@@ -180,6 +180,10 @@
       
       // Show preview immediately when session is created
       const pw = document.getElementById('previewWrap'); if (pw) pw.style.display = 'block';
+      // Ensure preview canvas is initialized
+      if (typeof setupPreviewCanvas === 'function') {
+        setupPreviewCanvas();
+      }
       
       // Initialize preview with ball in center (paused like viewer)
       const pv = document.getElementById('preview');
@@ -200,8 +204,8 @@
           radius: 20 // Уменьшен с 40 до 20 для превью
         };
         
-        // Start preview animation (but ball won't move until Start button)
-        startPreviewAnimation();
+        // Start preview animation (ensure draw loop is active)
+        if (typeof startPreviewAnimation === 'function') startPreviewAnimation();
         
         if (window.__pdraw) window.__pdraw();
       }
@@ -228,7 +232,7 @@
     <!-- PREVIEW TOP AREA -->
     <div id="previewWrap" style="display:none; position:sticky; top:0; z-index:500; padding:12px 24px 12px 24px; background: transparent; margin-right: 8px;">
       <label style="display:block; margin:0 0 6px 0; color:#94a3b8;">Превью движения (для психолога)</label>
-      <canvas id="preview" style="width:70%; max-width:500px; height:375px; background:#020617; border:1px solid #1f2937; border-radius:12px; display:block; margin:0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);"></canvas>
+      <canvas id="preview" style="width:100%; max-width:900px; height:450px; background:#020617; border:1px solid #1f2937; border-radius:12px; display:block; margin:0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); position:relative; z-index:1000;"></canvas>
     </div>
     <div class="wrap">
     <div class="emdr-info" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
@@ -756,18 +760,26 @@
           
           // Get the actual canvas element dimensions
           const rect = pv.getBoundingClientRect();
-          const width = rect.width || 500;
-          const height = rect.height || 375;
+          const cssWidth = rect.width || 500;
+          const cssHeight = rect.height || 375;
+          window.__previewCssW = cssWidth;
+          window.__previewCssH = cssHeight;
+          const targetWidth = Math.floor(cssWidth);
+          const targetHeight = Math.floor(cssHeight);
           
           // Only resize if dimensions actually changed
-          if (pv.width !== width || pv.height !== height) {
-            pv.width = width;
-            pv.height = height;
+          if (pv.width !== targetWidth || pv.height !== targetHeight) {
+            pv.width = targetWidth;
+            pv.height = targetHeight;
+            pv.style.width = cssWidth + 'px';
+            pv.style.height = cssHeight + 'px';
+            
+            // Draw directly in CSS pixel coordinates (no DPR scaling)
             
             // Re-initialize ball position after resize
             if (window.__pBall) {
-              window.__pBall.x = width / 2;
-              window.__pBall.y = height / 2;
+              window.__pBall.x = cssWidth / 2;
+              window.__pBall.y = cssHeight / 2;
               if (!window.__pBall.radius) {
                 window.__pBall.radius = (Number(document.getElementById('radiusRange')?.value || 40)) * 0.5;
               }
@@ -783,11 +795,25 @@
             return; 
           }
           
-          // Clear and fill background
-          pctx.clearRect(0, 0, pv.width, pv.height);
+          // Clear and fill background using CSS pixel space
+          const CW = window.__previewCssW || (pv.width || 500);
+          const CH = window.__previewCssH || (pv.height || 375);
+          // Ensure identity transform (we draw in CSS pixels)
+          pctx.setTransform(1, 0, 0, 1, 0, 0);
+          pctx.clearRect(0, 0, CW, CH);
           pctx.fillStyle = window.__pBall.colorBg || '#020617';
-          pctx.fillRect(0, 0, pv.width, pv.height);
+          pctx.fillRect(0, 0, CW, CH);
           
+          // Ensure movement when forced (after Start), recomputing velocity from slider and direction
+          if (window.__previewForceMoving && ( __previewBall.vx === 0 && __previewBall.vy === 0)) {
+            const dir = window.__lastDirection || lastDir || { x: 1, y: 0 };
+            const speed = Number(document.getElementById('speedRange')?.value || 50);
+            const rectNow = document.getElementById('preview')?.getBoundingClientRect();
+            const baseSpeed = rectNow ? Math.max(2.0, rectNow.width / 200) : 2.0;
+            const speedPx = (speed / 100) * baseSpeed;
+            __previewBall.vx = dir.x * speedPx;
+            __previewBall.vy = dir.y * speedPx;
+          }
           // Move ball based on velocity for smooth movement
           if (__previewBall.vx !== 0 || __previewBall.vy !== 0) {
             __previewBall.x += __previewBall.vx;
@@ -799,25 +825,22 @@
           }
           
           // Get ball properties with defaults
-          const ballRadius = window.__pBall.radius || 20; // 40 * 0.5
-          const ballX = __previewBall.x || pv.width / 2;
-          const ballY = __previewBall.y || pv.height / 2;
+          const ballRadius = Math.max(6, Math.min(40, window.__pBall.radius || 20));
+          const ballX = __previewBall.x || CW / 2;
+          const ballY = __previewBall.y || CH / 2;
           const ballColor = window.__pBall.colorBall || '#60a5fa';
           
-          // Allow ball to move across the entire preview area
-          // Only clamp to prevent ball from going completely off-screen
-          const clampedX = Math.max(-ballRadius, Math.min(pv.width + ballRadius, ballX));
-          const clampedY = Math.max(-ballRadius, Math.min(pv.height + ballRadius, ballY));
+          // Allow ball to move across the entire preview area and bounce at edges
+          let clampedX = ballX;
+          let clampedY = ballY;
+          if (ballX <= ballRadius) { clampedX = ballRadius; __previewBall.vx = Math.abs(__previewBall.vx); }
+          if (ballX >= CW - ballRadius) { clampedX = CW - ballRadius; __previewBall.vx = -Math.abs(__previewBall.vx); }
+          if (ballY <= ballRadius) { clampedY = ballRadius; __previewBall.vy = Math.abs(__previewBall.vy); }
+          if (ballY >= CH - ballRadius) { clampedY = CH - ballRadius; __previewBall.vy = -Math.abs(__previewBall.vy); }
           
-          // Bounce off walls in preview
-          if (clampedX !== ballX) {
-            __previewBall.x = clampedX;
-            __previewBall.vx = -__previewBall.vx * 0.8; // Bounce with energy loss
-          }
-          if (clampedY !== ballY) {
-            __previewBall.y = clampedY;
-            __previewBall.vy = -__previewBall.vy * 0.8; // Bounce with energy loss
-          }
+          // Update preview position to clamped values
+          __previewBall.x = clampedX;
+          __previewBall.y = clampedY;
           
           // Update global ball state for drawing
           window.__pBall.x = clampedX;
@@ -935,6 +958,11 @@
           window.__previewBall.vx = 0;
           window.__previewBall.vy = 0;
         }
+        // Stop local preview ticker if running
+        if (window.__previewTicker) {
+          clearInterval(window.__previewTicker);
+          window.__previewTicker = null;
+        }
         
         s.emit('control-update', { sessionId: sid, input: { pause: true } }); 
       }
@@ -950,19 +978,43 @@
             updateDirectionDisplay(1, 0);
           }
                   const speedVal = Number(document.getElementById('speedRange')?.value || 50);
+        // Ensure preview canvas and draw loop are initialized
+        if (typeof window.__pdraw !== 'function' && typeof setupPreviewCanvas === 'function') {
+          setupPreviewCanvas();
+        }
+        // Ensure preview animation loop is running (may be stopped after reset)
+        if (!window.__previewAnimation) {
+          if (typeof startPreviewAnimation === 'function') startPreviewAnimation();
+        }
         
         // Start preview movement (synchronize with viewer)
         if (window.__previewBall) {
           // Ensure we have direction - fallback to horizontal if none set
           const direction = window.__lastDirection || lastDir || { x: 1, y: 0 };
-          const speedPx = (speedVal / 100) * 80 * 0.1; // Convert to preview speed
+          const pv = document.getElementById('preview');
+          const rect = pv ? pv.getBoundingClientRect() : { width: 500 };
+          const speedPx = (speedVal / 100) * Math.max(2.0, rect.width / 200); // Scale with canvas size
           window.__previewBall.vx = direction.x * speedPx;
           window.__previewBall.vy = direction.y * speedPx;
+          window.__previewForceMoving = true;
+          // Start simple local ticker to guarantee visible movement
+          if (!window.__previewTicker) {
+            window.__previewTicker = setInterval(() => {
+              try {
+                if (!window.__previewBall) return;
+                window.__previewBall.x += window.__previewBall.vx;
+                window.__previewBall.y += window.__previewBall.vy;
+                if (typeof window.__pdraw === 'function') window.__pdraw();
+              } catch (_) {}
+            }, 16);
+          }
           console.log('Preview started:', { direction, speedPx, vx: window.__previewBall.vx, vy: window.__previewBall.vy });
         }
         
-        // Resume playback with current speed
-        s.emit('control-update', { sessionId: sid, input: { resume: true, speedScalar: speedVal } }); 
+        // Ensure direction is sent together with resume so motion starts immediately
+        const dir = window.__lastDirection || lastDir || { x: 1, y: 0 };
+        window.__lastDirection = dir;
+        s.emit('control-update', { sessionId: sid, input: { resume: true, speedScalar: speedVal, dirX: dir.x, dirY: dir.y } }); 
         }
 
 

@@ -425,21 +425,12 @@ io.on('connection', (socket) => {
       if (!session.lastDir) {
         session.lastDir = { x: 1, y: 0 };
       }
-      // Apply current speed to last direction
+      // Apply current speed to last direction immediately
       const currentSpeed = session.ball.speed || 120;
       session.ball.vx = session.lastDir.x * currentSpeed;
       session.ball.vy = session.lastDir.y * currentSpeed;
       
-      // Force immediate broadcast for resume
-      io.to(sessionId).emit('ball-state', {
-        ...session.ball,
-        radius: session.ball.radius,
-        colorBall: session.colors?.ball,
-        colorBg: session.colors?.bg,
-        width: session.world?.width,
-        height: session.world?.height
-      });
-      return;
+      // Do not return here: allow speedScalar/dirX/dirY below to refine state in same update
     }
     
     // Handle reset
@@ -472,7 +463,14 @@ io.on('connection', (socket) => {
     
     const targetSpeed = typeof clampedScalar === 'number' ? Math.round((clampedScalar / 100) * 80) : base * multiplier;
     
-    if (session.ball.speed !== targetSpeed) {
+    // If resuming and a scalar is provided, snap to target speed immediately for responsiveness
+    if (resume === true && typeof clampedScalar === 'number') {
+      session.ball.speed = targetSpeed;
+      if (session.lastDir && !session.paused) {
+        session.ball.vx = session.lastDir.x * session.ball.speed;
+        session.ball.vy = session.lastDir.y * session.ball.speed;
+      }
+    } else if (session.ball.speed !== targetSpeed) {
       // Smooth speed transition to avoid jerky movement
       const speedDiff = targetSpeed - session.ball.speed;
       const speedChange = Math.sign(speedDiff) * Math.min(Math.abs(speedDiff), 5); // Max 5px/s change per update

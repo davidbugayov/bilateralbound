@@ -1,6 +1,8 @@
 ---
 alwaysApply: true
 ---
+обновляй congig после каждого пуша
+
 <instructions>
 - ALWAYS follow <answering_rules> and <self_reflection>
 
