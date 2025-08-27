@@ -1,7 +1,11 @@
 ---
+description: 
+globs: 
 alwaysApply: true
 ---
 <instructions>
+Всегда обновляй config 
+Экономь токены
 - ALWAYS follow <answering_rules> and <self_reflection>
 
 <self_reflection>
