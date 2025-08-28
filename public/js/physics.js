@@ -85,11 +85,11 @@ class BallPhysics {
     const width = this.world.width;
     const height = this.world.height;
     const minSpeed = 500; // Увеличена минимальная скорость отскока для надежности
-    const edgePadding = 15; // Увеличен отступ от края для предотвращения застревания
+    const edgePadding = 25; // Значительно увеличен отступ от края для предотвращения застревания
     let bounced = false;
 
-    // Защита от множественных отскоков в одном кадре
-    if (this.lastBounceTime && Date.now() - this.lastBounceTime < 32) { // Не чаще 30 FPS для отскоков
+    // Защита от множественных отскоков в одном кадре - уменьшена для более частых отскоков
+    if (this.lastBounceTime && Date.now() - this.lastBounceTime < 16) { // Не чаще 60 FPS для отскоков
       return false;
     }
 
@@ -151,10 +151,24 @@ class BallPhysics {
 
     }
 
-    // Определяем, был ли отскок (изменение направления)
-    const speedChanged = (beforeVx !== this.ball.vx) || (beforeVy !== this.ball.vy);
-    if (bounced && speedChanged) {
+    // Специальная обработка для углов - предотвращаем застревание
+    if (bounced) {
+      // Проверяем, попал ли мяч в угол (два отскока одновременно)
+      const cornerBounce = ((this.ball.x - radius <= edgePadding && this.ball.y - radius <= edgePadding) || // Левый верхний
+                           (this.ball.x + radius >= width - edgePadding && this.ball.y - radius <= edgePadding) || // Правый верхний
+                           (this.ball.x - radius <= edgePadding && this.ball.y + radius >= height - edgePadding) || // Левый нижний
+                           (this.ball.x + radius >= width - edgePadding && this.ball.y + radius >= height - edgePadding)); // Правый нижний
 
+      if (cornerBounce) {
+        // В углу гарантируем минимальную скорость по обеим осям
+        const currentSpeed = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy);
+        if (currentSpeed < minSpeed * 1.5) { // Увеличиваем порог для углов
+          const scale = (minSpeed * 1.5) / currentSpeed;
+          this.ball.vx *= scale;
+          this.ball.vy *= scale;
+          console.log(`Corner bounce: increased speed to ${Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy).toFixed(1)}`);
+        }
+      }
 
       // Отправляем обновленное состояние на сервер
       this.syncBounceToServer();
