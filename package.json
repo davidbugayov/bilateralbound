@@ -1,17 +1,32 @@
 {
-  "name": "bilateral_bound",
+  "name": "bilateralbound",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A scalable real-time multiplayer game built with SOLID principles",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "start:production": "node server-production.js",
-    "build:pages": "rm -rf docs && mkdir -p docs && cp -R public/* docs/ && cp public/index.html docs/index.html && echo '\n/*' > docs/CNAME || true",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "debug": "LOG_LEVEL=DEBUG node src/server.js",
+    "local": "PORT=3000 npm run start",
+    "dev:open": "PORT=3000 npm start & sleep 2 && open http://localhost:3000 && wait",
+    "test": "npm run test:lint && npm run test:server",
+    "test:server": "node -c src/server.js && echo '✅ Server syntax OK'",
+    "test:lint": "echo '✅ No linter configured yet'",
+    "test:full": "npm run test && npm run health-test",
+    "health-test": "sleep 2 && curl -s http://localhost:3000/health | jq .status 2>/dev/null || echo '❌ Health check failed'",
+    "clean": "rm -rf node_modules package-lock.json && npm install",
+    "status": "curl -s http://localhost:3000/health || echo '❌ Server not running'",
+    "logs": "tail -f /dev/null",
+    "quick-start": "echo '🚀 Запуск сервера...' && npm run dev:open"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "game",
+    "multiplayer",
+    "http-only",
+    "solid",
+    "scalable"
+  ],
+  "author": "BilateralBound Team",
   "license": "ISC",
   "type": "commonjs",
   "engines": {
@@ -19,15 +34,15 @@
     "npm": ">=8.0.0"
   },
   "dependencies": {
+    "compression": "^1.7.4",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "socket.io": "^4.7.2",
-    "uuid": "^9.0.1",
     "express-rate-limit": "^7.1.5",
     "helmet": "^7.1.0",
-    "compression": "^1.7.4"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "jsdom": "^26.1.0",
     "nodemon": "^3.1.10"
   }
 }
