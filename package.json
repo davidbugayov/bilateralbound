@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "build": "echo '✅ No build step required for Node.js app'",
+    "build:pages": "echo '✅ Static files are served by Node.js server' && mkdir -p dist && cp -r public/* dist/ 2>/dev/null || echo 'No public files to copy'",
     "debug": "LOG_LEVEL=DEBUG node src/server.js",
     "local": "PORT=3000 npm run start",
     "dev:open": "PORT=3000 npm start & sleep 2 && open http://localhost:3000 && wait",
@@ -29,6 +31,12 @@
   "author": "BilateralBound Team",
   "license": "ISC",
   "type": "commonjs",
+  "homepage": ".",
+  "render": {
+    "type": "web",
+    "buildCommand": "npm install",
+    "startCommand": "npm start"
+  },
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
