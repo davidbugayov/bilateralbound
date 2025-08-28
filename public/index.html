@@ -458,8 +458,9 @@
       box-shadow: none;
       user-select: none;
       margin-bottom: 20px;
-      overflow: hidden;
+      overflow: visible;
       box-sizing: border-box;
+      min-height: 280px;
     }
 
     .floating-preview canvas {
@@ -533,6 +534,7 @@
         position: static;
         margin-bottom: 16px;
         padding: 16px;
+        min-height: 240px;
       }
 
       .floating-preview canvas {
@@ -551,7 +553,14 @@
         width: 100%;
         max-width: 100%;
         margin: 0 auto;
-        overflow: hidden;
+        overflow: visible;
+        padding-bottom: 35px;
+      }
+
+      .floating-preview #viewerInfo {
+        font-size: 11px;
+        padding: 3px 6px;
+        bottom: 8px;
       }
 
       .floating-preview .drag-handle {
@@ -685,9 +694,9 @@
 
         <div id="previewWrap" style="display: none;" class="control-section floating-preview">
           <h3 class="drag-handle">👁️ Превью движения</h3>
-          <div style="text-align: center; position: relative;">
+          <div style="text-align: center; position: relative; padding-bottom: 35px;">
             <canvas id="preview" style="border: 1px solid #374151; border-radius: 8px; background: #020617; max-width: 100%; height: auto; aspect-ratio: 4/3;"></canvas>
-            <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%);">
+            <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
               Вьювер: подключен
             </div>
           </div>
