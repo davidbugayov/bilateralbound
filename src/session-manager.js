@@ -202,8 +202,8 @@ class SessionManager {
       const speedMatchesDirection = (currentVxSign === nx || nx === 0) && (currentVySign === ny || ny === 0);
 
       // Рассчитываем скорость в пикселях в секунду
-      // 100% = 640 px/s, 40% = 256 px/s
-      const pixelsPerSecond = Math.max((session.ballState.speed / 100) * 640, 250); // Минимум 250 px/s
+      // 100% = 1280 px/s, 80% = 1024 px/s
+      const pixelsPerSecond = Math.max((session.ballState.speed / 100) * 1280, 500); // Минимум 500 px/s
       const currentSpeed = Math.sqrt(session.ballState.vx ** 2 + session.ballState.vy ** 2);
 
       // Обновляем скорость только если:
@@ -267,7 +267,7 @@ class SessionManager {
           }
         }
 
-        const pixelsPerSecond = Math.max((session.ballState.speed / 100) * 640, 250); // Минимум 250 px/s
+        const pixelsPerSecond = Math.max((session.ballState.speed / 100) * 1280, 500); // Минимум 500 px/s
 
         // НЕ сбрасываем позицию! Только устанавливаем скорость в нужном направлении
         // Мяч должен продолжать движение из текущей позиции
@@ -285,7 +285,7 @@ class SessionManager {
         }
       } else {
         // Если скорости нет, но направление указано - устанавливаем только скорость, оставляем позицию
-        const pixelsPerSecond = Math.max((session.ballState.speed / 100) * 640, 250); // Минимум 250 px/s
+        const pixelsPerSecond = Math.max((session.ballState.speed / 100) * 1280, 500); // Минимум 500 px/s
 
         // Устанавливаем скорость в указанном направлении, но не меняем позицию
         session.ballState.vx = nx * pixelsPerSecond;

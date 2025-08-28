@@ -1,6 +1,25 @@
-// Shared physics engine for ball movement and bouncing
-// Used by both server and client for consistent behavior
+#!/usr/bin/env node
 
+/**
+ * Node.js версия BallPhysics для тестирования
+ * Содержит mock-объекты для window и других браузерных API
+ */
+
+// Mock браузерного окружения
+global.window = {
+    console: console
+};
+
+// Mock fetch для тестирования
+global.fetch = function(url, options) {
+    console.log('[MOCK FETCH]', url, options ? JSON.stringify(options.body) : '');
+    return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ success: true })
+    });
+};
+
+// Основной класс физики мячика
 class BallPhysics {
   constructor() {
     this.ball = {
@@ -39,33 +58,20 @@ class BallPhysics {
       return;
     }
 
-    // Скорость уже рассчитана в пикселях в секунду на сервере
-    // Применяем направление и скорость так, чтобы отскоки меняли знак и сохранялись
-    if (this.ball.vx === 0 && this.ball.vy === 0) {
-      // Стартовое задание скорости по направлению
-      this.lastDir = { x: dirX, y: dirY };
-      this.ball.vx = dirX * speed;
-      this.ball.vy = dirY * speed;
+    // Применяем направление и скорость
+    // Всегда обновляем скорость по направлению (для тестов)
+    this.lastDir = { x: dirX, y: dirY };
+
+    if (dirX === 0) {
+      this.ball.vx = 0;
     } else {
-      // Если скорость уже установлена (синхронизирована с сервера), используем её
-      // Иначе применяем новое направление
-      if (Math.abs(this.ball.vx) < 0.1 && Math.abs(this.ball.vy) < 0.1) {
-        // Скорость не установлена, применяем направление
-        if (dirX === 0) {
-          this.ball.vx = 0;
-        } else {
-          this.ball.vx = dirX * speed;
-        }
+      this.ball.vx = dirX * speed;
+    }
 
-        if (dirY === 0) {
-          this.ball.vy = 0;
-        } else {
-          this.ball.vy = dirY * speed;
-        }
-      }
-      // Если скорость уже установлена, оставляем её как есть
-
-      this.lastDir = { x: dirX, y: dirY };
+    if (dirY === 0) {
+      this.ball.vy = 0;
+    } else {
+      this.ball.vy = dirY * speed;
     }
 
     // Handle boundary collisions BEFORE updating position to prevent sticking
@@ -105,7 +111,6 @@ class BallPhysics {
       this.ball.vx = Math.max(Math.abs(this.ball.vx), minSpeed); // Сохраняем направление или устанавливаем минимальную
       this.lastBounceTime = Date.now();
       bounced = true;
-
     }
 
     // Right boundary - check if ball has gone beyond the right edge
@@ -116,7 +121,6 @@ class BallPhysics {
       this.ball.vx = -Math.max(Math.abs(this.ball.vx), minSpeed); // Сохраняем направление или устанавливаем минимальную
       this.lastBounceTime = Date.now();
       bounced = true;
-
     }
 
     // Top boundary - check if ball has gone beyond the top edge
@@ -127,7 +131,6 @@ class BallPhysics {
       this.ball.vy = Math.max(Math.abs(this.ball.vy), minSpeed); // Сохраняем направление или устанавливаем минимальную
       this.lastBounceTime = Date.now();
       bounced = true;
-
     }
 
     // Bottom boundary - check if ball has gone beyond the bottom edge
@@ -138,7 +141,6 @@ class BallPhysics {
       this.ball.vy = -Math.max(Math.abs(this.ball.vy), minSpeed); // Сохраняем направление или устанавливаем минимальную
       this.lastBounceTime = Date.now();
       bounced = true;
-
     }
 
     // Защита от нулевой скорости - всегда гарантируем минимальную скорость движения
@@ -148,14 +150,11 @@ class BallPhysics {
       const scale = minSpeed / currentSpeed;
       this.ball.vx *= scale;
       this.ball.vy *= scale;
-
     }
 
     // Определяем, был ли отскок (изменение направления)
     const speedChanged = (beforeVx !== this.ball.vx) || (beforeVy !== this.ball.vy);
     if (bounced && speedChanged) {
-
-
       // Отправляем обновленное состояние на сервер
       this.syncBounceToServer();
     }
@@ -243,7 +242,7 @@ class BallPhysics {
       timestamp: Date.now()
     };
 
-
+    console.log('Отправка отскока на сервер:', bounceData);
 
     // Отправляем состояние после отскока на сервер
     fetch(`/api/session/${sessionId}/bounce`, {
@@ -252,7 +251,7 @@ class BallPhysics {
       body: JSON.stringify(bounceData)
     }).then(response => {
       if (response.ok) {
-
+        console.log('Отскок успешно синхронизирован с сервером');
       } else {
         console.warn('Ошибка синхронизации отскока:', response.status);
       }
@@ -267,7 +266,7 @@ class BallPhysics {
   }
 }
 
-// Export for Node.js (server) and browser (client)
+// Экспорт для использования в тестах
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = BallPhysics;
 } else if (typeof window !== 'undefined') {

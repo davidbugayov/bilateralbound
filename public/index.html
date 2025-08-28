@@ -69,33 +69,87 @@
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
-      background: #1f2937;
+      background: transparent;
       cursor: pointer;
-      padding: 0 9px;
+      padding: 0;
       box-sizing: border-box;
-      border-radius: 3px;
-      height: 6px;
+      border-radius: 6px;
+      height: 8px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input[type="range"]:hover {
+      transform: scaleY(1.1);
     }
 
     input[type="range"]::-webkit-slider-track {
-      background: #1f2937;
-      height: 6px;
-      border-radius: 3px;
-      border: 1px solid #374151;
+      background: linear-gradient(to right,
+        var(--progress-start-color, #60a5fa) 0%,
+        var(--progress-mid1-color, #3b82f6) 25%,
+        var(--progress-mid2-color, #2563eb) 50%,
+        var(--progress-mid3-color, #1d4ed8) 75%,
+        var(--progress-fill-color, #1d4ed8) var(--progress-percentage, 0%),
+        var(--progress-empty-color, #374151) var(--progress-percentage, 0%),
+        var(--progress-end-color, #4b5563) 100%);
+      height: 8px;
+      border-radius: 6px;
+      border: 1px solid #6b7280;
       width: 100%;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      background: #60a5fa;
-      height: 18px;
-      width: 18px;
+      background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+      height: 24px;
+      width: 24px;
       border-radius: 50%;
-      border: 2px solid #1f2937;
+      border: 3px solid #ffffff;
       cursor: pointer;
-      margin-top: -6px;
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+      margin-top: -8px;
+      box-shadow: 0 2px 8px rgba(96, 165, 250, 0.4),
+                  0 0 0 2px rgba(96, 165, 250, 0.2);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(96, 165, 250, 0.5),
+                  0 0 0 3px rgba(96, 165, 250, 0.3);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(0.95);
+    }
+
+    /* Firefox стили */
+    input[type="range"]::-moz-range-track {
+      background: linear-gradient(to right,
+        var(--progress-start-color, #60a5fa) 0%,
+        var(--progress-mid1-color, #3b82f6) 25%,
+        var(--progress-mid2-color, #2563eb) 50%,
+        var(--progress-mid3-color, #1d4ed8) 75%,
+        var(--progress-fill-color, #1d4ed8) var(--progress-percentage, 0%),
+        var(--progress-empty-color, #374151) var(--progress-percentage, 0%),
+        var(--progress-end-color, #4b5563) 100%);
+      height: 8px;
+      border-radius: 6px;
+      border: 1px solid #6b7280;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      border: 3px solid #ffffff;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(96, 165, 250, 0.4);
+      transition: all 0.3s ease;
     }
 
     .color-btn, .size-btn {
@@ -134,20 +188,36 @@
       background: #1d4ed8 !important;
     }
 
-    /* Улучшенные стили для контейнера скорости */
+    /* Современные стили для контейнера скорости */
     .speed-container {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      padding: 16px;
-      background: #1f2937;
-      border-radius: 12px;
-      border: 1px solid #374151;
+      gap: 16px;
+      padding: 20px;
+      background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+      border-radius: 16px;
+      border: 1px solid #4b5563;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .speed-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #60a5fa, #3b82f6, #1d4ed8);
+      border-radius: 16px 16px 0 0;
     }
 
     .speed-container input[type="range"] {
       width: 100%;
       margin: 0;
+      position: relative;
+      z-index: 2;
     }
 
     .speed-container .speed-labels {
@@ -155,23 +225,139 @@
       justify-content: space-between;
       align-items: center;
       font-size: 14px;
-      color: #9ca3af;
+      color: #d1d5db;
       font-weight: 500;
+      transition: all 0.3s ease;
     }
 
     .speed-container .speed-labels .speed-icon {
-      font-size: 16px;
+      font-size: 18px;
+      filter: drop-shadow(0 0 4px rgba(96, 165, 250, 0.3));
+      transition: transform 0.3s ease;
     }
 
     .speed-container .speed-value {
-      background: #60a5fa;
+      background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
       color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
+      padding: 6px 16px;
+      border-radius: 24px;
+      font-size: 13px;
       font-weight: 600;
-      min-width: 80px;
+      min-width: 100px;
       text-align: center;
+      box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .speed-container .speed-value::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .speed-container:hover .speed-value::before {
+      left: 100%;
+    }
+
+    .speed-container:hover .speed-labels .speed-icon {
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.6));
+    }
+
+    /* Анимации для плавных переходов */
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3); }
+      50% { box-shadow: 0 2px 8px rgba(96, 165, 250, 0.6); }
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes smoothValueChange {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes progressTransition {
+      0% { opacity: 0.8; }
+      100% { opacity: 1; }
+    }
+
+    /* Оптимизированные плавные переходы для элементов скорости */
+    .speed-container input[type="range"] {
+      /* Убираем CSS transition - используем только JS анимации */
+      transition: none;
+    }
+
+    .speed-container .speed-value {
+      /* Убираем CSS transition - используем только JS анимации */
+      transition: none;
+    }
+
+    .speed-container.active .speed-value {
+      animation: smoothValueChange 0.4s ease-out;
+    }
+
+    .speed-container.active input[type="range"] {
+      animation: progressTransition 0.3s ease-out;
+    }
+
+    /* Оптимизация производительности для предотвращения мерцания */
+    .speed-container .speed-value,
+    .speed-container .speed-labels {
+      will-change: auto; /* Отключаем will-change для предотвращения проблем */
+      backface-visibility: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      /* Предотвращаем layout thrashing */
+      contain: layout style paint;
+    }
+
+    /* Специфичные стили для слайдера */
+    .speed-container input[type="range"]::-webkit-slider-thumb {
+      transition: none; /* Отключаем все CSS переходы для thumb */
+    }
+
+    .speed-container input[type="range"]::-moz-range-thumb {
+      transition: none; /* Отключаем все CSS переходы для thumb */
+    }
+
+    .speed-container .speed-value {
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    /* Добавляем класс для активной анимации */
+    .speed-container.active .speed-value {
+      animation: pulseGlow 2s infinite;
+    }
+
+    /* Улучшаем responsive дизайн */
+    @media (max-width: 768px) {
+      .speed-container {
+        padding: 16px;
+        gap: 12px;
+      }
+
+      .speed-container .speed-labels {
+        font-size: 12px;
+      }
+
+      .speed-container .speed-value {
+        font-size: 12px;
+        padding: 4px 12px;
+        min-width: 80px;
+      }
     }
 
     /* Улучшенные стили для поля ввода ссылки */
@@ -239,6 +425,9 @@
       border-radius: 12px;
       border: 1px solid #374151;
       margin-bottom: 20px;
+      overflow: hidden;
+      box-sizing: border-box;
+      width: 100%;
     }
 
     .control-section h3 {
@@ -269,6 +458,26 @@
       box-shadow: none;
       user-select: none;
       margin-bottom: 20px;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .floating-preview canvas {
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 4/3;
+      object-fit: contain;
+      border-radius: 8px;
+      display: block;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .floating-preview > div {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
     }
     .floating-preview .drag-handle {
       cursor: default;
@@ -323,6 +532,26 @@
       .floating-preview {
         position: static;
         margin-bottom: 16px;
+        padding: 16px;
+      }
+
+      .floating-preview canvas {
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 4/3;
+        border-radius: 6px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+        box-sizing: border-box;
+      }
+
+      .floating-preview > div {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow: hidden;
       }
 
       .floating-preview .drag-handle {
@@ -456,10 +685,10 @@
 
         <div id="previewWrap" style="display: none;" class="control-section floating-preview">
           <h3 class="drag-handle">👁️ Превью движения</h3>
-          <div style="text-align: center;">
-            <canvas id="preview" width="800" height="600" style="border: 1px solid #374151; border-radius: 8px; background: #020617; max-width: 100%; height: auto;"></canvas>
-            <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af;">
-              Вьювер: 800×600
+          <div style="text-align: center; position: relative;">
+            <canvas id="preview" style="border: 1px solid #374151; border-radius: 8px; background: #020617; max-width: 100%; height: auto; aspect-ratio: 4/3;"></canvas>
+            <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%);">
+              Вьювер: подключен
             </div>
           </div>
         </div>
@@ -487,7 +716,7 @@
             <input id="speedRange" type="range" min="0" max="100" step="1" value="40" />
             <div class="speed-labels">
               <span class="speed-icon">🐌</span>
-              <span class="speed-value" id="speedLabel">40% (256 px/s)</span>
+              <span class="speed-value" id="speedLabel">40% (512 px/s)</span>
               <span class="speed-icon">🐆</span>
             </div>
           </div>
@@ -704,10 +933,22 @@
               fixedDeltaTime
             );
 
-            // Логируем только значительные движения (каждую секунду)
+            // Синхронизируем прогресс-бар с реальной скоростью мячика
+            // Обновляем с умной частотой для оптимальной производительности
+            const now = Date.now();
+            const timeSinceLastSync = now - (window.__lastProgressSync || 0);
+
+            // Обновляем чаще когда скорость высокая, реже когда низкая
+            const currentSpeed = Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy);
+            const updateInterval = currentSpeed > 500 ? 30 : currentSpeed > 200 ? 50 : 100;
+
+            if (timeSinceLastSync >= updateInterval) {
+              speedManager.syncWithBallPhysics(physics);
+              window.__lastProgressSync = now;
+            }
+
+            // Можно добавить логику для отслеживания производительности
             if (!window.__previewLastLog || Date.now() - window.__previewLastLog > 1000) {
-              console.log('Превью: мяч движется', physics.ball.x.toFixed(1), physics.ball.y.toFixed(1),
-                        'скорость:', physics.ball.vx.toFixed(1), physics.ball.vy.toFixed(1));
               window.__previewLastLog = Date.now();
             }
           } else {
@@ -776,7 +1017,7 @@
           if (ballState.colorBg) window.__previewPhysics.colors.bg = ballState.colorBg;
           if (ballState.paused !== undefined) window.__previewPhysics.paused = ballState.paused;
 
-          console.log('Начальное состояние превью синхронизировано:', ballState);
+  
         }
       } catch (error) {
         console.error('Error syncing initial state for preview:', error);
@@ -788,10 +1029,12 @@
 
       const canvas = window.__previewCanvas;
       const physics = window.__previewPhysics;
+      const container = canvas.parentElement;
 
-      // Максимальный размер превью (увеличенный для лучшей видимости)
-      const maxPreviewWidth = 600;
-      const maxPreviewHeight = 450;
+      // Получаем размеры контейнера
+      const containerRect = container.getBoundingClientRect();
+      const maxWidth = Math.min(containerRect.width - 40, 600); // Учитываем padding
+      const maxHeight = Math.min(400, maxWidth * 0.75); // Ограничиваем высоту
 
       // Вычисляем соотношение сторон вьювера
       const viewerRatio = viewerScreenSize.width / viewerScreenSize.height;
@@ -799,22 +1042,30 @@
       // Масштабируем превью, сохраняя соотношение сторон
       let previewWidth, previewHeight;
 
-      if (viewerRatio > 1) { // Горизонтальный экран
-        previewWidth = Math.min(maxPreviewWidth, viewerScreenSize.width * 0.3);
+      if (viewerRatio > 4/3) { // Очень широкий экран
+        previewWidth = maxWidth;
         previewHeight = previewWidth / viewerRatio;
-      } else { // Вертикальный экран
-        previewHeight = Math.min(maxPreviewHeight, viewerScreenSize.height * 0.3);
+        if (previewHeight > maxHeight) {
+          previewHeight = maxHeight;
+          previewWidth = previewHeight * viewerRatio;
+        }
+      } else if (viewerRatio < 4/3) { // Высокий экран
+        previewHeight = maxHeight;
         previewWidth = previewHeight * viewerRatio;
+        if (previewWidth > maxWidth) {
+          previewWidth = maxWidth;
+          previewHeight = previewWidth / viewerRatio;
+        }
+      } else { // Стандартное соотношение 4:3
+        previewWidth = Math.min(maxWidth, maxHeight * viewerRatio);
+        previewHeight = previewWidth / viewerRatio;
       }
 
       // Устанавливаем размеры canvas
-      canvas.width = previewWidth;
-      canvas.height = previewHeight;
+      canvas.width = Math.max(previewWidth, 320); // Минимальная ширина
+      canvas.height = Math.max(previewHeight, 240); // Минимальная высота
 
-      // Стилизуем canvas для лучшего отображения
-      canvas.style.border = '2px solid #666';
-      canvas.style.borderRadius = '4px';
-      canvas.style.backgroundColor = '#000';
+      // Не меняем CSS стили canvas - они уже правильно настроены
 
       // Обновляем границы физики (масштабируем относительно реального экрана вьювера)
       physics.setWorldSize(viewerScreenSize.width, viewerScreenSize.height);
@@ -835,7 +1086,7 @@
         viewerInfo.style.display = 'block';
       }
 
-      console.log(`Превью обновлено: ${previewWidth}x${previewHeight} (вьювер: ${viewerScreenSize.width}x${viewerScreenSize.height})`);
+
     }
 
 
@@ -913,7 +1164,7 @@
               const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
               window.__previewPhysics.lastDir = { x: dirX, y: dirY };
 
-              console.log('Превью: скорость обновлена', ballState.vx, ballState.vy, 'paused:', window.__previewPhysics.paused);
+
             }
 
             // Синхронизация параметров управления
@@ -923,7 +1174,7 @@
             if (ballState.colorBg) window.__previewPhysics.colors.bg = ballState.colorBg;
             if (ballState.paused !== undefined) {
               window.__previewPhysics.paused = ballState.paused;
-              console.log('Превью: пауза обновлена', ballState.paused);
+
             }
 
             // Убираем синхронизацию позиции - превью полагается только на команды сервера
@@ -953,9 +1204,8 @@
       const sessionId = window.__current?.sessionId;
       if (!sessionId) return;
 
-      const speedVal = Number(document.getElementById('speedRange')?.value || 40);
-
-      console.log('Контроллер: отправка команды', { dirX: dx, dirY: dy, speedScalar: speedVal });
+      // Используем speedManager для получения текущей скорости
+      const speedVal = speedManager.getCurrentSpeed();
 
       fetch(`/api/session/${sessionId}/controller/connect`, {
         method: 'POST',
@@ -969,8 +1219,6 @@
       }).then(response => {
         if (!response.ok) {
           console.error('Ошибка отправки команды:', response.status);
-        } else {
-          console.log('Контроллер: команда изменения направления отправлена успешно');
         }
       }).catch(error => console.error('Error updating direction:', error));
     }
@@ -1195,18 +1443,289 @@
     function updateProgressBar(value, isMobile = false) {
       const sliderId = isMobile ? 'mobileSpeedRange' : 'speedRange';
       const slider = document.getElementById(sliderId);
-      if (slider) {
-        const percentage = value + '%';
-        slider.style.background = `linear-gradient(to right, #60a5fa 0%, #60a5fa ${percentage}, #1f2937 ${percentage}, #1f2937 100%)`;
+      if (!slider) return;
+
+      // Предотвращаем множественные обновления одного и того же значения
+      const currentValue = parseInt(slider.getAttribute('data-current-value') || '0');
+      if (currentValue === value) return;
+
+      // Сохраняем текущее значение
+      slider.setAttribute('data-current-value', value.toString());
+
+      // Отменяем предыдущую анимацию, если она есть
+      if (slider._animationFrame) {
+        cancelAnimationFrame(slider._animationFrame);
+      }
+
+      // Используем requestAnimationFrame для плавного обновления
+      slider._animationFrame = requestAnimationFrame(() => {
+        updateProgressBarInternal(slider, value);
+        slider._animationFrame = null;
+      });
+    }
+
+    function updateProgressBarInternal(slider, value) {
+      const percentage = value + '%';
+
+      // Устанавливаем CSS custom properties для динамического обновления прогресса
+      slider.style.setProperty('--progress-percentage', percentage);
+
+      // Устанавливаем цвета в зависимости от значения
+      if (value >= 80) {
+        slider.style.setProperty('--progress-fill-color', '#f97316');
+        slider.style.setProperty('--progress-start-color', '#f97316');
+        slider.style.setProperty('--progress-mid1-color', '#ea580c');
+        slider.style.setProperty('--progress-mid2-color', '#dc2626');
+        slider.style.setProperty('--progress-mid3-color', '#b91c1c');
+      } else if (value >= 60) {
+        slider.style.setProperty('--progress-fill-color', '#eab308');
+        slider.style.setProperty('--progress-start-color', '#eab308');
+        slider.style.setProperty('--progress-mid1-color', '#ca8a04');
+        slider.style.setProperty('--progress-mid2-color', '#a16207');
+        slider.style.setProperty('--progress-mid3-color', '#854d0e');
+      } else if (value >= 40) {
+        slider.style.setProperty('--progress-fill-color', '#60a5fa');
+        slider.style.setProperty('--progress-start-color', '#60a5fa');
+        slider.style.setProperty('--progress-mid1-color', '#3b82f6');
+        slider.style.setProperty('--progress-mid2-color', '#2563eb');
+        slider.style.setProperty('--progress-mid3-color', '#1d4ed8');
+      } else if (value >= 20) {
+        slider.style.setProperty('--progress-fill-color', '#34d399');
+        slider.style.setProperty('--progress-start-color', '#34d399');
+        slider.style.setProperty('--progress-mid1-color', '#10b981');
+        slider.style.setProperty('--progress-mid2-color', '#059669');
+        slider.style.setProperty('--progress-mid3-color', '#047857');
+      } else {
+        slider.style.setProperty('--progress-fill-color', '#9ca3af');
+        slider.style.setProperty('--progress-start-color', '#9ca3af');
+        slider.style.setProperty('--progress-mid1-color', '#6b7280');
+        slider.style.setProperty('--progress-mid2-color', '#4b5563');
+        slider.style.setProperty('--progress-mid3-color', '#374151');
+      }
+
+      // Обновляем box-shadow
+      const shadowOpacity = value > 0 ? Math.min(value / 100, 0.3) : 0;
+      const newShadow = value > 0 ? `0 0 20px rgba(96, 165, 250, ${shadowOpacity})` : 'none';
+
+      if (slider.style.boxShadow !== newShadow) {
+        slider.style.boxShadow = newShadow;
+      }
+
+      // Обновляем цветовую индикацию valueElement
+      const container = slider.closest('.speed-container');
+      if (container) {
+        const valueElement = container.querySelector('.speed-value');
+        if (valueElement) {
+          updateValueElementStyle(valueElement, value);
+        }
+      }
+    }
+
+    // Отдельная функция для обновления стиля valueElement
+    function updateValueElementStyle(valueElement, value) {
+      let background, boxShadow;
+
+      if (value >= 80) {
+        background = 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)';
+        boxShadow = '0 2px 8px rgba(249, 115, 22, 0.3)';
+      } else if (value >= 60) {
+        background = 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)';
+        boxShadow = '0 2px 8px rgba(234, 179, 8, 0.3)';
+      } else if (value >= 40) {
+        background = 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)';
+        boxShadow = '0 2px 8px rgba(96, 165, 250, 0.3)';
+      } else if (value >= 20) {
+        background = 'linear-gradient(135deg, #34d399 0%, #10b981 100%)';
+        boxShadow = '0 2px 8px rgba(52, 211, 153, 0.3)';
+      } else {
+        background = 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)';
+        boxShadow = '0 2px 8px rgba(156, 163, 175, 0.2)';
+      }
+
+      // Обновляем стили только если они изменились
+      if (valueElement.style.background !== background) {
+        valueElement.style.background = background;
+      }
+      if (valueElement.style.boxShadow !== boxShadow) {
+        valueElement.style.boxShadow = boxShadow;
       }
     }
 
     function updateMobileSpeedLabel(value) {
       const label = document.getElementById('mobileSpeedLabel');
       if (label) {
-        label.textContent = value + '% (' + Math.round((value / 100) * 640) + ' px/s)';
+        label.textContent = value + '% (' + Math.round((value / 100) * 1280) + ' px/s)';
       }
     }
+
+    // Единый менеджер скорости с дебоунсом
+    class SpeedManager {
+      constructor() {
+        this.currentSpeed = 40;
+        this.lastUpdateTime = 0;
+        this.updateDelay = 150; // Уменьшенная задержка для более отзывчивого интерфейса
+        this.pendingUpdate = null;
+        this.isUpdating = false;
+      }
+
+      // Получить текущую скорость
+      getCurrentSpeed() {
+        return this.currentSpeed;
+      }
+
+      // Установить скорость с дебоунсом и синхронизацией
+      setSpeed(value, options = {}) {
+        const { force = false, skipServer = false, skipUI = false } = options;
+
+        // Проверяем, изменилось ли значение
+        if (!force && this.currentSpeed === value) return;
+
+        this.currentSpeed = value;
+
+        // Немедленно обновляем UI (без дебоунса)
+        if (!skipUI) {
+          this.updateUIImmediate(value);
+        }
+
+        // Обновляем сервер с дебоунсом
+        if (!skipServer) {
+          this.debouncedServerUpdate(value);
+        }
+      }
+
+      // Немедленное обновление UI без дебоунса
+      updateUIImmediate(value) {
+        // Обновляем основной слайдер
+        const range = document.getElementById('speedRange');
+        if (range && range.value !== value.toString()) {
+          range.value = value;
+        }
+
+        // Обновляем мобильный слайдер
+        const mobileRange = document.getElementById('mobileSpeedRange');
+        if (mobileRange && mobileRange.value !== value.toString()) {
+          mobileRange.value = value;
+        }
+
+        // Обновляем все лейблы
+        this.updateLabels(value);
+
+        // Обновляем прогресс-бар
+        this.updateProgressBars(value);
+      }
+
+      // Обновление лейблов
+      updateLabels(value) {
+        const labels = [
+          'speedLabel',
+          'mobileSpeedLabel'
+        ];
+
+        labels.forEach(id => {
+          const label = document.getElementById(id);
+          if (label) {
+            label.textContent = value + '% (' + Math.round((value / 100) * 1280) + ' px/s)';
+          }
+        });
+      }
+
+      // Обновление прогресс-баров
+      updateProgressBars(value) {
+        updateProgressBar(value, false); // Основной
+        updateProgressBar(value, true);  // Мобильный
+      }
+
+      // Дебоунсированное обновление сервера
+      debouncedServerUpdate(value) {
+        if (this.pendingUpdate) {
+          clearTimeout(this.pendingUpdate);
+        }
+
+        this.pendingUpdate = setTimeout(() => {
+          if (!this.isUpdating) {
+            this.sendToServer(value);
+          }
+        }, this.updateDelay);
+      }
+
+      // Отправка на сервер
+      async sendToServer(value) {
+        if (this.isUpdating) return;
+
+        const sessionId = window.__current?.sessionId;
+        if (!sessionId) return;
+
+        this.isUpdating = true;
+
+        try {
+          const lastDir = window.lastDir || { x: 1, y: 0 };
+
+          const response = await fetch(`/api/session/${sessionId}/controller/connect`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              speedScalar: value,
+              dirX: lastDir.x,
+              dirY: lastDir.y
+            })
+          });
+
+          if (!response.ok) {
+            console.error('Ошибка обновления скорости:', response.status);
+          }
+        } catch (error) {
+          console.error('Error updating speed:', error);
+        } finally {
+          this.isUpdating = false;
+        }
+      }
+
+      // Принудительное обновление (для инициализации)
+      forceUpdate(value) {
+        this.setSpeed(value, { force: true, skipServer: false });
+      }
+
+      // Только UI обновление (для синхронизации с сервером)
+      updateUIOnly(value) {
+        this.setSpeed(value, { skipServer: true });
+      }
+
+      // Синхронизация прогресса с реальной скоростью мячика
+      syncWithBallPhysics(physics) {
+        if (!physics || physics.paused) return;
+
+        // Вычисляем текущую абсолютную скорость мячика
+        const currentSpeed = Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy);
+
+        // Если скорость слишком маленькая (мяч почти остановился), не обновляем
+        if (currentSpeed < 50) return;
+
+        // Конвертируем абсолютную скорость обратно в процент (0-100)
+        // Используем те же параметры, что и в серверном коде
+        const maxSpeed = 1280; // Максимальная скорость при 100%
+        const minSpeed = 250;  // Минимальная скорость при 0%
+        const speedRange = maxSpeed - minSpeed;
+
+        // Нормализуем скорость в диапазон 0-100
+        let percentage = 0;
+        if (currentSpeed >= minSpeed) {
+          percentage = Math.min(100, Math.max(0, ((currentSpeed - minSpeed) / speedRange) * 100));
+        }
+
+        // Округляем до целого числа
+        const roundedPercentage = Math.round(percentage);
+
+        // Проверяем, изменилось ли значение значительно (избегаем микроскопических изменений)
+        const currentUIValue = this.getCurrentSpeed();
+        if (Math.abs(roundedPercentage - currentUIValue) >= 1) {
+          // Обновляем UI без отправки на сервер (чтобы избежать цикла)
+          this.updateUIImmediate(roundedPercentage);
+        }
+      }
+    }
+
+    // Глобальный экземпляр менеджера скорости
+    const speedManager = new SpeedManager();
 
     document.addEventListener('DOMContentLoaded', () => {
       // Инициализация мобильной поддержки
@@ -1226,67 +1745,64 @@
 
       // Отключили перетаскивание — превью закреплено сверху над управлением
 
-      let t;
-
-      // Обработчик основного слайдера скорости
+      // Обработчик основного слайдера скорости с использованием speedManager
       if (range) {
-        range.addEventListener('input', (e)=>{
-          const sessionId = window.__current?.sessionId;
-          if (!sessionId) return;
-
+        range.addEventListener('input', (e) => {
           const val = Number(e.target.value);
-          const lbl = document.getElementById('speedLabel');
-          if (lbl) lbl.textContent = val + '% (' + Math.round((val / 100) * 640) + ' px/s)';
 
-          updateProgressBar(val);
+          // Используем speedManager для синхронизированного обновления
+          speedManager.setSpeed(val);
 
-          clearTimeout(t);
-          t = setTimeout(() => {
-            // Отправляем команду на сервер - локальная физика обновится через polling
-            fetch(`/api/session/${sessionId}/controller/connect`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                speedScalar: val,
-                dirX: lastDir.x,
-                dirY: lastDir.y
-              })
-            }).catch(error => console.error('Error updating speed:', error));
-          }, 300); // Увеличили задержку до 300ms для снижения частоты обновлений
+          // Добавляем визуальные эффекты
+          const container = e.target.closest('.speed-container');
+          if (container) {
+            container.classList.add('active');
+            // Убираем класс через некоторое время (увеличено для плавности)
+            setTimeout(() => {
+              container.classList.remove('active');
+            }, 600); // Уменьшено для более быстрого отклика
+          }
         });
       }
 
-      // Обработчик мобильного слайдера скорости
+      // Обработчик мобильного слайдера скорости с использованием speedManager
       if (mobileRange) {
-        mobileRange.addEventListener('input', (e)=>{
-          const sessionId = window.__current?.sessionId;
-          if (!sessionId) return;
-
+        mobileRange.addEventListener('input', (e) => {
           const val = Number(e.target.value);
-          updateMobileSpeedLabel(val);
-          updateProgressBar(val, true);
 
-          clearTimeout(t);
-          t = setTimeout(() => {
-            // Отправляем команду на сервер - локальная физика обновится через polling
-            fetch(`/api/session/${sessionId}/controller/connect`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                speedScalar: val,
-                dirX: lastDir.x,
-                dirY: lastDir.y
-              })
-            }).catch(error => console.error('Error updating mobile speed:', error));
-          }, 300); // Увеличили задержку до 300ms для снижения частоты обновлений
+          // Используем speedManager для синхронизированного обновления
+          speedManager.setSpeed(val);
+
+          // Добавляем визуальные эффекты
+          const container = e.target.closest('.speed-container');
+          if (container) {
+            container.classList.add('active');
+            // Убираем класс через некоторое время
+            setTimeout(() => {
+              container.classList.remove('active');
+            }, 600); // Уменьшено для более быстрого отклика
+          }
         });
       }
 
       setBallColor('#60a5fa');
       setBgColor('#020617');
       setBallSize(40);
-      updateProgressBar(40);
-      updateMobileSpeedLabel(40);
+
+      // Инициализируем speedManager с начальным значением
+      speedManager.updateUIOnly(40);
+
+      // Инициализируем CSS custom properties для начального состояния
+      const initialRange = document.getElementById('speedRange');
+      if (initialRange) {
+        updateProgressBarInternal(initialRange, 40);
+      }
+
+      const initialMobileRange = document.getElementById('mobileSpeedRange');
+      if (initialMobileRange) {
+        updateProgressBarInternal(initialMobileRange, 40);
+      }
+
       checkServerStatus();
     });
 
