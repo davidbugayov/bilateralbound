@@ -242,4 +242,7 @@ if (typeof window !== 'undefined') {
     window.SessionPoller = SessionPoller;
 }
 
-module.exports = SessionPoller;
+// Экспортируем для использования в Node.js
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = SessionPoller;
+}

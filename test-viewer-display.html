@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест отображения размера экрана вьювера</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        #viewerInfo {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖥️ Тест отображения размера экрана вьювера</h1>
+
+    <div class="test-section">
+        <h3>1. Создание сессии</h3>
+        <button id="createSessionBtn">Создать сессию</button>
+        <div id="sessionResult" class="result info" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Проверка статуса без вьювера</h3>
+        <button id="checkNoViewerBtn" disabled>Проверить статус</button>
+        <div id="noViewerResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Подключение вьювера</h3>
+        <button id="connectViewerBtn" disabled>Подключить вьювер (1920×1080)</button>
+        <div id="viewerConnectionResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Проверка отображения размера экрана</h3>
+        <button id="checkScreenSizeBtn" disabled>Проверить отображение</button>
+        <div id="screenSizeResult" class="result" style="display: none;"></div>
+        <div id="viewerInfo">Вьювер и размер экрана</div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Результаты тестирования</h3>
+        <div id="finalResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+
+        // Функция для обновления информации о вьювере (копия из index.html)
+        function updateViewerInfo(sessionData) {
+            const viewerInfo = document.getElementById('viewerInfo');
+            if (viewerInfo && sessionData) {
+                const status = sessionData.viewerConnected ? 'подключен' : 'ожидает';
+                const dimensions = sessionData.viewerScreenSize ?
+                    `${sessionData.viewerScreenSize.width}×${sessionData.viewerScreenSize.height}` : '';
+
+                if (status === 'ожидает') {
+                    viewerInfo.textContent = 'Вьювер: ожидание подключения';
+                } else {
+                    viewerInfo.textContent = `Вьювер: ${dimensions || 'размер неизвестен'}`;
+                }
+                viewerInfo.style.display = 'block';
+            }
+        }
+
+        // Функция для выполнения HTTP запросов
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    body: options.body ? JSON.stringify(options.body) : undefined
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                throw new Error(`Ошибка запроса: ${error.message}`);
+            }
+        }
+
+        // Обработчики кнопок
+        document.getElementById('createSessionBtn').addEventListener('click', async () => {
+            try {
+                const result = await makeRequest('/api/session', { method: 'POST' });
+                currentSessionId = result.sessionId;
+
+                document.getElementById('sessionResult').textContent = `✅ Сессия создана: ${currentSessionId}`;
+                document.getElementById('sessionResult').className = 'result success';
+                document.getElementById('sessionResult').style.display = 'block';
+
+                // Активируем следующую кнопку
+                document.getElementById('checkNoViewerBtn').disabled = false;
+
+            } catch (error) {
+                document.getElementById('sessionResult').textContent = `❌ Ошибка: ${error.message}`;
+                document.getElementById('sessionResult').className = 'result error';
+                document.getElementById('sessionResult').style.display = 'block';
+            }
+        });
+
+        document.getElementById('checkNoViewerBtn').addEventListener('click', async () => {
+            try {
+                const result = await makeRequest(`/api/session/${currentSessionId}/state`);
+
+                if (!result.viewerConnected) {
+                    document.getElementById('noViewerResult').textContent = '✅ Статус корректен: вьювер не подключен';
+                    document.getElementById('noViewerResult').className = 'result success';
+                } else {
+                    throw new Error('Вьювер уже подключен');
+                }
+
+                document.getElementById('noViewerResult').style.display = 'block';
+                document.getElementById('connectViewerBtn').disabled = false;
+
+                // Обновляем информацию о вьювере
+                updateViewerInfo(result);
+
+            } catch (error) {
+                document.getElementById('noViewerResult').textContent = `❌ Ошибка: ${error.message}`;
+                document.getElementById('noViewerResult').className = 'result error';
+                document.getElementById('noViewerResult').style.display = 'block';
+            }
+        });
+
+        document.getElementById('connectViewerBtn').addEventListener('click', async () => {
+            try {
+                const result = await makeRequest(`/api/session/${currentSessionId}/viewer/connect`, {
+                    method: 'POST',
+                    body: { screenSize: { width: 1920, height: 1080 } }
+                });
+
+                document.getElementById('viewerConnectionResult').textContent = '✅ Вьювер подключен успешно';
+                document.getElementById('viewerConnectionResult').className = 'result success';
+                document.getElementById('viewerConnectionResult').style.display = 'block';
+
+                document.getElementById('checkScreenSizeBtn').disabled = false;
+
+            } catch (error) {
+                document.getElementById('viewerConnectionResult').textContent = `❌ Ошибка: ${error.message}`;
+                document.getElementById('viewerConnectionResult').className = 'result error';
+                document.getElementById('viewerConnectionResult').style.display = 'block';
+            }
+        });
+
+        document.getElementById('checkScreenSizeBtn').addEventListener('click', async () => {
+            try {
+                const result = await makeRequest(`/api/session/${currentSessionId}/state`);
+
+                if (!result.viewerScreenSize) {
+                    throw new Error('Размер экрана вьювера не найден в ответе сервера');
+                }
+
+                const { width, height } = result.viewerScreenSize;
+                if (width === 1920 && height === 1080) {
+                    document.getElementById('screenSizeResult').textContent =
+                        `✅ Размер экрана вьювера отображается корректно: ${width}×${height}`;
+                    document.getElementById('screenSizeResult').className = 'result success';
+                } else {
+                    throw new Error(`Неверный размер экрана: ${width}×${height}, ожидался 1920×1080`);
+                }
+
+                document.getElementById('screenSizeResult').style.display = 'block';
+
+                // Обновляем информацию о вьювере
+                updateViewerInfo(result);
+
+                // Показываем финальный результат
+                document.getElementById('finalResult').textContent =
+                    '🎉 Тестирование завершено успешно! Размер экрана вьювера отображается корректно.';
+                document.getElementById('finalResult').className = 'result success';
+                document.getElementById('finalResult').style.display = 'block';
+
+            } catch (error) {
+                document.getElementById('screenSizeResult').textContent = `❌ Ошибка: ${error.message}`;
+                document.getElementById('screenSizeResult').className = 'result error';
+                document.getElementById('screenSizeResult').style.display = 'block';
+            }
+        });
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🖥️ Тест отображения размера экрана вьювера загружен');
+        });
+    </script>
+</body>
+</html>

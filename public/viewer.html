@@ -194,6 +194,7 @@
             }
         }
   </style>
+    <script src="/js/session-poller.js"></script>
     <script src="/js/common.js"></script>
     <script src="/js/physics.js"></script>
 </head>
@@ -404,17 +405,20 @@
                         if (ballState.colorBg) physics.colors.bg = ballState.colorBg;
                         if (ballState.paused !== undefined) physics.paused = ballState.paused;
 
-                        // Синхронизация направления движения и скорости
+                        // Синхронизация направления движения и скорости (только направление, не абсолютные значения)
                         if (ballState.vx !== undefined || ballState.vy !== undefined) {
-                            physics.ball.vx = ballState.vx;
-                            physics.ball.vy = ballState.vy;
-
-                            // Обновляем направление для совместимости
+                            // Вычисляем направление из серверных данных
                             const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
                             const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
+
+                            // Обновляем только направление, скорость пусть рассчитывается локально
                             physics.lastDir = { x: dirX, y: dirY };
 
-
+                            // Если скорость нулевая, останавливаем мяч
+                            if (ballState.vx === 0 && ballState.vy === 0) {
+                                physics.ball.vx = 0;
+                                physics.ball.vy = 0;
+                            }
                         }
 
                         // Убираем синхронизацию позиции - вьювер полагается только на команды сервера

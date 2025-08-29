@@ -42,6 +42,12 @@ class SessionManager {
     return session ? session.viewerScreenSize : null;
   }
 
+  // Get viewer connection status
+  getViewerConnected(sessionId) {
+    const session = this.getSession(sessionId);
+    return session ? session.viewerConnected || false : false;
+  }
+
   // Create new session
   createSession() {
     if (this.sessions.size >= this.config.MAX_SESSIONS) {
@@ -203,8 +209,15 @@ class SessionManager {
 
       // Рассчитываем скорость в пикселях в секунду
       // 100% = 1280 px/s, 80% = 1024 px/s
-      const pixelsPerSecond = Math.max((session.ballState.speed / 100) * 1280, 500); // Минимум 500 px/s
+      // Для очень низких скоростей (< 30%) используем точный расчет без минимума
+      // Для средних и высоких скоростей (>= 30%) устанавливаем минимум 300 px/s для предотвращения застревания
+      const basePixelsPerSecond = (session.ballState.speed / 100) * 1280;
+      const minSpeedForPrevention = session.ballState.speed >= 30 ? 300 : 0;
+      const pixelsPerSecond = Math.max(basePixelsPerSecond, minSpeedForPrevention);
       const currentSpeed = Math.sqrt(session.ballState.vx ** 2 + session.ballState.vy ** 2);
+
+      // Логируем расчеты для отладки
+      logger.logSession(sessionId, `SPEED CALC: speedScalar=${session.ballState.speed}%, pixelsPerSecond=${pixelsPerSecond}, currentSpeed=${currentSpeed.toFixed(1)}, direction=(${nx}, ${ny})`);
 
       // Обновляем скорость только если:
       // 1. Скорость не соответствует направлению, ИЛИ
@@ -223,21 +236,25 @@ class SessionManager {
           logger.logSession(sessionId, `🎯 BOUNCE PRESERVED: vx=${session.ballState.vx}, vy=${session.ballState.vy} (command was ${nx}, ${ny})`);
         } else {
           // Устанавливаем новую скорость
+          const oldVx = session.ballState.vx;
+          const oldVy = session.ballState.vy;
           session.ballState.vx = nx * pixelsPerSecond;
           session.ballState.vy = ny * pixelsPerSecond;
+
+          logger.logSession(sessionId, `SPEED SET: old=(${oldVx}, ${oldVy}), new=(${session.ballState.vx}, ${session.ballState.vy}), pixelsPerSecond=${pixelsPerSecond}, direction=(${nx}, ${ny})`);
 
           // Защита от нулевой скорости - если скорость стала нулевой, устанавливаем минимальную
           const newSpeed = Math.sqrt(session.ballState.vx ** 2 + session.ballState.vy ** 2);
           if (newSpeed < 200 && (nx !== 0 || ny !== 0)) {
               // Восстанавливаем минимальную скорость
-              const minSpeed = 250; // Минимум 250 px/s (синхронизировано с клиентом)
+              const minSpeed = session.ballState.speed >= 30 ? 300 : 150; // Адаптивный минимум
               const scale = minSpeed / newSpeed;
               session.ballState.vx *= scale;
               session.ballState.vy *= scale;
               logger.logSession(sessionId, `Speed restored from ${newSpeed.toFixed(1)} to ${minSpeed} px/s`);
           }
 
-          logger.logSession(sessionId, `Direction updated: (${nx}, ${ny}), speed: ${pixelsPerSecond}px/s, vx: ${session.ballState.vx}, vy: ${session.ballState.vy}`);
+          logger.logSession(sessionId, `Direction updated: (${nx}, ${ny}), speed: ${pixelsPerSecond}px/s, vx: ${session.ballState.vx}, vy: ${session.ballState.vy}, finalSpeed=${newSpeed.toFixed(1)}`);
         }
       } else {
         logger.logSession(sessionId, `Direction command ignored - speed already matches direction: vx=${session.ballState.vx}, vy=${session.ballState.vy}`);
@@ -267,7 +284,10 @@ class SessionManager {
           }
         }
 
-        const pixelsPerSecond = Math.max((session.ballState.speed / 100) * 1280, 500); // Минимум 500 px/s
+        // Используем ту же логику минимальной скорости
+        const basePixelsPerSecond = (session.ballState.speed / 100) * 1280;
+        const minSpeedForPrevention = session.ballState.speed >= 30 ? 300 : 0;
+        const pixelsPerSecond = Math.max(basePixelsPerSecond, minSpeedForPrevention);
 
         // НЕ сбрасываем позицию! Только устанавливаем скорость в нужном направлении
         // Мяч должен продолжать движение из текущей позиции
@@ -285,7 +305,10 @@ class SessionManager {
         }
       } else {
         // Если скорости нет, но направление указано - устанавливаем только скорость, оставляем позицию
-        const pixelsPerSecond = Math.max((session.ballState.speed / 100) * 1280, 500); // Минимум 500 px/s
+        // Используем ту же логику минимальной скорости
+        const basePixelsPerSecond = (session.ballState.speed / 100) * 1280;
+        const minSpeedForPrevention = session.ballState.speed >= 30 ? 300 : 0;
+        const pixelsPerSecond = Math.max(basePixelsPerSecond, minSpeedForPrevention);
 
         // Устанавливаем скорость в указанном направлении, но не меняем позицию
         session.ballState.vx = nx * pixelsPerSecond;

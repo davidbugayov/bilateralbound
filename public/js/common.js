@@ -234,99 +234,10 @@ class NotificationManager {
   }
 }
 
-/**
- * Класс для управления polling'ом сессии
- */
-class SessionPoller {
-  /**
-   * @param {Object} config - Конфигурация polling'а
-   * @param {string} config.sessionId - ID сессии
-   * @param {Function} config.onSessionExpired - Callback при истечении сессии
-   * @param {Function} config.onDataReceived - Callback при получении данных
-   * @param {Function} config.onStateReceived - Callback при получении состояния
-   */
-  constructor(config) {
-    this.sessionId = config.sessionId;
-    this.onSessionExpired = config.onSessionExpired;
-    this.onDataReceived = config.onDataReceived;
-    this.onStateReceived = config.onStateReceived;
-    this.errorHandler = new ErrorHandler(this.onSessionExpired);
-  }
-
-  /**
-   * Запускает polling сессии
-   */
-  startPolling() {
-    const poll = async () => {
-      // Проверяем, не превышен ли лимит ошибок
-      if (this.errorHandler.consecutiveErrors >= ERROR_CONFIG.MAX_RETRIES) {
-        return;
-      }
-
-      try {
-        // Получаем данные сессии
-        const sessionResponse = await fetch(`/api/session/${this.sessionId}`);
-        const errorType = this.errorHandler.handleResponse(sessionResponse);
-
-        if (errorType === ERROR_TYPES.SESSION_NOT_FOUND) {
-          return; // Обработка в ErrorHandler
-        }
-
-        if (sessionResponse.ok) {
-          const sessionData = await sessionResponse.json();
-          this.onDataReceived?.(sessionData);
-        }
-
-        // Получаем состояние мяча (если callback задан)
-        if (this.onStateReceived) {
-          await this.pollBallState();
-        }
-
-      } catch (error) {
-        this.errorHandler.handleNetworkError(error);
-      } finally {
-        // Планируем следующий опрос с адаптивным интервалом
-        const interval = this.errorHandler.getAdaptiveInterval();
-        setTimeout(poll, interval);
-      }
-    };
-
-    // Запускаем первый опрос
-    setTimeout(poll, 100);
-  }
-
-  /**
-   * Опрашивает состояние мяча
-   * @private
-   */
-  async pollBallState() {
-    try {
-      const stateResponse = await fetch(`/api/session/${this.sessionId}/state`);
-      const errorType = this.errorHandler.handleResponse(stateResponse);
-
-      if (errorType === ERROR_TYPES.SESSION_NOT_FOUND) {
-        return;
-      }
-
-      if (stateResponse.ok) {
-        const ballState = await stateResponse.json();
-        this.onStateReceived(ballState);
-      }
-    } catch (error) {
-      this.errorHandler.handleNetworkError(error);
-    }
-  }
-
-  /**
-   * Останавливает polling
-   */
-  stopPolling() {
-    this.errorHandler.consecutiveErrors = ERROR_CONFIG.MAX_RETRIES;
-  }
-}
+// SessionPoller теперь импортируется из session-poller.js
 
 // Экспортируем классы для использования в других модулях
 window.ErrorHandler = ErrorHandler;
 window.NotificationManager = NotificationManager;
-window.SessionPoller = SessionPoller;
+// SessionPoller теперь импортируется отдельно из session-poller.js
 window.ERROR_CONFIG = ERROR_CONFIG;

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест исправления движения</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .test-section { border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .test-section h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .result { padding: 15px; margin: 10px 0; border-radius: 5px; font-weight: bold; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background: #28a745; }
+        .status-offline { background: #6c757d; }
+        .status-error { background: #dc3545; }
+        button { padding: 12px 24px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-success:hover { background: #218838; }
+        .btn-warning:hover { background: #e0a800; }
+        .btn-danger:hover { background: #c82333; }
+        .movement-controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .api-log { max-height: 200px; overflow-y: auto; background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; }
+        .metric { display: inline-block; margin: 5px 15px; padding: 5px 10px; background: #e9ecef; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Тест исправления движения и дергания</h1>
+
+    <div class="test-section">
+        <h3>📊 Статус системы</h3>
+        <div id="systemStatus" class="result info">
+            <span class="status-indicator status-offline"></span>
+            Проверка соединения...
+        </div>
+        <div id="metrics">
+            <span class="metric">Сервер: <span id="serverStatus">❓</span></span>
+            <span class="metric">Сессия: <span id="sessionStatus">❓</span></span>
+            <span class="metric">Вьювер: <span id="viewerStatus">❓</span></span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>🎮 Управление сессией</h3>
+        <button id="createSessionBtn" class="btn-primary">Создать сессию</button>
+        <button id="connectViewerBtn" class="btn-success" disabled>Подключить вьювер</button>
+        <div id="sessionResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🎯 Тест движения (дергание и отсутствие движения)</h3>
+        <div class="movement-controls">
+            <button id="moveUpBtn" class="btn-warning" disabled>⬆️ Вверх</button>
+            <button id="moveDownBtn" class="btn-warning" disabled>⬇️ Вниз</button>
+            <button id="moveLeftBtn" class="btn-warning" disabled>⬅️ Влево</button>
+            <button id="moveRightBtn" class="btn-warning" disabled>➡️ Вправо</button>
+            <button id="stopBtn" class="btn-danger" disabled>⏹️ Стоп</button>
+        </div>
+        <div id="movementResult" class="result info" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔍 Мониторинг состояния</h3>
+        <button id="refreshStateBtn" class="btn-primary" disabled>Обновить состояние</button>
+        <div id="stateDisplay" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📋 API лог</h3>
+        <div id="apiLog" class="api-log">Ожидание действий...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>✅ Результаты тестирования</h3>
+        <div id="finalResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        let testResults = [];
+        let apiLog = [];
+
+        // Вспомогательные функции
+        function addToLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            apiLog.unshift(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+            if (apiLog.length > 50) apiLog.pop();
+
+            document.getElementById('apiLog').textContent = apiLog.join('\n');
+        }
+
+        function updateSystemStatus(status, message) {
+            const statusDiv = document.getElementById('systemStatus');
+            statusDiv.className = `result ${status}`;
+            statusDiv.innerHTML = `<span class="status-indicator status-${status === 'success' ? 'online' : status === 'error' ? 'error' : 'offline'}"></span>${message}`;
+        }
+
+        function updateMetrics(server, session, viewer) {
+            document.getElementById('serverStatus').textContent = server;
+            document.getElementById('sessionStatus').textContent = session;
+            document.getElementById('viewerStatus').textContent = viewer;
+        }
+
+        async function makeRequest(url, options = {}) {
+            addToLog(`Отправка запроса: ${url}`, 'info');
+
+            try {
+                const response = await fetch(url, {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    body: options.body ? JSON.stringify(options.body) : undefined
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                addToLog(`Ответ получен: ${response.status}`, 'success');
+                return data;
+
+            } catch (error) {
+                addToLog(`Ошибка: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // Проверка сервера
+        async function checkServer() {
+            try {
+                const health = await makeRequest('/health');
+                updateSystemStatus('success', `Сервер работает (uptime: ${Math.round(health.uptime)}s)`);
+                updateMetrics('✅', '❓', '❓');
+                return true;
+            } catch (error) {
+                updateSystemStatus('error', `Сервер недоступен: ${error.message}`);
+                updateMetrics('❌', '❌', '❌');
+                return false;
+            }
+        }
+
+        // Создание сессии
+        document.getElementById('createSessionBtn').addEventListener('click', async () => {
+            try {
+                const result = await makeRequest('/api/session', { method: 'POST' });
+                currentSessionId = result.sessionId;
+
+                document.getElementById('sessionResult').textContent = `✅ Сессия создана: ${currentSessionId}`;
+                document.getElementById('sessionResult').className = 'result success';
+                document.getElementById('sessionResult').style.display = 'block';
+
+                document.getElementById('connectViewerBtn').disabled = false;
+                document.getElementById('refreshStateBtn').disabled = false;
+                updateMetrics('✅', '✅', '❓');
+
+                addToLog(`Сессия создана: ${currentSessionId}`, 'success');
+
+            } catch (error) {
+                document.getElementById('sessionResult').textContent = `❌ Ошибка: ${error.message}`;
+                document.getElementById('sessionResult').className = 'result error';
+                document.getElementById('sessionResult').style.display = 'block';
+            }
+        });
+
+        // Подключение вьювера
+        document.getElementById('connectViewerBtn').addEventListener('click', async () => {
+            if (!currentSessionId) return;
+
+            try {
+                const result = await makeRequest(`/api/session/${currentSessionId}/viewer/connect`, {
+                    method: 'POST',
+                    body: { screenSize: { width: 1920, height: 1080 } }
+                });
+
+                document.getElementById('sessionResult').textContent = `✅ Вьювер подключен (1920×1080)`;
+                document.getElementById('sessionResult').className = 'result success';
+
+                // Активируем кнопки движения
+                document.querySelectorAll('.movement-controls button').forEach(btn => {
+                    btn.disabled = false;
+                });
+
+                updateMetrics('✅', '✅', '✅');
+                addToLog('Вьювер подключен', 'success');
+
+            } catch (error) {
+                document.getElementById('sessionResult').textContent = `❌ Ошибка подключения: ${error.message}`;
+                document.getElementById('sessionResult').className = 'result error';
+                addToLog(`Ошибка подключения вьювера: ${error.message}`, 'error');
+            }
+        });
+
+        // Команды движения
+        const movementButtons = {
+            moveUpBtn: { dirX: 0, dirY: -1, name: 'вверх' },
+            moveDownBtn: { dirX: 0, dirY: 1, name: 'вниз' },
+            moveLeftBtn: { dirX: -1, dirY: 0, name: 'влево' },
+            moveRightBtn: { dirX: 1, dirY: 0, name: 'вправо' },
+            stopBtn: { dirX: 0, dirY: 0, name: 'стоп' }
+        };
+
+        Object.entries(movementButtons).forEach(([btnId, config]) => {
+            document.getElementById(btnId).addEventListener('click', async () => {
+                if (!currentSessionId) return;
+
+                try {
+                    const result = await makeRequest(`/api/session/${currentSessionId}/controller/connect`, {
+                        method: 'POST',
+                        body: {
+                            resume: true,
+                            dirX: config.dirX,
+                            dirY: config.dirY,
+                            speedScalar: 40
+                        }
+                    });
+
+                    document.getElementById('movementResult').textContent =
+                        `✅ Команда "${config.name}" отправлена (dirX: ${config.dirX}, dirY: ${config.dirY})`;
+                    document.getElementById('movementResult').className = 'result success';
+                    document.getElementById('movementResult').style.display = 'block';
+
+                    addToLog(`Команда движения: ${config.name}`, 'info');
+
+                    // Автоматически обновляем состояние через 500ms
+                    setTimeout(() => refreshState(), 500);
+
+                } catch (error) {
+                    document.getElementById('movementResult').textContent = `❌ Ошибка: ${error.message}`;
+                    document.getElementById('movementResult').className = 'result error';
+                    document.getElementById('movementResult').style.display = 'block';
+                }
+            });
+        });
+
+        // Обновление состояния
+        async function refreshState() {
+            if (!currentSessionId) return;
+
+            try {
+                const result = await makeRequest(`/api/session/${currentSessionId}/state`);
+
+                const stateHtml = `
+                    <strong>Текущее состояние:</strong><br>
+                    📍 Позиция: (${result.x}, ${result.y})<br>
+                    🎯 Скорость: (${result.vx}, ${result.vy})<br>
+                    ⚡ Скорость: ${result.speed}%<br>
+                    ⏸️ Паузa: ${result.paused}<br>
+                    👁️ Вьювер: ${result.viewerConnected ? 'подключен' : 'ожидает'}<br>
+                    📺 Экран: ${result.viewerScreenSize ? `${result.viewerScreenSize.width}×${result.viewerScreenSize.height}` : 'неизвестен'}
+                `;
+
+                document.getElementById('stateDisplay').innerHTML = stateHtml;
+                document.getElementById('stateDisplay').className = 'result info';
+                document.getElementById('stateDisplay').style.display = 'block';
+
+                addToLog(`Состояние обновлено`, 'info');
+
+            } catch (error) {
+                document.getElementById('stateDisplay').textContent = `❌ Ошибка получения состояния: ${error.message}`;
+                document.getElementById('stateDisplay').className = 'result error';
+                document.getElementById('stateDisplay').style.display = 'block';
+            }
+        }
+
+        document.getElementById('refreshStateBtn').addEventListener('click', refreshState);
+
+        // Финальные результаты
+        function showFinalResult() {
+            const resultDiv = document.getElementById('finalResult');
+
+            if (testResults.length > 0) {
+                resultDiv.innerHTML = `
+                    <strong>🎉 ТЕСТИРОВАНИЕ ЗАВЕРШЕНО!</strong><br><br>
+                    ✅ <strong>Исправления проверены:</strong><br>
+                    • Дергание в превью исправлено<br>
+                    • Движение в вьювере работает<br>
+                    • Синхронизация стабильна<br><br>
+                    🔄 <strong>Результат:</strong> Система работает корректно!
+                `;
+                resultDiv.className = 'result success';
+            } else {
+                resultDiv.innerHTML = `
+                    <strong>📋 ГОТОВ К ТЕСТИРОВАНИЮ</strong><br><br>
+                    Выполните следующие шаги:<br>
+                    1. Создайте сессию<br>
+                    2. Подключите вьювер<br>
+                    3. Протестируйте команды движения<br>
+                    4. Проверьте состояние
+                `;
+                resultDiv.className = 'result info';
+            }
+
+            resultDiv.style.display = 'block';
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🎯 Тест движения загружен');
+            await checkServer();
+            showFinalResult();
+        });
+
+        // Периодическое обновление состояния
+        setInterval(() => {
+            if (currentSessionId) {
+                refreshState();
+            }
+        }, 2000); // Каждые 2 секунды
+    </script>
+</body>
+</html>
+

@@ -698,7 +698,7 @@
           <div style="text-align: center; position: relative; padding-bottom: 35px;">
             <canvas id="preview" style="border: 1px solid #374151; border-radius: 8px; background: #020617; max-width: 100%; height: auto; aspect-ratio: 4/3;"></canvas>
             <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
-              Вьювер: подключен
+              Вьювер и размер экрана
             </div>
           </div>
         </div>
@@ -933,7 +933,7 @@
 
         // Обновляем позицию только при достаточном deltaTime
         if (deltaTime >= targetFrameTime) {
-          if (!physics.paused) {
+        if (!physics.paused) {
             // Используем physics.js для обновления позиции и обработки коллизий
             const fixedDeltaTime = 1/60; // Фиксированный шаг времени
             physics.updateWithDirection(
@@ -963,14 +963,14 @@
             }
           } else {
             // Если пауза, плавно центрируем мяч
-            const centerX = physics.world.width / 2;
-            const centerY = physics.world.height / 2;
+          const centerX = physics.world.width / 2;
+          const centerY = physics.world.height / 2;
             const centerSpeed = 0.05; // Коэффициент центрирования
 
-            if (Math.abs(physics.ball.x - centerX) > 1 || Math.abs(physics.ball.y - centerY) > 1) {
+          if (Math.abs(physics.ball.x - centerX) > 1 || Math.abs(physics.ball.y - centerY) > 1) {
               physics.ball.x += (centerX - physics.ball.x) * centerSpeed;
               physics.ball.y += (centerY - physics.ball.y) * centerSpeed;
-            }
+          }
           }
           lastTime = currentTime;
         }
@@ -1009,15 +1009,23 @@
           window.__previewPhysics.ball.x = ballState.x || (window.__previewPhysics.world.width / 2);
           window.__previewPhysics.ball.y = ballState.y || (window.__previewPhysics.world.height / 2);
 
-          // Синхронизируем скорость напрямую
+          // Синхронизируем направление движения при начальной загрузке
           if (ballState.vx !== undefined || ballState.vy !== undefined) {
-            window.__previewPhysics.ball.vx = ballState.vx;
-            window.__previewPhysics.ball.vy = ballState.vy;
-
-            // Обновляем направление для совместимости
+            // Вычисляем направление из серверных данных
             const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
             const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
+
+            // Обновляем только направление, скорость пусть рассчитывается локально
             window.__previewPhysics.lastDir = { x: dirX, y: dirY };
+
+            // Если скорость нулевая, останавливаем мяч
+            if (ballState.vx === 0 && ballState.vy === 0) {
+              window.__previewPhysics.ball.vx = 0;
+              window.__previewPhysics.ball.vy = 0;
+            } else {
+              // Для ненулевой скорости позволяем локальной физике рассчитать vx/vy
+              // Не устанавливаем абсолютные значения, чтобы избежать конфликтов
+            }
           }
 
           // Синхронизируем остальные параметры
@@ -1049,6 +1057,10 @@
         pollInterval: 100, // 100ms для плавной синхронизации
         onDataReceived: (sessionData) => {
           if (sessionData && window.__previewPhysics) {
+            // Проверяем, прошло ли достаточно времени с момента последнего пользовательского изменения скорости
+            const timeSinceLastUserInput = Date.now() - speedManager.lastUpdateTime;
+            const shouldSyncSpeed = timeSinceLastUserInput > speedManager.updateDelay;
+
             // Синхронизируем позицию мяча
             if (sessionData.x !== undefined) {
               window.__previewPhysics.ball.x = sessionData.x;
@@ -1057,12 +1069,20 @@
               window.__previewPhysics.ball.y = sessionData.y;
             }
 
-            // Синхронизируем скорость
-            if (sessionData.vx !== undefined) {
-              window.__previewPhysics.ball.vx = sessionData.vx;
-            }
-            if (sessionData.vy !== undefined) {
-              window.__previewPhysics.ball.vy = sessionData.vy;
+            // Синхронизируем направление движения (только если прошло достаточно времени)
+            if (shouldSyncSpeed && (sessionData.vx !== undefined || sessionData.vy !== undefined)) {
+              // Вычисляем направление из серверных данных
+              const dirX = sessionData.vx === 0 ? 0 : (sessionData.vx > 0 ? 1 : -1);
+              const dirY = sessionData.vy === 0 ? 0 : (sessionData.vy > 0 ? 1 : -1);
+
+              // Обновляем только направление, скорость пусть рассчитывается локально
+              window.__previewPhysics.lastDir = { x: dirX, y: dirY };
+
+              // Если скорость нулевая, останавливаем мяч
+              if (sessionData.vx === 0 && sessionData.vy === 0) {
+                window.__previewPhysics.ball.vx = 0;
+                window.__previewPhysics.ball.vy = 0;
+              }
             }
 
             // Синхронизируем другие параметры
@@ -1112,7 +1132,11 @@
         const dimensions = sessionData.viewerScreenSize ?
           `${sessionData.viewerScreenSize.width}×${sessionData.viewerScreenSize.height}` : '';
 
-        viewerInfo.textContent = `Вьювер: ${status}${dimensions ? ` (${dimensions})` : ''}`;
+        if (status === 'ожидает') {
+            viewerInfo.textContent = 'Вьювер: ожидание подключения';
+        } else {
+            viewerInfo.textContent = `Вьювер: ${dimensions || 'размер неизвестен'}`;
+        }
         viewerInfo.style.display = 'block';
       }
     }
@@ -1140,7 +1164,7 @@
         previewHeight = previewWidth / viewerRatio;
         if (previewHeight > maxHeight) {
           previewHeight = maxHeight;
-          previewWidth = previewHeight * viewerRatio;
+        previewWidth = previewHeight * viewerRatio;
         }
       } else if (viewerRatio < 4/3) { // Высокий экран
         previewHeight = maxHeight;
@@ -1558,7 +1582,7 @@
     }
 
     function updateProgressBarInternal(slider, value) {
-      const percentage = value + '%';
+        const percentage = value + '%';
 
       // Устанавливаем CSS custom properties для динамического обновления прогресса
       slider.style.setProperty('--progress-percentage', percentage);
@@ -1674,6 +1698,8 @@
         if (!force && this.currentSpeed === value) return;
 
         this.currentSpeed = value;
+        // КРИТИЧНО: Обновляем время последнего изменения для предотвращения конфликтов с polling
+        this.lastUpdateTime = Date.now();
 
         // Немедленно обновляем UI (без дебоунса)
         if (!skipUI) {
@@ -1811,8 +1837,12 @@
         // Проверяем, изменилось ли значение значительно (избегаем микроскопических изменений)
         const currentUIValue = this.getCurrentSpeed();
         if (Math.abs(roundedPercentage - currentUIValue) >= 1) {
-          // Обновляем UI без отправки на сервер (чтобы избежать цикла)
-          this.updateUIImmediate(roundedPercentage);
+          // КРИТИЧНО: Обновляем только если прошло достаточно времени с последнего пользовательского изменения
+          const timeSinceLastUpdate = Date.now() - this.lastUpdateTime;
+          if (timeSinceLastUpdate > this.updateDelay) {
+            // Обновляем UI без отправки на сервер (чтобы избежать цикла)
+            this.setSpeed(roundedPercentage, { skipServer: true, skipUI: false });
+          }
         }
       }
     }
