@@ -11,7 +11,7 @@ class SessionPoller {
         this.onError = options.onError || (() => {});
 
         // Настройки polling
-        this.pollInterval = options.pollInterval || 100; // 100ms - частый polling для плавности
+        this.pollInterval = options.pollInterval || 250; // 250ms - оптимальный интервал для плавности
         this.maxRetries = options.maxRetries || 3;
         this.retryDelay = options.retryDelay || 1000;
 

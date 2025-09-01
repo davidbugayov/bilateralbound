@@ -48,6 +48,12 @@ class SessionManager {
     return session ? session.viewerConnected || false : false;
   }
 
+  // Get controller connection status
+  getControllerConnected(sessionId) {
+    const session = this.getSession(sessionId);
+    return session ? session.controllerConnected || false : false;
+  }
+
   // Create new session
   createSession() {
     if (this.sessions.size >= this.config.MAX_SESSIONS) {
@@ -190,6 +196,7 @@ class SessionManager {
       const rawX = typeof updates.dirX === 'number' ? updates.dirX : 0;
       const rawY = typeof updates.dirY === 'number' ? updates.dirY : 0;
       let nx = 0, ny = 0;
+
       if (rawX === 0 && rawY === 0) {
         nx = 0; ny = 0;
       } else {
@@ -269,11 +276,14 @@ class SessionManager {
     if (updates.resume !== undefined) {
       session.ballState.paused = false;
       // При resume нужно установить направление, если оно указано в команде
+      let nx = 0, ny = 0;
+      let directionSpecified = false;
+
       if (updates.dirX !== undefined || updates.dirY !== undefined) {
         // Если указано направление, используем его для расчета скорости
         const rawX = typeof updates.dirX === 'number' ? updates.dirX : 0;
         const rawY = typeof updates.dirY === 'number' ? updates.dirY : 0;
-        let nx = 0, ny = 0;
+
         if (rawX === 0 && rawY === 0) {
           nx = 0; ny = 0;
         } else {
@@ -281,40 +291,37 @@ class SessionManager {
           const sy = rawY === 0 ? 0 : (rawY > 0 ? 1 : -1);
           if ((sx !== 0 && sy === 0) || (sx === 0 && sy !== 0) || (sx !== 0 && sy !== 0)) {
             nx = sx; ny = sy;
+            directionSpecified = true;
           }
         }
 
-        // Используем ту же логику минимальной скорости
-        const basePixelsPerSecond = (session.ballState.speed / 100) * 1280;
-        const minSpeedForPrevention = session.ballState.speed >= 30 ? 300 : 0;
-        const pixelsPerSecond = Math.max(basePixelsPerSecond, minSpeedForPrevention);
+        if (directionSpecified) {
+          // Используем ту же логику минимальной скорости
+          const basePixelsPerSecond = (session.ballState.speed / 100) * 1280;
+          const minSpeedForPrevention = session.ballState.speed >= 30 ? 300 : 0;
+          const pixelsPerSecond = Math.max(basePixelsPerSecond, minSpeedForPrevention);
 
-        // НЕ сбрасываем позицию! Только устанавливаем скорость в нужном направлении
-        // Мяч должен продолжать движение из текущей позиции
-        session.ballState.vx = nx * pixelsPerSecond;
-        session.ballState.vy = ny * pixelsPerSecond;
+          // НЕ сбрасываем позицию! Только устанавливаем скорость в нужном направлении
+          // Мяч должен продолжать движение из текущей позиции
+          session.ballState.vx = nx * pixelsPerSecond;
+          session.ballState.vy = ny * pixelsPerSecond;
 
-        logger.logSession(sessionId, `Ball direction changed: position=(${session.ballState.x}, ${session.ballState.y}), new_velocity=(${session.ballState.vx}, ${session.ballState.vy})`);
-      } else if (session.ballState.vx !== 0 || session.ballState.vy !== 0) {
-        // Если уже есть скорость, пересчитываем ее на основе новой скорости
-        const currentSpeed = Math.sqrt(session.ballState.vx ** 2 + session.ballState.vy ** 2);
-        if (currentSpeed > 0) {
-          const scale = session.ballState.speed / currentSpeed;
-          session.ballState.vx *= scale;
-          session.ballState.vy *= scale;
+          logger.logSession(sessionId, `Ball direction changed: position=(${session.ballState.x}, ${session.ballState.y}), new_velocity=(${session.ballState.vx}, ${session.ballState.vy})`);
         }
-      } else {
-        // Если скорости нет, но направление указано - устанавливаем только скорость, оставляем позицию
-        // Используем ту же логику минимальной скорости
-        const basePixelsPerSecond = (session.ballState.speed / 100) * 1280;
-        const minSpeedForPrevention = session.ballState.speed >= 30 ? 300 : 0;
-        const pixelsPerSecond = Math.max(basePixelsPerSecond, minSpeedForPrevention);
+      }
 
-        // Устанавливаем скорость в указанном направлении, но не меняем позицию
-        session.ballState.vx = nx * pixelsPerSecond;
-        session.ballState.vy = ny * pixelsPerSecond;
-
-        logger.logSession(sessionId, `Ball started: position=(${session.ballState.x}, ${session.ballState.y}), velocity=(${session.ballState.vx}, ${session.ballState.vy})`);
+      if (!directionSpecified) {
+        if (session.ballState.vx !== 0 || session.ballState.vy !== 0) {
+          // Если уже есть скорость, пересчитываем ее на основе новой скорости
+          const currentSpeed = Math.sqrt(session.ballState.vx ** 2 + session.ballState.vy ** 2);
+          if (currentSpeed > 0) {
+            const scale = session.ballState.speed / currentSpeed;
+            session.ballState.vx *= scale;
+            session.ballState.vy *= scale;
+          }
+        } else {
+          // Если скорости нет и направление не указано, ничего не делаем
+        }
       }
     }
     if (updates.pause !== undefined) session.ballState.paused = true;

@@ -3,9 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const path = require('path');
-const rateLimit = require('express-rate-limit');
-const helmet = require('helmet');
-const compression = require('compression');
 
 // Import our components
 const config = require('./config');
@@ -39,16 +36,6 @@ class BilateralBoundServer {
   setupMiddleware() {
     const serverConfig = config.getServerConfig();
 
-    // Rate limiting
-    const limiter = rateLimit({
-      windowMs: 1 * 60 * 1000,
-      max: 1000,
-      message: { error: 'Rate limit exceeded' },
-      standardHeaders: true,
-      legacyHeaders: false,
-      skip: (req) => req.path.startsWith('/health') || req.path.startsWith('/s/')
-    });
-
     // CORS configuration
     const corsConfig = config.getCorsConfig();
     this.app.use(cors({
@@ -73,49 +60,13 @@ class BilateralBoundServer {
       }
     });
 
-    // Security and performance middleware
-    this.app.use(helmet(this.getHelmetConfig()));
-    this.app.use(compression());
-    this.app.use(limiter);
+    // Basic middleware
     this.app.use(express.json());
 
     logger.info('Middleware configured');
   }
 
-  // Get Helmet security configuration
-  getHelmetConfig() {
-    return {
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "'unsafe-eval'",
-            "'unsafe-hashes'",
-            "https://cdn.jsdelivr.net",
-            "https://cdnjs.cloudflare.com",
-            "https://unpkg.com"
-          ],
-          scriptSrcAttr: ["'unsafe-inline'", "'unsafe-hashes'"],
-          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-          styleSrcAttr: ["'unsafe-inline'"],
-          fontSrc: ["'self'", "https://fonts.gstatic.com"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: [
-            "'self'",
-            "https://bilateralbound.onrender.com",
-            "http://localhost:3000",
-            "https://davidbugayov.github.io"
-          ],
-          objectSrc: ["'none'"],
-          workerSrc: ["'self'", "blob:"],
-          childSrc: ["'self'", "blob:"],
-          upgradeInsecureRequests: []
-        }
-      }
-    };
-  }
+
 
   // Setup routes
   setupRoutes() {
@@ -199,11 +150,13 @@ class BilateralBoundServer {
         // Получаем размеры экрана вьювера
         const viewerScreenSize = sessionManager.getViewerScreenSize(sessionId);
         const viewerConnected = sessionManager.getViewerConnected(sessionId);
+        const controllerConnected = sessionManager.getControllerConnected(sessionId);
 
-        // Возвращаем состояние шара вместе с информацией о вьювере
+        // Возвращаем состояние шара вместе с информацией о подключениях
         res.json({
           ...ballState,
           viewerConnected,
+          controllerConnected,
           viewerScreenSize: viewerScreenSize || { width: 800, height: 600 } // fallback
         });
       } catch (error) {
@@ -354,6 +307,34 @@ class BilateralBoundServer {
         res.json({ success: true, message: 'Viewer disconnected' });
       } catch (error) {
         logger.error('Error disconnecting viewer:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Controller update ball state (for movement commands)
+    this.app.post('/api/session/:sessionId/controller/update', (req, res) => {
+      try {
+        const { sessionId } = req.params;
+        const session = sessionManager.getSession(sessionId);
+
+        if (!session) {
+          return res.status(404).json({ error: 'Session not found' });
+        }
+
+        if (!session.controllerConnected) {
+          return res.status(403).json({ error: 'Controller not connected' });
+        }
+
+        const updates = req.body;
+        const success = sessionManager.updateBallState(sessionId, updates);
+
+        if (success) {
+          res.json({ success: true, message: 'Ball state updated' });
+        } else {
+          res.status(400).json({ error: 'Failed to update ball state' });
+        }
+      } catch (error) {
+        logger.error('Error updating ball state:', error);
         res.status(500).json({ error: error.message });
       }
     });

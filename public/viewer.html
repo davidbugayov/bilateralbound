@@ -394,35 +394,58 @@
                 onDataReceived: (sessionData) => {
                     // Обновляем статус сессии
                     updateStatus(sessionData);
-                },
-                onStateReceived: (ballState) => {
+
                     // Применяем команды управления локально
-                    if (physics && ballState) {
+                    if (physics && sessionData) {
                         // Синхронизация скорости и радиуса
-                        if (ballState.speed !== undefined) physics.ball.speed = ballState.speed;
-                        if (ballState.radius !== undefined) physics.ball.radius = ballState.radius;
-                        if (ballState.colorBall) physics.colors.ball = ballState.colorBall;
-                        if (ballState.colorBg) physics.colors.bg = ballState.colorBg;
-                        if (ballState.paused !== undefined) physics.paused = ballState.paused;
+                        if (sessionData.speed !== undefined) physics.ball.speed = sessionData.speed;
+                        if (sessionData.radius !== undefined) physics.ball.radius = sessionData.radius;
+                        if (sessionData.colorBall) physics.colors.ball = sessionData.colorBall;
+                        if (sessionData.colorBg) physics.colors.bg = sessionData.colorBg;
+                        if (sessionData.paused !== undefined) physics.paused = sessionData.paused;
 
                         // Синхронизация направления движения и скорости (только направление, не абсолютные значения)
-                        if (ballState.vx !== undefined || ballState.vy !== undefined) {
+                        if (sessionData.vx !== undefined || sessionData.vy !== undefined) {
                             // Вычисляем направление из серверных данных
-                            const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
-                            const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
+                            const dirX = sessionData.vx === 0 ? 0 : (sessionData.vx > 0 ? 1 : -1);
+                            const dirY = sessionData.vy === 0 ? 0 : (sessionData.vy > 0 ? 1 : -1);
 
                             // Обновляем только направление, скорость пусть рассчитывается локально
                             physics.lastDir = { x: dirX, y: dirY };
 
-                            // Если скорость нулевая, останавливаем мяч
-                            if (ballState.vx === 0 && ballState.vy === 0) {
-                                physics.ball.vx = 0;
-                                physics.ball.vy = 0;
+                            // Если скорость нулевая, останавливаем мяч плавно
+                            if (sessionData.vx === 0 && sessionData.vy === 0) {
+                                physics.ball.vx *= 0.9; // Плавное замедление
+                                physics.ball.vy *= 0.9;
+                                if (Math.abs(physics.ball.vx) < 1) physics.ball.vx = 0;
+                                if (Math.abs(physics.ball.vy) < 1) physics.ball.vy = 0;
+                            } else {
+                                // Устанавливаем скорость на основе серверных данных, но плавно
+                                const targetSpeed = Math.sqrt(sessionData.vx * sessionData.vx + sessionData.vy * sessionData.vy);
+                                const currentSpeed = Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy);
+
+                                if (Math.abs(targetSpeed - currentSpeed) > 50) { // Значительная разница
+                                    // Плавная синхронизация скорости
+                                    const lerpFactor = 0.1;
+                                    physics.ball.vx = physics.ball.vx * (1 - lerpFactor) + sessionData.vx * lerpFactor;
+                                    physics.ball.vy = physics.ball.vy * (1 - lerpFactor) + sessionData.vy * lerpFactor;
+                                }
                             }
                         }
 
-                        // Убираем синхронизацию позиции - вьювер полагается только на команды сервера
-                        // Синхронизация позиции вызывала дергание мяча
+                        // Плавная синхронизация позиции (только если значительная разница)
+                        if (sessionData.x !== undefined && sessionData.y !== undefined) {
+                            const dx = sessionData.x - physics.ball.x;
+                            const dy = sessionData.y - physics.ball.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+
+                            // Синхронизируем позицию только если разница больше 20 пикселей
+                            if (distance > 20) {
+                                const lerpFactor = 0.05; // Очень плавная синхронизация
+                                physics.ball.x += dx * lerpFactor;
+                                physics.ball.y += dy * lerpFactor;
+                            }
+                        }
                     }
                 }
             });
