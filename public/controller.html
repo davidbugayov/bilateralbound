@@ -306,30 +306,44 @@
       window.addEventListener('resize', handleResize);
 
       socket.on('connect', () => {
+        setStatus('Подключение...', false);
         socket.emit('join-session', { sessionId, role: 'controller' });
         // Reset session when controller connects
         socket.emit('control-update', { sessionId, input: { reset: true, pause: true } });
       });
+
+      socket.on('disconnect', () => {
+        hasController = false;
+        setStatus('Контроллер отключен', false);
+        // Скрываем превью при отключении
+        const preview = document.querySelector('.ball-preview');
+        if (preview) {
+          preview.style.display = 'none';
+        }
+      });
       socket.on('error-message', (msg) => {
         setStatus(`Ошибка: ${msg}`, true);
+        hasController = false; // Сбрасываем статус при ошибке
         vibrate(200); // Более длительная вибрация при ошибке
         // Clear error after 5 seconds
         setTimeout(() => {
           if (document.getElementById('status').className.includes('err')) {
-            setStatus(hasController ? 'Вы управляете мячом' : 'Ожидание контроллера...', false);
+            setStatus('Контроллер отключен', false);
           }
         }, 5000);
       });
 
       socket.on('role-update', (data) => {
         hasController = data.hasController;
-        setStatus(data.message || (hasController ? 'Вы управляете мячом' : 'Ожидание контроллера...'), false);
         if (hasController) {
+          setStatus(data.message || 'Вы управляете мячом', false);
           vibrate(100); // Короткая вибрация при успешном подключении
           // Инициализируем превью после успешного подключения
           setTimeout(() => {
             initializeBallPreview();
           }, 500);
+        } else {
+          setStatus(data.message || 'Контроллер отключен', false);
         }
       });
       socket.on('ball-state', (ballState) => {
