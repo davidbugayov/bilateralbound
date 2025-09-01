@@ -528,7 +528,7 @@
         
         async function updateScreenSize() {
             try {
-                await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
+                const response = await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -536,8 +536,17 @@
                         height: canvas.height
                     })
                 });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    const errorMessage = `HTTP ${response.status}: ${errorText || 'Неизвестная ошибка'}`;
+                    showWarning(`Не удалось обновить размер экрана: ${errorMessage}`);
+                    return;
+                }
+
+                console.log('✅ Размер экрана обновлен на сервере');
             } catch (error) {
-                console.error('Ошибка обновления размера экрана:', error);
+                console.error('Ошибка сети при обновлении размера экрана:', error);
             }
         }
         
@@ -568,6 +577,11 @@
             const statusOverlay = document.getElementById('statusOverlay');
             statusOverlay.className = 'status-overlay status-offline';
             document.getElementById('statusText').textContent = '❌ ' + message;
+        }
+
+        function showWarning(message) {
+            console.warn('⚠️ Предупреждение viewer:', message);
+            // Можно добавить визуальное предупреждение, если нужно
         }
         
         function hideLoading() {
