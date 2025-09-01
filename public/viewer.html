@@ -237,15 +237,23 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 BilateralBound Viewer - Инициализация...');
             
-            // Получаем sessionId из URL
-            sessionId = getSessionIdFromUrl();
-            if (!sessionId) {
-                showError('Session ID не найден в URL');
-                return;
+            try {
+                // Получаем sessionId из URL
+                sessionId = getSessionIdFromUrl();
+                if (!sessionId) {
+                    showError('Session ID не найден в URL');
+                    return;
+                }
+                
+                console.log('📱 Session ID получен:', sessionId);
+                
+                // Инициализируем viewer
+                await initializeViewer();
+                
+            } catch (error) {
+                console.error('❌ Критическая ошибка инициализации:', error);
+                showError('Ошибка инициализации: ' + error.message);
             }
-            
-            // Инициализируем viewer
-            await initializeViewer();
         });
         
         // ===== CORE FUNCTIONS =====
@@ -288,6 +296,9 @@
                 // Запускаем рендеринг
                 startRendering();
                 
+                // Настраиваем event listeners после инициализации
+                setupEventListeners();
+                
                 console.log('✅ Viewer успешно инициализирован');
                 
             } catch (error) {
@@ -300,13 +311,16 @@
         async function syncInitialState() {
             try {
                 const response = await fetch(`/api/session/${sessionId}/state`);
-                if (!response.ok) return;
+                if (!response.ok) {
+                    console.warn('Не удалось получить состояние сессии:', response.status);
+                    return;
+                }
                 
                 const ballState = await response.json();
                 if (ballState && physics) {
                     // Устанавливаем начальную позицию
-                    physics.ball.x = ballState.x;
-                    physics.ball.y = ballState.y;
+                    physics.ball.x = ballState.x || canvas.width / 2;
+                    physics.ball.y = ballState.y || canvas.height / 2;
                     
                     // Синхронизируем все параметры
                     if (ballState.speed !== undefined) physics.ball.speed = ballState.speed;
@@ -317,12 +331,14 @@
                     
                     // Синхронизируем направление движения
                     if (ballState.vx !== undefined || ballState.vy !== undefined) {
-                        physics.ball.vx = ballState.vx;
-                        physics.ball.vy = ballState.vy;
+                        physics.ball.vx = ballState.vx || 0;
+                        physics.ball.vy = ballState.vy || 0;
                         const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
                         const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
                         physics.lastDir = { x: dirX, y: dirY };
                     }
+                    
+                    console.log('✅ Начальное состояние синхронизировано');
                 }
             } catch (error) {
                 console.error('Ошибка синхронизации начального состояния:', error);
@@ -331,6 +347,11 @@
         
         async function connectToSession() {
             try {
+                // Проверяем, что canvas инициализирован
+                if (!canvas) {
+                    throw new Error('Canvas не инициализирован');
+                }
+                
                 const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -343,7 +364,8 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Не удалось подключиться к сессии');
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText || 'Не удалось подключиться к сессии'}`);
                 }
                 
                 console.log('✅ Подключение к сессии успешно');
@@ -513,7 +535,21 @@
         
         function getSessionIdFromUrl() {
             const pathParts = window.location.pathname.split('/');
-            return pathParts[pathParts.length - 1] || null;
+            const sessionId = pathParts[pathParts.length - 1] || null;
+            
+            // Проверяем, что sessionId не пустой и содержит только допустимые символы
+            if (sessionId && sessionId.trim() && /^[a-zA-Z0-9]+$/.test(sessionId)) {
+                return sessionId;
+            }
+            
+            // Попробуем получить из query параметров
+            const urlParams = new URLSearchParams(window.location.search);
+            const querySessionId = urlParams.get('session');
+            if (querySessionId && /^[a-zA-Z0-9]+$/.test(querySessionId)) {
+                return querySessionId;
+            }
+            
+            return null;
         }
         
         // ===== FULLSCREEN =====
@@ -538,40 +574,49 @@
         }
         
         // ===== EVENT LISTENERS =====
-        window.addEventListener('resize', resizeCanvas);
-        
-        document.addEventListener('fullscreenchange', function() {
-            isFullscreen = !!document.fullscreenElement;
-            const btn = document.querySelector('.fullscreen-btn');
-            if (btn) {
-                btn.textContent = isFullscreen ? '⛶ Выйти' : '⛶ Полноэкранный';
+        // Добавляем event listeners только после инициализации
+        function setupEventListeners() {
+            if (window) {
+                window.addEventListener('resize', resizeCanvas);
             }
-        });
-        
-        // Предотвращаем зум на мобильных устройствах
-        document.addEventListener('gesturestart', function(event) {
-            event.preventDefault();
-        });
-        
-        document.addEventListener('gesturechange', function(event) {
-            event.preventDefault();
-        });
-        
-        document.addEventListener('gestureend', function(event) {
-            event.preventDefault();
-        });
+            
+            if (document) {
+                document.addEventListener('fullscreenchange', function() {
+                    isFullscreen = !!document.fullscreenElement;
+                    const btn = document.querySelector('.fullscreen-btn');
+                    if (btn) {
+                        btn.textContent = isFullscreen ? '⛶ Выйти' : '⛶ Полноэкранный';
+                    }
+                });
+                
+                // Предотвращаем зум на мобильных устройствах
+                document.addEventListener('gesturestart', function(event) {
+                    event.preventDefault();
+                });
+                
+                document.addEventListener('gesturechange', function(event) {
+                    event.preventDefault();
+                });
+                
+                document.addEventListener('gestureend', function(event) {
+                    event.preventDefault();
+                });
+            }
+        }
         
         // Двойной тап для полноэкранного режима
         let lastTap = 0;
-        canvas.addEventListener('touchend', function(event) {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-            if (tapLength < 500 && tapLength > 0) {
-                event.preventDefault();
-                toggleFullscreen();
-            }
-            lastTap = currentTime;
-        });
+        if (canvas) {
+            canvas.addEventListener('touchend', function(event) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 500 && tapLength > 0) {
+                    event.preventDefault();
+                    toggleFullscreen();
+                }
+                lastTap = currentTime;
+            });
+        }
         
         console.log('🎯 BilateralBound Viewer - Готов к работе');
     </script>
