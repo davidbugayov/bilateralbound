@@ -12,7 +12,8 @@ const app = express();
 
 // Настраиваем trust proxy для работы за Render прокси-сервером
 // Это необходимо для правильной работы rate limiting и получения реального IP
-app.set('trust proxy', true);
+// Используем более безопасную настройку для express-rate-limit
+app.set('trust proxy', 1);
 
 const server = http.createServer(app);
 const io = new Server(server, {
