@@ -158,23 +158,27 @@ app.get('/debug/routes', (req, res) => {
   const routes = [];
 
   try {
-    app._router.stack.forEach((middleware) => {
-      if (middleware.route) {
-        routes.push({
-          path: middleware.route.path,
-          methods: Object.keys(middleware.route.methods)
-        });
-      } else if (middleware.name === 'router' && middleware.handle && middleware.handle.stack) {
-        middleware.handle.stack.forEach((handler) => {
-          if (handler.route) {
-            routes.push({
-              path: handler.route.path,
-              methods: Object.keys(handler.route.methods)
-            });
-          }
-        });
-      }
-    });
+    // Более безопасный способ получения маршрутов
+    function getRoutesFromStack(stack) {
+      if (!stack) return;
+
+      stack.forEach((layer) => {
+        if (layer.route && layer.route.path) {
+          routes.push({
+            path: layer.route.path,
+            methods: Object.keys(layer.route.methods || {})
+          });
+        } else if (layer.name === 'router' && layer.handle && layer.handle.stack) {
+          getRoutesFromStack(layer.handle.stack);
+        } else if (layer.handle && layer.handle.stack) {
+          getRoutesFromStack(layer.handle.stack);
+        }
+      });
+    }
+
+    if (app._router && app._router.stack) {
+      getRoutesFromStack(app._router.stack);
+    }
   } catch (error) {
     console.error('Error getting routes:', error);
   }
@@ -184,7 +188,8 @@ app.get('/debug/routes', (req, res) => {
     routes: routes,
     totalRoutes: routes.length,
     viewerRoutes: routes.filter(r => r && r.path && r.path.includes('viewer')),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    server: 'render.com'
   });
 });
 
