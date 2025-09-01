@@ -229,6 +229,146 @@ app.get('/config.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'config.js'));
 });
 
+// ===== VIEWER API ENDPOINTS =====
+
+// Viewer connect
+app.post('/api/session/:sessionId/viewer/connect', (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const session = sessions.get(sessionId);
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Сохраняем размеры экрана вьювера, если они переданы
+    const { screenSize } = req.body;
+    if (screenSize && screenSize.width && screenSize.height) {
+      session.world = { width: screenSize.width, height: screenSize.height };
+      // Устанавливаем начальную позицию шара в центре экрана вьювера
+      session.ball.x = screenSize.width / 2;
+      session.ball.y = screenSize.height / 2;
+      session.ball.vx = 0;
+      session.ball.vy = 0;
+      session.paused = true;
+    }
+
+    session.viewerJoined = true;
+    session.lastActivity = Date.now();
+    res.json({ success: true, message: 'Viewer connected' });
+  } catch (error) {
+    console.error('Error connecting viewer:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get session state
+app.get('/api/session/:sessionId/state', (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const session = sessions.get(sessionId);
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    res.json({
+      sessionId,
+      ballState: {
+        x: session.ball.x,
+        y: session.ball.y,
+        vx: session.ball.vx,
+        vy: session.ball.vy,
+        speed: session.ball.speed,
+        radius: session.ball.radius,
+        colorBall: session.colors?.ball,
+        colorBg: session.colors?.bg,
+        paused: session.paused
+      },
+      controllerConnected: !!session.controllerId,
+      viewerConnected: session.viewerJoined,
+      world: session.world
+    });
+  } catch (error) {
+    console.error('Error getting session state:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Controller update ball state
+app.post('/api/session/:sessionId/controller/update', (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const session = sessions.get(sessionId);
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    if (!session.controllerId) {
+      return res.status(403).json({ error: 'Controller not connected' });
+    }
+
+    const updates = req.body;
+    
+    // Handle pause/resume
+    if (updates.pause === true) {
+      session.paused = true;
+      session.ball.vx = 0;
+      session.ball.vy = 0;
+    }
+    
+    if (updates.resume === true) {
+      session.paused = false;
+      if (session.lastDir) {
+        session.ball.vx = session.lastDir.x * session.ball.speed;
+        session.ball.vy = session.lastDir.y * session.ball.speed;
+      }
+    }
+    
+    // Handle direction changes
+    if (typeof updates.dirX === 'number' && typeof updates.dirY === 'number') {
+      const mag = Math.hypot(updates.dirX, updates.dirY);
+      if (mag > 0) {
+        session.lastDir = { x: updates.dirX / mag, y: updates.dirY / mag };
+        if (!session.paused) {
+          session.ball.vx = session.lastDir.x * session.ball.speed;
+          session.ball.vy = session.lastDir.y * session.ball.speed;
+        }
+      }
+    }
+    
+    // Handle speed changes
+    if (typeof updates.speedScalar === 'number') {
+      const clampedScalar = Math.max(0, Math.min(100, updates.speedScalar));
+      session.ball.speed = Math.round((clampedScalar / 100) * 300);
+      if (!session.paused && session.lastDir) {
+        session.ball.vx = session.lastDir.x * session.ball.speed;
+        session.ball.vy = session.lastDir.y * session.ball.speed;
+      }
+    }
+    
+    // Handle color changes
+    if (updates.colorBall) {
+      session.colors.ball = updates.colorBall;
+    }
+    if (updates.colorBg) {
+      session.colors.bg = updates.colorBg;
+    }
+    
+    // Handle radius changes
+    if (typeof updates.radius === 'number') {
+      session.ball.radius = Math.max(10, Math.min(100, updates.radius));
+    }
+    
+    session.lastActivity = Date.now();
+    res.json({ success: true, message: 'Ball state updated' });
+  } catch (error) {
+    console.error('Error updating ball state:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 io.on('connection', (socket) => {
   socket.on('join-session', ({ sessionId, role }) => {
     // Enhanced session joining with better error handling
