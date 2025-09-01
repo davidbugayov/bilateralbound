@@ -156,29 +156,35 @@ app.get('/health', (req, res) => {
 // Debug endpoint to check available routes
 app.get('/debug/routes', (req, res) => {
   const routes = [];
-  app._router.stack.forEach((middleware) => {
-    if (middleware.route) {
-      routes.push({
-        path: middleware.route.path,
-        methods: Object.keys(middleware.route.methods)
-      });
-    } else if (middleware.name === 'router') {
-      middleware.handle.stack.forEach((handler) => {
-        if (handler.route) {
-          routes.push({
-            path: handler.route.path,
-            methods: Object.keys(handler.route.methods)
-          });
-        }
-      });
-    }
-  });
+
+  try {
+    app._router.stack.forEach((middleware) => {
+      if (middleware.route) {
+        routes.push({
+          path: middleware.route.path,
+          methods: Object.keys(middleware.route.methods)
+        });
+      } else if (middleware.name === 'router' && middleware.handle && middleware.handle.stack) {
+        middleware.handle.stack.forEach((handler) => {
+          if (handler.route) {
+            routes.push({
+              path: handler.route.path,
+              methods: Object.keys(handler.route.methods)
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error getting routes:', error);
+  }
 
   res.json({
     status: 'ok',
     routes: routes,
     totalRoutes: routes.length,
-    viewerRoutes: routes.filter(r => r.path && r.path.includes('viewer'))
+    viewerRoutes: routes.filter(r => r && r.path && r.path.includes('viewer')),
+    timestamp: new Date().toISOString()
   });
 });
 
