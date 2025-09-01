@@ -604,22 +604,34 @@
       body {
         padding: 8px;
         font-size: 14px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        min-height: 100vh;
       }
 
       .wrap {
         max-width: 100%;
         margin: 0;
+        gap: 8px;
       }
 
       .card {
         padding: 16px;
         margin: 0;
         border-radius: 12px;
+        background: linear-gradient(145deg, #111827, #1f2937);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid #334155;
       }
 
       h1 {
-        font-size: 24px;
+        font-size: 22px;
         margin-bottom: 8px;
+        text-align: center;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
 
       .viewer-link-container .link-input-group {
@@ -629,33 +641,42 @@
 
       .viewer-link-container .copy-btn {
         width: 100%;
-        padding: 12px;
-        font-size: 14px;
+        padding: 10px;
+        font-size: 13px;
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(96, 165, 250, 0.3);
       }
 
       .speed-container .speed-labels {
         flex-direction: column;
         gap: 6px;
         text-align: center;
-        font-size: 12px;
+        font-size: 11px;
+        color: #cbd5e1;
       }
 
       .floating-preview {
         position: static;
-        margin-bottom: 16px;
-        padding: 16px;
-        min-height: 240px;
+        margin-bottom: 12px;
+        padding: 12px;
+        min-height: 200px;
+        background: linear-gradient(145deg, #1e293b, #1f2937);
+        border-radius: 10px;
+        border: 1px solid #334155;
       }
 
       .floating-preview canvas {
         max-width: 100%;
         height: auto;
         aspect-ratio: 4/3;
-        border-radius: 6px;
+        border-radius: 8px;
         object-fit: contain;
         display: block;
         margin: 0 auto;
         box-sizing: border-box;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border: 1px solid #475569;
       }
 
       .floating-preview > div {
@@ -681,14 +702,20 @@
       .mobile-controls {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
+        background: linear-gradient(145deg, #1e293b, #1f2937);
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid #334155;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
       }
 
       .mobile-controls .control-row {
         display: flex;
-        gap: 8px;
+        gap: 6px;
         justify-content: center;
         align-items: center;
+        flex-wrap: wrap;
       }
 
       .mobile-controls .direction-pad {
@@ -755,18 +782,21 @@
 
       /* Улучшенные мобильные контроллеры */
       .mobile-controls .control-section {
-        background: #1e293b;
+        background: linear-gradient(145deg, #1e293b, #1f2937);
         border: 1px solid #334155;
         border-radius: 10px;
         padding: 10px;
         margin-bottom: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       }
 
       .mobile-controls .control-section h3 {
         margin: 0 0 6px 0;
         font-size: 13px;
         font-weight: 600;
-        color: #e2e8f0;
+        color: #fbbf24;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        text-align: center;
       }
 
       /* Улучшенная цветовая палитра */
@@ -782,10 +812,10 @@
         padding: 3px 2px;
         font-size: 9px;
         font-weight: 600;
-        border-radius: 5px;
+        border-radius: 6px;
         border: 2px solid transparent;
         color: white;
-        min-height: 32px; /* Уменьшен минимум для touch */
+        min-height: 32px;
         touch-action: manipulation;
         transition: all 0.2s ease;
         display: flex;
@@ -795,16 +825,19 @@
         gap: 1px;
         text-align: center;
         line-height: 1.0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
 
       .mobile-controls .color-palette button:hover {
         transform: scale(1.05);
         border-color: #fbbf24;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
       }
 
       .mobile-controls .color-palette button.active {
         border-color: #fbbf24 !important;
-        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3), 0 4px 8px rgba(0, 0, 0, 0.3);
         transform: scale(1.05);
       }
 
@@ -881,9 +914,9 @@
         font-weight: 600;
         border-radius: 6px;
         border: 2px solid #374151;
-        background: #374151;
+        background: linear-gradient(145deg, #374151, #4b5563);
         color: #e2e8f0;
-        min-height: 36px; /* Уменьшен минимум для touch */
+        min-height: 36px;
         touch-action: manipulation;
         transition: all 0.2s ease;
         display: flex;
@@ -891,19 +924,22 @@
         align-items: center;
         justify-content: center;
         gap: 3px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
 
       .mobile-controls .size-palette button:hover {
-        background: #4b5563;
+        background: linear-gradient(145deg, #4b5563, #6b7280);
         transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
       }
 
       .mobile-controls .size-palette button.active {
-        background: #60a5fa;
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
         border-color: #3b82f6;
         color: white;
         transform: scale(1.05);
-        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3), 0 4px 8px rgba(0, 0, 0, 0.3);
       }
 
       /* Стили для превью размеров */
@@ -1060,27 +1096,30 @@
 
       /* Улучшенные кнопки управления */
       .mobile-controls .big-btn {
-        padding: 16px 20px;
-        font-size: 16px;
+        padding: 12px 16px;
+        font-size: 14px;
         font-weight: 600;
-        min-width: 120px;
-        height: 48px;
+        min-width: 100px;
+        height: 44px;
         border-radius: 8px;
         border: none;
-        background: #60a5fa;
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
         color: white;
         touch-action: manipulation;
         transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(96, 165, 250, 0.3);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
 
       .mobile-controls .big-btn:hover {
-        background: #3b82f6;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(96, 165, 250, 0.4);
+        box-shadow: 0 4px 12px rgba(96, 165, 250, 0.4);
       }
 
       .mobile-controls .big-btn:active {
         transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(96, 165, 250, 0.3);
       }
 
       /* Улучшенные строки управления */
