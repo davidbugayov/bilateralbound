@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>BilateralBound - Просмотр</title>
+  <style>
+        body {
+      margin: 0; 
+      padding: 0;
+            background: #020617;
+      overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .viewer-container {
+            flex: 1;
+            position: relative;
+            background: #020617;
+        }
+
+        .viewer-canvas {
+      width: 100%; 
+      height: 100%; 
+      background: #020617; 
+      display: block; 
+    }
+
+        .status-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-online {
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+
+        .status-offline {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 12px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 12px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 18px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ef4444;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 18px;
+            text-align: center;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #ef4444;
+        }
+
+        /* Мобильные улучшения */
+        @media (max-width: 768px) {
+            .viewer-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            .viewer-canvas {
+                width: 100vw !important;
+                height: 100vh !important;
+            }
+
+            .status-overlay {
+                font-size: 12px;
+                padding: 12px 16px;
+                top: 10px;
+                left: 10px;
+                right: auto;
+                max-width: calc(100vw - 20px);
+            }
+
+            .instructions {
+                font-size: 10px;
+                padding: 12px 16px;
+                bottom: 10px;
+                left: 10px;
+                right: auto;
+                max-width: calc(100vw - 20px);
+            }
+
+            .fullscreen-btn {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 10px;
+            }
+
+            .error-message {
+                padding: 20px;
+                font-size: 14px;
+                margin: 20px;
+            }
+        }
+
+        /* Touch-friendly размеры */
+        @media (pointer: coarse) {
+            .fullscreen-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+
+            .status-overlay, .instructions {
+                min-height: 44px;
+            }
+        }
+  </style>
+    <script src="/js/session-poller.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/physics.js"></script>
+</head>
+<body>
+    <div class="viewer-container">
+        <canvas id="viewerCanvas" class="viewer-canvas"></canvas>
+
+        <div id="statusOverlay" class="status-overlay status-offline">
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+                <div>Подключение к сессии...</div>
+            </div>
+            <div id="statusContent" style="display: none;">
+                <div style="font-weight: bold; margin-bottom: 5px;">Статус сессии</div>
+                <div id="sessionStatus">Ожидание контроллера...</div>
+                <div id="viewerCount" style="margin-top: 10px; font-size: 12px; opacity: 0.8;">Зрителей: 1</div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <div style="font-weight: bold; margin-bottom: 8px;">🎯 Инструкции</div>
+            <div style="font-size: 11px; line-height: 1.4;">
+                • Следите за движением шарика<br>
+                • Шарик следует за вашим взглядом<br>
+                • Контроллер управляет движением<br>
+                • Нажмите F11 для полноэкранного режима
+            </div>
+        </div>
+
+        <button class="fullscreen-btn" onclick="toggleFullscreen()">
+            📺 Полный экран
+        </button>
+
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <div style="font-weight: bold; margin-bottom: 10px;">❌ Ошибка подключения</div>
+            <div id="errorText">Не удалось подключиться к сессии</div>
+            <button onclick="retryConnection()" style="margin-top: 15px; padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                Попробовать снова
+            </button>
+        </div>
+    </div>
+
+  <script>
+        let sessionId = null;
+        let physics = null;
+        let canvas = null;
+        let ctx = null;
+        let isFullscreen = false;
+
+        // Получаем sessionId из URL
+        function getSessionIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('sid') || window.location.pathname.split('/').pop();
+        }
+
+        async function initializeViewer() {
+            sessionId = getSessionIdFromUrl();
+
+    if (!sessionId) {
+                showError('Session ID не найден в URL. Проверьте ссылку от контроллера.');
+                return;
+            }
+
+            // Устанавливаем sessionId в глобальную переменную для синхронизации отскоков
+            if (!window.__current) {
+                window.__current = {};
+            }
+            window.__current.sessionId = sessionId;
+
+            // Инициализируем canvas
+            canvas = document.getElementById('viewerCanvas');
+            ctx = canvas.getContext('2d');
+
+            // Устанавливаем размер canvas
+            resizeCanvas();
+
+            // Инициализируем физику с размерами экрана вьювера
+            physics = new BallPhysics();
+            physics.setWorldSize(canvas.width, canvas.height); // Размер мира = размер canvas
+            physics.setPosition(canvas.width / 2, canvas.height / 2); // Центр экрана
+            physics.setPaused(true); // Начинаем с паузы
+            physics.lastDir = { x: 1, y: 0 }; // Инициализируем направление по умолчанию
+
+            // Подключаемся к сессии
+            await connectToSession();
+
+            // Синхронизируем начальное состояние шара
+            await syncInitialState();
+
+            // Запускаем polling обновлений
+            startStatePolling();
+
+            // Запускаем рендеринг
+            startRendering();
+        }
+
+        async function syncInitialState() {
+            try {
+                // Получаем текущее состояние шара с сервера
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                if (!response.ok) return;
+
+                const ballState = await response.json();
+                if (ballState && physics) {
+                    // Устанавливаем начальную позицию
+                    physics.ball.x = ballState.x;
+                    physics.ball.y = ballState.y;
+
+                    // Синхронизируем все параметры
+                    if (ballState.speed !== undefined) physics.ball.speed = ballState.speed;
+                    if (ballState.radius !== undefined) physics.ball.radius = ballState.radius;
+                    if (ballState.colorBall) physics.colors.ball = ballState.colorBall;
+                    if (ballState.colorBg) physics.colors.bg = ballState.colorBg;
+                    if (ballState.paused !== undefined) physics.paused = ballState.paused;
+
+                    // Синхронизируем направление движения
+                    if (ballState.vx !== undefined || ballState.vy !== undefined) {
+                        physics.ball.vx = ballState.vx;
+                        physics.ball.vy = ballState.vy;
+                        const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
+                        const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
+                        physics.lastDir = { x: dirX, y: dirY };
+                    }
+
+
+                }
+            } catch (error) {
+                console.error('Error syncing initial state:', error);
+            }
+        }
+
+        async function connectToSession() {
+            try {
+                // Отправляем размеры экрана вместе с подключением
+                const screenSize = {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                };
+
+                // Подключаемся как viewer
+                const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ screenSize })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // Скрываем загрузку, показываем статус
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('statusContent').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error connecting to session:', error);
+                showError('Не удалось подключиться к сессии. Проверьте правильность ссылки.');
+            }
+        }
+
+        /**
+         * Обработчик истечения сессии для вьювера
+         */
+        function handleSessionExpired() {
+            NotificationManager.showSessionExpired({
+                title: '⏰ Сессия истекла',
+                message: 'Ваша сессия была завершена. Создайте новую сессию для продолжения.',
+                actions: [
+                    {
+                        text: 'Главная',
+                        action: () => {
+                            location.href = '/';
+                        }
+                    },
+                    {
+                        text: 'Закрыть',
+                        action: () => {
+                            try {
+                                window.close();
+                            } catch (error) {
+                                console.log('Невозможно закрыть окно автоматически. Закройте вкладку вручную.');
+                                // Альтернатива: показать сообщение
+                                alert('Закройте эту вкладку вручную (Ctrl+W или Cmd+W)');
+                            }
+                        },
+                        primary: true
+                    }
+                ]
+            });
+        }
+
+        function startStatePolling() {
+            // Используем общий модуль для polling'а сессии
+            const poller = new SessionPoller({
+                sessionId,
+                onSessionExpired: handleSessionExpired,
+                onDataReceived: (sessionData) => {
+                    // Обновляем статус сессии
+                    updateStatus(sessionData);
+
+                    // Применяем команды управления локально
+                    if (physics && sessionData) {
+                        // Синхронизация скорости и радиуса
+                        if (sessionData.speed !== undefined) physics.ball.speed = sessionData.speed;
+                        if (sessionData.radius !== undefined) physics.ball.radius = sessionData.radius;
+                        if (sessionData.colorBall) physics.colors.ball = sessionData.colorBall;
+                        if (sessionData.colorBg) physics.colors.bg = sessionData.colorBg;
+                        if (sessionData.paused !== undefined) physics.paused = sessionData.paused;
+
+                        // Синхронизация направления движения и скорости (только направление, не абсолютные значения)
+                        if (sessionData.vx !== undefined || sessionData.vy !== undefined) {
+                            // Вычисляем направление из серверных данных
+                            const dirX = sessionData.vx === 0 ? 0 : (sessionData.vx > 0 ? 1 : -1);
+                            const dirY = sessionData.vy === 0 ? 0 : (sessionData.vy > 0 ? 1 : -1);
+
+                            // Обновляем только направление, скорость пусть рассчитывается локально
+                            physics.lastDir = { x: dirX, y: dirY };
+
+                            // Если скорость нулевая, останавливаем мяч плавно
+                            if (sessionData.vx === 0 && sessionData.vy === 0) {
+                                physics.ball.vx *= 0.9; // Плавное замедление
+                                physics.ball.vy *= 0.9;
+                                if (Math.abs(physics.ball.vx) < 1) physics.ball.vx = 0;
+                                if (Math.abs(physics.ball.vy) < 1) physics.ball.vy = 0;
+                            } else {
+                                // Устанавливаем скорость на основе серверных данных, но плавно
+                                const targetSpeed = Math.sqrt(sessionData.vx * sessionData.vx + sessionData.vy * sessionData.vy);
+                                const currentSpeed = Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy);
+
+                                if (Math.abs(targetSpeed - currentSpeed) > 50) { // Значительная разница
+                                    // Плавная синхронизация скорости
+                                    const lerpFactor = 0.1;
+                                    physics.ball.vx = physics.ball.vx * (1 - lerpFactor) + sessionData.vx * lerpFactor;
+                                    physics.ball.vy = physics.ball.vy * (1 - lerpFactor) + sessionData.vy * lerpFactor;
+                                }
+                            }
+                        }
+
+                        // Плавная синхронизация позиции (только если значительная разница)
+                        if (sessionData.x !== undefined && sessionData.y !== undefined) {
+                            const dx = sessionData.x - physics.ball.x;
+                            const dy = sessionData.y - physics.ball.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+
+                            // Синхронизируем позицию только если разница больше 20 пикселей
+                            if (distance > 20) {
+                                const lerpFactor = 0.05; // Очень плавная синхронизация
+                                physics.ball.x += dx * lerpFactor;
+                                physics.ball.y += dy * lerpFactor;
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Запускаем polling
+            poller.startPolling();
+        }
+
+
+
+
+
+        function updateStatus(sessionData) {
+            const statusEl = document.getElementById('sessionStatus');
+            const statusOverlay = document.getElementById('statusOverlay');
+
+            if (sessionData.controllerConnected) {
+                statusEl.textContent = '🎮 Контроллер подключен';
+                statusOverlay.className = 'status-overlay status-online';
+      } else {
+                statusEl.textContent = '⏳ Ожидание контроллера...';
+                statusOverlay.className = 'status-overlay status-offline';
+            }
+
+            // Обновляем количество зрителей (пока что статично)
+            document.getElementById('viewerCount').textContent = 'Зрителей: 1';
+        }
+
+                        function startRendering() {
+            let lastTime = 0;
+            const targetFrameTime = 1000 / 60; // 60 FPS
+            let lastMovementTime = 0;
+
+            function render(currentTime) {
+                if (!canvas || !ctx || !physics) return;
+
+                const deltaTime = currentTime - lastTime;
+
+                // Очищаем canvas
+                ctx.fillStyle = physics.colors.bg;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Обновляем позицию мяча только при достаточном deltaTime
+                if (deltaTime >= targetFrameTime) {
+                    if (!physics.paused) {
+                        // Используем physics.js для обновления позиции и обработки коллизий
+                        const fixedDeltaTime = 1/60; // Фиксированный шаг времени
+                        physics.updateWithDirection(
+                            physics.lastDir.x,
+                            physics.lastDir.y,
+                            Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy) || physics.ball.speed,
+                            fixedDeltaTime
+                        );
+
+                        // Обновляем время последнего движения для потенциального использования
+                        lastMovementTime = currentTime;
+                    } else {
+                        // Когда пауза, плавно центрируем мяч
+                        const centerX = canvas.width / 2;
+                        const centerY = canvas.height / 2;
+                        const centerSpeed = 3; // Пикселей в кадр
+
+                        if (Math.abs(physics.ball.x - centerX) > 1) {
+                            physics.ball.x += Math.sign(centerX - physics.ball.x) * Math.min(centerSpeed, Math.abs(centerX - physics.ball.x));
+                        }
+                        if (Math.abs(physics.ball.y - centerY) > 1) {
+                            physics.ball.y += Math.sign(centerY - physics.ball.y) * Math.min(centerSpeed, Math.abs(centerY - physics.ball.y));
+                        }
+                    }
+                    lastTime = currentTime;
+                }
+
+                // Рисуем шарик
+                ctx.beginPath();
+                ctx.arc(physics.ball.x, physics.ball.y, physics.ball.radius, 0, Math.PI * 2);
+                ctx.fillStyle = physics.colors.ball;
+                ctx.fill();
+
+                requestAnimationFrame(render);
+            }
+
+            render();
+        }
+
+
+
+        function resizeCanvas() {
+            if (!canvas) return;
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Обновляем размеры мира физики при изменении размера экрана
+            if (physics) {
+                physics.setWorldSize(canvas.width, canvas.height);
+            }
+
+            // Отправляем новые размеры экрана на сервер
+            updateScreenSize();
+        }
+
+        async function updateScreenSize() {
+            if (!sessionId) return;
+
+            try {
+                const screenSize = {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                };
+
+                await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ screenSize })
+                });
+            } catch (error) {
+                console.error('Error updating screen size:', error);
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    isFullscreen = true;
+                    document.querySelector('.fullscreen-btn').textContent = '📺 Выход из полноэкранного';
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    isFullscreen = false;
+                    document.querySelector('.fullscreen-btn').textContent = '📺 Полный экран';
+                });
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+
+        function retryConnection() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('loadingIndicator').style.display = 'block';
+            initializeViewer();
+        }
+
+        // Мобильная поддержка
+        function addMobileSupport() {
+            // Предотвращение зума двойным тапом
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            // Предотвращение зума pinch-to-zoom
+            document.addEventListener('gesturestart', function(event) {
+                event.preventDefault();
+            }, false);
+
+            document.addEventListener('gesturechange', function(event) {
+                event.preventDefault();
+            }, false);
+
+            document.addEventListener('gestureend', function(event) {
+                event.preventDefault();
+            }, false);
+
+            // Touch-action для лучшего отклика
+            document.body.style.touchAction = 'manipulation';
+
+            // Обработка изменения ориентации
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    resizeCanvas();
+                }, 500);
+            });
+
+            // Предотвращение контекстного меню на мобильных
+            document.addEventListener('contextmenu', function(event) {
+                event.preventDefault();
+            }, false);
+
+            // Обработка visibility change для экономии батареи
+            document.addEventListener('visibilitychange', function() {
+                // Можно добавить логику оптимизации производительности при сворачивании приложения
+            });
+        }
+
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   window.innerWidth <= 768 ||
+                   window.innerHeight <= 768;
+        }
+
+        // Обработчики событий
+        window.addEventListener('resize', resizeCanvas);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'F11') {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+            if (e.key === 'Escape' && isFullscreen) {
+                toggleFullscreen();
+            }
+        });
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            addMobileSupport();
+        });
+
+        initializeViewer();
+  </script>
+  </body>
+  </html>
