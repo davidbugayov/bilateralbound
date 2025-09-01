@@ -262,6 +262,34 @@ app.post('/api/session/:sessionId/viewer/connect', (req, res) => {
   }
 });
 
+// Update viewer screen size
+app.post('/api/session/:sessionId/viewer/screen-size', (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const session = sessions.get(sessionId);
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    const { width, height } = req.body;
+    if (!width || !height) {
+      return res.status(400).json({ error: 'Width and height are required' });
+    }
+
+    // Обновляем размеры мира
+    session.world = { width: parseInt(width), height: parseInt(height) };
+    session.lastActivity = Date.now();
+
+    console.log(`Viewer screen size updated for session ${sessionId}: ${width}x${height}`);
+
+    res.json({ success: true, message: 'Screen size updated' });
+  } catch (error) {
+    console.error('Error updating viewer screen size:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get session state
 app.get('/api/session/:sessionId/state', (req, res) => {
   try {
