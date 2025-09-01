@@ -143,11 +143,42 @@ app.use('/api/', apiLimiter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     sessions: sessions.size,
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    version: '1.1.0',
+    lastUpdate: '2024-01-15'
+  });
+});
+
+// Debug endpoint to check available routes
+app.get('/debug/routes', (req, res) => {
+  const routes = [];
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+      routes.push({
+        path: middleware.route.path,
+        methods: Object.keys(middleware.route.methods)
+      });
+    } else if (middleware.name === 'router') {
+      middleware.handle.stack.forEach((handler) => {
+        if (handler.route) {
+          routes.push({
+            path: handler.route.path,
+            methods: Object.keys(handler.route.methods)
+          });
+        }
+      });
+    }
+  });
+
+  res.json({
+    status: 'ok',
+    routes: routes,
+    totalRoutes: routes.length,
+    viewerRoutes: routes.filter(r => r.path && r.path.includes('viewer'))
   });
 });
 
