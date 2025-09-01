@@ -158,38 +158,35 @@ app.get('/debug/routes', (req, res) => {
   const routes = [];
 
   try {
-    // Более безопасный способ получения маршрутов
-    function getRoutesFromStack(stack) {
-      if (!stack) return;
+    // Простой способ проверки ключевых маршрутов
+    const keyRoutes = [
+      { path: '/health', methods: ['GET'] },
+      { path: '/debug/routes', methods: ['GET'] },
+      { path: '/api/status', methods: ['GET'] },
+      { path: '/api/session', methods: ['POST'] },
+      { path: '/api/session/:sessionId/viewer/connect', methods: ['POST'] },
+      { path: '/api/session/:sessionId/viewer/screen-size', methods: ['POST'] },
+      { path: '/api/session/:sessionId/state', methods: ['GET'] },
+      { path: '/api/session/:sessionId/controller/update', methods: ['POST'] }
+    ];
 
-      stack.forEach((layer) => {
-        if (layer.route && layer.route.path) {
-          routes.push({
-            path: layer.route.path,
-            methods: Object.keys(layer.route.methods || {})
-          });
-        } else if (layer.name === 'router' && layer.handle && layer.handle.stack) {
-          getRoutesFromStack(layer.handle.stack);
-        } else if (layer.handle && layer.handle.stack) {
-          getRoutesFromStack(layer.handle.stack);
-        }
-      });
-    }
+    routes.push(...keyRoutes);
 
-    if (app._router && app._router.stack) {
-      getRoutesFromStack(app._router.stack);
-    }
   } catch (error) {
-    console.error('Error getting routes:', error);
+    console.error('Error in debug routes:', error);
   }
+
+  const viewerRoutes = routes.filter(r => r.path && r.path.includes('viewer'));
 
   res.json({
     status: 'ok',
+    message: 'Debug endpoint working',
     routes: routes,
     totalRoutes: routes.length,
-    viewerRoutes: routes.filter(r => r && r.path && r.path.includes('viewer')),
+    viewerRoutes: viewerRoutes,
+    viewerRoutesCount: viewerRoutes.length,
     timestamp: new Date().toISOString(),
-    server: 'render.com'
+    server: process.env.RENDER ? 'render.com' : 'localhost'
   });
 });
 
