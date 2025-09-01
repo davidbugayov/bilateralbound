@@ -13,23 +13,30 @@
     input[type="text"], input[type="range"] { width: 100%; }
     .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #1f2937; border: 1px solid #374151; border-bottom-width: 3px; border-radius: 6px; padding: 2px 6px; transition: all 0.15s ease; }
     .kbd:active { transform: scale(0.95); background: #374151; }
-    .direction-btn { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 20px; touch-action: manipulation; }
+    .direction-btn { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 18px; touch-action: manipulation; }
     .speed-btn-mobile { min-width: 50px; height: 40px; font-size: 14px; touch-action: manipulation; }
+
+    /* Новая раскладка кнопок управления */
+    .direction-controls { display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 180px; margin: 0 auto; }
+    .direction-row { display: flex; gap: 6px; align-items: center; justify-content: center; }
+    .direction-spacer { width: 48px; height: 48px; }
     .status { color: #93c5fd; }
     .err { color: #fca5a5; }
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 
     /* Мобильная адаптация */
-    @media (max-width: 768px) {
+        @media (max-width: 768px) {
         body { padding: 12px; }
         .wrap { max-width: 100%; }
         .card { padding: 12px; }
-        .direction-btn { width: 56px; height: 56px; font-size: 20px; }
-        .speed-btn-mobile { min-width: 56px; height: 44px; font-size: 15px; }
-            .direction-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 200px; margin: 0 auto; }
-    .speed-controls { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-    .status-display { text-align: center; margin-bottom: 16px; }
-    .control-section { margin-bottom: 20px; }
+        .direction-btn { width: 44px; height: 44px; font-size: 16px; }
+        .speed-btn-mobile { min-width: 44px; height: 36px; font-size: 13px; }
+        .direction-controls { max-width: 160px; gap: 4px; }
+        .direction-row { gap: 4px; }
+        .direction-spacer { width: 44px; height: 44px; }
+        .speed-controls { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+        .status-display { text-align: center; margin-bottom: 16px; }
+        .control-section { margin-bottom: 20px; }
 
     /* Превью мяча */
     .ball-preview {
@@ -64,9 +71,11 @@
     }
 
     @media (max-width: 480px) {
-        .direction-btn { width: 48px; height: 48px; font-size: 18px; }
-        .speed-btn-mobile { min-width: 48px; height: 40px; font-size: 14px; }
-        .direction-grid { max-width: 180px; }
+        .direction-btn { width: 40px; height: 40px; font-size: 16px; }
+        .speed-btn-mobile { min-width: 40px; height: 32px; font-size: 12px; }
+        .direction-controls { max-width: 140px; gap: 3px; }
+        .direction-row { gap: 3px; }
+        .direction-spacer { width: 40px; height: 40px; }
         .ball-preview {
             max-width: 100%;
             height: 140px;
@@ -467,16 +476,25 @@
       <div class="card control-section">
         <label>🎯 Направление движения</label>
         <div id="directionDisplay" class="status" style="text-align: center; margin-bottom: 16px;">↔︎ Горизонталь (по умолчанию)</div>
-        <div class="direction-grid">
-          <button class="kbd direction-btn" data-dir="-1,-1" title="Вверх-влево">↖︎</button>
-          <button class="kbd direction-btn" data-dir="0,-1" title="Вверх">▲</button>
-          <button class="kbd direction-btn" data-dir="1,-1" title="Вверх-вправо">↗︎</button>
-          <button class="kbd direction-btn" data-dir="-1,0" title="Влево">◀︎</button>
-          <div></div>
-          <button class="kbd direction-btn" data-dir="1,0" title="Вправо">▶︎</button>
-          <button class="kbd direction-btn" data-dir="-1,1" title="Вниз-влево">↙︎</button>
-          <button class="kbd direction-btn" data-dir="0,1" title="Вниз">▼</button>
-          <button class="kbd direction-btn" data-dir="1,1" title="Вниз-вправо">↘︎</button>
+        <div class="direction-controls">
+          <!-- Верхний ряд -->
+          <div class="direction-row">
+            <button class="kbd direction-btn" data-dir="-1,-1" title="Вверх-влево">↖︎</button>
+            <button class="kbd direction-btn" data-dir="0,-1" title="Вверх">▲</button>
+            <button class="kbd direction-btn" data-dir="1,-1" title="Вверх-вправо">↗︎</button>
+          </div>
+          <!-- Средний ряд -->
+          <div class="direction-row">
+            <button class="kbd direction-btn" data-dir="-1,0" title="Влево">◀︎</button>
+            <div class="direction-spacer"></div>
+            <button class="kbd direction-btn" data-dir="1,0" title="Вправо">▶︎</button>
+          </div>
+          <!-- Нижний ряд -->
+          <div class="direction-row">
+            <button class="kbd direction-btn" data-dir="-1,1" title="Вниз-влево">↙︎</button>
+            <button class="kbd direction-btn" data-dir="0,1" title="Вниз">▼</button>
+            <button class="kbd direction-btn" data-dir="1,1" title="Вниз-вправо">↘︎</button>
+          </div>
         </div>
       </div>
 
