@@ -11,13 +11,73 @@
     .card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 16px; }
     label { display: block; font-size: 14px; color: #94a3b8; margin-bottom: 6px; }
     input[type="text"], input[type="range"] { width: 100%; }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #1f2937; border: 1px solid #374151; border-bottom-width: 3px; border-radius: 6px; padding: 2px 6px; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #1f2937; border: 1px solid #374151; border-bottom-width: 3px; border-radius: 6px; padding: 2px 6px; transition: all 0.15s ease; }
+    .kbd:active { transform: scale(0.95); background: #374151; }
+    .direction-btn { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; touch-action: manipulation; }
+    .speed-btn-mobile { min-width: 60px; height: 48px; font-size: 16px; touch-action: manipulation; }
     .status { color: #93c5fd; }
     .err { color: #fca5a5; }
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+
+    /* Мобильная адаптация */
+    @media (max-width: 768px) {
+        body { padding: 12px; }
+        .wrap { max-width: 100%; }
+        .card { padding: 12px; }
+        .direction-btn { width: 56px; height: 56px; font-size: 20px; }
+        .speed-btn-mobile { min-width: 56px; height: 44px; font-size: 15px; }
+            .direction-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 200px; margin: 0 auto; }
+    .speed-controls { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    .status-display { text-align: center; margin-bottom: 16px; }
+    .control-section { margin-bottom: 20px; }
+
+    /* Превью мяча */
+    .ball-preview {
+        width: 100%;
+        max-width: 280px;
+        height: 180px;
+        background: #020617;
+        border-radius: 12px;
+        border: 2px solid #374151;
+        margin: 0 auto 16px;
+        position: relative;
+        overflow: hidden;
+        display: none; /* Скрываем по умолчанию, показываем при подключении */
+    }
+    .preview-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        background: #020617;
+    }
+    .preview-status {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #94a3b8;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+    }
+
+    @media (max-width: 480px) {
+        .direction-btn { width: 48px; height: 48px; font-size: 18px; }
+        .speed-btn-mobile { min-width: 48px; height: 40px; font-size: 14px; }
+        .direction-grid { max-width: 180px; }
+        .ball-preview {
+            max-width: 100%;
+            height: 140px;
+            margin: 0 auto 12px;
+        }
+        .preview-status { font-size: 10px; padding: 3px 6px; }
+    }
   </style>
   <script src="./config.js?v=4"></script>
   <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js" crossorigin="anonymous"></script>
+  <script src="./js/physics.js"></script>
   <script>
     const url = new URL(location.href);
     const sessionId = url.searchParams.get('sid');
@@ -27,6 +87,10 @@
     let hasController = false;
     let keyState = { up:false, down:false, left:false, right:false };
     let mul = 1;
+
+    // Переменные для превью мяча
+    let previewCanvas, previewCtx, previewPhysics;
+    let lastFrameTime = 0;
 
     function emitDirection() {
       const dirX = (keyState.right ? 1 : 0) + (keyState.left ? -1 : 0);
@@ -49,6 +113,118 @@
       else display.textContent = '↔︎ Горизонталь';
     }
     function setMul(m) { mul = m; document.getElementById('speedVal').textContent = 'x' + m; }
+
+    // Инициализация превью мяча
+    function initializeBallPreview() {
+        const previewContainer = document.querySelector('.ball-preview');
+        if (!previewContainer) return;
+
+        // Показываем превью
+        previewContainer.style.display = 'block';
+
+        // Получаем canvas
+        previewCanvas = document.getElementById('previewCanvas');
+        if (!previewCanvas) return;
+
+        previewCtx = previewCanvas.getContext('2d');
+
+        // Устанавливаем размер canvas
+        const rect = previewContainer.getBoundingClientRect();
+        previewCanvas.width = rect.width;
+        previewCanvas.height = rect.height;
+
+        // Инициализируем физику для превью
+        previewPhysics = new BallPhysics();
+        previewPhysics.setWorldSize(previewCanvas.width, previewCanvas.height);
+        previewPhysics.setPosition(previewCanvas.width / 2, previewCanvas.height / 2);
+        previewPhysics.ball.radius = 12; // Меньший размер для превью
+
+        // Запускаем рендеринг превью
+        requestAnimationFrame(renderPreview);
+    }
+
+    // Рендеринг превью мяча
+    function renderPreview(currentTime) {
+        if (!previewCanvas || !previewCtx || !previewPhysics) return;
+
+        const deltaTime = (currentTime - lastFrameTime) / 1000;
+        lastFrameTime = currentTime;
+
+        // Очищаем canvas
+        previewCtx.fillStyle = previewPhysics.colors.bg;
+        previewCtx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+        // Обновляем физику превью
+        if (!previewPhysics.paused && deltaTime > 0 && deltaTime < 1/30) {
+            previewPhysics.updateWithDirection(
+                previewPhysics.lastDir.x,
+                previewPhysics.lastDir.y,
+                previewPhysics.ball.speed,
+                deltaTime
+            );
+        }
+
+        // Рисуем мяч
+        previewCtx.beginPath();
+        previewCtx.arc(previewPhysics.ball.x, previewPhysics.ball.y, previewPhysics.ball.radius, 0, Math.PI * 2);
+        previewCtx.fillStyle = previewPhysics.colors.ball;
+        previewCtx.fill();
+
+        // Обновляем статус превью
+        updatePreviewStatus();
+
+        requestAnimationFrame(renderPreview);
+    }
+
+    // Обновление статуса превью
+    function updatePreviewStatus() {
+        const statusEl = document.querySelector('.preview-status');
+        if (!statusEl) return;
+
+        const speed = previewPhysics.getCurrentSpeed();
+        let statusText = '⏸️ Пауза';
+
+        if (!previewPhysics.paused && speed > 10) {
+            statusText = `▶️ ${Math.round(speed)} ед/с`;
+        } else if (!previewPhysics.paused) {
+            statusText = '⏸️ Стоит';
+        }
+
+        statusEl.textContent = statusText;
+    }
+
+    // Обновление превью при получении данных от сервера
+    function updatePreviewFromServer(ballState) {
+        if (!previewPhysics || !ballState) return;
+
+        // Синхронизируем состояние мяча
+        previewPhysics.ball.x = (ballState.x / 800) * previewCanvas.width; // Масштабируем координаты
+        previewPhysics.ball.y = (ballState.y / 600) * previewCanvas.height;
+
+        if (ballState.speed !== undefined) previewPhysics.ball.speed = ballState.speed;
+        if (ballState.radius !== undefined) previewPhysics.ball.radius = Math.min(ballState.radius * 0.3, 15); // Масштабируем радиус
+        if (ballState.colorBall) previewPhysics.colors.ball = ballState.colorBall;
+        if (ballState.paused !== undefined) previewPhysics.paused = ballState.paused;
+
+        // Синхронизируем направление движения
+        if (ballState.vx !== undefined || ballState.vy !== undefined) {
+            previewPhysics.ball.vx = ballState.vx * 0.5; // Замедляем для превью
+            previewPhysics.ball.vy = ballState.vy * 0.5;
+            const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
+            const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
+            previewPhysics.lastDir = { x: dirX, y: dirY };
+        }
+    }
+
+    // Обработчик изменения размера окна
+    function handleResize() {
+        if (previewCanvas && previewPhysics) {
+            const rect = previewCanvas.parentElement.getBoundingClientRect();
+            previewCanvas.width = rect.width;
+            previewCanvas.height = rect.height;
+            previewPhysics.setWorldSize(previewCanvas.width, previewCanvas.height);
+        }
+    }
     
     function resetSession() {
       socket.emit('control-update', { sessionId, input: { reset: true, pause: true } });
@@ -77,9 +253,48 @@
       emitDirection();
     });
 
-    window.addEventListener('load', () => {
+    // Мобильная вибрация
+    function vibrate(pattern = 50) {
+      if (navigator.vibrate) {
+        navigator.vibrate(pattern);
+      }
+    }
+
+    // Тактильная обратная связь для кнопок
+    function addButtonFeedback() {
+      document.querySelectorAll('.kbd, .btn').forEach(btn => {
+        btn.addEventListener('touchstart', () => {
+          btn.style.transform = 'scale(0.95)';
+          vibrate(30);
+        });
+
+        btn.addEventListener('touchend', () => {
+          btn.style.transform = '';
+        });
+
+        btn.addEventListener('mousedown', () => {
+          btn.style.transform = 'scale(0.95)';
+        });
+
+        btn.addEventListener('mouseup', () => {
+          btn.style.transform = '';
+        });
+
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = '';
+        });
+      });
+    }
+
+            window.addEventListener('load', () => {
       document.getElementById('sessionId').value = sessionId;
       setMul(1);
+
+      // Инициализируем тактильную обратную связь
+      addButtonFeedback();
+
+      // Добавляем обработчик изменения размера окна
+      window.addEventListener('resize', handleResize);
 
       socket.on('connect', () => {
         socket.emit('join-session', { sessionId, role: 'controller' });
@@ -88,6 +303,7 @@
       });
       socket.on('error-message', (msg) => {
         setStatus(`Ошибка: ${msg}`, true);
+        vibrate(200); // Более длительная вибрация при ошибке
         // Clear error after 5 seconds
         setTimeout(() => {
           if (document.getElementById('status').className.includes('err')) {
@@ -95,20 +311,30 @@
           }
         }, 5000);
       });
-      
+
       socket.on('role-update', (data) => {
         hasController = data.hasController;
         setStatus(data.message || (hasController ? 'Вы управляете мячом' : 'Ожидание контроллера...'), false);
+        if (hasController) {
+          vibrate(100); // Короткая вибрация при успешном подключении
+          // Инициализируем превью после успешного подключения
+          setTimeout(() => {
+            initializeBallPreview();
+          }, 500);
+        }
       });
-      socket.on('ball-state', () => {
-        // No canvas on controller; only sends input.
+      socket.on('ball-state', (ballState) => {
+        // Обновляем превью мяча при получении состояния от сервера
+        updatePreviewFromServer(ballState);
       });
       socket.on('session-expired', (data) => {
         alert('Сессия истекла (15 минут). Создайте новую сессию.');
         setStatus(data.message, true);
+        vibrate([200, 100, 200]); // Сигнал тревоги
       });
       socket.on('viewer-joined', (data) => {
         setStatus('Зритель подключился к сессии!', false);
+        vibrate([50, 50, 50]); // Радостный сигнал
         // Show a temporary notification
         setTimeout(() => {
           setStatus('Вы управляете мячом', false);
@@ -116,60 +342,168 @@
       });
       socket.on('viewer-left', (data) => {
         setStatus('Зритель отключился. Сессия сброшена.', true);
+        vibrate([100, 50, 100]); // Предупреждающий сигнал
         // Show a temporary notification
         setTimeout(() => {
           setStatus('Ожидание зрителя...', false);
         }, 3000);
       });
-      // Hook buttons
+
+      // Hook buttons with enhanced feedback
       document.querySelectorAll('[data-dir]').forEach(btn => {
         btn.addEventListener('click', () => {
           const [dx,dy] = btn.getAttribute('data-dir').split(',').map(Number);
           pressDir(dx,dy);
+          vibrate(25); // Короткая вибрация при нажатии кнопки направления
         });
       });
+
+      // Предотвращаем зум на двойном тапе
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+
+      // Поддержка свайпов для управления направлением
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchStartTime = 0;
+      const minSwipeDistance = 50;
+      const maxSwipeTime = 300;
+
+      document.addEventListener('touchstart', function(event) {
+        if (event.touches.length === 1) {
+          touchStartX = event.touches[0].clientX;
+          touchStartY = event.touches[0].clientY;
+          touchStartTime = new Date().getTime();
+        }
+      }, false);
+
+      document.addEventListener('touchend', function(event) {
+        if (event.changedTouches.length === 1) {
+          const touchEndX = event.changedTouches[0].clientX;
+          const touchEndY = event.changedTouches[0].clientY;
+          const touchEndTime = new Date().getTime();
+
+          const deltaX = touchEndX - touchStartX;
+          const deltaY = touchEndY - touchStartY;
+          const deltaTime = touchEndTime - touchStartTime;
+
+          // Проверяем, что это быстрый свайп
+          if (deltaTime <= maxSwipeTime) {
+            const absDeltaX = Math.abs(deltaX);
+            const absDeltaY = Math.abs(deltaY);
+
+            // Определяем направление свайпа
+            if (Math.max(absDeltaX, absDeltaY) > minSwipeDistance) {
+              let direction = '';
+
+              if (absDeltaX > absDeltaY) {
+                // Горизонтальный свайп
+                if (deltaX > 0) {
+                  direction = 'вправо';
+                  pressDir(1, 0); // Вправо
+                } else {
+                  direction = 'влево';
+                  pressDir(-1, 0); // Влево
+                }
+              } else {
+                // Вертикальный свайп
+                if (deltaY > 0) {
+                  direction = 'вниз';
+                  pressDir(0, 1); // Вниз
+                } else {
+                  direction = 'вверх';
+                  pressDir(0, -1); // Вверх
+                }
+              }
+
+              // Показываем обратную связь
+              showSwipeFeedback(direction);
+              vibrate(40); // Вибрация при свайпе
+            }
+          }
+        }
+      }, false);
+
+      // Функция обратной связи для свайпов
+      function showSwipeFeedback(direction) {
+        const display = document.getElementById('directionDisplay');
+        const originalText = display.textContent;
+        const originalColor = display.style.color;
+
+        display.textContent = `👆 Свайп: ${direction}`;
+        display.style.color = '#22c55e';
+        display.style.fontWeight = 'bold';
+
+        setTimeout(() => {
+          display.textContent = originalText;
+          display.style.color = originalColor;
+          display.style.fontWeight = '';
+        }, 1000);
+      }
     });
   </script>
   </head>
   <body>
     <div class="wrap">
-      <h2>Контроллер сессии <span class="kbd" id="sessionId"></span></h2>
-      <p id="status" class="status">Подключение...</p>
+      <!-- Статус сессии -->
+      <div class="status-display">
+        <h2>Контроллер сессии <span class="kbd" id="sessionId"></span></h2>
+        <p id="status" class="status">Подключение...</p>
+      </div>
 
-      <div class="grid">
-        <div class="card">
-          <label>Скорость</label>
-          <div class="row" style="gap:8px; align-items:center">
-            <button class="kbd" onclick="setMul(1)">x1</button>
-            <button class="kbd" onclick="setMul(2)">x2</button>
-            <button class="kbd" onclick="setMul(3)">x3</button>
-            <button class="kbd" onclick="setMul(5)">x5</button>
-            <span id="speedVal" class="status">x1</span>
-          </div>
-        </div>
-        
-        <div class="card">
-          <label>Направление</label>
-          <div id="directionDisplay" class="status">↔︎ Горизонталь (по умолчанию)</div>
-        </div>
+      <!-- Превью мяча -->
+      <div class="ball-preview">
+        <canvas id="previewCanvas" class="preview-canvas"></canvas>
+        <div class="preview-status">⏸️ Ожидание данных...</div>
+      </div>
 
-        <div class="card">
-          <label>Управление</label>
-          <div>Стрелки/WASD и быстрые направления:</div>
-          <div style="display:grid; grid-template-columns:repeat(3,48px); gap:6px; margin-top:8px">
-            <button class="kbd" data-dir="-1,-1">↖︎</button>
-            <button class="kbd" data-dir="0,-1">▲</button>
-            <button class="kbd" data-dir="1,-1">↗︎</button>
-            <button class="kbd" data-dir="-1,0">◀︎</button>
-            <div></div>
-            <button class="kbd" data-dir="1,0">▶︎</button>
-            <button class="kbd" data-dir="-1,1">↙︎</button>
-            <button class="kbd" data-dir="0,1">▼</button>
-            <button class="kbd" data-dir="1,1">↘︎</button>
-          </div>
-          <div style="margin-top:12px">
-            <button class="btn" onclick="resetSession()" style="background:#dc2626; color:white; border:0; padding:8px 12px; border-radius:6px; cursor:pointer;">🔄 Сбросить сессию</button>
-          </div>
+      <!-- Управление направлением -->
+      <div class="card control-section">
+        <label>🎯 Направление движения</label>
+        <div id="directionDisplay" class="status" style="text-align: center; margin-bottom: 16px;">↔︎ Горизонталь (по умолчанию)</div>
+        <div class="direction-grid">
+          <button class="kbd direction-btn" data-dir="-1,-1" title="Вверх-влево">↖︎</button>
+          <button class="kbd direction-btn" data-dir="0,-1" title="Вверх">▲</button>
+          <button class="kbd direction-btn" data-dir="1,-1" title="Вверх-вправо">↗︎</button>
+          <button class="kbd direction-btn" data-dir="-1,0" title="Влево">◀︎</button>
+          <div></div>
+          <button class="kbd direction-btn" data-dir="1,0" title="Вправо">▶︎</button>
+          <button class="kbd direction-btn" data-dir="-1,1" title="Вниз-влево">↙︎</button>
+          <button class="kbd direction-btn" data-dir="0,1" title="Вниз">▼</button>
+          <button class="kbd direction-btn" data-dir="1,1" title="Вниз-вправо">↘︎</button>
+        </div>
+      </div>
+
+      <!-- Управление скоростью -->
+      <div class="card control-section">
+        <label>⚡ Скорость</label>
+        <div class="speed-controls">
+          <button class="kbd speed-btn-mobile" onclick="setMul(1)">x1</button>
+          <button class="kbd speed-btn-mobile" onclick="setMul(2)">x2</button>
+          <button class="kbd speed-btn-mobile" onclick="setMul(3)">x3</button>
+          <button class="kbd speed-btn-mobile" onclick="setMul(5)">x5</button>
+        </div>
+        <div style="text-align: center; margin-top: 8px;">
+          <span id="speedVal" class="status">x1</span>
+        </div>
+      </div>
+
+      <!-- Дополнительные действия -->
+      <div class="card control-section">
+        <label>🔧 Действия</label>
+        <div style="text-align: center;">
+          <button class="btn" onclick="resetSession()" style="background:#dc2626; color:white; border:0; padding:12px 24px; border-radius:8px; cursor:pointer; font-size:16px; min-width: 160px; touch-action: manipulation;">
+            🔄 Сбросить сессию
+          </button>
+        </div>
+        <div style="margin-top:16px; font-size:12px; color:#94a3b8; text-align:center;">
+          👁️ <strong>Превью мяча</strong> • 💡 <strong>Управление:</strong> кнопки • стрелки/WASD • <strong>свайпы</strong> по экрану
         </div>
       </div>
     </div>

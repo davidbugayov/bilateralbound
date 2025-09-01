@@ -138,25 +138,68 @@
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .status-overlay {
-                top: 10px;
-                left: 10px;
-                padding: 10px 15px;
-                font-size: 12px;
+                top: 12px;
+                left: 12px;
+                padding: 12px 18px;
+                font-size: 14px;
+                border-radius: 12px;
+                max-width: calc(100vw - 120px);
             }
-            
+
             .instructions {
-                bottom: 10px;
-                left: 10px;
-                padding: 10px 15px;
-                font-size: 11px;
-                max-width: 250px;
+                bottom: 12px;
+                left: 12px;
+                padding: 12px 18px;
+                font-size: 13px;
+                max-width: calc(100vw - 120px);
+                border-radius: 12px;
             }
-            
+
             .fullscreen-btn {
-                top: 10px;
-                right: 10px;
-                padding: 8px 12px;
-                font-size: 11px;
+                top: 12px;
+                right: 12px;
+                padding: 12px 16px;
+                font-size: 13px;
+                border-radius: 10px;
+                min-width: 140px;
+                touch-action: manipulation;
+                transition: all 0.2s ease;
+            }
+
+            .fullscreen-btn:active {
+                transform: scale(0.95);
+                background: rgba(0, 0, 0, 0.9);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .status-overlay {
+                top: 8px;
+                left: 8px;
+                padding: 10px 14px;
+                font-size: 12px;
+                border-radius: 10px;
+            }
+
+            .instructions {
+                bottom: 8px;
+                left: 8px;
+                padding: 10px 14px;
+                font-size: 12px;
+                border-radius: 10px;
+            }
+
+            .fullscreen-btn {
+                top: 8px;
+                right: 8px;
+                padding: 10px 14px;
+                font-size: 12px;
+                min-width: 120px;
+                border-radius: 8px;
+            }
+
+            .sessionInfo {
+                font-size: 11px !important;
             }
         }
 
@@ -204,10 +247,11 @@
         
         <!-- ===== INSTRUCTIONS ===== -->
         <div class="instructions fade-in">
-            <strong>Управление:</strong><br>
-            • Двойной тап для полноэкранного режима<br>
-            • Прокрутка для масштабирования<br>
-            • Перетаскивание для перемещения
+            <strong>📱 Управление:</strong><br>
+            • <strong>Двойной тап</strong> - полноэкранный режим<br>
+            • <strong>Прокрутка</strong> - масштабирование вида<br>
+            • <strong>Перетаскивание</strong> - перемещение по сцене<br>
+            <span id="mobileHint" style="font-size: 11px; opacity: 0.8; display: block; margin-top: 4px;">💡 Используйте контроллер для управления движением</span>
         </div>
         
         <!-- ===== FULLSCREEN BUTTON ===== -->
@@ -554,6 +598,11 @@
         
         // ===== FULLSCREEN =====
         function toggleFullscreen() {
+            // Тактильная обратная связь
+            if (navigator.vibrate) {
+                navigator.vibrate(30);
+            }
+
             if (!isFullscreen) {
                 if (document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen();
@@ -572,6 +621,42 @@
                 }
             }
         }
+
+        // ===== MOBILE ENHANCEMENTS =====
+        function enhanceMobileUX() {
+            // Предотвращаем зум при двойном тапе
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            // Улучшенная кнопка полноэкранного режима
+            const fullscreenBtn = document.querySelector('.fullscreen-btn');
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.95)';
+                    this.style.background = 'rgba(0, 0, 0, 0.9)';
+                });
+
+                fullscreenBtn.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                    this.style.background = 'rgba(0, 0, 0, 0.8)';
+                });
+            }
+
+            // Обновляем текст кнопки полноэкранного режима
+            document.addEventListener('fullscreenchange', function() {
+                isFullscreen = !!document.fullscreenElement || !!document.webkitFullscreenElement || !!document.msFullscreenElement;
+                const btn = document.querySelector('.fullscreen-btn');
+                if (btn) {
+                    btn.textContent = isFullscreen ? '⛶ Выйти' : '⛶ Полноэкранный';
+                }
+            });
+        }
         
         // ===== EVENT LISTENERS =====
         // Добавляем event listeners только после инициализации
@@ -579,40 +664,56 @@
             if (window) {
                 window.addEventListener('resize', resizeCanvas);
             }
-            
+
             if (document) {
-                document.addEventListener('fullscreenchange', function() {
-                    isFullscreen = !!document.fullscreenElement;
-                    const btn = document.querySelector('.fullscreen-btn');
-                    if (btn) {
-                        btn.textContent = isFullscreen ? '⛶ Выйти' : '⛶ Полноэкранный';
-                    }
-                });
-                
+                // Мобильные улучшения
+                enhanceMobileUX();
+
                 // Предотвращаем зум на мобильных устройствах
                 document.addEventListener('gesturestart', function(event) {
                     event.preventDefault();
                 });
-                
+
                 document.addEventListener('gesturechange', function(event) {
                     event.preventDefault();
                 });
-                
+
                 document.addEventListener('gestureend', function(event) {
                     event.preventDefault();
                 });
             }
         }
         
-        // Двойной тап для полноэкранного режима
+        // Двойной тап для полноэкранного режима с улучшенной обратной связью
         let lastTap = 0;
+        let tapCount = 0;
         if (canvas) {
             canvas.addEventListener('touchend', function(event) {
                 const currentTime = new Date().getTime();
                 const tapLength = currentTime - lastTap;
+
                 if (tapLength < 500 && tapLength > 0) {
-                    event.preventDefault();
-                    toggleFullscreen();
+                    tapCount++;
+                    if (tapCount === 2) {
+                        event.preventDefault();
+                        toggleFullscreen();
+
+                        // Показываем уведомление о двойном тапе
+                        const hint = document.getElementById('mobileHint');
+                        if (hint) {
+                            const originalText = hint.textContent;
+                            hint.textContent = '✅ Полноэкранный режим активирован!';
+                            hint.style.color = '#22c55e';
+                            setTimeout(() => {
+                                hint.textContent = originalText;
+                                hint.style.color = '';
+                            }, 2000);
+                        }
+
+                        tapCount = 0;
+                    }
+                } else {
+                    tapCount = 1;
                 }
                 lastTap = currentTime;
             });
