@@ -368,11 +368,15 @@ app.post('/api/session/:sessionId/controller/update', (req, res) => {
     const { sessionId } = req.params;
     const session = sessions.get(sessionId);
 
+    console.log(`🎮 Controller update request for session: ${sessionId}, body:`, req.body);
+
     if (!session) {
+      console.log(`❌ Session not found: ${sessionId}`);
       return res.status(404).json({ error: 'Session not found' });
     }
 
     if (!session.controllerId) {
+      console.log(`❌ Controller not connected to session: ${sessionId}`);
       return res.status(403).json({ error: 'Controller not connected' });
     }
 
@@ -429,6 +433,7 @@ app.post('/api/session/:sessionId/controller/update', (req, res) => {
     }
     
     session.lastActivity = Date.now();
+    console.log(`✅ Ball state updated for session: ${sessionId}`);
     res.json({ success: true, message: 'Ball state updated' });
   } catch (error) {
     console.error('Error updating ball state:', error);
@@ -437,14 +442,20 @@ app.post('/api/session/:sessionId/controller/update', (req, res) => {
 });
 
 io.on('connection', (socket) => {
+  console.log(`🔌 New WebSocket connection: ${socket.id}`);
+
   socket.on('join-session', ({ sessionId, role }) => {
+    console.log(`👤 Join session attempt: sessionId=${sessionId}, role=${role}, socketId=${socket.id}`);
+
     // Enhanced session joining with better error handling
     if (!sessionId || typeof sessionId !== 'string') {
+      console.log(`❌ Invalid sessionId: ${sessionId}`);
       socket.emit('error-message', 'Неверный ID сессии');
       return;
     }
-    
+
     if (!role || !['controller', 'viewer'].includes(role)) {
+      console.log(`❌ Invalid role: ${role}`);
       socket.emit('error-message', 'Неверная роль. Допустимые роли: controller, viewer');
       return;
     }
@@ -465,7 +476,7 @@ io.on('connection', (socket) => {
       };
       
       sessions.set(sessionId, newSession);
-      console.log(`New session created: ${sessionId} (paused by default)`);
+      console.log(`🆕 New session created: ${sessionId} (paused by default)`);
     }
     
     const session = sessions.get(sessionId);
@@ -479,57 +490,68 @@ io.on('connection', (socket) => {
       
       if (role === 'controller') {
         // Controller joining logic
+        console.log(`🎮 Controller joining session: ${sessionId}`);
         if (session.controllerId && session.controllerId !== socket.id) {
+          console.log(`❌ Controller already connected to session: ${sessionId}`);
           socket.emit('error-message', 'Контроллер уже подключен к этой сессии');
           return;
         }
-        
+
         session.controllerId = socket.id;
         session.lastActivity = Date.now();
-        
+        console.log(`✅ Controller connected to session: ${sessionId}, socketId: ${socket.id}`);
+
         // Send current ball state to controller
-        socket.emit('ball-state', { 
-          ...session.ball, 
+        socket.emit('ball-state', {
+          ...session.ball,
           radius: session.ball.radius,
           colorBall: session.colors?.ball,
           colorBg: session.colors?.bg,
           width: session.world?.width,
           height: session.world?.height
         });
-        
+        console.log(`📤 Sent ball state to controller: ${sessionId}`);
+
         // Notify all participants about controller joining
-        io.to(sessionId).emit('role-update', { 
+        io.to(sessionId).emit('role-update', {
           hasController: true,
           message: 'Контроллер подключился к сессии'
         });
-        
-        console.log(`Controller joined session: ${sessionId}`);
+        console.log(`📢 Notified all participants about controller joining: ${sessionId}`);
         
       } else {
         // Viewer joining logic
-        socket.emit('ball-state', { 
+        console.log(`👁️ Viewer joining session: ${sessionId}`);
+
+        socket.emit('ball-state', {
           ...session.ball,
           colorBall: session.colors?.ball,
           colorBg: session.colors?.bg,
           width: session.world?.width,
           height: session.world?.height
         });
-        
-        socket.emit('role-update', { 
+        console.log(`📤 Sent ball state to viewer: ${sessionId}`);
+
+        socket.emit('role-update', {
           hasController: !!session.controllerId,
           message: session.controllerId ? 'Контроллер активен' : 'Ожидание контроллера'
         });
-        
+        console.log(`📢 Sent role update to viewer: ${sessionId}, hasController: ${!!session.controllerId}`);
+
         // Notify controller that viewer has joined
         if (session.controllerId) {
-          io.to(session.controllerId).emit('viewer-joined', { 
+          io.to(session.controllerId).emit('viewer-joined', {
             message: 'Зритель подключился к сессии',
             sessionId: sessionId
           });
+          console.log(`📢 Notified controller about viewer joining: ${sessionId}`);
+        } else {
+          console.log(`⚠️ No controller connected to notify about viewer: ${sessionId}`);
         }
-        
+
         // Mark that viewer has joined (reset 5-minute timer)
         session.viewerJoined = true;
+        console.log(`✅ Viewer connected to session: ${sessionId}, socketId: ${socket.id}`);
         session.lastActivity = Date.now();
         
         console.log(`Viewer joined session: ${sessionId}`);
@@ -596,13 +618,17 @@ io.on('connection', (socket) => {
   });
 
   socket.on('control-update', ({ sessionId, input }) => {
+    console.log(`🎮 Control update received: session=${sessionId}, input=`, input);
+
     // Enhanced input validation and error handling
     if (!sessionId || typeof sessionId !== 'string') {
+      console.log(`❌ Invalid sessionId: ${sessionId}`);
       socket.emit('error-message', 'Неверный ID сессии');
       return;
     }
-    
+
     if (!input || typeof input !== 'object') {
+      console.log(`❌ Invalid input data:`, input);
       socket.emit('error-message', 'Неверные данные управления');
       return;
     }
@@ -779,6 +805,8 @@ io.on('connection', (socket) => {
         height: session.world?.height
       });
     }
+
+    console.log(`✅ Control update processed for session: ${sessionId}`);
   });
 
   // Enhanced server-side tick with better error handling and performance monitoring
