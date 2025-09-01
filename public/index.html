@@ -868,23 +868,42 @@
         transform: translateY(0);
       }
 
-      .control-btn.start {
-        background: #10b981;
-        color: white;
-      }
+          .control-btn.start {
+      background: #10b981;
+      color: white;
+    }
 
-      .control-btn.start:hover {
-        background: #059669;
-      }
+    .control-btn.start:hover {
+      background: #059669;
+    }
 
-      .control-btn.stop {
-        background: #f59e0b;
-        color: white;
-      }
+    .control-btn.stop {
+      background: #f59e0b;
+      color: white;
+    }
 
-      .control-btn.stop:hover {
-        background: #d97706;
-      }
+    .control-btn.stop:hover {
+      background: #d97706;
+    }
+
+    .control-btn.toggle {
+      background: #10b981;
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .control-btn.toggle:hover {
+      background: #059669;
+      transform: scale(1.05);
+    }
+
+    .control-btn.toggle.stop {
+      background: #f59e0b;
+    }
+
+    .control-btn.toggle.stop:hover {
+      background: #d97706;
+    }
 
       .control-btn.reset {
         background: transparent;
@@ -1011,9 +1030,8 @@
             <button class="btn direction-btn" onclick="setDir('vertical')" style="background: #60a5fa; min-width: 140px; padding: 12px 16px;">↕️ Вертикально</button>
             <button class="btn direction-btn" onclick="setDir('diagRL')" style="background: #60a5fa; min-width: 180px; padding: 12px 16px;">↖️↗️ Диагональ L→R</button>
             <button class="btn direction-btn" onclick="setDir('diagRLL')" style="background: #60a5fa; min-width: 180px; padding: 12px 16px;">↙️↘️ Диагональ R→L</button>
-            <button class="btn" onclick="resumePlay()" style="background: #10b981; min-width: 110px; padding: 12px 16px;">▶️ Старт</button>
-            <button class="btn" onclick="pausePlay()" style="background: #f59e0b; min-width: 110px; padding: 12px 16px;">⏸ Стоп</button>
-            <button class="btn outline" onclick="resetCenter()" style="min-width: 110px; padding: 12px 16px;">🎯 Центр</button>
+                          <button class="btn" onclick="togglePlayPause()" id="desktopToggleBtn" style="background: #10b981; min-width: 110px; padding: 12px 16px;">▶️ Старт</button>
+              <button class="btn outline" onclick="resetCenter()" style="min-width: 110px; padding: 12px 16px;">🎯 Центр</button>
             <button class="btn" onclick="resetSession()" style="background: #dc2626; min-width: 110px; padding: 12px 16px;">🔄 Сброс</button>
           </div>
           <p style="text-align: center; margin: 12px 0; font-size: 14px; color: #9ca3af;">
@@ -1091,13 +1109,9 @@
               </button>
             </div>
             <div class="control-row">
-              <button class="control-btn start" onclick="resumePlay()">
-                <span>▶️</span>
-                <span>Старт</span>
-              </button>
-              <button class="control-btn stop" onclick="pausePlay()">
-                <span>⏸️</span>
-                <span>Стоп</span>
+              <button class="control-btn toggle" onclick="togglePlayPause()" id="toggleBtn">
+                <span id="toggleIcon">▶️</span>
+                <span id="toggleText">Старт</span>
               </button>
               <button class="control-btn reset" onclick="resetCenter()">
                 <span>🎯</span>
@@ -1832,35 +1846,73 @@
       }).catch(error => console.error('Error setting ball size:', error));
     }
 
-    function resumePlay(){
+    // Глобальная переменная для отслеживания состояния воспроизведения
+    let isPlaying = false;
+
+    function togglePlayPause(){
       const sessionId = window.__current?.sessionId;
       if (!sessionId) return;
 
-      const speedVal = Number(document.getElementById('speedRange')?.value || 40);
-
-      // Отправляем команду на сервер - локальная физика обновится через polling
-      fetch(`/api/session/${sessionId}/controller/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resume: true,
-          speedScalar: speedVal,
-          dirX: lastDir.x,
-          dirY: lastDir.y
-        })
-      }).catch(error => console.error('Error resuming:', error));
+      if (!isPlaying) {
+        // Запускаем воспроизведение
+        const speedVal = Number(document.getElementById('speedRange')?.value || 40);
+        
+        fetch(`/api/session/${sessionId}/controller/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resume: true,
+            speedScalar: speedVal,
+            dirX: lastDir.x,
+            dirY: lastDir.y
+          })
+        }).catch(error => console.error('Error resuming:', error));
+        
+        isPlaying = true;
+        updateToggleButton();
+      } else {
+        // Останавливаем воспроизведение
+        fetch(`/api/session/${sessionId}/controller/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pause: true })
+        }).catch(error => console.error('Error pausing:', error));
+        
+        isPlaying = false;
+        updateToggleButton();
+      }
     }
 
-    function pausePlay(){
-      const sessionId = window.__current?.sessionId;
-      if (!sessionId) return;
-
-      // Отправляем команду на сервер - локальная физика обновится через polling
-      fetch(`/api/session/${sessionId}/controller/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pause: true })
-      }).catch(error => console.error('Error pausing:', error));
+    function updateToggleButton() {
+      // Обновляем мобильную кнопку
+      const toggleIcon = document.getElementById('toggleIcon');
+      const toggleText = document.getElementById('toggleText');
+      const toggleBtn = document.getElementById('toggleBtn');
+      
+      // Обновляем десктопную кнопку
+      const desktopToggleBtn = document.getElementById('desktopToggleBtn');
+      
+      if (isPlaying) {
+        // Состояние "Стоп"
+        if (toggleIcon) toggleIcon.textContent = '⏸️';
+        if (toggleText) toggleText.textContent = 'Стоп';
+        if (toggleBtn) toggleBtn.classList.remove('start');
+        if (toggleBtn) toggleBtn.classList.add('stop');
+        if (desktopToggleBtn) {
+          desktopToggleBtn.textContent = '⏸ Стоп';
+          desktopToggleBtn.style.background = '#f59e0b';
+        }
+      } else {
+        // Состояние "Старт"
+        if (toggleIcon) toggleIcon.textContent = '▶️';
+        if (toggleText) toggleText.textContent = 'Старт';
+        if (toggleBtn) toggleBtn.classList.remove('stop');
+        if (toggleBtn) toggleBtn.classList.add('start');
+        if (desktopToggleBtn) {
+          desktopToggleBtn.textContent = '▶️ Старт';
+          desktopToggleBtn.style.background = '#10b981';
+        }
+      }
     }
 
     function copy(id) {
@@ -2339,7 +2391,7 @@
         setDir('horizontal');
       } else if (e.key === ' ') {
         e.preventDefault();
-        pausePlay();
+        togglePlayPause();
       } else if (e.key === 'r' || e.key === 'R') {
         e.preventDefault();
         resetCenter();
