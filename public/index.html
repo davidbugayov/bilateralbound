@@ -639,7 +639,7 @@
       .mobile-controls {
         display: flex !important;
         flex-direction: column;
-        gap: 8px;
+        gap: 4px;
         width: 100%;
       }
 
@@ -647,14 +647,14 @@
       .mobile-controls .control-section {
         background: #1e293b;
         border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 6px;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 4px;
       }
 
       .mobile-controls .control-section h3 {
-        margin: 0 0 8px 0;
-        font-size: 14px;
+        margin: 0 0 6px 0;
+        font-size: 13px;
         font-weight: 600;
         color: #e2e8f0;
       }
@@ -663,19 +663,19 @@
       .mobile-controls .color-palette {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin-top: 8px;
+        gap: 6px;
+        margin-top: 6px;
       }
 
       .mobile-controls .color-palette button {
-        height: 44px;
-        padding: 4px 2px;
-        font-size: 10px;
+        height: 40px;
+        padding: 3px 2px;
+        font-size: 9px;
         font-weight: 600;
-        border-radius: 6px;
+        border-radius: 5px;
         border: 2px solid transparent;
         color: white;
-        min-height: 36px; /* Уменьшен минимум для touch */
+        min-height: 32px; /* Уменьшен минимум для touch */
         touch-action: manipulation;
         transition: all 0.2s ease;
         display: flex;
@@ -702,8 +702,8 @@
       .mobile-controls .bg-palette {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin-top: 8px;
+        gap: 6px;
+        margin-top: 6px;
       }
 
       .mobile-controls .bg-palette button {
@@ -735,21 +735,26 @@
       .mobile-controls .size-palette {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
+        gap: 6px;
         margin-top: 8px;
       }
 
       .mobile-controls .size-palette button {
-        padding: 8px 6px;
-        font-size: 12px;
+        padding: 6px 4px;
+        font-size: 11px;
         font-weight: 600;
-        border-radius: 8px;
+        border-radius: 6px;
         border: 2px solid #374151;
         background: #374151;
         color: #e2e8f0;
-        min-height: 40px; /* Уменьшен минимум для touch */
+        min-height: 36px; /* Уменьшен минимум для touch */
         touch-action: manipulation;
         transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
       }
 
       .mobile-controls .size-palette button:hover {
@@ -780,24 +785,25 @@
       }
 
       .size-dot.small {
+        width: 8px;
+        height: 8px;
+      }
+
+      .size-dot.medium {
         width: 12px;
         height: 12px;
       }
 
-      .size-dot.medium {
+      .size-dot.large {
         width: 16px;
         height: 16px;
       }
 
-      .size-dot.large {
-        width: 20px;
-        height: 20px;
-      }
-
       .size-label {
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 500;
         text-align: center;
+        line-height: 1.0;
       }
 
       /* Стили для превью цветов */
@@ -1136,27 +1142,27 @@
             <h3>🎨 Цвет шарика</h3>
             <div class="color-palette">
               <button class="color-btn" data-color="#60a5fa" style="background: #60a5fa;" onclick="setBallColor('#60a5fa')" title="Синий">
-                <div class="color-preview" style="width: 16px; height: 16px; background: #60a5fa; border-radius: 50%; margin-bottom: 2px;"></div>
+                <div class="color-preview" style="width: 14px; height: 14px; background: #60a5fa; border-radius: 50%; margin-bottom: 1px;"></div>
                 <span class="color-label">Синий</span>
               </button>
               <button class="color-btn" data-color="#ef4444" style="background: #ef4444;" onclick="setBallColor('#ef4444')" title="Красный">
-                <div class="color-preview" style="width: 16px; height: 16px; background: #ef4444; border-radius: 50%; margin-bottom: 2px;"></div>
+                <div class="color-preview" style="width: 14px; height: 14px; background: #ef4444; border-radius: 50%; margin-bottom: 1px;"></div>
                 <span class="color-label">Красный</span>
               </button>
               <button class="color-btn" data-color="#10b981" style="background: #10b981;" onclick="setBallColor('#10b981')" title="Зеленый">
-                <div class="color-preview" style="width: 16px; height: 16px; background: #10b981; border-radius: 50%; margin-bottom: 2px;"></div>
+                <div class="color-preview" style="width: 14px; height: 14px; background: #10b981; border-radius: 50%; margin-bottom: 1px;"></div>
                 <span class="color-label">Зеленый</span>
               </button>
               <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" onclick="setBallColor('#f59e0b')" title="Оранжевый">
-                <div class="color-preview" style="width: 16px; height: 16px; background: #f59e0b; border-radius: 50%; margin-bottom: 2px;"></div>
+                <div class="color-preview" style="width: 14px; height: 14px; background: #f59e0b; border-radius: 50%; margin-bottom: 1px;"></div>
                 <span class="color-label">Оранжевый</span>
               </button>
               <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="setBallColor('#8b5cf6')" title="Фиолетовый">
-                <div class="color-preview" style="width: 16px; height: 16px; background: #8b5cf6; border-radius: 50%; margin-bottom: 2px;"></div>
+                <div class="color-preview" style="width: 14px; height: 14px; background: #8b5cf6; border-radius: 50%; margin-bottom: 1px;"></div>
                 <span class="color-label">Фиолетовый</span>
               </button>
               <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="setBallColor('#f97316')" title="Коралловый">
-                <div class="color-preview" style="width: 16px; height: 16px; background: #f97316; border-radius: 50%; margin-bottom: 2px;"></div>
+                <div class="color-preview" style="width: 14px; height: 14px; background: #f97316; border-radius: 50%; margin-bottom: 1px;"></div>
                 <span class="color-label">Коралловый</span>
               </button>
             </div>
@@ -1169,19 +1175,19 @@
                 <div class="size-preview">
                   <div class="size-dot small"></div>
                 </div>
-                <span class="size-label">Маленький</span>
+                <span class="size-label">Мал.</span>
               </button>
               <button class="size-btn active" data-size="40" onclick="setBallSize(40)" title="Средний (40px)">
                 <div class="size-preview">
                   <div class="size-dot medium"></div>
                 </div>
-                <span class="size-label">Средний</span>
+                <span class="size-label">Сред.</span>
               </button>
               <button class="size-btn" data-size="80" onclick="setBallSize(80)" title="Большой (80px)">
                 <div class="size-preview">
                   <div class="size-dot large"></div>
                 </div>
-                <span class="size-label">Большой</span>
+                <span class="size-label">Бол.</span>
               </button>
             </div>
           </div>
