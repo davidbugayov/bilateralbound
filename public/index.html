@@ -841,6 +841,32 @@
         transform: scale(1.05);
       }
 
+      /* Стили для ссылки зрителя в мобильной версии */
+      .mobile-controls .viewer-link-container {
+        margin-top: 8px;
+      }
+
+      .mobile-controls .viewer-link-container .link-input-group {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .mobile-controls .viewer-link-container input {
+        flex: 1;
+        min-width: 200px;
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+
+      .mobile-controls .viewer-link-container .copy-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+        min-width: 80px;
+      }
+
       /* Улучшенная палитра размеров */
       .mobile-controls .size-palette {
         display: grid;
@@ -1203,6 +1229,15 @@
         <!-- Мобильные элементы управления (видны только на мобильных) -->
         <div class="mobile-controls" style="display: none;">
           <div class="control-section">
+            <h3>🔗 Ссылка для зрителя</h3>
+            <div class="viewer-link-container">
+              <div class="link-input-group">
+                <input id="mobileView" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
+                <button onclick="copy('mobileView')" class="copy-btn">📋 Копировать</button>
+              </div>
+            </div>
+          </div>
+          <div class="control-section">
             <h3>🎮 Управление</h3>
             <div class="control-row">
               <button class="big-btn direction-btn" onclick="mobileSetDir('horizontal')" data-dir="horizontal">
@@ -1347,9 +1382,11 @@
 
         // Безопасно обновляем элементы, проверяя их существование
         const viewInput = document.getElementById('view');
+        const mobileViewInput = document.getElementById('mobileView');
         const curSid = document.getElementById('curSid');
 
         if (viewInput) viewInput.value = viewerLink;
+        if (mobileViewInput) mobileViewInput.value = viewerLink;
         if (curSid) curSid.textContent = sessionId;
 
         // Подключаем контроллер к сессии
