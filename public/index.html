@@ -639,7 +639,7 @@
       .mobile-controls {
         display: flex !important;
         flex-direction: column;
-        gap: 16px;
+        gap: 8px;
         width: 100%;
       }
 
@@ -648,13 +648,13 @@
         background: #1e293b;
         border: 1px solid #334155;
         border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 8px;
+        padding: 12px;
+        margin-bottom: 6px;
       }
 
       .mobile-controls .control-section h3 {
-        margin: 0 0 12px 0;
-        font-size: 16px;
+        margin: 0 0 8px 0;
+        font-size: 14px;
         font-weight: 600;
         color: #e2e8f0;
       }
@@ -663,28 +663,28 @@
       .mobile-controls .color-palette {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        gap: 8px;
         margin-top: 8px;
       }
 
       .mobile-controls .color-palette button {
-        height: 56px;
-        padding: 8px 4px;
-        font-size: 13px;
+        height: 44px;
+        padding: 4px 2px;
+        font-size: 10px;
         font-weight: 600;
-        border-radius: 8px;
+        border-radius: 6px;
         border: 2px solid transparent;
         color: white;
-        min-height: 44px; /* Минимум для touch */
+        min-height: 36px; /* Уменьшен минимум для touch */
         touch-action: manipulation;
         transition: all 0.2s ease;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 4px;
+        gap: 1px;
         text-align: center;
-        line-height: 1.2;
+        line-height: 1.0;
       }
 
       .mobile-controls .color-palette button:hover {
@@ -702,19 +702,19 @@
       .mobile-controls .bg-palette {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        gap: 8px;
         margin-top: 8px;
       }
 
       .mobile-controls .bg-palette button {
-        height: 48px;
-        padding: 8px;
-        font-size: 14px;
+        height: 40px;
+        padding: 6px;
+        font-size: 12px;
         font-weight: 600;
         border-radius: 8px;
         border: 1px solid #374151;
         color: #e2e8f0;
-        min-height: 44px;
+        min-height: 36px;
         touch-action: manipulation;
         transition: all 0.2s ease;
         text-align: center;
@@ -735,19 +735,19 @@
       .mobile-controls .size-palette {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        gap: 8px;
         margin-top: 8px;
       }
 
       .mobile-controls .size-palette button {
-        padding: 12px 8px;
-        font-size: 14px;
+        padding: 8px 6px;
+        font-size: 12px;
         font-weight: 600;
         border-radius: 8px;
         border: 2px solid #374151;
         background: #374151;
         color: #e2e8f0;
-        min-height: 44px; /* Минимум для touch */
+        min-height: 40px; /* Уменьшен минимум для touch */
         touch-action: manipulation;
         transition: all 0.2s ease;
       }
@@ -795,7 +795,7 @@
       }
 
       .size-label {
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 500;
         text-align: center;
       }
@@ -1091,21 +1091,21 @@
             <div class="control-row">
               <button class="big-btn direction-btn" onclick="mobileSetDir('horizontal')" data-dir="horizontal">
                 <span class="direction-icon">↔️</span>
-                <span class="direction-text">Горизонтально</span>
+                <span class="direction-text">Гориз.</span>
               </button>
               <button class="big-btn direction-btn" onclick="mobileSetDir('vertical')" data-dir="vertical">
                 <span class="direction-icon">↕️</span>
-                <span class="direction-text">Вертикально</span>
+                <span class="direction-text">Верт.</span>
               </button>
             </div>
             <div class="control-row">
               <button class="big-btn direction-btn" onclick="mobileSetDir('diagLR')" data-dir="diagLR">
-                <span class="direction-icon">↗️↘️</span>
-                <span class="direction-text">Диагональ</span>
+                <span class="direction-icon">↗️</span>
+                <span class="direction-text">Диаг.1</span>
               </button>
               <button class="big-btn direction-btn" onclick="mobileSetDir('diagRL')" data-dir="diagRL">
-                <span class="direction-icon">↖️↙️</span>
-                <span class="direction-text">Диагональ</span>
+                <span class="direction-icon">↖️</span>
+                <span class="direction-text">Диаг.2</span>
               </button>
             </div>
             <div class="control-row">
@@ -1136,27 +1136,27 @@
             <h3>🎨 Цвет шарика</h3>
             <div class="color-palette">
               <button class="color-btn" data-color="#60a5fa" style="background: #60a5fa;" onclick="setBallColor('#60a5fa')" title="Синий">
-                <div class="color-preview" style="width: 20px; height: 20px; background: #60a5fa; border-radius: 50%; margin-bottom: 4px;"></div>
+                <div class="color-preview" style="width: 16px; height: 16px; background: #60a5fa; border-radius: 50%; margin-bottom: 2px;"></div>
                 <span class="color-label">Синий</span>
               </button>
               <button class="color-btn" data-color="#ef4444" style="background: #ef4444;" onclick="setBallColor('#ef4444')" title="Красный">
-                <div class="color-preview" style="width: 20px; height: 20px; background: #ef4444; border-radius: 50%; margin-bottom: 4px;"></div>
+                <div class="color-preview" style="width: 16px; height: 16px; background: #ef4444; border-radius: 50%; margin-bottom: 2px;"></div>
                 <span class="color-label">Красный</span>
               </button>
               <button class="color-btn" data-color="#10b981" style="background: #10b981;" onclick="setBallColor('#10b981')" title="Зеленый">
-                <div class="color-preview" style="width: 20px; height: 20px; background: #10b981; border-radius: 50%; margin-bottom: 4px;"></div>
+                <div class="color-preview" style="width: 16px; height: 16px; background: #10b981; border-radius: 50%; margin-bottom: 2px;"></div>
                 <span class="color-label">Зеленый</span>
               </button>
               <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" onclick="setBallColor('#f59e0b')" title="Оранжевый">
-                <div class="color-preview" style="width: 20px; height: 20px; background: #f59e0b; border-radius: 50%; margin-bottom: 4px;"></div>
+                <div class="color-preview" style="width: 16px; height: 16px; background: #f59e0b; border-radius: 50%; margin-bottom: 2px;"></div>
                 <span class="color-label">Оранжевый</span>
               </button>
               <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="setBallColor('#8b5cf6')" title="Фиолетовый">
-                <div class="color-preview" style="width: 20px; height: 20px; background: #8b5cf6; border-radius: 50%; margin-bottom: 4px;"></div>
+                <div class="color-preview" style="width: 16px; height: 16px; background: #8b5cf6; border-radius: 50%; margin-bottom: 2px;"></div>
                 <span class="color-label">Фиолетовый</span>
               </button>
               <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="setBallColor('#f97316')" title="Коралловый">
-                <div class="color-preview" style="width: 20px; height: 20px; background: #f97316; border-radius: 50%; margin-bottom: 4px;"></div>
+                <div class="color-preview" style="width: 16px; height: 16px; background: #f97316; border-radius: 50%; margin-bottom: 2px;"></div>
                 <span class="color-label">Коралловый</span>
               </button>
             </div>
