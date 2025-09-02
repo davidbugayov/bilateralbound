@@ -255,6 +255,30 @@ class BilateralBoundServer {
       }
     });
 
+    // Controller update (for sending control commands)
+    this.app.post('/api/session/:sessionId/controller/update', (req, res) => {
+      try {
+        const { sessionId } = req.params;
+        const session = sessionManager.getSession(sessionId);
+
+        if (!session) {
+          return res.status(404).json({ error: 'Session not found' });
+        }
+
+        // Обновляем состояние мяча на основе команд от контроллера
+        const updates = req.body;
+        if (Object.keys(updates).length > 0) {
+          sessionManager.updateBallState(sessionId, updates);
+          logger.logSession(sessionId, `Controller update: ${JSON.stringify(updates)}`);
+        }
+
+        res.json({ success: true, message: 'Controller update processed' });
+      } catch (error) {
+        logger.error('Error updating controller:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
     // Bounce sync from client
     this.app.post('/api/session/:sessionId/bounce', (req, res) => {
       try {

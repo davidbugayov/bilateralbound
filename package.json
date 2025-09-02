@@ -16,6 +16,7 @@
     "test:lint": "echo '✅ No linter configured yet'",
     "test:full": "npm run test && npm run health-test",
     "test:all": "node run-all-tests.js",
+    "test:comprehensive": "node test-comprehensive.js",
     "test:sync": "node test-latency-sync.js",
     "test:basic": "node test-basic-sync.js",
     "test:speed": "node test-simple-speed.js",
