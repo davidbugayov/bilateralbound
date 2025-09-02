@@ -1326,48 +1326,7 @@
 
 
 
-            if (sessionData.y !== undefined) {
-              window.__previewPhysics.ball.y = sessionData.y;
-            }
 
-            // Синхронизируем направление движения (только если прошло достаточно времени)
-            if (shouldSyncSpeed && (sessionData.vx !== undefined || sessionData.vy !== undefined)) {
-              // Вычисляем направление из серверных данных
-              const dirX = sessionData.vx === 0 ? 0 : (sessionData.vx > 0 ? 1 : -1);
-              const dirY = sessionData.vy === 0 ? 0 : (sessionData.vy > 0 ? 1 : -1);
-
-              // Обновляем только направление, скорость пусть рассчитывается локально
-              window.__previewPhysics.lastDir = { x: dirX, y: dirY };
-
-              // Если скорость нулевая, останавливаем мяч
-              if (sessionData.vx === 0 && sessionData.vy === 0) {
-                window.__previewPhysics.ball.vx = 0;
-                window.__previewPhysics.ball.vy = 0;
-              }
-            }
-
-            // Синхронизируем другие параметры
-            if (sessionData.speed !== undefined) {
-              window.__previewPhysics.ball.speed = sessionData.speed;
-            }
-            if (sessionData.radius !== undefined) {
-              window.__previewPhysics.ball.radius = sessionData.radius;
-            }
-
-            // Управляем паузой
-            const isMoving = sessionData.vx !== 0 || sessionData.vy !== 0;
-            window.__previewPhysics.paused = !isMoving;
-
-            // Обновляем направление
-            if (sessionData.vx !== undefined && sessionData.vy !== undefined) {
-              const dirX = sessionData.vx === 0 ? 0 : (sessionData.vx > 0 ? 1 : -1);
-              const dirY = sessionData.vy === 0 ? 0 : (sessionData.vy > 0 ? 1 : -1);
-              window.__previewPhysics.lastDir = { x: dirX, y: dirY };
-            }
-
-            // Обновляем информацию о вьювере
-            updateViewerInfo(sessionData);
-          }
         },
         onSessionExpired: () => {
           console.log('Preview session expired');
