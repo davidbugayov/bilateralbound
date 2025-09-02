@@ -1315,7 +1315,7 @@
       // Используем speedManager для получения текущей скорости
       const speedVal = speedManager.getCurrentSpeed();
 
-      fetch(`/api/session/${sessionId}/controller/connect`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1357,7 +1357,7 @@
         );
       }
 
-      fetch(`/api/session/${sessionId}/controller/connect`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reset: true })
@@ -1367,7 +1367,7 @@
     function resetSession(){
       const sessionId = window.__current?.sessionId;
       if (sessionId) {
-        fetch(`/api/session/${sessionId}/controller/connect`, {
+        fetch(`/api/session/${sessionId}/controller/update`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reset: true, pause: true })
@@ -1406,7 +1406,7 @@
       const sessionId = window.__current?.sessionId;
       if (!sessionId) return;
 
-      fetch(`/api/session/${sessionId}/controller/connect`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ colorBall: color })
@@ -1428,7 +1428,7 @@
       const sessionId = window.__current?.sessionId;
       if (!sessionId) return;
 
-      fetch(`/api/session/${sessionId}/controller/connect`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ colorBg: color })
@@ -1446,7 +1446,7 @@
       const sessionId = window.__current?.sessionId;
       if (!sessionId) return;
 
-      fetch(`/api/session/${sessionId}/controller/connect`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ radius: size })
@@ -1460,7 +1460,7 @@
       const speedVal = Number(document.getElementById('speedRange')?.value || 40);
 
       // Отправляем команду на сервер - локальная физика обновится через polling
-      fetch(`/api/session/${sessionId}/controller/connect`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1477,7 +1477,7 @@
       if (!sessionId) return;
 
       // Отправляем команду на сервер - локальная физика обновится через polling
-      fetch(`/api/session/${sessionId}/controller/connect`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pause: true })
@@ -1770,7 +1770,7 @@
         try {
           const lastDir = window.lastDir || { x: 1, y: 0 };
 
-          const response = await fetch(`/api/session/${sessionId}/controller/connect`, {
+          const response = await fetch(`/api/session/${sessionId}/controller/update`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

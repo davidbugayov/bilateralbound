@@ -405,19 +405,25 @@
                         if (ballState.colorBg) physics.colors.bg = ballState.colorBg;
                         if (ballState.paused !== undefined) physics.paused = ballState.paused;
 
-                        // Синхронизация направления движения и скорости (только направление, не абсолютные значения)
+                        // Синхронизация направления движения и скорости
                         if (ballState.vx !== undefined || ballState.vy !== undefined) {
-                            // Вычисляем направление из серверных данных
-                            const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
-                            const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
-
-                            // Обновляем только направление, скорость пусть рассчитывается локально
-                            physics.lastDir = { x: dirX, y: dirY };
-
                             // Если скорость нулевая, останавливаем мяч
                             if (ballState.vx === 0 && ballState.vy === 0) {
                                 physics.ball.vx = 0;
                                 physics.ball.vy = 0;
+                                physics.paused = true;
+                            } else {
+                                // Запускаем мяч с правильной скоростью и направлением
+                                const speed = Math.sqrt(ballState.vx * ballState.vx + ballState.vy * ballState.vy);
+                                const dirX = ballState.vx / speed;
+                                const dirY = ballState.vy / speed;
+
+                                // Устанавливаем направление и скорость
+                                physics.lastDir = { x: dirX, y: dirY };
+                                physics.ball.vx = ballState.vx;
+                                physics.ball.vy = ballState.vy;
+                                physics.ball.speed = speed;
+                                physics.paused = false;
                             }
                         }
 
