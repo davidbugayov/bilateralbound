@@ -1232,77 +1232,22 @@
 
 
 
-    async function syncInitialState(sessionId) {
-      try {
-        // Получаем текущее состояние шара с сервера
-        const response = await fetch(`/api/session/${sessionId}/state`);
-        if (!response.ok) return;
+    // Функция syncInitialState удалена - управление превью теперь в controller.html
 
-        const ballState = await response.json();
-        if (ballState && window.__previewPhysics) {
-          // Обновляем размеры превью в зависимости от экрана вьювера
-          updatePreviewSize(ballState.viewerScreenSize);
 
-          // Устанавливаем начальную позицию из состояния сервера
-          window.__previewPhysics.ball.x = ballState.x || (window.__previewPhysics.world.width / 2);
-          window.__previewPhysics.ball.y = ballState.y || (window.__previewPhysics.world.height / 2);
 
-          // Синхронизируем направление движения при начальной загрузке
-          if (ballState.vx !== undefined || ballState.vy !== undefined) {
-            // Вычисляем направление из серверных данных
-            const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
-            const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
 
-            // Обновляем только направление, скорость пусть рассчитывается локально
-            window.__previewPhysics.lastDir = { x: dirX, y: dirY };
 
-            // Если скорость нулевая, останавливаем мяч
-            if (ballState.vx === 0 && ballState.vy === 0) {
-              window.__previewPhysics.ball.vx = 0;
-              window.__previewPhysics.ball.vy = 0;
-            } else {
-              // Для ненулевой скорости позволяем локальной физике рассчитать vx/vy
-              // Не устанавливаем абсолютные значения, чтобы избежать конфликтов
-            }
-          }
 
-          // Синхронизируем остальные параметры
-          if (ballState.speed !== undefined) window.__previewPhysics.ball.speed = ballState.speed;
-          if (ballState.radius !== undefined) window.__previewPhysics.ball.radius = ballState.radius;
-          if (ballState.colorBall) window.__previewPhysics.colors.ball = ballState.colorBall;
-          if (ballState.colorBg) window.__previewPhysics.colors.bg = ballState.colorBg;
-          if (ballState.paused !== undefined) window.__previewPhysics.paused = ballState.paused;
 
-  
-        }
 
-        // Запускаем SessionPoller для непрерывной синхронизации
-        startPreviewPolling(sessionId);
-      } catch (error) {
-        console.error('Error syncing initial state for preview:', error);
-      }
-    }
 
-    function startPreviewPolling(sessionId) {
-      // Останавливаем предыдущий polling если он был
-      if (window.__previewPoller) {
-        window.__previewPoller.stopPolling();
-      }
 
-      // Создаем новый SessionPoller для preview
-      window.__previewPoller = new SessionPoller({
-        sessionId,
-        pollInterval: 100, // 100ms для плавной синхронизации
-        onDataReceived: (sessionData) => {
-          if (sessionData && window.__previewPhysics) {
-            // Проверяем, прошло ли достаточно времени с момента последнего пользовательского изменения скорости
-            const timeSinceLastUserInput = Date.now() - speedManager.lastUpdateTime;
-            const shouldSyncSpeed = timeSinceLastUserInput > speedManager.updateDelay;
 
-            // Синхронизируем позицию мяча
-            if (sessionData.x !== undefined) {
-              window.__previewPhysics.ball.x = sessionData.x;
-            }
+    // Функция startPreviewPolling удалена - управление превью теперь в controller.html
+
+
+
             if (sessionData.y !== undefined) {
               window.__previewPhysics.ball.y = sessionData.y;
             }
@@ -1467,39 +1412,7 @@
 
 
 
-    function setDir(mode){
-      // Допускаем только четыре направления: горизонталь, вертикаль, две диагонали
-      let dx = 1, dy = 0;
-      if (mode === 'horizontal') { dx = 1; dy = 0; }
-      else if (mode === 'vertical') { dx = 0; dy = 1; }
-      else if (mode === 'diagRL') { dx = -1; dy = 1; } // диагональ слева направо
-      else if (mode === 'diagRLL') { dx = -1; dy = -1; } // диагональ справа налево
-      else { dx = 1; dy = 0; }
-      lastDir = { x: dx, y: dy };
-
-      updateDirectionDisplay(dx, dy);
-
-      const sessionId = window.__current?.sessionId;
-      if (!sessionId) return;
-
-      // Используем speedManager для получения текущей скорости
-      const speedVal = speedManager.getCurrentSpeed();
-
-      fetch(`/api/session/${sessionId}/controller/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resume: true,  // Важно: запускаем мяч при изменении направления
-          dirX: dx,
-          dirY: dy,
-          speedScalar: speedVal
-        })
-      }).then(response => {
-        if (!response.ok) {
-          console.error('Ошибка отправки команды:', response.status);
-        }
-      }).catch(error => console.error('Error updating direction:', error));
-    }
+    // Функция setDir удалена - управление направлением теперь в controller.html
 
     function updateDirectionDisplay(dx, dy) {
       const display = document.getElementById('currentDirection');
@@ -1534,163 +1447,13 @@
       }).catch(error => console.error('Error resetting center:', error));
     }
 
-    function resetSession(){
-      const sessionId = window.__current?.sessionId;
-      if (sessionId) {
-        fetch(`/api/session/${sessionId}/controller/update`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reset: true, pause: true })
-        }).catch(error => console.error('Error resetting session:', error));
-      }
+    // Функция resetSession удалена - управление сессиями теперь в controller.html
 
-      if (window.__previewPhysics) {
-        window.__previewPhysics.setPaused(true);
-      }
+    // Функции setBallColor и setBgColor удалены - управление цветами теперь в controller.html
 
-      setTimeout(() => {
-        // Безопасно возвращаемся к созданию сессии
-        const createSection = document.getElementById('createSection');
-        const controllerSection = document.getElementById('controllerSection');
+    // Функция setBallSize удалена - управление размером шарика теперь в controller.html
 
-        if (createSection) createSection.style.display = 'block';
-        if (controllerSection) controllerSection.style.display = 'none';
-
-        window.__current = null;
-        createSession();
-      }, 1000);
-    }
-
-    function setBallColor(color) {
-      document.querySelectorAll('.color-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.color === color) {
-          btn.classList.add('active');
-        }
-      });
-
-      if (window.__previewPhysics) {
-        window.__previewPhysics.colors.ball = color;
-      }
-
-      const sessionId = window.__current?.sessionId;
-      if (!sessionId) return;
-
-      fetch(`/api/session/${sessionId}/controller/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ colorBall: color })
-      }).catch(error => console.error('Error setting ball color:', error));
-    }
-
-    function setBgColor(color) {
-      document.querySelectorAll('.color-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.color === color) {
-          btn.classList.add('active');
-        }
-      });
-
-      if (window.__previewPhysics) {
-        window.__previewPhysics.colors.bg = color;
-      }
-
-      const sessionId = window.__current?.sessionId;
-      if (!sessionId) return;
-
-      fetch(`/api/session/${sessionId}/controller/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ colorBg: color })
-      }).catch(error => console.error('Error setting background color:', error));
-    }
-
-    function setBallSize(size) {
-      document.querySelectorAll('.size-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (parseInt(btn.dataset.size) === size) {
-          btn.classList.add('active');
-        }
-      });
-
-      const sessionId = window.__current?.sessionId;
-      if (!sessionId) return;
-
-      fetch(`/api/session/${sessionId}/controller/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ radius: size })
-      }).catch(error => console.error('Error setting ball size:', error));
-    }
-
-    // Глобальная переменная для отслеживания состояния воспроизведения
-    let isPlaying = false;
-
-    function togglePlayPause(){
-      const sessionId = window.__current?.sessionId;
-      if (!sessionId) return;
-
-      if (!isPlaying) {
-        // Запускаем воспроизведение
-        const speedVal = Number(document.getElementById('speedRange')?.value || 40);
-        
-        fetch(`/api/session/${sessionId}/controller/update`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            resume: true,
-            speedScalar: speedVal,
-            dirX: lastDir.x,
-            dirY: lastDir.y
-          })
-        }).catch(error => console.error('Error resuming:', error));
-        
-        isPlaying = true;
-        updateToggleButton();
-      } else {
-        // Останавливаем воспроизведение
-        fetch(`/api/session/${sessionId}/controller/update`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pause: true })
-        }).catch(error => console.error('Error pausing:', error));
-        
-        isPlaying = false;
-        updateToggleButton();
-      }
-    }
-
-    function updateToggleButton() {
-      // Обновляем мобильную кнопку
-      const toggleIcon = document.getElementById('toggleIcon');
-      const toggleText = document.getElementById('toggleText');
-      const toggleBtn = document.getElementById('toggleBtn');
-      
-      // Обновляем десктопную кнопку
-      const desktopToggleBtn = document.getElementById('desktopToggleBtn');
-      
-      if (isPlaying) {
-        // Состояние "Стоп"
-        if (toggleIcon) toggleIcon.textContent = '⏸️';
-        if (toggleText) toggleText.textContent = 'Стоп';
-        if (toggleBtn) toggleBtn.classList.remove('start');
-        if (toggleBtn) toggleBtn.classList.add('stop');
-        if (desktopToggleBtn) {
-          desktopToggleBtn.textContent = '⏸ Стоп';
-          desktopToggleBtn.style.background = '#f59e0b';
-        }
-      } else {
-        // Состояние "Старт"
-        if (toggleIcon) toggleIcon.textContent = '▶️';
-        if (toggleText) toggleText.textContent = 'Старт';
-        if (toggleBtn) toggleBtn.classList.remove('stop');
-        if (toggleBtn) toggleBtn.classList.add('start');
-        if (desktopToggleBtn) {
-          desktopToggleBtn.textContent = '▶️ Старт';
-          desktopToggleBtn.style.background = '#10b981';
-        }
-      }
-    }
+    // Функции togglePlayPause и updateToggleButton удалены - управление воспроизведением теперь в controller.html
 
     function copy(id) {
       const el = document.getElementById(id);
