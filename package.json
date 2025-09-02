@@ -21,6 +21,8 @@
     "test:basic": "node test-basic-sync.js",
     "test:speed": "node test-simple-speed.js",
     "test:corners": "node test-physics-corner.js",
+    "test:viewer-sync": "node test-viewer-sync.js",
+    "test:final-verification": "node final-verification.js",
     "health-test": "sleep 2 && curl -s http://localhost:3000/health | jq .status 2>/dev/null || echo '❌ Health check failed'",
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "status": "curl -s http://localhost:3000/health || echo '❌ Server not running'",

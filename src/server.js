@@ -131,6 +131,7 @@ class BilateralBoundServer {
 
     // Статические файлы должны идти ПЕРВЫМИ, перед API маршрутами
     this.app.use(express.static(path.join(__dirname, '..', 'public')));
+    this.app.use('/test', express.static(path.join(__dirname, '..')));
 
     // API status
     this.app.get('/api/status', (req, res) => {
