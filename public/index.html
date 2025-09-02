@@ -1224,21 +1224,7 @@
 
 
 
-            const currentSpeed = Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy);
-            const updateInterval = currentSpeed > 500 ? 30 : currentSpeed > 200 ? 50 : 100;
 
-            if (timeSinceLastSync >= updateInterval) {
-              speedManager.syncWithBallPhysics(physics);
-              window.__lastProgressSync = now;
-            }
-
-            // Можно добавить логику для отслеживания производительности
-            if (!window.__previewLastLog || Date.now() - window.__previewLastLog > 1000) {
-              window.__previewLastLog = Date.now();
-            }
-
-          lastTime = currentTime;
-        }
 
 
 
