@@ -832,7 +832,7 @@
 
     async function createSession() {
       try {
-        const response = await fetch('/api/session/new');
+        const response = await fetch('/api/session', { method: 'POST' });
         if (!response.ok) {
           throw new Error('Не удалось создать сессию');
         }
@@ -1212,17 +1212,8 @@
      * Обработчик истечения сессии для контроллера
      */
     function handleSessionExpired() {
-      NotificationManager.showSessionExpired({
-        title: '⏰ Сессия истекла',
-        message: 'Ваша сессия была завершена. Создайте новую сессию для продолжения.',
-        actions: [{
-          text: 'Создать новую сессию',
-          action: () => {
-            location.reload();
-          },
-          primary: true
-        }]
-      });
+      alert('⏰ Сессия истекла\nВаша сессия была завершена. Создайте новую сессию для продолжения.');
+      location.reload();
     }
 
     function startSessionPolling(sessionId) {
