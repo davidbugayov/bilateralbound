@@ -1182,6 +1182,38 @@
         </div>
       </div>
 
+      <!-- Секция ссылок (показывается после создания сессии) -->
+      <div id="linksSection" style="display: none;">
+        <div class="card">
+          <h3>🔗 Ссылки для сессии</h3>
+          <p style="margin: 8px 0; color: #9ca3af;">Сессия создана! Поделитесь ссылкой ниже:</p>
+
+          <div style="margin: 16px 0;">
+            <label style="display: block; font-size: 14px; color: #94a3b8; margin-bottom: 8px; font-weight: 600;">
+              🎬 Ссылка для зрителя:
+            </label>
+            <div style="display: flex; gap: 8px;">
+              <input id="viewerLink" readonly style="flex: 1; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: #e2e8f0; font-family: monospace; font-size: 14px;">
+              <button onclick="copyViewerLink()" style="padding: 12px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer;">📋 Копировать</button>
+            </div>
+          </div>
+
+          <div style="margin: 16px 0;">
+            <label style="display: block; font-size: 14px; color: #94a3b8; margin-bottom: 8px; font-weight: 600;">
+              🎮 Ссылка для контроллера:
+            </label>
+            <div style="display: flex; gap: 8px;">
+              <input id="controllerLink" readonly style="flex: 1; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: #e2e8f0; font-family: monospace; font-size: 14px;">
+              <button onclick="copyControllerLink()" style="padding: 12px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">📋 Копировать</button>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 20px;">
+            <button onclick="proceedToController()" style="padding: 14px 24px; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">🚀 Перейти к управлению</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Контроллер теперь в отдельном файле controller.html -->
     </div>
 
@@ -1205,15 +1237,61 @@
         const data = await response.json();
         const sessionId = data.sessionId;
 
-        // Перенаправляем на страницу контроллера с параметром сессии
-        window.location.href = `/c/${sessionId}?sid=${sessionId}`;
-
-        // Для отладки: выводим ссылку на viewer в консоль
-        console.log('Ссылка для зрителя:', `${window.location.origin}/s/${sessionId}`);
+        // Показываем секцию с ссылками
+        showSessionLinks(sessionId);
 
       } catch (error) {
         alert('Ошибка при создании сессии: ' + error.message);
         console.error('Error creating session:', error);
+      }
+    }
+
+    function showSessionLinks(sessionId) {
+      const baseUrl = window.location.origin;
+      const viewerLink = `${baseUrl}/s/${sessionId}`;
+      const controllerLink = `${baseUrl}/c/${sessionId}?sid=${sessionId}`;
+
+      // Заполняем поля со ссылками
+      const viewerInput = document.getElementById('viewerLink');
+      const controllerInput = document.getElementById('controllerLink');
+
+      if (viewerInput) viewerInput.value = viewerLink;
+      if (controllerInput) controllerInput.value = controllerLink;
+
+      // Скрываем секцию создания и показываем секцию ссылок
+      const createSection = document.getElementById('createSection');
+      const linksSection = document.getElementById('linksSection');
+
+      if (createSection) createSection.style.display = 'none';
+      if (linksSection) linksSection.style.display = 'block';
+
+      // Для отладки: выводим ссылку на viewer в консоль
+      console.log('Ссылка для зрителя:', viewerLink);
+      console.log('Ссылка для контроллера:', controllerLink);
+    }
+
+    function copyViewerLink() {
+      const input = document.getElementById('viewerLink');
+      if (input) {
+        input.select();
+        document.execCommand('copy');
+        alert('Ссылка для зрителя скопирована!');
+      }
+    }
+
+    function copyControllerLink() {
+      const input = document.getElementById('controllerLink');
+      if (input) {
+        input.select();
+        document.execCommand('copy');
+        alert('Ссылка для контроллера скопирована!');
+      }
+    }
+
+    function proceedToController() {
+      const input = document.getElementById('controllerLink');
+      if (input && input.value) {
+        window.location.href = input.value;
       }
     }
 
