@@ -60,5 +60,10 @@
   "devDependencies": {
     "jsdom": "^26.1.0",
     "nodemon": "^3.1.10"
+  },
+  "render": {
+    "type": "web",
+    "buildCommand": "npm install",
+    "startCommand": "node server.js"
   }
 }
