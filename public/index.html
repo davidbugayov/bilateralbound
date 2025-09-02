@@ -1217,73 +1217,13 @@
       }
     }
 
-    // Функция initializePreview удалена - теперь используется в controller.html
-      }
+    // Функции initializePreview и startPreviewAnimation удалены - теперь используются в controller.html
 
-      const physics = new BallPhysics();
-      // Начальный размер мира - будет обновлен при подключении вьювера
-      physics.setWorldSize(800, 600);
-      physics.setPosition(400, 300);
-      physics.setPaused(true);
 
-      window.__previewPhysics = physics;
-      window.__previewCanvas = document.getElementById('preview');
-      window.__previewCtx = window.__previewCanvas.getContext('2d');
 
-      // Устанавливаем начальный размер превью
-      updatePreviewSize({ width: 800, height: 600 });
 
-      // После установки размеров превью центрируем мяч в видимой области
-      const canvas = window.__previewCanvas;
-      if (canvas) {
-        const centerX = physics.world.width / 2;
-        const centerY = physics.world.height / 2;
-        physics.setPosition(centerX, centerY);
-      }
 
-      startPreviewAnimation();
-    }
 
-    function startPreviewAnimation() {
-      const canvas = window.__previewCanvas;
-      const ctx = window.__previewCtx;
-      const physics = window.__previewPhysics;
-
-      if (!canvas || !ctx || !physics) return;
-
-      let lastTime = 0;
-      const targetFrameTime = 1000 / 60; // 60 FPS
-
-      function render(currentTime) {
-        if (!canvas || !ctx || !physics) return;
-
-        const deltaTime = currentTime - lastTime;
-
-        // Очищаем canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Рисуем фон
-        ctx.fillStyle = physics.colors.bg;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Обновляем позицию только при достаточном deltaTime
-        if (deltaTime >= targetFrameTime) {
-        if (!physics.paused) {
-            // Используем physics.js для обновления позиции и обработки коллизий
-            const fixedDeltaTime = 1/60; // Фиксированный шаг времени
-            physics.updateWithDirection(
-              physics.lastDir.x,
-              physics.lastDir.y,
-              Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy) || physics.ball.speed,
-              fixedDeltaTime
-            );
-
-            // Синхронизируем прогресс-бар с реальной скоростью мячика
-            // Обновляем с умной частотой для оптимальной производительности
-            const now = Date.now();
-            const timeSinceLastSync = now - (window.__lastProgressSync || 0);
-
-            // Обновляем чаще когда скорость высокая, реже когда низкая
             const currentSpeed = Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy);
             const updateInterval = currentSpeed > 500 ? 30 : currentSpeed > 200 ? 50 : 100;
 
@@ -1296,38 +1236,15 @@
             if (!window.__previewLastLog || Date.now() - window.__previewLastLog > 1000) {
               window.__previewLastLog = Date.now();
             }
-          } else {
-            // Если пауза, плавно центрируем мяч
-          const centerX = physics.world.width / 2;
-          const centerY = physics.world.height / 2;
-            const centerSpeed = 0.05; // Коэффициент центрирования
 
-          if (Math.abs(physics.ball.x - centerX) > 1 || Math.abs(physics.ball.y - centerY) > 1) {
-              physics.ball.x += (centerX - physics.ball.x) * centerSpeed;
-              physics.ball.y += (centerY - physics.ball.y) * centerSpeed;
-          }
-          }
           lastTime = currentTime;
         }
 
-        // Масштабируем координаты для отображения в превью
-        const scaleX = canvas.width / physics.world.width;
-        const scaleY = canvas.height / physics.world.height;
-        const scaledX = physics.ball.x * scaleX;
-        const scaledY = physics.ball.y * scaleY;
-        const scaledRadius = physics.ball.radius * Math.min(scaleX, scaleY);
 
-        // Рисуем мяч в масштабированных координатах
-        ctx.beginPath();
-        ctx.arc(scaledX, scaledY, scaledRadius, 0, Math.PI * 2);
-        ctx.fillStyle = physics.colors.ball;
-        ctx.fill();
 
-        requestAnimationFrame(render);
-      }
 
-      render();
-    }
+
+
 
     async function syncInitialState(sessionId) {
       try {
