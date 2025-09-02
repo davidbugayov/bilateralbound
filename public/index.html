@@ -1182,216 +1182,7 @@
         </div>
       </div>
 
-      <div id="controllerSection" style="display: none;">
-        <div class="control-section">
-          <h3>🎮 Сессия: <span id="curSid">...</span></h3>
-          <p style="margin: 8px 0;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
-          <div class="viewer-link-container">
-            <div class="link-input-group">
-              <input id="view" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
-              <button onclick="copy('view')" class="copy-btn">📋 Копировать</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="previewWrap" style="display: none;" class="control-section floating-preview">
-          <h3 class="drag-handle">👁️ Превью движения</h3>
-          <div style="text-align: center; position: relative; padding-bottom: 35px;">
-            <canvas id="preview" style="border: 1px solid #374151; border-radius: 8px; background: #020617; max-width: 100%; height: auto; aspect-ratio: 4/3;"></canvas>
-            <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
-              Вьювер и размер экрана
-            </div>
-          </div>
-        </div>
-
-        <div class="control-section">
-          <h3>🎮 Управление и направление</h3>
-          <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px;">
-            <button class="btn direction-btn" onclick="setDir('horizontal')" style="background: #60a5fa; min-width: 140px; padding: 12px 16px;">↔️ Горизонтально</button>
-            <button class="btn direction-btn" onclick="setDir('vertical')" style="background: #60a5fa; min-width: 140px; padding: 12px 16px;">↕️ Вертикально</button>
-            <button class="btn direction-btn" onclick="setDir('diagRL')" style="background: #60a5fa; min-width: 180px; padding: 12px 16px;">↖️↗️ Диагональ L→R</button>
-            <button class="btn direction-btn" onclick="setDir('diagRLL')" style="background: #60a5fa; min-width: 180px; padding: 12px 16px;">↙️↘️ Диагональ R→L</button>
-                          <button class="btn" onclick="togglePlayPause()" id="desktopToggleBtn" style="background: #10b981; min-width: 110px; padding: 12px 16px;">▶️ Старт</button>
-              <button class="btn outline" onclick="resetCenter()" style="min-width: 110px; padding: 12px 16px;">🎯 Центр</button>
-            <button class="btn" onclick="resetSession()" style="background: #dc2626; min-width: 110px; padding: 12px 16px;">🔄 Сброс</button>
-          </div>
-          <p style="text-align: center; margin: 12px 0; font-size: 14px; color: #9ca3af;">
-            Текущее направление: <span id="currentDirection">↔️ Горизонтально</span>
-          </p>
-        </div>
-
-        <div class="control-section">
-          <h3>⚡ Скорость движения</h3>
-          <div class="speed-container">
-            <input id="speedRange" type="range" min="0" max="100" step="1" value="40" />
-            <div class="speed-labels">
-              <span class="speed-icon">🐌</span>
-              <span class="speed-value" id="speedLabel">40% (512 px/s)</span>
-              <span class="speed-icon">🐆</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="control-section">
-          <h3>🎨 Цвет шарика</h3>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="color-btn" data-color="#60a5fa" style="background: #60a5fa;" onclick="setBallColor('#60a5fa')">Синий</button>
-            <button class="color-btn" data-color="#ef4444" style="background: #ef4444;" onclick="setBallColor('#ef4444')">Красный</button>
-            <button class="color-btn" data-color="#10b981" style="background: #10b981;" onclick="setBallColor('#10b981')">Зеленый</button>
-            <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" onclick="setBallColor('#f59e0b')">Оранжевый</button>
-            <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="setBallColor('#8b5cf6')">Фиолетовый</button>
-            <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="setBallColor('#f97316')">Коралловый</button>
-          </div>
-        </div>
-
-        <div class="control-section">
-          <h3>🎨 Цвет фона</h3>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="color-btn" data-color="#020617" style="background: #020617; border: 1px solid #374151;" onclick="setBgColor('#020617')">Темный</button>
-            <button class="color-btn" data-color="#1f2937" style="background: #1f2937; border: 1px solid #374151;" onclick="setBgColor('#1f2937')">Серый</button>
-            <button class="color-btn" data-color="#0f172a" style="background: #0f172a; border: 1px solid #374151;" onclick="setBgColor('#0f172a')">Синий</button>
-            <button class="color-btn" data-color="#1e293b" style="background: #1e293b; border: 1px solid #374151;" onclick="setBgColor('#1e293b')">Сланцевый</button>
-            <button class="color-btn" data-color="#0c0a09" style="background: #0c0a09; border: 1px solid #374151;" onclick="setBgColor('#0c0a09')">Черный</button>
-            <button class="color-btn" data-color="#1c1917" style="background: #1c1917; border: 1px solid #374151;" onclick="setBgColor('#1c1917')">Каменный</button>
-          </div>
-        </div>
-
-        <div class="control-section">
-          <h3>📏 Размер шарика</h3>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="size-btn" data-size="20" onclick="setBallSize(20)">Маленький</button>
-            <button class="size-btn active" data-size="40" onclick="setBallSize(40)">Средний</button>
-            <button class="size-btn" data-size="80" onclick="setBallSize(80)">Большой</button>
-          </div>
-        </div>
-
-        <!-- Мобильные элементы управления (видны только на мобильных) -->
-        <div class="mobile-controls" style="display: none;">
-          <div class="control-section">
-            <h3>🔗 Ссылка для зрителя</h3>
-            <div class="viewer-link-container">
-              <div class="link-input-group">
-                <input id="mobileView" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
-                <button onclick="copy('mobileView')" class="copy-btn">📋 Копировать</button>
-              </div>
-            </div>
-          </div>
-          <div class="control-section">
-            <h3>🎮 Управление</h3>
-            <div class="control-row">
-              <button class="big-btn direction-btn" onclick="mobileSetDir('horizontal')" data-dir="horizontal">
-                <span class="direction-icon">↔️</span>
-                <span class="direction-text">Гориз.</span>
-              </button>
-              <button class="big-btn direction-btn" onclick="mobileSetDir('vertical')" data-dir="vertical">
-                <span class="direction-icon">↕️</span>
-                <span class="direction-text">Верт.</span>
-              </button>
-            </div>
-            <div class="control-row">
-              <button class="big-btn direction-btn" onclick="mobileSetDir('diagLR')" data-dir="diagLR">
-                <span class="direction-icon">↗️</span>
-                <span class="direction-text">Диаг.1</span>
-              </button>
-              <button class="big-btn direction-btn" onclick="mobileSetDir('diagRL')" data-dir="diagRL">
-                <span class="direction-icon">↖️</span>
-                <span class="direction-text">Диаг.2</span>
-              </button>
-            </div>
-            <div class="control-row">
-              <button class="control-btn toggle" onclick="togglePlayPause()" id="toggleBtn">
-                <span id="toggleIcon">▶️</span>
-                <span id="toggleText">Старт</span>
-              </button>
-              <button class="control-btn reset" onclick="resetCenter()">
-                <span>🎯</span>
-                <span>Центр</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="control-section">
-            <h3>⚡ Скорость</h3>
-            <div class="speed-container">
-              <input id="mobileSpeedRange" type="range" min="0" max="100" step="1" value="40" />
-              <div class="speed-labels">
-                <span class="speed-icon">🐌</span>
-                <span class="speed-value" id="mobileSpeedLabel">40% (256 px/s)</span>
-                <span class="speed-icon">🐆</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="control-section">
-            <h3>🎨 Цвет шарика</h3>
-            <div class="color-palette">
-              <button class="color-btn" data-color="#60a5fa" style="background: #60a5fa;" onclick="setBallColor('#60a5fa')" title="Синий">
-                <div class="color-preview" style="width: 14px; height: 14px; background: #60a5fa; border-radius: 50%; margin-bottom: 1px;"></div>
-                <span class="color-label">Синий</span>
-              </button>
-              <button class="color-btn" data-color="#ef4444" style="background: #ef4444;" onclick="setBallColor('#ef4444')" title="Красный">
-                <div class="color-preview" style="width: 14px; height: 14px; background: #ef4444; border-radius: 50%; margin-bottom: 1px;"></div>
-                <span class="color-label">Красный</span>
-              </button>
-              <button class="color-btn" data-color="#10b981" style="background: #10b981;" onclick="setBallColor('#10b981')" title="Зеленый">
-                <div class="color-preview" style="width: 14px; height: 14px; background: #10b981; border-radius: 50%; margin-bottom: 1px;"></div>
-                <span class="color-label">Зеленый</span>
-              </button>
-              <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" onclick="setBallColor('#f59e0b')" title="Оранжевый">
-                <div class="color-preview" style="width: 14px; height: 14px; background: #f59e0b; border-radius: 50%; margin-bottom: 1px;"></div>
-                <span class="color-label">Оранжевый</span>
-              </button>
-              <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="setBallColor('#8b5cf6')" title="Фиолетовый">
-                <div class="color-preview" style="width: 14px; height: 14px; background: #8b5cf6; border-radius: 50%; margin-bottom: 1px;"></div>
-                <span class="color-label">Фиолетовый</span>
-              </button>
-              <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="setBallColor('#f97316')" title="Коралловый">
-                <div class="color-preview" style="width: 14px; height: 14px; background: #f97316; border-radius: 50%; margin-bottom: 1px;"></div>
-                <span class="color-label">Коралловый</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="control-section">
-            <h3>📏 Размер шарика</h3>
-            <div class="size-palette">
-              <button class="size-btn" data-size="20" onclick="setBallSize(20)" title="Маленький (20px)">
-                <div class="size-preview">
-                  <div class="size-dot small"></div>
-                </div>
-                <span class="size-label">Мал.</span>
-              </button>
-              <button class="size-btn active" data-size="40" onclick="setBallSize(40)" title="Средний (40px)">
-                <div class="size-preview">
-                  <div class="size-dot medium"></div>
-                </div>
-                <span class="size-label">Сред.</span>
-              </button>
-              <button class="size-btn" data-size="80" onclick="setBallSize(80)" title="Большой (80px)">
-                <div class="size-preview">
-                  <div class="size-dot large"></div>
-                </div>
-                <span class="size-label">Бол.</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="control-section">
-            <h3>🎭 Цвет фона</h3>
-            <div class="bg-palette">
-              <button class="bg-btn" data-color="#020617" style="background: #020617; border: 1px solid #374151;" onclick="setBgColor('#020617')" title="Темный">
-                Темный
-              </button>
-              <button class="bg-btn" data-color="#1f2937" style="background: #1f2937; border: 1px solid #374151;" onclick="setBgColor('#1f2937')" title="Серый">
-                Серый
-              </button>
-              <button class="bg-btn" data-color="#0f172a" style="background: #0f172a; border: 1px solid #374151;" onclick="setBgColor('#0f172a')" title="Синий">
-                Синий
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Контроллер теперь в отдельном файле controller.html -->
     </div>
 
     <div id="statusIndicator" class="status-indicator disconnected">Проверяем статус сервера...</div>
@@ -1406,7 +1197,7 @@
 
     async function createSession() {
       try {
-        const response = await fetch('/api/session/new');
+        const response = await fetch('/api/session', { method: 'POST' });
         if (!response.ok) {
           throw new Error('Не удалось создать сессию');
         }
@@ -1414,40 +1205,11 @@
         const data = await response.json();
         const sessionId = data.sessionId;
 
-        window.__current = { sessionId };
+        // Перенаправляем на страницу контроллера с параметром сессии
+        window.location.href = `/c/${sessionId}?sid=${sessionId}`;
 
-        const baseUrl = window.location.origin;
-        const viewerLink = `${baseUrl}/s/${sessionId}`;
-
-        // Безопасно обновляем элементы, проверяя их существование
-        const viewInput = document.getElementById('view');
-        const mobileViewInput = document.getElementById('mobileView');
-        const curSid = document.getElementById('curSid');
-
-        if (viewInput) viewInput.value = viewerLink;
-        if (mobileViewInput) mobileViewInput.value = viewerLink;
-        if (curSid) curSid.textContent = sessionId;
-
-        // Подключаем контроллер к сессии
-        await fetch(`/api/session/${sessionId}/controller/connect`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ screenSize: { width: window.innerWidth, height: window.innerHeight } })
-        });
-
-        initializePreview(sessionId);
-
-        // Синхронизируем начальное состояние шара
-        syncInitialState(sessionId);
-
-        startSessionPolling(sessionId);
-
-        // Безопасно скрываем/показываем секции
-        const createSection = document.getElementById('createSection');
-        const controllerSection = document.getElementById('controllerSection');
-
-        if (createSection) createSection.style.display = 'none';
-        if (controllerSection) controllerSection.style.display = 'block';
+        // Для отладки: выводим ссылку на viewer в консоль
+        console.log('Ссылка для зрителя:', `${window.location.origin}/s/${sessionId}`);
 
       } catch (error) {
         alert('Ошибка при создании сессии: ' + error.message);
@@ -1455,10 +1217,7 @@
       }
     }
 
-    function initializePreview(sessionId) {
-      const previewWrap = document.getElementById('previewWrap');
-      if (previewWrap) {
-        previewWrap.style.display = 'block';
+    // Функция initializePreview удалена - теперь используется в controller.html
       }
 
       const physics = new BallPhysics();
@@ -1801,84 +1560,7 @@
       });
     }
 
-    function startSessionPolling(sessionId) {
-      // Используем общий модуль для polling'а сессии
-      const poller = new SessionPoller({
-        sessionId,
-        onSessionExpired: handleSessionExpired,
-        onDataReceived: (sessionData) => {
-          // Обновляем статус зрителя
-          const statusEl = document.getElementById('viewerStatus');
-          const statusOverlay = document.getElementById('statusIndicator');
-
-          if (sessionData.viewerConnected) {
-            if (statusEl) {
-              statusEl.textContent = 'Зритель подключен';
-              statusEl.style.color = '#10b981';
-            }
-            if (statusOverlay) {
-              statusOverlay.className = 'status-indicator connected';
-              statusOverlay.textContent = 'Зритель подключен';
-            }
-          } else {
-            if (statusEl) {
-              statusEl.textContent = 'Ожидание зрителя...';
-              statusEl.style.color = '#ef4444';
-            }
-            if (statusOverlay) {
-              statusOverlay.className = 'status-indicator disconnected';
-              statusOverlay.textContent = 'Ожидание зрителя...';
-            }
-
-            // Скрываем информацию о размерах вьювера при отключении
-            const viewerInfo = document.getElementById('viewerInfo');
-            if (viewerInfo) {
-              viewerInfo.style.display = 'none';
-            }
-          }
-        },
-        onStateReceived: (ballState) => {
-          // Применяем команды управления локально
-          if (window.__previewPhysics && ballState) {
-            // Обновляем размеры превью при изменении экрана вьювера
-            if (ballState.viewerScreenSize &&
-                (ballState.viewerScreenSize.width !== window.__previewPhysics.world.width ||
-                 ballState.viewerScreenSize.height !== window.__previewPhysics.world.height)) {
-              updatePreviewSize(ballState.viewerScreenSize);
-            }
-
-            // Синхронизация скорости в пикселях в секунду
-            if (ballState.vx !== undefined || ballState.vy !== undefined) {
-              window.__previewPhysics.ball.vx = ballState.vx;
-              window.__previewPhysics.ball.vy = ballState.vy;
-
-              // Обновляем направление для совместимости
-              const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
-              const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
-              window.__previewPhysics.lastDir = { x: dirX, y: dirY };
-
-
-            }
-
-            // Синхронизация параметров управления
-            if (ballState.speed !== undefined) window.__previewPhysics.ball.speed = ballState.speed;
-            if (ballState.radius !== undefined) window.__previewPhysics.ball.radius = ballState.radius;
-            if (ballState.colorBall) window.__previewPhysics.colors.ball = ballState.colorBall;
-            if (ballState.colorBg) window.__previewPhysics.colors.bg = ballState.colorBg;
-            if (ballState.paused !== undefined) {
-              window.__previewPhysics.paused = ballState.paused;
-
-            }
-
-            // Убираем синхронизацию позиции - превью полагается только на команды сервера
-            // Синхронизация позиции вызывала дергание мяча
-          }
-        }
-      });
-
-      // Запускаем polling
-      poller.startPolling();
-    }
+    // Функция startSessionPolling удалена - теперь используется в controller.html
 
 
 
