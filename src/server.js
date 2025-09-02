@@ -199,11 +199,13 @@ class BilateralBoundServer {
         // Получаем размеры экрана вьювера
         const viewerScreenSize = sessionManager.getViewerScreenSize(sessionId);
         const viewerConnected = sessionManager.getViewerConnected(sessionId);
+        const controllerConnected = sessionManager.getSession(sessionId)?.controllerConnected || false;
 
-        // Возвращаем состояние шара вместе с информацией о вьювере
+        // Возвращаем состояние шара вместе с информацией о подключениях
         res.json({
           ...ballState,
           viewerConnected,
+          controllerConnected,
           viewerScreenSize: viewerScreenSize || { width: 800, height: 600 } // fallback
         });
       } catch (error) {
