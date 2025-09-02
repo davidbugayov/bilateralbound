@@ -82,6 +82,7 @@ class BilateralBoundServer {
 
     // Статические файлы должны идти ПЕРВЫМИ, перед API маршрутами
     this.app.use(express.static(path.join(__dirname, '..', 'public')));
+    this.app.use('/test', express.static(path.join(__dirname, '..')));
 
     // API status
     this.app.get('/api/status', (req, res) => {
@@ -150,7 +151,7 @@ class BilateralBoundServer {
         // Получаем размеры экрана вьювера
         const viewerScreenSize = sessionManager.getViewerScreenSize(sessionId);
         const viewerConnected = sessionManager.getViewerConnected(sessionId);
-        const controllerConnected = sessionManager.getControllerConnected(sessionId);
+        const controllerConnected = sessionManager.getSession(sessionId)?.controllerConnected || false;
 
         // Возвращаем состояние шара вместе с информацией о подключениях
         res.json({
@@ -204,6 +205,30 @@ class BilateralBoundServer {
         res.json({ success: true, message: 'Controller disconnected' });
       } catch (error) {
         logger.error('Error disconnecting controller:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Controller update (for sending control commands)
+    this.app.post('/api/session/:sessionId/controller/update', (req, res) => {
+      try {
+        const { sessionId } = req.params;
+        const session = sessionManager.getSession(sessionId);
+
+        if (!session) {
+          return res.status(404).json({ error: 'Session not found' });
+        }
+
+        // Обновляем состояние мяча на основе команд от контроллера
+        const updates = req.body;
+        if (Object.keys(updates).length > 0) {
+          sessionManager.updateBallState(sessionId, updates);
+          logger.logSession(sessionId, `Controller update: ${JSON.stringify(updates)}`);
+        }
+
+        res.json({ success: true, message: 'Controller update processed' });
+      } catch (error) {
+        logger.error('Error updating controller:', error);
         res.status(500).json({ error: error.message });
       }
     });

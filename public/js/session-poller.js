@@ -7,6 +7,7 @@ class SessionPoller {
     constructor(options) {
         this.sessionId = options.sessionId;
         this.onDataReceived = options.onDataReceived || (() => {});
+        this.onStateReceived = options.onStateReceived || (() => {});
         this.onSessionExpired = options.onSessionExpired || (() => {});
         this.onError = options.onError || (() => {});
 
@@ -126,7 +127,10 @@ class SessionPoller {
 
                 if (isChanged) {
                     this.lastState = response.data;
-                    this.onDataReceived(response.data);
+
+                    // Вызываем оба callbacks
+                    this.onDataReceived(response.data); // Для статуса сессии
+                    this.onStateReceived(response.data); // Для состояния мяча
 
                     // Сбрасываем счетчик ошибок при успешном запросе
                     this.errorCount = 0;

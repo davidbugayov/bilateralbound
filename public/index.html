@@ -1432,24 +1432,47 @@
      * Обработчик истечения сессии для контроллера
      */
     function handleSessionExpired() {
-      NotificationManager.showSessionExpired({
-        title: '⏰ Сессия истекла',
-        message: 'Ваша сессия была завершена. Создайте новую сессию для продолжения.',
-        actions: [{
-          text: 'Создать новую сессию',
-          action: () => {
-            location.reload();
-          },
-          primary: true
-        }]
-      });
+      alert('⏰ Сессия истекла\nВаша сессия была завершена. Создайте новую сессию для продолжения.');
+      location.reload();
     }
 
     // Функция startSessionPolling удалена - теперь используется в controller.html
 
 
 
-    // Функция setDir удалена - управление направлением теперь в controller.html
+    function setDir(mode){
+      // Допускаем только четыре направления: горизонталь, вертикаль, две диагонали
+      let dx = 1, dy = 0;
+      if (mode === 'horizontal') { dx = 1; dy = 0; }
+      else if (mode === 'vertical') { dx = 0; dy = 1; }
+      else if (mode === 'diagRL') { dx = -1; dy = 1; } // диагональ слева направо
+      else if (mode === 'diagRLL') { dx = -1; dy = -1; } // диагональ справа налево
+      else { dx = 1; dy = 0; }
+      lastDir = { x: dx, y: dy };
+
+      updateDirectionDisplay(dx, dy);
+
+      const sessionId = window.__current?.sessionId;
+      if (!sessionId) return;
+
+      // Используем speedManager для получения текущей скорости
+      const speedVal = speedManager.getCurrentSpeed();
+
+      fetch(`/api/session/${sessionId}/controller/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resume: true,  // Важно: запускаем мяч при изменении направления
+          dirX: dx,
+          dirY: dy,
+          speedScalar: speedVal
+        })
+      }).then(response => {
+        if (!response.ok) {
+          console.error('Ошибка отправки команды:', response.status);
+        }
+      }).catch(error => console.error('Error updating direction:', error));
+    }
 
     function updateDirectionDisplay(dx, dy) {
       const display = document.getElementById('currentDirection');
@@ -1485,12 +1508,121 @@
     }
 
     // Функция resetSession удалена - управление сессиями теперь в controller.html
+    function resetSession(){
+      const sessionId = window.__current?.sessionId;
+      if (sessionId) {
+        fetch(`/api/session/${sessionId}/controller/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reset: true, pause: true })
+        }).catch(error => console.error('Error resetting session:', error));
+      }
 
     // Функции setBallColor и setBgColor удалены - управление цветами теперь в controller.html
 
     // Функция setBallSize удалена - управление размером шарика теперь в controller.html
 
     // Функции togglePlayPause и updateToggleButton удалены - управление воспроизведением теперь в controller.html
+        if (createSection) createSection.style.display = 'block';
+        if (controllerSection) controllerSection.style.display = 'none';
+
+        window.__current = null;
+        createSession();
+      }, 1000);
+    }
+
+    function setBallColor(color) {
+      document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.color === color) {
+          btn.classList.add('active');
+        }
+      });
+
+      if (window.__previewPhysics) {
+        window.__previewPhysics.colors.ball = color;
+      }
+
+      const sessionId = window.__current?.sessionId;
+      if (!sessionId) return;
+
+      fetch(`/api/session/${sessionId}/controller/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ colorBall: color })
+      }).catch(error => console.error('Error setting ball color:', error));
+    }
+
+    function setBgColor(color) {
+      document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.color === color) {
+          btn.classList.add('active');
+        }
+      });
+
+      if (window.__previewPhysics) {
+        window.__previewPhysics.colors.bg = color;
+      }
+
+      const sessionId = window.__current?.sessionId;
+      if (!sessionId) return;
+
+      fetch(`/api/session/${sessionId}/controller/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ colorBg: color })
+      }).catch(error => console.error('Error setting background color:', error));
+    }
+
+    function setBallSize(size) {
+      document.querySelectorAll('.size-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (parseInt(btn.dataset.size) === size) {
+          btn.classList.add('active');
+        }
+      });
+
+      const sessionId = window.__current?.sessionId;
+      if (!sessionId) return;
+
+      fetch(`/api/session/${sessionId}/controller/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ radius: size })
+      }).catch(error => console.error('Error setting ball size:', error));
+    }
+
+    function resumePlay(){
+      const sessionId = window.__current?.sessionId;
+      if (!sessionId) return;
+
+      const speedVal = Number(document.getElementById('speedRange')?.value || 40);
+
+      // Отправляем команду на сервер - локальная физика обновится через polling
+      fetch(`/api/session/${sessionId}/controller/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resume: true,
+          speedScalar: speedVal,
+          dirX: lastDir.x,
+          dirY: lastDir.y
+        })
+      }).catch(error => console.error('Error resuming:', error));
+    }
+
+    function pausePlay(){
+      const sessionId = window.__current?.sessionId;
+      if (!sessionId) return;
+
+      // Отправляем команду на сервер - локальная физика обновится через polling
+      fetch(`/api/session/${sessionId}/controller/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pause: true })
+      }).catch(error => console.error('Error pausing:', error));
+    }
 
     function copy(id) {
       const el = document.getElementById(id);

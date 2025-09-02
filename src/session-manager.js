@@ -324,7 +324,12 @@ class SessionManager {
         }
       }
     }
-    if (updates.pause !== undefined) session.ballState.paused = true;
+    if (updates.pause !== undefined) {
+      session.ballState.paused = true;
+      session.ballState.vx = 0;
+      session.ballState.vy = 0;
+      logger.logSession(sessionId, 'Ball paused: velocity set to (0, 0)');
+    }
     if (updates.reset !== undefined) {
       // Используем размеры экрана вьювера для центрирования
       const viewerScreenSize = session.viewerScreenSize || { width: 800, height: 600 };

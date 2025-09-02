@@ -437,14 +437,27 @@
                         if (sessionData.colorBall) physics.colors.ball = sessionData.colorBall;
                         if (sessionData.colorBg) physics.colors.bg = sessionData.colorBg;
                         if (sessionData.paused !== undefined) physics.paused = sessionData.paused;
-                        
+
                         // Синхронизация направления движения и скорости
                         if (sessionData.vx !== undefined || sessionData.vy !== undefined) {
-                            physics.ball.vx = sessionData.vx;
-                            physics.ball.vy = sessionData.vy;
-                            const dirX = sessionData.vx === 0 ? 0 : (sessionData.vx > 0 ? 1 : -1);
-                            const dirY = sessionData.vy === 0 ? 0 : (sessionData.vy > 0 ? 1 : -1);
-                            physics.lastDir = { x: dirX, y: dirY };
+                            // Если скорость нулевая, останавливаем мяч
+                            if (sessionData.vx === 0 && sessionData.vy === 0) {
+                                physics.ball.vx = 0;
+                                physics.ball.vy = 0;
+                                physics.paused = true;
+                            } else {
+                                // Запускаем мяч с правильной скоростью и направлением
+                                const speed = Math.sqrt(sessionData.vx * sessionData.vx + sessionData.vy * sessionData.vy);
+                                const dirX = sessionData.vx / speed;
+                                const dirY = sessionData.vy / speed;
+
+                                // Устанавливаем направление и скорость
+                                physics.lastDir = { x: dirX, y: dirY };
+                                physics.ball.vx = sessionData.vx;
+                                physics.ball.vy = sessionData.vy;
+                                physics.ball.speed = speed;
+                                physics.paused = false;
+                            }
                         }
                     }
                 }
