@@ -1221,13 +1221,17 @@
   </div>
 
   <script>
+    // Проверка что скрипт загружается
+    console.log('Script loaded successfully');
+
     let lastDir = { x: 1, y: 0 };
 
     function randomSid() {
       return Math.random().toString(36).slice(2, 8);
     }
 
-    async function createSession() {
+    // Проверка что функция определена
+    window.createSession = async function createSession() {
       try {
         const response = await fetch('/api/session', { method: 'POST' });
         if (!response.ok) {
@@ -1309,6 +1313,15 @@
 
 
 
+
+    // Проверка что все функции определены
+    console.log('All functions defined:', {
+      createSession: typeof window.createSession,
+      showSessionLinks: typeof showSessionLinks,
+      copyViewerLink: typeof copyViewerLink,
+      copyControllerLink: typeof copyControllerLink,
+      proceedToController: typeof proceedToController
+    });
 
     // Функция syncInitialState удалена - управление превью теперь в controller.html
 
