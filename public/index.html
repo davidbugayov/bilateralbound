@@ -1,28 +1,20 @@
 <!doctype html>
-<html lang="ru">
+<html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="description" content="BilateralBound - Создание сессий для управления движением шарика" />
-  <meta name="keywords" content="bilateral, bound, session, controller, viewer" />
-  <title>BilateralBound - Создать сессию</title>
+  <title>Создать сессию</title>
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202509031127" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico?v=202509031127" />
   <link rel="apple-touch-icon" href="/favicon.svg?v=202509031127" />
   <link rel="shortcut icon" href="/favicon.ico?v=202509031127" />
-  
-  <!-- ===== STYLES ===== -->
+
   <style>
-    /* ===== RESET & BASE ===== */
-    * {
-      box-sizing: border-box;
-    }
-    
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       margin: 0;
@@ -31,10 +23,8 @@
       color: #e2e8f0;
       overflow-x: hidden;
       min-height: 100vh;
-      line-height: 1.6;
     }
 
-    /* ===== LAYOUT ===== */
     .wrap {
       max-width: 900px;
       margin: 0 auto;
@@ -52,114 +42,23 @@
       backdrop-filter: blur(10px);
     }
 
-    /* ===== TYPOGRAPHY ===== */
-    h1, h2, h3 {
-      margin: 0 0 16px 0;
-      font-weight: 600;
-      color: #f8fafc;
-    }
+    button { background: #2563eb; color: white; border: 0; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
 
-    h1 { font-size: 28px; }
-    h2 { font-size: 24px; }
-    h3 { font-size: 20px; }
+    button:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
 
-    p {
-      margin: 0 0 12px 0;
-      color: #cbd5e1;
-    }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #1f2937; border: 1px solid #374151; border-bottom-width: 3px; border-radius: 6px; padding: 2px 6px; }
 
-    /* ===== BUTTONS ===== */
-    button {
-      background: #2563eb;
-      color: white;
-      border: 0;
-      padding: 10px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: inherit;
-      font-size: 14px;
-    }
+    input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #374151; background: #0b1220; color: #e2e8f0; transition: border-color 0.2s ease; }
 
-    button:hover {
-      background: #1d4ed8;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+    input:focus { outline: none; border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1); }
+    .controls { display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+    .btn { background:#1e40af; color:#fff; border:0; padding:8px 12px; border-radius:8px; cursor:pointer; transition: all 0.2s ease; }
 
-    button:active {
-      transform: translateY(0);
-    }
+    .btn:hover { background: #1e3a8a; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
 
-    .btn {
-      background: #1e40af;
-      color: #fff;
-      border: 0;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn:hover {
-      background: #1e3a8a;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn.outline {
-      background: transparent;
-      border: 1px solid #374151;
-      color: #e2e8f0;
-    }
-
-    .btn.outline:hover {
-      background: #1f2937;
-      border-color: #60a5fa;
-    }
-
-    /* ===== FORMS ===== */
-    input {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #374151;
-      background: #0b1220;
-      color: #e2e8f0;
-      transition: border-color 0.2s ease;
-      font-family: inherit;
-      font-size: 14px;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #60a5fa;
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
-    }
-
-    /* ===== UTILITIES ===== */
-    .kbd {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      background: #1f2937;
-      border: 1px solid #374151;
-      border-bottom-width: 3px;
-      border-radius: 6px;
-      padding: 2px 6px;
-    }
-
-    .controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    .slider {
-      width: 100%;
-    }
-
-    /* ===== STATUS INDICATOR ===== */
+    .btn.outline { background:transparent; border:1px solid #374151; color:#e2e8f0; }
+    .btn.outline:hover { background: #1f2937; border-color: #60a5fa; }
+    .slider { width: 100%; }
     .status-indicator {
       position: fixed;
       top: 12px;
@@ -170,18 +69,10 @@
       border: 1px solid #1f2937;
       font-size: 12px;
       z-index: 1000;
-      backdrop-filter: blur(10px);
     }
+    .status-indicator.connected { border-color: #10b981; }
+    .status-indicator.disconnected { border-color: #ef4444; }
 
-    .status-indicator.connected {
-      border-color: #10b981;
-    }
-
-    .status-indicator.disconnected {
-      border-color: #ef4444;
-    }
-
-    /* ===== RANGE SLIDER ===== */
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
@@ -610,34 +501,22 @@
       body {
         padding: 8px;
         font-size: 14px;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        min-height: 100vh;
       }
 
       .wrap {
         max-width: 100%;
         margin: 0;
-        gap: 8px;
       }
 
       .card {
         padding: 16px;
         margin: 0;
         border-radius: 12px;
-        background: linear-gradient(145deg, #111827, #1f2937);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        border: 1px solid #334155;
       }
 
       h1 {
-        font-size: 22px;
+        font-size: 24px;
         margin-bottom: 8px;
-        text-align: center;
-        background: linear-gradient(135deg, #fbbf24, #f59e0b);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
 
       .viewer-link-container .link-input-group {
@@ -647,42 +526,33 @@
 
       .viewer-link-container .copy-btn {
         width: 100%;
-        padding: 10px;
-        font-size: 13px;
-        background: linear-gradient(135deg, #60a5fa, #3b82f6);
-        border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(96, 165, 250, 0.3);
+        padding: 12px;
+        font-size: 14px;
       }
 
       .speed-container .speed-labels {
         flex-direction: column;
         gap: 6px;
         text-align: center;
-        font-size: 11px;
-        color: #cbd5e1;
+        font-size: 12px;
       }
 
       .floating-preview {
         position: static;
-        margin-bottom: 12px;
-        padding: 12px;
-        min-height: 200px;
-        background: linear-gradient(145deg, #1e293b, #1f2937);
-        border-radius: 10px;
-        border: 1px solid #334155;
+        margin-bottom: 16px;
+        padding: 16px;
+        min-height: 240px;
       }
 
       .floating-preview canvas {
         max-width: 100%;
         height: auto;
         aspect-ratio: 4/3;
-        border-radius: 8px;
+        border-radius: 6px;
         object-fit: contain;
         display: block;
         margin: 0 auto;
         box-sizing: border-box;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        border: 1px solid #475569;
       }
 
       .floating-preview > div {
@@ -708,20 +578,14 @@
       .mobile-controls {
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        background: linear-gradient(145deg, #1e293b, #1f2937);
-        border-radius: 10px;
-        padding: 12px;
-        border: 1px solid #334155;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        gap: 12px;
       }
 
       .mobile-controls .control-row {
         display: flex;
-        gap: 6px;
+        gap: 8px;
         justify-content: center;
         align-items: center;
-        flex-wrap: wrap;
       }
 
       .mobile-controls .direction-pad {
@@ -777,370 +641,6 @@
       .direction-btn, .color-btn, .size-btn {
         display: none;
       }
-
-      /* Показываем мобильные контроллеры */
-      .mobile-controls {
-        display: flex !important;
-        flex-direction: column;
-        gap: 4px;
-        width: 100%;
-      }
-
-      /* Улучшенные мобильные контроллеры */
-      .mobile-controls .control-section {
-        background: linear-gradient(145deg, #1e293b, #1f2937);
-        border: 1px solid #334155;
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 4px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      }
-
-      .mobile-controls .control-section h3 {
-        margin: 0 0 6px 0;
-        font-size: 13px;
-        font-weight: 600;
-        color: #fbbf24;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-        text-align: center;
-      }
-
-      /* Улучшенная цветовая палитра */
-      .mobile-controls .color-palette {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-        margin-top: 6px;
-      }
-
-      .mobile-controls .color-palette button {
-        height: 40px;
-        padding: 3px 2px;
-        font-size: 9px;
-        font-weight: 600;
-        border-radius: 6px;
-        border: 2px solid transparent;
-        color: white;
-        min-height: 32px;
-        touch-action: manipulation;
-        transition: all 0.2s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1px;
-        text-align: center;
-        line-height: 1.0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-      }
-
-      .mobile-controls .color-palette button:hover {
-        transform: scale(1.05);
-        border-color: #fbbf24;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      }
-
-      .mobile-controls .color-palette button.active {
-        border-color: #fbbf24 !important;
-        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3), 0 4px 8px rgba(0, 0, 0, 0.3);
-        transform: scale(1.05);
-      }
-
-      /* Улучшенная палитра фона */
-      .mobile-controls .bg-palette {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-        margin-top: 6px;
-      }
-
-      .mobile-controls .bg-palette button {
-        height: 40px;
-        padding: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        border-radius: 8px;
-        border: 1px solid #374151;
-        color: #e2e8f0;
-        min-height: 36px;
-        touch-action: manipulation;
-        transition: all 0.2s ease;
-        text-align: center;
-      }
-
-      .mobile-controls .bg-palette button:hover {
-        transform: scale(1.05);
-        border-color: #fbbf24;
-      }
-
-      .mobile-controls .bg-palette button.active {
-        border-color: #fbbf24 !important;
-        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
-        transform: scale(1.05);
-      }
-
-      /* Стили для ссылки зрителя в мобильной версии */
-      .mobile-controls .viewer-link-container {
-        margin-top: 8px;
-      }
-
-      .mobile-controls .viewer-link-container .link-input-group {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      .mobile-controls .viewer-link-container input {
-        flex: 1;
-        min-width: 200px;
-        font-size: 12px;
-        padding: 6px 8px;
-      }
-
-      .mobile-controls .viewer-link-container .copy-btn {
-        padding: 6px 10px;
-        font-size: 11px;
-        white-space: nowrap;
-        min-width: 80px;
-      }
-
-      /* Улучшенная палитра размеров */
-      .mobile-controls .size-palette {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-        margin-top: 8px;
-      }
-
-      .mobile-controls .size-palette button {
-        padding: 6px 4px;
-        font-size: 11px;
-        font-weight: 600;
-        border-radius: 6px;
-        border: 2px solid #374151;
-        background: linear-gradient(145deg, #374151, #4b5563);
-        color: #e2e8f0;
-        min-height: 36px;
-        touch-action: manipulation;
-        transition: all 0.2s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-      }
-
-      .mobile-controls .size-palette button:hover {
-        background: linear-gradient(145deg, #4b5563, #6b7280);
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      }
-
-      .mobile-controls .size-palette button.active {
-        background: linear-gradient(135deg, #60a5fa, #3b82f6);
-        border-color: #3b82f6;
-        color: white;
-        transform: scale(1.05);
-        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3), 0 4px 8px rgba(0, 0, 0, 0.3);
-      }
-
-      /* Стили для превью размеров */
-      .size-preview {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 6px;
-      }
-
-      .size-dot {
-        border-radius: 50%;
-        border: 2px solid #60a5fa;
-        background: #60a5fa;
-      }
-
-      .size-dot.small {
-        width: 8px;
-        height: 8px;
-      }
-
-      .size-dot.medium {
-        width: 12px;
-        height: 12px;
-      }
-
-      .size-dot.large {
-        width: 16px;
-        height: 16px;
-      }
-
-      .size-label {
-        font-size: 9px;
-        font-weight: 500;
-        text-align: center;
-        line-height: 1.0;
-      }
-
-      /* Стили для превью цветов */
-      .color-preview {
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        margin-bottom: 4px;
-      }
-
-      .color-label {
-        font-size: 11px;
-        font-weight: 500;
-        text-align: center;
-        line-height: 1.2;
-      }
-
-      /* Улучшенные кнопки направления */
-      .direction-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        text-align: center;
-        padding: 12px 16px;
-        min-height: 60px;
-      }
-
-      .direction-icon {
-        font-size: 20px;
-        margin-bottom: 2px;
-      }
-
-      .direction-text {
-        font-size: 11px;
-        font-weight: 500;
-        line-height: 1.1;
-      }
-
-      .direction-btn.active {
-        background: #3b82f6 !important;
-        border-color: #1d4ed8 !important;
-        transform: scale(1.05);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-      }
-
-      /* Улучшенные кнопки управления (старт/стоп) */
-      .control-btn {
-        padding: 14px 18px;
-        font-size: 15px;
-        font-weight: 600;
-        border-radius: 10px;
-        border: none;
-        min-height: 50px;
-        touch-action: manipulation;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-      }
-
-      .control-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      }
-
-      .control-btn:active {
-        transform: translateY(0);
-      }
-
-          .control-btn.start {
-      background: #10b981;
-      color: white;
-    }
-
-    .control-btn.start:hover {
-      background: #059669;
-    }
-
-    .control-btn.stop {
-      background: #f59e0b;
-      color: white;
-    }
-
-    .control-btn.stop:hover {
-      background: #d97706;
-    }
-
-    .control-btn.toggle {
-      background: #10b981;
-      color: white;
-      transition: all 0.3s ease;
-    }
-
-    .control-btn.toggle:hover {
-      background: #059669;
-      transform: scale(1.05);
-    }
-
-    .control-btn.toggle.stop {
-      background: #f59e0b;
-    }
-
-    .control-btn.toggle.stop:hover {
-      background: #d97706;
-    }
-
-      .control-btn.reset {
-        background: transparent;
-        border: 2px solid #374151;
-        color: #e2e8f0;
-      }
-
-      .control-btn.reset:hover {
-        border-color: #fbbf24;
-        color: #fbbf24;
-      }
-
-      /* Улучшенные кнопки управления */
-      .mobile-controls .big-btn {
-        padding: 12px 16px;
-        font-size: 14px;
-        font-weight: 600;
-        min-width: 100px;
-        height: 44px;
-        border-radius: 8px;
-        border: none;
-        background: linear-gradient(135deg, #60a5fa, #3b82f6);
-        color: white;
-        touch-action: manipulation;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 6px rgba(96, 165, 250, 0.3);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-      }
-
-      .mobile-controls .big-btn:hover {
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(96, 165, 250, 0.4);
-      }
-
-      .mobile-controls .big-btn:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 4px rgba(96, 165, 250, 0.3);
-      }
-
-      /* Улучшенные строки управления */
-      .mobile-controls .control-row {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      /* Скрываем обычные секции управления на мобильных */
-      .control-section:not(.mobile-controls .control-section) {
-        display: none;
-      }
     }
 
     /* Дополнительные стили для планшетов */
@@ -1188,39 +688,143 @@
         </div>
       </div>
 
-      <!-- Секция ссылок (показывается после создания сессии) -->
-      <div id="linksSection" style="display: none;">
-        <div class="card">
-          <h3>🔗 Ссылки для сессии</h3>
-          <p style="margin: 8px 0; color: #9ca3af;">Сессия создана! Поделитесь ссылкой ниже:</p>
-
-          <div style="margin: 16px 0;">
-            <label style="display: block; font-size: 14px; color: #94a3b8; margin-bottom: 8px; font-weight: 600;">
-              🎬 Ссылка для зрителя:
-            </label>
-            <div style="display: flex; gap: 8px;">
-              <input id="viewerLink" readonly style="flex: 1; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: #e2e8f0; font-family: monospace; font-size: 14px;">
-              <button onclick="copyViewerLink()" style="padding: 12px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer;">📋 Копировать</button>
-          </div>
-        </div>
-
-          <div style="margin: 16px 0;">
-            <label style="display: block; font-size: 14px; color: #94a3b8; margin-bottom: 8px; font-weight: 600;">
-              🎮 Ссылка для контроллера:
-            </label>
-            <div style="display: flex; gap: 8px;">
-              <input id="controllerLink" readonly style="flex: 1; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: #e2e8f0; font-family: monospace; font-size: 14px;">
-              <button onclick="copyControllerLink()" style="padding: 12px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">📋 Копировать</button>
-          </div>
-        </div>
-
-          <div style="text-align: center; margin-top: 20px;">
-            <button onclick="proceedToController()" style="padding: 14px 24px; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">🚀 Перейти к управлению</button>
+      <div id="controllerSection" style="display: none;">
+        <div class="control-section">
+          <h3>🎮 Сессия: <span id="curSid">...</span></h3>
+          <p style="margin: 8px 0;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
+          <div class="viewer-link-container">
+            <div class="link-input-group">
+              <input id="view" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
+              <button onclick="copy('view')" class="copy-btn">📋 Копировать</button>
             </div>
           </div>
         </div>
 
-      <!-- Контроллер теперь в отдельном файле controller.html -->
+        <div id="previewWrap" style="display: none;" class="control-section floating-preview">
+          <h3 class="drag-handle">👁️ Превью движения</h3>
+          <div style="text-align: center; position: relative; padding-bottom: 35px;">
+            <canvas id="preview" style="border: 1px solid #374151; border-radius: 8px; background: #020617; max-width: 100%; height: auto; aspect-ratio: 4/3;"></canvas>
+            <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
+              Вьювер и размер экрана
+            </div>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <h3>🎮 Управление и направление</h3>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px;">
+            <button class="btn direction-btn" onclick="setDir('horizontal')" style="background: #60a5fa; min-width: 140px; padding: 12px 16px;">↔️ Горизонтально</button>
+            <button class="btn direction-btn" onclick="setDir('vertical')" style="background: #60a5fa; min-width: 140px; padding: 12px 16px;">↕️ Вертикально</button>
+            <button class="btn direction-btn" onclick="setDir('diagRL')" style="background: #60a5fa; min-width: 180px; padding: 12px 16px;">↖️↗️ Диагональ L→R</button>
+            <button class="btn direction-btn" onclick="setDir('diagRLL')" style="background: #60a5fa; min-width: 180px; padding: 12px 16px;">↙️↘️ Диагональ R→L</button>
+            <button class="btn" onclick="resumePlay()" style="background: #10b981; min-width: 110px; padding: 12px 16px;">▶️ Старт</button>
+            <button class="btn" onclick="pausePlay()" style="background: #f59e0b; min-width: 110px; padding: 12px 16px;">⏸ Стоп</button>
+            <button class="btn outline" onclick="resetCenter()" style="min-width: 110px; padding: 12px 16px;">🎯 Центр</button>
+            <button class="btn" onclick="resetSession()" style="background: #dc2626; min-width: 110px; padding: 12px 16px;">🔄 Сброс</button>
+          </div>
+          <p style="text-align: center; margin: 12px 0; font-size: 14px; color: #9ca3af;">
+            Текущее направление: <span id="currentDirection">↔️ Горизонтально</span>
+          </p>
+        </div>
+
+        <div class="control-section">
+          <h3>⚡ Скорость движения</h3>
+          <div class="speed-container">
+            <input id="speedRange" type="range" min="0" max="100" step="1" value="40" />
+            <div class="speed-labels">
+              <span class="speed-icon">🐌</span>
+              <span class="speed-value" id="speedLabel">40% (512 px/s)</span>
+              <span class="speed-icon">🐆</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <h3>🎨 Цвет шарика</h3>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="color-btn" data-color="#60a5fa" style="background: #60a5fa;" onclick="setBallColor('#60a5fa')">Синий</button>
+            <button class="color-btn" data-color="#ef4444" style="background: #ef4444;" onclick="setBallColor('#ef4444')">Красный</button>
+            <button class="color-btn" data-color="#10b981" style="background: #10b981;" onclick="setBallColor('#10b981')">Зеленый</button>
+            <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" onclick="setBallColor('#f59e0b')">Оранжевый</button>
+            <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="setBallColor('#8b5cf6')">Фиолетовый</button>
+            <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="setBallColor('#f97316')">Коралловый</button>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <h3>🎨 Цвет фона</h3>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="color-btn" data-color="#020617" style="background: #020617; border: 1px solid #374151;" onclick="setBgColor('#020617')">Темный</button>
+            <button class="color-btn" data-color="#1f2937" style="background: #1f2937; border: 1px solid #374151;" onclick="setBgColor('#1f2937')">Серый</button>
+            <button class="color-btn" data-color="#0f172a" style="background: #0f172a; border: 1px solid #374151;" onclick="setBgColor('#0f172a')">Синий</button>
+            <button class="color-btn" data-color="#1e293b" style="background: #1e293b; border: 1px solid #374151;" onclick="setBgColor('#1e293b')">Сланцевый</button>
+            <button class="color-btn" data-color="#0c0a09" style="background: #0c0a09; border: 1px solid #374151;" onclick="setBgColor('#0c0a09')">Черный</button>
+            <button class="color-btn" data-color="#1c1917" style="background: #1c1917; border: 1px solid #374151;" onclick="setBgColor('#1c1917')">Каменный</button>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <h3>📏 Размер шарика</h3>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="size-btn" data-size="20" onclick="setBallSize(20)">Маленький</button>
+            <button class="size-btn active" data-size="40" onclick="setBallSize(40)">Средний</button>
+            <button class="size-btn" data-size="80" onclick="setBallSize(80)">Большой</button>
+          </div>
+        </div>
+
+        <!-- Мобильные элементы управления (видны только на мобильных) -->
+        <div class="mobile-controls" style="display: none;">
+          <div class="control-section">
+            <h3>🎮 Управление</h3>
+            <div class="control-row">
+              <button class="btn big-btn" onclick="mobileSetDir('horizontal')" style="background: #60a5fa;">↔️ Горизонтально</button>
+              <button class="btn big-btn" onclick="mobileSetDir('vertical')" style="background: #60a5fa;">↕️ Вертикально</button>
+            </div>
+            <div class="control-row">
+              <button class="btn big-btn" onclick="mobileSetDir('diagRL')" style="background: #60a5fa;">↖️↗️ Диагональ</button>
+              <button class="btn big-btn" onclick="mobileSetDir('diagRLL')" style="background: #60a5fa;">↙️↘️ Диагональ</button>
+            </div>
+            <div class="control-row">
+              <button class="btn big-btn" onclick="resumePlay()" style="background: #10b981;">▶️ Старт</button>
+              <button class="btn big-btn" onclick="pausePlay()" style="background: #f59e0b;">⏸ Стоп</button>
+              <button class="btn big-btn outline" onclick="resetCenter()" style="background: transparent;">🎯 Центр</button>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>⚡ Скорость</h3>
+            <div class="speed-container">
+              <input id="mobileSpeedRange" type="range" min="0" max="100" step="1" value="40" />
+              <div class="speed-labels">
+                <span class="speed-icon">🐌</span>
+                <span class="speed-value" id="mobileSpeedLabel">40% (256 px/s)</span>
+                <span class="speed-icon">🐆</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>🎨 Цвет шарика</h3>
+            <div class="color-palette">
+              <button class="color-btn" data-color="#60a5fa" style="background: #60a5fa;" onclick="setBallColor('#60a5fa')">С</button>
+              <button class="color-btn" data-color="#ef4444" style="background: #ef4444;" onclick="setBallColor('#ef4444')">К</button>
+              <button class="color-btn" data-color="#10b981" style="background: #10b981;" onclick="setBallColor('#10b981')">З</button>
+              <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" onclick="setBallColor('#f59e0b')">О</button>
+              <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="setBallColor('#8b5cf6')">Ф</button>
+              <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="setBallColor('#f97316')">Ко</button>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>📏 Размер</h3>
+            <div class="size-palette">
+              <button class="size-btn" data-size="20" onclick="setBallSize(20)">М</button>
+              <button class="size-btn active" data-size="40" onclick="setBallSize(40)">С</button>
+              <button class="size-btn" data-size="80" onclick="setBallSize(80)">Б</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="statusIndicator" class="status-indicator disconnected">Проверяем статус сервера...</div>
@@ -1236,8 +840,7 @@
       return Math.random().toString(36).slice(2, 8);
     }
 
-    // Проверка что функция определена
-    window.createSession = async function createSession() {
+    async function createSession() {
       try {
         const response = await fetch('/api/session', { method: 'POST' });
         if (!response.ok) {
@@ -1246,6 +849,8 @@
 
         const data = await response.json();
         const sessionId = data.sessionId;
+
+        window.__current = { sessionId };
 
         // Сразу переходим к контроллеру без промежуточного экрана
         const baseUrl = window.location.origin;
@@ -1258,92 +863,251 @@
       }
     }
 
-    function showSessionLinks(sessionId) {
-      const baseUrl = window.location.origin;
-      const viewerLink = `${baseUrl}/s/${sessionId}`;
-      const controllerLink = `${baseUrl}/c/${sessionId}?sid=${sessionId}`;
+    function initializePreview(sessionId) {
+      const previewWrap = document.getElementById('previewWrap');
+      if (previewWrap) {
+        previewWrap.style.display = 'block';
+      }
 
-      // Заполняем поля со ссылками
-      const viewerInput = document.getElementById('viewerLink');
-      const controllerInput = document.getElementById('controllerLink');
+      const physics = new BallPhysics();
+      // Начальный размер мира - будет обновлен при подключении вьювера
+      physics.setWorldSize(800, 600);
+      physics.setPosition(400, 300);
+      physics.setPaused(true);
 
-      if (viewerInput) viewerInput.value = viewerLink;
-      if (controllerInput) controllerInput.value = controllerLink;
+      window.__previewPhysics = physics;
+      window.__previewCanvas = document.getElementById('preview');
+      window.__previewCtx = window.__previewCanvas.getContext('2d');
 
-      // Скрываем секцию создания и показываем секцию ссылок
-      const createSection = document.getElementById('createSection');
-      const linksSection = document.getElementById('linksSection');
+      // Устанавливаем начальный размер превью
+      updatePreviewSize({ width: 800, height: 600 });
 
-      if (createSection) createSection.style.display = 'none';
-      if (linksSection) linksSection.style.display = 'block';
+      // После установки размеров превью центрируем мяч в видимой области
+      const canvas = window.__previewCanvas;
+      if (canvas) {
+        const centerX = physics.world.width / 2;
+        const centerY = physics.world.height / 2;
+        physics.setPosition(centerX, centerY);
+      }
 
-      // Для отладки: выводим ссылку на viewer в консоль
-      console.log('Ссылка для зрителя:', viewerLink);
-      console.log('Ссылка для контроллера:', controllerLink);
+      startPreviewAnimation();
     }
 
-    function copyViewerLink() {
-      const input = document.getElementById('viewerLink');
-      if (input) {
-        input.select();
-        document.execCommand('copy');
-        alert('Ссылка для зрителя скопирована!');
+    function startPreviewAnimation() {
+      const canvas = window.__previewCanvas;
+      const ctx = window.__previewCtx;
+      const physics = window.__previewPhysics;
+
+      if (!canvas || !ctx || !physics) return;
+
+      let lastTime = 0;
+      const targetFrameTime = 1000 / 60; // 60 FPS
+
+      function render(currentTime) {
+        if (!canvas || !ctx || !physics) return;
+
+        const deltaTime = currentTime - lastTime;
+
+        // Очищаем canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Рисуем фон
+        ctx.fillStyle = physics.colors.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Обновляем позицию только при достаточном deltaTime
+        if (deltaTime >= targetFrameTime) {
+        if (!physics.paused) {
+            // Используем physics.js для обновления позиции и обработки коллизий
+            const fixedDeltaTime = 1/60; // Фиксированный шаг времени
+            physics.updateWithDirection(
+              physics.lastDir.x,
+              physics.lastDir.y,
+              Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy) || physics.ball.speed,
+              fixedDeltaTime
+            );
+
+            // Синхронизируем прогресс-бар с реальной скоростью мячика
+            // Обновляем с умной частотой для оптимальной производительности
+            const now = Date.now();
+            const timeSinceLastSync = now - (window.__lastProgressSync || 0);
+
+            // Обновляем чаще когда скорость высокая, реже когда низкая
+            const currentSpeed = Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy);
+            const updateInterval = currentSpeed > 500 ? 30 : currentSpeed > 200 ? 50 : 100;
+
+            if (timeSinceLastSync >= updateInterval) {
+              speedManager.syncWithBallPhysics(physics);
+              window.__lastProgressSync = now;
+            }
+
+            // Можно добавить логику для отслеживания производительности
+            if (!window.__previewLastLog || Date.now() - window.__previewLastLog > 1000) {
+              window.__previewLastLog = Date.now();
+            }
+          } else {
+            // Если пауза, плавно центрируем мяч
+          const centerX = physics.world.width / 2;
+          const centerY = physics.world.height / 2;
+            const centerSpeed = 0.05; // Коэффициент центрирования
+
+          if (Math.abs(physics.ball.x - centerX) > 1 || Math.abs(physics.ball.y - centerY) > 1) {
+              physics.ball.x += (centerX - physics.ball.x) * centerSpeed;
+              physics.ball.y += (centerY - physics.ball.y) * centerSpeed;
+          }
+          }
+          lastTime = currentTime;
+        }
+
+        // Масштабируем координаты для отображения в превью
+        const scaleX = canvas.width / physics.world.width;
+        const scaleY = canvas.height / physics.world.height;
+        const scaledX = physics.ball.x * scaleX;
+        const scaledY = physics.ball.y * scaleY;
+        const scaledRadius = physics.ball.radius * Math.min(scaleX, scaleY);
+
+        // Рисуем мяч в масштабированных координатах
+        ctx.beginPath();
+        ctx.arc(scaledX, scaledY, scaledRadius, 0, Math.PI * 2);
+        ctx.fillStyle = physics.colors.ball;
+        ctx.fill();
+
+        requestAnimationFrame(render);
+      }
+
+      render();
+    }
+
+    async function syncInitialState(sessionId) {
+      try {
+        // Получаем текущее состояние шара с сервера
+        const response = await fetch(`/api/session/${sessionId}/state`);
+        if (!response.ok) return;
+
+        const ballState = await response.json();
+        if (ballState && window.__previewPhysics) {
+          // Обновляем размеры превью в зависимости от экрана вьювера
+          updatePreviewSize(ballState.viewerScreenSize);
+
+          // Устанавливаем начальную позицию из состояния сервера
+          window.__previewPhysics.ball.x = ballState.x || (window.__previewPhysics.world.width / 2);
+          window.__previewPhysics.ball.y = ballState.y || (window.__previewPhysics.world.height / 2);
+
+          // Синхронизируем направление движения при начальной загрузке
+          if (ballState.vx !== undefined || ballState.vy !== undefined) {
+            // Вычисляем направление из серверных данных
+            const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
+            const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
+
+            // Обновляем только направление, скорость пусть рассчитывается локально
+            window.__previewPhysics.lastDir = { x: dirX, y: dirY };
+
+            // Если скорость нулевая, останавливаем мяч
+            if (ballState.vx === 0 && ballState.vy === 0) {
+              window.__previewPhysics.ball.vx = 0;
+              window.__previewPhysics.ball.vy = 0;
+            } else {
+              // Для ненулевой скорости позволяем локальной физике рассчитать vx/vy
+              // Не устанавливаем абсолютные значения, чтобы избежать конфликтов
+            }
+          }
+
+          // Синхронизируем остальные параметры
+          if (ballState.speed !== undefined) window.__previewPhysics.ball.speed = ballState.speed;
+          if (ballState.radius !== undefined) window.__previewPhysics.ball.radius = ballState.radius;
+          if (ballState.colorBall) window.__previewPhysics.colors.ball = ballState.colorBall;
+          if (ballState.colorBg) window.__previewPhysics.colors.bg = ballState.colorBg;
+          if (ballState.paused !== undefined) window.__previewPhysics.paused = ballState.paused;
+
+  
+        }
+
+        // Запускаем SessionPoller для непрерывной синхронизации
+        startPreviewPolling(sessionId);
+      } catch (error) {
+        console.error('Error syncing initial state for preview:', error);
       }
     }
 
-    function copyControllerLink() {
-      const input = document.getElementById('controllerLink');
-      if (input) {
-        input.select();
-        document.execCommand('copy');
-        alert('Ссылка для контроллера скопирована!');
+    function startPreviewPolling(sessionId) {
+      // Останавливаем предыдущий polling если он был
+      if (window.__previewPoller) {
+        window.__previewPoller.stopPolling();
       }
+
+      // Создаем новый SessionPoller для preview
+      window.__previewPoller = new SessionPoller({
+        sessionId,
+        pollInterval: 100, // 100ms для плавной синхронизации
+        onDataReceived: (sessionData) => {
+          if (sessionData && window.__previewPhysics) {
+            // Проверяем, прошло ли достаточно времени с момента последнего пользовательского изменения скорости
+            const timeSinceLastUserInput = Date.now() - speedManager.lastUpdateTime;
+            const shouldSyncSpeed = timeSinceLastUserInput > speedManager.updateDelay;
+
+            // Синхронизируем позицию мяча
+            if (sessionData.x !== undefined) {
+              window.__previewPhysics.ball.x = sessionData.x;
+            }
+            if (sessionData.y !== undefined) {
+              window.__previewPhysics.ball.y = sessionData.y;
+            }
+
+            // Синхронизируем направление движения (только если прошло достаточно времени)
+            if (shouldSyncSpeed && (sessionData.vx !== undefined || sessionData.vy !== undefined)) {
+              // Вычисляем направление из серверных данных
+              const dirX = sessionData.vx === 0 ? 0 : (sessionData.vx > 0 ? 1 : -1);
+              const dirY = sessionData.vy === 0 ? 0 : (sessionData.vy > 0 ? 1 : -1);
+
+              // Обновляем только направление, скорость пусть рассчитывается локально
+              window.__previewPhysics.lastDir = { x: dirX, y: dirY };
+
+              // Если скорость нулевая, останавливаем мяч
+              if (sessionData.vx === 0 && sessionData.vy === 0) {
+                window.__previewPhysics.ball.vx = 0;
+                window.__previewPhysics.ball.vy = 0;
+              }
+            }
+
+            // Синхронизируем другие параметры
+            if (sessionData.speed !== undefined) {
+              window.__previewPhysics.ball.speed = sessionData.speed;
+            }
+            if (sessionData.radius !== undefined) {
+              window.__previewPhysics.ball.radius = sessionData.radius;
+            }
+
+            // Управляем паузой
+            const isMoving = sessionData.vx !== 0 || sessionData.vy !== 0;
+            window.__previewPhysics.paused = !isMoving;
+
+            // Обновляем направление
+            if (sessionData.vx !== undefined && sessionData.vy !== undefined) {
+              const dirX = sessionData.vx === 0 ? 0 : (sessionData.vx > 0 ? 1 : -1);
+              const dirY = sessionData.vy === 0 ? 0 : (sessionData.vy > 0 ? 1 : -1);
+              window.__previewPhysics.lastDir = { x: dirX, y: dirY };
+            }
+
+            // Обновляем информацию о вьювере
+            updateViewerInfo(sessionData);
+          }
+        },
+        onSessionExpired: () => {
+          console.log('Preview session expired');
+          // Останавливаем polling
+          if (window.__previewPoller) {
+            window.__previewPoller.stopPolling();
+          }
+        },
+        onError: (error) => {
+          console.error('Preview polling error:', error);
+        }
+      });
+
+      // Запускаем polling
+      window.__previewPoller.startPolling();
+      console.log('✅ Preview polling started');
     }
-
-    function proceedToController() {
-      const input = document.getElementById('controllerLink');
-      if (input && input.value) {
-        window.location.href = input.value;
-      }
-    }
-
-    // Функции initializePreview и startPreviewAnimation удалены - теперь используются в controller.html
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Проверка что все функции определены
-    console.log('All functions defined:', {
-      createSession: typeof window.createSession,
-      showSessionLinks: typeof showSessionLinks,
-      copyViewerLink: typeof copyViewerLink,
-      copyControllerLink: typeof copyControllerLink,
-      proceedToController: typeof proceedToController
-    });
-
-    // Функция syncInitialState удалена - управление превью теперь в controller.html
-
-
-
-
-
-
-
-
-
-
-
-    // Функция startPreviewPolling удалена - управление превью теперь в controller.html
 
     function updateViewerInfo(sessionData) {
       const viewerInfo = document.getElementById('viewerInfo');
@@ -1436,7 +1200,84 @@
             location.reload();
     }
 
-    // Функция startSessionPolling удалена - теперь используется в controller.html
+    function startSessionPolling(sessionId) {
+      // Используем общий модуль для polling'а сессии
+      const poller = new SessionPoller({
+        sessionId,
+        onSessionExpired: handleSessionExpired,
+        onDataReceived: (sessionData) => {
+          // Обновляем статус зрителя
+          const statusEl = document.getElementById('viewerStatus');
+          const statusOverlay = document.getElementById('statusIndicator');
+
+          if (sessionData.viewerConnected) {
+            if (statusEl) {
+              statusEl.textContent = 'Зритель подключен';
+              statusEl.style.color = '#10b981';
+            }
+            if (statusOverlay) {
+              statusOverlay.className = 'status-indicator connected';
+              statusOverlay.textContent = 'Зритель подключен';
+            }
+          } else {
+            if (statusEl) {
+              statusEl.textContent = 'Ожидание зрителя...';
+              statusEl.style.color = '#ef4444';
+            }
+            if (statusOverlay) {
+              statusOverlay.className = 'status-indicator disconnected';
+              statusOverlay.textContent = 'Ожидание зрителя...';
+            }
+
+            // Скрываем информацию о размерах вьювера при отключении
+            const viewerInfo = document.getElementById('viewerInfo');
+            if (viewerInfo) {
+              viewerInfo.style.display = 'none';
+            }
+          }
+        },
+        onStateReceived: (ballState) => {
+          // Применяем команды управления локально
+          if (window.__previewPhysics && ballState) {
+            // Обновляем размеры превью при изменении экрана вьювера
+            if (ballState.viewerScreenSize &&
+                (ballState.viewerScreenSize.width !== window.__previewPhysics.world.width ||
+                 ballState.viewerScreenSize.height !== window.__previewPhysics.world.height)) {
+              updatePreviewSize(ballState.viewerScreenSize);
+            }
+
+            // Синхронизация скорости в пикселях в секунду
+            if (ballState.vx !== undefined || ballState.vy !== undefined) {
+              window.__previewPhysics.ball.vx = ballState.vx;
+              window.__previewPhysics.ball.vy = ballState.vy;
+
+              // Обновляем направление для совместимости
+              const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
+              const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
+              window.__previewPhysics.lastDir = { x: dirX, y: dirY };
+
+
+            }
+
+            // Синхронизация параметров управления
+            if (ballState.speed !== undefined) window.__previewPhysics.ball.speed = ballState.speed;
+            if (ballState.radius !== undefined) window.__previewPhysics.ball.radius = ballState.radius;
+            if (ballState.colorBall) window.__previewPhysics.colors.ball = ballState.colorBall;
+            if (ballState.colorBg) window.__previewPhysics.colors.bg = ballState.colorBg;
+            if (ballState.paused !== undefined) {
+              window.__previewPhysics.paused = ballState.paused;
+
+            }
+
+            // Убираем синхронизацию позиции - превью полагается только на команды сервера
+            // Синхронизация позиции вызывала дергание мяча
+          }
+        }
+      });
+
+      // Запускаем polling
+      poller.startPolling();
+    }
 
 
 
@@ -1507,7 +1348,6 @@
       }).catch(error => console.error('Error resetting center:', error));
     }
 
-    // Функция resetSession удалена - управление сессиями теперь в controller.html
     function resetSession(){
       const sessionId = window.__current?.sessionId;
       if (sessionId) {
@@ -1517,13 +1357,23 @@
           body: JSON.stringify({ reset: true, pause: true })
         }).catch(error => console.error('Error resetting session:', error));
       }
+
+      if (window.__previewPhysics) {
+        window.__previewPhysics.setPaused(true);
+      }
+
+      setTimeout(() => {
+        // Безопасно возвращаемся к созданию сессии
+        const createSection = document.getElementById('createSection');
+        const controllerSection = document.getElementById('controllerSection');
+
+        if (createSection) createSection.style.display = 'block';
+        if (controllerSection) controllerSection.style.display = 'none';
+
+        window.__current = null;
+        createSession();
+      }, 1000);
     }
-
-    // Функции setBallColor и setBgColor удалены - управление цветами теперь в controller.html
-
-    // Функция setBallSize удалена - управление размером шарика теперь в controller.html
-
-    // Функции togglePlayPause и updateToggleButton удалены - управление воспроизведением теперь в controller.html
 
     function setBallColor(color) {
       document.querySelectorAll('.color-btn').forEach(btn => {
@@ -1626,17 +1476,6 @@
 
     // Мобильные функции управления
     function mobileSetDir(mode) {
-      // Снимаем выделение со всех кнопок направления
-      document.querySelectorAll('.direction-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-
-      // Выделяем текущую кнопку
-      const currentBtn = document.querySelector(`.direction-btn[data-dir="${mode}"]`);
-      if (currentBtn) {
-        currentBtn.classList.add('active');
-      }
-
       setDir(mode);
     }
 
@@ -1986,6 +1825,15 @@
     // Глобальный экземпляр менеджера скорости
     const speedManager = new SpeedManager();
 
+    // Проверка что все функции определены
+    console.log('All functions defined:', {
+      createSession: typeof createSession,
+      showSessionLinks: typeof showSessionLinks,
+      copyViewerLink: typeof copyViewerLink,
+      copyControllerLink: typeof copyControllerLink,
+      proceedToController: typeof proceedToController
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
       // Инициализация мобильной поддержки
       addTouchSupport();
@@ -2094,7 +1942,7 @@
         setDir('horizontal');
       } else if (e.key === ' ') {
         e.preventDefault();
-        // togglePlayPause() removed - управление воспроизведением в controller.html
+        pausePlay();
       } else if (e.key === 'r' || e.key === 'R') {
         e.preventDefault();
         resetCenter();
