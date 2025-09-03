@@ -831,7 +831,8 @@
   </div>
 
   <script>
-    let lastDir = { x: 1, y: 0 };
+    window.lastDir = { x: 1, y: 0 };
+    let lastDir = window.lastDir;
 
     function randomSid() {
       return Math.random().toString(36).slice(2, 8);
@@ -859,11 +860,14 @@
         if (viewInput) viewInput.value = viewerLink;
         if (curSid) curSid.textContent = sessionId;
 
-        // НЕ отправляем начальную команду запуска мяча
-        // Мяч будет запущен только после нажатия кнопки "Старт" пользователем
+        // Отправляем speedScalar при подключении контроллера
+        const speedVal = Number(document.getElementById('speedRange')?.value || 40);
         await fetch(`/api/session/${sessionId}/controller/connect`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            speedScalar: speedVal
+          })
         });
 
         initializePreview(sessionId);
@@ -1313,6 +1317,7 @@
       else if (mode === 'diagRLL') { dx = -1; dy = -1; } // диагональ справа налево
       else { dx = 1; dy = 0; }
       lastDir = { x: dx, y: dy };
+      window.lastDir = lastDir;
 
       updateDirectionDisplay(dx, dy);
 
@@ -1465,6 +1470,7 @@
       if (!sessionId) return;
 
         const speedVal = Number(document.getElementById('speedRange')?.value || 40);
+        console.log('Resume play with speed:', speedVal);
         
       // Отправляем команду на сервер - локальная физика обновится через polling
         fetch(`/api/session/${sessionId}/controller/update`, {
@@ -1694,6 +1700,8 @@
 
         // Проверяем, изменилось ли значение
         if (!force && this.currentSpeed === value) return;
+
+        console.log('SpeedManager.setSpeed called with value:', value);
 
         this.currentSpeed = value;
         // КРИТИЧНО: Обновляем время последнего изменения для предотвращения конфликтов с polling
