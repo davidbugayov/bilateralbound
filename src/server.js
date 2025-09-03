@@ -373,23 +373,6 @@ class BilateralBoundServer {
       res.sendFile(path.join(__dirname, '..', 'public', 'controller.html'));
     });
 
-    // Специальный роут для controller сессий - более специфичный
-    this.app.get('/c/:sessionId(*)', (req, res, next) => {
-      const sessionId = req.params.sessionId;
-
-      // Пропускаем если это файл (содержит точку)
-      if (sessionId.includes('.')) {
-        return next();
-      }
-
-      // Проверяем что это валидный sessionId
-      if (sessionId && sessionId.length >= 6) {
-        res.sendFile(path.join(__dirname, '..', 'public', 'controller.html'));
-      } else {
-        res.status(404).send('Invalid session ID');
-      }
-    });
-
     // Специальный роут для viewer сессий - более специфичный
     this.app.get('/s/:sessionId(*)', (req, res, next) => {
       const sessionId = req.params.sessionId;
