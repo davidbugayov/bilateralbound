@@ -947,10 +947,18 @@
         if (!physics.paused) {
             // Используем physics.js для обновления позиции и обработки коллизий
             const fixedDeltaTime = 1/60; // Фиксированный шаг времени
+
+            // Рассчитываем текущую скорость на основе speedScalar
+            const currentSpeed = Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy);
+            const targetSpeed = (physics.ball.speed / 100) * 1280; // Преобразуем speedScalar в пиксели/сек
+
+            // Используем текущую скорость мяча или целевую скорость
+            const speedToUse = currentSpeed > 0 ? currentSpeed : targetSpeed;
+
             physics.updateWithDirection(
               physics.lastDir.x,
               physics.lastDir.y,
-              Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy) || physics.ball.speed,
+              speedToUse,
               fixedDeltaTime
             );
 
@@ -1273,17 +1281,20 @@
               updatePreviewSize(ballState.viewerScreenSize);
             }
 
-            // Синхронизация скорости в пикселях в секунду
+            // Синхронизация скорости через правильный метод физики
             if (ballState.vx !== undefined || ballState.vy !== undefined) {
-              window.__previewPhysics.ball.vx = ballState.vx;
-              window.__previewPhysics.ball.vy = ballState.vy;
+              // Используем updateFromServer для правильной интерполяции
+              window.__previewPhysics.updateFromServer(
+                ballState.x || window.__previewPhysics.ball.x,
+                ballState.y || window.__previewPhysics.ball.y,
+                ballState.vx,
+                ballState.vy
+              );
 
               // Обновляем направление для совместимости
               const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
               const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
               window.__previewPhysics.lastDir = { x: dirX, y: dirY };
-
-
             }
 
             // Синхронизация параметров управления
