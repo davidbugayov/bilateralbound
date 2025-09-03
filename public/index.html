@@ -831,9 +831,6 @@
   </div>
 
   <script>
-    // Проверка что скрипт загружается
-    console.log('Script loaded successfully');
-
     let lastDir = { x: 1, y: 0 };
 
     function randomSid() {
@@ -852,10 +849,36 @@
 
         window.__current = { sessionId };
 
-        // Сразу переходим к контроллеру без промежуточного экрана
-        const baseUrl = window.location.origin;
-        const controllerLink = `${baseUrl}/c/${sessionId}?sid=${sessionId}`;
-        window.location.href = controllerLink;
+      const baseUrl = window.location.origin;
+      const viewerLink = `${baseUrl}/s/${sessionId}`;
+
+        // Безопасно обновляем элементы, проверяя их существование
+        const viewInput = document.getElementById('view');
+        const curSid = document.getElementById('curSid');
+
+        if (viewInput) viewInput.value = viewerLink;
+        if (curSid) curSid.textContent = sessionId;
+
+        // НЕ отправляем начальную команду запуска мяча
+        // Мяч будет запущен только после нажатия кнопки "Старт" пользователем
+        await fetch(`/api/session/${sessionId}/controller/connect`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        initializePreview(sessionId);
+
+        // Синхронизируем начальное состояние шара
+        syncInitialState(sessionId);
+
+        startSessionPolling(sessionId);
+
+        // Безопасно скрываем/показываем секции
+      const createSection = document.getElementById('createSection');
+        const controllerSection = document.getElementById('controllerSection');
+
+      if (createSection) createSection.style.display = 'none';
+        if (controllerSection) controllerSection.style.display = 'block';
 
       } catch (error) {
         alert('Ошибка при создании сессии: ' + error.message);
@@ -1824,15 +1847,6 @@
 
     // Глобальный экземпляр менеджера скорости
     const speedManager = new SpeedManager();
-
-    // Проверка что все функции определены
-    console.log('All functions defined:', {
-      createSession: typeof createSession,
-      showSessionLinks: typeof showSessionLinks,
-      copyViewerLink: typeof copyViewerLink,
-      copyControllerLink: typeof copyControllerLink,
-      proceedToController: typeof proceedToController
-    });
 
     document.addEventListener('DOMContentLoaded', () => {
       // Инициализация мобильной поддержки

@@ -369,10 +369,6 @@ class BilateralBoundServer {
       res.sendFile(path.join(__dirname, '..', 'public', 'viewer.html'));
     });
 
-    this.app.get('/c/:sessionId', (req, res) => {
-      res.sendFile(path.join(__dirname, '..', 'public', 'controller.html'));
-    });
-
     // Специальный роут для viewer сессий - более специфичный
     this.app.get('/s/:sessionId(*)', (req, res, next) => {
       const sessionId = req.params.sessionId;
