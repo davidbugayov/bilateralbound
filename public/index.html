@@ -1195,8 +1195,8 @@
             <div style="display: flex; gap: 8px;">
               <input id="viewerLink" readonly style="flex: 1; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: #e2e8f0; font-family: monospace; font-size: 14px;">
               <button onclick="copyViewerLink()" style="padding: 12px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer;">📋 Копировать</button>
-            </div>
           </div>
+        </div>
 
           <div style="margin: 16px 0;">
             <label style="display: block; font-size: 14px; color: #94a3b8; margin-bottom: 8px; font-weight: 600;">
@@ -1205,14 +1205,14 @@
             <div style="display: flex; gap: 8px;">
               <input id="controllerLink" readonly style="flex: 1; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: #e2e8f0; font-family: monospace; font-size: 14px;">
               <button onclick="copyControllerLink()" style="padding: 12px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">📋 Копировать</button>
-            </div>
           </div>
+        </div>
 
           <div style="text-align: center; margin-top: 20px;">
             <button onclick="proceedToController()" style="padding: 14px 24px; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">🚀 Перейти к управлению</button>
+            </div>
           </div>
         </div>
-      </div>
 
       <!-- Контроллер теперь в отдельном файле controller.html -->
     </div>
@@ -1324,27 +1324,6 @@
 
     // Функция startPreviewPolling удалена - управление превью теперь в controller.html
 
-
-
-
-        },
-        onSessionExpired: () => {
-          console.log('Preview session expired');
-          // Останавливаем polling
-          if (window.__previewPoller) {
-            window.__previewPoller.stopPolling();
-          }
-        },
-        onError: (error) => {
-          console.error('Preview polling error:', error);
-        }
-      });
-
-      // Запускаем polling
-      window.__previewPoller.startPolling();
-      console.log('✅ Preview polling started');
-    }
-
     function updateViewerInfo(sessionData) {
       const viewerInfo = document.getElementById('viewerInfo');
       if (viewerInfo && sessionData) {
@@ -1433,7 +1412,7 @@
      */
     function handleSessionExpired() {
       alert('⏰ Сессия истекла\nВаша сессия была завершена. Создайте новую сессию для продолжения.');
-      location.reload();
+            location.reload();
     }
 
     // Функция startSessionPolling удалена - теперь используется в controller.html
@@ -1523,13 +1502,6 @@
     // Функция setBallSize удалена - управление размером шарика теперь в controller.html
 
     // Функции togglePlayPause и updateToggleButton удалены - управление воспроизведением теперь в controller.html
-        if (createSection) createSection.style.display = 'block';
-        if (controllerSection) controllerSection.style.display = 'none';
-
-        window.__current = null;
-        createSession();
-      }, 1000);
-    }
 
     function setBallColor(color) {
       document.querySelectorAll('.color-btn').forEach(btn => {
@@ -1597,19 +1569,19 @@
       const sessionId = window.__current?.sessionId;
       if (!sessionId) return;
 
-      const speedVal = Number(document.getElementById('speedRange')?.value || 40);
-
+        const speedVal = Number(document.getElementById('speedRange')?.value || 40);
+        
       // Отправляем команду на сервер - локальная физика обновится через polling
-      fetch(`/api/session/${sessionId}/controller/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resume: true,
-          speedScalar: speedVal,
-          dirX: lastDir.x,
-          dirY: lastDir.y
-        })
-      }).catch(error => console.error('Error resuming:', error));
+        fetch(`/api/session/${sessionId}/controller/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resume: true,
+            speedScalar: speedVal,
+            dirX: lastDir.x,
+            dirY: lastDir.y
+          })
+        }).catch(error => console.error('Error resuming:', error));
     }
 
     function pausePlay(){
@@ -1617,11 +1589,11 @@
       if (!sessionId) return;
 
       // Отправляем команду на сервер - локальная физика обновится через polling
-      fetch(`/api/session/${sessionId}/controller/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pause: true })
-      }).catch(error => console.error('Error pausing:', error));
+        fetch(`/api/session/${sessionId}/controller/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pause: true })
+        }).catch(error => console.error('Error pausing:', error));
     }
 
     function copy(id) {
