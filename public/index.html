@@ -968,7 +968,6 @@
             const timeSinceLastSync = now - (window.__lastProgressSync || 0);
 
             // Обновляем чаще когда скорость высокая, реже когда низкая
-            const currentSpeed = Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy);
             const updateInterval = currentSpeed > 500 ? 30 : currentSpeed > 200 ? 50 : 100;
 
             if (timeSinceLastSync >= updateInterval) {
@@ -1513,6 +1512,14 @@
       el.select();
       document.execCommand('copy');
     }
+
+    // Экспортируем все функции в глобальную область видимости
+    window.createSession = createSession;
+    window.setDir = setDir;
+    window.resumePlay = resumePlay;
+    window.pausePlay = pausePlay;
+    window.copy = copy;
+    window.mobileSetDir = mobileSetDir;
 
     // Мобильные функции управления
     function mobileSetDir(mode) {
