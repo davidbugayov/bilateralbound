@@ -53,9 +53,6 @@ services:
         source: /s/*
         destination: /s/*
       - type: rewrite
-        source: /c/*
-        destination: /c/*
-      - type: rewrite
         source: /api/*
         destination: /api/*
       - type: rewrite
