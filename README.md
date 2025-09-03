@@ -76,7 +76,7 @@ window.SERVER_URL = 'https://bilateralbound.onrender.com';
 - `GET /api/session/new` — создать сессию, ответ `{ sessionId }`.
 - `POST /api/session` — создать сессию, ответ `{ sessionId }`.
 - `GET /s/:sessionId` — страница зрителя.
-- `GET /c/:sessionId` — страница контроллера.
+- `GET /` — главная страница с созданием сессии и контроллером.
 
 Сокеты (`socket.io`):
 - `join-session` `{ sessionId, role: 'viewer'|'controller' }`
