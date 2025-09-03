@@ -1247,8 +1247,10 @@
         const data = await response.json();
         const sessionId = data.sessionId;
 
-        // Показываем секцию с ссылками
-        showSessionLinks(sessionId);
+        // Сразу переходим к контроллеру без промежуточного экрана
+        const baseUrl = window.location.origin;
+        const controllerLink = `${baseUrl}/c/${sessionId}?sid=${sessionId}`;
+        window.location.href = controllerLink;
 
       } catch (error) {
         alert('Ошибка при создании сессии: ' + error.message);
