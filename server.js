@@ -73,6 +73,17 @@ const sessionManager = {
       return true
     }
 
+    // Handle reset (center the ball)
+    if (updates.reset !== undefined) {
+      // Center coordinates (assuming 800x600 world, center at 400x300)
+      session.ballState.x = 400
+      session.ballState.y = 300
+      session.ballState.vx = 0
+      session.ballState.vy = 0
+      session.ballState.paused = true
+      return true
+    }
+
     // Handle resume with direction
     if (updates.resume !== undefined && updates.dirX !== undefined && updates.dirY !== undefined) {
       // Use consistent speed calculation: speedPercent * maxSpeed / 100
@@ -83,10 +94,33 @@ const sessionManager = {
       session.ballState.vy = updates.dirY * pixelsPerSecond
       session.ballState.paused = false
       session.ballState.speed = speedPercent
+      return true
     }
 
-    // Handle other updates
-    Object.assign(session.ballState, updates)
+    // Handle resume without explicit direction (use default horizontal)
+    if (updates.resume === true && !('dirX' in updates) && !('dirY' in updates)) {
+      const speedPercent = updates.speedScalar || session.ballState.speed || 40
+      const maxSpeed = 1280 // Match PhysicsEngine default maxSpeed
+      const pixelsPerSecond = (speedPercent / 100) * maxSpeed
+      // Default to horizontal movement (dx=1, dy=0)
+      session.ballState.vx = 1 * pixelsPerSecond
+      session.ballState.vy = 0
+      session.ballState.paused = false
+      session.ballState.speed = speedPercent
+      return true
+    }
+
+    // Handle other updates (only if not handled above)
+    const handledUpdates = { ...updates }
+    delete handledUpdates.pause
+    delete handledUpdates.reset
+    delete handledUpdates.resume
+    delete handledUpdates.dirX
+    delete handledUpdates.dirY
+    delete handledUpdates.speedScalar
+
+    // Apply remaining updates
+    Object.assign(session.ballState, handledUpdates)
     return true
   },
 

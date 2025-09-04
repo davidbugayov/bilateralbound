@@ -812,10 +812,13 @@
     }
 
     function resetCenter(){
-      fetch(`/api/session/${sessionId}/reset`, {
+      debugLog('🎯 Центрирование мяча...');
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ center: true })
+        body: JSON.stringify({ reset: true })
+      }).then(() => {
+        debugLog('✅ Мяч отцентрирован');
       }).catch(error => debugError('Error resetting center:', error));
     }
 
@@ -887,8 +890,9 @@
           debugLog('⏸ Игра остановлена');
         }).catch(error => debugError('Error pausing play:', error));
       } else {
-        // Запускаем игру (нужно направление для resume)
+        // Запускаем игру (используем горизонтальное направление по умолчанию, если не выбрано другое)
         const currentDirection = directionState || { dx: 1, dy: 0 };
+        debugLog(`▶️ Запуск движения: направление dx=${currentDirection.dx}, dy=${currentDirection.dy}`);
         fetch(`/api/session/${sessionId}/controller/update`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

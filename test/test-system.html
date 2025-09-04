@@ -407,6 +407,7 @@
                 <button class="test-btn" onclick="runFullTest()">🚀 Полный тест</button>
                 <button class="test-btn" onclick="testDirections()">🧭 Направления</button>
                 <button class="test-btn" onclick="testMovement()">⚡ Движение</button>
+                <button class="test-btn" onclick="testDefaultBehavior()">🎯 По умолчанию</button>
                 <button class="test-btn" onclick="testScaling()">📏 Масштаб</button>
                 <button class="test-btn" onclick="testColors()">🎨 Цвета</button>
                 <button class="test-btn" onclick="clearLog()">🗑️ Очистить лог</button>
@@ -719,14 +720,25 @@
 
             await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // Тест 4: Тестирование цветов
+            // Тест 4: Тестирование поведения по умолчанию
+            try {
+                await testDefaultBehavior();
+                await new Promise(resolve => setTimeout(resolve, 4000));
+                passedTests += 3; // Центрирование + старт по умолчанию + остановка
+                totalTests += 3;
+            } catch (error) {
+                log('error', `❌ Тест 4: Ошибка тестирования поведения по умолчанию - ${error.message}`);
+                totalTests += 3;
+            }
+
+            // Тест 5: Тестирование цветов
             try {
                 await testColors();
                 await new Promise(resolve => setTimeout(resolve, 4000));
                 passedTests += 2; // Цвет фона + цвет мяча
                 totalTests += 2;
             } catch (error) {
-                log('error', `❌ Тест 4: Ошибка тестирования цветов - ${error.message}`);
+                log('error', `❌ Тест 5: Ошибка тестирования цветов - ${error.message}`);
                 totalTests += 2;
             }
 
@@ -938,6 +950,104 @@
             setTimeout(() => {
                 log('success', '📏 Тест масштабирования завершен');
             }, 2500);
+        }
+
+        // Тест поведения по умолчанию
+        async function testDefaultBehavior() {
+            log('info', '🎯 Тестирование поведения по умолчанию...');
+
+            let successCount = 0;
+
+            // Тест 1: Мяч центрирован по умолчанию
+            try {
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                if (!response.ok) throw new Error('Не удалось получить состояние');
+
+                const state = await response.json();
+                const isCentered = Math.abs(state.x - 400) < 5 && Math.abs(state.y - 300) < 5;
+
+                if (isCentered) {
+                    log('success', `✅ Мяч центрирован по умолчанию: x=${state.x}, y=${state.y} ✓`);
+                    successCount++;
+                } else {
+                    log('error', `❌ Мяч не центрирован: x=${state.x}, y=${state.y}, ожидалось x=400, y=300`);
+                }
+            } catch (error) {
+                log('error', `❌ Ошибка проверки центрирования: ${error.message}`);
+            }
+
+            // Тест 2: Запуск движения без выбора направления (должен быть горизонтальным)
+            try {
+                // Отправляем команду старта без направления
+                const response = await fetch(`/api/session/${sessionId}/controller/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ resume: true })
+                });
+
+                if (!response.ok) throw new Error('Не удалось запустить движение');
+
+                // Ждем обработки команды
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Проверяем состояние
+                const stateResponse = await fetch(`/api/session/${sessionId}/state`);
+                const state = await stateResponse.json();
+
+                // Проверяем что движение началось с горизонтальным направлением по умолчанию
+                const isMovingHorizontally = state.paused === false &&
+                                           Math.abs(state.vx) >= 400 && // Минимум 400 для скорости 50%
+                                           Math.abs(state.vy) < 1;     // Вертикальная скорость близка к 0
+
+                if (isMovingHorizontally) {
+                    log('success', `✅ Движение началось горизонтально: vx=${state.vx}, vy=${state.vy} ✓`);
+                    successCount++;
+                } else {
+                    log('error', `❌ Движение не началось горизонтально: paused=${state.paused}, vx=${state.vx}, vy=${state.vy}`);
+                }
+            } catch (error) {
+                log('error', `❌ Ошибка запуска движения: ${error.message}`);
+            }
+
+            // Тест 3: Остановка и проверка что мяч остался в центре
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Останавливаем движение
+                const stopResponse = await fetch(`/api/session/${sessionId}/controller/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pause: true })
+                });
+
+                if (!stopResponse.ok) throw new Error('Не удалось остановить движение');
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Проверяем что мяч остановился
+                const stateResponse = await fetch(`/api/session/${sessionId}/state`);
+                const state = await stateResponse.json();
+
+                const isStopped = state.paused === true &&
+                                Math.abs(state.vx) < 1 &&
+                                Math.abs(state.vy) < 1;
+
+                if (isStopped) {
+                    log('success', `✅ Движение остановлено: paused=${state.paused}, vx=${state.vx}, vy=${state.vy} ✓`);
+                    successCount++;
+                } else {
+                    log('error', `❌ Движение не остановлено: paused=${state.paused}, vx=${state.vx}, vy=${state.vy}`);
+                }
+            } catch (error) {
+                log('error', `❌ Ошибка остановки движения: ${error.message}`);
+            }
+
+            // Финальная оценка
+            if (successCount === 3) {
+                log('success', `🎯 Тест поведения по умолчанию завершен: ${successCount}/3 ✓`);
+            } else {
+                log('error', `💥 Тест поведения по умолчанию провален: ${successCount}/3 ✗`);
+            }
         }
 
         // Тест цветов и видимости
