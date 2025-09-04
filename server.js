@@ -84,14 +84,19 @@ const sessionManager = {
       return true
     }
 
-    // Handle resume with direction
-    if (updates.resume !== undefined && updates.dirX !== undefined && updates.dirY !== undefined) {
+    // Handle resume with direction (explicit or pending)
+    if (updates.resume !== undefined && (updates.dirX !== undefined || updates.dirY !== undefined || session.ballState.pendingDirection)) {
       // Use consistent speed calculation: speedPercent * maxSpeed / 100
       const speedPercent = updates.speedScalar || session.ballState.speed || 40
       const maxSpeed = 1280 // Match PhysicsEngine default maxSpeed
       const pixelsPerSecond = (speedPercent / 100) * maxSpeed
-      session.ballState.vx = updates.dirX * pixelsPerSecond
-      session.ballState.vy = updates.dirY * pixelsPerSecond
+
+      // Use explicit direction if provided, otherwise use pending direction
+      const dirX = updates.dirX !== undefined ? updates.dirX : (session.ballState.pendingDirection ? session.ballState.pendingDirection.dx : 1)
+      const dirY = updates.dirY !== undefined ? updates.dirY : (session.ballState.pendingDirection ? session.ballState.pendingDirection.dy : 0)
+
+      session.ballState.vx = dirX * pixelsPerSecond
+      session.ballState.vy = dirY * pixelsPerSecond
       session.ballState.paused = false
       session.ballState.speed = speedPercent
       return true
@@ -107,6 +112,14 @@ const sessionManager = {
       session.ballState.vy = 0
       session.ballState.paused = false
       session.ballState.speed = speedPercent
+      return true
+    }
+
+    // Handle direction update without resume (just set direction for future use)
+    if (updates.dirX !== undefined && updates.dirY !== undefined && updates.resume === undefined) {
+      // Store direction for future resume command, but don't start movement
+      // This will be used when user clicks "Start" later
+      session.ballState.pendingDirection = { dx: updates.dirX, dy: updates.dirY }
       return true
     }
 

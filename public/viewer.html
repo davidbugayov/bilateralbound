@@ -82,20 +82,6 @@
             color: #ef4444;
         }
 
-        .instructions {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 12px;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            max-width: 300px;
-        }
 
         /* ===== CONTROLS ===== */
         .fullscreen-btn {
@@ -160,14 +146,6 @@
                 max-width: calc(100vw - 120px);
             }
 
-            .instructions {
-                bottom: 12px;
-                left: 12px;
-                padding: 12px 18px;
-                font-size: 13px;
-                max-width: calc(100vw - 120px);
-                border-radius: 12px;
-            }
 
             .fullscreen-btn {
                 top: 12px;
@@ -195,13 +173,6 @@
                 border-radius: 10px;
             }
 
-            .instructions {
-                bottom: 8px;
-                left: 8px;
-                padding: 10px 14px;
-                font-size: 12px;
-                border-radius: 10px;
-            }
 
             .fullscreen-btn {
                 top: 8px;
@@ -256,14 +227,6 @@
         <!-- ===== STATUS OVERLAY ===== -->
         <div id="statusContainer"></div>
         
-        <!-- ===== INSTRUCTIONS ===== -->
-        <div class="instructions fade-in">
-            <strong>📱 Управление:</strong><br>
-            • <strong>Двойной тап</strong> - полноэкранный режим<br>
-            • <strong>Прокрутка</strong> - масштабирование вида<br>
-            • <strong>Перетаскивание</strong> - перемещение по сцене<br>
-            <span id="mobileHint" style="font-size: 11px; opacity: 0.8; display: block; margin-top: 4px;">💡 Используйте контроллер для управления движением</span>
-        </div>
         
         <!-- ===== FULLSCREEN BUTTON ===== -->
         <button class="fullscreen-btn" onclick="toggleFullscreen()">
@@ -679,17 +642,6 @@
                         event.preventDefault();
                         toggleFullscreen();
 
-                        // Показываем уведомление о двойном тапе
-                        const hint = document.getElementById('mobileHint');
-                        if (hint) {
-                            const originalText = hint.textContent;
-                            hint.textContent = '✅ Полноэкранный режим активирован!';
-                            hint.style.color = '#22c55e';
-                            setTimeout(() => {
-                                hint.textContent = originalText;
-                                hint.style.color = '';
-                            }, 2000);
-                        }
 
                         tapCount = 0;
                     }

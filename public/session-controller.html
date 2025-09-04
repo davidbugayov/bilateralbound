@@ -766,15 +766,14 @@
       updateDirectionDisplay(dx, dy);
       updateDirectionButtons(); // Обновляем выделение кнопок
 
-      // Отправляем команду на сервер
+      // Отправляем команду на сервер (только установка направления, без запуска движения)
       fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dirX: dx,
-          dirY: dy,
-          resume: true,
-          speedScalar: components.speed ? components.speed.getSpeed() : 40
+          dirY: dy
+          // НЕ отправляем resume: true - движение запускается только кнопкой "Старт"
         })
       }).then(() => {
         debugLog('✅ Направление и движение установлены:', mode, {dx, dy});
@@ -890,7 +889,7 @@
           debugLog('⏸ Игра остановлена');
         }).catch(error => debugError('Error pausing play:', error));
       } else {
-        // Запускаем игру (используем горизонтальное направление по умолчанию, если не выбрано другое)
+        // Запускаем игру (используем выбранное направление или горизонтальное по умолчанию)
         const currentDirection = directionState || { dx: 1, dy: 0 };
         debugLog(`▶️ Запуск движения: направление dx=${currentDirection.dx}, dy=${currentDirection.dy}`);
         fetch(`/api/session/${sessionId}/controller/update`, {
@@ -898,8 +897,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             resume: true,
-            dirX: currentDirection.dx,
-            dirY: currentDirection.dy,
             speedScalar: components.speed ? components.speed.getSpeed() : 40
           })
         }).then(() => {
