@@ -8,7 +8,7 @@ class SessionSync {
   constructor (options = {}) {
     this.options = {
       sessionId: null,
-      pollInterval: 100,
+      pollInterval: 200, // Увеличен с 100ms до 200ms для уменьшения дергания
       serverUrl: '',
       onStateReceived: null,
       onSessionExpired: null,

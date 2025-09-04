@@ -276,22 +276,46 @@ class PhysicsEngine {
 
     const scale = viewerScreenSize ? this.calculateScale(viewerScreenSize) : 1
 
-    // Синхронизация позиции
+    // Синхронизация позиции с плавной коррекцией
     if (serverState.x !== undefined) {
-      this.ball.x = viewerScreenSize ? serverState.x * scale : serverState.x
+      const targetX = viewerScreenSize ? serverState.x * scale : serverState.x
+      const diffX = targetX - this.ball.x
+
+      // Если разница слишком большая (>5px), корректируем плавно
+      if (Math.abs(diffX) > 5) {
+        this.ball.x += diffX * 0.1 // Плавная коррекция 10% за кадр
+      }
     }
 
     if (serverState.y !== undefined) {
-      this.ball.y = viewerScreenSize ? serverState.y * scale : serverState.y
+      const targetY = viewerScreenSize ? serverState.y * scale : serverState.y
+      const diffY = targetY - this.ball.y
+
+      // Если разница слишком большая (>5px), корректируем плавно
+      if (Math.abs(diffY) > 5) {
+        this.ball.y += diffY * 0.1 // Плавная коррекция 10% за кадр
+      }
     }
 
-    // Синхронизация скорости
+    // Синхронизация скорости с плавной коррекцией
     if (serverState.vx !== undefined) {
-      this.ball.vx = viewerScreenSize ? serverState.vx * scale : serverState.vx
+      const targetVx = viewerScreenSize ? serverState.vx * scale : serverState.vx
+      const diffVx = targetVx - this.ball.vx
+
+      // Если разница скорости слишком большая, корректируем плавно
+      if (Math.abs(diffVx) > 10) {
+        this.ball.vx += diffVx * 0.2 // Быстрая коррекция скорости 20% за кадр
+      }
     }
 
     if (serverState.vy !== undefined) {
-      this.ball.vy = viewerScreenSize ? serverState.vy * scale : serverState.vy
+      const targetVy = viewerScreenSize ? serverState.vy * scale : serverState.vy
+      const diffVy = targetVy - this.ball.vy
+
+      // Если разница скорости слишком большая, корректируем плавно
+      if (Math.abs(diffVy) > 10) {
+        this.ball.vy += diffVy * 0.2 // Быстрая коррекция скорости 20% за кадр
+      }
     }
 
     // Синхронизация других параметров

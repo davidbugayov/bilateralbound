@@ -48,7 +48,8 @@ class BallRenderer {
     if (this.animationFrameId) {
       this.stop()
     }
-    this.lastTime = 0
+    // Инициализируем lastTime текущим временем для избежания огромного deltaTime
+    this.lastTime = performance.now()
     // Привязываем контекст для предотвращения потери this
     this.renderLoop = this.renderLoop.bind(this)
     this.renderLoop(performance.now())
@@ -98,26 +99,27 @@ class BallRenderer {
 
     const deltaTime = currentTime - this.lastTime
 
-    // Обновляем физику только при достаточном deltaTime
-    if (deltaTime >= this.targetFrameTime) {
-      try {
-        // Вызываем callback перед обновлением физики
-        if (this.onFrameCallback) {
-          this.onFrameCallback(deltaTime)
-        }
+    // Ограничиваем deltaTime для предотвращения огромных прыжков (максимум 100ms)
+    const clampedDeltaTime = Math.min(deltaTime, 100)
 
-        // Обновляем физику
-        this.physics.update(deltaTime / 1000)
-
-        // Рендерим сцену
-        this.render()
-
-        this.lastTime = currentTime
-      } catch (error) {
-        console.error('BallRenderer: Error during render loop:', error)
-        this.stop()
-        return
+    // Всегда обновляем физику с плавным deltaTime
+    try {
+      // Вызываем callback перед обновлением физики
+      if (this.onFrameCallback) {
+        this.onFrameCallback(clampedDeltaTime)
       }
+
+      // Обновляем физику с clamped deltaTime для плавности
+      this.physics.update(clampedDeltaTime / 1000)
+
+      // Рендерим сцену
+      this.render()
+
+      this.lastTime = currentTime
+    } catch (error) {
+      console.error('BallRenderer: Error during render loop:', error)
+      this.stop()
+      return
     }
 
     this.animationFrameId = requestAnimationFrame((timestamp) => this.renderLoop(timestamp))
