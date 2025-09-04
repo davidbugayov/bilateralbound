@@ -39,8 +39,9 @@ const sessionManager = {
     const session = {
       id: uuidv4().substring(0, 6),
       ballState: {
-        x: 400,
-        y: 300,
+        // Центрирование будет выполнено динамически при подключении вьювера
+        x: 400,  // Временное значение, будет обновлено
+        y: 300,  // Временное значение, будет обновлено
         vx: 0,
         vy: 0,
         speed: 40,
@@ -211,7 +212,16 @@ const sessionManager = {
   setViewerScreenSize: function (sessionId, screenSize) {
     const session = this.sessions.get(sessionId)
     if (!session) return false
+
     session.viewerScreenSize = screenSize
+
+    // Центрируем мяч при установке размера экрана вьювера
+    if (session.ballState) {
+      session.ballState.x = screenSize.width / 2
+      session.ballState.y = screenSize.height / 2
+      console.log(`🎯 Мяч центрирован при установке размера вьювера: ${screenSize.width}×${screenSize.height} -> (${session.ballState.x}, ${session.ballState.y})`)
+    }
+
     return true
   },
 

@@ -557,13 +557,17 @@
 
       const container = canvas.parentElement;
       const containerRect = container.getBoundingClientRect();
-      const maxWidth = Math.min(containerRect.width - 40, 600);
-      const maxHeight = Math.min(400, maxWidth * 0.75);
+
+      // Уменьшенные размеры для удобства психолога
+      const maxWidth = Math.min(containerRect.width - 40, 400);  // Было 600, стало 400
+      const maxHeight = Math.min(300, maxWidth * 0.75);          // Было 400, стало 300
 
       const viewerRatio = viewerScreenSize.width / viewerScreenSize.height;
+      console.log(`📐 Вьювер соотношение: ${viewerRatio.toFixed(3)} (${viewerScreenSize.width}×${viewerScreenSize.height})`);
 
       let previewWidth, previewHeight;
 
+      // Сохраняем точное соотношение сторон вьювера
       if (viewerRatio > 4/3) {
         previewWidth = maxWidth;
         previewHeight = previewWidth / viewerRatio;
@@ -583,15 +587,21 @@
         previewHeight = previewWidth / viewerRatio;
       }
 
-      canvas.width = Math.max(previewWidth, 320);
-      canvas.height = Math.max(previewHeight, 240);
+      // Минимальные размеры для маленького превью
+      canvas.width = Math.max(previewWidth, 200);   // Было 320, стало 200
+      canvas.height = Math.max(previewHeight, 150); // Было 240, стало 150
+
+      console.log(`📏 Превью размер: ${canvas.width}×${canvas.height} (соотношение: ${(canvas.width/canvas.height).toFixed(3)})`);
 
       window.__previewRenderer.resize(canvas.width, canvas.height);
       window.__previewPhysics.setWorldSize(canvas.width, canvas.height);
 
+      // Центрируем мяч в превью
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       window.__previewPhysics.setPosition(centerX, centerY);
+
+      console.log(`🎯 Мяч центрирован в превью: x=${centerX}, y=${centerY}`);
 
       const viewerInfo = document.getElementById('viewerInfo');
       if (viewerInfo) {
