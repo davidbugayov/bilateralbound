@@ -1,0 +1,736 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Управление сессией</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202509031127" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=202509031127" />
+  <link rel="apple-touch-icon" href="/favicon.svg?v=202509031127" />
+  <link rel="shortcut icon" href="/favicon.ico?v=202509031127" />
+
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/shared-components.css">
+  <style>
+    /* Специфичные стили для session-controller.html */
+
+    .control-section {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    .floating-preview {
+      position: sticky;
+      top: 20px;
+      z-index: 10;
+      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.3), 0 4px 16px -2px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(15px);
+    }
+
+    .drag-handle {
+      cursor: move;
+      margin: 0 0 16px 0;
+      padding: 8px 12px;
+      background: #1f2937;
+      border-radius: 8px;
+      user-select: none;
+    }
+
+    button { background: #2563eb; color: white; border: 0; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+
+    button:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+
+    .btn { padding: 8px 16px; font-size: 14px; font-weight: 500; }
+    .btn.outline { background: transparent; border: 1px solid #374151; color: #9ca3af; }
+    .btn.outline:hover { background: #374151; color: white; }
+
+    .direction-btn { padding: 10px 16px; font-size: 13px; min-width: 140px; }
+
+    .copy-btn { padding: 8px 12px; font-size: 12px; background: #374151; }
+    .copy-btn:hover { background: #4b5563; }
+
+    .color-btn { padding: 8px 16px; font-size: 14px; border-radius: 6px; transition: all 0.2s ease; }
+    .color-btn:hover { transform: scale(1.05); }
+
+    .size-btn { padding: 8px 16px; font-size: 14px; background: #374151; color: #9ca3af; border-radius: 6px; transition: all 0.2s ease; }
+    .size-btn:hover { background: #4b5563; color: white; }
+    .size-btn.active { background: #2563eb; color: white; }
+
+    .viewer-link-container {
+      margin: 16px 0;
+    }
+
+    .link-input-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .link-input-group input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #374151;
+      border-radius: 6px;
+      background: #1f2937;
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+
+    .link-input-group input:focus {
+      outline: none;
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
+    }
+
+    .speed-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .speed-container input[type="range"] {
+      width: 100%;
+      max-width: 300px;
+      height: 6px;
+      background: #374151;
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .speed-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #60a5fa;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .speed-container input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: #60a5fa;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .speed-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 300px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+
+    .speed-value {
+      font-weight: 600;
+      color: #60a5fa;
+    }
+
+    /* Мобильные стили */
+    @media (max-width: 768px) {
+      body { padding: 16px; }
+
+      .wrap { gap: 16px; }
+
+      .control-section { padding: 16px; }
+
+      .direction-btn { min-width: 120px; padding: 12px; }
+
+      .mobile-controls { display: block !important; }
+
+      .speed-container input[type="range"] { max-width: 250px; }
+    }
+
+    .mobile-controls { display: none; }
+
+    .control-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .big-btn {
+      flex: 1;
+      padding: 16px;
+      font-size: 16px;
+      min-height: 50px;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #374151;
+      color: #9ca3af;
+      border: 1px solid #4b5563;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 1000;
+    }
+
+    .back-btn:hover {
+      background: #4b5563;
+      color: white;
+    }
+
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #1f2937; border: 1px solid #374151; border-bottom-width: 3px; border-radius: 6px; padding: 2px 6px; }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="goBack()">← На главную</button>
+
+  <div class="wrap">
+    <div class="control-section">
+      <h3>🎮 Сессия: <span id="curSid">...</span></h3>
+      <p style="margin: 8px 0;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
+      <div class="viewer-link-container">
+        <div class="link-input-group">
+          <input id="view" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
+          <button onclick="copy('view')" class="copy-btn">📋 Копировать</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="previewWrap" style="display: none;" class="control-section floating-preview">
+      <h3 class="drag-handle">👁️ Превью движения</h3>
+      <div style="text-align: center; position: relative; padding-bottom: 35px;">
+        <canvas id="preview" style="border: 1px solid #374151; border-radius: 8px; background: #020617; max-width: 100%; height: auto; aspect-ratio: 4/3;"></canvas>
+        <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
+          Вьювер и размер экрана
+        </div>
+      </div>
+    </div>
+
+    <div class="control-section">
+      <h3>🎮 Управление и направление</h3>
+      <div id="directionControls"></div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 12px 0;">
+        <button class="btn" onclick="resumePlay()" style="background: #10b981; min-width: 110px; padding: 12px 16px;">▶️ Старт</button>
+        <button class="btn" onclick="pausePlay()" style="background: #f59e0b; min-width: 110px; padding: 12px 16px;">⏸ Стоп</button>
+        <button class="btn outline" onclick="resetCenter()" style="min-width: 110px; padding: 12px 16px;">🎯 Центр</button>
+        <button class="btn" onclick="resetSession()" style="background: #dc2626; min-width: 110px; padding: 12px 16px;">🔄 Сброс</button>
+      </div>
+      <p style="text-align: center; margin: 12px 0; font-size: 14px; color: #9ca3af;">
+        Текущее направление: <span id="currentDirection">↔️ Горизонтально</span>
+      </p>
+    </div>
+
+    <div class="control-section">
+      <div id="speedControl"></div>
+    </div>
+
+    <div class="control-section">
+      <div id="ballColorControl"></div>
+    </div>
+
+    <div class="control-section">
+      <div id="bgColorControl"></div>
+    </div>
+
+    <div class="control-section">
+      <div id="sizeControl"></div>
+    </div>
+
+    <!-- Мобильные элементы управления -->
+    <div id="mobileControls" style="display: none;"></div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="./js/common.js"></script>
+  <script src="./js/physics-engine.js"></script>
+  <script src="./js/renderer.js"></script>
+  <script src="./js/session-sync.js"></script>
+  <script src="./js/module-factory.js"></script>
+  <script src="./js/shared-components.js"></script>
+
+  <script>
+    // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
+    let sessionId;
+    let speedManager;
+    let directionState = { dx: 1, dy: 0 };
+    let components = {};
+
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
+    document.addEventListener('DOMContentLoaded', function() {
+      // Получаем sessionId из URL параметров
+      const urlParams = new URLSearchParams(window.location.search);
+      sessionId = urlParams.get('sessionId');
+
+      if (!sessionId) {
+        alert('Ошибка: sessionId не найден в URL');
+        window.location.href = '/';
+        return;
+      }
+
+      window.__current = { sessionId };
+      initializeController();
+    });
+
+    async function initializeController() {
+      try {
+        console.log('🎮 Инициализация контроллера для сессии:', sessionId);
+
+        // Инициализируем превью
+        initializePreview(sessionId);
+
+        // Синхронизируем начальное состояние
+        await syncInitialState(sessionId);
+
+        // Запускаем polling состояния сессии
+        startSessionPolling(sessionId);
+
+        // Инициализируем переиспользуемые компоненты
+        initializeComponents();
+
+        // Обновляем UI
+        document.getElementById('curSid').textContent = sessionId;
+        const baseUrl = window.location.origin;
+        const viewerLink = `${baseUrl}/s/${sessionId}`;
+        document.getElementById('view').value = viewerLink;
+
+      } catch (error) {
+        console.error('Ошибка инициализации контроллера:', error);
+        alert('Ошибка при инициализации контроллера: ' + error.message);
+      }
+    }
+
+    function initializeComponents() {
+      // Создаем компонент управления направлением
+      components.direction = sharedComponents.createDirectionControls(
+        document.getElementById('directionControls'),
+        {
+          onDirectionChange: (direction) => {
+            directionState = direction;
+            updateDirectionDisplay(direction.x, direction.y);
+            setDirFromDirection(direction);
+          }
+        }
+      );
+
+      // Создаем компонент управления скоростью
+      components.speed = sharedComponents.createSpeedControl(
+        document.getElementById('speedControl'),
+        {
+          onSpeedChange: (speed) => {
+            updateSpeed(speed);
+          }
+        }
+      );
+
+      // Создаем компонент управления цветом шарика
+      components.ballColor = sharedComponents.createColorControl(
+        document.getElementById('ballColorControl'),
+        {
+          colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316'],
+          title: '🎨 Цвет шарика',
+          onColorChange: (color) => {
+            setBallColor(color);
+          }
+        }
+      );
+
+      // Создаем компонент управления цветом фона
+      components.bgColor = sharedComponents.createColorControl(
+        document.getElementById('bgColorControl'),
+        {
+          colors: ['#020617', '#1f2937', '#0f172a', '#1e293b', '#0c0a09', '#1c1917'],
+          title: '🎨 Цвет фона',
+          onColorChange: (color) => {
+            setBgColor(color);
+          }
+        }
+      );
+
+      // Создаем компонент управления размером
+      components.size = sharedComponents.createSizeControl(
+        document.getElementById('sizeControl'),
+        {
+          sizes: [20, 40, 80],
+          defaultValue: 40,
+          title: '📏 Размер шарика',
+          onSizeChange: (size) => {
+            setBallSize(size);
+          }
+        }
+      );
+
+      // Создаем мобильные контролы
+      if (window.isMobile && window.isMobile()) {
+        components.mobile = sharedComponents.createMobileControls(
+          document.getElementById('mobileControls'),
+          {
+            onDirectionChange: (direction) => {
+              directionState = direction;
+              updateDirectionDisplay(direction.x, direction.y);
+              setDirFromDirection(direction);
+            },
+            onSpeedChange: (speed) => {
+              updateSpeed(speed);
+            }
+          }
+        );
+        document.getElementById('mobileControls').style.display = 'block';
+      }
+
+      // Инициализируем менеджер скорости
+      speedManager = {
+        lastUpdateTime: 0,
+        updateDelay: 100,
+        getCurrentSpeed: function() {
+          return components.speed ? components.speed.getSpeed() : 40;
+        }
+      };
+    }
+
+    async function updateSpeed(speed) {
+      try {
+        const response = await fetch(`/api/session/${sessionId}/speed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ speedScalar: speed })
+        });
+
+        if (!response.ok) {
+          console.warn('Не удалось обновить скорость:', response.status);
+        } else {
+          console.log('✅ Скорость обновлена:', speed);
+        }
+      } catch (error) {
+        console.error('Ошибка при обновлении скорости:', error);
+      }
+    }
+
+    function initializePreview(sessionId) {
+      const previewWrap = document.getElementById('previewWrap');
+      if (previewWrap) {
+        previewWrap.style.display = 'block';
+      }
+
+      const canvas = document.getElementById('preview');
+      if (!canvas) {
+        console.error('Preview canvas not found');
+        return;
+      }
+
+      const physics = new PhysicsEngine({
+        worldWidth: canvas.width,
+        worldHeight: canvas.height,
+        ballRadius: 20,
+        minSpeed: 50,
+        maxSpeed: 1280
+      });
+
+      const renderer = new BallRenderer(canvas, physics);
+
+      window.__previewPhysics = physics;
+      window.__previewRenderer = renderer;
+      window.__previewCanvas = canvas;
+
+      renderer.start();
+    }
+
+    async function syncInitialState(sessionId) {
+      try {
+        const response = await fetch(`/api/session/${sessionId}/state`);
+        if (!response.ok) return;
+
+        const ballState = await response.json();
+        if (ballState && window.__previewPhysics) {
+          updatePreviewSize(ballState.viewerScreenSize);
+          if (ballState.speed !== undefined) {
+            window.__previewPhysics.setSpeed(ballState.speed);
+            document.getElementById('speedRange').value = ballState.speed;
+            document.getElementById('speedLabel').textContent = `${ballState.speed}% (${Math.round((ballState.speed / 100) * 1280)} px/s)`;
+          }
+          if (ballState.radius !== undefined) window.__previewPhysics.setBallSize(ballState.radius);
+          if (ballState.colorBall) window.__previewPhysics.setBallColor(ballState.colorBall);
+          if (ballState.colorBg) window.__previewPhysics.setBgColor(ballState.colorBg);
+          if (ballState.paused !== undefined) window.__previewPhysics.setPaused(ballState.paused);
+          if (ballState.vx !== undefined || ballState.vy !== undefined) {
+            window.__previewPhysics.setVelocity(ballState.vx || 0, ballState.vy || 0);
+            const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
+            const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
+            directionState = { dx: dirX, dy: dirY };
+            updateDirectionDisplay(dirX, dirY);
+          }
+
+          console.log('✅ Начальное состояние синхронизировано');
+        }
+      } catch (error) {
+        console.error('Ошибка синхронизации начального состояния:', error);
+      }
+    }
+
+    function updatePreviewSize(viewerScreenSize) {
+      if (!viewerScreenSize || !window.__previewRenderer || !window.__previewPhysics) return;
+
+      const canvas = document.getElementById('preview');
+      if (!canvas) return;
+
+      const container = canvas.parentElement;
+      const containerRect = container.getBoundingClientRect();
+      const maxWidth = Math.min(containerRect.width - 40, 600);
+      const maxHeight = Math.min(400, maxWidth * 0.75);
+
+      const viewerRatio = viewerScreenSize.width / viewerScreenSize.height;
+
+      let previewWidth, previewHeight;
+
+      if (viewerRatio > 4/3) {
+        previewWidth = maxWidth;
+        previewHeight = previewWidth / viewerRatio;
+        if (previewHeight > maxHeight) {
+          previewHeight = maxHeight;
+          previewWidth = previewHeight * viewerRatio;
+        }
+      } else if (viewerRatio < 4/3) {
+        previewHeight = maxHeight;
+        previewWidth = previewHeight * viewerRatio;
+        if (previewWidth > maxWidth) {
+          previewWidth = maxWidth;
+          previewHeight = previewWidth / viewerRatio;
+        }
+      } else {
+        previewWidth = Math.min(maxWidth, maxHeight * viewerRatio);
+        previewHeight = previewWidth / viewerRatio;
+      }
+
+      canvas.width = Math.max(previewWidth, 320);
+      canvas.height = Math.max(previewHeight, 240);
+
+      window.__previewRenderer.resize(canvas.width, canvas.height);
+      window.__previewPhysics.setWorldSize(canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      window.__previewPhysics.setPosition(centerX, centerY);
+
+      const viewerInfo = document.getElementById('viewerInfo');
+      if (viewerInfo) {
+        viewerInfo.textContent = `Вьювер: ${viewerScreenSize.width}×${viewerScreenSize.height}`;
+        viewerInfo.style.display = 'block';
+      }
+    }
+
+    function handleSessionExpired() {
+      alert('Сессия истекла. Возвращаемся на главную страницу.');
+      window.location.href = '/';
+    }
+
+    function startSessionPolling(sessionId) {
+      const sessionSync = new SessionSync({
+        sessionId,
+        pollInterval: 100,
+        serverUrl: '',
+        onSessionExpired: handleSessionExpired,
+        onDataReceived: (sessionData) => {
+          updateViewerInfo(sessionData);
+          if (sessionData && window.__previewPhysics) {
+            const timeSinceLastUserInput = Date.now() - speedManager.lastUpdateTime;
+            const shouldSyncSpeed = timeSinceLastUserInput > speedManager.updateDelay;
+
+            if (sessionData.x !== undefined || sessionData.y !== undefined) {
+              if (sessionData.viewerScreenSize) {
+                const scale = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
+                const scaledX = sessionData.x * scale;
+                const scaledY = sessionData.y * scale;
+                window.__previewPhysics.setPosition(scaledX, scaledY);
+              }
+            }
+
+            if (sessionData.vx !== undefined || sessionData.vy !== undefined) {
+              if (sessionData.viewerScreenSize) {
+                const scale = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
+                const scaledVx = sessionData.vx * scale;
+                const scaledVy = sessionData.vy * scale;
+                window.__previewPhysics.setVelocity(scaledVx, scaledVy);
+              }
+            }
+
+            if (sessionData.radius !== undefined) {
+              const scale = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
+              const scaledRadius = sessionData.radius * scale;
+              window.__previewPhysics.setBallSize(scaledRadius);
+            }
+
+            if (shouldSyncSpeed && sessionData.speed !== undefined) {
+              window.__previewPhysics.setSpeed(sessionData.speed);
+              document.getElementById('speedRange').value = sessionData.speed;
+              document.getElementById('speedLabel').textContent = `${sessionData.speed}% (${Math.round((sessionData.speed / 100) * 1280)} px/s)`;
+            }
+
+            if (sessionData.colorBall) window.__previewPhysics.setBallColor(sessionData.colorBall);
+            if (sessionData.colorBg) window.__previewPhysics.setBgColor(sessionData.colorBg);
+            if (sessionData.paused !== undefined) window.__previewPhysics.setPaused(sessionData.paused);
+          }
+        },
+        onError: (error) => {
+          console.error('Ошибка синхронизации:', error);
+        }
+      });
+
+      sessionSync.startPolling();
+    }
+
+    function updateViewerInfo(sessionData) {
+      const viewerStatus = document.getElementById('viewerStatus');
+      if (viewerStatus) {
+        if (sessionData.viewerConnected) {
+          viewerStatus.textContent = 'Подключен';
+          viewerStatus.style.color = '#10b981';
+        } else {
+          viewerStatus.textContent = 'Ожидание...';
+          viewerStatus.style.color = '#ef4444';
+        }
+      }
+
+      if (sessionData.viewerScreenSize) {
+        updatePreviewSize(sessionData.viewerScreenSize);
+      }
+    }
+
+    // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
+    function setDir(mode){
+      let dx = 0, dy = 0;
+      switch(mode){
+        case 'horizontal': dx = 1; dy = 0; break;
+        case 'vertical': dx = 0; dy = 1; break;
+        case 'diagRL': dx = 0.707; dy = 0.707; break;
+        case 'diagRLL': dx = 0.707; dy = -0.707; break;
+      }
+
+      directionState = { dx, dy };
+      updateDirectionDisplay(dx, dy);
+
+      fetch(`/api/session/${sessionId}/direction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dx, dy })
+      }).catch(error => console.error('Error setting direction:', error));
+    }
+
+    function setDirFromDirection(direction) {
+      const dx = direction.x;
+      const dy = direction.y;
+      
+      directionState = { dx, dy };
+      updateDirectionDisplay(dx, dy);
+
+      fetch(`/api/session/${sessionId}/direction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dx, dy })
+      }).catch(error => console.error('Error setting direction:', error));
+    }
+
+    function updateDirectionDisplay(dx, dy) {
+      const currentDirection = document.getElementById('currentDirection');
+      if (!currentDirection) return;
+
+      let directionText = '↔️ Горизонтально';
+      if (dx === 0 && dy === 1) directionText = '↕️ Вертикально';
+      else if (dx > 0 && dy > 0) directionText = '↗️ Диагональ L→R';
+      else if (dx > 0 && dy < 0) directionText = '↙️ Диагональ R→L';
+      else if (dx < 0 && dy > 0) directionText = '↖️ Диагональ R→L';
+      else if (dx < 0 && dy < 0) directionText = '↙️ Диагональ L→R';
+
+      currentDirection.textContent = directionText;
+    }
+
+    function resetCenter(){
+      fetch(`/api/session/${sessionId}/reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ center: true })
+      }).catch(error => console.error('Error resetting center:', error));
+    }
+
+    function resetSession(){
+      if (confirm('Вы уверены, что хотите сбросить сессию?')) {
+        fetch(`/api/session/${sessionId}/reset`, {
+          method: 'POST'
+        }).then(() => {
+          window.location.reload();
+        }).catch(error => console.error('Error resetting session:', error));
+      }
+    }
+
+    function setBallColor(color) {
+      fetch(`/api/session/${sessionId}/color/ball`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ color })
+      }).catch(error => console.error('Error setting ball color:', error));
+    }
+
+    function setBgColor(color) {
+      fetch(`/api/session/${sessionId}/color/bg`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ color })
+      }).catch(error => console.error('Error setting background color:', error));
+    }
+
+    function setBallSize(size) {
+      fetch(`/api/session/${sessionId}/size`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ size })
+      }).catch(error => console.error('Error setting ball size:', error));
+    }
+
+    function resumePlay(){
+      fetch(`/api/session/${sessionId}/resume`, {
+        method: 'POST'
+      }).catch(error => console.error('Error resuming play:', error));
+    }
+
+    function pausePlay(){
+      fetch(`/api/session/${sessionId}/pause`, {
+        method: 'POST'
+      }).catch(error => console.error('Error pausing play:', error));
+    }
+
+    function copy(id) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.select();
+        navigator.clipboard.writeText(element.value).then(() => {
+          const btn = event.target;
+          const originalText = btn.textContent;
+          btn.textContent = '✅ Скопировано!';
+          setTimeout(() => btn.textContent = originalText, 2000);
+        }).catch(err => {
+          console.error('Failed to copy: ', err);
+        });
+      }
+    }
+
+
+    function goBack() {
+      if (confirm('Вы уверены, что хотите вернуться на главную страницу? Текущая сессия будет сохранена.')) {
+        window.location.href = '/';
+      }
+    }
+  </script>
+</body>
+</html>

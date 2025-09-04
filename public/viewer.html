@@ -11,6 +11,7 @@
     <title>BilateralBound - Просмотр</title>
     
     <!-- ===== STYLES ===== -->
+    <link rel="stylesheet" href="/css/shared-components.css">
     <style>
         /* ===== RESET & BASE ===== */
         * {
@@ -240,10 +241,7 @@
         <canvas id="viewerCanvas" class="viewer-canvas"></canvas>
         
         <!-- ===== STATUS OVERLAY ===== -->
-        <div id="statusOverlay" class="status-overlay status-offline">
-            <div id="statusText">Подключение...</div>
-            <div id="sessionInfo" style="margin-top: 5px; font-size: 12px; opacity: 0.8;"></div>
-        </div>
+        <div id="statusContainer"></div>
         
         <!-- ===== INSTRUCTIONS ===== -->
         <div class="instructions fade-in">
@@ -266,16 +264,22 @@
     </div>
 
     <!-- ===== SCRIPTS ===== -->
-    <script src="/js/session-poller.js"></script>
-    <script src="/js/common.js"></script>
-    <script src="/js/physics.js"></script>
+      <script src="/js/common.js"></script>
+  <script src="/js/physics-engine.js"></script>
+  <script src="/js/renderer.js"></script>
+  <script src="/js/session-sync.js"></script>
+  <script src="/js/module-factory.js"></script>
+  <script src="/js/shared-components.js"></script>
     
     <!-- ===== MAIN SCRIPT ===== -->
     <script>
         // ===== GLOBAL VARIABLES =====
-        let canvas, ctx, physics;
+        let physicsEngine;
+        let renderer;
+        let sessionSync;
         let sessionId;
         let isFullscreen = false;
+        let components = {};
         
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', async function() {
@@ -291,6 +295,9 @@
                 
                 console.log('📱 Session ID получен:', sessionId);
                 
+                // Инициализируем компоненты
+                initializeComponents();
+                
                 // Инициализируем viewer
                 await initializeViewer();
                 
@@ -300,51 +307,87 @@
             }
         });
         
+        // ===== COMPONENT INITIALIZATION =====
+        function initializeComponents() {
+            // Создаем компонент статуса
+            components.status = sharedComponents.createStatusIndicator(
+                document.getElementById('statusContainer'),
+                {
+                    title: 'Подключение...',
+                    showIcon: true,
+                    autoHide: false
+                }
+            );
+        }
+        
         // ===== CORE FUNCTIONS =====
         async function initializeViewer() {
             try {
                 console.log('📱 Инициализация viewer для сессии:', sessionId);
-                
+
                 // Скрываем загрузку
                 hideLoading();
-                
-                // Устанавливаем sessionId в глобальную переменную для синхронизации отскоков
+
+                // Устанавливаем sessionId в глобальную переменную для совместимости
                 if (!window.__current) {
                     window.__current = {};
                 }
                 window.__current.sessionId = sessionId;
-                
-                // Инициализируем canvas
-                canvas = document.getElementById('viewerCanvas');
-                ctx = canvas.getContext('2d');
-                
+
+                // Получаем canvas
+                const canvas = document.getElementById('viewerCanvas');
+                if (!canvas) {
+                    throw new Error('Canvas не найден');
+                }
+
                 // Устанавливаем размер canvas
                 resizeCanvas();
-                
-                // Инициализируем физику с размерами экрана вьювера
-                physics = new BallPhysics();
-                physics.setWorldSize(canvas.width, canvas.height);
-                physics.setPosition(canvas.width / 2, canvas.height / 2);
-                physics.setPaused(true);
-                physics.lastDir = { x: 1, y: 0 };
-                
+
+                // Создаем движок физики
+                physicsEngine = new PhysicsEngine({
+                    worldWidth: canvas.width,
+                    worldHeight: canvas.height,
+                    bounceCallback: syncBounce
+                });
+
+                // Создаем рендерер
+                renderer = new BallRenderer(canvas, physicsEngine);
+
+                // Создаем синхронизатор сессии
+                sessionSync = new SessionSync({
+                    sessionId: sessionId,
+                    serverUrl: '',
+                    onStateReceived: (serverState) => {
+                        // Синхронизируем состояние с сервером
+                        physicsEngine.syncFromServer(serverState);
+
+                        // Обновляем статус
+                        updateStatus(serverState);
+                    },
+                    onSessionExpired: handleSessionExpired,
+                    onError: (error) => {
+                        console.error('Session sync error:', error);
+                        showError('Ошибка синхронизации: ' + error.message);
+                    }
+                });
+
                 // Подключаемся к сессии
                 await connectToSession();
-                
-                // Синхронизируем начальное состояние шара
+
+                // Синхронизируем начальное состояние
                 await syncInitialState();
-                
-                // Запускаем polling обновлений
-                startStatePolling();
-                
+
+                // Запускаем синхронизацию
+                sessionSync.startPolling();
+
                 // Запускаем рендеринг
-                startRendering();
-                
-                // Настраиваем event listeners после инициализации
+                renderer.start();
+
+                // Настраиваем event listeners
                 setupEventListeners();
-                
+
                 console.log('✅ Viewer успешно инициализирован');
-                
+
             } catch (error) {
                 console.error('❌ Ошибка инициализации viewer:', error);
                 showError('Ошибка инициализации: ' + error.message);
@@ -353,35 +396,19 @@
         
         // ===== SESSION MANAGEMENT =====
         async function syncInitialState() {
+            if (!physicsEngine) return;
+
             try {
                 const response = await fetch(`/api/session/${sessionId}/state`);
                 if (!response.ok) {
                     console.warn('Не удалось получить состояние сессии:', response.status);
                     return;
                 }
-                
+
                 const ballState = await response.json();
-                if (ballState && physics) {
-                    // Устанавливаем начальную позицию
-                    physics.ball.x = ballState.x || canvas.width / 2;
-                    physics.ball.y = ballState.y || canvas.height / 2;
-                    
-                    // Синхронизируем все параметры
-                    if (ballState.speed !== undefined) physics.ball.speed = ballState.speed;
-                    if (ballState.radius !== undefined) physics.ball.radius = ballState.radius;
-                    if (ballState.colorBall) physics.colors.ball = ballState.colorBall;
-                    if (ballState.colorBg) physics.colors.bg = ballState.colorBg;
-                    if (ballState.paused !== undefined) physics.paused = ballState.paused;
-                    
-                    // Синхронизируем направление движения
-                    if (ballState.vx !== undefined || ballState.vy !== undefined) {
-                        physics.ball.vx = ballState.vx || 0;
-                        physics.ball.vy = ballState.vy || 0;
-                        const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
-                        const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
-                        physics.lastDir = { x: dirX, y: dirY };
-                    }
-                    
+                if (ballState) {
+                    // Синхронизируем состояние через PhysicsEngine
+                    physicsEngine.syncFromServer(ballState);
                     console.log('✅ Начальное состояние синхронизировано');
                 }
             } catch (error) {
@@ -391,18 +418,19 @@
         
         async function connectToSession() {
             try {
-                // Проверяем, что canvas инициализирован
-                if (!canvas) {
-                    throw new Error('Canvas не инициализирован');
+                // Получаем размеры canvas
+                const canvasElement = document.getElementById('viewerCanvas');
+                if (!canvasElement) {
+                    throw new Error('Canvas не найден');
                 }
-                
+
                 const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         screenSize: {
-                            width: canvas.width,
-                            height: canvas.height
+                            width: canvasElement.width,
+                            height: canvasElement.height
                         }
                     })
                 });
@@ -421,122 +449,40 @@
         }
         
         // ===== POLLING =====
-        function startStatePolling() {
-            const poller = new SessionPoller({
-                sessionId,
-                onSessionExpired: handleSessionExpired,
-                onDataReceived: (sessionData) => {
-                    // Обновляем статус сессии
-                    updateStatus(sessionData);
-                    
-                    // Применяем команды управления локально
-                    if (physics && sessionData) {
-                        // Синхронизация скорости и радиуса
-                        if (sessionData.speed !== undefined) physics.ball.speed = sessionData.speed;
-                        if (sessionData.radius !== undefined) physics.ball.radius = sessionData.radius;
-                        if (sessionData.colorBall) physics.colors.ball = sessionData.colorBall;
-                        if (sessionData.colorBg) physics.colors.bg = sessionData.colorBg;
-                        if (sessionData.paused !== undefined) physics.paused = sessionData.paused;
 
-                        // Синхронизация направления движения и скорости
-                        if (sessionData.vx !== undefined || sessionData.vy !== undefined) {
-                            // Если скорость нулевая, останавливаем мяч
-                            if (sessionData.vx === 0 && sessionData.vy === 0) {
-                                physics.ball.vx = 0;
-                                physics.ball.vy = 0;
-                                physics.paused = true;
-                            } else {
-                                // Запускаем мяч с правильной скоростью и направлением
-                                const speed = Math.sqrt(sessionData.vx * sessionData.vx + sessionData.vy * sessionData.vy);
-                                const dirX = sessionData.vx / speed;
-                                const dirY = sessionData.vy / speed;
-
-                                // Устанавливаем направление и скорость
-                                physics.lastDir = { x: dirX, y: dirY };
-                                physics.ball.vx = sessionData.vx;
-                                physics.ball.vy = sessionData.vy;
-                                physics.ball.speed = speed;
-                                physics.paused = false;
-                            }
-                        }
-                    }
-                }
-            });
-            
-            poller.startPolling();
-        }
-        
-        // ===== RENDERING =====
-        function startRendering() {
-            let lastTime = 0;
-            const targetFrameTime = 1000 / 60; // 60 FPS
-            let lastMovementTime = 0;
-            
-            function render(currentTime) {
-                if (!canvas || !ctx || !physics) return;
-                
-                const deltaTime = currentTime - lastTime;
-                
-                // Очищаем canvas
-                ctx.fillStyle = physics.colors.bg;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // Обновляем позицию мяча только при достаточном deltaTime
-                if (deltaTime >= targetFrameTime) {
-                    if (!physics.paused) {
-                        // Используем physics.js для обновления позиции и обработки коллизий
-                        const fixedDeltaTime = 1/60; // Фиксированный шаг времени
-                        physics.updateWithDirection(
-                            physics.lastDir.x,
-                            physics.lastDir.y,
-                            Math.sqrt(physics.ball.vx * physics.ball.vx + physics.ball.vy * physics.ball.vy) || physics.ball.speed,
-                            fixedDeltaTime
-                        );
-                        
-                        // Обновляем время последнего движения для потенциального использования
-                        lastMovementTime = currentTime;
-                    } else {
-                        // Когда пауза, плавно центрируем мяч
-                        const centerX = canvas.width / 2;
-                        const centerY = canvas.height / 2;
-                        const centerSpeed = 3; // Пикселей в кадр
-                        
-                        if (Math.abs(physics.ball.x - centerX) > 1) {
-                            physics.ball.x += Math.sign(centerX - physics.ball.x) * Math.min(centerSpeed, Math.abs(centerX - physics.ball.x));
-                        }
-                        if (Math.abs(physics.ball.y - centerY) > 1) {
-                            physics.ball.y += Math.sign(centerY - physics.ball.y) * Math.min(centerSpeed, Math.abs(centerY - physics.ball.y));
-                        }
-                    }
-                    lastTime = currentTime;
-                }
-                
-                // Рисуем шарик
-                ctx.beginPath();
-                ctx.arc(physics.ball.x, physics.ball.y, physics.ball.radius, 0, Math.PI * 2);
-                ctx.fillStyle = physics.colors.ball;
-                ctx.fill();
-                
-                requestAnimationFrame(render);
-            }
-            
-            render();
-        }
         
         // ===== UTILITY FUNCTIONS =====
         function resizeCanvas() {
+            const canvas = document.getElementById('viewerCanvas');
             if (!canvas) return;
-            
+
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
+
             // Обновляем размеры мира физики при изменении размера экрана
-            if (physics) {
-                physics.setWorldSize(canvas.width, canvas.height);
+            if (physicsEngine) {
+                physicsEngine.setWorldSize(canvas.width, canvas.height);
             }
-            
+
+            // Обновляем рендерер
+            if (renderer) {
+                renderer.resize(canvas.width, canvas.height);
+            }
+
             // Отправляем новые размеры экрана на сервер
             updateScreenSize();
+        }
+
+        // ===== BOUNCE SYNCHRONIZATION =====
+        async function syncBounce(bounceData) {
+            if (sessionSync) {
+                try {
+                    await sessionSync.syncBounce(bounceData);
+                    console.log('✅ Отскок синхронизирован с сервером');
+                } catch (error) {
+                    console.error('Ошибка при синхронизации отскока:', error);
+                }
+            }
         }
         
         async function updateScreenSize() {
@@ -564,21 +510,12 @@
         }
         
         function updateStatus(sessionData) {
-            const statusOverlay = document.getElementById('statusOverlay');
-            const statusText = document.getElementById('statusText');
-            const sessionInfo = document.getElementById('sessionInfo');
-            
-            if (sessionData.controllerConnected) {
-                statusOverlay.className = 'status-overlay status-online';
-                statusText.textContent = '✅ Контроллер подключен';
-            } else {
-                statusOverlay.className = 'status-overlay status-offline';
-                statusText.textContent = '❌ Контроллер отключен';
-            }
-            
-            // Показываем информацию о сессии
-            if (sessionData.sessionId) {
-                sessionInfo.textContent = `Сессия: ${sessionData.sessionId}`;
+            if (components.status) {
+                if (sessionData.controllerConnected) {
+                    components.status.setStatus('success', 'Контроллер подключен');
+                } else {
+                    components.status.setStatus('error', 'Контроллер отключен');
+                }
             }
         }
         
@@ -587,9 +524,9 @@
         }
         
         function showError(message) {
-            const statusOverlay = document.getElementById('statusOverlay');
-            statusOverlay.className = 'status-overlay status-offline';
-            document.getElementById('statusText').textContent = '❌ ' + message;
+            if (components.status) {
+                components.status.setStatus('error', message);
+            }
         }
 
         function showWarning(message) {

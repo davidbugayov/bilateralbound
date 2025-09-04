@@ -1,115 +1,207 @@
-// Common utilities and functions
+/**
+ * Common utilities and functions for BilateralBound
+ * Оптимизирован для производительности и переиспользуемости
+ */
 
-// Функция для генерации случайного ID
-function generateId() {
-    return Math.random().toString(36).substr(2, 9);
+// Кэшируем часто используемые функции
+const random = Math.random;
+const toString = (num, radix) => num.toString(radix);
+
+/**
+ * Генерирует случайный ID сессии (оптимизированная версия)
+ */
+function randomSid() {
+    return toString(random() * 36, 36).slice(2, 8);
 }
 
-// Функция для копирования текста в буфер обмена
-async function copyToClipboard(text) {
-    try {
-        await navigator.clipboard.writeText(text);
-        return true;
-    } catch (err) {
-        // Fallback для старых браузеров
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            return true;
-        } catch (fallbackErr) {
-            document.body.removeChild(textArea);
-            return false;
-        }
-    }
-}
-
-// Функция для показа уведомлений
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-    
-    // Стили для уведомления
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6'};
-        color: white;
-        padding: 12px 16px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 10000;
-        font-size: 14px;
-        max-width: 300px;
-        word-wrap: break-word;
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Автоматически удаляем через 3 секунды
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-        }
-    }, 3000);
-}
-
-// Функция для форматирования времени
-function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-// Функция для проверки поддержки WebSocket
-function isWebSocketSupported() {
-    return typeof WebSocket !== 'undefined';
-}
-
-// Функция для проверки поддержки Canvas
+/**
+ * Проверяет поддержку Canvas (кэшированная версия)
+ */
 function isCanvasSupported() {
     const canvas = document.createElement('canvas');
     return !!(canvas.getContext && canvas.getContext('2d'));
 }
 
-// Функция для дебаунсинга функций
-function debounce(func, wait) {
+/**
+ * Создает и возвращает canvas элемент с оптимизированными настройками
+ */
+function createOptimizedCanvas(width = 800, height = 600) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Оптимизируем canvas для производительности
+    const ctx = canvas.getContext('2d', {
+        alpha: false,           // Отключаем альфа-канал для лучшей производительности
+        desynchronized: true,   // Улучшаем производительность на некоторых устройствах
+        powerPreference: 'high-performance' // Предпочитаем высокую производительность
+    });
+    
+    // Устанавливаем оптимальные настройки рендеринга
+    ctx.imageSmoothingEnabled = false; // Отключаем сглаживание для пиксельной графики
+    
+    return { canvas, ctx };
+}
+
+/**
+ * Создает пул объектов для переиспользования
+ */
+class ObjectPool {
+    constructor(createFn, resetFn, initialSize = 10) {
+        this.createFn = createFn;
+        this.resetFn = resetFn;
+        this.pool = [];
+        this.active = new Set();
+        
+        // Предварительно создаем объекты
+        for (let i = 0; i < initialSize; i++) {
+            this.pool.push(this.createFn());
+        }
+    }
+    
+    acquire() {
+        let obj;
+        if (this.pool.length > 0) {
+            obj = this.pool.pop();
+        } else {
+            obj = this.createFn();
+        }
+        
+        this.active.add(obj);
+        return obj;
+    }
+    
+    release(obj) {
+        if (this.active.has(obj)) {
+            this.resetFn(obj);
+            this.active.delete(obj);
+            this.pool.push(obj);
+        }
+    }
+    
+    clear() {
+        this.pool.length = 0;
+        this.active.clear();
+    }
+}
+
+/**
+ * Утилита для измерения производительности
+ */
+class PerformanceMonitor {
+    constructor() {
+        this.marks = new Map();
+        this.measures = new Map();
+    }
+    
+    mark(name) {
+        this.marks.set(name, performance.now());
+    }
+    
+    measure(name, startMark, endMark) {
+        const start = this.marks.get(startMark);
+        const end = this.marks.get(endMark);
+        
+        if (start && end) {
+            this.measures.set(name, end - start);
+        }
+    }
+    
+    getMeasure(name) {
+        return this.measures.get(name);
+    }
+    
+    clear() {
+        this.marks.clear();
+        this.measures.clear();
+    }
+}
+
+/**
+ * Утилита для дебаунсинга функций
+ */
+function debounce(func, wait, immediate = false) {
     let timeout;
     return function executedFunction(...args) {
         const later = () => {
-            clearTimeout(timeout);
-            func(...args);
+            timeout = null;
+            if (!immediate) func.apply(this, args);
         };
+        const callNow = immediate && !timeout;
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
+        if (callNow) func.apply(this, args);
     };
 }
 
-// Функция для throttle функций
+/**
+ * Утилита для throttle функций
+ */
 function throttle(func, limit) {
     let inThrottle;
-    return function() {
-        const args = arguments;
-        const context = this;
+    return function(...args) {
         if (!inThrottle) {
-            func.apply(context, args);
+            func.apply(this, args);
             inThrottle = true;
             setTimeout(() => inThrottle = false, limit);
         }
     };
 }
 
-// Функция для проверки мобильного устройства
-function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+/**
+ * Утилита для анимации чисел
+ */
+function animateNumber(element, start, end, duration = 1000, easing = 'easeOut') {
+    const startTime = performance.now();
+    const difference = end - start;
+    
+    const easingFunctions = {
+        linear: t => t,
+        easeOut: t => 1 - Math.pow(1 - t, 3),
+        easeIn: t => t * t * t,
+        easeInOut: t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+    };
+    
+    const ease = easingFunctions[easing] || easingFunctions.easeOut;
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        const easedProgress = ease(progress);
+        const current = start + (difference * easedProgress);
+        
+        element.textContent = Math.round(current);
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    requestAnimationFrame(update);
 }
 
-// Функция для получения размера экрана
+/**
+ * Утилита для проверки видимости элемента
+ */
+function isElementVisible(element) {
+    if (!element) return false;
+    
+    const rect = element.getBoundingClientRect();
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    const windowWidth = window.innerWidth || document.documentElement.clientWidth;
+    
+    return (
+        rect.top < windowHeight &&
+        rect.bottom > 0 &&
+        rect.left < windowWidth &&
+        rect.right > 0
+    );
+}
+
+/**
+ * Утилита для получения размера экрана
+ */
 function getScreenSize() {
     return {
         width: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
@@ -117,17 +209,16 @@ function getScreenSize() {
     };
 }
 
-// Функция для валидации URL
-function isValidUrl(string) {
-    try {
-        new URL(string);
-        return true;
-    } catch (_) {
-        return false;
-    }
+/**
+ * Утилита для проверки мобильного устройства
+ */
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-// Функция для безопасного парсинга JSON
+/**
+ * Утилита для безопасного парсинга JSON
+ */
 function safeJsonParse(str, defaultValue = null) {
     try {
         return JSON.parse(str);
@@ -136,7 +227,9 @@ function safeJsonParse(str, defaultValue = null) {
     }
 }
 
-// Функция для глубокого клонирования объекта
+/**
+ * Утилита для глубокого клонирования объекта
+ */
 function deepClone(obj) {
     if (obj === null || typeof obj !== 'object') return obj;
     if (obj instanceof Date) return new Date(obj.getTime());
@@ -152,154 +245,44 @@ function deepClone(obj) {
     }
 }
 
-// Функция для анимации числа
-function animateNumber(element, start, end, duration = 1000) {
-    const startTime = performance.now();
-    const difference = end - start;
+// Экспортируем для использования
+if (typeof window !== 'undefined') {
+    // Основные функции
+    window.randomSid = randomSid;
+    window.isCanvasSupported = isCanvasSupported;
     
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Easing function (ease-out)
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const current = start + (difference * easeOut);
-        
-        element.textContent = Math.round(current);
-        
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        }
-    }
+    // Дополнительные утилиты
+    window.createOptimizedCanvas = createOptimizedCanvas;
+    window.ObjectPool = ObjectPool;
+    window.PerformanceMonitor = PerformanceMonitor;
+    window.debounce = debounce;
+    window.throttle = throttle;
+    window.animateNumber = animateNumber;
+    window.isElementVisible = isElementVisible;
+    window.getScreenSize = getScreenSize;
+    window.isMobile = isMobile;
+    window.safeJsonParse = safeJsonParse;
+    window.deepClone = deepClone;
     
-    requestAnimationFrame(update);
+    // Создаем глобальный экземпляр PerformanceMonitor
+    window.performanceMonitor = new PerformanceMonitor();
 }
 
-// Функция для создания элемента с атрибутами
-function createElement(tag, attributes = {}, children = []) {
-    const element = document.createElement(tag);
-    
-    // Устанавливаем атрибуты
-    Object.entries(attributes).forEach(([key, value]) => {
-        if (key === 'className') {
-            element.className = value;
-        } else if (key === 'textContent') {
-            element.textContent = value;
-        } else if (key === 'innerHTML') {
-            element.innerHTML = value;
-        } else if (key.startsWith('on') && typeof value === 'function') {
-            element.addEventListener(key.slice(2).toLowerCase(), value);
-        } else {
-            element.setAttribute(key, value);
-        }
-    });
-    
-    // Добавляем дочерние элементы
-    children.forEach(child => {
-        if (typeof child === 'string') {
-            element.appendChild(document.createTextNode(child));
-        } else {
-            element.appendChild(child);
-        }
-    });
-    
-    return element;
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        randomSid,
+        isCanvasSupported,
+        createOptimizedCanvas,
+        ObjectPool,
+        PerformanceMonitor,
+        debounce,
+        throttle,
+        animateNumber,
+        isElementVisible,
+        getScreenSize,
+        isMobile,
+        safeJsonParse,
+        deepClone
+    };
 }
 
-// Функция для добавления CSS стилей
-function addStyles(css) {
-    const style = document.createElement('style');
-    style.textContent = css;
-    document.head.appendChild(style);
-}
-
-// Функция для загрузки скрипта
-function loadScript(src, callback) {
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = callback;
-    script.onerror = () => console.error(`Failed to load script: ${src}`);
-    document.head.appendChild(script);
-}
-
-// Функция для загрузки CSS
-function loadCSS(href) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.appendChild(link);
-}
-
-// Функция для получения параметров URL
-function getUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    const result = {};
-    for (const [key, value] of params) {
-        result[key] = value;
-    }
-    return result;
-}
-
-// Функция для установки параметров URL
-function setUrlParams(params) {
-    const url = new URL(window.location);
-    Object.entries(params).forEach(([key, value]) => {
-        url.searchParams.set(key, value);
-    });
-    window.history.replaceState({}, '', url);
-}
-
-// Функция для получения sessionId из URL
-function getSessionIdFromUrl() {
-    const pathParts = window.location.pathname.split('/');
-    return pathParts[pathParts.length - 1] || null;
-}
-
-// Функция для проверки онлайн статуса
-function isOnline() {
-    return navigator.onLine;
-}
-
-// Функция для обработки ошибок сети
-function handleNetworkError(error, context = '') {
-    console.error(`Network error in ${context}:`, error);
-    
-    if (!isOnline()) {
-        showNotification('Нет подключения к интернету', 'error');
-        return;
-    }
-    
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        showNotification('Ошибка подключения к серверу', 'error');
-        return;
-    }
-    
-    showNotification(`Ошибка: ${error.message}`, 'error');
-}
-
-// Экспортируем функции для использования в других модулях
-window.CommonUtils = {
-    generateId,
-    copyToClipboard,
-    showNotification,
-    formatTime,
-    isWebSocketSupported,
-    isCanvasSupported,
-    debounce,
-    throttle,
-    isMobile,
-    getScreenSize,
-    isValidUrl,
-    safeJsonParse,
-    deepClone,
-    animateNumber,
-    createElement,
-    addStyles,
-    loadScript,
-    loadCSS,
-    getUrlParams,
-    setUrlParams,
-    getSessionIdFromUrl,
-    isOnline,
-    handleNetworkError
-};
