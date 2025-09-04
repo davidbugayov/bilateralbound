@@ -107,8 +107,13 @@ const sessionManager = {
       const speedPercent = updates.speedScalar || session.ballState.speed || 40
       const maxSpeed = 1280 // Match PhysicsEngine default maxSpeed
       const pixelsPerSecond = (speedPercent / 100) * maxSpeed
-      // Default to horizontal movement (dx=1, dy=0)
-      session.ballState.vx = 1 * pixelsPerSecond
+
+      // Определяем направление в зависимости от текущей позиции мяча
+      // Если мяч слева от центра - двигаемся вправо, если справа - влево
+      const centerX = 400
+      const dirX = session.ballState.x < centerX ? 1 : -1
+
+      session.ballState.vx = dirX * pixelsPerSecond
       session.ballState.vy = 0
       session.ballState.paused = false
       session.ballState.speed = speedPercent
@@ -135,6 +140,47 @@ const sessionManager = {
     // Apply remaining updates
     Object.assign(session.ballState, handledUpdates)
     return true
+  },
+
+  // Физический движок для сервера
+  physicsEngine: {
+    worldWidth: 800,
+    worldHeight: 600,
+    minSpeed: 128,
+    maxSpeed: 1280,
+
+    updateBallPosition: function(ballState, deltaTime) {
+      if (ballState.paused) return
+
+      // Обновляем позицию
+      ballState.x += ballState.vx * deltaTime
+      ballState.y += ballState.vy * deltaTime
+
+      // Обрабатываем коллизии с границами
+      this.handleBoundaryCollisions(ballState)
+    },
+
+    handleBoundaryCollisions: function(ballState) {
+      const radius = ballState.radius || 40
+
+      // Левая и правая границы
+      if (ballState.x - radius <= 0) {
+        ballState.x = radius
+        ballState.vx = Math.abs(ballState.vx)
+      } else if (ballState.x + radius >= this.worldWidth) {
+        ballState.x = this.worldWidth - radius
+        ballState.vx = -Math.abs(ballState.vx)
+      }
+
+      // Верхняя и нижняя границы
+      if (ballState.y - radius <= 0) {
+        ballState.y = radius
+        ballState.vy = Math.abs(ballState.vy)
+      } else if (ballState.y + radius >= this.worldHeight) {
+        ballState.y = this.worldHeight - radius
+        ballState.vy = -Math.abs(ballState.vy)
+      }
+    }
   },
 
   setControllerConnected: function (sessionId, connected) {
@@ -398,6 +444,16 @@ server.listen(PORT, () => {
   logger.info(`Server listening on http://localhost:${PORT}`)
   logger.info('Sessions: HTTP-only architecture ready')
 })
+
+// Physics update loop (60 FPS)
+setInterval(() => {
+  const deltaTime = 1/60 // 60 FPS
+  sessionManager.sessions.forEach((session, sessionId) => {
+    if (session.ballState && !session.ballState.paused) {
+      sessionManager.physicsEngine.updateBallPosition(session.ballState, deltaTime)
+    }
+  })
+}, 1000/60) // 60 FPS
 
 // Cleanup intervals
 setInterval(() => {
