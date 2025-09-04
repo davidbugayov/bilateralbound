@@ -4,35 +4,35 @@
  */
 
 class SharedComponents {
-    constructor() {
-        this.components = new Map();
-        this.eventListeners = new Map();
-    }
+  constructor () {
+    this.components = new Map()
+    this.eventListeners = new Map()
+  }
 
-    /**
+  /**
      * Создает переиспользуемый компонент управления направлением
      */
-    createDirectionControls(container, options = {}) {
-        const defaultOptions = {
-            onDirectionChange: null,
-            showLabels: true,
-            style: 'grid', // 'grid' или 'horizontal'
-            ...options
-        };
+  createDirectionControls (container, options = {}) {
+    const defaultOptions = {
+      onDirectionChange: null,
+      showLabels: true,
+      style: 'grid', // 'grid' или 'horizontal'
+      ...options
+    }
 
-        const component = {
-            container,
-            options: defaultOptions,
-            currentDirection: { x: 0, y: 0 },
-            buttons: new Map(),
-            
-            // Создает HTML для контролов
-            render() {
-                const directionControls = document.createElement('div');
-                directionControls.className = 'direction-controls';
-                
-                if (defaultOptions.style === 'grid') {
-                    directionControls.innerHTML = `
+    const component = {
+      container,
+      options: defaultOptions,
+      currentDirection: { x: 0, y: 0 },
+      buttons: new Map(),
+
+      // Создает HTML для контролов
+      render () {
+        const directionControls = document.createElement('div')
+        directionControls.className = 'direction-controls'
+
+        if (defaultOptions.style === 'grid') {
+          directionControls.innerHTML = `
                         <div class="direction-grid">
                             <button class="direction-btn" data-direction="up" title="Вверх">⬆️</button>
                             <button class="direction-btn" data-direction="left" title="Влево">⬅️</button>
@@ -40,98 +40,98 @@ class SharedComponents {
                             <button class="direction-btn" data-direction="right" title="Вправо">➡️</button>
                             <button class="direction-btn" data-direction="down" title="Вниз">⬇️</button>
                         </div>
-                    `;
-                } else {
-                    directionControls.innerHTML = `
+                    `
+        } else {
+          directionControls.innerHTML = `
                         <div class="direction-horizontal">
                             <button class="direction-btn" data-direction="left" title="Влево">⬅️</button>
                             <button class="direction-btn" data-direction="center" title="Стоп">⏹️</button>
                             <button class="direction-btn" data-direction="right" title="Вправо">➡️</button>
                         </div>
-                    `;
-                }
+                    `
+        }
 
-                container.appendChild(directionControls);
-                this.setupEventListeners();
-                return this;
-            },
+        container.appendChild(directionControls)
+        this.setupEventListeners()
+        return this
+      },
 
-            // Настраивает обработчики событий
-            setupEventListeners() {
-                const buttons = container.querySelectorAll('.direction-btn');
-                buttons.forEach(button => {
-                    const direction = button.dataset.direction;
-                    this.buttons.set(direction, button);
-                    
-                    button.addEventListener('click', () => {
-                        this.setDirection(direction);
-                    });
-                });
-            },
+      // Настраивает обработчики событий
+      setupEventListeners () {
+        const buttons = container.querySelectorAll('.direction-btn')
+        buttons.forEach(button => {
+          const direction = button.dataset.direction
+          this.buttons.set(direction, button)
 
-            // Устанавливает направление
-            setDirection(direction) {
-                const directionMap = {
-                    up: { x: 0, y: -1 },
-                    down: { x: 0, y: 1 },
-                    left: { x: -1, y: 0 },
-                    right: { x: 1, y: 0 },
-                    center: { x: 0, y: 0 }
-                };
+          button.addEventListener('click', () => {
+            this.setDirection(direction)
+          })
+        })
+      },
 
-                this.currentDirection = directionMap[direction] || { x: 0, y: 0 };
-                
-                // Обновляем активную кнопку
-                this.buttons.forEach((btn, dir) => {
-                    btn.classList.toggle('active', dir === direction);
-                });
+      // Устанавливает направление
+      setDirection (direction) {
+        const directionMap = {
+          up: { x: 0, y: -1 },
+          down: { x: 0, y: 1 },
+          left: { x: -1, y: 0 },
+          right: { x: 1, y: 0 },
+          center: { x: 0, y: 0 }
+        }
 
-                // Вызываем callback
-                if (this.options.onDirectionChange) {
-                    this.options.onDirectionChange(this.currentDirection);
-                }
-            },
+        this.currentDirection = directionMap[direction] || { x: 0, y: 0 }
 
-            // Получает текущее направление
-            getDirection() {
-                return { ...this.currentDirection };
-            },
+        // Обновляем активную кнопку
+        this.buttons.forEach((btn, dir) => {
+          btn.classList.toggle('active', dir === direction)
+        })
 
-            // Сбрасывает направление
-            reset() {
-                this.setDirection('center');
-            }
-        };
+        // Вызываем callback
+        if (this.options.onDirectionChange) {
+          this.options.onDirectionChange(this.currentDirection)
+        }
+      },
 
-        return component.render();
+      // Получает текущее направление
+      getDirection () {
+        return { ...this.currentDirection }
+      },
+
+      // Сбрасывает направление
+      reset () {
+        this.setDirection('center')
+      }
     }
 
-    /**
+    return component.render()
+  }
+
+  /**
      * Создает переиспользуемый компонент управления скоростью
      */
-    createSpeedControl(container, options = {}) {
-        const defaultOptions = {
-            min: 0,
-            max: 100,
-            defaultValue: 40,
-            onSpeedChange: null,
-            showValue: true,
-            showLabels: true,
-            ...options
-        };
+  createSpeedControl (container, options = {}) {
+    const defaultOptions = {
+      min: 0,
+      max: 100,
+      defaultValue: 40,
+      onSpeedChange: null,
+      showValue: true,
+      showLabels: true,
+      ...options
+    }
 
-        const component = {
-            container,
-            options: defaultOptions,
-            currentSpeed: defaultOptions.defaultValue,
-            elements: {},
+    const component = {
+      container,
+      options: defaultOptions,
+      currentSpeed: defaultOptions.defaultValue,
+      elements: {},
 
-            // Создает HTML для контроля скорости
-            render() {
-                const speedControl = document.createElement('div');
-                speedControl.className = 'speed-control';
-                
-                speedControl.innerHTML = `
+      // Создает HTML для контроля скорости
+      render () {
+        const speedControl = document.createElement('div')
+        speedControl.className = 'speed-control'
+
+        speedControl.innerHTML = `
                     <div class="speed-header">
                         <h3>🚀 Скорость</h3>
                         ${defaultOptions.showValue ? '<span class="speed-value">40</span>' : ''}
@@ -143,92 +143,94 @@ class SharedComponents {
                                max="${defaultOptions.max}" 
                                value="${defaultOptions.currentSpeed}"
                                step="1">
-                        ${defaultOptions.showLabels ? `
+                        ${defaultOptions.showLabels
+    ? `
                             <div class="speed-labels">
                                 <span>🐌</span>
                                 <span>🚀</span>
                             </div>
-                        ` : ''}
+                        `
+    : ''}
                     </div>
-                `;
+                `
 
-                container.appendChild(speedControl);
-                this.setupElements();
-                this.setupEventListeners();
-                return this;
-            },
+        container.appendChild(speedControl)
+        this.setupElements()
+        this.setupEventListeners()
+        return this
+      },
 
-            // Настраивает ссылки на элементы
-            setupElements() {
-                this.elements.range = container.querySelector('.speed-range');
-                this.elements.value = container.querySelector('.speed-value');
-                this.elements.labels = container.querySelector('.speed-labels');
-            },
+      // Настраивает ссылки на элементы
+      setupElements () {
+        this.elements.range = container.querySelector('.speed-range')
+        this.elements.value = container.querySelector('.speed-value')
+        this.elements.labels = container.querySelector('.speed-labels')
+      },
 
-            // Настраивает обработчики событий
-            setupEventListeners() {
-                if (this.elements.range) {
-                    this.elements.range.addEventListener('input', (e) => {
-                        this.setSpeed(parseInt(e.target.value));
-                    });
-                }
-            },
+      // Настраивает обработчики событий
+      setupEventListeners () {
+        if (this.elements.range) {
+          this.elements.range.addEventListener('input', (e) => {
+            this.setSpeed(parseInt(e.target.value))
+          })
+        }
+      },
 
-            // Устанавливает скорость
-            setSpeed(speed) {
-                this.currentSpeed = Math.max(this.options.min, Math.min(this.options.max, speed));
-                
-                if (this.elements.range) {
-                    this.elements.range.value = this.currentSpeed;
-                }
-                
-                if (this.elements.value) {
-                    this.elements.value.textContent = this.currentSpeed;
-                }
+      // Устанавливает скорость
+      setSpeed (speed) {
+        this.currentSpeed = Math.max(this.options.min, Math.min(this.options.max, speed))
 
-                // Вызываем callback
-                if (this.options.onSpeedChange) {
-                    this.options.onSpeedChange(this.currentSpeed);
-                }
-            },
+        if (this.elements.range) {
+          this.elements.range.value = this.currentSpeed
+        }
 
-            // Получает текущую скорость
-            getSpeed() {
-                return this.currentSpeed;
-            },
+        if (this.elements.value) {
+          this.elements.value.textContent = this.currentSpeed
+        }
 
-            // Сбрасывает скорость
-            reset() {
-                this.setSpeed(this.options.defaultValue);
-            }
-        };
+        // Вызываем callback
+        if (this.options.onSpeedChange) {
+          this.options.onSpeedChange(this.currentSpeed)
+        }
+      },
 
-        return component.render();
+      // Получает текущую скорость
+      getSpeed () {
+        return this.currentSpeed
+      },
+
+      // Сбрасывает скорость
+      reset () {
+        this.setSpeed(this.options.defaultValue)
+      }
     }
 
-    /**
+    return component.render()
+  }
+
+  /**
      * Создает переиспользуемый компонент управления цветом
      */
-    createColorControl(container, options = {}) {
-        const defaultOptions = {
-            colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
-            onColorChange: null,
-            title: '🎨 Цвет',
-            ...options
-        };
+  createColorControl (container, options = {}) {
+    const defaultOptions = {
+      colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+      onColorChange: null,
+      title: '🎨 Цвет',
+      ...options
+    }
 
-        const component = {
-            container,
-            options: defaultOptions,
-            currentColor: defaultOptions.colors[0],
-            elements: {},
+    const component = {
+      container,
+      options: defaultOptions,
+      currentColor: defaultOptions.colors[0],
+      elements: {},
 
-            // Создает HTML для контроля цвета
-            render() {
-                const colorControl = document.createElement('div');
-                colorControl.className = 'color-control';
-                
-                colorControl.innerHTML = `
+      // Создает HTML для контроля цвета
+      render () {
+        const colorControl = document.createElement('div')
+        colorControl.className = 'color-control'
+
+        colorControl.innerHTML = `
                     <h3>${defaultOptions.title}</h3>
                     <div class="color-palette">
                         ${defaultOptions.colors.map(color => `
@@ -239,73 +241,73 @@ class SharedComponents {
                             </button>
                         `).join('')}
                     </div>
-                `;
+                `
 
-                container.appendChild(colorControl);
-                this.setupEventListeners();
-                return this;
-            },
+        container.appendChild(colorControl)
+        this.setupEventListeners()
+        return this
+      },
 
-            // Настраивает обработчики событий
-            setupEventListeners() {
-                const buttons = container.querySelectorAll('.color-btn');
-                buttons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        const color = button.dataset.color;
-                        this.setColor(color);
-                    });
-                });
-            },
+      // Настраивает обработчики событий
+      setupEventListeners () {
+        const buttons = container.querySelectorAll('.color-btn')
+        buttons.forEach(button => {
+          button.addEventListener('click', () => {
+            const color = button.dataset.color
+            this.setColor(color)
+          })
+        })
+      },
 
-            // Устанавливает цвет
-            setColor(color) {
-                this.currentColor = color;
-                
-                // Обновляем активную кнопку
-                const buttons = container.querySelectorAll('.color-btn');
-                buttons.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.color === color);
-                });
+      // Устанавливает цвет
+      setColor (color) {
+        this.currentColor = color
 
-                // Вызываем callback
-                if (this.options.onColorChange) {
-                    this.options.onColorChange(color);
-                }
-            },
+        // Обновляем активную кнопку
+        const buttons = container.querySelectorAll('.color-btn')
+        buttons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.color === color)
+        })
 
-            // Получает текущий цвет
-            getColor() {
-                return this.currentColor;
-            }
-        };
+        // Вызываем callback
+        if (this.options.onColorChange) {
+          this.options.onColorChange(color)
+        }
+      },
 
-        return component.render();
+      // Получает текущий цвет
+      getColor () {
+        return this.currentColor
+      }
     }
 
-    /**
+    return component.render()
+  }
+
+  /**
      * Создает переиспользуемый компонент управления размером
      */
-    createSizeControl(container, options = {}) {
-        const defaultOptions = {
-            sizes: [20, 30, 40, 50, 60],
-            defaultValue: 40,
-            onSizeChange: null,
-            title: '📏 Размер',
-            ...options
-        };
+  createSizeControl (container, options = {}) {
+    const defaultOptions = {
+      sizes: [20, 30, 40, 50, 60],
+      defaultValue: 40,
+      onSizeChange: null,
+      title: '📏 Размер',
+      ...options
+    }
 
-        const component = {
-            container,
-            options: defaultOptions,
-            currentSize: defaultOptions.defaultValue,
-            elements: {},
+    const component = {
+      container,
+      options: defaultOptions,
+      currentSize: defaultOptions.defaultValue,
+      elements: {},
 
-            // Создает HTML для контроля размера
-            render() {
-                const sizeControl = document.createElement('div');
-                sizeControl.className = 'size-control';
-                
-                sizeControl.innerHTML = `
+      // Создает HTML для контроля размера
+      render () {
+        const sizeControl = document.createElement('div')
+        sizeControl.className = 'size-control'
+
+        sizeControl.innerHTML = `
                     <h3>${defaultOptions.title}</h3>
                     <div class="size-palette">
                         ${defaultOptions.sizes.map(size => `
@@ -316,287 +318,287 @@ class SharedComponents {
                             </button>
                         `).join('')}
                     </div>
-                `;
+                `
 
-                container.appendChild(sizeControl);
-                this.setupEventListeners();
-                return this;
-            },
+        container.appendChild(sizeControl)
+        this.setupEventListeners()
+        return this
+      },
 
-            // Настраивает обработчики событий
-            setupEventListeners() {
-                const buttons = container.querySelectorAll('.size-btn');
-                buttons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        const size = parseInt(button.dataset.size);
-                        this.setSize(size);
-                    });
-                });
-            },
+      // Настраивает обработчики событий
+      setupEventListeners () {
+        const buttons = container.querySelectorAll('.size-btn')
+        buttons.forEach(button => {
+          button.addEventListener('click', () => {
+            const size = parseInt(button.dataset.size)
+            this.setSize(size)
+          })
+        })
+      },
 
-            // Устанавливает размер
-            setSize(size) {
-                this.currentSize = size;
-                
-                // Обновляем активную кнопку
-                const buttons = container.querySelectorAll('.size-btn');
-                buttons.forEach(btn => {
-                    btn.classList.toggle('active', parseInt(btn.dataset.size) === size);
-                });
+      // Устанавливает размер
+      setSize (size) {
+        this.currentSize = size
 
-                // Вызываем callback
-                if (this.options.onSizeChange) {
-                    this.options.onSizeChange(size);
-                }
-            },
+        // Обновляем активную кнопку
+        const buttons = container.querySelectorAll('.size-btn')
+        buttons.forEach(btn => {
+          btn.classList.toggle('active', parseInt(btn.dataset.size) === size)
+        })
 
-            // Получает текущий размер
-            getSize() {
-                return this.currentSize;
-            }
-        };
+        // Вызываем callback
+        if (this.options.onSizeChange) {
+          this.options.onSizeChange(size)
+        }
+      },
 
-        return component.render();
+      // Получает текущий размер
+      getSize () {
+        return this.currentSize
+      }
     }
 
-    /**
+    return component.render()
+  }
+
+  /**
      * Создает переиспользуемый компонент статуса
      */
-    createStatusIndicator(container, options = {}) {
-        const defaultOptions = {
-            title: 'Статус',
-            showIcon: true,
-            autoHide: false,
-            hideDelay: 3000,
-            ...options
-        };
+  createStatusIndicator (container, options = {}) {
+    const defaultOptions = {
+      title: 'Статус',
+      showIcon: true,
+      autoHide: false,
+      hideDelay: 3000,
+      ...options
+    }
 
-        const component = {
-            container,
-            options: defaultOptions,
-            currentStatus: 'idle',
-            elements: {},
+    const component = {
+      container,
+      options: defaultOptions,
+      currentStatus: 'idle',
+      elements: {},
 
-            // Создает HTML для индикатора статуса
-            render() {
-                const statusIndicator = document.createElement('div');
-                statusIndicator.className = 'status-indicator';
-                
-                statusIndicator.innerHTML = `
+      // Создает HTML для индикатора статуса
+      render () {
+        const statusIndicator = document.createElement('div')
+        statusIndicator.className = 'status-indicator'
+
+        statusIndicator.innerHTML = `
                     <div class="status-content">
                         ${defaultOptions.showIcon ? '<span class="status-icon">⏳</span>' : ''}
                         <span class="status-text">${defaultOptions.title}</span>
                     </div>
-                `;
+                `
 
-                container.appendChild(statusIndicator);
-                this.setupElements();
-                return this;
-            },
+        container.appendChild(statusIndicator)
+        this.setupElements()
+        return this
+      },
 
-            // Настраивает ссылки на элементы
-            setupElements() {
-                this.elements.container = container.querySelector('.status-indicator');
-                this.elements.icon = container.querySelector('.status-icon');
-                this.elements.text = container.querySelector('.status-text');
-            },
+      // Настраивает ссылки на элементы
+      setupElements () {
+        this.elements.container = container.querySelector('.status-indicator')
+        this.elements.icon = container.querySelector('.status-icon')
+        this.elements.text = container.querySelector('.status-text')
+      },
 
-            // Устанавливает статус
-            setStatus(status, message = '', type = 'info') {
-                this.currentStatus = status;
-                
-                const statusMap = {
-                    idle: { icon: '⏳', class: 'idle' },
-                    loading: { icon: '🔄', class: 'loading' },
-                    success: { icon: '✅', class: 'success' },
-                    error: { icon: '❌', class: 'error' },
-                    warning: { icon: '⚠️', class: 'warning' }
-                };
+      // Устанавливает статус
+      setStatus (status, message = '', type = 'info') {
+        this.currentStatus = status
 
-                const statusInfo = statusMap[status] || statusMap.idle;
-                
-                if (this.elements.icon) {
-                    this.elements.icon.textContent = statusInfo.icon;
-                }
-                
-                if (this.elements.text) {
-                    this.elements.text.textContent = message || status;
-                }
+        const statusMap = {
+          idle: { icon: '⏳', class: 'idle' },
+          loading: { icon: '🔄', class: 'loading' },
+          success: { icon: '✅', class: 'success' },
+          error: { icon: '❌', class: 'error' },
+          warning: { icon: '⚠️', class: 'warning' }
+        }
 
-                // Обновляем CSS классы
-                this.elements.container.className = `status-indicator ${statusInfo.class}`;
+        const statusInfo = statusMap[status] || statusMap.idle
 
-                // Автоматически скрываем если включено
-                if (this.options.autoHide && status !== 'loading') {
-                    setTimeout(() => {
-                        this.hide();
-                    }, this.options.hideDelay);
-                }
-            },
+        if (this.elements.icon) {
+          this.elements.icon.textContent = statusInfo.icon
+        }
 
-            // Показывает индикатор
-            show() {
-                this.elements.container.style.display = 'block';
-            },
+        if (this.elements.text) {
+          this.elements.text.textContent = message || status
+        }
 
-            // Скрывает индикатор
-            hide() {
-                this.elements.container.style.display = 'none';
-            },
+        // Обновляем CSS классы
+        this.elements.container.className = `status-indicator ${statusInfo.class}`
 
-            // Получает текущий статус
-            getStatus() {
-                return this.currentStatus;
-            }
-        };
+        // Автоматически скрываем если включено
+        if (this.options.autoHide && status !== 'loading') {
+          setTimeout(() => {
+            this.hide()
+          }, this.options.hideDelay)
+        }
+      },
 
-        return component.render();
+      // Показывает индикатор
+      show () {
+        this.elements.container.style.display = 'block'
+      },
+
+      // Скрывает индикатор
+      hide () {
+        this.elements.container.style.display = 'none'
+      },
+
+      // Получает текущий статус
+      getStatus () {
+        return this.currentStatus
+      }
     }
 
-    /**
+    return component.render()
+  }
+
+  /**
      * Создает переиспользуемый компонент canvas с превью
      */
-    createCanvasPreview(container, options = {}) {
-        const defaultOptions = {
-            width: 400,
-            height: 300,
-            backgroundColor: '#020617',
-            showInfo: true,
-            draggable: false,
-            ...options
-        };
+  createCanvasPreview (container, options = {}) {
+    const defaultOptions = {
+      width: 400,
+      height: 300,
+      backgroundColor: '#020617',
+      showInfo: true,
+      draggable: false,
+      ...options
+    }
 
-        const component = {
-            container,
-            options: defaultOptions,
-            canvas: null,
-            ctx: null,
-            physicsEngine: null,
-            renderer: null,
-            elements: {},
+    const component = {
+      container,
+      options: defaultOptions,
+      canvas: null,
+      ctx: null,
+      physicsEngine: null,
+      renderer: null,
+      elements: {},
 
-            // Создает HTML для canvas превью
-            render() {
-                const previewContainer = document.createElement('div');
-                previewContainer.className = 'canvas-preview';
-                
-                previewContainer.innerHTML = `
+      // Создает HTML для canvas превью
+      render () {
+        const previewContainer = document.createElement('div')
+        previewContainer.className = 'canvas-preview'
+
+        previewContainer.innerHTML = `
                     ${defaultOptions.draggable ? '<div class="drag-handle">📱 Перетащите</div>' : ''}
                     <canvas width="${defaultOptions.width}" height="${defaultOptions.height}"></canvas>
                     ${defaultOptions.showInfo ? '<div class="preview-info">Превью</div>' : ''}
-                `;
+                `
 
-                container.appendChild(previewContainer);
-                this.setupCanvas();
-                this.setupElements();
-                return this;
-            },
+        container.appendChild(previewContainer)
+        this.setupCanvas()
+        this.setupElements()
+        return this
+      },
 
-            // Настраивает canvas
-            setupCanvas() {
-                this.canvas = container.querySelector('canvas');
-                this.ctx = this.canvas.getContext('2d');
-                
-                // Создаем движок физики и рендерер
-                this.physicsEngine = moduleFactory.createPhysicsEngine({
-                    worldWidth: this.options.width,
-                    worldHeight: this.options.height,
-                    colors: {
-                        bg: this.options.backgroundColor
-                    }
-                });
+      // Настраивает canvas
+      setupCanvas () {
+        this.canvas = container.querySelector('canvas')
+        this.ctx = this.canvas.getContext('2d')
 
-                this.renderer = moduleFactory.createRenderer(this.canvas, this.physicsEngine);
-            },
+        // Создаем движок физики и рендерер
+        this.physicsEngine = moduleFactory.createPhysicsEngine({
+          worldWidth: this.options.width,
+          worldHeight: this.options.height,
+          colors: {
+            bg: this.options.backgroundColor
+          }
+        })
 
-            // Настраивает ссылки на элементы
-            setupElements() {
-                this.elements.container = container.querySelector('.canvas-preview');
-                this.elements.canvas = this.canvas;
-                this.elements.info = container.querySelector('.preview-info');
-            },
+        this.renderer = moduleFactory.createRenderer(this.canvas, this.physicsEngine)
+      },
 
-            // Запускает рендеринг
-            start() {
-                if (this.renderer) {
-                    this.renderer.start();
-                }
-            },
+      // Настраивает ссылки на элементы
+      setupElements () {
+        this.elements.container = container.querySelector('.canvas-preview')
+        this.elements.canvas = this.canvas
+        this.elements.info = container.querySelector('.preview-info')
+      },
 
-            // Останавливает рендеринг
-            stop() {
-                if (this.renderer) {
-                    this.renderer.stop();
-                }
-            },
+      // Запускает рендеринг
+      start () {
+        if (this.renderer) {
+          this.renderer.start()
+        }
+      },
 
-            // Синхронизирует с сервером
-            syncFromServer(state) {
-                if (this.physicsEngine) {
-                    this.physicsEngine.syncFromServer(state);
-                }
-            },
+      // Останавливает рендеринг
+      stop () {
+        if (this.renderer) {
+          this.renderer.stop()
+        }
+      },
 
-            // Изменяет размеры
-            resize(width, height) {
-                this.options.width = width;
-                this.options.height = height;
-                
-                if (this.canvas) {
-                    this.canvas.width = width;
-                    this.canvas.height = height;
-                }
-                
-                if (this.physicsEngine) {
-                    this.physicsEngine.setWorldSize(width, height);
-                }
-                
-                if (this.renderer) {
-                    this.renderer.resize(width, height);
-                }
-            },
+      // Синхронизирует с сервером
+      syncFromServer (state) {
+        if (this.physicsEngine) {
+          this.physicsEngine.syncFromServer(state)
+        }
+      },
 
-            // Получает canvas элемент
-            getCanvas() {
-                return this.canvas;
-            },
+      // Изменяет размеры
+      resize (width, height) {
+        this.options.width = width
+        this.options.height = height
 
-            // Получает движок физики
-            getPhysicsEngine() {
-                return this.physicsEngine;
-            },
+        if (this.canvas) {
+          this.canvas.width = width
+          this.canvas.height = height
+        }
 
-            // Получает рендерер
-            getRenderer() {
-                return this.renderer;
-            }
-        };
+        if (this.physicsEngine) {
+          this.physicsEngine.setWorldSize(width, height)
+        }
 
-        return component.render();
+        if (this.renderer) {
+          this.renderer.resize(width, height)
+        }
+      },
+
+      // Получает canvas элемент
+      getCanvas () {
+        return this.canvas
+      },
+
+      // Получает движок физики
+      getPhysicsEngine () {
+        return this.physicsEngine
+      },
+
+      // Получает рендерер
+      getRenderer () {
+        return this.renderer
+      }
     }
 
-    /**
+    return component.render()
+  }
+
+  /**
      * Создает переиспользуемый компонент мобильных контролов
      */
-    createMobileControls(container, options = {}) {
-        const defaultOptions = {
-            onDirectionChange: null,
-            onSpeedChange: null,
-            showSpeedControl: true,
-            ...options
-        };
+  createMobileControls (container, options = {}) {
+    const defaultOptions = {
+      onDirectionChange: null,
+      onSpeedChange: null,
+      showSpeedControl: true,
+      ...options
+    }
 
-        const component = {
-            container,
-            options: defaultOptions,
-            elements: {},
+    const component = {
+      container,
+      options: defaultOptions,
+      elements: {},
 
-            // Создает HTML для мобильных контролов
-            render() {
-                const mobileControls = document.createElement('div');
-                mobileControls.className = 'mobile-controls';
-                
-                mobileControls.innerHTML = `
+      // Создает HTML для мобильных контролов
+      render () {
+        const mobileControls = document.createElement('div')
+        mobileControls.className = 'mobile-controls'
+
+        mobileControls.innerHTML = `
                     <div class="mobile-direction-pad">
                         <button class="mobile-btn up" data-direction="up">⬆️</button>
                         <button class="mobile-btn left" data-direction="left">⬅️</button>
@@ -604,100 +606,102 @@ class SharedComponents {
                         <button class="mobile-btn right" data-direction="right">➡️</button>
                         <button class="mobile-btn down" data-direction="down">⬇️</button>
                     </div>
-                    ${defaultOptions.showSpeedControl ? `
+                    ${defaultOptions.showSpeedControl
+    ? `
                         <div class="mobile-speed-control">
                             <input type="range" class="mobile-speed-range" min="0" max="100" value="40">
                             <span class="mobile-speed-value">40</span>
                         </div>
-                    ` : ''}
-                `;
+                    `
+    : ''}
+                `
 
-                container.appendChild(mobileControls);
-                this.setupElements();
-                this.setupEventListeners();
-                return this;
-            },
+        container.appendChild(mobileControls)
+        this.setupElements()
+        this.setupEventListeners()
+        return this
+      },
 
-            // Настраивает ссылки на элементы
-            setupElements() {
-                this.elements.container = container.querySelector('.mobile-controls');
-                this.elements.directionPad = container.querySelector('.mobile-direction-pad');
-                this.elements.speedRange = container.querySelector('.mobile-speed-range');
-                this.elements.speedValue = container.querySelector('.mobile-speed-value');
-            },
+      // Настраивает ссылки на элементы
+      setupElements () {
+        this.elements.container = container.querySelector('.mobile-controls')
+        this.elements.directionPad = container.querySelector('.mobile-direction-pad')
+        this.elements.speedRange = container.querySelector('.mobile-speed-range')
+        this.elements.speedValue = container.querySelector('.mobile-speed-value')
+      },
 
-            // Настраивает обработчики событий
-            setupEventListeners() {
-                // Направление
-                const directionButtons = container.querySelectorAll('.mobile-btn');
-                directionButtons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        const direction = button.dataset.direction;
-                        this.handleDirectionChange(direction);
-                    });
-                });
+      // Настраивает обработчики событий
+      setupEventListeners () {
+        // Направление
+        const directionButtons = container.querySelectorAll('.mobile-btn')
+        directionButtons.forEach(button => {
+          button.addEventListener('click', () => {
+            const direction = button.dataset.direction
+            this.handleDirectionChange(direction)
+          })
+        })
 
-                // Скорость
-                if (this.elements.speedRange) {
-                    this.elements.speedRange.addEventListener('input', (e) => {
-                        const speed = parseInt(e.target.value);
-                        this.handleSpeedChange(speed);
-                    });
-                }
-            },
+        // Скорость
+        if (this.elements.speedRange) {
+          this.elements.speedRange.addEventListener('input', (e) => {
+            const speed = parseInt(e.target.value)
+            this.handleSpeedChange(speed)
+          })
+        }
+      },
 
-            // Обрабатывает изменение направления
-            handleDirectionChange(direction) {
-                const directionMap = {
-                    up: { x: 0, y: -1 },
-                    down: { x: 0, y: 1 },
-                    left: { x: -1, y: 0 },
-                    right: { x: 1, y: 0 },
-                    center: { x: 0, y: 0 }
-                };
+      // Обрабатывает изменение направления
+      handleDirectionChange (direction) {
+        const directionMap = {
+          up: { x: 0, y: -1 },
+          down: { x: 0, y: 1 },
+          left: { x: -1, y: 0 },
+          right: { x: 1, y: 0 },
+          center: { x: 0, y: 0 }
+        }
 
-                const newDirection = directionMap[direction] || { x: 0, y: 0 };
+        const newDirection = directionMap[direction] || { x: 0, y: 0 }
 
-                if (this.options.onDirectionChange) {
-                    this.options.onDirectionChange(newDirection);
-                }
-            },
+        if (this.options.onDirectionChange) {
+          this.options.onDirectionChange(newDirection)
+        }
+      },
 
-            // Обрабатывает изменение скорости
-            handleSpeedChange(speed) {
-                if (this.elements.speedValue) {
-                    this.elements.speedValue.textContent = speed;
-                }
+      // Обрабатывает изменение скорости
+      handleSpeedChange (speed) {
+        if (this.elements.speedValue) {
+          this.elements.speedValue.textContent = speed
+        }
 
-                if (this.options.onSpeedChange) {
-                    this.options.onSpeedChange(speed);
-                }
-            },
+        if (this.options.onSpeedChange) {
+          this.options.onSpeedChange(speed)
+        }
+      },
 
-            // Показывает мобильные контролы
-            show() {
-                this.elements.container.style.display = 'block';
-            },
+      // Показывает мобильные контролы
+      show () {
+        this.elements.container.style.display = 'block'
+      },
 
-            // Скрывает мобильные контролы
-            hide() {
-                this.elements.container.style.display = 'none';
-            }
-        };
-
-        return component.render();
+      // Скрывает мобильные контролы
+      hide () {
+        this.elements.container.style.display = 'none'
+      }
     }
+
+    return component.render()
+  }
 }
 
 // Создаем глобальный экземпляр
-const sharedComponents = new SharedComponents();
+const sharedComponents = new SharedComponents()
 
 // Экспортируем для использования
 if (typeof window !== 'undefined') {
-    window.SharedComponents = SharedComponents;
-    window.sharedComponents = sharedComponents;
+  window.SharedComponents = SharedComponents
+  window.sharedComponents = sharedComponents
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { SharedComponents, sharedComponents };
+  module.exports = { SharedComponents, sharedComponents }
 }

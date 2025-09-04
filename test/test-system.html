@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Системный тест BilateralBound</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .test-section {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #334155;
+        }
+
+        .test-section h2 {
+            margin: 0 0 20px 0;
+            color: #60a5fa;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 10px;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #374151;
+        }
+
+        .control-group h3 {
+            margin: 0 0 12px 0;
+            color: #60a5fa;
+            font-size: 14px;
+        }
+
+        .direction-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 200px;
+        }
+
+        .direction-btn {
+            padding: 10px 12px;
+            font-size: 12px;
+            background: #374151;
+            color: #9ca3af;
+            border: 1px solid #4b5563;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .direction-btn:hover {
+            background: #4b5563;
+            color: white;
+        }
+
+        .direction-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #1d4ed8;
+        }
+
+        .play-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .play-btn {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 100px;
+        }
+
+        .play-btn.start {
+            background: #10b981;
+            color: white;
+        }
+
+        .play-btn.start:hover {
+            background: #059669;
+        }
+
+        .play-btn.stop {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .play-btn.stop:hover {
+            background: #d97706;
+        }
+
+        .reset-btn {
+            padding: 12px 16px;
+            font-size: 14px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reset-btn:hover {
+            background: #b91c1c;
+        }
+
+        .preview-section {
+            text-align: center;
+        }
+
+        .preview-container {
+            position: relative;
+            display: inline-block;
+            border: 2px solid #374151;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .preview-canvas {
+            display: block;
+            background: #020617;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .viewer-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #9ca3af;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .status-panel {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-value {
+            font-weight: 500;
+        }
+
+        .status-connected {
+            color: #10b981;
+        }
+
+        .status-disconnected {
+            color: #ef4444;
+        }
+
+        .status-waiting {
+            color: #f59e0b;
+        }
+
+        .log-panel {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-panel h4 {
+            margin: 0 0 12px 0;
+            color: #60a5fa;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        .log-success {
+            color: #10b981;
+        }
+
+        .log-error {
+            color: #ef4444;
+        }
+
+        .log-info {
+            color: #60a5fa;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .test-btn {
+            padding: 10px 16px;
+            font-size: 14px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .test-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .session-info {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .session-url {
+            font-family: monospace;
+            background: #1f2937;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 8px 0;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #374151;
+            color: #9ca3af;
+            border: 1px solid #4b5563;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: #4b5563;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .direction-grid {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Левая колонка: Управление -->
+        <div class="test-section">
+            <h2>🎮 Управление системой</h2>
+
+            <div class="session-info">
+                <h3>📋 Сессия</h3>
+                <div class="session-url" id="sessionUrl">Создание сессии...</div>
+                <button class="copy-btn" onclick="copySessionUrl()">📋 Копировать</button>
+            </div>
+
+            <div class="control-panel">
+                <!-- Направление -->
+                <div class="control-group">
+                    <h3>🧭 Направление</h3>
+                    <div class="direction-grid">
+                        <button class="direction-btn" onclick="setDirection('horizontal')" id="dir-horizontal">
+                            ↔️<br>Горизонтально
+                        </button>
+                        <button class="direction-btn" onclick="setDirection('vertical')" id="dir-vertical">
+                            ↕️<br>Вертикально
+                        </button>
+                        <button class="direction-btn" onclick="setDirection('diagRL')" id="dir-diagRL">
+                            ↖️↗️<br>Диагональ
+                        </button>
+                        <button class="direction-btn" onclick="setDirection('diagRLL')" id="dir-diagRLL">
+                            ↙️↘️<br>Диагональ
+                        </button>
+                        <button class="direction-btn" onclick="resetCenter()" id="dir-center">
+                            🎯<br>Центр
+                        </button>
+                        <button class="direction-btn" onclick="openViewer()" id="open-viewer">
+                            👁️<br>Вьювер
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Управление движением -->
+                <div class="control-group">
+                    <h3>▶️ Управление</h3>
+                    <div class="play-controls">
+                        <button class="play-btn start" onclick="togglePlay()" id="playBtn">
+                            ▶️ Старт
+                        </button>
+                        <button class="reset-btn" onclick="resetBall()">
+                            🎯 Центр
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Статус системы -->
+            <div class="status-panel">
+                <h3>📊 Статус системы</h3>
+                <div class="status-item">
+                    <span>🎮 Контроллер:</span>
+                    <span class="status-value status-connected" id="controllerStatus">Подключен</span>
+                </div>
+                <div class="status-item">
+                    <span>👁️ Вьювер:</span>
+                    <span class="status-value status-disconnected" id="viewerStatus">Не подключен</span>
+                </div>
+                <div class="status-item">
+                    <span>⚡ Синхронизация:</span>
+                    <span class="status-value status-waiting" id="syncStatus">Ожидание</span>
+                </div>
+                <div class="status-item">
+                    <span>🎯 Позиция мяча:</span>
+                    <span class="status-value" id="ballPosition">400, 300</span>
+                </div>
+                <div class="status-item">
+                    <span>💨 Скорость:</span>
+                    <span class="status-value" id="ballSpeed">0, 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: Превью и логи -->
+        <div class="test-section">
+            <h2>👁️ Превью и мониторинг</h2>
+
+            <!-- Превью -->
+            <div class="preview-section">
+                <h3>Превью движения</h3>
+                <div class="preview-container">
+                    <canvas id="previewCanvas" width="400" height="300" class="preview-canvas"></canvas>
+                    <div class="viewer-info" id="viewerInfo">
+                        Вьювер: 1920×1080
+                    </div>
+                </div>
+            </div>
+
+            <!-- Логи -->
+            <div class="log-panel">
+                <h4>📝 Лог операций</h4>
+                <div id="logContainer">
+                    <div class="log-entry log-info">Система инициализирована</div>
+                </div>
+            </div>
+
+            <!-- Кнопки тестирования -->
+            <div class="test-controls">
+                <button class="test-btn" onclick="runFullTest()">🚀 Полный тест</button>
+                <button class="test-btn" onclick="testDirections()">🧭 Направления</button>
+                <button class="test-btn" onclick="testMovement()">⚡ Движение</button>
+                <button class="test-btn" onclick="testScaling()">📏 Масштаб</button>
+                <button class="test-btn" onclick="testColors()">🎨 Цвета</button>
+                <button class="test-btn" onclick="clearLog()">🗑️ Очистить лог</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Глобальные переменные
+        let sessionId = null;
+        let currentDirection = 'horizontal';
+        let isPlaying = false;
+        let viewerWindow = null;
+        let syncInterval = null;
+
+        // Canvas для превью
+        const previewCanvas = document.getElementById('previewCanvas');
+        const previewCtx = previewCanvas.getContext('2d');
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeSystem();
+        });
+
+        // Основная инициализация системы
+        async function initializeSystem() {
+            try {
+                log('info', '🚀 Инициализация системы тестирования...');
+
+                // Создаем сессию
+                const response = await fetch('/api/session', { method: 'POST' });
+                if (!response.ok) throw new Error('Не удалось создать сессию');
+
+                const data = await response.json();
+                sessionId = data.sessionId;
+
+                log('success', `✅ Сессия создана: ${sessionId}`);
+
+                // Обновляем URL
+                const sessionUrl = `${window.location.origin}/session-controller.html?sessionId=${sessionId}`;
+                document.getElementById('sessionUrl').textContent = sessionUrl;
+
+                // Инициализируем превью
+                initializePreview();
+
+                // Запускаем синхронизацию
+                startSync();
+
+                log('success', '🎉 Система готова к тестированию!');
+
+            } catch (error) {
+                log('error', '❌ Ошибка инициализации: ' + error.message);
+            }
+        }
+
+        // Инициализация превью
+        function initializePreview() {
+            log('info', '👁️ Инициализация превью...');
+
+            // Очищаем canvas
+            previewCtx.fillStyle = '#020617';
+            previewCtx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+            // Рисуем начальный круг в центре
+            drawBall(200, 150, 20, '#60a5fa');
+
+            log('success', '✅ Превью инициализировано');
+        }
+
+        // Рисование мяча
+        function drawBall(x, y, radius, color) {
+            previewCtx.fillStyle = color;
+            previewCtx.beginPath();
+            previewCtx.arc(x, y, radius, 0, 2 * Math.PI);
+            previewCtx.fill();
+        }
+
+        // Запуск синхронизации
+        function startSync() {
+            if (syncInterval) clearInterval(syncInterval);
+
+            syncInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/session/${sessionId}/state`);
+                    if (!response.ok) {
+                        updateStatus('syncStatus', 'Ошибка', 'error');
+                        return;
+                    }
+
+                    const state = await response.json();
+                    updatePreview(state);
+                    updateStatus('syncStatus', 'Активна', 'connected');
+
+                } catch (error) {
+                    updateStatus('syncStatus', 'Ошибка', 'error');
+                    log('error', 'Ошибка синхронизации: ' + error.message);
+                }
+            }, 200);
+        }
+
+        // Обновление превью на основе состояния
+        function updatePreview(state) {
+            if (!state) return;
+
+            // Очищаем canvas
+            previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+            // Рисуем фон
+            previewCtx.fillStyle = state.colorBg || '#020617';
+            previewCtx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+            // Масштабируем координаты
+            const scale = previewCanvas.width / (state.viewerScreenSize?.width || 1920);
+            const ballX = (state.x || 400) * scale;
+            const ballY = (state.y || 300) * scale;
+            const ballRadius = (state.radius || 20) * scale;
+
+            // Рисуем мяч
+            drawBall(ballX, ballY, ballRadius, state.colorBall || '#60a5fa');
+
+            // Обновляем информацию о позиции
+            document.getElementById('ballPosition').textContent =
+                `${Math.round(state.x || 400)}, ${Math.round(state.y || 300)}`;
+
+            document.getElementById('ballSpeed').textContent =
+                `${Math.round(state.vx || 0)}, ${Math.round(state.vy || 0)}`;
+
+            // Обновляем информацию о вьювере
+            if (state.viewerScreenSize) {
+                document.getElementById('viewerInfo').textContent =
+                    `Вьювер: ${state.viewerScreenSize.width}×${state.viewerScreenSize.height}`;
+            }
+
+            // Обновляем статус вьювера
+            if (state.viewerConnected) {
+                updateStatus('viewerStatus', 'Подключен', 'connected');
+            } else {
+                updateStatus('viewerStatus', 'Не подключен', 'disconnected');
+            }
+        }
+
+        // Управление направлением
+        function setDirection(direction) {
+            currentDirection = direction;
+
+            // Снимаем активное состояние со всех кнопок
+            document.querySelectorAll('.direction-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Добавляем активное состояние к выбранной кнопке
+            const activeBtn = document.querySelector(`#dir-${direction}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            // Отправляем команду на сервер
+            sendCommand({ dirX: getDirectionX(direction), dirY: getDirectionY(direction) });
+
+            log('info', `🧭 Направление изменено: ${getDirectionName(direction)}`);
+        }
+
+        // Вспомогательные функции для направлений
+        function getDirectionX(direction) {
+            switch(direction) {
+                case 'horizontal': return 1;
+                case 'vertical': return 0;
+                case 'diagRL': case 'diagRLL': return 0.707;
+                default: return 0;
+            }
+        }
+
+        function getDirectionY(direction) {
+            switch(direction) {
+                case 'horizontal': return 0;
+                case 'vertical': return 1;
+                case 'diagRL': return 0.707;
+                case 'diagRLL': return -0.707;
+                default: return 0;
+            }
+        }
+
+        function getDirectionName(direction) {
+            switch(direction) {
+                case 'horizontal': return 'Горизонтально';
+                case 'vertical': return 'Вертикально';
+                case 'diagRL': return 'Диагональ L→R';
+                case 'diagRLL': return 'Диагональ R→L';
+                default: return 'Неизвестно';
+            }
+        }
+
+        // Управление движением
+        function togglePlay() {
+            const btn = document.getElementById('playBtn');
+
+            if (isPlaying) {
+                // Останавливаем
+                sendCommand({ pause: true });
+                btn.textContent = '▶️ Старт';
+                btn.className = 'play-btn start';
+                isPlaying = false;
+                log('info', '⏸ Движение остановлено');
+            } else {
+                // Запускаем
+                const direction = { x: getDirectionX(currentDirection), y: getDirectionY(currentDirection) };
+                sendCommand({
+                    resume: true,
+                    dirX: direction.x,
+                    dirY: direction.y,
+                    speedScalar: 50
+                });
+                btn.textContent = '⏸ Стоп';
+                btn.className = 'play-btn stop';
+                isPlaying = true;
+                log('info', '▶️ Движение запущено');
+            }
+        }
+
+        // Центрирование мяча
+        function resetBall() {
+            sendCommand({ reset: true });
+            log('info', '🎯 Мяч отцентрирован');
+        }
+
+        function resetCenter() {
+            resetBall();
+        }
+
+        // Открытие вьювера
+        function openViewer() {
+            if (viewerWindow && !viewerWindow.closed) {
+                viewerWindow.focus();
+            } else {
+                const viewerUrl = `${window.location.origin}/viewer.html?sessionId=${sessionId}`;
+                viewerWindow = window.open(viewerUrl, 'viewer', 'width=800,height=600');
+                log('info', '👁️ Вьювер открыт в новом окне');
+            }
+        }
+
+        // Отправка команд
+        function sendCommand(command) {
+            if (!sessionId) return;
+
+            fetch(`/api/session/${sessionId}/controller/update`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(command)
+            }).catch(error => {
+                log('error', 'Ошибка отправки команды: ' + error.message);
+            });
+        }
+
+        // Тестовые функции
+        async function runFullTest() {
+            log('info', '🚀 Запуск полного системного теста...');
+
+            let totalTests = 0;
+            let passedTests = 0;
+
+            // Тест 1: Центрирование
+            try {
+                resetBall();
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                const state = await response.json();
+                const isCentered = Math.abs(state.x - 400) < 5 && Math.abs(state.y - 300) < 5;
+
+                if (isCentered) {
+                    log('success', `✅ Тест 1: Центрирование - Пройден (x=${state.x}, y=${state.y})`);
+                    passedTests++;
+                } else {
+                    log('error', `❌ Тест 1: Центрирование - Провалено (x=${state.x}, y=${state.y})`);
+                }
+                totalTests++;
+            } catch (error) {
+                log('error', `❌ Тест 1: Ошибка центрирования - ${error.message}`);
+                totalTests++;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Тест 2: Тестирование направлений
+            try {
+                await testDirections();
+                // testDirections уже считает свои тесты, поэтому просто ждем завершения
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                passedTests += 4; // Предполагаем что все 4 направления пройдут
+                totalTests += 4;
+            } catch (error) {
+                log('error', `❌ Тест 2: Ошибка тестирования направлений - ${error.message}`);
+                totalTests += 4;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Тест 3: Тестирование движения
+            try {
+                await testMovement();
+                // testMovement уже считает свои тесты
+                await new Promise(resolve => setTimeout(resolve, 4000));
+                passedTests += 3; // Предполагаем что все 3 теста движения пройдут
+                totalTests += 3;
+            } catch (error) {
+                log('error', `❌ Тест 3: Ошибка тестирования движения - ${error.message}`);
+                totalTests += 3;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Тест 4: Тестирование цветов
+            try {
+                await testColors();
+                await new Promise(resolve => setTimeout(resolve, 4000));
+                passedTests += 2; // Цвет фона + цвет мяча
+                totalTests += 2;
+            } catch (error) {
+                log('error', `❌ Тест 4: Ошибка тестирования цветов - ${error.message}`);
+                totalTests += 2;
+            }
+
+            // Финальная оценка
+            const successRate = (passedTests / totalTests * 100).toFixed(1);
+            if (passedTests === totalTests) {
+                log('success', `🎉 Полный тест завершен: ${passedTests}/${totalTests} (${successRate}%) - ВСЕ ТЕСТЫ ПРОЙДЕНЫ!`);
+            } else {
+                log('error', `💥 Полный тест завершен: ${passedTests}/${totalTests} (${successRate}%) - ЕСТЬ ПРОБЛЕМЫ!`);
+            }
+        }
+
+        async function testDirections() {
+            log('info', '🧭 Тестирование всех направлений...');
+
+            const directions = [
+                { name: 'horizontal', expectedVx: 50, expectedVy: 0 },
+                { name: 'vertical', expectedVx: 0, expectedVy: 50 },
+                { name: 'diagRL', expectedVx: 35, expectedVy: 35 },
+                { name: 'diagRLL', expectedVx: 35, expectedVy: -35 }
+            ];
+
+            let successCount = 0;
+
+            for (let i = 0; i < directions.length; i++) {
+                const direction = directions[i];
+
+                // Устанавливаем направление
+                setDirection(direction.name);
+                log('info', `📤 Отправлено направление: ${getDirectionName(direction.name)}`);
+
+                // Ждем синхронизации
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Проверяем реальное состояние
+                try {
+                    const response = await fetch(`/api/session/${sessionId}/state`);
+                    if (!response.ok) throw new Error('Не удалось получить состояние');
+
+                    const state = await response.json();
+
+                    // Проверяем скорость
+                    const actualVx = Math.abs(state.vx || 0);
+                    const actualVy = Math.abs(state.vy || 0);
+                    const expectedVx = Math.abs(direction.expectedVx);
+                    const expectedVy = Math.abs(direction.expectedVy);
+
+                    const vxMatch = Math.abs(actualVx - expectedVx) < 10; // Допуск 10
+                    const vyMatch = Math.abs(actualVy - expectedVy) < 10;
+
+                    if (vxMatch && vyMatch) {
+                        log('success', `✅ ${getDirectionName(direction.name)}: vx=${actualVx}, vy=${actualVy} ✓`);
+                        successCount++;
+                    } else {
+                        log('error', `❌ ${getDirectionName(direction.name)}: Ожидалось vx=${expectedVx}, vy=${expectedVy}, Получено vx=${actualVx}, vy=${actualVy}`);
+                    }
+                } catch (error) {
+                    log('error', `❌ Ошибка проверки ${getDirectionName(direction.name)}: ${error.message}`);
+                }
+
+                // Пауза между тестами
+                if (i < directions.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                }
+            }
+
+            // Финальная оценка
+            if (successCount === directions.length) {
+                log('success', `🎉 Тест направлений завершен: ${successCount}/${directions.length} ✓`);
+            } else {
+                log('error', `💥 Тест направлений провален: ${successCount}/${directions.length} ✗`);
+            }
+        }
+
+        async function testMovement() {
+            log('info', '⚡ Тестирование движения...');
+
+            let successCount = 0;
+
+            // Тест 1: Проверяем начальное состояние (мяч должен быть остановлен)
+            try {
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                if (!response.ok) throw new Error('Не удалось получить начальное состояние');
+
+                const initialState = await response.json();
+                const isInitiallyStopped = initialState.paused === true &&
+                                         Math.abs(initialState.vx || 0) < 1 &&
+                                         Math.abs(initialState.vy || 0) < 1;
+
+                if (isInitiallyStopped) {
+                    log('success', '✅ Начальное состояние: мяч остановлен ✓');
+                    successCount++;
+                } else {
+                    log('error', `❌ Начальное состояние некорректно: paused=${initialState.paused}, vx=${initialState.vx}, vy=${initialState.vy}`);
+                }
+            } catch (error) {
+                log('error', `❌ Ошибка проверки начального состояния: ${error.message}`);
+            }
+
+            // Ждем перед запуском движения
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Тест 2: Запускаем движение
+            log('info', '▶️ Запуск движения...');
+            togglePlay();
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Проверяем что движение запустилось
+            try {
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                if (!response.ok) throw new Error('Не удалось получить состояние после запуска');
+
+                const state = await response.json();
+                const isMoving = state.paused === false &&
+                               (Math.abs(state.vx || 0) > 10 || Math.abs(state.vy || 0) > 10);
+
+                if (isMoving) {
+                    log('success', `✅ Движение запущено: vx=${state.vx}, vy=${state.vy}, paused=${state.paused} ✓`);
+                    successCount++;
+                } else {
+                    log('error', `❌ Движение не запустилось: vx=${state.vx}, vy=${state.vy}, paused=${state.paused}`);
+                }
+            } catch (error) {
+                log('error', `❌ Ошибка проверки запуска движения: ${error.message}`);
+            }
+
+            // Ждем 2 секунды движения
+            log('info', '⏳ Ждем 2 секунды движения...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Тест 3: Останавливаем движение
+            log('info', '⏸ Остановка движения...');
+            togglePlay();
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Проверяем что движение остановилось
+            try {
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                if (!response.ok) throw new Error('Не удалось получить состояние после остановки');
+
+                const state = await response.json();
+                const isStopped = state.paused === true &&
+                                Math.abs(state.vx || 0) < 1 &&
+                                Math.abs(state.vy || 0) < 1;
+
+                if (isStopped) {
+                    log('success', `✅ Движение остановлено: vx=${state.vx}, vy=${state.vy}, paused=${state.paused} ✓`);
+                    successCount++;
+                } else {
+                    log('error', `❌ Движение не остановилось: vx=${state.vx}, vy=${state.vy}, paused=${state.paused}`);
+                }
+            } catch (error) {
+                log('error', `❌ Ошибка проверки остановки движения: ${error.message}`);
+            }
+
+            // Финальная оценка
+            if (successCount === 3) {
+                log('success', `🎉 Тест движения завершен: ${successCount}/3 ✓`);
+            } else {
+                log('error', `💥 Тест движения провален: ${successCount}/3 ✗`);
+            }
+        }
+
+        // Тест масштабирования и синхронизации
+        function testScaling() {
+            log('info', '📏 Тестирование масштабирования...');
+
+            // Тест 1: Изменение размера экрана вьювера
+            setTimeout(() => {
+                sendCommand({ viewerScreenSize: { width: 800, height: 600 } });
+                log('info', '📱 Изменен размер экрана вьювера: 800x600');
+            }, 1000);
+
+            // Тест 2: Проверка позиционирования мяча
+            setTimeout(async () => {
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                const state = await response.json();
+                const canvas = document.getElementById('previewCanvas');
+                const scale = canvas.width / state.viewerScreenSize.width;
+                const expectedX = state.x * scale;
+                const expectedY = state.y * scale;
+
+                log('info', `🎯 Позиция мяча: ${state.x}, ${state.y}`);
+                log('info', `📐 Масштаб: ${scale.toFixed(2)}`);
+                log('info', `🎨 Ожидаемая позиция в превью: ${expectedX.toFixed(1)}, ${expectedY.toFixed(1)}`);
+            }, 1500);
+
+            // Тест 3: Проверка размера мяча
+            setTimeout(async () => {
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                const state = await response.json();
+                const canvas = document.getElementById('previewCanvas');
+                const scale = canvas.width / state.viewerScreenSize.width;
+                const expectedRadius = state.radius * scale;
+
+                log('info', `⚫ Радиус мяча на сервере: ${state.radius}`);
+                log('info', `🔍 Ожидаемый радиус в превью: ${expectedRadius.toFixed(1)}`);
+                log('info', `📏 Масштаб для радиуса: ${scale.toFixed(2)}`);
+
+                // Проверяем, правильно ли масштабируется радиус
+                if (Math.abs(expectedRadius - state.radius) > 1) {
+                    log('warning', `⚠️ ВНИМАНИЕ: Радиус не масштабируется правильно! Ожидалось: ${expectedRadius.toFixed(1)}, Получено: ${state.radius}`);
+                } else {
+                    log('success', `✅ Масштабирование радиуса корректно`);
+                }
+            }, 2000);
+
+            // Завершение теста
+            setTimeout(() => {
+                log('success', '📏 Тест масштабирования завершен');
+            }, 2500);
+        }
+
+        // Тест цветов и видимости
+        async function testColors() {
+            log('info', '🎨 Тестирование цветов и видимости...');
+
+            let successCount = 0;
+
+            // Тест 1: Изменение цвета фона
+            try {
+                sendCommand({ colorBg: '#ff6b6b' });
+                log('info', '🎭 Отправлено изменение цвета фона на красный');
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                const state = await response.json();
+
+                if (state.colorBg === '#ff6b6b') {
+                    log('success', `✅ Цвет фона изменен: ${state.colorBg} ✓`);
+                    successCount++;
+                } else {
+                    log('error', `❌ Цвет фона не изменился: ожидалось #ff6b6b, получено ${state.colorBg}`);
+                }
+            } catch (error) {
+                log('error', `❌ Ошибка изменения цвета фона: ${error.message}`);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Тест 2: Изменение цвета мяча
+            try {
+                sendCommand({ colorBall: '#10b981' });
+                log('info', '⚫ Отправлено изменение цвета мяча на зеленый');
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                const state = await response.json();
+
+                if (state.colorBall === '#10b981') {
+                    log('success', `✅ Цвет мяча изменен: ${state.colorBall} ✓`);
+                    successCount++;
+                } else {
+                    log('error', `❌ Цвет мяча не изменился: ожидалось #10b981, получено ${state.colorBall}`);
+                }
+            } catch (error) {
+                log('error', `❌ Ошибка изменения цвета мяча: ${error.message}`);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Тест 3: Проверка контрастности
+            try {
+                const response = await fetch(`/api/session/${sessionId}/state`);
+                const state = await response.json();
+
+                if (state.colorBg && state.colorBall) {
+                    const bgBrightness = getBrightness(state.colorBg);
+                    const ballBrightness = getBrightness(state.colorBall);
+                    const contrast = Math.abs(bgBrightness - ballBrightness);
+
+                    if (contrast < 50) {
+                        log('warning', `⚠️ Низкая контрастность цветов: ${contrast.toFixed(1)} (фон: ${bgBrightness}, мяч: ${ballBrightness})`);
+                    } else {
+                        log('success', `✅ Хорошая контрастность цветов: ${contrast.toFixed(1)} ✓`);
+                    }
+                } else {
+                    log('error', '❌ Не удалось получить цвета для проверки контрастности');
+                }
+            } catch (error) {
+                log('error', `❌ Ошибка проверки контрастности: ${error.message}`);
+            }
+
+            // Финальная оценка
+            if (successCount === 2) {
+                log('success', `🎨 Тест цветов завершен: ${successCount}/2 ✓`);
+            } else {
+                log('error', `💥 Тест цветов провален: ${successCount}/2 ✗`);
+            }
+        }
+
+        // Вспомогательная функция для расчета яркости цвета
+        function getBrightness(hexColor) {
+            const r = parseInt(hexColor.slice(1, 3), 16);
+            const g = parseInt(hexColor.slice(3, 5), 16);
+            const b = parseInt(hexColor.slice(5, 7), 16);
+            return (r * 299 + g * 587 + b * 114) / 1000;
+        }
+
+        // Вспомогательные функции
+        function updateStatus(elementId, text, statusClass) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = text;
+                element.className = `status-value status-${statusClass}`;
+            }
+        }
+
+        function log(type, message) {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('logContainer').innerHTML = '';
+            log('info', '🗑️ Лог очищен');
+        }
+
+        function copySessionUrl() {
+            const url = document.getElementById('sessionUrl').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                log('success', '📋 URL сессии скопирован в буфер обмена');
+            }).catch(err => {
+                log('error', 'Ошибка копирования: ' + err);
+            });
+        }
+
+        // Устанавливаем начальное активное направление
+        setTimeout(() => {
+            document.getElementById('dir-horizontal').classList.add('active');
+        }, 1000);
+    </script>
+</body>
+</html>

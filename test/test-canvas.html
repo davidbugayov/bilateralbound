@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Canvas - Диагностика</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid #333;
+            background: #000;
+            margin: 10px 0;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Диагностика Canvas и Renderer</h1>
+
+    <div id="results"></div>
+
+    <h2>Тест 1: Canvas</h2>
+    <canvas id="testCanvas" width="400" height="300"></canvas>
+
+    <h2>Тест 2: PhysicsEngine</h2>
+    <div id="physicsTest"></div>
+
+    <h2>Тест 3: BallRenderer</h2>
+    <canvas id="rendererCanvas" width="400" height="300"></canvas>
+
+    <script src="../js/physics-engine.js"></script>
+    <script src="../js/renderer.js"></script>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        // Тест 1: Canvas
+        try {
+            const canvas = document.getElementById('testCanvas');
+            if (canvas) {
+                log('✅ Canvas элемент найден');
+
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    log('✅ Canvas 2D контекст получен');
+
+                    // Рисуем тестовый круг
+                    ctx.fillStyle = '#ff0000';
+                    ctx.beginPath();
+                    ctx.arc(200, 150, 50, 0, 2 * Math.PI);
+                    ctx.fill();
+                    log('✅ Тестовый круг нарисован');
+                } else {
+                    log('❌ Не удалось получить 2D контекст', 'error');
+                }
+            } else {
+                log('❌ Canvas элемент не найден', 'error');
+            }
+        } catch (error) {
+            log(`❌ Ошибка в тесте Canvas: ${error.message}`, 'error');
+        }
+
+        // Тест 2: PhysicsEngine
+        try {
+            const physics = new PhysicsEngine({
+                worldWidth: 400,
+                worldHeight: 300,
+                ballRadius: 20
+            });
+
+            log('✅ PhysicsEngine создан');
+
+            if (physics.ball) {
+                log(`✅ Шарик инициализирован: x=${physics.ball.x}, y=${physics.ball.y}, radius=${physics.ball.radius}`);
+            } else {
+                log('❌ Шарик не инициализирован', 'error');
+            }
+
+            if (physics.colors) {
+                log(`✅ Цвета инициализированы: ball=${physics.colors.ball}, bg=${physics.colors.bg}`);
+            } else {
+                log('❌ Цвета не инициализированы', 'error');
+            }
+
+            // Тест методов
+            if (typeof physics.setBallSize === 'function') {
+                physics.setBallSize(30);
+                log(`✅ Метод setBallSize работает: radius=${physics.ball.radius}`);
+            } else {
+                log('❌ Метод setBallSize не найден', 'error');
+            }
+
+            if (typeof physics.setBallColor === 'function') {
+                physics.setBallColor('#00ff00');
+                log(`✅ Метод setBallColor работает: color=${physics.colors.ball}`);
+            } else {
+                log('❌ Метод setBallColor не найден', 'error');
+            }
+
+        } catch (error) {
+            log(`❌ Ошибка в тесте PhysicsEngine: ${error.message}`, 'error');
+        }
+
+        // Тест 3: BallRenderer
+        try {
+            const canvas = document.getElementById('rendererCanvas');
+            const physics = new PhysicsEngine({
+                worldWidth: 400,
+                worldHeight: 300,
+                ballRadius: 20
+            });
+
+            if (canvas && physics) {
+                const renderer = new BallRenderer(canvas, physics);
+                log('✅ BallRenderer создан');
+
+                // Проверяем методы
+                if (typeof renderer.start === 'function') {
+                    log('✅ Метод start найден');
+                } else {
+                    log('❌ Метод start не найден', 'error');
+                }
+
+                if (typeof renderer.render === 'function') {
+                    log('✅ Метод render найден');
+                } else {
+                    log('❌ Метод render не найден', 'error');
+                }
+
+                // Пробуем рендерить статически
+                try {
+                    renderer.render();
+                    log('✅ Статический рендеринг прошел успешно');
+                } catch (error) {
+                    log(`❌ Ошибка статического рендеринга: ${error.message}`, 'error');
+                }
+
+                // Пробуем запустить
+                try {
+                    renderer.start();
+                    log('✅ Renderer запущен');
+                } catch (error) {
+                    log(`❌ Ошибка запуска renderer: ${error.message}`, 'error');
+                }
+
+            } else {
+                log('❌ Отсутствуют canvas или physics для теста renderer', 'error');
+            }
+
+        } catch (error) {
+            log(`❌ Ошибка в тесте BallRenderer: ${error.message}`, 'error');
+        }
+
+        // Итоговый отчет
+        setTimeout(() => {
+            const totalTests = results.children.length;
+            const errors = results.querySelectorAll('.error').length;
+            const successes = results.querySelectorAll('.success').length;
+
+            log(`📊 Итог: ${successes} успехов, ${errors} ошибок из ${totalTests} тестов`, errors > 0 ? 'error' : 'success');
+        }, 1000);
+    </script>
+</body>
+</html>

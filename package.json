@@ -2,20 +2,23 @@
   "name": "bilateralbound",
   "version": "1.1.0",
   "description": "A scalable real-time multiplayer game built with SOLID principles",
-  "main": "src/server.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
+    "dev": "nodemon server.js",
+    "start": "node server.js",
     "build": "echo '✅ No build step required for Node.js app'",
     "build:pages": "echo '✅ Static files are served by Node.js server' && mkdir -p dist && cp -r public/* dist/ 2>/dev/null || echo 'No public files to copy'",
-    "debug": "LOG_LEVEL=DEBUG node src/server.js",
+    "debug": "LOG_LEVEL=DEBUG node server.js",
     "local": "PORT=3000 npm run start",
     "dev:open": "PORT=3000 npm start & sleep 2 && open http://localhost:3000 && wait",
     "test": "npm run test:lint && npm run test:server",
-    "test:server": "node -c src/server.js && echo '✅ Server syntax OK'",
-    "test:lint": "echo '✅ No linter configured yet'",
+    "test:server": "node -c server.js && echo '✅ Server syntax OK'",
+    "test:lint": "eslint server.js public/js/*.js --ext .js",
+    "lint:fix": "eslint server.js public/js/*.js --ext .js --fix",
+    "format": "prettier --write \"server.js\" \"public/js/*.js\" \"public/*.html\"",
     "test:full": "npm run test && npm run health-test",
-    "test:sync": "echo '🧪 Откройте http://localhost:3000/test-sync.html для тестирования'",
+    "test:sync": "echo '🧪 Откройте http://localhost:3000/test/test-sync.html для тестирования'",
+    "test:performance": "echo '🧪 Откройте http://localhost:3000/test/test-performance.html для тестирования производительности'",
     "health-test": "sleep 2 && curl -s http://localhost:3000/health | jq .status 2>/dev/null || echo '❌ Health check failed'",
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "status": "curl -s http://localhost:3000/health || echo '❌ Server not running'",
@@ -51,12 +54,13 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
     "jsdom": "^26.1.0",
-    "nodemon": "^3.1.10"
-  },
-  "render": {
-    "type": "web",
-    "buildCommand": "npm install",
-    "startCommand": "node server.js"
+    "nodemon": "^3.1.10",
+    "prettier": "^3.2.5"
   }
 }

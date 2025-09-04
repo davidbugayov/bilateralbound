@@ -6,9 +6,22 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="BilateralBound - Просмотр движения шарика в реальном времени" />
-    <meta name="keywords" content="bilateral, bound, viewer, real-time, ball, movement" />
-    <title>BilateralBound - Просмотр</title>
+    <meta name="description" content="BilateralBound - Просмотр движения шарика в реальном времени. Наблюдайте за интерактивной физикой и управляйте движением" />
+    <meta name="keywords" content="bilateral, bound, viewer, real-time, ball, movement, physics, game, multiplayer" />
+    <meta name="author" content="BilateralBound Team" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#020617" />
+    <title>BilateralBound - Просмотр сессии</title>
+
+    <!-- Open Graph for Viewer -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="BilateralBound - Просмотр сессии" />
+    <meta property="og:description" content="Просмотр движения шарика в реальном времени" />
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/js/common.js" as="script" />
+    <link rel="preload" href="/js/module-factory.js" as="script" />
+    <link rel="preload" href="/css/shared-components.css" as="style" />
     
     <!-- ===== STYLES ===== -->
     <link rel="stylesheet" href="/css/shared-components.css">
@@ -283,7 +296,7 @@
         
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 BilateralBound Viewer - Инициализация...');
+            debugLog('🚀 BilateralBound Viewer - Инициализация...');
             
             try {
                 // Получаем sessionId из URL
@@ -293,7 +306,7 @@
                     return;
                 }
                 
-                console.log('📱 Session ID получен:', sessionId);
+                debugLog('📱 Session ID получен:', sessionId);
                 
                 // Инициализируем компоненты
                 initializeComponents();
@@ -302,7 +315,7 @@
                 await initializeViewer();
                 
             } catch (error) {
-                console.error('❌ Критическая ошибка инициализации:', error);
+                debugError('❌ Критическая ошибка инициализации:', error);
                 showError('Ошибка инициализации: ' + error.message);
             }
         });
@@ -323,7 +336,7 @@
         // ===== CORE FUNCTIONS =====
         async function initializeViewer() {
             try {
-                console.log('📱 Инициализация viewer для сессии:', sessionId);
+                debugLog('📱 Инициализация viewer для сессии:', sessionId);
 
                 // Скрываем загрузку
                 hideLoading();
@@ -345,8 +358,8 @@
 
                 // Создаем движок физики
                 physicsEngine = new PhysicsEngine({
-                    worldWidth: canvas.width,
-                    worldHeight: canvas.height,
+                    worldWidth: canvas.width || window.innerWidth,
+                    worldHeight: canvas.height || window.innerHeight,
                     bounceCallback: syncBounce
                 });
 
@@ -366,7 +379,7 @@
                     },
                     onSessionExpired: handleSessionExpired,
                     onError: (error) => {
-                        console.error('Session sync error:', error);
+                        debugError('Session sync error:', error);
                         showError('Ошибка синхронизации: ' + error.message);
                     }
                 });
@@ -386,10 +399,10 @@
                 // Настраиваем event listeners
                 setupEventListeners();
 
-                console.log('✅ Viewer успешно инициализирован');
+                debugLog('✅ Viewer успешно инициализирован');
 
             } catch (error) {
-                console.error('❌ Ошибка инициализации viewer:', error);
+                debugError('❌ Ошибка инициализации viewer:', error);
                 showError('Ошибка инициализации: ' + error.message);
             }
         }
@@ -401,7 +414,7 @@
             try {
                 const response = await fetch(`/api/session/${sessionId}/state`);
                 if (!response.ok) {
-                    console.warn('Не удалось получить состояние сессии:', response.status);
+                    debugWarn('Не удалось получить состояние сессии:', response.status);
                     return;
                 }
 
@@ -409,10 +422,10 @@
                 if (ballState) {
                     // Синхронизируем состояние через PhysicsEngine
                     physicsEngine.syncFromServer(ballState);
-                    console.log('✅ Начальное состояние синхронизировано');
+                    debugLog('✅ Начальное состояние синхронизировано');
                 }
             } catch (error) {
-                console.error('Ошибка синхронизации начального состояния:', error);
+                debugError('Ошибка синхронизации начального состояния:', error);
             }
         }
         
@@ -440,10 +453,10 @@
                     throw new Error(`HTTP ${response.status}: ${errorText || 'Не удалось подключиться к сессии'}`);
                 }
                 
-                console.log('✅ Подключение к сессии успешно');
+                debugLog('✅ Подключение к сессии успешно');
                 
             } catch (error) {
-                console.error('❌ Ошибка подключения к сессии:', error);
+                debugError('❌ Ошибка подключения к сессии:', error);
                 throw error;
             }
         }
@@ -478,21 +491,23 @@
             if (sessionSync) {
                 try {
                     await sessionSync.syncBounce(bounceData);
-                    console.log('✅ Отскок синхронизирован с сервером');
+                    debugLog('✅ Отскок синхронизирован с сервером');
                 } catch (error) {
-                    console.error('Ошибка при синхронизации отскока:', error);
+                    debugError('Ошибка при синхронизации отскока:', error);
                 }
             }
         }
         
         async function updateScreenSize() {
             try {
+                const canvasEl = document.getElementById('viewerCanvas');
+                if (!canvasEl) return;
                 const response = await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        width: canvas.width,
-                        height: canvas.height
+                        width: canvasEl.width,
+                        height: canvasEl.height
                     })
                 });
 
@@ -503,9 +518,9 @@
                     return;
                 }
 
-                console.log('✅ Размер экрана обновлен на сервере');
+                debugLog('✅ Размер экрана обновлен на сервере');
             } catch (error) {
-                console.error('Ошибка сети при обновлении размера экрана:', error);
+                debugError('Ошибка сети при обновлении размера экрана:', error);
             }
         }
         
@@ -530,7 +545,7 @@
         }
 
         function showWarning(message) {
-            console.warn('⚠️ Предупреждение viewer:', message);
+            debugWarn('⚠️ Предупреждение viewer:', message);
             // Можно добавить визуальное предупреждение, если нужно
         }
         
@@ -651,8 +666,10 @@
         // Двойной тап для полноэкранного режима с улучшенной обратной связью
         let lastTap = 0;
         let tapCount = 0;
-        if (canvas) {
-            canvas.addEventListener('touchend', function(event) {
+        (function(){
+            const canvasEl = document.getElementById('viewerCanvas');
+            if (!canvasEl) return;
+            canvasEl.addEventListener('touchend', function(event) {
                 const currentTime = new Date().getTime();
                 const tapLength = currentTime - lastTap;
 
@@ -681,9 +698,9 @@
                 }
                 lastTap = currentTime;
             });
-        }
+        })();
         
-        console.log('🎯 BilateralBound Viewer - Готов к работе');
+        debugLog('🎯 BilateralBound Viewer - Готов к работе');
     </script>
 </body>
 </html>

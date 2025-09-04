@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простой тест - Диагностика мячика</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid #333;
+            background: #000;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Простой тест отображения мячика</h1>
+
+    <div id="status" class="status info">Инициализация...</div>
+
+    <h2>Canvas для теста:</h2>
+    <canvas id="testCanvas" width="400" height="300"></canvas>
+
+    <button onclick="testBallDisplay()">🧪 Протестировать отображение мячика</button>
+    <button onclick="clearCanvas()">🗑️ Очистить canvas</button>
+
+    <script src="../js/physics-engine.js"></script>
+    <script src="../js/renderer.js"></script>
+
+    <script>
+        let physics;
+        let renderer;
+        let canvas;
+        let ctx;
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            console.log(message);
+        }
+
+        // Инициализация при загрузке страницы
+        window.addEventListener('load', function() {
+            try {
+                updateStatus('🚀 Инициализация...');
+
+                canvas = document.getElementById('testCanvas');
+                ctx = canvas.getContext('2d');
+
+                if (!canvas || !ctx) {
+                    throw new Error('Canvas или контекст не доступны');
+                }
+
+                updateStatus('✅ Canvas инициализирован');
+
+                // Создаем физику
+                physics = new PhysicsEngine({
+                    worldWidth: canvas.width,
+                    worldHeight: canvas.height,
+                    ballRadius: 20
+                });
+
+                updateStatus('✅ PhysicsEngine создан');
+
+                // Создаем рендерер
+                renderer = new BallRenderer(canvas, physics);
+                updateStatus('✅ BallRenderer создан');
+
+                // Запускаем рендерер
+                renderer.start();
+                updateStatus('✅ Рендерер запущен - мячик должен двигаться!', 'success');
+
+            } catch (error) {
+                updateStatus(`❌ Ошибка инициализации: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+            }
+        });
+
+        // Функция для ручного тестирования
+        function testBallDisplay() {
+            if (!renderer) {
+                updateStatus('❌ Рендерер не инициализирован', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('🧪 Тестируем отображение мячика...');
+
+                // Проверяем текущее состояние шарика
+                const ball = physics.ball;
+                updateStatus(`📍 Шарик: x=${ball.x.toFixed(1)}, y=${ball.y.toFixed(1)}, radius=${ball.radius}`);
+
+                // Рисуем шарик вручную для проверки
+                clearCanvas();
+                renderer.render();
+
+                updateStatus('✅ Мячик должен быть виден на canvas', 'success');
+
+            } catch (error) {
+                updateStatus(`❌ Ошибка тестирования: ${error.message}`, 'error');
+                console.error('Test error:', error);
+            }
+        }
+
+        function clearCanvas() {
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                updateStatus('🗑️ Canvas очищен');
+            }
+        }
+
+        // Автоматический тест через 3 секунды
+        setTimeout(() => {
+            if (renderer) {
+                testBallDisplay();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

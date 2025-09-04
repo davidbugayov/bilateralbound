@@ -6,7 +6,20 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>Управление сессией</title>
+
+  <!-- SEO Meta Tags -->
+  <title>BilateralBound - Управление сессией</title>
+  <meta name="description" content="Управление движением шарика в BilateralBound - интерактивной multiplayer игре с реальным временем" />
+  <meta name="keywords" content="управление, сессия, шарик, физика, realtime, bilateralbound, controller" />
+  <meta name="author" content="BilateralBound Team" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#2563eb" />
+
+  <!-- Preload critical resources -->
+  <link rel="preload" href="./js/common.js" as="script" />
+  <link rel="preload" href="./js/module-factory.js" as="script" />
+  <link rel="preload" href="./css/common.css" as="style" />
+  <link rel="preload" href="./css/shared-components.css" as="style" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202509031127" />
@@ -54,9 +67,7 @@
     .btn.outline:hover { background: #374151; color: white; }
 
     .direction-btn { padding: 10px 16px; font-size: 13px; min-width: 140px; }
-
-    .copy-btn { padding: 8px 12px; font-size: 12px; background: #374151; }
-    .copy-btn:hover { background: #4b5563; }
+    .direction-btn.active { background: #1d4ed8 !important; transform: scale(1.05); box-shadow: 0 0 10px rgba(37, 99, 235, 0.3); }
 
     .color-btn { padding: 8px 16px; font-size: 14px; border-radius: 6px; transition: all 0.2s ease; }
     .color-btn:hover { transform: scale(1.05); }
@@ -90,6 +101,9 @@
       border-color: #60a5fa;
       box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
     }
+
+    .copy-btn { padding: 8px 12px; font-size: 12px; background: #374151; color: #9ca3af; border: 1px solid #4b5563; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; }
+    .copy-btn:hover { background: #4b5563; color: white; }
 
     .speed-container {
       display: flex;
@@ -222,10 +236,14 @@
 
     <div class="control-section">
       <h3>🎮 Управление и направление</h3>
-      <div id="directionControls"></div>
+      <div class="controls" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 20px 0;">
+        <button class="direction-btn" onclick="setDirection('horizontal')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↔️ Горизонтально</button>
+        <button class="direction-btn" onclick="setDirection('vertical')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↕️ Вертикально</button>
+        <button class="direction-btn" onclick="setDirection('diagRL')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↖️↗️ Диагональ L→R</button>
+        <button class="direction-btn" onclick="setDirection('diagRLL')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↙️↘️ Диагональ R→L</button>
+      </div>
       <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 12px 0;">
-        <button class="btn" onclick="resumePlay()" style="background: #10b981; min-width: 110px; padding: 12px 16px;">▶️ Старт</button>
-        <button class="btn" onclick="pausePlay()" style="background: #f59e0b; min-width: 110px; padding: 12px 16px;">⏸ Стоп</button>
+        <button id="playPauseBtn" class="btn" onclick="togglePlayPause()" style="background: #10b981; min-width: 140px; padding: 12px 16px;">▶️ Старт</button>
         <button class="btn outline" onclick="resetCenter()" style="min-width: 110px; padding: 12px 16px;">🎯 Центр</button>
         <button class="btn" onclick="resetSession()" style="background: #dc2626; min-width: 110px; padding: 12px 16px;">🔄 Сброс</button>
       </div>
@@ -249,9 +267,6 @@
     <div class="control-section">
       <div id="sizeControl"></div>
     </div>
-
-    <!-- Мобильные элементы управления -->
-    <div id="mobileControls" style="display: none;"></div>
   </div>
 
   <!-- SCRIPTS -->
@@ -287,7 +302,7 @@
 
     async function initializeController() {
       try {
-        console.log('🎮 Инициализация контроллера для сессии:', sessionId);
+        debugLog('🎮 Инициализация контроллера для сессии:', sessionId);
 
         // Инициализируем превью
         initializePreview(sessionId);
@@ -308,24 +323,12 @@
         document.getElementById('view').value = viewerLink;
 
       } catch (error) {
-        console.error('Ошибка инициализации контроллера:', error);
+        debugError('Ошибка инициализации контроллера:', error);
         alert('Ошибка при инициализации контроллера: ' + error.message);
       }
     }
 
     function initializeComponents() {
-      // Создаем компонент управления направлением
-      components.direction = sharedComponents.createDirectionControls(
-        document.getElementById('directionControls'),
-        {
-          onDirectionChange: (direction) => {
-            directionState = direction;
-            updateDirectionDisplay(direction.x, direction.y);
-            setDirFromDirection(direction);
-          }
-        }
-      );
-
       // Создаем компонент управления скоростью
       components.speed = sharedComponents.createSpeedControl(
         document.getElementById('speedControl'),
@@ -373,24 +376,6 @@
         }
       );
 
-      // Создаем мобильные контролы
-      if (window.isMobile && window.isMobile()) {
-        components.mobile = sharedComponents.createMobileControls(
-          document.getElementById('mobileControls'),
-          {
-            onDirectionChange: (direction) => {
-              directionState = direction;
-              updateDirectionDisplay(direction.x, direction.y);
-              setDirFromDirection(direction);
-            },
-            onSpeedChange: (speed) => {
-              updateSpeed(speed);
-            }
-          }
-        );
-        document.getElementById('mobileControls').style.display = 'block';
-      }
-
       // Инициализируем менеджер скорости
       speedManager = {
         lastUpdateTime: 0,
@@ -403,68 +388,129 @@
 
     async function updateSpeed(speed) {
       try {
-        const response = await fetch(`/api/session/${sessionId}/speed`, {
+        const response = await fetch(`/api/session/${sessionId}/controller/update`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ speedScalar: speed })
         });
 
         if (!response.ok) {
-          console.warn('Не удалось обновить скорость:', response.status);
+          debugWarn('Не удалось обновить скорость:', response.status);
         } else {
-          console.log('✅ Скорость обновлена:', speed);
+          debugLog('✅ Скорость обновлена:', speed);
+          if (speedManager) {
+            speedManager.lastUpdateTime = Date.now();
+          }
         }
       } catch (error) {
-        console.error('Ошибка при обновлении скорости:', error);
+        debugError('Ошибка при обновлении скорости:', error);
       }
     }
 
     function initializePreview(sessionId) {
+      debugLog('🎮 Начинаем инициализацию превью');
+
       const previewWrap = document.getElementById('previewWrap');
       if (previewWrap) {
         previewWrap.style.display = 'block';
+        debugLog('✅ Превью контейнер показан');
       }
 
       const canvas = document.getElementById('preview');
       if (!canvas) {
-        console.error('Preview canvas not found');
+        debugError('Preview canvas not found');
         return;
       }
+      debugLog('✅ Canvas элемент найден');
 
-      const physics = new PhysicsEngine({
-        worldWidth: canvas.width,
-        worldHeight: canvas.height,
-        ballRadius: 20,
-        minSpeed: 50,
-        maxSpeed: 1280
-      });
+      // Проверяем размеры canvas
+      debugLog(`📏 Исходные размеры canvas: ${canvas.width}x${canvas.height}`);
+      if (canvas.width === 0 || canvas.height === 0) {
+        debugLog(`⚠️ Неверные размеры canvas, устанавливаем по умолчанию`);
+        canvas.width = 400;
+        canvas.height = 300;
+      }
 
-      const renderer = new BallRenderer(canvas, physics);
+      try {
+        const physics = new PhysicsEngine({
+          worldWidth: canvas.width,
+          worldHeight: canvas.height,
+          ballRadius: 20,
+          minSpeed: 50,
+          maxSpeed: 1280
+        });
+        debugLog('✅ PhysicsEngine создан');
 
-      window.__previewPhysics = physics;
-      window.__previewRenderer = renderer;
-      window.__previewCanvas = canvas;
+        const renderer = new BallRenderer(canvas, physics);
+        debugLog('✅ BallRenderer создан');
 
-      renderer.start();
+        renderer.setFrameCallback((deltaTime) => {
+          // Дополнительная логика для превью может быть добавлена здесь
+        });
+
+        window.__previewPhysics = physics;
+        window.__previewRenderer = renderer;
+        window.__previewCanvas = canvas;
+        debugLog('✅ Глобальные переменные установлены');
+
+        renderer.start();
+        debugLog('✅ Renderer запущен');
+
+        debugLog('🎉 Инициализация превью завершена успешно');
+
+      } catch (error) {
+        debugError('❌ Ошибка при инициализации превью: ' + error.message);
+        console.error('Preview initialization error:', error);
+      }
     }
 
     async function syncInitialState(sessionId) {
       try {
+        debugLog('🔄 Начинаем синхронизацию начального состояния');
+
         const response = await fetch(`/api/session/${sessionId}/state`);
-        if (!response.ok) return;
+        if (!response.ok) {
+          debugError('Не удалось получить состояние с сервера');
+          return;
+        }
 
         const ballState = await response.json();
+        debugLog(`📊 Получено состояние: x=${ballState.x}, y=${ballState.y}, paused=${ballState.paused}`);
+
         if (ballState && window.__previewPhysics) {
+          debugLog('✅ Preview physics доступен, начинаем синхронизацию');
           updatePreviewSize(ballState.viewerScreenSize);
           if (ballState.speed !== undefined) {
             window.__previewPhysics.setSpeed(ballState.speed);
-            document.getElementById('speedRange').value = ballState.speed;
-            document.getElementById('speedLabel').textContent = `${ballState.speed}% (${Math.round((ballState.speed / 100) * 1280)} px/s)`;
+            if (components && components.speed && typeof components.speed.setSpeed === 'function') {
+              components.speed.setSpeed(ballState.speed);
+            }
           }
-          if (ballState.radius !== undefined) window.__previewPhysics.setBallSize(ballState.radius);
-          if (ballState.colorBall) window.__previewPhysics.setBallColor(ballState.colorBall);
-          if (ballState.colorBg) window.__previewPhysics.setBgColor(ballState.colorBg);
-          if (ballState.paused !== undefined) window.__previewPhysics.setPaused(ballState.paused);
+          if (ballState.radius !== undefined && typeof window.__previewPhysics.setBallSize === 'function') {
+            // Масштабируем радиус под размер превью
+            if (ballState.viewerScreenSize) {
+              const scale = window.__previewCanvas.width / ballState.viewerScreenSize.width;
+              const scaledRadius = ballState.radius * scale;
+              window.__previewPhysics.setBallSize(scaledRadius);
+            } else {
+              window.__previewPhysics.setBallSize(ballState.radius);
+            }
+          }
+          if (ballState.colorBall && typeof window.__previewPhysics.setBallColor === 'function') {
+            window.__previewPhysics.setBallColor(ballState.colorBall);
+          }
+          if (ballState.colorBg && typeof window.__previewPhysics.setBgColor === 'function') {
+            window.__previewPhysics.setBgColor(ballState.colorBg);
+          }
+          if (ballState.paused !== undefined && typeof window.__previewPhysics.setPaused === 'function') {
+            window.__previewPhysics.setPaused(ballState.paused);
+            // Синхронизируем состояние кнопки
+            isPlaying = !ballState.paused;
+            updatePlayPauseButton();
+          }
+
+          // Инициализируем выделение кнопки направления по умолчанию
+          updateDirectionButtons();
           if (ballState.vx !== undefined || ballState.vy !== undefined) {
             window.__previewPhysics.setVelocity(ballState.vx || 0, ballState.vy || 0);
             const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
@@ -473,18 +519,26 @@
             updateDirectionDisplay(dirX, dirY);
           }
 
-          console.log('✅ Начальное состояние синхронизировано');
+          debugLog('✅ Начальное состояние синхронизировано');
         }
       } catch (error) {
-        console.error('Ошибка синхронизации начального состояния:', error);
+        debugError('Ошибка синхронизации начального состояния:', error);
       }
     }
 
     function updatePreviewSize(viewerScreenSize) {
-      if (!viewerScreenSize || !window.__previewRenderer || !window.__previewPhysics) return;
+      if (!viewerScreenSize || !window.__previewRenderer || !window.__previewPhysics) {
+        console.log('⚠️ Skipping preview size update - missing requirements');
+        return;
+      }
 
       const canvas = document.getElementById('preview');
-      if (!canvas) return;
+      if (!canvas) {
+        console.log('⚠️ Preview canvas not found');
+        return;
+      }
+
+      console.log('🔧 Updating preview size with viewer screen:', viewerScreenSize);
 
       const container = canvas.parentElement;
       const containerRect = container.getBoundingClientRect();
@@ -529,6 +583,13 @@
         viewerInfo.textContent = `Вьювер: ${viewerScreenSize.width}×${viewerScreenSize.height}`;
         viewerInfo.style.display = 'block';
       }
+
+      console.log('✅ Preview size updated:', {
+        finalSize: { width: canvas.width, height: canvas.height },
+        containerSize: { width: containerRect.width, height: containerRect.height },
+        viewerRatio: viewerRatio,
+        maxDimensions: { width: maxWidth, height: maxHeight }
+      });
     }
 
     function handleSessionExpired() {
@@ -542,8 +603,36 @@
         pollInterval: 100,
         serverUrl: '',
         onSessionExpired: handleSessionExpired,
-        onDataReceived: (sessionData) => {
+        onStateReceived: (sessionData) => {
           updateViewerInfo(sessionData);
+
+          // Синхронизируем состояние кнопки Старт/Стоп
+          if (sessionData.paused !== undefined) {
+            isPlaying = !sessionData.paused;
+            updatePlayPauseButton();
+          }
+
+          // Синхронизируем направление
+          if (sessionData.dirX !== undefined && sessionData.dirY !== undefined) {
+            // Определяем режим направления на основе dirX и dirY
+            if (sessionData.dirX === 1 && sessionData.dirY === 0) {
+              currentDirectionMode = 'horizontal';
+            } else if (sessionData.dirX === 0 && sessionData.dirY === 1) {
+              currentDirectionMode = 'vertical';
+            } else if (sessionData.dirX > 0 && sessionData.dirY > 0) {
+              currentDirectionMode = 'diagRL';
+            } else if (sessionData.dirX > 0 && sessionData.dirY < 0) {
+              currentDirectionMode = 'diagRLL';
+            }
+            updateDirectionButtons();
+          }
+
+          // Обновляем размер превью если изменился размер экрана зрителя
+          if (sessionData.viewerScreenSize) {
+            console.log('📺 Updating preview size:', sessionData.viewerScreenSize);
+            updatePreviewSize(sessionData.viewerScreenSize);
+          }
+
           if (sessionData && window.__previewPhysics) {
             const timeSinceLastUserInput = Date.now() - speedManager.lastUpdateTime;
             const shouldSyncSpeed = timeSinceLastUserInput > speedManager.updateDelay;
@@ -553,6 +642,11 @@
                 const scale = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
                 const scaledX = sessionData.x * scale;
                 const scaledY = sessionData.y * scale;
+                console.log('📍 Preview position update:', {
+                  original: { x: sessionData.x, y: sessionData.y },
+                  scale: scale,
+                  scaled: { x: scaledX, y: scaledY }
+                });
                 window.__previewPhysics.setPosition(scaledX, scaledY);
               }
             }
@@ -562,6 +656,13 @@
                 const scale = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
                 const scaledVx = sessionData.vx * scale;
                 const scaledVy = sessionData.vy * scale;
+                console.log('🎮 Preview velocity update:', {
+                  original: { vx: sessionData.vx, vy: sessionData.vy },
+                  scale: scale,
+                  scaled: { vx: scaledVx, vy: scaledVy },
+                  canvasSize: { w: window.__previewCanvas.width, h: window.__previewCanvas.height },
+                  viewerSize: sessionData.viewerScreenSize
+                });
                 window.__previewPhysics.setVelocity(scaledVx, scaledVy);
               }
             }
@@ -574,17 +675,24 @@
 
             if (shouldSyncSpeed && sessionData.speed !== undefined) {
               window.__previewPhysics.setSpeed(sessionData.speed);
-              document.getElementById('speedRange').value = sessionData.speed;
-              document.getElementById('speedLabel').textContent = `${sessionData.speed}% (${Math.round((sessionData.speed / 100) * 1280)} px/s)`;
+              if (components && components.speed && typeof components.speed.setSpeed === 'function') {
+                components.speed.setSpeed(sessionData.speed);
+              }
             }
 
-            if (sessionData.colorBall) window.__previewPhysics.setBallColor(sessionData.colorBall);
-            if (sessionData.colorBg) window.__previewPhysics.setBgColor(sessionData.colorBg);
-            if (sessionData.paused !== undefined) window.__previewPhysics.setPaused(sessionData.paused);
+            if (sessionData.colorBall && typeof window.__previewPhysics.setBallColor === 'function') {
+              window.__previewPhysics.setBallColor(sessionData.colorBall);
+            }
+            if (sessionData.colorBg && typeof window.__previewPhysics.setBgColor === 'function') {
+              window.__previewPhysics.setBgColor(sessionData.colorBg);
+            }
+            if (sessionData.paused !== undefined && typeof window.__previewPhysics.setPaused === 'function') {
+              window.__previewPhysics.setPaused(sessionData.paused);
+            }
           }
         },
         onError: (error) => {
-          console.error('Ошибка синхронизации:', error);
+          debugError('Ошибка синхронизации:', error);
         }
       });
 
@@ -625,13 +733,60 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dx, dy })
-      }).catch(error => console.error('Error setting direction:', error));
+      }).catch(error => debugError('Error setting direction:', error));
+    }
+
+    // Функция для обновления активного состояния кнопок направлений
+    function updateDirectionButtons() {
+      // Снимаем активное состояние со всех кнопок
+      document.querySelectorAll('.direction-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // Добавляем активное состояние к текущей кнопке
+      const activeBtn = document.querySelector(`.direction-btn[onclick*="setDirection('${currentDirectionMode}'"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+      }
+    }
+
+    // Функция установки направления (как в тесте)
+    function setDirection(mode) {
+      currentDirectionMode = mode;
+
+      let dx = 0, dy = 0;
+      switch(mode) {
+        case 'horizontal': dx = 1; dy = 0; break;
+        case 'vertical': dx = 0; dy = 1; break;
+        case 'diagRL': dx = 0.707; dy = 0.707; break;
+        case 'diagRLL': dx = 0.707; dy = -0.707; break;
+      }
+
+      directionState = { dx, dy };
+      updateDirectionDisplay(dx, dy);
+      updateDirectionButtons(); // Обновляем выделение кнопок
+
+      // Отправляем команду на сервер
+      fetch(`/api/session/${sessionId}/controller/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dirX: dx,
+          dirY: dy,
+          resume: true,
+          speedScalar: components.speed ? components.speed.getSpeed() : 40
+        })
+      }).then(() => {
+        debugLog('✅ Направление и движение установлены:', mode, {dx, dy});
+      }).catch(error => {
+        debugError('❌ Ошибка установки направления:', error);
+      });
     }
 
     function setDirFromDirection(direction) {
       const dx = direction.x;
       const dy = direction.y;
-      
+
       directionState = { dx, dy };
       updateDirectionDisplay(dx, dy);
 
@@ -639,7 +794,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dx, dy })
-      }).catch(error => console.error('Error setting direction:', error));
+      }).catch(error => debugError('Error setting direction:', error));
     }
 
     function updateDirectionDisplay(dx, dy) {
@@ -661,7 +816,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ center: true })
-      }).catch(error => console.error('Error resetting center:', error));
+      }).catch(error => debugError('Error resetting center:', error));
     }
 
     function resetSession(){
@@ -670,24 +825,24 @@
           method: 'POST'
         }).then(() => {
           window.location.reload();
-        }).catch(error => console.error('Error resetting session:', error));
+        }).catch(error => debugError('Error resetting session:', error));
       }
     }
 
     function setBallColor(color) {
-      fetch(`/api/session/${sessionId}/color/ball`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ color })
-      }).catch(error => console.error('Error setting ball color:', error));
+        body: JSON.stringify({ colorBall: color })
+      }).catch(error => debugError('Error setting ball color:', error));
     }
 
     function setBgColor(color) {
-      fetch(`/api/session/${sessionId}/color/bg`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ color })
-      }).catch(error => console.error('Error setting background color:', error));
+        body: JSON.stringify({ colorBg: color })
+      }).catch(error => debugError('Error setting background color:', error));
     }
 
     function setBallSize(size) {
@@ -695,36 +850,92 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ size })
-      }).catch(error => console.error('Error setting ball size:', error));
+      }).catch(error => debugError('Error setting ball size:', error));
     }
 
+    // Глобальная переменная для отслеживания состояния игры
+    let isPlaying = false;
+
+    // Глобальная переменная для отслеживания текущего направления
+    let currentDirectionMode = 'horizontal';
+
+    function updatePlayPauseButton() {
+      const button = document.getElementById('playPauseBtn');
+      if (!button) return;
+
+      if (isPlaying) {
+        button.textContent = '⏸ Стоп';
+        button.style.background = '#f59e0b';
+      } else {
+        button.textContent = '▶️ Старт';
+        button.style.background = '#10b981';
+      }
+    }
+
+    function togglePlayPause(){
+      const button = document.getElementById('playPauseBtn');
+
+      if (isPlaying) {
+        // Останавливаем игру
+        fetch(`/api/session/${sessionId}/controller/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pause: true })
+        }).then(() => {
+          isPlaying = false;
+          updatePlayPauseButton();
+          debugLog('⏸ Игра остановлена');
+        }).catch(error => debugError('Error pausing play:', error));
+      } else {
+        // Запускаем игру (нужно направление для resume)
+        const currentDirection = directionState || { dx: 1, dy: 0 };
+        fetch(`/api/session/${sessionId}/controller/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resume: true,
+            dirX: currentDirection.dx,
+            dirY: currentDirection.dy,
+            speedScalar: components.speed ? components.speed.getSpeed() : 40
+          })
+        }).then(() => {
+          isPlaying = true;
+          updatePlayPauseButton();
+          debugLog('▶️ Игра запущена');
+        }).catch(error => debugError('Error resuming play:', error));
+      }
+    }
+
+    // Устаревшие функции (оставлены для совместимости)
     function resumePlay(){
-      fetch(`/api/session/${sessionId}/resume`, {
-        method: 'POST'
-      }).catch(error => console.error('Error resuming play:', error));
+      if (!isPlaying) {
+        togglePlayPause();
+      }
     }
 
     function pausePlay(){
-      fetch(`/api/session/${sessionId}/pause`, {
-        method: 'POST'
-      }).catch(error => console.error('Error pausing play:', error));
+      if (isPlaying) {
+        togglePlayPause();
+      }
     }
 
     function copy(id) {
       const element = document.getElementById(id);
-      if (element) {
-        element.select();
-        navigator.clipboard.writeText(element.value).then(() => {
-          const btn = event.target;
-          const originalText = btn.textContent;
-          btn.textContent = '✅ Скопировано!';
-          setTimeout(() => btn.textContent = originalText, 2000);
-        }).catch(err => {
-          console.error('Failed to copy: ', err);
+      if (!element) return;
+      element.select();
+      navigator.clipboard.writeText(element.value)
+        .then(() => {
+          const btn = (window.event && window.event.target) || null;
+          if (btn) {
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Скопировано!';
+            setTimeout(() => { btn.textContent = originalText }, 2000);
+          }
+        })
+        .catch(err => {
+          debugError('Failed to copy: ', err);
         });
-      }
     }
-
 
     function goBack() {
       if (confirm('Вы уверены, что хотите вернуться на главную страницу? Текущая сессия будет сохранена.')) {

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+coverage/
+*.min.js
+public/emdr-therapy/
+docs/
+test/
+*.config.js

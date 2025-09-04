@@ -6,7 +6,53 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>Создать сессию</title>
+
+  <!-- SEO Meta Tags -->
+  <title>BilateralBound - Создать игровую сессию</title>
+  <meta name="description" content="Создайте новую сессию для игры BilateralBound - интерактивной игры с управлением движением шарика в реальном времени" />
+  <meta name="keywords" content="игра, multiplayer, шарик, физика, realtime, bilateralbound" />
+  <meta name="author" content="BilateralBound Team" />
+  <meta name="robots" content="index, follow" />
+  <meta name="language" content="Russian" />
+  <meta name="theme-color" content="#2563eb" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="BilateralBound - Создать игровую сессию" />
+  <meta property="og:description" content="Создайте новую сессию для игры BilateralBound - интерактивной игры с управлением движением шарика" />
+  <meta property="og:image" content="/favicon.svg" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="BilateralBound - Создать игровую сессию" />
+  <meta name="twitter:description" content="Создайте новую сессию для игры BilateralBound - интерактивной игры с управлением движением шарика" />
+
+  <!-- Preload critical resources -->
+  <link rel="preload" href="./js/common.js" as="script" />
+  <link rel="preload" href="./js/module-factory.js" as="script" />
+  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+  <!-- Structured Data for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "BilateralBound",
+    "description": "Интерактивная multiplayer игра с управлением движением шарика в реальном времени",
+    "url": "https://bilateralbound.onrender.com",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web Browser",
+    "author": {
+      "@type": "Organization",
+      "name": "BilateralBound Team"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202509031127" />
@@ -47,9 +93,9 @@
       color: white; 
       border: 0; 
       padding: 10px 14px; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      transition: all 0.2s ease; 
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
     button:hover { 
@@ -59,19 +105,19 @@
     }
 
     input { 
-      width: 100%; 
+      width: 100%;
       padding: 8px 10px; 
-      border-radius: 8px; 
-      border: 1px solid #374151; 
-      background: #0b1220; 
-      color: #e2e8f0; 
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #0b1220;
+      color: #e2e8f0;
       transition: border-color 0.2s ease; 
     }
 
     input:focus { 
-      outline: none; 
-      border-color: #60a5fa; 
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1); 
+      outline: none;
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
     }
 
     .status-indicator {
@@ -101,10 +147,10 @@
     }
   </style>
   <script src="./js/common.js"></script>
-  <script src="./js/physics-engine.js"></script>
-  <script src="./js/renderer.js"></script>
-  <script src="./js/session-sync.js"></script>
   <script src="./js/module-factory.js"></script>
+  <script defer src="./js/physics-engine.js"></script>
+  <script defer src="./js/renderer.js"></script>
+  <script defer src="./js/session-sync.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -133,11 +179,11 @@
               Управляйте шаром и наблюдайте за превью
             </div>
           </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div id="statusIndicator" class="status-indicator disconnected">Проверяем статус сервера...</div>
+    
   </div>
 
   <script>
@@ -167,28 +213,12 @@
 
       } catch (error) {
         alert('Ошибка при создании сессии: ' + error.message);
-        console.error('Error creating session:', error);
+        debugError('Error creating session:', error);
       }
     }
 
-    // Мониторинг статуса сессии
-    function startStatusMonitoring(sessionId) {
-      const sessionSync = moduleFactory.createSessionSync({
-        sessionId,
-        onStateReceived: (sessionData) => {
-          const statusOverlay = document.getElementById('statusIndicator');
-          if (sessionData.viewerConnected) {
-            statusOverlay.className = 'status-indicator connected';
-            statusOverlay.textContent = 'Зритель подключен';
-          } else {
-            statusOverlay.className = 'status-indicator disconnected';
-            statusOverlay.textContent = 'Ожидание зрителя...';
-          }
-        }
-      });
-
-      sessionSync.startPolling();
-    }
+    // На главной больше не показываем ожидание зрителя
+    function startStatusMonitoring(sessionId) {}
   </script>
 </body>
 </html>
