@@ -190,6 +190,13 @@ class SessionSync {
   }
 
   /**
+     * Синхронизирует отскок с сервером
+     */
+  async syncBounce (bounceData) {
+    return await this.sendBounce(bounceData)
+  }
+
+  /**
      * Отправляет событие отскока на сервер
      */
   async sendBounce (bounceData) {

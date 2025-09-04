@@ -448,6 +448,30 @@ app.post('/api/session/:sessionId/viewer/screen-size', (req, res) => {
   }
 })
 
+// Bounce event endpoint
+app.post('/api/session/:sessionId/bounce', (req, res) => {
+  try {
+    const { sessionId } = req.params
+    const bounceData = req.body
+
+    const session = sessionManager.getSession(sessionId)
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' })
+    }
+
+    // Log bounce event for debugging
+    console.log(`🎯 Bounce event for session ${sessionId}:`, bounceData)
+
+    // Here you can add bounce analytics, logging, or other processing
+    // For now, just acknowledge the bounce
+    res.json({ success: true, message: 'Bounce recorded' })
+
+  } catch (error) {
+    logger.error('Error processing bounce:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Static routes for viewer
 app.get('/s/:sessionId', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'viewer.html'))
