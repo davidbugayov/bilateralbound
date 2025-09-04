@@ -758,10 +758,18 @@
       directionState = { dx, dy };
       updateDirectionDisplay(dx, dy);
 
-      fetch(`/api/session/${sessionId}/direction`, {
+      // Отправляем команду изменения направления через controller/update
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dx, dy })
+        body: JSON.stringify({
+          dirX: dx,
+          dirY: dy,
+          // Если мяч движется, сразу меняем направление
+          resume: true
+        })
+      }).then(() => {
+        debugLog(`✅ Направление изменено: dx=${dx}, dy=${dy}`);
       }).catch(error => debugError('Error setting direction:', error));
     }
 

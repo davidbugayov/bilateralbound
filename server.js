@@ -132,11 +132,34 @@ const sessionManager = {
       return true
     }
 
-    // Handle direction update without resume (just set direction for future use)
-    if (updates.dirX !== undefined && updates.dirY !== undefined && updates.resume === undefined) {
-      // Store direction for future resume command, but don't start movement
-      // This will be used when user clicks "Start" later
-      session.ballState.pendingDirection = { dx: updates.dirX, dy: updates.dirY }
+    // Handle direction update (change direction immediately if ball is moving)
+    if (updates.dirX !== undefined && updates.dirY !== undefined) {
+      const speedPercent = updates.speedScalar || session.ballState.speed || 40
+      const maxSpeed = 1280 // Match PhysicsEngine default maxSpeed
+      const pixelsPerSecond = (speedPercent / 100) * maxSpeed
+
+      // Если мяч уже движется, сразу меняем направление
+      if (!session.ballState.paused && (session.ballState.vx !== 0 || session.ballState.vy !== 0)) {
+        // Сохраняем текущую скорость и меняем только направление
+        const currentSpeed = Math.sqrt(session.ballState.vx * session.ballState.vx + session.ballState.vy * session.ballState.vy)
+        const normalizedDirX = updates.dirX === 0 ? 0 : (updates.dirX > 0 ? 1 : -1)
+        const normalizedDirY = updates.dirY === 0 ? 0 : (updates.dirY > 0 ? 1 : -1)
+
+        // Нормализуем диагональное направление
+        if (normalizedDirX !== 0 && normalizedDirY !== 0) {
+          const length = Math.sqrt(normalizedDirX * normalizedDirX + normalizedDirY * normalizedDirY)
+          session.ballState.vx = (normalizedDirX / length) * currentSpeed
+          session.ballState.vy = (normalizedDirY / length) * currentSpeed
+        } else {
+          session.ballState.vx = normalizedDirX * currentSpeed
+          session.ballState.vy = normalizedDirY * currentSpeed
+        }
+
+        console.log(`🎯 Направление мяча изменено: vx=${session.ballState.vx}, vy=${session.ballState.vy}`)
+      } else {
+        // Если мяч не движется, сохраняем направление для будущего запуска
+        session.ballState.pendingDirection = { dx: updates.dirX, dy: updates.dirY }
+      }
       return true
     }
 
