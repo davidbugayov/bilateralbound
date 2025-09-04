@@ -325,10 +325,10 @@
                 // Устанавливаем размер canvas
                 resizeCanvas();
 
-                // Создаем движок физики
+                // Создаем движок физики с размером экрана вьювера
                 physicsEngine = new PhysicsEngine({
-                    worldWidth: canvas.width || window.innerWidth,
-                    worldHeight: canvas.height || window.innerHeight,
+                    worldWidth: window.innerWidth,
+                    worldHeight: window.innerHeight,
                     bounceCallback: syncBounce
                 });
 
@@ -340,8 +340,12 @@
                     sessionId: sessionId,
                     serverUrl: '',
                     onStateReceived: (serverState) => {
-                        // Синхронизируем состояние с сервером
-                        physicsEngine.syncFromServer(serverState);
+                        // Синхронизируем состояние с сервером с учетом размера экрана вьювера
+                        const viewerScreenSize = {
+                            width: window.innerWidth,
+                            height: window.innerHeight
+                        };
+                        physicsEngine.syncFromServer(serverState, viewerScreenSize);
 
                         // Обновляем статус
                         updateStatus(serverState);
@@ -389,8 +393,12 @@
 
                 const ballState = await response.json();
                 if (ballState) {
-                    // Синхронизируем состояние через PhysicsEngine
-                    physicsEngine.syncFromServer(ballState);
+                    // Синхронизируем состояние через PhysicsEngine с учетом размера экрана
+                    const viewerScreenSize = {
+                        width: window.innerWidth,
+                        height: window.innerHeight
+                    };
+                    physicsEngine.syncFromServer(ballState, viewerScreenSize);
                     debugLog('✅ Начальное состояние синхронизировано');
                 }
             } catch (error) {
@@ -411,8 +419,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         screenSize: {
-                            width: canvasElement.width,
-                            height: canvasElement.height
+                            width: window.innerWidth,
+                            height: window.innerHeight
                         }
                     })
                 });
@@ -469,14 +477,12 @@
         
         async function updateScreenSize() {
             try {
-                const canvasEl = document.getElementById('viewerCanvas');
-                if (!canvasEl) return;
                 const response = await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        width: canvasEl.width,
-                        height: canvasEl.height
+                        width: window.innerWidth,
+                        height: window.innerHeight
                     })
                 });
 
