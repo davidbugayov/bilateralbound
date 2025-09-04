@@ -498,9 +498,19 @@
           if (ballState.radius !== undefined && typeof window.__previewPhysics.setBallSize === 'function') {
             // Масштабируем радиус под размер превью и делаем его маленьким
             if (ballState.viewerScreenSize) {
-              const scale = window.__previewCanvas.width / ballState.viewerScreenSize.width;
+              // Единый масштаб для сохранения круглой формы мяча
+              const scaleX = window.__previewCanvas.width / ballState.viewerScreenSize.width;
+              const scaleY = window.__previewCanvas.height / ballState.viewerScreenSize.height;
+              const scale = Math.min(scaleX, scaleY); // Используем минимальный масштаб для сохранения пропорций
+
               // Дополнительно уменьшаем радиус в 3 раза для маленького шара в превью
               const scaledRadius = Math.max(ballState.radius * scale * 0.3, 3);
+              console.log('🔵 Preview ball scaling:', {
+                canvasSize: { w: window.__previewCanvas.width, h: window.__previewCanvas.height },
+                viewerSize: ballState.viewerScreenSize,
+                scales: { x: scaleX, y: scaleY, final: scale },
+                radius: { original: ballState.radius, scaled: scaledRadius }
+              });
               window.__previewPhysics.setBallSize(scaledRadius);
             } else {
               // Для случая без размера вьювера тоже делаем маленький шар
@@ -670,13 +680,20 @@
 
             if (sessionData.x !== undefined || sessionData.y !== undefined) {
               if (sessionData.viewerScreenSize) {
-                const scale = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
-                const scaledX = sessionData.x * scale;
-                const scaledY = sessionData.y * scale;
+                // Единый масштаб для сохранения пропорций
+                const scaleX = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
+                const scaleY = window.__previewCanvas.height / sessionData.viewerScreenSize.height;
+                const scale = Math.min(scaleX, scaleY); // Используем минимальный масштаб
+
+                const scaledX = sessionData.x * scaleX; // X масштабируется по ширине
+                const scaledY = sessionData.y * scaleY; // Y масштабируется по высоте
+
                 console.log('📍 Preview position update:', {
                   original: { x: sessionData.x, y: sessionData.y },
-                  scale: scale,
-                  scaled: { x: scaledX, y: scaledY }
+                  scales: { x: scaleX, y: scaleY },
+                  scaled: { x: scaledX, y: scaledY },
+                  canvasSize: { w: window.__previewCanvas.width, h: window.__previewCanvas.height },
+                  viewerSize: sessionData.viewerScreenSize
                 });
                 window.__previewPhysics.setPosition(scaledX, scaledY);
               }
@@ -684,12 +701,16 @@
 
             if (sessionData.vx !== undefined || sessionData.vy !== undefined) {
               if (sessionData.viewerScreenSize) {
-                const scale = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
-                const scaledVx = sessionData.vx * scale;
-                const scaledVy = sessionData.vy * scale;
+                // Масштабируем скорость по соответствующим осям для сохранения пропорций
+                const scaleX = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
+                const scaleY = window.__previewCanvas.height / sessionData.viewerScreenSize.height;
+
+                const scaledVx = sessionData.vx * scaleX; // VX масштабируется по ширине
+                const scaledVy = sessionData.vy * scaleY; // VY масштабируется по высоте
+
                 console.log('🎮 Preview velocity update:', {
                   original: { vx: sessionData.vx, vy: sessionData.vy },
-                  scale: scale,
+                  scales: { x: scaleX, y: scaleY },
                   scaled: { vx: scaledVx, vy: scaledVy },
                   canvasSize: { w: window.__previewCanvas.width, h: window.__previewCanvas.height },
                   viewerSize: sessionData.viewerScreenSize
@@ -699,9 +720,20 @@
             }
 
             if (sessionData.radius !== undefined) {
-              const scale = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
-              const scaledRadius = sessionData.radius * scale;
-              window.__previewPhysics.setBallSize(scaledRadius);
+              if (sessionData.viewerScreenSize) {
+                // Единый масштаб для сохранения круглой формы мяча
+                const scaleX = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
+                const scaleY = window.__previewCanvas.height / sessionData.viewerScreenSize.height;
+                const scale = Math.min(scaleX, scaleY); // Используем минимальный масштаб
+
+                const scaledRadius = Math.max(sessionData.radius * scale * 0.3, 3);
+                console.log('🔵 Preview radius update:', {
+                  original: sessionData.radius,
+                  scale: scale,
+                  scaled: scaledRadius
+                });
+                window.__previewPhysics.setBallSize(scaledRadius);
+              }
             }
 
             if (shouldSyncSpeed && sessionData.speed !== undefined) {
