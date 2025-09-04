@@ -338,8 +338,11 @@
                     bounceCallback: syncBounce
                 });
 
-                // Создаем рендерер
-                renderer = new BallRenderer(canvas, physicsEngine);
+                // Создаем рендерер с локальной физикой для вьювера
+                renderer = new BallRenderer(canvas, physicsEngine, {
+                    localPhysics: true, // Включаем локальную физику для вьювера
+                    bounceCallback: syncBounce // Функция для синхронизации отскоков
+                });
 
                 // Создаем синхронизатор сессии
                 sessionSync = new SessionSync({
@@ -622,7 +625,12 @@
         // Добавляем event listeners только после инициализации
         function setupEventListeners() {
             if (window) {
-                window.addEventListener('resize', resizeCanvas);
+                // Добавляем throttling для resize события (максимум 1 раз в 1000ms)
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(resizeCanvas, 1000);
+                });
             }
 
             if (document) {

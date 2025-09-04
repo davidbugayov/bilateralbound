@@ -448,7 +448,9 @@
         });
         debugLog('✅ PhysicsEngine создан');
 
-        const renderer = new BallRenderer(canvas, physics);
+        const renderer = new BallRenderer(canvas, physics, {
+            localPhysics: true // Локальная физика для превью (без синхронизации отскоков)
+        });
         debugLog('✅ BallRenderer создан');
 
         renderer.setFrameCallback((deltaTime) => {

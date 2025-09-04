@@ -133,24 +133,40 @@ class SharedComponents {
 
         speedControl.innerHTML = `
                     <div class="speed-header">
-                        <h3>🚀 Скорость</h3>
-                        ${defaultOptions.showValue ? '<span class="speed-value">40</span>' : ''}
-                    </div>
-                    <div class="speed-slider-container">
-                        <input type="range" 
-                               class="speed-range" 
-                               min="${defaultOptions.min}" 
-                               max="${defaultOptions.max}" 
-                               value="${defaultOptions.currentSpeed}"
-                               step="1">
-                        ${defaultOptions.showLabels
-    ? `
-                            <div class="speed-labels">
-                                <span>🐌</span>
-                                <span>🚀</span>
+                        <div class="speed-icon">⚡</div>
+                        <div class="speed-info">
+                            <h3>Скорость движения</h3>
+                            ${defaultOptions.showValue ? '<div class="speed-display"><span class="speed-value">40</span><span class="speed-unit">%</span></div>' : ''}
+                        </div>
+                        <div class="speed-indicator">
+                            <div class="speed-bar">
+                                <div class="speed-fill" style="width: 40%"></div>
                             </div>
-                        `
-    : ''}
+                        </div>
+                    </div>
+                    <div class="speed-controls">
+                        <div class="speed-presets">
+                            <button class="speed-preset slow" data-speed="20">🐌<span>Медленно</span></button>
+                            <button class="speed-preset normal active" data-speed="40">⚡<span>Нормально</span></button>
+                            <button class="speed-preset fast" data-speed="80">🚀<span>Быстро</span></button>
+                        </div>
+                        <div class="speed-slider-container">
+                            <div class="speed-track">
+                                <input type="range"
+                                       class="speed-range"
+                                       min="${defaultOptions.min}"
+                                       max="${defaultOptions.max}"
+                                       value="${defaultOptions.currentSpeed}"
+                                       step="1">
+                                <div class="speed-marks">
+                                    <span class="mark" style="left: 0%">0</span>
+                                    <span class="mark" style="left: 25%">25</span>
+                                    <span class="mark" style="left: 50%">50</span>
+                                    <span class="mark" style="left: 75%">75</span>
+                                    <span class="mark" style="left: 100%">100</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `
 
@@ -164,7 +180,10 @@ class SharedComponents {
       setupElements () {
         this.elements.range = container.querySelector('.speed-range')
         this.elements.value = container.querySelector('.speed-value')
-        this.elements.labels = container.querySelector('.speed-labels')
+        this.elements.display = container.querySelector('.speed-display')
+        this.elements.fill = container.querySelector('.speed-fill')
+        this.elements.presets = container.querySelectorAll('.speed-preset')
+        this.elements.unit = container.querySelector('.speed-unit')
       },
 
       // Настраивает обработчики событий
@@ -173,6 +192,39 @@ class SharedComponents {
           this.elements.range.addEventListener('input', (e) => {
             this.setSpeed(parseInt(e.target.value))
           })
+        }
+
+        // Обработчики для пресетов скорости
+        if (this.elements.presets) {
+          this.elements.presets.forEach(preset => {
+            preset.addEventListener('click', (e) => {
+              const speed = parseInt(preset.dataset.speed)
+              this.setSpeed(speed)
+              this.updateActivePreset(speed)
+            })
+          })
+        }
+      },
+
+      // Обновляет активный пресет
+      updateActivePreset (speed) {
+        if (!this.elements.presets) return
+
+        // Снимаем активное состояние со всех
+        this.elements.presets.forEach(preset => {
+          preset.classList.remove('active')
+        })
+
+        // Определяем активный пресет на основе скорости
+        let activePreset = null
+        if (speed <= 30) activePreset = 'slow'
+        else if (speed <= 60) activePreset = 'normal'
+        else activePreset = 'fast'
+
+        // Устанавливаем активное состояние
+        const activeElement = container.querySelector(`.speed-preset.${activePreset}`)
+        if (activeElement) {
+          activeElement.classList.add('active')
         }
       },
 
@@ -187,6 +239,14 @@ class SharedComponents {
         if (this.elements.value) {
           this.elements.value.textContent = this.currentSpeed
         }
+
+        // Обновляем индикатор заполнения
+        if (this.elements.fill) {
+          this.elements.fill.style.width = `${this.currentSpeed}%`
+        }
+
+        // Обновляем активный пресет
+        this.updateActivePreset(this.currentSpeed)
 
         // Вызываем callback
         if (this.options.onSpeedChange) {

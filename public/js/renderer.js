@@ -5,7 +5,7 @@
  */
 
 class BallRenderer {
-  constructor (canvas, physicsEngine) {
+  constructor (canvas, physicsEngine, options = {}) {
     // Проверяем входные параметры
     if (!canvas) {
       throw new Error('Canvas element is required for BallRenderer')
@@ -28,6 +28,10 @@ class BallRenderer {
     this.targetFrameTime = 1000 / 60 // 60 FPS
 
     this.onFrameCallback = null
+    this.options = {
+      localPhysics: false, // Флаг для локальной физики (для вьювера)
+      ...options
+    }
 
     // Кэшируем часто используемые значения
     this.pi2 = Math.PI * 2
@@ -109,8 +113,10 @@ class BallRenderer {
         this.onFrameCallback(clampedDeltaTime)
       }
 
-      // Обновляем физику с clamped deltaTime для плавности
-      this.physics.update(clampedDeltaTime / 1000)
+      // Обновляем физику только если включена локальная физика или это превью
+      if (this.options.localPhysics) {
+        this.physics.update(clampedDeltaTime / 1000)
+      }
 
       // Рендерим сцену
       this.render()
