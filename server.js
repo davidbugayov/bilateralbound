@@ -460,6 +460,7 @@ app.post('/api/session/:sessionId/viewer/screen-size', (req, res) => {
     }
 
     if (typeof width === 'number' && typeof height === 'number') {
+      console.log(`📏 Вьювер обновил размер экрана: ${width}×${height} (сессия: ${sessionId})`);
       sessionManager.setViewerScreenSize(sessionId, { width, height })
       return res.json({ success: true })
     }

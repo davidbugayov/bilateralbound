@@ -18,10 +18,10 @@
     <meta name="target-audience" content="EMDR Patients, Couples" />
 
     <!-- Favicon for Viewer (Eye Icon) -->
-    <link rel="icon" type="image/svg+xml" href="/favicon-viewer.svg?v=202509031127" />
-    <link rel="icon" type="image/x-icon" href="/favicon-viewer.ico?v=202509031127" />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=202509031127" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=202509031127" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-viewer.svg?v=202509031200" />
+    <link rel="icon" type="image/x-icon" href="/favicon-viewer.ico?v=202509031200" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=202509031200" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=202509031200" />
 
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
@@ -502,7 +502,7 @@
                     return;
                 }
 
-                debugLog('✅ Размер экрана обновлен на сервере');
+                debugLog(`✅ Размер экрана обновлен на сервере: ${window.innerWidth}×${window.innerHeight}`);
             } catch (error) {
                 debugError('Ошибка сети при обновлении размера экрана:', error);
             }
@@ -629,7 +629,10 @@
                 let resizeTimeout;
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimeout);
-                    resizeTimeout = setTimeout(resizeCanvas, 1000);
+                    resizeTimeout = setTimeout(() => {
+                        resizeCanvas();
+                        updateScreenSize();
+                    }, 1000);
                 });
             }
 
