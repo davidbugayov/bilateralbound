@@ -51,7 +51,7 @@ const sessionManager = {
       },
       controllerConnected: false,
       viewerConnected: false,
-      viewerScreenSize: { width: 1920, height: 1080 },
+      viewerScreenSize: null, // Будет установлен при подключении вьювера
       createdAt: Date.now(),
       lastActivity: Date.now()
     }
@@ -73,11 +73,19 @@ const sessionManager = {
       return true
     }
 
-    // Handle reset (center the ball)
+    // Handle reset (center the ball based on viewer screen size)
     if (updates.reset !== undefined) {
-      // Center coordinates (assuming 800x600 world, center at 400x300)
-      session.ballState.x = 400
-      session.ballState.y = 300
+      // Use viewer screen size if available, otherwise use default world size
+      const viewerSize = session.viewerScreenSize
+      const worldWidth = viewerSize ? viewerSize.width : 800
+      const worldHeight = viewerSize ? viewerSize.height : 600
+
+      // Calculate center coordinates dynamically
+      const centerX = worldWidth / 2
+      const centerY = worldHeight / 2
+
+      session.ballState.x = centerX
+      session.ballState.y = centerY
       session.ballState.vx = 0
       session.ballState.vy = 0
       session.ballState.paused = true
@@ -108,9 +116,12 @@ const sessionManager = {
       const maxSpeed = 1280 // Match PhysicsEngine default maxSpeed
       const pixelsPerSecond = (speedPercent / 100) * maxSpeed
 
-      // Определяем направление в зависимости от текущей позиции мяча
+      // Определяем направление в зависимости от размера экрана вьювера
+      const viewerSize = session.viewerScreenSize
+      const worldWidth = viewerSize ? viewerSize.width : 800
+      const centerX = worldWidth / 2
+
       // Если мяч слева от центра - двигаемся вправо, если справа - влево
-      const centerX = 400
       const dirX = session.ballState.x < centerX ? 1 : -1
 
       session.ballState.vx = dirX * pixelsPerSecond

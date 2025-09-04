@@ -676,13 +676,17 @@
 
                 const response = await fetch(`/api/session/${sessionId}/state`);
                 const state = await response.json();
-                const isCentered = Math.abs(state.x - 400) < 5 && Math.abs(state.y - 300) < 5;
+                // Центр вычисляется динамически на основе размера экрана вьювера
+                const viewerSize = state.viewerScreenSize || { width: 800, height: 600 };
+                const expectedCenterX = viewerSize.width / 2;
+                const expectedCenterY = viewerSize.height / 2;
+                const isCentered = Math.abs(state.x - expectedCenterX) < 5 && Math.abs(state.y - expectedCenterY) < 5;
 
                 if (isCentered) {
-                    log('success', `✅ Тест 1: Центрирование - Пройден (x=${state.x}, y=${state.y})`);
+                    log('success', `✅ Тест 1: Центрирование - Пройден (x=${state.x}, y=${state.y}, центр: ${expectedCenterX}, ${expectedCenterY})`);
                     passedTests++;
                 } else {
-                    log('error', `❌ Тест 1: Центрирование - Провалено (x=${state.x}, y=${state.y})`);
+                    log('error', `❌ Тест 1: Центрирование - Провалено (x=${state.x}, y=${state.y}, ожидалось: ${expectedCenterX}, ${expectedCenterY})`);
                 }
                 totalTests++;
             } catch (error) {
@@ -964,13 +968,17 @@
                 if (!response.ok) throw new Error('Не удалось получить состояние');
 
                 const state = await response.json();
-                const isCentered = Math.abs(state.x - 400) < 5 && Math.abs(state.y - 300) < 5;
+                // Центр вычисляется динамически на основе размера экрана вьювера
+                const viewerSize = state.viewerScreenSize || { width: 800, height: 600 };
+                const expectedCenterX = viewerSize.width / 2;
+                const expectedCenterY = viewerSize.height / 2;
+                const isCentered = Math.abs(state.x - expectedCenterX) < 5 && Math.abs(state.y - expectedCenterY) < 5;
 
                 if (isCentered) {
-                    log('success', `✅ Мяч центрирован по умолчанию: x=${state.x}, y=${state.y} ✓`);
+                    log('success', `✅ Мяч центрирован по умолчанию: x=${state.x}, y=${state.y} (центр: ${expectedCenterX}, ${expectedCenterY}) ✓`);
                     successCount++;
                 } else {
-                    log('error', `❌ Мяч не центрирован: x=${state.x}, y=${state.y}, ожидалось x=400, y=300`);
+                    log('error', `❌ Мяч не центрирован: x=${state.x}, y=${state.y}, ожидалось x=${expectedCenterX}, y=${expectedCenterY}`);
                 }
             } catch (error) {
                 log('error', `❌ Ошибка проверки центрирования: ${error.message}`);

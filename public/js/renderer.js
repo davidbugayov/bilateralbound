@@ -166,9 +166,20 @@ class BallRenderer {
 
     try {
       this.beginPath()
-      this.arc(ball.x, ball.y, ball.radius, 0, this.pi2)
+      // Рисуем маленький круглый шар
+      this.arc(ball.x, ball.y, Math.max(ball.radius, 2), 0, this.pi2)
       this.ctx.fillStyle = this.colors.ball
+      // Добавляем небольшую тень для объема
+      this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'
+      this.ctx.shadowBlur = 2
+      this.ctx.shadowOffsetX = 1
+      this.ctx.shadowOffsetY = 1
       this.fill()
+      // Сбрасываем тень для следующих элементов
+      this.ctx.shadowColor = 'transparent'
+      this.ctx.shadowBlur = 0
+      this.ctx.shadowOffsetX = 0
+      this.ctx.shadowOffsetY = 0
     } catch (error) {
       console.error('BallRenderer: Error rendering ball:', error)
     }

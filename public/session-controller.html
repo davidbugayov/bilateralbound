@@ -410,6 +410,9 @@
     function initializePreview(sessionId) {
       debugLog('🎮 Начинаем инициализацию превью');
 
+      // Показываем текст ожидания подключения вьювера
+      showWaitingForViewer();
+
       const previewWrap = document.getElementById('previewWrap');
       if (previewWrap) {
         previewWrap.style.display = 'block';
@@ -435,7 +438,7 @@
         const physics = new PhysicsEngine({
           worldWidth: canvas.width,
           worldHeight: canvas.height,
-          ballRadius: 20,
+          ballRadius: 6, // Маленький радиус для превью (было 20)
           minSpeed: 50,
           maxSpeed: 1280
         });
@@ -487,13 +490,16 @@
             }
           }
           if (ballState.radius !== undefined && typeof window.__previewPhysics.setBallSize === 'function') {
-            // Масштабируем радиус под размер превью
+            // Масштабируем радиус под размер превью и делаем его маленьким
             if (ballState.viewerScreenSize) {
               const scale = window.__previewCanvas.width / ballState.viewerScreenSize.width;
-              const scaledRadius = ballState.radius * scale;
+              // Дополнительно уменьшаем радиус в 3 раза для маленького шара в превью
+              const scaledRadius = Math.max(ballState.radius * scale * 0.3, 3);
               window.__previewPhysics.setBallSize(scaledRadius);
             } else {
-              window.__previewPhysics.setBallSize(ballState.radius);
+              // Для случая без размера вьювера тоже делаем маленький шар
+              const smallRadius = Math.max(ballState.radius * 0.3, 3);
+              window.__previewPhysics.setBallSize(smallRadius);
             }
           }
           if (ballState.colorBall && typeof window.__previewPhysics.setBallColor === 'function') {
@@ -526,9 +532,18 @@
       }
     }
 
+    function showWaitingForViewer() {
+      const viewerInfo = document.getElementById('viewerInfo');
+      if (viewerInfo) {
+        viewerInfo.textContent = '⏳ Ожидание подключения вьювера';
+        viewerInfo.style.display = 'block';
+      }
+    }
+
     function updatePreviewSize(viewerScreenSize) {
       if (!viewerScreenSize || !window.__previewRenderer || !window.__previewPhysics) {
-        console.log('⚠️ Skipping preview size update - missing requirements');
+        console.log('⚠️ Skipping preview size update - missing viewer screen size or components');
+        showWaitingForViewer();
         return;
       }
 
