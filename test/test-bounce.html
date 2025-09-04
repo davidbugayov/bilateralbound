@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест отскоков мячика</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .test-section {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #334155;
+        }
+
+        .test-section h2 {
+            margin: 0 0 20px 0;
+            color: #60a5fa;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 10px;
+        }
+
+        .canvas-container {
+            position: relative;
+            display: inline-block;
+            border: 2px solid #374151;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .test-canvas {
+            display: block;
+            background: #020617;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .test-btn {
+            padding: 10px 16px;
+            font-size: 14px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .test-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .test-btn.success {
+            background: #10b981;
+        }
+
+        .test-btn.error {
+            background: #ef4444;
+        }
+
+        .log-panel {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-panel h4 {
+            margin: 0 0 12px 0;
+            color: #60a5fa;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        .log-success {
+            color: #10b981;
+        }
+
+        .log-error {
+            color: #ef4444;
+        }
+
+        .log-info {
+            color: #60a5fa;
+        }
+
+        .log-warning {
+            color: #f59e0b;
+        }
+
+        .status-panel {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .status-value {
+            font-weight: 500;
+        }
+
+        .status-connected {
+            color: #10b981;
+        }
+
+        .status-disconnected {
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Левая колонка: Тест отскоков -->
+        <div class="test-section">
+            <h2>🎯 Тест отскоков мячика</h2>
+
+            <div class="canvas-container">
+                <canvas id="bounceCanvas" width="400" height="300" class="test-canvas"></canvas>
+            </div>
+
+            <div class="test-controls">
+                <button class="test-btn" onclick="testHorizontalBounce()">↔️ Горизонтальный отскок</button>
+                <button class="test-btn" onclick="testVerticalBounce()">↕️ Вертикальный отскок</button>
+                <button class="test-btn" onclick="testDiagonalBounce()">↗️ Диагональный отскок</button>
+                <button class="test-btn" onclick="testAllBounces()">🚀 Все отскоки</button>
+                <button class="test-btn" onclick="resetTest()">🔄 Сброс</button>
+                <button class="test-btn" onclick="clearLog()">🗑️ Очистить лог</button>
+            </div>
+
+            <div class="status-panel">
+                <h3>📊 Статус теста</h3>
+                <div class="status-item">
+                    <span>🎯 Позиция мяча:</span>
+                    <span class="status-value" id="ballPosition">200, 150</span>
+                </div>
+                <div class="status-item">
+                    <span>💨 Скорость:</span>
+                    <span class="status-value" id="ballSpeed">0, 0</span>
+                </div>
+                <div class="status-item">
+                    <span>🎪 Отскоки:</span>
+                    <span class="status-value" id="bounceCount">0</span>
+                </div>
+                <div class="status-item">
+                    <span>⏱️ Время теста:</span>
+                    <span class="status-value" id="testTime">0.0s</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: Логи и результаты -->
+        <div class="test-section">
+            <h2>📝 Результаты тестирования</h2>
+
+            <div class="log-panel">
+                <h4>📋 Лог операций</h4>
+                <div id="logContainer">
+                    <div class="log-entry log-info">Система инициализирована</div>
+                </div>
+            </div>
+
+            <div class="test-controls">
+                <button class="test-btn" onclick="runQuickBounceTest()">⚡ Быстрый тест (5с)</button>
+                <button class="test-btn" onclick="runFullBounceTest()">🔬 Полный тест (15с)</button>
+                <button class="test-btn" onclick="testBounceAccuracy()">🎯 Точность отскоков</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/physics-engine.js"></script>
+    <script src="../js/renderer.js"></script>
+
+    <script>
+        // Глобальные переменные
+        let physics;
+        let renderer;
+        let canvas;
+        let ctx;
+        let bounceCount = 0;
+        let testStartTime = 0;
+        let testInterval = null;
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeBounceTest();
+        });
+
+        function initializeBounceTest() {
+            try {
+                log('info', '🚀 Инициализация теста отскоков...');
+
+                canvas = document.getElementById('bounceCanvas');
+                ctx = canvas.getContext('2d');
+
+                if (!canvas || !ctx) {
+                    throw new Error('Canvas или контекст не доступны');
+                }
+
+                // Создаем физику с локальным движком
+                physics = new PhysicsEngine({
+                    worldWidth: canvas.width,
+                    worldHeight: canvas.height,
+                    ballRadius: 20,
+                    bounceCallback: handleBounce
+                });
+
+                log('success', '✅ PhysicsEngine создан');
+
+                // Создаем рендерер с локальной физикой
+                renderer = new BallRenderer(canvas, physics, { localPhysics: true });
+                log('success', '✅ BallRenderer создан');
+
+                // Запускаем рендерер
+                renderer.start();
+                log('success', '✅ Рендерер запущен');
+
+                // Обновляем статус
+                updateStatus();
+
+                log('success', '🎉 Тест отскоков готов!');
+
+            } catch (error) {
+                log('error', '❌ Ошибка инициализации: ' + error.message);
+            }
+        }
+
+        function handleBounce(bounceData) {
+            bounceCount++;
+            log('info', `🎯 Отскок #${bounceCount}: x=${bounceData.x.toFixed(1)}, y=${bounceData.y.toFixed(1)}, vx=${bounceData.vx.toFixed(1)}, vy=${bounceData.vy.toFixed(1)}`);
+            updateStatus();
+        }
+
+        function testHorizontalBounce() {
+            log('info', '↔️ Тестирование горизонтального отскока...');
+            resetTest();
+            
+            // Устанавливаем мяч в центр и запускаем горизонтальное движение
+            physics.setPosition(200, 150);
+            physics.startMovement(1, 0, 80); // Высокая скорость для быстрого теста
+            
+            log('info', '▶️ Мяч запущен горизонтально вправо');
+        }
+
+        function testVerticalBounce() {
+            log('info', '↕️ Тестирование вертикального отскока...');
+            resetTest();
+            
+            // Устанавливаем мяч в центр и запускаем вертикальное движение
+            physics.setPosition(200, 150);
+            physics.startMovement(0, 1, 80); // Высокая скорость для быстрого теста
+            
+            log('info', '▶️ Мяч запущен вертикально вниз');
+        }
+
+        function testDiagonalBounce() {
+            log('info', '↗️ Тестирование диагонального отскока...');
+            resetTest();
+            
+            // Устанавливаем мяч в центр и запускаем диагональное движение
+            physics.setPosition(200, 150);
+            physics.startMovement(0.707, 0.707, 80); // Диагональ вправо-вниз
+            
+            log('info', '▶️ Мяч запущен диагонально');
+        }
+
+        function testAllBounces() {
+            log('info', '🚀 Тестирование всех типов отскоков...');
+            resetTest();
+            
+            // Последовательно тестируем все направления
+            setTimeout(() => {
+                physics.setPosition(200, 150);
+                physics.startMovement(1, 0, 60);
+                log('info', '1️⃣ Горизонтальный отскок');
+            }, 0);
+
+            setTimeout(() => {
+                physics.setPosition(200, 150);
+                physics.startMovement(0, 1, 60);
+                log('info', '2️⃣ Вертикальный отскок');
+            }, 2000);
+
+            setTimeout(() => {
+                physics.setPosition(200, 150);
+                physics.startMovement(0.707, 0.707, 60);
+                log('info', '3️⃣ Диагональный отскок');
+            }, 4000);
+
+            setTimeout(() => {
+                physics.setPosition(200, 150);
+                physics.startMovement(-1, 0, 60);
+                log('info', '4️⃣ Обратный горизонтальный отскок');
+            }, 6000);
+        }
+
+        function runQuickBounceTest() {
+            log('info', '⚡ Запуск быстрого теста отскоков (5 секунд)...');
+            resetTest();
+            testStartTime = Date.now();
+
+            // Запускаем мяч в случайном направлении
+            const angle = Math.random() * Math.PI * 2;
+            const dirX = Math.cos(angle);
+            const dirY = Math.sin(angle);
+            
+            physics.setPosition(200, 150);
+            physics.startMovement(dirX, dirY, 100); // Максимальная скорость
+
+            // Останавливаем тест через 5 секунд
+            setTimeout(() => {
+                physics.stopMovement();
+                const testDuration = (Date.now() - testStartTime) / 1000;
+                log('success', `✅ Быстрый тест завершен за ${testDuration.toFixed(1)}с. Отскоков: ${bounceCount}`);
+                
+                if (bounceCount > 0) {
+                    log('success', '🎉 Отскоки работают корректно!');
+                } else {
+                    log('error', '❌ Отскоки не обнаружены - возможна проблема!');
+                }
+            }, 5000);
+        }
+
+        function runFullBounceTest() {
+            log('info', '🔬 Запуск полного теста отскоков (15 секунд)...');
+            resetTest();
+            testStartTime = Date.now();
+
+            // Запускаем мяч в случайном направлении
+            const angle = Math.random() * Math.PI * 2;
+            const dirX = Math.cos(angle);
+            const dirY = Math.sin(angle);
+            
+            physics.setPosition(200, 150);
+            physics.startMovement(dirX, dirY, 80);
+
+            // Останавливаем тест через 15 секунд
+            setTimeout(() => {
+                physics.stopMovement();
+                const testDuration = (Date.now() - testStartTime) / 1000;
+                const bouncesPerSecond = bounceCount / testDuration;
+                
+                log('success', `✅ Полный тест завершен за ${testDuration.toFixed(1)}с. Отскоков: ${bounceCount}`);
+                log('info', `📊 Частота отскоков: ${bouncesPerSecond.toFixed(2)} отскоков/сек`);
+                
+                if (bounceCount >= 10) {
+                    log('success', '🎉 Отскоки работают отлично!');
+                } else if (bounceCount >= 5) {
+                    log('warning', '⚠️ Отскоки работают, но возможно медленно');
+                } else {
+                    log('error', '❌ Мало отскоков - возможна проблема с физикой!');
+                }
+            }, 15000);
+        }
+
+        function testBounceAccuracy() {
+            log('info', '🎯 Тестирование точности отскоков...');
+            resetTest();
+
+            // Тестируем точность отскоков от каждой границы
+            const tests = [
+                { name: 'Левая граница', pos: [30, 150], dir: [-1, 0] },
+                { name: 'Правая граница', pos: [370, 150], dir: [1, 0] },
+                { name: 'Верхняя граница', pos: [200, 30], dir: [0, -1] },
+                { name: 'Нижняя граница', pos: [200, 270], dir: [0, 1] }
+            ];
+
+            let testIndex = 0;
+            const runNextTest = () => {
+                if (testIndex >= tests.length) {
+                    log('success', '✅ Тест точности завершен');
+                    return;
+                }
+
+                const test = tests[testIndex];
+                log('info', `🎯 Тестируем ${test.name}...`);
+                
+                physics.setPosition(test.pos[0], test.pos[1]);
+                physics.startMovement(test.dir[0], test.dir[1], 60);
+
+                // Ждем 2 секунды для отскока
+                setTimeout(() => {
+                    physics.stopMovement();
+                    testIndex++;
+                    setTimeout(runNextTest, 500);
+                }, 2000);
+            };
+
+            runNextTest();
+        }
+
+        function resetTest() {
+            if (physics) {
+                physics.reset();
+                bounceCount = 0;
+                testStartTime = 0;
+                updateStatus();
+                log('info', '🔄 Тест сброшен');
+            }
+        }
+
+        function updateStatus() {
+            if (physics) {
+                const state = physics.getState();
+                document.getElementById('ballPosition').textContent = 
+                    `${state.x.toFixed(1)}, ${state.y.toFixed(1)}`;
+                document.getElementById('ballSpeed').textContent = 
+                    `${state.vx.toFixed(1)}, ${state.vy.toFixed(1)}`;
+                document.getElementById('bounceCount').textContent = bounceCount;
+                
+                if (testStartTime > 0) {
+                    const elapsed = (Date.now() - testStartTime) / 1000;
+                    document.getElementById('testTime').textContent = `${elapsed.toFixed(1)}s`;
+                }
+            }
+        }
+
+        function log(type, message) {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('logContainer').innerHTML = '';
+            log('info', '🗑️ Лог очищен');
+        }
+
+        // Автоматический тест при загрузке
+        setTimeout(() => {
+            if (physics) {
+                log('info', '🚀 Автоматический запуск быстрого теста...');
+                runQuickBounceTest();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

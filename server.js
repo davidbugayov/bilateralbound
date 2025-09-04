@@ -183,37 +183,57 @@ const sessionManager = {
     worldHeight: 600,
     minSpeed: 128,
     maxSpeed: 1280,
+    friction: 0.98, // Добавлено трение для более реалистичного движения
+    bounceDamping: 0.95, // Добавлено затухание при отскоках
 
-    updateBallPosition: function(ballState, deltaTime) {
+    updateBallPosition: function(ballState, deltaTime, viewerScreenSize) {
       if (ballState.paused) return
 
-      // Обновляем позицию
+      // Применяем легкое трение для более реалистичного движения
+      ballState.vx *= this.friction
+      ballState.vy *= this.friction
+
+      // Обновляем позицию с плавным движением
       ballState.x += ballState.vx * deltaTime
       ballState.y += ballState.vy * deltaTime
 
       // Обрабатываем коллизии с границами
-      this.handleBoundaryCollisions(ballState)
+      this.handleBoundaryCollisions(ballState, viewerScreenSize)
     },
 
-    handleBoundaryCollisions: function(ballState) {
+    handleBoundaryCollisions: function(ballState, viewerScreenSize) {
       const radius = ballState.radius || 40
+      let bounced = false
 
-      // Левая и правая границы
+      // Используем размеры экрана вьювера если доступны, иначе дефолтные
+      const worldWidth = viewerScreenSize ? viewerScreenSize.width : this.worldWidth
+      const worldHeight = viewerScreenSize ? viewerScreenSize.height : this.worldHeight
+
+      // Левая и правая границы с плавной коррекцией
       if (ballState.x - radius <= 0) {
-        ballState.x = radius
-        ballState.vx = Math.abs(ballState.vx)
-      } else if (ballState.x + radius >= this.worldWidth) {
-        ballState.x = this.worldWidth - radius
-        ballState.vx = -Math.abs(ballState.vx)
+        ballState.x = radius + 1 // Небольшой отступ для плавности
+        ballState.vx = Math.abs(ballState.vx) * this.bounceDamping // Отражаем вправо с затуханием
+        bounced = true
+      } else if (ballState.x + radius >= worldWidth) {
+        ballState.x = worldWidth - radius - 1 // Небольшой отступ для плавности
+        ballState.vx = -Math.abs(ballState.vx) * this.bounceDamping // Отражаем влево с затуханием
+        bounced = true
       }
 
-      // Верхняя и нижняя границы
+      // Верхняя и нижняя границы с плавной коррекцией
       if (ballState.y - radius <= 0) {
-        ballState.y = radius
-        ballState.vy = Math.abs(ballState.vy)
-      } else if (ballState.y + radius >= this.worldHeight) {
-        ballState.y = this.worldHeight - radius
-        ballState.vy = -Math.abs(ballState.vy)
+        ballState.y = radius + 1 // Небольшой отступ для плавности
+        ballState.vy = Math.abs(ballState.vy) * this.bounceDamping // Отражаем вниз с затуханием
+        bounced = true
+      } else if (ballState.y + radius >= worldHeight) {
+        ballState.y = worldHeight - radius - 1 // Небольшой отступ для плавности
+        ballState.vy = -Math.abs(ballState.vy) * this.bounceDamping // Отражаем вверх с затуханием
+        bounced = true
+      }
+
+      // Логируем отскок для отладки (только при значительных изменениях)
+      if (bounced && Math.abs(ballState.vx) > 10 && Math.abs(ballState.vy) > 10) {
+        console.log(`🎯 Отскок: x=${ballState.x.toFixed(1)}, y=${ballState.y.toFixed(1)}, vx=${ballState.vx.toFixed(1)}, vy=${ballState.vy.toFixed(1)} (мир: ${worldWidth}×${worldHeight})`)
       }
     }
   },
@@ -519,7 +539,7 @@ setInterval(() => {
   const deltaTime = 1/60 // 60 FPS
   sessionManager.sessions.forEach((session, sessionId) => {
     if (session.ballState && !session.ballState.paused) {
-      sessionManager.physicsEngine.updateBallPosition(session.ballState, deltaTime)
+      sessionManager.physicsEngine.updateBallPosition(session.ballState, deltaTime, session.viewerScreenSize)
     }
   })
 }, 1000/60) // 60 FPS

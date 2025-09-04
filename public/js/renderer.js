@@ -26,6 +26,8 @@ class BallRenderer {
     this.animationFrameId = null
     this.lastTime = 0
     this.targetFrameTime = 1000 / 60 // 60 FPS
+    this.frameCount = 0
+    this.fps = 60
 
     this.onFrameCallback = null
     this.options = {
@@ -103,8 +105,11 @@ class BallRenderer {
 
     const deltaTime = currentTime - this.lastTime
 
-    // Ограничиваем deltaTime для предотвращения огромных прыжков (максимум 100ms)
-    const clampedDeltaTime = Math.min(deltaTime, 100)
+    // Ограничиваем deltaTime для предотвращения огромных прыжков (максимум 50ms для плавности)
+    const clampedDeltaTime = Math.min(deltaTime, 50)
+    
+    // Обновляем счетчик кадров для FPS
+    this.frameCount++
 
     // Всегда обновляем физику с плавным deltaTime
     try {
@@ -173,16 +178,26 @@ class BallRenderer {
     }
 
     try {
+      // Создаем градиент для более плавного отображения
+      const gradient = this.ctx.createRadialGradient(
+        ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, 0,
+        ball.x, ball.y, ball.radius
+      )
+      gradient.addColorStop(0, this.colors.ball)
+      gradient.addColorStop(1, this.adjustBrightness(this.colors.ball, -20))
+
       this.beginPath()
-      // Рисуем маленький круглый шар
+      // Рисуем мяч с градиентом
       this.arc(ball.x, ball.y, Math.max(ball.radius, 2), 0, this.pi2)
-      this.ctx.fillStyle = this.colors.ball
-      // Добавляем небольшую тень для объема
-      this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'
-      this.ctx.shadowBlur = 2
-      this.ctx.shadowOffsetX = 1
-      this.ctx.shadowOffsetY = 1
+      this.ctx.fillStyle = gradient
+      
+      // Добавляем мягкую тень для объема
+      this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
+      this.ctx.shadowBlur = 4
+      this.ctx.shadowOffsetX = 2
+      this.ctx.shadowOffsetY = 2
       this.fill()
+      
       // Сбрасываем тень для следующих элементов
       this.ctx.shadowColor = 'transparent'
       this.ctx.shadowBlur = 0
@@ -191,6 +206,17 @@ class BallRenderer {
     } catch (error) {
       console.error('BallRenderer: Error rendering ball:', error)
     }
+  }
+
+  /**
+   * Изменяет яркость цвета
+   */
+  adjustBrightness(color, amount) {
+    const hex = color.replace('#', '')
+    const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount))
+    const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount))
+    const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount))
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
   }
 
   /**

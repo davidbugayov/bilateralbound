@@ -506,7 +506,7 @@
                     updateStatus('syncStatus', 'Ошибка', 'error');
                     log('error', 'Ошибка синхронизации: ' + error.message);
                 }
-            }, 200);
+            }, 100); // Увеличена частота синхронизации с 200ms до 100ms
         }
 
         // Обновление превью на основе состояния
@@ -672,7 +672,7 @@
             // Тест 1: Центрирование
             try {
                 resetBall();
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 const response = await fetch(`/api/session/${sessionId}/state`);
                 const state = await response.json();
@@ -694,13 +694,13 @@
                 totalTests++;
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // Тест 2: Тестирование направлений
             try {
                 await testDirections();
                 // testDirections уже считает свои тесты, поэтому просто ждем завершения
-                await new Promise(resolve => setTimeout(resolve, 5000));
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 passedTests += 4; // Предполагаем что все 4 направления пройдут
                 totalTests += 4;
             } catch (error) {
@@ -708,13 +708,13 @@
                 totalTests += 4;
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // Тест 3: Тестирование движения
             try {
                 await testMovement();
                 // testMovement уже считает свои тесты
-                await new Promise(resolve => setTimeout(resolve, 4000));
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 passedTests += 3; // Предполагаем что все 3 теста движения пройдут
                 totalTests += 3;
             } catch (error) {
@@ -722,12 +722,12 @@
                 totalTests += 3;
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // Тест 4: Тестирование поведения по умолчанию
             try {
                 await testDefaultBehavior();
-                await new Promise(resolve => setTimeout(resolve, 4000));
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 passedTests += 3; // Центрирование + старт по умолчанию + остановка
                 totalTests += 3;
             } catch (error) {
@@ -738,7 +738,7 @@
             // Тест 5: Тестирование цветов
             try {
                 await testColors();
-                await new Promise(resolve => setTimeout(resolve, 4000));
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 passedTests += 2; // Цвет фона + цвет мяча
                 totalTests += 2;
             } catch (error) {
@@ -774,8 +774,8 @@
                 setDirection(direction.name);
                 log('info', `📤 Отправлено направление: ${getDirectionName(direction.name)}`);
 
-                // Ждем синхронизации
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Ждем синхронизации (сокращено с 500ms до 200ms)
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 // Проверяем реальное состояние
                 try {
@@ -803,9 +803,9 @@
                     log('error', `❌ Ошибка проверки ${getDirectionName(direction.name)}: ${error.message}`);
                 }
 
-                // Пауза между тестами
+                // Пауза между тестами (сокращено с 800ms до 300ms)
                 if (i < directions.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 800));
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 }
             }
 
@@ -842,13 +842,13 @@
                 log('error', `❌ Ошибка проверки начального состояния: ${error.message}`);
             }
 
-            // Ждем перед запуском движения
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Ждем перед запуском движения (сокращено с 500ms до 200ms)
+            await new Promise(resolve => setTimeout(resolve, 200));
 
             // Тест 2: Запускаем движение
             log('info', '▶️ Запуск движения...');
             togglePlay();
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 200));
 
             // Проверяем что движение запустилось
             try {
@@ -869,14 +869,14 @@
                 log('error', `❌ Ошибка проверки запуска движения: ${error.message}`);
             }
 
-            // Ждем 2 секунды движения
-            log('info', '⏳ Ждем 2 секунды движения...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Ждем 1 секунду движения (сокращено с 2 секунд)
+            log('info', '⏳ Ждем 1 секунду движения...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             // Тест 3: Останавливаем движение
             log('info', '⏸ Остановка движения...');
             togglePlay();
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 200));
 
             // Проверяем что движение остановилось
             try {
@@ -995,8 +995,8 @@
 
                 if (!response.ok) throw new Error('Не удалось запустить движение');
 
-                // Ждем обработки команды
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Ждем обработки команды (сокращено с 500ms до 200ms)
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 // Проверяем состояние
                 const stateResponse = await fetch(`/api/session/${sessionId}/state`);
@@ -1019,7 +1019,7 @@
 
             // Тест 3: Остановка и проверка что мяч остался в центре
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 500));
 
                 // Останавливаем движение
                 const stopResponse = await fetch(`/api/session/${sessionId}/controller/update`, {
@@ -1030,7 +1030,7 @@
 
                 if (!stopResponse.ok) throw new Error('Не удалось остановить движение');
 
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 // Проверяем что мяч остановился
                 const stateResponse = await fetch(`/api/session/${sessionId}/state`);
@@ -1069,7 +1069,7 @@
                 sendCommand({ colorBg: '#ff6b6b' });
                 log('info', '🎭 Отправлено изменение цвета фона на красный');
 
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 const response = await fetch(`/api/session/${sessionId}/state`);
                 const state = await response.json();
@@ -1084,14 +1084,14 @@
                 log('error', `❌ Ошибка изменения цвета фона: ${error.message}`);
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             // Тест 2: Изменение цвета мяча
             try {
                 sendCommand({ colorBall: '#10b981' });
                 log('info', '⚫ Отправлено изменение цвета мяча на зеленый');
 
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 const response = await fetch(`/api/session/${sessionId}/state`);
                 const state = await response.json();
@@ -1106,7 +1106,7 @@
                 log('error', `❌ Ошибка изменения цвета мяча: ${error.message}`);
             }
 
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 200));
 
             // Тест 3: Проверка контрастности
             try {

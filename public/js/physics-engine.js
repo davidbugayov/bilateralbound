@@ -13,8 +13,10 @@ class PhysicsEngine {
       ballRadius: 20,
       minSpeed: 50,
       maxSpeed: 1280,
-      lerpFactor: 0.1,
+      lerpFactor: 0.15, // Увеличено для более плавного движения
       bounceCallback: null,
+      friction: 0.98, // Добавлено трение для более реалистичного движения
+      bounceDamping: 0.95, // Добавлено затухание при отскоках
       ...options
     }
 
@@ -180,7 +182,11 @@ class PhysicsEngine {
     this.ball.vx += (this.state.targetVx - this.ball.vx) * this.options.lerpFactor
     this.ball.vy += (this.state.targetVy - this.ball.vy) * this.options.lerpFactor
 
-    // Обновляем позицию
+    // Применяем легкое трение для более реалистичного движения
+    this.ball.vx *= this.options.friction
+    this.ball.vy *= this.options.friction
+
+    // Обновляем позицию с плавным движением
     this.ball.x += this.ball.vx * deltaTime
     this.ball.y += this.ball.vy * deltaTime
 
@@ -197,25 +203,32 @@ class PhysicsEngine {
     const worldWidth = this.options.worldWidth
     const worldHeight = this.options.worldHeight
 
-    // Проверяем левую и правую границы
+    let bounced = false
+
+    // Проверяем левую и правую границы с плавной коррекцией
     if (ball.x - radius <= 0) {
-      ball.x = radius
-      ball.vx = this.abs(ball.vx)
-      this.handleBounce()
+      ball.x = radius + 1 // Небольшой отступ для плавности
+      ball.vx = this.abs(ball.vx) * this.options.bounceDamping // Отражаем вправо с затуханием
+      bounced = true
     } else if (ball.x + radius >= worldWidth) {
-      ball.x = worldWidth - radius
-      ball.vx = -this.abs(ball.vx)
-      this.handleBounce()
+      ball.x = worldWidth - radius - 1 // Небольшой отступ для плавности
+      ball.vx = -this.abs(ball.vx) * this.options.bounceDamping // Отражаем влево с затуханием
+      bounced = true
     }
 
-    // Проверяем верхнюю и нижнюю границы
+    // Проверяем верхнюю и нижнюю границы с плавной коррекцией
     if (ball.y - radius <= 0) {
-      ball.y = radius
-      ball.vy = this.abs(ball.vy)
-      this.handleBounce()
+      ball.y = radius + 1 // Небольшой отступ для плавности
+      ball.vy = this.abs(ball.vy) * this.options.bounceDamping // Отражаем вниз с затуханием
+      bounced = true
     } else if (ball.y + radius >= worldHeight) {
-      ball.y = worldHeight - radius
-      ball.vy = -this.abs(ball.vy)
+      ball.y = worldHeight - radius - 1 // Небольшой отступ для плавности
+      ball.vy = -this.abs(ball.vy) * this.options.bounceDamping // Отражаем вверх с затуханием
+      bounced = true
+    }
+
+    // Вызываем callback только один раз за кадр
+    if (bounced) {
       this.handleBounce()
     }
   }
