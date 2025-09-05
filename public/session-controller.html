@@ -40,8 +40,8 @@
       background: #111827;
       border: 1px solid #1f2937;
       border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 20px;
+      padding: 16px;
+      margin-bottom: 0;
       box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
     }
 
@@ -80,9 +80,7 @@
     .size-btn:hover { background: #4b5563; color: white; }
     .size-btn.active { background: #2563eb; color: white; }
 
-    .viewer-link-container {
-      margin: 16px 0;
-    }
+    .viewer-link-container { margin: 12px 0; }
 
     .link-input-group {
       display: flex;
@@ -124,6 +122,7 @@
       border-radius: 3px;
       outline: none;
       -webkit-appearance: none;
+      appearance: none;
     }
 
     .speed-container input[type="range"]::-webkit-slider-thumb {
@@ -162,7 +161,7 @@
     }
 
     /* Улучшенная компоновка внутри блока управления */
-    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-items: start; }
     .controls-card { background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 12px; }
     .controls-title { margin: 0 0 8px 0; font-size: 14px; color: #9ca3af; font-weight: 500; }
     .direction-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -186,6 +185,11 @@
       .segmented { flex-direction: column; }
       .segmented .seg-btn + .seg-btn { border-left: 0; border-top: 1px solid #1f2937; }
     }
+
+    /* Внешний вид: общая сетка */
+    .appearance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; align-items: start; }
+    @media (max-width: 1024px) { .appearance-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px) { .appearance-grid { grid-template-columns: 1fr; } }
 
     /* Мобильные стили */
     @media (max-width: 768px) {
@@ -295,15 +299,21 @@
     </div>
 
     <div class="control-section">
-      <div id="ballColorControl"></div>
-    </div>
-
-    <div class="control-section">
-      <div id="bgColorControl"></div>
-    </div>
-
-    <div class="control-section">
-      <div id="sizeControl"></div>
+      <h3>🎨 Оформление</h3>
+      <div class="appearance-grid">
+        <div class="controls-card">
+          <p class="controls-title">Цвет шарика</p>
+          <div id="ballColorControl"></div>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">Цвет фона</p>
+          <div id="bgColorControl"></div>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">Размер шарика</p>
+          <div id="sizeControl"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -381,7 +391,7 @@
       components.ballColor = sharedComponents.createColorControl(
         document.getElementById('ballColorControl'),
         {
-          colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316'],
+          colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff'],
           title: '🎨 Цвет шарика',
           onColorChange: (color) => {
             setBallColor(color);
@@ -393,7 +403,7 @@
       components.bgColor = sharedComponents.createColorControl(
         document.getElementById('bgColorControl'),
         {
-          colors: ['#020617', '#1f2937', '#0f172a', '#1e293b', '#0c0a09', '#1c1917'],
+          colors: ['#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a', '#1e293b'],
           title: '🎨 Цвет фона',
           onColorChange: (color) => {
             setBgColor(color);
@@ -405,7 +415,7 @@
       components.size = sharedComponents.createSizeControl(
         document.getElementById('sizeControl'),
         {
-          sizes: [20, 40, 80],
+          sizes: [20, 40, 80, 100],
           defaultValue: 40,
           title: '📏 Размер шарика',
           onSizeChange: (size) => {
