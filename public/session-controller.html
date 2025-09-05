@@ -45,7 +45,13 @@
       box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
     }
 
-    .floating-preview { position: sticky; top: 20px; z-index: 10; box-shadow: 0 8px 32px -4px rgba(0,0,0,0.3), 0 4px 16px -2px rgba(0,0,0,0.2); backdrop-filter: blur(15px); }
+    .floating-preview {
+      position: sticky;
+      top: 20px;
+      z-index: 10;
+      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.3), 0 4px 16px -2px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(15px);
+    }
 
     .drag-handle {
       cursor: move;
@@ -74,7 +80,9 @@
     .size-btn:hover { background: #4b5563; color: white; }
     .size-btn.active { background: #2563eb; color: white; }
 
-    .viewer-link-container { margin: 16px 0; }
+    .viewer-link-container {
+      margin: 16px 0;
+    }
 
     .link-input-group {
       display: flex;
@@ -153,24 +161,11 @@
       color: #60a5fa;
     }
 
-    /* Компоновка */
-    .layout {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 20px;
-      align-items: start;
-    }
-
-    .controls-stack { display: flex; flex-direction: column; gap: 16px; }
-
-    .action-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-
     /* Мобильные стили */
     @media (max-width: 768px) {
       body { padding: 16px; }
 
       .wrap { gap: 16px; }
-      .layout { display: block; }
 
       .control-section { padding: 16px; }
 
@@ -222,57 +217,59 @@
   <button class="back-btn" onclick="goBack()">← На главную</button>
 
   <div class="wrap">
-    <div class="layout">
-      <div class="controls-stack">
-        <div class="control-section">
-          <h3>🎮 Сессия: <span id="curSid">...</span></h3>
-          <p style="margin: 8px 0;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
-          <div class="viewer-link-container">
-            <div class="link-input-group">
-              <input id="view" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
-              <button onclick="copy('view')" class="copy-btn">📋 Копировать</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="control-section">
-          <div class="action-row">
-            <button id="playPauseBtn" class="btn" onclick="togglePlayPause()" style="background: #10b981; min-width: 140px; padding: 12px 16px;">▶️ Старт</button>
-            <button class="btn outline" onclick="resetCenter()" style="min-width: 110px; padding: 12px 16px;">🎯 Центр</button>
-            <button class="btn" onclick="resetSession()" style="background: #dc2626; min-width: 110px; padding: 12px 16px;">🔄 Сброс</button>
-          </div>
-          <div id="directionControl" style="margin-top: 16px; display: flex; justify-content: center;"></div>
-          <p style="text-align: center; margin: 12px 0; font-size: 14px; color: #9ca3af;">
-            Текущее направление: <span id="currentDirection">↔️ Горизонтально</span>
-          </p>
-        </div>
-
-        <div class="control-section">
-          <div id="speedControl"></div>
-        </div>
-
-        <div class="control-section">
-          <div id="sizeControl"></div>
-        </div>
-
-        <div class="control-section">
-          <div id="ballColorControl"></div>
-        </div>
-
-        <div class="control-section">
-          <div id="bgColorControl"></div>
+    <div class="control-section">
+      <h3>🎮 Сессия: <span id="curSid">...</span></h3>
+      <p style="margin: 8px 0;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
+      <div class="viewer-link-container">
+        <div class="link-input-group">
+          <input id="view" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
+          <button onclick="copy('view')" class="copy-btn">📋 Копировать</button>
         </div>
       </div>
+    </div>
 
-      <div id="previewWrap" style="display: none;" class="control-section floating-preview">
-        <h3 class="drag-handle">👁️ Превью движения</h3>
-        <div style="text-align: center; position: relative; padding-bottom: 35px;">
-          <canvas id="preview" style="border: 1px solid #374151; border-radius: 8px; background: #020617; max-width: 100%; height: auto; aspect-ratio: 4/3;"></canvas>
-          <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
-            Вьювер и размер экрана
-          </div>
+    <div id="previewWrap" style="display: none;" class="control-section floating-preview">
+      <h3 class="drag-handle">👁️ Превью движения</h3>
+      <div style="text-align: center; position: relative; padding-bottom: 35px;">
+        <canvas id="preview" style="border: 1px solid #374151; border-radius: 8px; background: #020617; max-width: 100%; height: auto; aspect-ratio: 4/3;"></canvas>
+        <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
+          Вьювер и размер экрана
         </div>
       </div>
+    </div>
+
+    <div class="control-section">
+      <h3>🎮 Управление и направление</h3>
+      <div class="controls" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 20px 0;">
+        <button class="direction-btn" onclick="setDirection('horizontal')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↔️ Горизонтально</button>
+        <button class="direction-btn" onclick="setDirection('vertical')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↕️ Вертикально</button>
+        <button class="direction-btn" onclick="setDirection('diagRL')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↖️↗️ Диагональ L→R</button>
+        <button class="direction-btn" onclick="setDirection('diagRLL')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↙️↘️ Диагональ R→L</button>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 12px 0;">
+        <button id="playPauseBtn" class="btn" onclick="togglePlayPause()" style="background: #10b981; min-width: 140px; padding: 12px 16px;">▶️ Старт</button>
+        <button class="btn outline" onclick="resetCenter()" style="min-width: 110px; padding: 12px 16px;">🎯 Центр</button>
+        <button class="btn" onclick="resetSession()" style="background: #dc2626; min-width: 110px; padding: 12px 16px;">🔄 Сброс</button>
+      </div>
+      <p style="text-align: center; margin: 12px 0; font-size: 14px; color: #9ca3af;">
+        Текущее направление: <span id="currentDirection">↔️ Горизонтально</span>
+      </p>
+    </div>
+
+    <div class="control-section">
+      <div id="speedControl"></div>
+    </div>
+
+    <div class="control-section">
+      <div id="ballColorControl"></div>
+    </div>
+
+    <div class="control-section">
+      <div id="bgColorControl"></div>
+    </div>
+
+    <div class="control-section">
+      <div id="sizeControl"></div>
     </div>
   </div>
 
@@ -336,25 +333,7 @@
     }
 
     function initializeComponents() {
-      // Компонент направления (компактный горизонтальный)
-      components.direction = sharedComponents.createDirectionControls(
-        document.getElementById('directionControl'),
-        {
-          style: 'horizontal',
-          onDirectionChange: (dir) => {
-            const dx = dir.x; const dy = dir.y;
-            directionState = { dx, dy };
-            updateDirectionDisplay(dx, dy);
-            fetch(`/api/session/${sessionId}/controller/update`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ dirX: dx, dirY: dy })
-            }).catch(error => debugError('Error setting direction:', error));
-          }
-        }
-      );
-
-      // Компонент управления скоростью
+      // Создаем компонент управления скоростью
       components.speed = sharedComponents.createSpeedControl(
         document.getElementById('speedControl'),
         {
