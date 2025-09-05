@@ -289,46 +289,28 @@ class PhysicsEngine {
 
     const scale = viewerScreenSize ? this.calculateScale(viewerScreenSize) : 1
 
-    // Синхронизация позиции с плавной коррекцией
+    // Синхронизация позиции (жесткая, без интерполяции, чтобы убрать дрожание)
     if (serverState.x !== undefined) {
       const targetX = viewerScreenSize ? serverState.x * scale : serverState.x
-      const diffX = targetX - this.ball.x
-
-      // Если разница слишком большая (>5px), корректируем плавно
-      if (Math.abs(diffX) > 5) {
-        this.ball.x += diffX * 0.1 // Плавная коррекция 10% за кадр
-      }
+      this.ball.x = targetX
     }
 
     if (serverState.y !== undefined) {
       const targetY = viewerScreenSize ? serverState.y * scale : serverState.y
-      const diffY = targetY - this.ball.y
-
-      // Если разница слишком большая (>5px), корректируем плавно
-      if (Math.abs(diffY) > 5) {
-        this.ball.y += diffY * 0.1 // Плавная коррекция 10% за кадр
-      }
+      this.ball.y = targetY
     }
 
-    // Синхронизация скорости с плавной коррекцией
+    // Синхронизация скорости: мягкая корректировка, чтобы не гасить движение
     if (serverState.vx !== undefined) {
       const targetVx = viewerScreenSize ? serverState.vx * scale : serverState.vx
       const diffVx = targetVx - this.ball.vx
-
-      // Если разница скорости слишком большая, корректируем плавно
-      if (Math.abs(diffVx) > 10) {
-        this.ball.vx += diffVx * 0.2 // Быстрая коррекция скорости 20% за кадр
-      }
+      this.ball.vx += diffVx * 0.5
     }
 
     if (serverState.vy !== undefined) {
       const targetVy = viewerScreenSize ? serverState.vy * scale : serverState.vy
       const diffVy = targetVy - this.ball.vy
-
-      // Если разница скорости слишком большая, корректируем плавно
-      if (Math.abs(diffVy) > 10) {
-        this.ball.vy += diffVy * 0.2 // Быстрая коррекция скорости 20% за кадр
-      }
+      this.ball.vy += diffVy * 0.5
     }
 
     // Синхронизация других параметров

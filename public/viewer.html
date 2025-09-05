@@ -338,9 +338,9 @@
                     bounceCallback: syncBounce
                 });
 
-                // Создаем рендерер с локальной физикой для вьювера
+                // Создаем рендерер с локальной физикой — движение непрерывное между апдейтами сервера
                 renderer = new BallRenderer(canvas, physicsEngine, {
-                    localPhysics: true, // Включаем локальную физику для вьювера
+                    localPhysics: true,
                     bounceCallback: syncBounce // Функция для синхронизации отскоков
                 });
 

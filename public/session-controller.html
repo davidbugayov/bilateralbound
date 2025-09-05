@@ -331,6 +331,8 @@
     let speedManager;
     let directionState = { dx: 1, dy: 0 };
     let components = {};
+    let lastServerRadius;
+    let lastViewerScreenSize;
 
     // ===== ИНИЦИАЛИЗАЦИЯ =====
     document.addEventListener('DOMContentLoaded', function() {
@@ -395,6 +397,7 @@
           title: '🎨 Цвет шарика',
           onColorChange: (color) => {
             setBallColor(color);
+            // Не меняем радиус превью при смене цвета
           }
         }
       );
@@ -407,6 +410,7 @@
           title: '🎨 Цвет фона',
           onColorChange: (color) => {
             setBgColor(color);
+            // Не меняем радиус превью при смене фона
           }
         }
       );
@@ -536,6 +540,7 @@
         if (ballState && window.__previewPhysics) {
           debugLog('✅ Preview physics доступен, начинаем синхронизацию');
           updatePreviewSize(ballState.viewerScreenSize);
+          lastViewerScreenSize = ballState.viewerScreenSize || lastViewerScreenSize;
           if (ballState.speed !== undefined) {
             window.__previewPhysics.setSpeed(ballState.speed);
             if (components && components.speed && typeof components.speed.setSpeed === 'function') {
@@ -564,6 +569,7 @@
               const smallRadius = Math.max(ballState.radius * 0.5, 4);
               window.__previewPhysics.setBallSize(smallRadius);
             }
+            lastServerRadius = ballState.radius;
           }
           if (ballState.colorBall && typeof window.__previewPhysics.setBallColor === 'function') {
             window.__previewPhysics.setBallColor(ballState.colorBall);
@@ -600,18 +606,6 @@
       if (viewerInfo) {
         viewerInfo.textContent = '⏳ Ожидание подключения вьювера';
         viewerInfo.style.display = 'block';
-      }
-
-      // Делаем мяч чуть меньше в режиме ожидания вьювера
-      try {
-        if (window.__previewPhysics && typeof window.__previewPhysics.setBallSize === 'function') {
-          var ballObj = window.__previewPhysics.ball || {};
-          var currentR = typeof ballObj.radius === 'number' ? ballObj.radius : 12;
-          var waitingR = Math.max(Math.round(currentR * 0.75), 4);
-          window.__previewPhysics.setBallSize(waitingR);
-        }
-      } catch (e) {
-        // no-op
       }
     }
 
@@ -710,19 +704,7 @@
         onStateReceived: (sessionData) => {
           updateViewerInfo(sessionData);
 
-          // Если зритель не подключен — поддерживаем уменьшенный радиус в превью
-          if (sessionData && sessionData.viewerConnected === false) {
-            try {
-              if (window.__previewPhysics && typeof window.__previewPhysics.setBallSize === 'function') {
-                var ballObj2 = window.__previewPhysics.ball || {};
-                var curR2 = typeof ballObj2.radius === 'number' ? ballObj2.radius : 12;
-                var waitingR2 = Math.max(Math.round(curR2 * 0.75), 4);
-                window.__previewPhysics.setBallSize(waitingR2);
-              }
-            } catch (e) {
-              // no-op
-            }
-          }
+          // Не изменяем радиус превью в зависимости от статуса подключения вьювера
 
           // Синхронизируем состояние кнопки Старт/Стоп
           if (sessionData.paused !== undefined) {
@@ -749,6 +731,7 @@
           if (sessionData.viewerScreenSize) {
             console.log('📺 Синхронизация размера превью с вьювером:', sessionData.viewerScreenSize);
             updatePreviewSize(sessionData.viewerScreenSize);
+            lastViewerScreenSize = sessionData.viewerScreenSize;
           }
 
           if (sessionData && window.__previewPhysics) {
@@ -796,22 +779,7 @@
               }
             }
 
-            if (sessionData.radius !== undefined) {
-              if (sessionData.viewerScreenSize) {
-                // Единый масштаб для сохранения круглой формы мяча
-                const scaleX = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
-                const scaleY = window.__previewCanvas.height / sessionData.viewerScreenSize.height;
-                const scale = Math.min(scaleX, scaleY); // Используем минимальный масштаб
-
-                const scaledRadius = Math.max(sessionData.radius * scale * 0.5, 4);
-                console.log('🔵 Preview radius update:', {
-                  original: sessionData.radius,
-                  scale: scale,
-                  scaled: scaledRadius
-                });
-                window.__previewPhysics.setBallSize(scaledRadius);
-              }
-            }
+            // Не меняем радиус мяча в превью при смене цвета/фона – игнорируем обновления radius от сервера
 
             if (shouldSyncSpeed && sessionData.speed !== undefined) {
               window.__previewPhysics.setSpeed(sessionData.speed);
