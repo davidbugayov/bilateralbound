@@ -1,0 +1,47 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0f172a"/>
+  
+  <!-- Eye shape -->
+  <ellipse cx="600" cy="315" rx="280" ry="120" fill="#1e293b" stroke="#3b82f6" stroke-width="4"/>
+  
+  <!-- Eye pupil -->
+  <circle cx="600" cy="315" r="80" fill="#0f172a"/>
+  
+  <!-- Eye highlight -->
+  <ellipse cx="580" cy="295" rx="25" ry="15" fill="#ffffff" opacity="0.8"/>
+  
+  <!-- Bilateral stimulation arrows -->
+  <g stroke="#60a5fa" stroke-width="6" fill="none" opacity="0.7">
+    <!-- Left arrows -->
+    <path d="M 200 200 L 250 200" marker-end="url(#arrowhead)"/>
+    <path d="M 200 250 L 250 250" marker-end="url(#arrowhead)"/>
+    <path d="M 200 300 L 250 300" marker-end="url(#arrowhead)"/>
+    <path d="M 200 350 L 250 350" marker-end="url(#arrowhead)"/>
+    <path d="M 200 400 L 250 400" marker-end="url(#arrowhead)"/>
+    
+    <!-- Right arrows -->
+    <path d="M 950 200 L 900 200" marker-end="url(#arrowhead)"/>
+    <path d="M 950 250 L 900 250" marker-end="url(#arrowhead)"/>
+    <path d="M 950 300 L 900 300" marker-end="url(#arrowhead)"/>
+    <path d="M 950 350 L 900 350" marker-end="url(#arrowhead)"/>
+    <path d="M 950 400 L 900 400" marker-end="url(#arrowhead)"/>
+  </g>
+  
+  <!-- Title -->
+  <text x="600" y="500" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="48" font-weight="bold">
+    BilateralBound
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="550" text-anchor="middle" fill="#94a3b8" font-family="Arial, sans-serif" font-size="24">
+    EMDR Терапия с Биодинамической Стимуляцией
+  </text>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#60a5fa"/>
+    </marker>
+  </defs>
+</svg>
