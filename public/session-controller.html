@@ -436,6 +436,9 @@
         debugLog(`⚠️ Неверные размеры canvas, устанавливаем по умолчанию`);
         canvas.width = 400;
         canvas.height = 300;
+        // Жестко задаем CSS размеры, чтобы исключить неравномерное масштабирование
+        canvas.style.width = canvas.width + 'px';
+        canvas.style.height = canvas.height + 'px';
       }
 
       try {
@@ -606,6 +609,10 @@
       // Минимальные размеры для маленького превью
       canvas.width = Math.max(previewWidth, 200);   // Было 320, стало 200
       canvas.height = Math.max(previewHeight, 150); // Было 240, стало 150
+
+      // Синхронизируем CSS размеры с внутренними, чтобы круг не сплющивался
+      canvas.style.width = canvas.width + 'px';
+      canvas.style.height = canvas.height + 'px';
 
       console.log(`📏 Превью размер: ${canvas.width}×${canvas.height} (соотношение: ${(canvas.width/canvas.height).toFixed(3)})`);
 
