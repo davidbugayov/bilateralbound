@@ -20,6 +20,9 @@ class PhysicsEngine {
       ...options
     }
 
+    // Флаг для определения режима вьювера
+    this.isViewer = false
+
     // Предварительно вычисляем центр мира
     this.centerX = this.options.worldWidth / 2
     this.centerY = this.options.worldHeight / 2
@@ -178,17 +181,24 @@ class PhysicsEngine {
   update (deltaTime) {
     if (this.state.paused) return
 
-    // Плавно интерполируем к целевой скорости
-    this.ball.vx += (this.state.targetVx - this.ball.vx) * this.options.lerpFactor
-    this.ball.vy += (this.state.targetVy - this.ball.vy) * this.options.lerpFactor
+    // Для вьювера используем прямую скорость без интерполяции
+    if (this.isViewer) {
+      // Обновляем позицию напрямую с текущей скоростью
+      this.ball.x += this.ball.vx * deltaTime
+      this.ball.y += this.ball.vy * deltaTime
+    } else {
+      // Для превью используем плавную интерполяцию
+      this.ball.vx += (this.state.targetVx - this.ball.vx) * this.options.lerpFactor
+      this.ball.vy += (this.state.targetVy - this.ball.vy) * this.options.lerpFactor
 
-    // Применяем легкое трение для более реалистичного движения
-    this.ball.vx *= this.options.friction
-    this.ball.vy *= this.options.friction
+      // Применяем легкое трение для более реалистичного движения
+      this.ball.vx *= this.options.friction
+      this.ball.vy *= this.options.friction
 
-    // Обновляем позицию с плавным движением
-    this.ball.x += this.ball.vx * deltaTime
-    this.ball.y += this.ball.vy * deltaTime
+      // Обновляем позицию с плавным движением
+      this.ball.x += this.ball.vx * deltaTime
+      this.ball.y += this.ball.vy * deltaTime
+    }
 
     // Обрабатываем коллизии с границами
     this.handleBoundaryCollisions()
@@ -207,24 +217,36 @@ class PhysicsEngine {
 
     // Проверяем левую и правую границы с плавной коррекцией
     if (ball.x - radius <= 0) {
-      ball.x = radius + 1 // Небольшой отступ для плавности
+      ball.x = radius + 2 // Увеличен отступ для предотвращения застревания
       ball.vx = this.abs(ball.vx) * this.options.bounceDamping // Отражаем вправо с затуханием
       bounced = true
     } else if (ball.x + radius >= worldWidth) {
-      ball.x = worldWidth - radius - 1 // Небольшой отступ для плавности
+      ball.x = worldWidth - radius - 2 // Увеличен отступ для предотвращения застревания
       ball.vx = -this.abs(ball.vx) * this.options.bounceDamping // Отражаем влево с затуханием
       bounced = true
     }
 
     // Проверяем верхнюю и нижнюю границы с плавной коррекцией
     if (ball.y - radius <= 0) {
-      ball.y = radius + 1 // Небольшой отступ для плавности
+      ball.y = radius + 2 // Увеличен отступ для предотвращения застревания
       ball.vy = this.abs(ball.vy) * this.options.bounceDamping // Отражаем вниз с затуханием
       bounced = true
     } else if (ball.y + radius >= worldHeight) {
-      ball.y = worldHeight - radius - 1 // Небольшой отступ для плавности
+      ball.y = worldHeight - radius - 2 // Увеличен отступ для предотвращения застревания
       ball.vy = -this.abs(ball.vy) * this.options.bounceDamping // Отражаем вверх с затуханием
       bounced = true
+    }
+
+    // Предотвращаем застревание мяча при очень низкой скорости
+    if (this.abs(ball.vx) < 5 && this.abs(ball.vy) < 5 && !this.state.paused) {
+      // Добавляем минимальную скорость, если мяч почти остановился
+      const minSpeed = 10
+      if (this.abs(ball.vx) > 0) {
+        ball.vx = ball.vx > 0 ? minSpeed : -minSpeed
+      }
+      if (this.abs(ball.vy) > 0) {
+        ball.vy = ball.vy > 0 ? minSpeed : -minSpeed
+      }
     }
 
     // Вызываем callback только один раз за кадр
@@ -287,30 +309,38 @@ class PhysicsEngine {
   syncFromServer (serverState, viewerScreenSize = null) {
     if (!serverState) return
 
-    const scale = viewerScreenSize ? this.calculateScale(viewerScreenSize) : 1
+    // Для вьювера используем только синхронизацию скорости и направления
+    if (viewerScreenSize) {
+      // Устанавливаем флаг вьювера
+      this.isViewer = true
+      
+      // Синхронизируем только скорость и направление - позицию клиент вычисляет сам
+      if (serverState.vx !== undefined) {
+        this.ball.vx = serverState.vx
+      }
+      if (serverState.vy !== undefined) {
+        this.ball.vy = serverState.vy
+      }
+      if (serverState.speed !== undefined) {
+        this.ball.speed = serverState.speed
+      }
+      // Позицию НЕ синхронизируем - клиент сам вычисляет движение
+    } else {
+      // Для превью используем масштабирование
+      const scale = this.calculateScale(viewerScreenSize)
 
-    // Синхронизация позиции (жесткая, без интерполяции, чтобы убрать дрожание)
-    if (serverState.x !== undefined) {
-      const targetX = viewerScreenSize ? serverState.x * scale : serverState.x
-      this.ball.x = targetX
-    }
-
-    if (serverState.y !== undefined) {
-      const targetY = viewerScreenSize ? serverState.y * scale : serverState.y
-      this.ball.y = targetY
-    }
-
-    // Синхронизация скорости: мягкая корректировка, чтобы не гасить движение
-    if (serverState.vx !== undefined) {
-      const targetVx = viewerScreenSize ? serverState.vx * scale : serverState.vx
-      const diffVx = targetVx - this.ball.vx
-      this.ball.vx += diffVx * 0.5
-    }
-
-    if (serverState.vy !== undefined) {
-      const targetVy = viewerScreenSize ? serverState.vy * scale : serverState.vy
-      const diffVy = targetVy - this.ball.vy
-      this.ball.vy += diffVy * 0.5
+      if (serverState.x !== undefined) {
+        this.ball.x = serverState.x * scale
+      }
+      if (serverState.y !== undefined) {
+        this.ball.y = serverState.y * scale
+      }
+      if (serverState.vx !== undefined) {
+        this.ball.vx = serverState.vx * scale
+      }
+      if (serverState.vy !== undefined) {
+        this.ball.vy = serverState.vy * scale
+      }
     }
 
     // Синхронизация других параметров
@@ -318,7 +348,14 @@ class PhysicsEngine {
       this.ball.speed = serverState.speed
     }
     if (serverState.radius !== undefined) {
-      this.ball.radius = viewerScreenSize ? serverState.radius * scale : serverState.radius
+      if (viewerScreenSize) {
+        // Для вьювера используем прямой радиус
+        this.ball.radius = serverState.radius
+      } else {
+        // Для превью используем масштабированный радиус
+        const scale = this.calculateScale(viewerScreenSize)
+        this.ball.radius = serverState.radius * scale
+      }
     }
     if (serverState.colorBall) {
       this.colors.ball = serverState.colorBall

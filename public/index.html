@@ -231,28 +231,50 @@
     // Используем фабрику модулей для создания сессии
     async function createSession() {
       try {
+        console.log('🔄 Создание сессии...');
         const response = await fetch('/api/session', { method: 'POST' });
+        
+        console.log('📡 Ответ сервера:', response.status, response.statusText);
+        
         if (!response.ok) {
-          throw new Error('Не удалось создать сессию');
+          const errorText = await response.text();
+          console.error('❌ Ошибка ответа:', errorText);
+          throw new Error(`HTTP ${response.status}: ${errorText || 'Не удалось создать сессию'}`);
         }
 
         const data = await response.json();
+        console.log('✅ Данные сессии:', data);
+        
         const sessionId = data.sessionId;
+        if (!sessionId) {
+          throw new Error('Сессия создана, но ID не получен');
+        }
 
+        console.log('🔗 Подключение контроллера к сессии:', sessionId);
+        
         // Подключаем контроллер к сессии
-        await fetch(`/api/session/${sessionId}/controller/connect`, {
+        const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({})
         });
+        
+        if (!connectResponse.ok) {
+          const connectError = await connectResponse.text();
+          throw new Error(`Ошибка подключения контроллера: ${connectError}`);
+        }
+        
+        console.log('✅ Контроллер подключен к сессии');
 
         // Запускаем мониторинг статуса
         startStatusMonitoring(sessionId);
 
         // Перенаправляем на страницу контроллера
+        console.log('🚀 Перенаправление на контроллер...');
         window.location.href = `/session-controller.html?sessionId=${sessionId}`;
 
       } catch (error) {
+        console.error('❌ Полная ошибка:', error);
         alert('Ошибка при создании сессии: ' + error.message);
         debugError('Error creating session:', error);
       }

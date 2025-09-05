@@ -25,9 +25,9 @@ class BallRenderer {
 
     this.animationFrameId = null
     this.lastTime = 0
-    this.targetFrameTime = 1000 / 60 // 60 FPS
+    this.targetFrameTime = 1000 / 120 // 120 FPS для ультра-плавности
     this.frameCount = 0
-    this.fps = 60
+    this.fps = 120
 
     this.onFrameCallback = null
     this.options = {
@@ -105,8 +105,8 @@ class BallRenderer {
 
     const deltaTime = currentTime - this.lastTime
 
-    // Ограничиваем deltaTime для предотвращения огромных прыжков (максимум 50ms для плавности)
-    const clampedDeltaTime = Math.min(deltaTime, 50)
+    // Ограничиваем deltaTime для предотвращения огромных прыжков (максимум 25ms для ультра-плавности)
+    const clampedDeltaTime = Math.min(deltaTime, 25)
     
     // Обновляем счетчик кадров для FPS
     this.frameCount++
@@ -118,10 +118,11 @@ class BallRenderer {
         this.onFrameCallback(clampedDeltaTime)
       }
 
-      // Обновляем физику только если включена локальная физика или это превью
-      if (this.options.localPhysics) {
-        this.physics.update(clampedDeltaTime / 1000)
-      }
+          // Обновляем физику только если включена локальная физика или это превью
+    if (this.options.localPhysics) {
+      // Используем более плавное обновление физики
+      this.physics.update(clampedDeltaTime / 1000)
+    }
 
       // Рендерим сцену
       this.render()

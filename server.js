@@ -163,6 +163,26 @@ const sessionManager = {
       return true
     }
 
+    // Handle speed change during movement
+    if (updates.speedScalar !== undefined) {
+      const speedPercent = updates.speedScalar
+      const maxSpeed = 1280 // Match PhysicsEngine default maxSpeed
+      const newSpeed = (speedPercent / 100) * maxSpeed
+
+      // Если мяч движется, масштабируем текущую скорость
+      if (!session.ballState.paused && (session.ballState.vx !== 0 || session.ballState.vy !== 0)) {
+        const currentSpeed = Math.sqrt(session.ballState.vx * session.ballState.vx + session.ballState.vy * session.ballState.vy)
+        if (currentSpeed > 0.1) { // Минимальная скорость для избежания деления на очень маленькое число
+          const scale = newSpeed / currentSpeed
+          session.ballState.vx *= scale
+          session.ballState.vy *= scale
+          console.log(`🎯 Скорость изменена во время движения: ${speedPercent}% (${session.ballState.vx.toFixed(1)}, ${session.ballState.vy.toFixed(1)})`)
+        }
+      }
+
+      session.ballState.speed = speedPercent
+    }
+
     // Handle other updates (only if not handled above)
     const handledUpdates = { ...updates }
     delete handledUpdates.pause
@@ -183,13 +203,13 @@ const sessionManager = {
     worldHeight: 600,
     minSpeed: 128,
     maxSpeed: 1280,
-    friction: 0.98, // Добавлено трение для более реалистичного движения
-    bounceDamping: 0.95, // Добавлено затухание при отскоках
+    friction: 1.0, // Убираем трение для постоянного движения
+    bounceDamping: 1.0, // Убираем затухание для идеальных отскоков
 
     updateBallPosition: function(ballState, deltaTime, viewerScreenSize) {
       if (ballState.paused) return
 
-      // Применяем легкое трение для более реалистичного движения
+      // Применяем трение (теперь 1.0 = без трения)
       ballState.vx *= this.friction
       ballState.vy *= this.friction
 
@@ -231,8 +251,8 @@ const sessionManager = {
         bounced = true
       }
 
-      // Логируем отскок для отладки (только при значительных изменениях)
-      if (bounced && Math.abs(ballState.vx) > 10 && Math.abs(ballState.vy) > 10) {
+      // Логируем отскок для отладки (все отскоки)
+      if (bounced) {
         console.log(`🎯 Отскок: x=${ballState.x.toFixed(1)}, y=${ballState.y.toFixed(1)}, vx=${ballState.vx.toFixed(1)}, vy=${ballState.vy.toFixed(1)} (мир: ${worldWidth}×${worldHeight})`)
       }
     }
@@ -304,16 +324,18 @@ app.use(helmet({
   }
 }))
 
-// Rate limiting (мягкий для локальной разработки)
+// Rate limiting (отключен для локальной разработки)
 const isLocal = process.env.NODE_ENV !== 'production'
-const limiter = rateLimit({
-  windowMs: 60 * 1000, // 1 минута
-  max: isLocal ? 1000 : 100,
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false
-})
-app.use('/api/', limiter)
+if (!isLocal) {
+  const limiter = rateLimit({
+    windowMs: 60 * 1000, // 1 минута
+    max: 100,
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false
+  })
+  app.use('/api/', limiter)
+}
 
 // CORS middleware
 app.use(cors({

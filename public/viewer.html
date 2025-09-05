@@ -268,6 +268,8 @@
         let sessionId;
         let isFullscreen = false;
         let components = {};
+        let resizeTimeout = null;
+        let lastScreenSizeUpdate = 0;
         
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', async function() {
@@ -338,9 +340,9 @@
                     bounceCallback: syncBounce
                 });
 
-                // Создаем рендерер с локальной физикой — движение непрерывное между апдейтами сервера
+                // Создаем рендерер без локальной физики — полагаемся только на серверную синхронизацию
                 renderer = new BallRenderer(canvas, physicsEngine, {
-                    localPhysics: true,
+                    localPhysics: true, // Включаем локальную физику для плавной отрисовки
                     bounceCallback: syncBounce // Функция для синхронизации отскоков
                 });
 
@@ -468,31 +470,39 @@
                 renderer.resize(canvas.width, canvas.height);
             }
 
-            // Отправляем новые размеры экрана на сервер
-            updateScreenSize();
+            // НЕ вызываем updateScreenSize здесь - он будет вызван через debounce
         }
 
         // ===== BOUNCE SYNCHRONIZATION =====
-        async function syncBounce(bounceData) {
+        function syncBounce(bounceData) {
             if (sessionSync) {
-                try {
-                    await sessionSync.syncBounce(bounceData);
+                // Делаем неблокирующий вызов, чтобы не тормозить движок
+                sessionSync.syncBounce(bounceData).then(() => {
                     debugLog('✅ Отскок синхронизирован с сервером');
-                } catch (error) {
-                    debugError('Ошибка при синхронизации отскока:', error);
-                }
+                }).catch(error => {
+                    // Тихо игнорируем ошибки синхронизации отскоков, чтобы не мешать работе
+                    debugLog('⚠️ Отскок не синхронизирован (сеть недоступна)');
+                });
             }
         }
         
         async function updateScreenSize() {
             try {
+                // Проверяем, прошло ли достаточно времени с последнего обновления (минимум 2 секунды)
+                const now = Date.now();
+                if (now - lastScreenSizeUpdate < 2000) {
+                    return; // Пропускаем обновление, чтобы не спамить сервер
+                }
+
                 const response = await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         width: window.innerWidth,
                         height: window.innerHeight
-                    })
+                    }),
+                    // Добавляем timeout для предотвращения зависания
+                    signal: AbortSignal.timeout(5000)
                 });
 
                 if (!response.ok) {
@@ -502,9 +512,17 @@
                     return;
                 }
 
+                lastScreenSizeUpdate = now;
                 debugLog(`✅ Размер экрана обновлен на сервере: ${window.innerWidth}×${window.innerHeight}`);
             } catch (error) {
-                debugError('Ошибка сети при обновлении размера экрана:', error);
+                if (error.name === 'AbortError') {
+                    debugLog('⏰ Таймаут при обновлении размера экрана');
+                } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    // Тихо игнорируем сетевые ошибки, чтобы не мешать работе движка
+                    debugLog('🌐 Сеть недоступна при обновлении размера экрана');
+                } else {
+                    debugError('Ошибка при обновлении размера экрана:', error);
+                }
             }
         }
         
@@ -625,14 +643,17 @@
         // Добавляем event listeners только после инициализации
         function setupEventListeners() {
             if (window) {
-                // Добавляем throttling для resize события (максимум 1 раз в 1000ms)
-                let resizeTimeout;
+                // Добавляем throttling для resize события (максимум 1 раз в 1500ms)
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimeout);
                     resizeTimeout = setTimeout(() => {
                         resizeCanvas();
-                        updateScreenSize();
-                    }, 1000);
+                        // Обновляем размер экрана на сервере только после завершения resize
+                        updateScreenSize().catch(error => {
+                            // Тихо игнорируем ошибки сети при resize, чтобы не мешать работе
+                            debugLog('Размер экрана не обновлен (сеть недоступна)');
+                        });
+                    }, 1500); // Увеличенная задержка для стабильности
                 });
             }
 

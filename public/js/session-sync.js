@@ -8,7 +8,7 @@ class SessionSync {
   constructor (options = {}) {
     this.options = {
       sessionId: null,
-      pollInterval: 500, // Увеличен до 500ms для уменьшения нагрузки и HTTP 429 ошибок
+      pollInterval: 500, // Еще меньше запросов - только для синхронизации изменений
       serverUrl: '',
       onStateReceived: null,
       onSessionExpired: null,
@@ -143,6 +143,7 @@ class SessionSync {
 
   /**
      * Проверяет, изменилось ли состояние (оптимизированная версия)
+     * Учитывает только значительные изменения для уменьшения запросов
      */
   hasStateChanged (newState) {
     if (!this.lastState) return true
@@ -151,12 +152,13 @@ class SessionSync {
     const last = this.lastState
     const current = newState
 
+    // Для вьювера проверяем только изменения скорости и направления
+    const velocityChanged = last.vx !== current.vx || last.vy !== current.vy
+    const speedChanged = last.speed !== current.speed
+
     return (
-      last.x !== current.x ||
-            last.y !== current.y ||
-            last.vx !== current.vx ||
-            last.vy !== current.vy ||
-            last.speed !== current.speed ||
+      velocityChanged ||
+      speedChanged ||
             last.radius !== current.radius ||
             last.colorBall !== current.colorBall ||
             last.colorBg !== current.colorBg ||
