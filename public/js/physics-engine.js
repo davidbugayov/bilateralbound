@@ -15,8 +15,8 @@ class PhysicsEngine {
       maxSpeed: 1280,
       lerpFactor: 0.15, // Увеличено для более плавного движения
       bounceCallback: null,
-      friction: 0.98, // Добавлено трение для более реалистичного движения
-      bounceDamping: 0.95, // Добавлено затухание при отскоках
+      friction: 1.0, // Убираем трение для постоянного движения
+      bounceDamping: 1.0, // Убираем затухание для идеальных отскоков
       ...options
     }
 
@@ -181,24 +181,10 @@ class PhysicsEngine {
   update (deltaTime) {
     if (this.state.paused) return
 
-    // Для вьювера используем прямую скорость без интерполяции
-    if (this.isViewer) {
-      // Обновляем позицию напрямую с текущей скоростью
-      this.ball.x += this.ball.vx * deltaTime
-      this.ball.y += this.ball.vy * deltaTime
-    } else {
-      // Для превью используем плавную интерполяцию
-      this.ball.vx += (this.state.targetVx - this.ball.vx) * this.options.lerpFactor
-      this.ball.vy += (this.state.targetVy - this.ball.vy) * this.options.lerpFactor
-
-      // Применяем легкое трение для более реалистичного движения
-      this.ball.vx *= this.options.friction
-      this.ball.vy *= this.options.friction
-
-      // Обновляем позицию с плавным движением
-      this.ball.x += this.ball.vx * deltaTime
-      this.ball.y += this.ball.vy * deltaTime
-    }
+    // Используем одинаковую логику для вьювера и превью - прямую скорость
+    // Обновляем позицию напрямую с текущей скоростью
+    this.ball.x += this.ball.vx * deltaTime
+    this.ball.y += this.ball.vy * deltaTime
 
     // Обрабатываем коллизии с границами
     this.handleBoundaryCollisions()
@@ -215,36 +201,36 @@ class PhysicsEngine {
 
     let bounced = false
 
-    // Проверяем левую и правую границы с плавной коррекцией
+    // Проверяем левую и правую границы с экстра-плавной коррекцией
     if (ball.x - radius <= 0) {
-      ball.x = radius + 2 // Увеличен отступ для предотвращения застревания
-      ball.vx = this.abs(ball.vx) * this.options.bounceDamping // Отражаем вправо с затуханием
+      ball.x = radius + 8 // Максимальный отступ для экстра-плавности
+      ball.vx = Math.abs(ball.vx) * 0.99 // Отражаем вправо с почти нулевым затуханием
       bounced = true
     } else if (ball.x + radius >= worldWidth) {
-      ball.x = worldWidth - radius - 2 // Увеличен отступ для предотвращения застревания
-      ball.vx = -this.abs(ball.vx) * this.options.bounceDamping // Отражаем влево с затуханием
+      ball.x = worldWidth - radius - 8 // Максимальный отступ для экстра-плавности
+      ball.vx = -Math.abs(ball.vx) * 0.99 // Отражаем влево с почти нулевым затуханием
       bounced = true
     }
 
-    // Проверяем верхнюю и нижнюю границы с плавной коррекцией
+    // Проверяем верхнюю и нижнюю границы с экстра-плавной коррекцией
     if (ball.y - radius <= 0) {
-      ball.y = radius + 2 // Увеличен отступ для предотвращения застревания
-      ball.vy = this.abs(ball.vy) * this.options.bounceDamping // Отражаем вниз с затуханием
+      ball.y = radius + 8 // Максимальный отступ для экстра-плавности
+      ball.vy = Math.abs(ball.vy) * 0.99 // Отражаем вниз с почти нулевым затуханием
       bounced = true
     } else if (ball.y + radius >= worldHeight) {
-      ball.y = worldHeight - radius - 2 // Увеличен отступ для предотвращения застревания
-      ball.vy = -this.abs(ball.vy) * this.options.bounceDamping // Отражаем вверх с затуханием
+      ball.y = worldHeight - radius - 8 // Максимальный отступ для экстра-плавности
+      ball.vy = -Math.abs(ball.vy) * 0.99 // Отражаем вверх с почти нулевым затуханием
       bounced = true
     }
 
     // Предотвращаем застревание мяча при очень низкой скорости
-    if (this.abs(ball.vx) < 5 && this.abs(ball.vy) < 5 && !this.state.paused) {
+    if (Math.abs(ball.vx) < 5 && Math.abs(ball.vy) < 5 && !this.state.paused) {
       // Добавляем минимальную скорость, если мяч почти остановился
-      const minSpeed = 10
-      if (this.abs(ball.vx) > 0) {
+      const minSpeed = 20
+      if (Math.abs(ball.vx) > 0) {
         ball.vx = ball.vx > 0 ? minSpeed : -minSpeed
       }
-      if (this.abs(ball.vy) > 0) {
+      if (Math.abs(ball.vy) > 0) {
         ball.vy = ball.vy > 0 ? minSpeed : -minSpeed
       }
     }
@@ -326,21 +312,15 @@ class PhysicsEngine {
       }
       // Позицию НЕ синхронизируем - клиент сам вычисляет движение
     } else {
-      // Для превью используем масштабирование
-      const scale = this.calculateScale(viewerScreenSize)
-
-      if (serverState.x !== undefined) {
-        this.ball.x = serverState.x * scale
-      }
-      if (serverState.y !== undefined) {
-        this.ball.y = serverState.y * scale
-      }
+      // Для превью используем ту же логику, что и для вьювера - без масштабирования скорости
+      // Синхронизируем только скорость и направление - позицию клиент вычисляет сам
       if (serverState.vx !== undefined) {
-        this.ball.vx = serverState.vx * scale
+        this.ball.vx = serverState.vx
       }
       if (serverState.vy !== undefined) {
-        this.ball.vy = serverState.vy * scale
+        this.ball.vy = serverState.vy
       }
+      // Позицию НЕ синхронизируем - клиент сам вычисляет движение
     }
 
     // Синхронизация других параметров

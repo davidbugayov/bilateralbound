@@ -433,7 +433,7 @@
       // Инициализируем менеджер скорости
       speedManager = {
         lastUpdateTime: 0,
-        updateDelay: 100,
+        updateDelay: 200, // Уменьшаем задержку для более частой синхронизации
         getCurrentSpeed: function() {
           return components.speed ? components.speed.getSpeed() : 40;
         }
@@ -495,14 +495,14 @@
         const physics = new PhysicsEngine({
           worldWidth: canvas.width,
           worldHeight: canvas.height,
-          ballRadius: 12, // Чуть больше мяч для превью
-          minSpeed: 50,
-          maxSpeed: 1280
+          ballRadius: 10, // Уменьшаем радиус для компактности
+          minSpeed: 100, // Увеличиваем минимальную скорость для отскоков
+          maxSpeed: 1200 // Увеличиваем максимальную скорость для отскоков
         });
         debugLog('✅ PhysicsEngine создан');
 
         const renderer = new BallRenderer(canvas, physics, {
-            localPhysics: true // Локальная физика для превью (без синхронизации отскоков)
+            localPhysics: true // Включаем локальную физику для превью - как у вьювера
         });
         debugLog('✅ BallRenderer создан');
 
@@ -589,7 +589,26 @@
           // Инициализируем выделение кнопки направления по умолчанию
           updateDirectionButtons();
           if (ballState.vx !== undefined || ballState.vy !== undefined) {
-            window.__previewPhysics.setVelocity(ballState.vx || 0, ballState.vy || 0);
+            if (ballState.viewerScreenSize && window.__previewCanvas) {
+              // Масштабируем скорость для синхронизации с вьювером
+              const scaleX = window.__previewCanvas.width / ballState.viewerScreenSize.width;
+              const scaleY = window.__previewCanvas.height / ballState.viewerScreenSize.height;
+
+              const scaledVx = ballState.vx * scaleX;
+              const scaledVy = ballState.vy * scaleY;
+
+              console.log('🎯 Initial preview velocity sync:', {
+                original: { vx: ballState.vx, vy: ballState.vy },
+                scales: { x: scaleX, y: scaleY },
+                scaled: { vx: scaledVx, vy: scaledVy }
+              });
+
+              window.__previewPhysics.setVelocity(scaledVx, scaledVy);
+            } else {
+              // Без размера вьювера устанавливаем напрямую
+              window.__previewPhysics.setVelocity(ballState.vx || 0, ballState.vy || 0);
+            }
+
             const dirX = ballState.vx === 0 ? 0 : (ballState.vx > 0 ? 1 : -1);
             const dirY = ballState.vy === 0 ? 0 : (ballState.vy > 0 ? 1 : -1);
             directionState = { dx: dirX, dy: dirY };
@@ -629,9 +648,9 @@
       const container = canvas.parentElement;
       const containerRect = container.getBoundingClientRect();
 
-      // Уменьшенные размеры для удобства психолога
-      const maxWidth = Math.min(containerRect.width - 40, 400);  // Было 600, стало 400
-      const maxHeight = Math.min(300, maxWidth * 0.75);          // Было 400, стало 300
+      // Уменьшенные размеры для компактности
+      const maxWidth = Math.min(containerRect.width - 40, 350);  // Уменьшаем для компактности
+      const maxHeight = Math.min(280, maxWidth * 0.75);          // Уменьшаем для компактности
 
       const viewerRatio = viewerScreenSize.width / viewerScreenSize.height;
       console.log(`📐 Вьювер соотношение: ${viewerRatio.toFixed(3)} (${viewerScreenSize.width}×${viewerScreenSize.height})`);
@@ -658,9 +677,9 @@
         previewHeight = previewWidth / viewerRatio;
       }
 
-      // Минимальные размеры для маленького превью
-      canvas.width = Math.max(previewWidth, 200);   // Было 320, стало 200
-      canvas.height = Math.max(previewHeight, 150); // Было 240, стало 150
+      // Минимальные размеры для компактности
+      canvas.width = Math.max(previewWidth, 250);   // Уменьшаем минимум для компактности
+      canvas.height = Math.max(previewHeight, 200); // Уменьшаем минимум для компактности
 
       // Синхронизируем CSS размеры с внутренними, чтобы круг не сплющивался
       canvas.style.width = canvas.width + 'px';
@@ -740,44 +759,36 @@
             const timeSinceLastUserInput = Date.now() - speedManager.lastUpdateTime;
             const shouldSyncSpeed = timeSinceLastUserInput > speedManager.updateDelay;
 
-            if (sessionData.x !== undefined || sessionData.y !== undefined) {
+            // УБИРАЕМ синхронизацию позиции для превью - используем только локальную физику
+            // Позиция рассчитывается локально на основе скорости и направления, как в вьювере
+
+            if ((sessionData.vx !== undefined || sessionData.vy !== undefined) && shouldSyncSpeed) {
               if (sessionData.viewerScreenSize) {
-                // Единый масштаб для сохранения пропорций
-                const scaleX = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
-                const scaleY = window.__previewCanvas.height / sessionData.viewerScreenSize.height;
-                const scale = Math.min(scaleX, scaleY); // Используем минимальный масштаб
+                // Масштабируем скорость для синхронизации с вьювером
+                const canvas = document.getElementById('preview');
+                if (canvas) {
+                  const scaleX = canvas.width / sessionData.viewerScreenSize.width;
+                  const scaleY = canvas.height / sessionData.viewerScreenSize.height;
 
-                const scaledX = sessionData.x * scaleX; // X масштабируется по ширине
-                const scaledY = sessionData.y * scaleY; // Y масштабируется по высоте
+                  const scaledVx = sessionData.vx * scaleX;
+                  const scaledVy = sessionData.vy * scaleY;
 
-                console.log('📍 Preview position update:', {
-                  original: { x: sessionData.x, y: sessionData.y },
-                  scales: { x: scaleX, y: scaleY },
-                  scaled: { x: scaledX, y: scaledY },
-                  canvasSize: { w: window.__previewCanvas.width, h: window.__previewCanvas.height },
-                  viewerSize: sessionData.viewerScreenSize
-                });
-                window.__previewPhysics.setPosition(scaledX, scaledY);
-              }
-            }
+                  console.log('🎮 Preview velocity sync:', {
+                    original: { vx: sessionData.vx, vy: sessionData.vy },
+                    scales: { x: scaleX, y: scaleY },
+                    scaled: { vx: scaledVx, vy: scaledVy },
+                    canvasSize: { w: canvas.width, h: canvas.height },
+                    viewerSize: sessionData.viewerScreenSize
+                  });
 
-            if (sessionData.vx !== undefined || sessionData.vy !== undefined) {
-              if (sessionData.viewerScreenSize) {
-                // Масштабируем скорость по соответствующим осям для сохранения пропорций
-                const scaleX = window.__previewCanvas.width / sessionData.viewerScreenSize.width;
-                const scaleY = window.__previewCanvas.height / sessionData.viewerScreenSize.height;
-
-                const scaledVx = sessionData.vx * scaleX; // VX масштабируется по ширине
-                const scaledVy = sessionData.vy * scaleY; // VY масштабируется по высоте
-
-                console.log('🎮 Preview velocity update:', {
-                  original: { vx: sessionData.vx, vy: sessionData.vy },
-                  scales: { x: scaleX, y: scaleY },
-                  scaled: { vx: scaledVx, vy: scaledVy },
-                  canvasSize: { w: window.__previewCanvas.width, h: window.__previewCanvas.height },
-                  viewerSize: sessionData.viewerScreenSize
-                });
-                window.__previewPhysics.setVelocity(scaledVx, scaledVy);
+                  window.__previewPhysics.setVelocity(scaledVx, scaledVy);
+                } else {
+                  // Fallback без масштабирования
+                  window.__previewPhysics.setVelocity(sessionData.vx, sessionData.vy);
+                }
+              } else {
+                // Без размера вьювера устанавливаем напрямую
+                window.__previewPhysics.setVelocity(sessionData.vx, sessionData.vy);
               }
             }
 

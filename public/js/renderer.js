@@ -25,9 +25,9 @@ class BallRenderer {
 
     this.animationFrameId = null
     this.lastTime = 0
-    this.targetFrameTime = 1000 / 120 // 120 FPS для ультра-плавности
+    this.targetFrameTime = 1000 / 60 // 60 FPS для стабильности
     this.frameCount = 0
-    this.fps = 120
+    this.fps = 60
 
     this.onFrameCallback = null
     this.options = {
@@ -105,8 +105,8 @@ class BallRenderer {
 
     const deltaTime = currentTime - this.lastTime
 
-    // Ограничиваем deltaTime для предотвращения огромных прыжков (максимум 25ms для ультра-плавности)
-    const clampedDeltaTime = Math.min(deltaTime, 25)
+    // Ограничиваем deltaTime для предотвращения огромных прыжков (максимум 50ms для стабильности)
+    const clampedDeltaTime = Math.min(deltaTime, 50)
     
     // Обновляем счетчик кадров для FPS
     this.frameCount++
