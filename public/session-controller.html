@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <meta http-equiv="Cache-Control" content="public, max-age=3600" />
+  <meta http-equiv="Pragma" content="cache" />
+  <meta http-equiv="Expires" content="3600" />
 
   <!-- SEO Meta Tags -->
   <title>BilateralBound - EMDR терапия контроллер</title>
@@ -23,7 +23,7 @@
   <link rel="preload" href="./js/common.js" as="script" />
   <link rel="preload" href="./js/module-factory.js" as="script" />
   <link rel="preload" href="./css/common.css" as="style" />
-  <link rel="preload" href="./css/shared-components.css" as="style" />
+  <link rel="preload" href="./css/shared-components.css?v=202501031200" as="style" />
 
   <!-- Favicon for Controller -->
   <link rel="icon" type="image/svg+xml" href="/favicon-controller.svg?v=202509031200" />
@@ -32,7 +32,7 @@
   <link rel="shortcut icon" href="/favicon-controller.ico?v=202509031200" />
 
   <link rel="stylesheet" href="./css/common.css">
-  <link rel="stylesheet" href="./css/shared-components.css">
+  <link rel="stylesheet" href="./css/shared-components.css?v=202501031200">
   <style>
     /* Специфичные стили для session-controller.html */
 
@@ -433,7 +433,7 @@
       // Инициализируем менеджер скорости
       speedManager = {
         lastUpdateTime: 0,
-        updateDelay: 200, // Уменьшаем задержку для более частой синхронизации
+        updateDelay: 500, // Оптимизированная задержка для предотвращения 429 ошибок
         getCurrentSpeed: function() {
           return components.speed ? components.speed.getSpeed() : 40;
         }
@@ -449,7 +449,13 @@
         });
 
         if (!response.ok) {
-          debugWarn('Не удалось обновить скорость:', response.status);
+          if (response.status === 429) {
+            debugWarn('⚠️ Слишком много запросов (429), увеличиваем задержку');
+            // Увеличиваем задержку при 429 ошибке
+            speedManager.updateDelay = Math.min(speedManager.updateDelay * 2, 5000);
+          } else {
+            debugWarn('Не удалось обновить скорость:', response.status);
+          }
         } else {
           debugLog('✅ Скорость обновлена:', speed);
           if (speedManager) {

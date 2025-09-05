@@ -8,7 +8,7 @@ class SessionSync {
   constructor (options = {}) {
     this.options = {
       sessionId: null,
-      pollInterval: 100, // Увеличиваем частоту для плавности
+      pollInterval: 500, // Оптимизированная частота для предотвращения 429 ошибок
       serverUrl: '',
       onStateReceived: null,
       onSessionExpired: null,
@@ -183,8 +183,14 @@ class SessionSync {
       return
     }
 
-    // Экспоненциальная задержка при ошибках
-    const delay = Math.min(1000 * Math.pow(2, this.errorCount), 10000)
+    // Специальная обработка 429 ошибок (Too Many Requests)
+    let delay = Math.min(1000 * Math.pow(2, this.errorCount), 10000)
+    
+    if (error.message && error.message.includes('429')) {
+      // Для 429 ошибок увеличиваем задержку еще больше
+      delay = Math.min(2000 * Math.pow(2, this.errorCount), 30000)
+      debugWarn(`SessionSync: 429 error detected, increasing delay to ${delay}ms`)
+    }
 
     if (this.isPolling) {
       this.pollTimer = setTimeout(() => this.poll(), delay)
