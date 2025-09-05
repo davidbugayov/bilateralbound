@@ -8,7 +8,7 @@ class SessionSync {
   constructor (options = {}) {
     this.options = {
       sessionId: null,
-      pollInterval: 500, // Оптимизированная частота для предотвращения 429 ошибок
+      pollInterval: 100, // Увеличена частота для более плавной синхронизации
       serverUrl: '',
       onStateReceived: null,
       onSessionExpired: null,
@@ -153,8 +153,8 @@ class SessionSync {
     const current = newState
 
     // Для вьювера проверяем только изменения скорости и направления
-    const velocityChanged = last.vx !== current.vx || last.vy !== current.vy
-    const speedChanged = last.speed !== current.speed
+    const velocityChanged = Math.abs(last.vx - current.vx) > 0.1 || Math.abs(last.vy - current.vy) > 0.1
+    const speedChanged = Math.abs(last.speed - current.speed) > 0.1
 
     return (
       velocityChanged ||

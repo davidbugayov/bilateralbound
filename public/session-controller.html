@@ -433,7 +433,7 @@
       // Инициализируем менеджер скорости
       speedManager = {
         lastUpdateTime: 0,
-        updateDelay: 500, // Оптимизированная задержка для предотвращения 429 ошибок
+        updateDelay: 200, // Уменьшена задержка для более отзывчивого управления
         getCurrentSpeed: function() {
           return components.speed ? components.speed.getSpeed() : 40;
         }
@@ -442,6 +442,12 @@
 
     async function updateSpeed(speed) {
       try {
+        // Проверяем, нужно ли обновлять скорость
+        const timeSinceLastUpdate = Date.now() - speedManager.lastUpdateTime;
+        if (timeSinceLastUpdate < speedManager.updateDelay) {
+          return; // Пропускаем обновление если прошло мало времени
+        }
+
         const response = await fetch(`/api/session/${sessionId}/controller/update`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -452,7 +458,7 @@
           if (response.status === 429) {
             debugWarn('⚠️ Слишком много запросов (429), увеличиваем задержку');
             // Увеличиваем задержку при 429 ошибке
-            speedManager.updateDelay = Math.min(speedManager.updateDelay * 2, 5000);
+            speedManager.updateDelay = Math.min(speedManager.updateDelay * 2, 2000);
           } else {
             debugWarn('Не удалось обновить скорость:', response.status);
           }
@@ -765,56 +771,15 @@
             const timeSinceLastUserInput = Date.now() - speedManager.lastUpdateTime;
             const shouldSyncSpeed = timeSinceLastUserInput > speedManager.updateDelay;
 
-            // УБИРАЕМ синхронизацию позиции для превью - используем только локальную физику
-            // Позиция рассчитывается локально на основе скорости и направления, как в вьювере
+            // Синхронизируем все состояние с сервером через PhysicsEngine
+            if (shouldSyncSpeed || sessionData.paused !== undefined) {
+              console.log('🎮 Sync preview with server state:', sessionData);
+              window.__previewPhysics.syncFromServer(sessionData, null); // null = preview mode
 
-            if ((sessionData.vx !== undefined || sessionData.vy !== undefined) && shouldSyncSpeed) {
-              if (sessionData.viewerScreenSize) {
-                // Масштабируем скорость для синхронизации с вьювером
-                const canvas = document.getElementById('preview');
-                if (canvas) {
-                  const scaleX = canvas.width / sessionData.viewerScreenSize.width;
-                  const scaleY = canvas.height / sessionData.viewerScreenSize.height;
-
-                  const scaledVx = sessionData.vx * scaleX;
-                  const scaledVy = sessionData.vy * scaleY;
-
-                  console.log('🎮 Preview velocity sync:', {
-                    original: { vx: sessionData.vx, vy: sessionData.vy },
-                    scales: { x: scaleX, y: scaleY },
-                    scaled: { vx: scaledVx, vy: scaledVy },
-                    canvasSize: { w: canvas.width, h: canvas.height },
-                    viewerSize: sessionData.viewerScreenSize
-                  });
-
-                  window.__previewPhysics.setVelocity(scaledVx, scaledVy);
-                } else {
-                  // Fallback без масштабирования
-                  window.__previewPhysics.setVelocity(sessionData.vx, sessionData.vy);
-                }
-              } else {
-                // Без размера вьювера устанавливаем напрямую
-                window.__previewPhysics.setVelocity(sessionData.vx, sessionData.vy);
-              }
-            }
-
-            // Не меняем радиус мяча в превью при смене цвета/фона – игнорируем обновления radius от сервера
-
-            if (shouldSyncSpeed && sessionData.speed !== undefined) {
-              window.__previewPhysics.setSpeed(sessionData.speed);
-              if (components && components.speed && typeof components.speed.setSpeed === 'function') {
+              // Обновляем компонент скорости в UI
+              if (sessionData.speed !== undefined && components && components.speed && typeof components.speed.setSpeed === 'function') {
                 components.speed.setSpeed(sessionData.speed);
               }
-            }
-
-            if (sessionData.colorBall && typeof window.__previewPhysics.setBallColor === 'function') {
-              window.__previewPhysics.setBallColor(sessionData.colorBall);
-            }
-            if (sessionData.colorBg && typeof window.__previewPhysics.setBgColor === 'function') {
-              window.__previewPhysics.setBgColor(sessionData.colorBg);
-            }
-            if (sessionData.paused !== undefined && typeof window.__previewPhysics.setPaused === 'function') {
-              window.__previewPhysics.setPaused(sessionData.paused);
             }
           }
         },

@@ -181,10 +181,23 @@ class PhysicsEngine {
   update (deltaTime) {
     if (this.state.paused) return
 
-    // Используем одинаковую логику для вьювера и превью - прямую скорость
-    // Обновляем позицию напрямую с текущей скоростью
-    this.ball.x += this.ball.vx * deltaTime
-    this.ball.y += this.ball.vy * deltaTime
+    // Используем плавную интерполяцию для предотвращения дергания
+    if (this.isViewer) {
+      // Для вьювера используем прямую скорость (как раньше)
+      this.ball.x += this.ball.vx * deltaTime
+      this.ball.y += this.ball.vy * deltaTime
+    } else {
+      // Для превью используем плавную интерполяцию к целевой скорости
+      const lerpFactor = this.options.lerpFactor || 0.15
+      
+      // Плавно интерполируем к целевой скорости
+      this.ball.vx += (this.state.targetVx - this.ball.vx) * lerpFactor
+      this.ball.vy += (this.state.targetVy - this.ball.vy) * lerpFactor
+      
+      // Обновляем позицию с интерполированной скоростью
+      this.ball.x += this.ball.vx * deltaTime
+      this.ball.y += this.ball.vy * deltaTime
+    }
 
     // Обрабатываем коллизии с границами
     this.handleBoundaryCollisions()
@@ -295,32 +308,55 @@ class PhysicsEngine {
   syncFromServer (serverState, viewerScreenSize = null) {
     if (!serverState) return
 
-    // Для вьювера используем только синхронизацию скорости и направления
-    if (viewerScreenSize) {
-      // Устанавливаем флаг вьювера
-      this.isViewer = true
-      
-      // Синхронизируем только скорость и направление - позицию клиент вычисляет сам
-      if (serverState.vx !== undefined) {
+    // Синхронизируем позицию с сервером для всех клиентов
+    if (serverState.x !== undefined && serverState.y !== undefined) {
+      if (viewerScreenSize) {
+        // Для вьювера используем прямую позицию с сервера
+        this.isViewer = true
+        this.ball.x = serverState.x
+        this.ball.y = serverState.y
+      } else {
+        // Для превью масштабируем позицию под размер превью
+        const canvas = document.getElementById('preview')
+        if (canvas && serverState.viewerScreenSize) {
+          const scaleX = canvas.width / serverState.viewerScreenSize.width
+          const scaleY = canvas.height / serverState.viewerScreenSize.height
+          this.ball.x = serverState.x * scaleX
+          this.ball.y = serverState.y * scaleY
+        } else {
+          // Fallback - используем прямую позицию
+          this.ball.x = serverState.x
+          this.ball.y = serverState.y
+        }
+      }
+    }
+
+    // Синхронизируем скорость
+    if (serverState.vx !== undefined && serverState.vy !== undefined) {
+      if (viewerScreenSize) {
+        // Для вьювера используем прямую скорость с сервера
         this.ball.vx = serverState.vx
-      }
-      if (serverState.vy !== undefined) {
         this.ball.vy = serverState.vy
+        this.state.targetVx = serverState.vx
+        this.state.targetVy = serverState.vy
+      } else {
+        // Для превью масштабируем скорость под размер превью
+        const canvas = document.getElementById('preview')
+        if (canvas && serverState.viewerScreenSize) {
+          const scaleX = canvas.width / serverState.viewerScreenSize.width
+          const scaleY = canvas.height / serverState.viewerScreenSize.height
+          const scaledVx = serverState.vx * scaleX
+          const scaledVy = serverState.vy * scaleY
+
+          // Используем плавную интерполяцию для превью
+          this.state.targetVx = scaledVx
+          this.state.targetVy = scaledVy
+        } else {
+          // Fallback без масштабирования
+          this.state.targetVx = serverState.vx
+          this.state.targetVy = serverState.vy
+        }
       }
-      if (serverState.speed !== undefined) {
-        this.ball.speed = serverState.speed
-      }
-      // Позицию НЕ синхронизируем - клиент сам вычисляет движение
-    } else {
-      // Для превью используем ту же логику, что и для вьювера - без масштабирования скорости
-      // Синхронизируем только скорость и направление - позицию клиент вычисляет сам
-      if (serverState.vx !== undefined) {
-        this.ball.vx = serverState.vx
-      }
-      if (serverState.vy !== undefined) {
-        this.ball.vy = serverState.vy
-      }
-      // Позицию НЕ синхронизируем - клиент сам вычисляет движение
     }
 
     // Синхронизация других параметров
@@ -332,9 +368,15 @@ class PhysicsEngine {
         // Для вьювера используем прямой радиус
         this.ball.radius = serverState.radius
       } else {
-        // Для превью используем масштабированный радиус
-        const scale = this.calculateScale(viewerScreenSize)
-        this.ball.radius = serverState.radius * scale
+        // Для превью масштабируем радиус
+        const canvas = document.getElementById('preview')
+        if (canvas && serverState.viewerScreenSize) {
+          const scale = Math.min(canvas.width / serverState.viewerScreenSize.width,
+                                canvas.height / serverState.viewerScreenSize.height)
+          this.ball.radius = Math.max(serverState.radius * scale * 0.5, 4)
+        } else {
+          this.ball.radius = Math.max(serverState.radius * 0.5, 4)
+        }
       }
     }
     if (serverState.colorBall) {
@@ -345,13 +387,6 @@ class PhysicsEngine {
     }
     if (serverState.paused !== undefined) {
       this.state.paused = serverState.paused
-    }
-
-    // Обновляем направление на основе скорости
-    const speed = this.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy)
-    if (speed > 0) {
-      this.state.lastDirection.x = this.ball.vx / speed
-      this.state.lastDirection.y = this.ball.vy / speed
     }
   }
 

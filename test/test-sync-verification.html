@@ -320,16 +320,35 @@
                             );
                             
                             // Проверяем на резкие скачки (дергания) - ультра-чувствительно
-                            if (distance > 10) {
+                            if (distance > 15) {
+                                log(`🚨 КРИТИЧЕСКОЕ ДЕРГАНИЕ! Скачок: ${distance.toFixed(1)}px`);
+                                log(`   Предыдущая позиция: (${lastPos.x.toFixed(1)}, ${lastPos.y.toFixed(1)})`);
+                                log(`   Текущая позиция: (${currentPos.x.toFixed(1)}, ${currentPos.y.toFixed(1)})`);
+                            } else if (distance > 8) {
                                 log(`⚠️ ДЕРГАНИЕ ОБНАРУЖЕНО! Скачок: ${distance.toFixed(1)}px`);
                                 log(`   Предыдущая позиция: (${lastPos.x.toFixed(1)}, ${lastPos.y.toFixed(1)})`);
                                 log(`   Текущая позиция: (${currentPos.x.toFixed(1)}, ${currentPos.y.toFixed(1)})`);
-                            } else if (distance > 5) {
+                            } else if (distance > 4) {
                                 log(`⚠️ Подозрительное движение: ${distance.toFixed(1)}px`);
                             } else if (distance > 2) {
                                 log(`⚠️ Микроскачок: ${distance.toFixed(1)}px`);
                             } else {
                                 log(`✅ Движение плавное: ${distance.toFixed(1)}px`);
+                            }
+
+                            // Проверяем синхронизацию скорости
+                            const lastSpeed = Math.sqrt(lastViewerState.vx * lastViewerState.vx + lastViewerState.vy * lastViewerState.vy);
+                            const currentSpeed = Math.sqrt(state.vx * state.vx + state.vy * state.vy);
+                            const speedDiff = Math.abs(currentSpeed - lastSpeed);
+                            
+                            if (speedDiff > 50) {
+                                log(`🚨 КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ СКОРОСТИ! Разница: ${speedDiff.toFixed(1)}px/s`);
+                                log(`   Предыдущая скорость: ${lastSpeed.toFixed(1)}px/s`);
+                                log(`   Текущая скорость: ${currentSpeed.toFixed(1)}px/s`);
+                            } else if (speedDiff > 20) {
+                                log(`⚠️ Резкое изменение скорости: ${speedDiff.toFixed(1)}px/s`);
+                            } else if (speedDiff > 5) {
+                                log(`⚠️ Изменение скорости: ${speedDiff.toFixed(1)}px/s`);
                             }
                         }
                         
