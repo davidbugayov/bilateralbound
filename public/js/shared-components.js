@@ -117,6 +117,7 @@ class SharedComponents {
       onSpeedChange: null,
       showValue: true,
       showLabels: true,
+      simple: true,
       ...options
     }
 
@@ -131,44 +132,61 @@ class SharedComponents {
         const speedControl = document.createElement('div')
         speedControl.className = 'speed-control'
 
-        speedControl.innerHTML = `
-                    <div class="speed-header">
-                        <div class="speed-icon">⚡</div>
+        if (defaultOptions.simple) {
+          speedControl.innerHTML = `
                         <div class="speed-info">
-                            <h3>Скорость движения</h3>
+                            <h3>Скорость</h3>
                             ${defaultOptions.showValue ? '<div class="speed-display"><span class="speed-value">40</span><span class="speed-unit">%</span></div>' : ''}
                         </div>
-                        <div class="speed-indicator">
-                            <div class="speed-bar">
-                                <div class="speed-fill" style="width: 40%"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="speed-controls">
-                        <div class="speed-presets">
-                            <button class="speed-preset slow" data-speed="20">🐌<span>Медленно</span></button>
-                            <button class="speed-preset normal active" data-speed="40">⚡<span>Нормально</span></button>
-                            <button class="speed-preset fast" data-speed="80">🚀<span>Быстро</span></button>
-                        </div>
                         <div class="speed-slider-container">
-                            <div class="speed-track">
-                                <input type="range"
-                                       class="speed-range"
-                                       min="${defaultOptions.min}"
-                                       max="${defaultOptions.max}"
-                                       value="${defaultOptions.currentSpeed}"
-                                       step="1">
-                                <div class="speed-marks">
-                                    <span class="mark" style="left: 0%">0</span>
-                                    <span class="mark" style="left: 25%">25</span>
-                                    <span class="mark" style="left: 50%">50</span>
-                                    <span class="mark" style="left: 75%">75</span>
-                                    <span class="mark" style="left: 100%">100</span>
+                            <input type="range"
+                                   class="speed-range"
+                                   min="${defaultOptions.min}"
+                                   max="${defaultOptions.max}"
+                                   value="${defaultOptions.currentSpeed}"
+                                   step="1">
+                        </div>
+                    `
+        } else {
+          speedControl.innerHTML = `
+                        <div class="speed-header">
+                            <div class="speed-icon">⚡</div>
+                            <div class="speed-info">
+                                <h3>Скорость движения</h3>
+                                ${defaultOptions.showValue ? '<div class="speed-display"><span class="speed-value">40</span><span class="speed-unit">%</span></div>' : ''}
+                            </div>
+                            <div class="speed-indicator">
+                                <div class="speed-bar">
+                                    <div class="speed-fill" style="width: 40%"></div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `
+                        <div class="speed-controls">
+                            <div class="speed-presets">
+                                <button class="speed-preset slow" data-speed="20">🐌<span>Медленно</span></button>
+                                <button class="speed-preset normal active" data-speed="40">⚡<span>Нормально</span></button>
+                                <button class="speed-preset fast" data-speed="80">🚀<span>Быстро</span></button>
+                            </div>
+                            <div class="speed-slider-container">
+                                <div class="speed-track">
+                                    <input type="range"
+                                           class="speed-range"
+                                           min="${defaultOptions.min}"
+                                           max="${defaultOptions.max}"
+                                           value="${defaultOptions.currentSpeed}"
+                                           step="1">
+                                    <div class="speed-marks">
+                                        <span class="mark" style="left: 0%">0</span>
+                                        <span class="mark" style="left: 25%">25</span>
+                                        <span class="mark" style="left: 50%">50</span>
+                                        <span class="mark" style="left: 75%">75</span>
+                                        <span class="mark" style="left: 100%">100</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+        }
 
         container.appendChild(speedControl)
         this.setupElements()
@@ -194,10 +212,10 @@ class SharedComponents {
           })
         }
 
-        // Обработчики для пресетов скорости
-        if (this.elements.presets) {
+        // Обработчики для пресетов скорости (в простом режиме отсутствуют)
+        if (this.elements.presets && this.elements.presets.length) {
           this.elements.presets.forEach(preset => {
-            preset.addEventListener('click', (e) => {
+            preset.addEventListener('click', () => {
               const speed = parseInt(preset.dataset.speed)
               this.setSpeed(speed)
               this.updateActivePreset(speed)
@@ -208,7 +226,7 @@ class SharedComponents {
 
       // Обновляет активный пресет
       updateActivePreset (speed) {
-        if (!this.elements.presets) return
+        if (!this.elements.presets || !this.elements.presets.length) return
 
         // Снимаем активное состояние со всех
         this.elements.presets.forEach(preset => {

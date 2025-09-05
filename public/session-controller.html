@@ -161,6 +161,32 @@
       color: #60a5fa;
     }
 
+    /* Улучшенная компоновка внутри блока управления */
+    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .controls-card { background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 12px; }
+    .controls-title { margin: 0 0 8px 0; font-size: 14px; color: #9ca3af; font-weight: 500; }
+    .direction-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+    /* Действия: улучшенная раскладка */
+    .actions-grid { display: grid; grid-template-columns: 1.2fr .9fr .9fr; gap: 8px; align-items: stretch; }
+    .actions-grid .btn { width: 100%; }
+    .actions-grid .btn.primary { font-weight: 600; }
+
+    /* Сегментированный контрол направлений */
+    .segmented { display: flex; gap: 0; border: 1px solid #1f2937; border-radius: 10px; overflow: hidden; background: #0d1526; }
+    .segmented .seg-btn { flex: 1; padding: 10px 12px; font-size: 13px; color: #9ca3af; background: transparent; border: 0; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
+    .segmented .seg-btn + .seg-btn { border-left: 1px solid #1f2937; }
+    .segmented .seg-btn:hover { background: #152139; color: #e5e7eb; }
+    .segmented .seg-btn.active { background: #1d4ed8; color: #ffffff; }
+    .segmented .seg-btn strong { font-weight: 600; }
+
+    @media (max-width: 768px) {
+      .controls-grid { grid-template-columns: 1fr; }
+      .actions-grid { grid-template-columns: 1fr; }
+      .segmented { flex-direction: column; }
+      .segmented .seg-btn + .seg-btn { border-left: 0; border-top: 1px solid #1f2937; }
+    }
+
     /* Мобильные стили */
     @media (max-width: 768px) {
       body { padding: 16px; }
@@ -240,24 +266,32 @@
 
     <div class="control-section">
       <h3>🎮 Управление и направление</h3>
-      <div class="controls" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 20px 0;">
-        <button class="direction-btn" onclick="setDirection('horizontal')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↔️ Горизонтально</button>
-        <button class="direction-btn" onclick="setDirection('vertical')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↕️ Вертикально</button>
-        <button class="direction-btn" onclick="setDirection('diagRL')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↖️↗️ Диагональ L→R</button>
-        <button class="direction-btn" onclick="setDirection('diagRLL')" style="background: #2563eb; color: white; border: 0; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 140px;">↙️↘️ Диагональ R→L</button>
+      <div class="controls-grid">
+        <div class="controls-card">
+          <p class="controls-title">Действия</p>
+          <div class="actions-grid">
+            <button id="playPauseBtn" class="btn primary" onclick="togglePlayPause()" style="background: #10b981; padding: 12px 16px;">▶️ Старт</button>
+            <button class="btn outline" onclick="resetCenter()" style="padding: 12px 16px;">🎯 Центр</button>
+            <button class="btn" onclick="resetSession()" style="background: #dc2626; padding: 12px 16px;">🔄 Сброс</button>
+          </div>
+          <p class="controls-title" style="margin-top: 12px;">Направление</p>
+          <div class="direction-row">
+            <div class="segmented" id="directionSegmented">
+              <button class="seg-btn" data-mode="horizontal" onclick="setDirection('horizontal')"><strong>↔️</strong> Гориз.</button>
+              <button class="seg-btn" data-mode="vertical" onclick="setDirection('vertical')"><strong>↕️</strong> Вертик.</button>
+              <button class="seg-btn" data-mode="diagRL" onclick="setDirection('diagRL')"><strong>↖️↗️</strong> L→R</button>
+              <button class="seg-btn" data-mode="diagRLL" onclick="setDirection('diagRLL')"><strong>↙️↘️</strong> R→L</button>
+            </div>
+          </div>
+          <p style="text-align: center; margin: 8px 0; font-size: 13px; color: #6b7280;">
+            <span id="currentDirection">↔️ Горизонтально</span>
+          </p>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">Скорость</p>
+          <div id="speedControl"></div>
+        </div>
       </div>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 12px 0;">
-        <button id="playPauseBtn" class="btn" onclick="togglePlayPause()" style="background: #10b981; min-width: 140px; padding: 12px 16px;">▶️ Старт</button>
-        <button class="btn outline" onclick="resetCenter()" style="min-width: 110px; padding: 12px 16px;">🎯 Центр</button>
-        <button class="btn" onclick="resetSession()" style="background: #dc2626; min-width: 110px; padding: 12px 16px;">🔄 Сброс</button>
-      </div>
-      <p style="text-align: center; margin: 12px 0; font-size: 14px; color: #9ca3af;">
-        Текущее направление: <span id="currentDirection">↔️ Горизонтально</span>
-      </p>
-    </div>
-
-    <div class="control-section">
-      <div id="speedControl"></div>
     </div>
 
     <div class="control-section">
@@ -843,15 +877,12 @@
     // Функция для обновления активного состояния кнопок направлений
     function updateDirectionButtons() {
       // Снимаем активное состояние со всех кнопок
-      document.querySelectorAll('.direction-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
+      document.querySelectorAll('.direction-btn').forEach(btn => { btn.classList.remove('active'); });
+      document.querySelectorAll('.segmented .seg-btn').forEach(btn => { btn.classList.remove('active'); });
 
       // Добавляем активное состояние к текущей кнопке
-      const activeBtn = document.querySelector(`.direction-btn[onclick*="setDirection('${currentDirectionMode}'"]`);
-      if (activeBtn) {
-        activeBtn.classList.add('active');
-      }
+      const activeSeg = document.querySelector(`.segmented .seg-btn[data-mode="${currentDirectionMode}"]`);
+      if (activeSeg) { activeSeg.classList.add('active'); }
     }
 
     // Функция установки направления (как в тесте)
