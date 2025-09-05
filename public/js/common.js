@@ -9,6 +9,81 @@ const debugLog = DEBUG ? (...args) => console.log(...args) : () => {}
 const debugError = DEBUG ? (...args) => console.error(...args) : () => {}
 const debugWarn = DEBUG ? (...args) => console.warn(...args) : () => {}
 
+// Функции для отображения ошибок пользователю (работают всегда)
+function showError(message, details = '') {
+  console.error('🚨 Ошибка:', message, details)
+  
+  // Создаем уведомление об ошибке
+  const errorDiv = document.createElement('div')
+  errorDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ef4444;
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10000;
+    max-width: 400px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+  `
+  
+  errorDiv.innerHTML = `
+    <div style="font-weight: 600; margin-bottom: 4px;">🚨 Произошла ошибка</div>
+    <div>${message}</div>
+    ${details ? `<div style="font-size: 12px; opacity: 0.8; margin-top: 4px;">${details}</div>` : ''}
+  `
+  
+  document.body.appendChild(errorDiv)
+  
+  // Автоматически скрываем через 5 секунд
+  setTimeout(() => {
+    if (errorDiv.parentNode) {
+      errorDiv.parentNode.removeChild(errorDiv)
+    }
+  }, 5000)
+}
+
+function showWarning(message, details = '') {
+  console.warn('⚠️ Предупреждение:', message, details)
+  
+  // Создаем уведомление о предупреждении
+  const warningDiv = document.createElement('div')
+  warningDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #f59e0b;
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10000;
+    max-width: 400px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+  `
+  
+  warningDiv.innerHTML = `
+    <div style="font-weight: 600; margin-bottom: 4px;">⚠️ Предупреждение</div>
+    <div>${message}</div>
+    ${details ? `<div style="font-size: 12px; opacity: 0.8; margin-top: 4px;">${details}</div>` : ''}
+  `
+  
+  document.body.appendChild(warningDiv)
+  
+  // Автоматически скрываем через 3 секунды
+  setTimeout(() => {
+    if (warningDiv.parentNode) {
+      warningDiv.parentNode.removeChild(warningDiv)
+    }
+  }, 3000)
+}
+
 // Кэшируем часто используемые функции
 const random = Math.random
 const toString = (num, radix) => num.toString(radix)

@@ -376,7 +376,7 @@
 
       } catch (error) {
         debugError('Ошибка инициализации контроллера:', error);
-        alert('Ошибка при инициализации контроллера: ' + error.message);
+        showError('Ошибка при инициализации контроллера', error.message);
       }
     }
 
@@ -457,10 +457,12 @@
         if (!response.ok) {
           if (response.status === 429) {
             debugWarn('⚠️ Слишком много запросов (429), увеличиваем задержку');
+            showWarning('Слишком много запросов', 'Увеличиваем задержку для предотвращения ошибок');
             // Увеличиваем задержку при 429 ошибке
             speedManager.updateDelay = Math.min(speedManager.updateDelay * 2, 2000);
           } else {
             debugWarn('Не удалось обновить скорость:', response.status);
+            showError('Не удалось обновить скорость', `HTTP ${response.status}`);
           }
         } else {
           debugLog('✅ Скорость обновлена:', speed);
@@ -470,6 +472,7 @@
         }
       } catch (error) {
         debugError('Ошибка при обновлении скорости:', error);
+        showError('Ошибка при обновлении скорости', error.message);
       }
     }
 
@@ -535,6 +538,7 @@
       } catch (error) {
         debugError('❌ Ошибка при инициализации превью: ' + error.message);
         console.error('Preview initialization error:', error);
+        showError('Ошибка при инициализации превью', error.message);
       }
     }
 
@@ -545,6 +549,7 @@
         const response = await fetch(`/api/session/${sessionId}/state`);
         if (!response.ok) {
           debugError('Не удалось получить состояние с сервера');
+          showError('Не удалось получить состояние с сервера', `HTTP ${response.status}`);
           return;
         }
 
@@ -631,6 +636,7 @@
         }
       } catch (error) {
         debugError('Ошибка синхронизации начального состояния:', error);
+        showError('Ошибка синхронизации начального состояния', error.message);
       }
     }
 
@@ -785,6 +791,7 @@
         },
         onError: (error) => {
           debugError('Ошибка синхронизации:', error);
+          showError('Ошибка синхронизации', error.message || 'Неизвестная ошибка');
         }
       });
 
@@ -839,7 +846,10 @@
         })
       }).then(() => {
         debugLog(`✅ Направление изменено: dx=${dx}, dy=${dy}`);
-      }).catch(error => debugError('Error setting direction:', error));
+      }).catch(error => {
+        debugError('Error setting direction:', error);
+        showError('Ошибка изменения направления', error.message);
+      });
     }
 
     // Функция для обновления активного состояния кнопок направлений
@@ -882,6 +892,7 @@
         debugLog('✅ Направление и движение установлены:', mode, {dx, dy});
       }).catch(error => {
         debugError('❌ Ошибка установки направления:', error);
+        showError('Ошибка установки направления', error.message);
       });
     }
 
@@ -921,7 +932,10 @@
         body: JSON.stringify({ reset: true })
       }).then(() => {
         debugLog('✅ Мяч отцентрирован');
-      }).catch(error => debugError('Error resetting center:', error));
+      }).catch(error => {
+        debugError('Error resetting center:', error);
+        showError('Ошибка центрирования мяча', error.message);
+      });
     }
 
     function resetSession(){
@@ -995,7 +1009,7 @@
           });
         }).catch(error => {
           debugError('Error resetting session:', error);
-          alert('Ошибка при сбросе сессии: ' + error.message);
+          showError('Ошибка при сбросе сессии', error.message);
         });
       }
     }
@@ -1005,7 +1019,10 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ colorBall: color })
-      }).catch(error => debugError('Error setting ball color:', error));
+      }).catch(error => {
+        debugError('Error setting ball color:', error);
+        showError('Ошибка изменения цвета мяча', error.message);
+      });
     }
 
     function setBgColor(color) {
@@ -1013,7 +1030,10 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ colorBg: color })
-      }).catch(error => debugError('Error setting background color:', error));
+      }).catch(error => {
+        debugError('Error setting background color:', error);
+        showError('Ошибка изменения цвета фона', error.message);
+      });
     }
 
     function setBallSize(size) {
@@ -1021,7 +1041,10 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ size })
-      }).catch(error => debugError('Error setting ball size:', error));
+      }).catch(error => {
+        debugError('Error setting ball size:', error);
+        showError('Ошибка изменения размера мяча', error.message);
+      });
     }
 
     // Глобальная переменная для отслеживания состояния игры
@@ -1056,7 +1079,10 @@
           isPlaying = false;
           updatePlayPauseButton();
           debugLog('⏸ Игра остановлена');
-        }).catch(error => debugError('Error pausing play:', error));
+        }).catch(error => {
+          debugError('Error pausing play:', error);
+          showError('Ошибка остановки игры', error.message);
+        });
       } else {
         // Запускаем игру (используем выбранное направление или горизонтальное по умолчанию)
         const currentDirection = directionState || { dx: 1, dy: 0 };
@@ -1072,7 +1098,10 @@
           isPlaying = true;
           updatePlayPauseButton();
           debugLog('▶️ Игра запущена');
-        }).catch(error => debugError('Error resuming play:', error));
+        }).catch(error => {
+          debugError('Error resuming play:', error);
+          showError('Ошибка запуска игры', error.message);
+        });
       }
     }
 
@@ -1104,6 +1133,7 @@
         })
         .catch(err => {
           debugError('Failed to copy: ', err);
+          showError('Ошибка копирования', err.message);
         });
     }
 
