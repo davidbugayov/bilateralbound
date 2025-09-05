@@ -8,7 +8,7 @@ class SessionSync {
   constructor (options = {}) {
     this.options = {
       sessionId: null,
-      pollInterval: 100, // Увеличена частота для более плавной синхронизации
+      pollInterval: this.getOptimalPollInterval(), // Адаптивный интервал для продакшена
       serverUrl: '',
       onStateReceived: null,
       onSessionExpired: null,
@@ -297,6 +297,21 @@ class SessionSync {
   resetErrorCounters () {
     this.errorCount = 0
     this.retryCount = 0
+  }
+
+  /**
+   * Определяет оптимальный интервал polling'а в зависимости от окружения
+   */
+  getOptimalPollInterval () {
+    // Проверяем, работаем ли на продакшене (Render.com)
+    const isProduction = window.location.hostname.includes('onrender.com') || 
+                        window.location.hostname.includes('bilateralbound.onrender.com')
+    
+    if (isProduction) {
+      return 500 // 500ms для продакшена чтобы избежать 429 ошибок
+    } else {
+      return 100 // 100ms для локальной разработки
+    }
   }
 
   /**

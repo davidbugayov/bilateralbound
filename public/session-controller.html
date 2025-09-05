@@ -433,7 +433,7 @@
       // Инициализируем менеджер скорости
       speedManager = {
         lastUpdateTime: 0,
-        updateDelay: 200, // Уменьшена задержка для более отзывчивого управления
+        updateDelay: getOptimalUpdateDelay(), // Адаптивная задержка для продакшена
         getCurrentSpeed: function() {
           return components.speed ? components.speed.getSpeed() : 40;
         }
@@ -731,7 +731,7 @@
     function startSessionPolling(sessionId) {
       sessionSync = new SessionSync({
         sessionId,
-        pollInterval: 100,
+        pollInterval: getOptimalPollInterval(), // Адаптивный интервал
         serverUrl: '',
         onSessionExpired: handleSessionExpired,
         onStateReceived: (sessionData) => {
@@ -1110,6 +1110,36 @@
     function goBack() {
       if (confirm('Вы уверены, что хотите вернуться на главную страницу? Текущая сессия будет сохранена.')) {
         window.location.href = '/';
+      }
+    }
+
+    /**
+     * Определяет оптимальную задержку обновления в зависимости от окружения
+     */
+    function getOptimalUpdateDelay() {
+      // Проверяем, работаем ли на продакшене (Render.com)
+      const isProduction = window.location.hostname.includes('onrender.com') || 
+                          window.location.hostname.includes('bilateralbound.onrender.com')
+      
+      if (isProduction) {
+        return 1000 // 1 секунда для продакшена чтобы избежать 429 ошибок
+      } else {
+        return 200 // 200ms для локальной разработки
+      }
+    }
+
+    /**
+     * Определяет оптимальный интервал polling'а в зависимости от окружения
+     */
+    function getOptimalPollInterval() {
+      // Проверяем, работаем ли на продакшене (Render.com)
+      const isProduction = window.location.hostname.includes('onrender.com') || 
+                          window.location.hostname.includes('bilateralbound.onrender.com')
+      
+      if (isProduction) {
+        return 500 // 500ms для продакшена чтобы избежать 429 ошибок
+      } else {
+        return 100 // 100ms для локальной разработки
       }
     }
   </script>

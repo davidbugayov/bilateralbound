@@ -349,6 +349,7 @@
                 // Создаем синхронизатор сессии
                 sessionSync = new SessionSync({
                     sessionId: sessionId,
+                    pollInterval: getOptimalPollInterval(), // Адаптивный интервал для продакшена
                     serverUrl: '',
                     onStateReceived: (serverState) => {
                         // Синхронизируем состояние с сервером с учетом размера экрана вьювера
@@ -703,6 +704,21 @@
         })();
         
         debugLog('🎯 BilateralBound Viewer - Готов к работе');
+
+        /**
+         * Определяет оптимальный интервал polling'а в зависимости от окружения
+         */
+        function getOptimalPollInterval() {
+            // Проверяем, работаем ли на продакшене (Render.com)
+            const isProduction = window.location.hostname.includes('onrender.com') || 
+                                window.location.hostname.includes('bilateralbound.onrender.com')
+            
+            if (isProduction) {
+                return 500 // 500ms для продакшена чтобы избежать 429 ошибок
+            } else {
+                return 100 // 100ms для локальной разработки
+            }
+        }
     </script>
 </body>
 </html>
