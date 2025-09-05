@@ -249,6 +249,7 @@
   <div class="wrap">
     <div class="control-section">
       <h3>🎮 Сессия: <span id="curSid">...</span></h3>
+      <p id="sessionInfo" style="margin: 4px 0; font-size: 14px; color: #9ca3af;">Сессия: загрузка...</p>
       <p style="margin: 8px 0;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
       <div class="viewer-link-container">
         <div class="link-input-group">
@@ -333,6 +334,7 @@
     let components = {};
     let lastServerRadius;
     let lastViewerScreenSize;
+    let sessionSync;
 
     // ===== ИНИЦИАЛИЗАЦИЯ =====
     document.addEventListener('DOMContentLoaded', function() {
@@ -696,7 +698,7 @@
     }
 
     function startSessionPolling(sessionId) {
-      const sessionSync = new SessionSync({
+      sessionSync = new SessionSync({
         sessionId,
         pollInterval: 100,
         serverUrl: '',
@@ -819,6 +821,12 @@
         }
       }
 
+      // Обновляем информацию о сессии в заголовке
+      const sessionInfo = document.getElementById('sessionInfo');
+      if (sessionInfo) {
+        sessionInfo.textContent = `Сессия: ${sessionId}`;
+      }
+
       if (sessionData.viewerScreenSize) {
         updatePreviewSize(sessionData.viewerScreenSize);
       }
@@ -936,11 +944,77 @@
 
     function resetSession(){
       if (confirm('Вы уверены, что хотите сбросить сессию?')) {
+        // Останавливаем синхронизацию
+        if (sessionSync) {
+          sessionSync.stopPolling();
+        }
+        
+        // Сбрасываем сессию на сервере
         fetch(`/api/session/${sessionId}/reset`, {
           method: 'POST'
         }).then(() => {
-          window.location.reload();
-        }).catch(error => debugError('Error resetting session:', error));
+          // Создаем новую сессию
+          return fetch('/api/session', { method: 'POST' });
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          return response.json();
+        }).then(data => {
+          const newSessionId = data.sessionId;
+          
+          // Подключаем контроллер к новой сессии
+          return fetch(`/api/session/${newSessionId}/controller/connect`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          }).then(() => {
+            // Показываем уведомление о новой сессии
+            debugLog(`🔄 Сессия сброшена. Новая сессия: ${newSessionId}`);
+            
+            // Обновляем глобальную переменную sessionId
+            sessionId = newSessionId;
+            
+            // Обновляем отображение ID сессии
+            const curSidElement = document.getElementById('curSid');
+            if (curSidElement) {
+              curSidElement.textContent = newSessionId;
+              debugLog(`✅ ID сессии обновлен в заголовке: ${newSessionId}`);
+            }
+            
+            // Обновляем ссылку для вьювера
+            const viewInput = document.getElementById('view');
+            if (viewInput) {
+              viewInput.value = `${window.location.origin}/s/${newSessionId}`;
+              debugLog(`✅ Ссылка для вьювера обновлена: ${viewInput.value}`);
+            }
+            
+            // Обновляем URL в браузере
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('sessionId', newSessionId);
+            window.history.replaceState({}, '', newUrl.toString());
+            debugLog(`✅ URL обновлен: ${newUrl.toString()}`);
+            
+            // Перезапускаем синхронизацию с новой сессией
+            if (sessionSync) {
+              sessionSync.stopPolling();
+              sessionSync.options.sessionId = newSessionId;
+              sessionSync.sessionId = newSessionId;
+              sessionSync.apiBaseUrl = `/api/session/${newSessionId}`;
+              sessionSync.startPolling();
+              debugLog(`✅ Синхронизация перезапущена для сессии: ${newSessionId}`);
+            }
+            
+            // Обновляем информацию о сессии
+            const sessionInfo = document.getElementById('sessionInfo');
+            if (sessionInfo) {
+              sessionInfo.textContent = `Сессия: ${newSessionId}`;
+            }
+          });
+        }).catch(error => {
+          debugError('Error resetting session:', error);
+          alert('Ошибка при сбросе сессии: ' + error.message);
+        });
       }
     }
 
