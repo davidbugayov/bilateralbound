@@ -383,6 +383,11 @@ class PhysicsEngine {
 
     // Синхронизируем скорость
     if (serverState.vx !== undefined && serverState.vy !== undefined) {
+      // Если сервер отправляет скорость, автоматически снимаем паузу
+      if (serverState.vx !== 0 || serverState.vy !== 0) {
+        this.state.paused = false
+      }
+      
       if (viewerScreenSize) {
         // Для вьювера используем прямую скорость с сервера
         const oldVel = { vx: this.ball.vx, vy: this.ball.vy }
