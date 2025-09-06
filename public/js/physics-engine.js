@@ -198,14 +198,21 @@ class PhysicsEngine {
       this.ball.vx += (this.state.targetVx - this.ball.vx) * lerpFactor
       this.ball.vy += (this.state.targetVy - this.ball.vy) * lerpFactor
       
-      // Плавно интерполируем к целевой позиции (если установлена)
+      // Обновляем позицию с интерполированной скоростью
+      this.ball.x += this.ball.vx * deltaTime
+      this.ball.y += this.ball.vy * deltaTime
+      
+      // Плавно корректируем позицию к целевой (если установлена) - только для синхронизации
       if (this.state.targetX !== undefined && this.state.targetY !== undefined) {
-        this.ball.x += (this.state.targetX - this.ball.x) * positionLerpFactor
-        this.ball.y += (this.state.targetY - this.ball.y) * positionLerpFactor
-      } else {
-        // Обновляем позицию с интерполированной скоростью
-        this.ball.x += this.ball.vx * deltaTime
-        this.ball.y += this.ball.vy * deltaTime
+        const posDiffX = this.state.targetX - this.ball.x
+        const posDiffY = this.state.targetY - this.ball.y
+        const distance = Math.sqrt(posDiffX * posDiffX + posDiffY * posDiffY)
+        
+        // Корректируем только если разница значительная (больше 10 пикселей)
+        if (distance > 10) {
+          this.ball.x += posDiffX * positionLerpFactor
+          this.ball.y += posDiffY * positionLerpFactor
+        }
       }
     }
 
@@ -365,14 +372,10 @@ class PhysicsEngine {
             viewerSize: serverState.viewerScreenSize
           })
         } else {
-          // Fallback - устанавливаем целевую позицию без масштабирования
-          const oldTarget = { x: this.state.targetX, y: this.state.targetY }
-          this.state.targetX = serverState.x
-          this.state.targetY = serverState.y
-          console.log('🎮 PhysicsEngine: Preview fallback target position set', {
-            oldTarget,
-            newTarget: { x: this.state.targetX, y: this.state.targetY },
-            serverPos: { x: serverState.x, y: serverState.y }
+          // Fallback - без вьювера не устанавливаем целевые позиции, пусть движется локально
+          console.log('🎮 PhysicsEngine: Preview fallback - no viewer, using local movement', {
+            serverPos: { x: serverState.x, y: serverState.y },
+            localPos: { x: this.ball.x, y: this.ball.y }
           })
         }
       }
