@@ -388,11 +388,11 @@ class SharedComponents {
         sizeControl.innerHTML = `
                     <h3>${defaultOptions.title}</h3>
                     <div class="size-palette">
-                        ${defaultOptions.sizes.map(size => `
+                        ${defaultOptions.sizes.map((size, index) => `
                             <button class="size-btn" 
                                     data-size="${size}"
                                     title="${size}px">
-                                ${size}
+                                x${index + 1}
                             </button>
                         `).join('')}
                     </div>
