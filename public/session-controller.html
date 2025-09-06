@@ -779,13 +779,30 @@
 
             // Синхронизируем все состояние с сервером через PhysicsEngine
             if (shouldSyncSpeed || sessionData.paused !== undefined) {
-              console.log('🎮 Sync preview with server state:', sessionData);
+              console.log('🎮 Controller: Sync preview with server state:', {
+                sessionData: {
+                  x: sessionData.x,
+                  y: sessionData.y,
+                  vx: sessionData.vx,
+                  vy: sessionData.vy,
+                  speed: sessionData.speed,
+                  paused: sessionData.paused
+                },
+                shouldSyncSpeed,
+                timeSinceLastUserInput,
+                updateDelay: speedManager.updateDelay
+              });
               window.__previewPhysics.syncFromServer(sessionData, null); // null = preview mode
 
               // Обновляем компонент скорости в UI
               if (sessionData.speed !== undefined && components && components.speed && typeof components.speed.setSpeed === 'function') {
                 components.speed.setSpeed(sessionData.speed);
               }
+            } else {
+              console.log('⏭️ Controller: Skipping sync due to recent user input', {
+                timeSinceLastUserInput,
+                updateDelay: speedManager.updateDelay
+              });
             }
           }
         },

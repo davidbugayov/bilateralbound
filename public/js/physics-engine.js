@@ -306,27 +306,64 @@ class PhysicsEngine {
      * Синхронизирует состояние с сервером (оптимизированная версия)
      */
   syncFromServer (serverState, viewerScreenSize = null) {
-    if (!serverState) return
+    if (!serverState) {
+      console.log('⚠️ PhysicsEngine: No server state provided')
+      return
+    }
+
+    console.log('🔄 PhysicsEngine: Syncing from server', {
+      serverState: {
+        x: serverState.x,
+        y: serverState.y,
+        vx: serverState.vx,
+        vy: serverState.vy,
+        speed: serverState.speed,
+        paused: serverState.paused
+      },
+      viewerScreenSize,
+      isViewer: !!viewerScreenSize
+    })
 
     // Синхронизируем позицию с сервером для всех клиентов
     if (serverState.x !== undefined && serverState.y !== undefined) {
       if (viewerScreenSize) {
         // Для вьювера используем прямую позицию с сервера
         this.isViewer = true
+        const oldPos = { x: this.ball.x, y: this.ball.y }
         this.ball.x = serverState.x
         this.ball.y = serverState.y
+        console.log('🎯 PhysicsEngine: Viewer position sync', {
+          oldPos,
+          newPos: { x: this.ball.x, y: this.ball.y },
+          serverPos: { x: serverState.x, y: serverState.y }
+        })
       } else {
         // Для превью масштабируем позицию под размер превью
         const canvas = document.getElementById('preview')
         if (canvas && serverState.viewerScreenSize) {
           const scaleX = canvas.width / serverState.viewerScreenSize.width
           const scaleY = canvas.height / serverState.viewerScreenSize.height
+          const oldPos = { x: this.ball.x, y: this.ball.y }
           this.ball.x = serverState.x * scaleX
           this.ball.y = serverState.y * scaleY
+          console.log('🎮 PhysicsEngine: Preview position sync', {
+            oldPos,
+            newPos: { x: this.ball.x, y: this.ball.y },
+            serverPos: { x: serverState.x, y: serverState.y },
+            scales: { x: scaleX, y: scaleY },
+            canvasSize: { w: canvas.width, h: canvas.height },
+            viewerSize: serverState.viewerScreenSize
+          })
         } else {
           // Fallback - используем прямую позицию
+          const oldPos = { x: this.ball.x, y: this.ball.y }
           this.ball.x = serverState.x
           this.ball.y = serverState.y
+          console.log('🎮 PhysicsEngine: Preview fallback position sync', {
+            oldPos,
+            newPos: { x: this.ball.x, y: this.ball.y },
+            serverPos: { x: serverState.x, y: serverState.y }
+          })
         }
       }
     }
@@ -335,10 +372,16 @@ class PhysicsEngine {
     if (serverState.vx !== undefined && serverState.vy !== undefined) {
       if (viewerScreenSize) {
         // Для вьювера используем прямую скорость с сервера
+        const oldVel = { vx: this.ball.vx, vy: this.ball.vy }
         this.ball.vx = serverState.vx
         this.ball.vy = serverState.vy
         this.state.targetVx = serverState.vx
         this.state.targetVy = serverState.vy
+        console.log('🎯 PhysicsEngine: Viewer velocity sync', {
+          oldVel,
+          newVel: { vx: this.ball.vx, vy: this.ball.vy },
+          serverVel: { vx: serverState.vx, vy: serverState.vy }
+        })
       } else {
         // Для превью масштабируем скорость под размер превью
         const canvas = document.getElementById('preview')
@@ -349,12 +392,25 @@ class PhysicsEngine {
           const scaledVy = serverState.vy * scaleY
 
           // Используем плавную интерполяцию для превью
+          const oldTarget = { vx: this.state.targetVx, vy: this.state.targetVy }
           this.state.targetVx = scaledVx
           this.state.targetVy = scaledVy
+          console.log('🎮 PhysicsEngine: Preview velocity sync', {
+            oldTarget,
+            newTarget: { vx: this.state.targetVx, vy: this.state.targetVy },
+            serverVel: { vx: serverState.vx, vy: serverState.vy },
+            scales: { x: scaleX, y: scaleY }
+          })
         } else {
           // Fallback без масштабирования
+          const oldTarget = { vx: this.state.targetVx, vy: this.state.targetVy }
           this.state.targetVx = serverState.vx
           this.state.targetVy = serverState.vy
+          console.log('🎮 PhysicsEngine: Preview fallback velocity sync', {
+            oldTarget,
+            newTarget: { vx: this.state.targetVx, vy: this.state.targetVy },
+            serverVel: { vx: serverState.vx, vy: serverState.vy }
+          })
         }
       }
     }

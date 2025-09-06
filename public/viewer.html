@@ -357,6 +357,17 @@
                             width: window.innerWidth,
                             height: window.innerHeight
                         };
+                        console.log('👁️ Viewer: Received server state', {
+                            serverState: {
+                                x: serverState.x,
+                                y: serverState.y,
+                                vx: serverState.vx,
+                                vy: serverState.vy,
+                                speed: serverState.speed,
+                                paused: serverState.paused
+                            },
+                            viewerScreenSize
+                        });
                         physicsEngine.syncFromServer(serverState, viewerScreenSize);
 
                         // Обновляем статус

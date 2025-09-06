@@ -122,6 +122,7 @@ class SessionSync {
   handleResponse (response) {
     if (response.status === 404) {
       // Сессия истекла
+      console.log('🔄 SessionSync: Session expired (404)')
       if (this.options.onSessionExpired) {
         this.options.onSessionExpired()
       }
@@ -131,13 +132,40 @@ class SessionSync {
 
     if (response.status === 200 && response.data) {
       // Проверяем, изменилось ли состояние
-      if (this.hasStateChanged(response.data)) {
+      const hasChanged = this.hasStateChanged(response.data)
+      console.log('🔄 SessionSync: State check', {
+        hasChanged,
+        lastState: this.lastState ? {
+          x: this.lastState.x,
+          y: this.lastState.y,
+          vx: this.lastState.vx,
+          vy: this.lastState.vy,
+          speed: this.lastState.speed
+        } : null,
+        newState: {
+          x: response.data.x,
+          y: response.data.y,
+          vx: response.data.vx,
+          vy: response.data.vy,
+          speed: response.data.speed
+        }
+      })
+
+      if (hasChanged) {
         this.lastState = response.data
+        console.log('✅ SessionSync: State changed, calling callback')
 
         if (this.options.onStateReceived) {
           this.options.onStateReceived(response.data)
         }
+      } else {
+        console.log('⏭️ SessionSync: No significant changes, skipping callback')
       }
+    } else {
+      console.log('⚠️ SessionSync: Invalid response', {
+        status: response.status,
+        hasData: !!response.data
+      })
     }
   }
 
@@ -146,7 +174,10 @@ class SessionSync {
      * Учитывает только значительные изменения для уменьшения запросов
      */
   hasStateChanged (newState) {
-    if (!this.lastState) return true
+    if (!this.lastState) {
+      console.log('🔄 SessionSync: First state, marking as changed')
+      return true
+    }
 
     // Быстрая проверка основных параметров
     const last = this.lastState
@@ -155,16 +186,32 @@ class SessionSync {
     // Для вьювера проверяем только изменения скорости и направления
     const velocityChanged = Math.abs(last.vx - current.vx) > 0.1 || Math.abs(last.vy - current.vy) > 0.1
     const speedChanged = Math.abs(last.speed - current.speed) > 0.1
+    const positionChanged = Math.abs(last.x - current.x) > 0.1 || Math.abs(last.y - current.y) > 0.1
 
-    return (
-      velocityChanged ||
-      speedChanged ||
-            last.radius !== current.radius ||
-            last.colorBall !== current.colorBall ||
-            last.colorBg !== current.colorBg ||
-            last.paused !== current.paused ||
-            last.viewerConnected !== current.viewerConnected
-    )
+    const changes = {
+      velocityChanged,
+      speedChanged,
+      positionChanged,
+      radiusChanged: last.radius !== current.radius,
+      colorBallChanged: last.colorBall !== current.colorBall,
+      colorBgChanged: last.colorBg !== current.colorBg,
+      pausedChanged: last.paused !== current.paused,
+      viewerConnectedChanged: last.viewerConnected !== current.viewerConnected
+    }
+
+    const hasAnyChange = Object.values(changes).some(change => change)
+    
+    console.log('🔄 SessionSync: Change detection', {
+      changes,
+      hasAnyChange,
+      thresholds: {
+        velocity: 0.1,
+        speed: 0.1,
+        position: 0.1
+      }
+    })
+
+    return hasAnyChange
   }
 
   /**
