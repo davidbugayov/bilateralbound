@@ -347,7 +347,7 @@
             const scale = previewCanvas.width / (state.viewerScreenSize?.width || 1920);
             const ballX = (state.x || 400) * scale;
             const ballY = (state.y || 300) * scale;
-            const ballRadius = (state.radius || 20) * scale;
+            const ballRadius = (state.radius || 40) * scale;
 
             // Рисуем мяч
             drawBall(ballX, ballY, ballRadius, state.colorBall || '#60a5fa');

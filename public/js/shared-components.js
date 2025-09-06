@@ -367,7 +367,7 @@ class SharedComponents {
      */
   createSizeControl (container, options = {}) {
     const defaultOptions = {
-      sizes: [20, 30, 40, 50, 60],
+      sizes: [20, 40, 80, 100],
       defaultValue: 40,
       onSizeChange: null,
       title: '📏 Размер',
