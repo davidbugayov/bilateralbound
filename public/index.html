@@ -60,9 +60,8 @@
   <meta name="twitter:alt-title" content="BilateralBound - Создать игровую сессию" />
   <meta name="twitter:alt-description" content="Создайте новую сессию для игры BilateralBound - интерактивной игры с управлением движением шарика в реальном времени" />
 
-  <!-- Preload critical resources -->
+  <!-- Preload only essential resources for main page -->
   <link rel="preload" href="./js/common.js" as="script" />
-  <link rel="preload" href="./js/module-factory.js" as="script" />
   <link rel="dns-prefetch" href="//fonts.googleapis.com" />
 
   <!-- Structured Data for SEO -->
@@ -191,11 +190,8 @@
       }
     }
   </style>
+  <!-- Load only essential scripts for main page -->
   <script src="./js/common.js"></script>
-  <script src="./js/module-factory.js"></script>
-  <script defer src="./js/physics-engine.js"></script>
-  <script defer src="./js/renderer.js"></script>
-  <script defer src="./js/session-sync.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -220,7 +216,7 @@
       </div>
 
       <div id="createSection">
-        <button onclick="createSession()" style="width: 100%; padding: 16px; font-size: 18px; margin: 20px 0; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+        <button id="createSessionBtn" onclick="createSession()" style="width: 100%; padding: 16px; font-size: 18px; margin: 20px 0; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
           🚀 Начать EMDR сессию
         </button>
 
@@ -273,9 +269,52 @@
   </div>
 
   <script>
-    // Используем фабрику модулей для создания сессии
+    // Загружаем необходимые скрипты только при создании сессии
+    async function loadSessionScripts() {
+      return new Promise((resolve, reject) => {
+        const scripts = [
+          './js/module-factory.js',
+          './js/physics-engine.js', 
+          './js/renderer.js',
+          './js/session-sync.js'
+        ];
+        
+        let loadedCount = 0;
+        const totalScripts = scripts.length;
+        
+        scripts.forEach(src => {
+          const script = document.createElement('script');
+          script.src = src;
+          script.onload = () => {
+            loadedCount++;
+            if (loadedCount === totalScripts) {
+              console.log('✅ Все скрипты сессии загружены');
+              resolve();
+            }
+          };
+          script.onerror = () => {
+            console.error('❌ Ошибка загрузки скрипта:', src);
+            reject(new Error(`Failed to load ${src}`));
+          };
+          document.head.appendChild(script);
+        });
+      });
+    }
+
+    // Создаем сессию с загрузкой необходимых скриптов
     async function createSession() {
+      const btn = document.getElementById('createSessionBtn');
+      const originalText = btn.innerHTML;
+      
       try {
+        // Показываем индикатор загрузки
+        btn.innerHTML = '⏳ Загрузка...';
+        btn.disabled = true;
+        
+        console.log('🔄 Загрузка скриптов сессии...');
+        await loadSessionScripts();
+        
+        btn.innerHTML = '🔄 Создание сессии...';
         console.log('🔄 Создание сессии...');
         const response = await fetch('/api/session', { method: 'POST' });
         
@@ -322,6 +361,10 @@
         console.error('❌ Полная ошибка:', error);
         alert('Ошибка при создании сессии: ' + error.message);
         debugError('Error creating session:', error);
+        
+        // Восстанавливаем кнопку
+        btn.innerHTML = originalText;
+        btn.disabled = false;
       }
     }
 
