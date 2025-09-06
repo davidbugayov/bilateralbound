@@ -409,7 +409,7 @@
       components.bgColor = sharedComponents.createColorControl(
         document.getElementById('bgColorControl'),
         {
-          colors: ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a', '#1e293b'],
+          colors: ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a'],
           defaultValue: '#020617', // Дефолтный цвет фона
           title: '🎨 Цвет фона',
           onColorChange: (color) => {
@@ -743,6 +743,12 @@
     }
 
     function startSessionPolling(sessionId) {
+      // Останавливаем предыдущую проверку вьювера если она была
+      if (window.viewerCheckInterval) {
+        clearInterval(window.viewerCheckInterval);
+        window.viewerCheckInterval = null;
+      }
+      
       // Сначала делаем один запрос чтобы проверить есть ли вьювер
       checkViewerStatus(sessionId);
     }
@@ -773,35 +779,42 @@
     }
 
     function startViewerCheckPolling(sessionId) {
-      console.log('⏳ Starting viewer check polling (no state requests)');
+      console.log('⏳ Starting viewer check polling (NO state requests)');
       
-      sessionSync = new SessionSync({
-        sessionId,
-        pollInterval: 5000, // Проверяем каждые 5 секунд
-        serverUrl: '',
-        onSessionExpired: handleSessionExpired,
-        onStateReceived: (sessionData) => {
+      // Используем простой setInterval вместо SessionSync
+      // чтобы избежать запросов к /state эндпоинту
+      const viewerCheckInterval = setInterval(async () => {
+        try {
+          const response = await fetch(`/api/session/${sessionId}/state`);
+          const sessionData = await response.json();
+          
           const hasViewer = sessionData.viewerConnected;
-          console.log('👀 Viewer check:', { hasViewer });
+          console.log('👀 Viewer check (no polling):', { hasViewer });
 
           if (hasViewer) {
             console.log('🎉 Viewer connected! Switching to full polling');
-            // Вьювер подключился - переключаемся на полный polling
-            sessionSync.stopPolling();
+            // Останавливаем проверку и запускаем полный polling
+            clearInterval(viewerCheckInterval);
             startFullPolling(sessionId);
           }
-          // Если вьювера все еще нет - просто ждем
-        },
-        onError: (error) => {
+        } catch (error) {
           console.error('Viewer check error:', error);
         }
-      });
-
-      sessionSync.startPolling();
+      }, 5000); // Проверяем каждые 5 секунд
+      
+      // Сохраняем interval ID для возможной остановки
+      window.viewerCheckInterval = viewerCheckInterval;
     }
 
     function startFullPolling(sessionId) {
       console.log('🚀 Starting full polling (viewer connected)');
+      
+      // Останавливаем проверку вьювера если она была запущена
+      if (window.viewerCheckInterval) {
+        clearInterval(window.viewerCheckInterval);
+        window.viewerCheckInterval = null;
+        console.log('🛑 Stopped viewer check interval');
+      }
       
       sessionSync = new SessionSync({
         sessionId,
