@@ -1056,10 +1056,10 @@
     }
 
     function setBallSize(size) {
-      fetch(`/api/session/${sessionId}/size`, {
+      fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ size })
+        body: JSON.stringify({ radius: size })
       }).catch(error => {
         debugError('Error setting ball size:', error);
         showError('Ошибка изменения размера мяча', error.message);
