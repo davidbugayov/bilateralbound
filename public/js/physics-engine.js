@@ -13,7 +13,8 @@ class PhysicsEngine {
       ballRadius: 20,
       minSpeed: 50,
       maxSpeed: 1280,
-      lerpFactor: 0.15, // Увеличено для более плавного движения
+      lerpFactor: 0.1, // Плавная интерполяция скорости
+      positionLerpFactor: 0.05, // Плавная интерполяция позиции
       bounceCallback: null,
       friction: 1.0, // Убираем трение для постоянного движения
       bounceDamping: 1.0, // Убираем затухание для идеальных отскоков
@@ -45,7 +46,9 @@ class PhysicsEngine {
       paused: true,
       lastDirection: { x: 0, y: 0 },
       targetVx: 0,
-      targetVy: 0
+      targetVy: 0,
+      targetX: 0,
+      targetY: 0
     }
 
     this.bounceCallback = this.options.bounceCallback
@@ -187,16 +190,23 @@ class PhysicsEngine {
       this.ball.x += this.ball.vx * deltaTime
       this.ball.y += this.ball.vy * deltaTime
     } else {
-      // Для превью используем плавную интерполяцию к целевой скорости
-      const lerpFactor = this.options.lerpFactor || 0.15
+      // Для превью используем плавную интерполяцию
+      const lerpFactor = this.options.lerpFactor || 0.1
+      const positionLerpFactor = this.options.positionLerpFactor || 0.05
       
       // Плавно интерполируем к целевой скорости
       this.ball.vx += (this.state.targetVx - this.ball.vx) * lerpFactor
       this.ball.vy += (this.state.targetVy - this.ball.vy) * lerpFactor
       
-      // Обновляем позицию с интерполированной скоростью
-      this.ball.x += this.ball.vx * deltaTime
-      this.ball.y += this.ball.vy * deltaTime
+      // Плавно интерполируем к целевой позиции (если есть)
+      if (this.state.targetX !== 0 || this.state.targetY !== 0) {
+        this.ball.x += (this.state.targetX - this.ball.x) * positionLerpFactor
+        this.ball.y += (this.state.targetY - this.ball.y) * positionLerpFactor
+      } else {
+        // Обновляем позицию с интерполированной скоростью
+        this.ball.x += this.ball.vx * deltaTime
+        this.ball.y += this.ball.vy * deltaTime
+      }
     }
 
     // Обрабатываем коллизии с границами
@@ -338,30 +348,30 @@ class PhysicsEngine {
           serverPos: { x: serverState.x, y: serverState.y }
         })
       } else {
-        // Для превью масштабируем позицию под размер превью
+        // Для превью устанавливаем целевую позицию для плавной интерполяции
         const canvas = document.getElementById('preview')
         if (canvas && serverState.viewerScreenSize) {
           const scaleX = canvas.width / serverState.viewerScreenSize.width
           const scaleY = canvas.height / serverState.viewerScreenSize.height
-          const oldPos = { x: this.ball.x, y: this.ball.y }
-          this.ball.x = serverState.x * scaleX
-          this.ball.y = serverState.y * scaleY
-          console.log('🎮 PhysicsEngine: Preview position sync', {
-            oldPos,
-            newPos: { x: this.ball.x, y: this.ball.y },
+          const oldTarget = { x: this.state.targetX, y: this.state.targetY }
+          this.state.targetX = serverState.x * scaleX
+          this.state.targetY = serverState.y * scaleY
+          console.log('🎮 PhysicsEngine: Preview target position set', {
+            oldTarget,
+            newTarget: { x: this.state.targetX, y: this.state.targetY },
             serverPos: { x: serverState.x, y: serverState.y },
             scales: { x: scaleX, y: scaleY },
             canvasSize: { w: canvas.width, h: canvas.height },
             viewerSize: serverState.viewerScreenSize
           })
         } else {
-          // Fallback - используем прямую позицию
-          const oldPos = { x: this.ball.x, y: this.ball.y }
-          this.ball.x = serverState.x
-          this.ball.y = serverState.y
-          console.log('🎮 PhysicsEngine: Preview fallback position sync', {
-            oldPos,
-            newPos: { x: this.ball.x, y: this.ball.y },
+          // Fallback - устанавливаем целевую позицию без масштабирования
+          const oldTarget = { x: this.state.targetX, y: this.state.targetY }
+          this.state.targetX = serverState.x
+          this.state.targetY = serverState.y
+          console.log('🎮 PhysicsEngine: Preview fallback target position set', {
+            oldTarget,
+            newTarget: { x: this.state.targetX, y: this.state.targetY },
             serverPos: { x: serverState.x, y: serverState.y }
           })
         }
@@ -501,6 +511,8 @@ class PhysicsEngine {
     this.state.lastDirection.y = 0
     this.state.targetVx = 0
     this.state.targetVy = 0
+    this.state.targetX = 0
+    this.state.targetY = 0
   }
 
   /**
