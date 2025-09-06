@@ -47,8 +47,8 @@ class PhysicsEngine {
       lastDirection: { x: 0, y: 0 },
       targetVx: 0,
       targetVy: 0,
-      targetX: 0,
-      targetY: 0
+      targetX: undefined,
+      targetY: undefined
     }
 
     this.bounceCallback = this.options.bounceCallback
@@ -198,8 +198,8 @@ class PhysicsEngine {
       this.ball.vx += (this.state.targetVx - this.ball.vx) * lerpFactor
       this.ball.vy += (this.state.targetVy - this.ball.vy) * lerpFactor
       
-      // Плавно интерполируем к целевой позиции (если есть)
-      if (this.state.targetX !== 0 || this.state.targetY !== 0) {
+      // Плавно интерполируем к целевой позиции (если установлена)
+      if (this.state.targetX !== undefined && this.state.targetY !== undefined) {
         this.ball.x += (this.state.targetX - this.ball.x) * positionLerpFactor
         this.ball.y += (this.state.targetY - this.ball.y) * positionLerpFactor
       } else {
@@ -511,8 +511,8 @@ class PhysicsEngine {
     this.state.lastDirection.y = 0
     this.state.targetVx = 0
     this.state.targetVy = 0
-    this.state.targetX = 0
-    this.state.targetY = 0
+    this.state.targetX = undefined
+    this.state.targetY = undefined
   }
 
   /**

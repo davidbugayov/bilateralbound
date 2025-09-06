@@ -1229,6 +1229,8 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             resume: true,
+            dirX: currentDirection.dx,
+            dirY: currentDirection.dy,
             speedScalar: components.speed ? components.speed.getSpeed() : 40
           })
         }).then(() => {
