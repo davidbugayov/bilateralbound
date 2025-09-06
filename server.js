@@ -45,7 +45,7 @@ const sessionManager = {
         vx: 0,
         vy: 0,
         speed: 40,
-        radius: 40,
+        radius: 20,
         colorBall: '#60a5fa',
         colorBg: '#020617',
         paused: true

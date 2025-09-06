@@ -10,7 +10,7 @@ class PhysicsEngine {
     this.options = {
       worldWidth: 800,
       worldHeight: 600,
-      ballRadius: 40,
+      ballRadius: 20,
       minSpeed: 50,
       maxSpeed: 1280,
       lerpFactor: 0.15, // Увеличено для более плавного движения

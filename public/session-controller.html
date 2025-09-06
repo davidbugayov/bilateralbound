@@ -396,6 +396,7 @@
         document.getElementById('ballColorControl'),
         {
           colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff'],
+          defaultValue: '#60a5fa', // Дефолтный цвет мяча
           title: '🎨 Цвет шарика',
           onColorChange: (color) => {
             setBallColor(color);
@@ -408,7 +409,8 @@
       components.bgColor = sharedComponents.createColorControl(
         document.getElementById('bgColorControl'),
         {
-          colors: ['#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a', '#1e293b'],
+          colors: ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a', '#1e293b'],
+          defaultValue: '#020617', // Дефолтный цвет фона
           title: '🎨 Цвет фона',
           onColorChange: (color) => {
             setBgColor(color);
@@ -422,7 +424,7 @@
         document.getElementById('sizeControl'),
         {
           sizes: [20, 40, 80, 100],
-          defaultValue: 40,
+          defaultValue: 20,
           title: '📏 Размер шарика',
           onSizeChange: (size) => {
             setBallSize(size);

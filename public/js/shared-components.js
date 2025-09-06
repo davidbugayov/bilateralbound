@@ -292,6 +292,7 @@ class SharedComponents {
   createColorControl (container, options = {}) {
     const defaultOptions = {
       colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+      defaultValue: null, // Будет установлен в colors[0] если не указан
       onColorChange: null,
       title: '🎨 Цвет',
       ...options
@@ -300,7 +301,7 @@ class SharedComponents {
     const component = {
       container,
       options: defaultOptions,
-      currentColor: defaultOptions.colors[0],
+      currentColor: defaultOptions.defaultValue || defaultOptions.colors[0],
       elements: {},
 
       // Создает HTML для контроля цвета
@@ -368,7 +369,7 @@ class SharedComponents {
   createSizeControl (container, options = {}) {
     const defaultOptions = {
       sizes: [20, 40, 80, 100],
-      defaultValue: 40,
+      defaultValue: 20,
       onSizeChange: null,
       title: '📏 Размер',
       ...options
