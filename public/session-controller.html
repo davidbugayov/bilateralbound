@@ -1169,7 +1169,7 @@
                           window.location.hostname.includes('bilateralbound.onrender.com')
       
       if (isProduction) {
-        return 1000 // 1 секунда для продакшена чтобы избежать 429 ошибок
+        return 3000 // 3 секунды для продакшена чтобы избежать 429 ошибок
       } else {
         return 200 // 200ms для локальной разработки
       }
@@ -1184,7 +1184,7 @@
                           window.location.hostname.includes('bilateralbound.onrender.com')
       
       if (isProduction) {
-        return 500 // 500ms для продакшена чтобы избежать 429 ошибок
+        return 3000 // 3 секунды для продакшена чтобы избежать 429 ошибок
       } else {
         return 100 // 100ms для локальной разработки
       }

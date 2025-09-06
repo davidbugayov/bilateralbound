@@ -183,35 +183,65 @@ class SessionSync {
     const last = this.lastState
     const current = newState
 
-    // Для вьювера проверяем только изменения скорости и направления
-    const velocityChanged = Math.abs(last.vx - current.vx) > 0.1 || Math.abs(last.vy - current.vy) > 0.1
-    const speedChanged = Math.abs(last.speed - current.speed) > 0.1
-    const positionChanged = Math.abs(last.x - current.x) > 0.1 || Math.abs(last.y - current.y) > 0.1
+    // Для продакшена проверяем только критические изменения
+    const isProduction = window.location.hostname.includes('onrender.com') || 
+                        window.location.hostname.includes('bilateralbound.onrender.com')
 
-    const changes = {
-      velocityChanged,
-      speedChanged,
-      positionChanged,
-      radiusChanged: last.radius !== current.radius,
-      colorBallChanged: last.colorBall !== current.colorBall,
-      colorBgChanged: last.colorBg !== current.colorBg,
-      pausedChanged: last.paused !== current.paused,
-      viewerConnectedChanged: last.viewerConnected !== current.viewerConnected
-    }
+    if (isProduction) {
+      // На продакшене синхронизируем только отскоки и паузу
+      const positionChanged = Math.abs(last.x - current.x) > 50 || Math.abs(last.y - current.y) > 50
+      const pausedChanged = last.paused !== current.paused
+      const speedChanged = Math.abs(last.speed - current.speed) > 10
 
-    const hasAnyChange = Object.values(changes).some(change => change)
-    
-    console.log('🔄 SessionSync: Change detection', {
-      changes,
-      hasAnyChange,
-      thresholds: {
-        velocity: 0.1,
-        speed: 0.1,
-        position: 0.1
+      const changes = {
+        positionChanged,
+        pausedChanged,
+        speedChanged
       }
-    })
 
-    return hasAnyChange
+      const hasAnyChange = Object.values(changes).some(change => change)
+      
+      console.log('🔄 SessionSync: Production change detection (bounces only)', {
+        changes,
+        hasAnyChange,
+        thresholds: {
+          position: 50,
+          speed: 10
+        }
+      })
+
+      return hasAnyChange
+    } else {
+      // Для локальной разработки полная синхронизация
+      const velocityChanged = Math.abs(last.vx - current.vx) > 0.1 || Math.abs(last.vy - current.vy) > 0.1
+      const speedChanged = Math.abs(last.speed - current.speed) > 0.1
+      const positionChanged = Math.abs(last.x - current.x) > 0.1 || Math.abs(last.y - current.y) > 0.1
+
+      const changes = {
+        velocityChanged,
+        speedChanged,
+        positionChanged,
+        radiusChanged: last.radius !== current.radius,
+        colorBallChanged: last.colorBall !== current.colorBall,
+        colorBgChanged: last.colorBg !== current.colorBg,
+        pausedChanged: last.paused !== current.paused,
+        viewerConnectedChanged: last.viewerConnected !== current.viewerConnected
+      }
+
+      const hasAnyChange = Object.values(changes).some(change => change)
+      
+      console.log('🔄 SessionSync: Local change detection (full sync)', {
+        changes,
+        hasAnyChange,
+        thresholds: {
+          velocity: 0.1,
+          speed: 0.1,
+          position: 0.1
+        }
+      })
+
+      return hasAnyChange
+    }
   }
 
   /**
@@ -355,7 +385,7 @@ class SessionSync {
                         window.location.hostname.includes('bilateralbound.onrender.com')
     
     if (isProduction) {
-      return 500 // 500ms для продакшена чтобы избежать 429 ошибок
+      return 3000 // 3 секунды для продакшена чтобы избежать 429 ошибок
     } else {
       return 100 // 100ms для локальной разработки
     }

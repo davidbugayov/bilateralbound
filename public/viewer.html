@@ -357,18 +357,48 @@
                             width: window.innerWidth,
                             height: window.innerHeight
                         };
-                        console.log('👁️ Viewer: Received server state', {
-                            serverState: {
-                                x: serverState.x,
-                                y: serverState.y,
-                                vx: serverState.vx,
-                                vy: serverState.vy,
-                                speed: serverState.speed,
-                                paused: serverState.paused
-                            },
-                            viewerScreenSize
-                        });
-                        physicsEngine.syncFromServer(serverState, viewerScreenSize);
+                        
+                        // На продакшене синхронизируем только при отскоках
+                        const isProduction = window.location.hostname.includes('onrender.com') || 
+                                            window.location.hostname.includes('bilateralbound.onrender.com')
+                        
+                        if (isProduction) {
+                            // Проверяем, произошел ли отскок (большое изменение позиции)
+                            const lastPos = physicsEngine.ball ? { x: physicsEngine.ball.x, y: physicsEngine.ball.y } : null
+                            const shouldSync = !lastPos || 
+                                             Math.abs(lastPos.x - serverState.x) > 50 || 
+                                             Math.abs(lastPos.y - serverState.y) > 50 ||
+                                             serverState.paused !== physicsEngine.state.paused
+                            
+                            if (shouldSync) {
+                                console.log('👁️ Viewer: Production sync (bounce detected)', {
+                                    lastPos,
+                                    serverPos: { x: serverState.x, y: serverState.y },
+                                    positionDiff: lastPos ? {
+                                        x: Math.abs(lastPos.x - serverState.x),
+                                        y: Math.abs(lastPos.y - serverState.y)
+                                    } : null,
+                                    pausedChanged: serverState.paused !== physicsEngine.state.paused
+                                });
+                                physicsEngine.syncFromServer(serverState, viewerScreenSize);
+                            } else {
+                                console.log('⏭️ Viewer: Skipping sync (no significant change)');
+                            }
+                        } else {
+                            // Локальная разработка - полная синхронизация
+                            console.log('👁️ Viewer: Local sync (full)', {
+                                serverState: {
+                                    x: serverState.x,
+                                    y: serverState.y,
+                                    vx: serverState.vx,
+                                    vy: serverState.vy,
+                                    speed: serverState.speed,
+                                    paused: serverState.paused
+                                },
+                                viewerScreenSize
+                            });
+                            physicsEngine.syncFromServer(serverState, viewerScreenSize);
+                        }
 
                         // Обновляем статус
                         updateStatus(serverState);
@@ -719,17 +749,17 @@
         /**
          * Определяет оптимальный интервал polling'а в зависимости от окружения
          */
-        function getOptimalPollInterval() {
-            // Проверяем, работаем ли на продакшене (Render.com)
-            const isProduction = window.location.hostname.includes('onrender.com') || 
-                                window.location.hostname.includes('bilateralbound.onrender.com')
-            
-            if (isProduction) {
-                return 500 // 500ms для продакшена чтобы избежать 429 ошибок
-            } else {
-                return 100 // 100ms для локальной разработки
-            }
-        }
+    function getOptimalPollInterval() {
+      // Проверяем, работаем ли на продакшене (Render.com)
+      const isProduction = window.location.hostname.includes('onrender.com') || 
+                          window.location.hostname.includes('bilateralbound.onrender.com')
+      
+      if (isProduction) {
+        return 3000 // 3 секунды для продакшена чтобы избежать 429 ошибок
+      } else {
+        return 100 // 100ms для локальной разработки
+      }
+    }
     </script>
 </body>
 </html>
