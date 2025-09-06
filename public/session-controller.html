@@ -743,24 +743,88 @@
     }
 
     function startSessionPolling(sessionId) {
+      // Сначала делаем один запрос чтобы проверить есть ли вьювер
+      checkViewerStatus(sessionId);
+    }
+
+    async function checkViewerStatus(sessionId) {
+      try {
+        const response = await fetch(`/api/session/${sessionId}/state`);
+        const sessionData = await response.json();
+        
+        const hasViewer = sessionData.viewerConnected;
+        console.log('🔍 Initial viewer check:', { 
+          hasViewer, 
+          viewerScreenSize: sessionData.viewerScreenSize 
+        });
+
+        if (hasViewer) {
+          // Вьювер уже подключен - запускаем полный polling
+          startFullPolling(sessionId);
+        } else {
+          // Вьювера нет - запускаем только проверку подключения
+          startViewerCheckPolling(sessionId);
+        }
+      } catch (error) {
+        console.error('Error checking viewer status:', error);
+        // В случае ошибки запускаем полный polling
+        startFullPolling(sessionId);
+      }
+    }
+
+    function startViewerCheckPolling(sessionId) {
+      console.log('⏳ Starting viewer check polling (no state requests)');
+      
       sessionSync = new SessionSync({
         sessionId,
-        pollInterval: getOptimalPollInterval(), // Адаптивный интервал
+        pollInterval: 5000, // Проверяем каждые 5 секунд
+        serverUrl: '',
+        onSessionExpired: handleSessionExpired,
+        onStateReceived: (sessionData) => {
+          const hasViewer = sessionData.viewerConnected;
+          console.log('👀 Viewer check:', { hasViewer });
+
+          if (hasViewer) {
+            console.log('🎉 Viewer connected! Switching to full polling');
+            // Вьювер подключился - переключаемся на полный polling
+            sessionSync.stopPolling();
+            startFullPolling(sessionId);
+          }
+          // Если вьювера все еще нет - просто ждем
+        },
+        onError: (error) => {
+          console.error('Viewer check error:', error);
+        }
+      });
+
+      sessionSync.startPolling();
+    }
+
+    function startFullPolling(sessionId) {
+      console.log('🚀 Starting full polling (viewer connected)');
+      
+      sessionSync = new SessionSync({
+        sessionId,
+        pollInterval: getOptimalPollInterval(true), // Полный интервал для вьювера
         serverUrl: '',
         onSessionExpired: handleSessionExpired,
         onStateReceived: (sessionData) => {
           updateViewerInfo(sessionData);
 
-          // Оптимизация: меньше активности когда вьювер не подключен
           const hasViewer = sessionData.viewerConnected;
-          console.log('📊 Controller polling:', { 
+          console.log('📊 Full polling:', { 
             hasViewer, 
             viewerScreenSize: sessionData.viewerScreenSize,
             paused: sessionData.paused 
           });
 
-          // Обновляем интервал polling'а в зависимости от наличия вьювера
-          updatePollingInterval(hasViewer);
+          // Если вьювер отключился - переключаемся на проверку
+          if (!hasViewer) {
+            console.log('👋 Viewer disconnected! Switching to viewer check');
+            sessionSync.stopPolling();
+            startViewerCheckPolling(sessionId);
+            return;
+          }
 
           // Синхронизируем состояние кнопки Старт/Стоп
           if (sessionData.paused !== undefined) {
@@ -982,13 +1046,8 @@
           sessionSync.stopPolling();
         }
         
-        // Сбрасываем сессию на сервере
-        fetch(`/api/session/${sessionId}/reset`, {
-          method: 'POST'
-        }).then(() => {
-          // Создаем новую сессию
-          return fetch('/api/session', { method: 'POST' });
-        }).then(response => {
+        // Создаем новую сессию (без сброса старой)
+        fetch('/api/session', { method: 'POST' }).then(response => {
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
@@ -1043,6 +1102,13 @@
             if (sessionInfo) {
               sessionInfo.textContent = `Сессия: ${newSessionId}`;
             }
+            
+            // Сбрасываем состояние контроллера
+            isPlaying = false;
+            hasViewer = false;
+            updatePlayPauseButton();
+            
+            debugLog('✅ Сессия сброшена, создана новая сессия');
           });
         }).catch(error => {
           debugError('Error resetting session:', error);
