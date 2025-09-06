@@ -444,6 +444,12 @@
 
     async function updateSpeed(speed) {
       try {
+        // Оптимизация: меньше обновлений когда нет вьювера
+        if (!hasViewer) {
+          console.log('⏭️ Skipping speed update - no viewer connected');
+          return;
+        }
+        
         // Проверяем, нужно ли обновлять скорость
         const timeSinceLastUpdate = Date.now() - speedManager.lastUpdateTime;
         if (timeSinceLastUpdate < speedManager.updateDelay) {
@@ -745,7 +751,16 @@
         onStateReceived: (sessionData) => {
           updateViewerInfo(sessionData);
 
-          // Не изменяем радиус превью в зависимости от статуса подключения вьювера
+          // Оптимизация: меньше активности когда вьювер не подключен
+          const hasViewer = sessionData.viewerConnected;
+          console.log('📊 Controller polling:', { 
+            hasViewer, 
+            viewerScreenSize: sessionData.viewerScreenSize,
+            paused: sessionData.paused 
+          });
+
+          // Обновляем интервал polling'а в зависимости от наличия вьювера
+          updatePollingInterval(hasViewer);
 
           // Синхронизируем состояние кнопки Старт/Стоп
           if (sessionData.paused !== undefined) {
@@ -818,6 +833,9 @@
     }
 
     function updateViewerInfo(sessionData) {
+      // Обновляем глобальную переменную
+      hasViewer = sessionData.viewerConnected;
+      
       const viewerStatus = document.getElementById('viewerStatus');
       if (viewerStatus) {
         if (sessionData.viewerConnected) {
@@ -1034,6 +1052,12 @@
     }
 
     function setBallColor(color) {
+      // Оптимизация: меньше обновлений когда нет вьювера
+      if (!hasViewer) {
+        console.log('⏭️ Skipping ball color update - no viewer connected');
+        return;
+      }
+      
       fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1045,6 +1069,12 @@
     }
 
     function setBgColor(color) {
+      // Оптимизация: меньше обновлений когда нет вьювера
+      if (!hasViewer) {
+        console.log('⏭️ Skipping background color update - no viewer connected');
+        return;
+      }
+      
       fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1056,6 +1086,12 @@
     }
 
     function setBallSize(size) {
+      // Оптимизация: меньше обновлений когда нет вьювера
+      if (!hasViewer) {
+        console.log('⏭️ Skipping ball size update - no viewer connected');
+        return;
+      }
+      
       fetch(`/api/session/${sessionId}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1068,6 +1104,9 @@
 
     // Глобальная переменная для отслеживания состояния игры
     let isPlaying = false;
+    
+    // Глобальная переменная для отслеживания наличия вьювера
+    let hasViewer = false;
 
     // Глобальная переменная для отслеживания текущего направления
     let currentDirectionMode = 'horizontal';
@@ -1178,17 +1217,34 @@
     }
 
     /**
-     * Определяет оптимальный интервал polling'а в зависимости от окружения
+     * Определяет оптимальный интервал polling'а в зависимости от окружения и наличия вьювера
      */
-    function getOptimalPollInterval() {
+    function getOptimalPollInterval(hasViewer = false) {
       // Проверяем, работаем ли на продакшене (Render.com)
       const isProduction = window.location.hostname.includes('onrender.com') || 
                           window.location.hostname.includes('bilateralbound.onrender.com')
       
       if (isProduction) {
-        return 3000 // 3 секунды для продакшена чтобы избежать 429 ошибок
+        // На продакшене: реже когда нет вьювера
+        return hasViewer ? 3000 : 10000 // 3 сек с вьювером, 10 сек без вьювера
       } else {
-        return 100 // 100ms для локальной разработки
+        // Локально: реже когда нет вьювера
+        return hasViewer ? 100 : 2000 // 100ms с вьювером, 2 сек без вьювера
+      }
+    }
+
+    /**
+     * Обновляет интервал polling'а в зависимости от наличия вьювера
+     */
+    function updatePollingInterval(hasViewer) {
+      if (sessionSync) {
+        const newInterval = getOptimalPollInterval(hasViewer);
+        sessionSync.pollInterval = newInterval;
+        console.log('🔄 Polling interval updated:', { 
+          hasViewer, 
+          newInterval,
+          isProduction: window.location.hostname.includes('onrender.com')
+        });
       }
     }
   </script>
