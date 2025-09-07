@@ -118,11 +118,11 @@ class BallRenderer {
         this.onFrameCallback(clampedDeltaTime)
       }
 
-          // Обновляем физику только если включена локальная физика или это превью
-    if (this.options.localPhysics) {
-      // Используем более плавное обновление физики
-      this.physics.update(clampedDeltaTime / 1000)
-    }
+      // Обновляем физику только если включена локальная физика
+      if (this.options.localPhysics) {
+        // Используем более плавное обновление физики
+        this.physics.update(clampedDeltaTime / 1000)
+      }
 
       // Рендерим сцену
       this.render()

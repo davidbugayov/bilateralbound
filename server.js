@@ -39,9 +39,9 @@ const sessionManager = {
     const session = {
       id: uuidv4().substring(0, 6),
       ballState: {
-        // Центрирование будет выполнено динамически при подключении вьювера
-        x: 400,  // Временное значение, будет обновлено
-        y: 300,  // Временное значение, будет обновлено
+        // Используем размеры по умолчанию для инициализации
+        x: 960,  // Центр экрана 1920x1080
+        y: 540,  // Центр экрана 1920x1080
         vx: 0,
         vy: 0,
         speed: 40,
@@ -66,11 +66,14 @@ const sessionManager = {
     const session = this.sessions.get(sessionId)
     if (!session) return false
 
+    console.log(`🎮 Server: updateBallState called with:`, updates)
+
     // Handle pause
     if (updates.pause !== undefined) {
       session.ballState.paused = true
       session.ballState.vx = 0
       session.ballState.vy = 0
+      console.log(`🎮 Server: Ball paused`)
       return true
     }
 
@@ -108,6 +111,8 @@ const sessionManager = {
       session.ballState.vy = dirY * pixelsPerSecond
       session.ballState.paused = false
       session.ballState.speed = speedPercent
+      
+      console.log(`🎮 Server: Ball resumed with vx=${session.ballState.vx}, vy=${session.ballState.vy}, speed=${speedPercent}`)
       return true
     }
 
@@ -460,7 +465,9 @@ app.post('/api/session/:sessionId/controller/update', (req, res) => {
       return res.status(404).json({ error: 'Session not found' })
     }
 
-    sessionManager.updateBallState(sessionId, req.body)
+    console.log(`🎮 Server: Controller update for session ${sessionId}:`, req.body)
+    const result = sessionManager.updateBallState(sessionId, req.body)
+    console.log(`🎮 Server: Update result:`, result, 'New state:', session.ballState)
     res.json({ success: true, message: 'Controller update processed' })
   } catch (error) {
     logger.error('Error updating controller:', error)

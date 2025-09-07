@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест движения мяча</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #020617;
+            color: white;
+            font-family: monospace;
+        }
+        canvas {
+            border: 1px solid #374151;
+            background: #020617;
+            display: block;
+            margin: 20px auto;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест движения мяча</h1>
+    <div class="controls">
+        <button onclick="startBall()">▶️ Старт</button>
+        <button onclick="stopBall()">⏸ Стоп</button>
+        <button onclick="resetBall()">🎯 Центр</button>
+    </div>
+    <canvas id="testCanvas" width="800" height="600"></canvas>
+
+    <script src="/js/physics-engine.js"></script>
+    <script src="/js/renderer.js"></script>
+    <script>
+        let physics, renderer;
+
+        function init() {
+            const canvas = document.getElementById('testCanvas');
+
+            physics = new PhysicsEngine({
+                worldWidth: canvas.width,
+                worldHeight: canvas.height,
+                ballRadius: 20
+            });
+
+            renderer = new BallRenderer(canvas, physics, {
+                localPhysics: true
+            });
+
+            // Запускаем рендерер
+            renderer.start();
+
+            // Автоматически запускаем мяч
+            setTimeout(() => {
+                startBall();
+            }, 1000);
+
+            console.log('Тест инициализирован');
+        }
+
+        function startBall() {
+            if (physics) {
+                physics.setPaused(false);
+                physics.startMovement(1, 0, 40); // Горизонтальное движение
+                console.log('Мяч запущен');
+            }
+        }
+
+        function stopBall() {
+            if (physics) {
+                physics.setPaused(true);
+                console.log('Мяч остановлен');
+            }
+        }
+
+        function resetBall() {
+            if (physics) {
+                physics.setPosition(400, 300);
+                physics.setVelocity(0, 0);
+                physics.setPaused(true);
+                console.log('Мяч центрирован');
+            }
+        }
+
+        // Инициализируем при загрузке страницы
+        window.onload = init;
+    </script>
+</body>
+</html>

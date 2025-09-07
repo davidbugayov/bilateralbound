@@ -340,7 +340,7 @@
                     bounceCallback: syncBounce
                 });
 
-                // Создаем рендерер без локальной физики — полагаемся только на серверную синхронизацию
+                // Создаем рендерер с локальной физикой для плавности
                 renderer = new BallRenderer(canvas, physicsEngine, {
                     localPhysics: true, // Включаем локальную физику для плавной отрисовки
                     bounceCallback: syncBounce // Функция для синхронизации отскоков
@@ -349,7 +349,7 @@
                 // Создаем синхронизатор сессии
                 sessionSync = new SessionSync({
                     sessionId: sessionId,
-                    pollInterval: getOptimalPollInterval(), // Адаптивный интервал для продакшена
+                    pollInterval: 50, // Очень частая синхронизация для плавности
                     serverUrl: '',
                     onStateReceived: (serverState) => {
                         // Синхронизируем состояние с сервером с учетом размера экрана вьювера
@@ -358,47 +358,21 @@
                             height: window.innerHeight
                         };
                         
-                        // На продакшене синхронизируем только при отскоках
-                        const isProduction = window.location.hostname.includes('onrender.com') || 
-                                            window.location.hostname.includes('bilateralbound.onrender.com')
-                        
-                        if (isProduction) {
-                            // Проверяем, произошел ли отскок (большое изменение позиции)
-                            const lastPos = physicsEngine.ball ? { x: physicsEngine.ball.x, y: physicsEngine.ball.y } : null
-                            const shouldSync = !lastPos || 
-                                             Math.abs(lastPos.x - serverState.x) > 50 || 
-                                             Math.abs(lastPos.y - serverState.y) > 50 ||
-                                             serverState.paused !== physicsEngine.state.paused
-                            
-                            if (shouldSync) {
-                                console.log('👁️ Viewer: Production sync (bounce detected)', {
-                                    lastPos,
-                                    serverPos: { x: serverState.x, y: serverState.y },
-                                    positionDiff: lastPos ? {
-                                        x: Math.abs(lastPos.x - serverState.x),
-                                        y: Math.abs(lastPos.y - serverState.y)
-                                    } : null,
-                                    pausedChanged: serverState.paused !== physicsEngine.state.paused
-                                });
-                                physicsEngine.syncFromServer(serverState, viewerScreenSize);
-                            } else {
-                                console.log('⏭️ Viewer: Skipping sync (no significant change)');
-                            }
-                        } else {
-                            // Локальная разработка - полная синхронизация
-                            console.log('👁️ Viewer: Local sync (full)', {
-                                serverState: {
-                                    x: serverState.x,
-                                    y: serverState.y,
-                                    vx: serverState.vx,
-                                    vy: serverState.vy,
-                                    speed: serverState.speed,
-                                    paused: serverState.paused
-                                },
-                                viewerScreenSize
-                            });
-                            physicsEngine.syncFromServer(serverState, viewerScreenSize);
-                        }
+                        // Всегда синхронизируем для плавного движения
+                        physicsEngine.syncFromServer(serverState, viewerScreenSize);
+
+                        console.log('👁️ Viewer: State synced', {
+                            serverState: {
+                                x: serverState.x,
+                                y: serverState.y,
+                                vx: serverState.vx,
+                                vy: serverState.vy,
+                                speed: serverState.speed,
+                                paused: serverState.paused
+                            },
+                            viewerScreenSize,
+                            ballState: physicsEngine.getState()
+                        });
 
                         // Обновляем статус
                         updateStatus(serverState);

@@ -92,21 +92,31 @@ class SessionSync {
           if (xhr.status === 200) {
             try {
               const response = JSON.parse(xhr.responseText)
+              console.log('🔄 SessionSync: Request successful', { url, response })
               resolve({ status: xhr.status, data: response })
             } catch (e) {
+              console.log('🔄 SessionSync: Request successful (raw)', { url, data: xhr.responseText })
               resolve({ status: xhr.status, data: xhr.responseText })
             }
           } else if (xhr.status === 404) {
             // Сессия истекла
+            console.log('🔄 SessionSync: Session expired (404)', { url })
             resolve({ status: xhr.status, data: null })
           } else {
+            console.log('🔄 SessionSync: Request failed', { url, status: xhr.status, data: xhr.responseText })
             resolve({ status: xhr.status, data: xhr.responseText })
           }
         }
       }
 
-      xhr.onerror = () => reject(new Error('Network error'))
-      xhr.ontimeout = () => reject(new Error('Request timeout'))
+      xhr.onerror = () => {
+        console.error('🔄 SessionSync: Network error', { url })
+        reject(new Error('Network error'))
+      }
+      xhr.ontimeout = () => {
+        console.error('🔄 SessionSync: Request timeout', { url })
+        reject(new Error('Request timeout'))
+      }
 
       if (data) {
         xhr.send(JSON.stringify(data))
@@ -131,8 +141,17 @@ class SessionSync {
     }
 
     if (response.status === 200 && response.data) {
+      // Парсим JSON данные
+      let sessionData
+      try {
+        sessionData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+      } catch (e) {
+        console.error('🔄 SessionSync: Failed to parse response data:', response.data)
+        return
+      }
+
       // Проверяем, изменилось ли состояние
-      const hasChanged = this.hasStateChanged(response.data)
+      const hasChanged = this.hasStateChanged(sessionData)
       console.log('🔄 SessionSync: State check', {
         hasChanged,
         lastState: this.lastState ? {
@@ -140,23 +159,25 @@ class SessionSync {
           y: this.lastState.y,
           vx: this.lastState.vx,
           vy: this.lastState.vy,
-          speed: this.lastState.speed
+          speed: this.lastState.speed,
+          paused: this.lastState.paused
         } : null,
         newState: {
-          x: response.data.x,
-          y: response.data.y,
-          vx: response.data.vx,
-          vy: response.data.vy,
-          speed: response.data.speed
+          x: sessionData.x,
+          y: sessionData.y,
+          vx: sessionData.vx,
+          vy: sessionData.vy,
+          speed: sessionData.speed,
+          paused: sessionData.paused
         }
       })
 
       if (hasChanged) {
-        this.lastState = response.data
+        this.lastState = sessionData
         console.log('✅ SessionSync: State changed, calling callback')
 
         if (this.options.onStateReceived) {
-          this.options.onStateReceived(response.data)
+          this.options.onStateReceived(sessionData)
         }
       } else {
         console.log('⏭️ SessionSync: No significant changes, skipping callback')
@@ -188,10 +209,10 @@ class SessionSync {
                         window.location.hostname.includes('bilateralbound.onrender.com')
 
     if (isProduction) {
-      // На продакшене синхронизируем только отскоки и паузу
-      const positionChanged = Math.abs(last.x - current.x) > 50 || Math.abs(last.y - current.y) > 50
+      // На продакшене синхронизируем движение мяча с очень малым порогом
+      const positionChanged = Math.abs(last.x - current.x) > 1 || Math.abs(last.y - current.y) > 1
       const pausedChanged = last.paused !== current.paused
-      const speedChanged = Math.abs(last.speed - current.speed) > 10
+      const speedChanged = Math.abs(last.speed - current.speed) > 0.1
 
       const changes = {
         positionChanged,
@@ -201,21 +222,21 @@ class SessionSync {
 
       const hasAnyChange = Object.values(changes).some(change => change)
       
-      console.log('🔄 SessionSync: Production change detection (bounces only)', {
+      console.log('🔄 SessionSync: Production change detection (smooth movement)', {
         changes,
         hasAnyChange,
         thresholds: {
-          position: 50,
-          speed: 10
+          position: 1,
+          speed: 0.1
         }
       })
 
       return hasAnyChange
     } else {
-      // Для локальной разработки полная синхронизация
-      const velocityChanged = Math.abs(last.vx - current.vx) > 0.1 || Math.abs(last.vy - current.vy) > 0.1
+      // Для локальной разработки полная синхронизация с разумными порогами
+      const velocityChanged = Math.abs(last.vx - current.vx) > 1 || Math.abs(last.vy - current.vy) > 1
       const speedChanged = Math.abs(last.speed - current.speed) > 0.1
-      const positionChanged = Math.abs(last.x - current.x) > 0.1 || Math.abs(last.y - current.y) > 0.1
+      const positionChanged = Math.abs(last.x - current.x) > 1 || Math.abs(last.y - current.y) > 1
 
       const changes = {
         velocityChanged,
@@ -286,7 +307,7 @@ class SessionSync {
      */
   async sendBounce (bounceData) {
     try {
-      const response = await this.makeRequest('/bounce', 'POST', bounceData)
+      const response = await this.makeRequest(`/api/session/${this.sessionId}/bounce`, 'POST', bounceData)
       return response.status === 200
     } catch (error) {
       debugError('Failed to send bounce:', error)

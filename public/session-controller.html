@@ -356,6 +356,9 @@
       try {
         debugLog('🎮 Инициализация контроллера для сессии:', sessionId);
 
+        // Инициализируем отображение направления
+        updateDirectionDisplay(directionState.dx, directionState.dy);
+
         // Инициализируем превью
         initializePreview(sessionId);
 
@@ -541,6 +544,14 @@
         renderer.start();
         debugLog('✅ Renderer запущен');
 
+        // Устанавливаем мяч в центр и ставим на паузу по умолчанию
+        setTimeout(() => {
+            physics.setPaused(true);
+            physics.setPosition(canvas.width / 2, canvas.height / 2); // Центр превью
+            physics.setVelocity(0, 0);
+            debugLog('✅ Превью инициализирован в центре и на паузе');
+        }, 500);
+
         debugLog('🎉 Инициализация превью завершена успешно');
 
       } catch (error) {
@@ -716,12 +727,12 @@
       window.__previewRenderer.resize(canvas.width, canvas.height);
       window.__previewPhysics.setWorldSize(canvas.width, canvas.height);
 
-      // Центрируем мяч в превью
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      window.__previewPhysics.setPosition(centerX, centerY);
+      // Центрирование мяча в превью теперь происходит через syncFromServer
+      // const centerX = canvas.width / 2;
+      // const centerY = canvas.height / 2;
+      // window.__previewPhysics.setPosition(centerX, centerY);
 
-      console.log(`🎯 Мяч центрирован в превью: x=${centerX}, y=${centerY}`);
+      console.log(`🎯 Мяч будет центрирован через syncFromServer`);
 
       const viewerInfo = document.getElementById('viewerInfo');
       if (viewerInfo) {
@@ -818,7 +829,7 @@
       
       sessionSync = new SessionSync({
         sessionId,
-        pollInterval: getOptimalPollInterval(true), // Полный интервал для вьювера
+        pollInterval: 50, // Очень частая синхронизация для плавности
         serverUrl: '',
         onSessionExpired: handleSessionExpired,
         onStateReceived: (sessionData) => {
@@ -871,32 +882,41 @@
             const timeSinceLastUserInput = Date.now() - speedManager.lastUpdateTime;
             const shouldSyncSpeed = timeSinceLastUserInput > speedManager.updateDelay;
 
-            // Синхронизируем все состояние с сервером через PhysicsEngine
-            if (shouldSyncSpeed || sessionData.paused !== undefined) {
-              console.log('🎮 Controller: Sync preview with server state:', {
-                sessionData: {
-                  x: sessionData.x,
-                  y: sessionData.y,
-                  vx: sessionData.vx,
-                  vy: sessionData.vy,
-                  speed: sessionData.speed,
-                  paused: sessionData.paused
-                },
-                shouldSyncSpeed,
-                timeSinceLastUserInput,
-                updateDelay: speedManager.updateDelay
-              });
-              window.__previewPhysics.syncFromServer(sessionData, null); // null = preview mode
+            // Синхронизируем состояние с сервером
+            console.log('🎮 Controller: Sync preview with server state:', {
+              sessionData: {
+                x: sessionData.x,
+                y: sessionData.y,
+                vx: sessionData.vx,
+                vy: sessionData.vy,
+                speed: sessionData.speed,
+                paused: sessionData.paused,
+                viewerConnected: sessionData.viewerConnected
+              },
+              shouldSyncSpeed,
+              timeSinceLastUserInput,
+              updateDelay: speedManager.updateDelay
+            });
 
-              // Обновляем компонент скорости в UI
-              if (sessionData.speed !== undefined && components && components.speed && typeof components.speed.setSpeed === 'function') {
-                components.speed.setSpeed(sessionData.speed);
-              }
+            // Синхронизируем превью только если вьювер подключен
+            if (sessionData.viewerConnected) {
+              window.__previewPhysics.syncFromServer(sessionData, null); // null = preview mode
+              console.log('🎮 Controller: Preview synced with server (viewer connected)');
             } else {
-              console.log('⏭️ Controller: Skipping sync due to recent user input', {
-                timeSinceLastUserInput,
-                updateDelay: speedManager.updateDelay
-              });
+              // Если вьювер не подключен, останавливаем локальную физику и ставим мяч в центр
+              if (window.__previewPhysics && window.__previewCanvas) {
+                window.__previewPhysics.setPaused(true);
+                const centerX = window.__previewCanvas.width / 2;
+                const centerY = window.__previewCanvas.height / 2;
+                window.__previewPhysics.setPosition(centerX, centerY);
+                window.__previewPhysics.setVelocity(0, 0);
+                console.log(`🎮 Controller: Preview paused and centered at (${centerX}, ${centerY}) (no viewer connected)`);
+              }
+            }
+
+            // Обновляем компонент скорости в UI
+            if (sessionData.speed !== undefined && components && components.speed && typeof components.speed.setSpeed === 'function') {
+              components.speed.setSpeed(sessionData.speed);
             }
           }
         },
@@ -910,8 +930,18 @@
     }
 
     function updateViewerInfo(sessionData) {
+      // Отслеживаем изменение статуса вьювера
+      const wasViewerConnected = hasViewer;
+      const isViewerConnected = sessionData.viewerConnected;
+      
       // Обновляем глобальную переменную
       hasViewer = sessionData.viewerConnected;
+      
+      // Если вьювер только что подключился, возобновляем локальную физику превью
+      if (!wasViewerConnected && isViewerConnected && window.__previewPhysics) {
+        window.__previewPhysics.setPaused(false);
+        console.log('🎮 Controller: Preview physics resumed (viewer connected)');
+      }
       
       const viewerStatus = document.getElementById('viewerStatus');
       if (viewerStatus) {
@@ -1121,6 +1151,9 @@
             hasViewer = false;
             updatePlayPauseButton();
             
+            // Возвращаем превью в состояние ожидания
+            showWaitingForViewer();
+            
             debugLog('✅ Сессия сброшена, создана новая сессия');
           });
         }).catch(error => {
@@ -1216,13 +1249,22 @@
           isPlaying = false;
           updatePlayPauseButton();
           debugLog('⏸ Игра остановлена');
+
+          // Синхронизируем превью
+          if (window.__previewPhysics) {
+            window.__previewPhysics.setPaused(true);
+          }
         }).catch(error => {
           debugError('Error pausing play:', error);
           showError('Ошибка остановки игры', error.message);
         });
       } else {
         // Запускаем игру (используем выбранное направление или горизонтальное по умолчанию)
-        const currentDirection = directionState || { dx: 1, dy: 0 };
+        // Убеждаемся что направление не нулевое
+        let currentDirection = directionState || { dx: 1, dy: 0 };
+        if (currentDirection.dx === 0 && currentDirection.dy === 0) {
+          currentDirection = { dx: 1, dy: 0 }; // По умолчанию горизонтальное движение
+        }
         debugLog(`▶️ Запуск движения: направление dx=${currentDirection.dx}, dy=${currentDirection.dy}`);
         fetch(`/api/session/${sessionId}/controller/update`, {
           method: 'POST',
@@ -1237,6 +1279,13 @@
           isPlaying = true;
           updatePlayPauseButton();
           debugLog('▶️ Игра запущена');
+
+          // Запускаем локальную физику в превью
+          if (window.__previewPhysics) {
+            window.__previewPhysics.setPaused(false);
+            window.__previewPhysics.startMovement(currentDirection.dx, currentDirection.dy, components.speed ? components.speed.getSpeed() : 40);
+            debugLog('▶️ Локальная физика превью запущена');
+          }
         }).catch(error => {
           debugError('Error resuming play:', error);
           showError('Ошибка запуска игры', error.message);

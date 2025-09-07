@@ -254,6 +254,11 @@
                 renderer.start();
                 log('success', '✅ Рендерер запущен');
 
+                // Автоматически запускаем мяч через 1 секунду
+                setTimeout(() => {
+                    testHorizontalBounce();
+                }, 1000);
+
                 // Обновляем статус
                 updateStatus();
 

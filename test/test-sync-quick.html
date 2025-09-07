@@ -289,16 +289,28 @@
 
         // Инициализация превью
         function initializePreview() {
-            log('info', '👁️ Инициализация превью...');
+            log('info', '👁️ Инициализация превью с локальной физикой...');
 
-            // Очищаем canvas
-            previewCtx.fillStyle = '#020617';
-            previewCtx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+            // Создаем локальную физику для превью
+            window.__previewPhysics = new PhysicsEngine({
+                worldWidth: previewCanvas.width,
+                worldHeight: previewCanvas.height,
+                ballRadius: 20
+            });
 
-            // Рисуем начальный круг в центре
-            drawBall(200, 150, 20, '#60a5fa');
+            // Создаем рендерер с локальной физикой
+            window.__previewRenderer = new BallRenderer(previewCanvas, window.__previewPhysics, {
+                localPhysics: true
+            });
 
-            log('success', '✅ Превью инициализировано');
+            // Запускаем рендерер
+            window.__previewRenderer.start();
+
+            // Запускаем локальную физику по умолчанию
+            window.__previewPhysics.setPaused(false);
+            window.__previewPhysics.startMovement(1, 0, 40);
+
+            log('success', '✅ Превью с локальной физикой инициализировано');
         }
 
         // Рисование мяча
@@ -336,21 +348,36 @@
         function updatePreview(state) {
             if (!state) return;
 
-            // Очищаем canvas
-            previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+            // Синхронизируем локальную физику с состоянием сервера
+            if (window.__previewPhysics && state) {
+                // Синхронизируем позицию
+                if (state.x !== undefined && state.y !== undefined) {
+                    window.__previewPhysics.setPosition(state.x * previewCanvas.width / (state.viewerScreenSize?.width || 1920),
+                                                       state.y * previewCanvas.height / (state.viewerScreenSize?.height || 1080));
+                }
 
-            // Рисуем фон
-            previewCtx.fillStyle = state.colorBg || '#020617';
-            previewCtx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+                // Синхронизируем скорость
+                if (state.vx !== undefined && state.vy !== undefined) {
+                    window.__previewPhysics.setVelocity(state.vx * previewCanvas.width / (state.viewerScreenSize?.width || 1920),
+                                                       state.vy * previewCanvas.height / (state.viewerScreenSize?.height || 1080));
+                }
 
-            // Масштабируем координаты
-            const scale = previewCanvas.width / (state.viewerScreenSize?.width || 1920);
-            const ballX = (state.x || 400) * scale;
-            const ballY = (state.y || 300) * scale;
-            const ballRadius = (state.radius || 40) * scale;
+                // Синхронизируем паузу
+                if (state.paused !== undefined) {
+                    window.__previewPhysics.setPaused(state.paused);
+                }
 
-            // Рисуем мяч
-            drawBall(ballX, ballY, ballRadius, state.colorBall || '#60a5fa');
+                // Синхронизируем цвета
+                if (state.colorBall) {
+                    window.__previewPhysics.setBallColor(state.colorBall);
+                }
+                if (state.colorBg) {
+                    window.__previewPhysics.setBgColor(state.colorBg);
+                }
+                if (state.radius) {
+                    window.__previewPhysics.setBallSize(state.radius);
+                }
+            }
 
             // Обновляем информацию о позиции
             document.getElementById('ballPosition').textContent =
