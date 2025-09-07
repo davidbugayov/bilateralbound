@@ -313,169 +313,49 @@ class PhysicsEngine {
   }
 
   /**
-     * Синхронизирует состояние с сервером (оптимизированная версия)
+     * Применяет команду от сервера
      */
-  syncFromServer (serverState, viewerScreenSize = null) {
-    if (!serverState) {
-      console.log('⚠️ PhysicsEngine: No server state provided')
-      return
+  applyCommand (command) {
+    if (!command) return
+
+    if (command.reset) {
+      this.reset()
     }
 
-    console.log('🔄 PhysicsEngine: Syncing from server', {
-      serverState: {
-        x: serverState.x,
-        y: serverState.y,
-        vx: serverState.vx,
-        vy: serverState.vy,
-        speed: serverState.speed,
-        paused: serverState.paused
-      },
-      viewerScreenSize,
-      isViewer: !!viewerScreenSize
-    })
+    if (command.pause) {
+      this.stopMovement()
+    }
+    
+    if (command.resume) {
+      this.state.paused = false
+      // Направление и скорость должны прийти в этой же команде
+    }
 
-    // Синхронизируем позицию с сервером для всех клиентов
-    if (serverState.x !== undefined && serverState.y !== undefined) {
-      if (viewerScreenSize) {
-        // Для вьювера используем прямую позицию с сервера
-        this.isViewer = true
-        const oldPos = { x: this.ball.x, y: this.ball.y }
-        this.ball.x = serverState.x
-        this.ball.y = serverState.y
-        console.log('🎯 PhysicsEngine: Viewer position sync', {
-          oldPos,
-          newPos: { x: this.ball.x, y: this.ball.y },
-          serverPos: { x: serverState.x, y: serverState.y }
-        })
-      } else {
-        // Для превью устанавливаем целевую позицию ТОЛЬКО если есть размер экрана вьювера
-        if (serverState.viewerScreenSize) {
-          const canvas = document.getElementById('preview')
-          if (canvas) {
-            let targetX, targetY
-            
-            // Масштабируем позицию с сервера под размер превью
-            const scaleX = canvas.width / serverState.viewerScreenSize.width
-            const scaleY = canvas.height / serverState.viewerScreenSize.height
-            targetX = serverState.x * scaleX
-            targetY = serverState.y * scaleY
-            
-            const oldTarget = { x: this.state.targetX, y: this.state.targetY }
-            
-            // Проверяем границы превью
-            const radius = this.ball.radius
-            if (targetX - radius < 0) targetX = radius
-            if (targetX + radius > canvas.width) targetX = canvas.width - radius
-            if (targetY - radius < 0) targetY = radius
-            if (targetY + radius > canvas.height) targetY = canvas.height - radius
-            
-            this.state.targetX = targetX
-            this.state.targetY = targetY
-            
-            // Если сервер на паузе, превью должно сразу переместиться в целевую точку,
-            // так как цикл update() не будет выполняться для плавной интерполяции.
-            if (serverState.paused) {
-                this.ball.x = targetX;
-                this.ball.y = targetY;
-            }
-
-            console.log('🎮 PhysicsEngine: Preview target position set', {
-              oldTarget,
-              newTarget: { x: this.state.targetX, y: this.state.targetY },
-              serverPos: { x: serverState.x, y: serverState.y },
-              canvasSize: { w: canvas.width, h: canvas.height },
-              viewerSize: serverState.viewerScreenSize || 'none'
-            })
-          } else {
-            console.log('🎮 PhysicsEngine: Preview canvas not found')
-          }
-        }
+    if (command.dirX !== undefined && command.dirY !== undefined) {
+      this.setDirection(command.dirX, command.dirY)
+      // Если мяч уже движется, пересчитываем скорость
+      if (!this.state.paused) {
+        this.calculateTargetVelocity()
       }
     }
 
-    // Синхронизируем скорость
-    if (serverState.vx !== undefined && serverState.vy !== undefined) {
-      // Если сервер отправляет скорость, автоматически снимаем паузу
-      if (serverState.vx !== 0 || serverState.vy !== 0) {
-        this.state.paused = false
-      }
-      
-      if (viewerScreenSize) {
-        // Для вьювера используем прямую скорость с сервера
-        const oldVel = { vx: this.ball.vx, vy: this.ball.vy }
-        this.ball.vx = serverState.vx
-        this.ball.vy = serverState.vy
-        this.state.targetVx = serverState.vx
-        this.state.targetVy = serverState.vy
-        console.log('🎯 PhysicsEngine: Viewer velocity sync', {
-          oldVel,
-          newVel: { vx: this.ball.vx, vy: this.ball.vy },
-          serverVel: { vx: serverState.vx, vy: serverState.vy }
-        })
-      } else {
-        // Для превью масштабируем скорость ТОЛЬКО если есть размер экрана вьювера
-        if (serverState.viewerScreenSize) {
-            const canvas = document.getElementById('preview')
-            if (canvas) {
-              const scaleX = canvas.width / serverState.viewerScreenSize.width
-              const scaleY = canvas.height / serverState.viewerScreenSize.height
-              const scaledVx = serverState.vx * scaleX
-              const scaledVy = serverState.vy * scaleY
-
-              // Используем плавную интерполяцию для превью
-              const oldTarget = { vx: this.state.targetVx, vy: this.state.targetVy }
-              this.state.targetVx = scaledVx
-              this.state.targetVy = scaledVy
-              console.log('🎮 PhysicsEngine: Preview velocity sync', {
-                oldTarget,
-                newTarget: { vx: this.state.targetVx, vy: this.state.targetVy },
-                serverVel: { vx: serverState.vx, vy: serverState.vy },
-                scales: { x: scaleX, y: scaleY }
-              })
-            }
-        } else {
-            // Fallback без масштабирования - используем прямую скорость (если нет данных о вьювере)
-            const oldTarget = { vx: this.state.targetVx, vy: this.state.targetVy }
-            this.state.targetVx = serverState.vx
-            this.state.targetVy = serverState.vy
-            console.log('🎮 PhysicsEngine: Preview fallback velocity sync (no viewer size)', {
-                oldTarget,
-                newTarget: { vx: this.state.targetVx, vy: this.state.targetVy },
-                serverVel: { vx: serverState.vx, vy: serverState.vy }
-            })
-        }
+    if (command.speed !== undefined) {
+      this.setSpeed(command.speed)
+      if (!this.state.paused) {
+        this.calculateTargetVelocity()
       }
     }
 
-    // Синхронизация других параметров
-    if (serverState.speed !== undefined) {
-      this.ball.speed = serverState.speed
+    if (command.radius) {
+      this.setBallSize(command.radius)
     }
-    if (serverState.radius !== undefined) {
-      if (viewerScreenSize) {
-        // Для вьювера используем прямой радиус
-        this.ball.radius = serverState.radius
-      } else {
-        // Для превью масштабируем радиус
-        const canvas = document.getElementById('preview')
-        if (canvas && serverState.viewerScreenSize) {
-          const scale = Math.min(canvas.width / serverState.viewerScreenSize.width,
-                                canvas.height / serverState.viewerScreenSize.height)
-          this.ball.radius = Math.max(serverState.radius * scale, 4) // Убрал доп. множитель 0.5
-        } else {
-          // Если размера вьювера нет, используем дефолтный радиус для превью
-          this.ball.radius = this.options.ballRadius || 10;
-        }
-      }
+
+    if (command.colorBall) {
+      this.setBallColor(command.colorBall)
     }
-    if (serverState.colorBall) {
-      this.colors.ball = serverState.colorBall
-    }
-    if (serverState.colorBg) {
-      this.colors.bg = serverState.colorBg
-    }
-    if (serverState.paused !== undefined) {
-      this.state.paused = serverState.paused
+
+    if (command.colorBg) {
+      this.setBgColor(command.colorBg)
     }
   }
 

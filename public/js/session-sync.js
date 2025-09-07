@@ -130,6 +130,15 @@ class SessionSync {
      * Обрабатывает ответ от сервера
      */
   handleResponse (response) {
+    // Специальная обработка 429 (Too Many Requests)
+    if (response.status === 429) {
+      const prev = this.options.pollInterval
+      // Экспоненциальный backoff c потолком
+      const next = Math.min((prev || 200) * 2, 5000)
+      this.setPollInterval(next)
+      console.warn(`SessionSync: 429 received, increasing pollInterval ${prev}ms -> ${next}ms`)
+      return
+    }
     if (response.status === 404) {
       // Сессия истекла
       console.log('🔄 SessionSync: Session expired (404)')
@@ -296,26 +305,6 @@ class SessionSync {
   }
 
   /**
-     * Синхронизирует отскок с сервером
-     */
-  async syncBounce (bounceData) {
-    return await this.sendBounce(bounceData)
-  }
-
-  /**
-     * Отправляет событие отскока на сервер
-     */
-  async sendBounce (bounceData) {
-    try {
-      const response = await this.makeRequest(`/api/session/${this.sessionId}/bounce`, 'POST', bounceData)
-      return response.status === 200
-    } catch (error) {
-      debugError('Failed to send bounce:', error)
-      return false
-    }
-  }
-
-  /**
      * Обновляет состояние сессии
      */
   async updateSession (updates) {
@@ -408,7 +397,7 @@ class SessionSync {
     if (isProduction) {
       return 3000 // 3 секунды для продакшена чтобы избежать 429 ошибок
     } else {
-      return 100 // 100ms для локальной разработки
+      return 200 // 200ms для локальной разработки, чтобы снизить нагрузку
     }
   }
 

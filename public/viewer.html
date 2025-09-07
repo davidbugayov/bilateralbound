@@ -370,45 +370,28 @@
                 physicsEngine = new PhysicsEngine({
                     worldWidth: window.innerWidth,
                     worldHeight: window.innerHeight,
-                    bounceCallback: syncBounce
+                    bounceCallback: null // Отключен, т.к. bounce-события теперь не отправляются
                 });
 
                 // Создаем рендерер с локальной физикой для плавности
                 renderer = new BallRenderer(canvas, physicsEngine, {
-                    localPhysics: true, // Включаем локальную физику для плавной отрисовки
-                    bounceCallback: syncBounce // Функция для синхронизации отскоков
+                    localPhysics: true,
+                    bounceCallback: null // Отключен
                 });
 
                 // Создаем синхронизатор сессии
                 sessionSync = new SessionSync({
                     sessionId: sessionId,
-                    pollInterval: 50, // Очень частая синхронизация для плавности
+                    pollInterval: undefined,
                     serverUrl: '',
-                    onStateReceived: (serverState) => {
-                        // Синхронизируем состояние с сервером с учетом размера экрана вьювера
-                        const viewerScreenSize = {
-                            width: window.innerWidth,
-                            height: window.innerHeight
-                        };
-                        
-                        // Всегда синхронизируем для плавного движения
-                        physicsEngine.syncFromServer(serverState, viewerScreenSize);
+                    onStateReceived: (command) => {
+                        // Применяем команду от сервера
+                        physicsEngine.applyCommand(command);
 
-                        console.log('👁️ Viewer: State synced', {
-                            serverState: {
-                                x: serverState.x,
-                                y: serverState.y,
-                                vx: serverState.vx,
-                                vy: serverState.vy,
-                                speed: serverState.speed,
-                                paused: serverState.paused
-                            },
-                            viewerScreenSize,
-                            ballState: physicsEngine.getState()
-                        });
+                        console.log('👁️ Viewer: Command applied', { command });
 
                         // Обновляем статус
-                        updateStatus(serverState);
+                        updateStatus(command);
                     },
                     onSessionExpired: handleSessionExpired,
                     onError: (error) => {
@@ -454,11 +437,7 @@
                 const ballState = await response.json();
                 if (ballState) {
                     // Синхронизируем состояние через PhysicsEngine с учетом размера экрана
-                    const viewerScreenSize = {
-                        width: window.innerWidth,
-                        height: window.innerHeight
-                    };
-                    physicsEngine.syncFromServer(ballState, viewerScreenSize);
+                    physicsEngine.applyCommand(ballState);
                     debugLog('✅ Начальное состояние синхронизировано');
                 }
             } catch (error) {
@@ -522,19 +501,6 @@
             // НЕ вызываем updateScreenSize здесь - он будет вызван через debounce
         }
 
-        // ===== BOUNCE SYNCHRONIZATION =====
-        function syncBounce(bounceData) {
-            if (sessionSync) {
-                // Делаем неблокирующий вызов, чтобы не тормозить движок
-                sessionSync.syncBounce(bounceData).then(() => {
-                    debugLog('✅ Отскок синхронизирован с сервером');
-                }).catch(error => {
-                    // Тихо игнорируем ошибки синхронизации отскоков, чтобы не мешать работе
-                    debugLog('⚠️ Отскок не синхронизирован (сеть недоступна)');
-                });
-            }
-        }
-        
         async function updateScreenSize() {
             try {
                 // Проверяем, прошло ли достаточно времени с последнего обновления (минимум 2 секунды)
