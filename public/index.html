@@ -30,13 +30,13 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" content="BilateralBound - EMDR терапия для пациентов" />
   <meta property="og:description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
-  <meta property="og:image" content="https://bilateralbound.onrender.com/emdr-eye.svg?v=202501031200" />
+  <meta property="og:image" content="https://bilateralbound.onrender.com/embr-eye.png?v=202501031200" />
   <meta property="og:url" content="https://bilateralbound.onrender.com" />
   <meta property="og:site_name" content="BilateralBound" />
   <meta property="og:locale" content="ru_RU" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:type" content="image/svg+xml" />
+  <meta property="og:image:type" content="image/png" />
   <meta property="article:author" content="BilateralBound Team" />
   <meta property="article:section" content="Mental Health, Therapy" />
   <meta property="article:tag" content="EMDR терапия" />
@@ -52,7 +52,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="BilateralBound - EMDR терапия для пациентов" />
   <meta name="twitter:description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
-  <meta name="twitter:image" content="https://bilateralbound.onrender.com/emdr-eye.svg?v=202501031200" />
+  <meta name="twitter:image" content="https://bilateralbound.onrender.com/embr-eye.png?v=202501031200" />
   <meta name="twitter:site" content="@bilateralbound" />
   <meta name="twitter:creator" content="@bilateralbound" />
 
@@ -178,6 +178,29 @@
     .status-indicator.connected { border-color: #10b981; }
     .status-indicator.disconnected { border-color: #ef4444; }
 
+    /* Header */
+    .site-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      background: rgba(2, 6, 23, 0.8);
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      width: fit-content;
+    }
+    .site-header img {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      object-fit: cover;
+      display: block;
+    }
+    .site-header span {
+      color: #e2e8f0;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
     /* Адаптивные стили */
     @media (max-width: 768px) {
       .wrap {
@@ -196,6 +219,10 @@
 <body>
   <div class="wrap">
     <div class="card">
+      <div class="site-header" style="margin-bottom: 12px;">
+        <img src="/embr-eye.png" alt="BilateralBound" loading="lazy" />
+        <span>BilateralBound</span>
+      </div>
       <h1>🧠 BilateralBound - EMDR Терапия</h1>
       <p style="font-size: 18px; color: #94a3b8; margin-bottom: 24px;">
         Инновационная платформа для EMDR терапии с биодинамической стимуляцией
@@ -273,10 +300,10 @@
     async function loadSessionScripts() {
       return new Promise((resolve, reject) => {
         const scripts = [
-          './js/module-factory.js',
-          './js/physics-engine.js', 
-          './js/renderer.js',
-          './js/session-sync.js'
+          '/js/module-factory.js',
+          '/js/physics-engine.js', 
+          '/js/renderer.js',
+          '/js/session-sync.js'
         ];
         
         let loadedCount = 0;
