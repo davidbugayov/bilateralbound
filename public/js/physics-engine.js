@@ -208,6 +208,12 @@ class PhysicsEngine {
       this.ball.y += (this.state.targetY - this.ball.y) * lerpFactor
     }
 
+    if (Math.abs(this.ball.x - this.state.targetX) > 0.01 || Math.abs(this.ball.y - this.state.targetY) > 0.01) {
+        if (!this.state.paused) {
+            console.log(`[PhysicsEngine] Interpolation: Target(${this.state.targetX.toFixed(1)}, ${this.state.targetY.toFixed(1)}), Current(${this.ball.x.toFixed(1)}, ${this.ball.y.toFixed(1)}) -> New(${this.ball.x.toFixed(1)}, ${this.ball.y.toFixed(1)})`);
+        }
+    }
+
     // Корректируем позицию если она сильно отклонилась (защита от рассинхронизации)
     const distance = this.sqrt((this.ball.x - this.state.targetX) ** 2 + (this.ball.y - this.state.targetY) ** 2)
     if (distance > 50) { // Если отклонение больше 50px, резко корректируем
@@ -227,18 +233,26 @@ class PhysicsEngine {
       return
     }
 
-    // Этот код теперь выполняется только на сервере
+    // Этот код теперь выполняется только для локальной физики (превью)
+    this.updateLocalPhysics(deltaTime);
+  }
+
+  /**
+   * Обновляет локальную физику для превью
+   */
+  updateLocalPhysics(deltaTime) {
     if (this.state.paused) return
 
-    // Плавно интерполируем к целевой скорости
-    const lerpFactor = this.options.lerpFactor || 0.1
-    this.ball.vx += (this.state.targetVx - this.ball.vx) * lerpFactor
-    this.ball.vy += (this.state.targetVy - this.ball.vy) * lerpFactor
-    
-    // Обновляем позицию с интерполированной скоростью
+    // Пересчитываем скорость напрямую из направления и процента скорости
+    const speedPercent = this.ball.speed / 100
+    const pixelsPerSecond = speedPercent * this.options.maxSpeed
+    this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
+    this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
+
+    // Обновляем позицию
     this.ball.x += this.ball.vx * deltaTime
     this.ball.y += this.ball.vy * deltaTime
-    
+
     // Обрабатываем коллизии с границами
     this.handleBoundaryCollisions()
   }
@@ -254,41 +268,29 @@ class PhysicsEngine {
 
     let bounced = false
 
-    // Проверяем левую и правую границы с экстра-плавной коррекцией
-    if (ball.x - radius <= 0) {
-      ball.x = radius + 8 // Максимальный отступ для экстра-плавности
-      ball.vx = Math.abs(ball.vx) * 0.99 // Отражаем вправо с почти нулевым затуханием
+    // Проверяем левую и правую границы
+    if (ball.x - radius < 0) {
+      ball.x = radius // Клампим позицию
+      this.state.lastDirection.x = Math.abs(this.state.lastDirection.x || 1)
       bounced = true
-    } else if (ball.x + radius >= worldWidth) {
-      ball.x = worldWidth - radius - 8 // Максимальный отступ для экстра-плавности
-      ball.vx = -Math.abs(ball.vx) * 0.99 // Отражаем влево с почти нулевым затуханием
-      bounced = true
-    }
-
-    // Проверяем верхнюю и нижнюю границы с экстра-плавной коррекцией
-    if (ball.y - radius <= 0) {
-      ball.y = radius + 8 // Максимальный отступ для экстра-плавности
-      ball.vy = Math.abs(ball.vy) * 0.99 // Отражаем вниз с почти нулевым затуханием
-      bounced = true
-    } else if (ball.y + radius >= worldHeight) {
-      ball.y = worldHeight - radius - 8 // Максимальный отступ для экстра-плавности
-      ball.vy = -Math.abs(ball.vy) * 0.99 // Отражаем вверх с почти нулевым затуханием
+    } else if (ball.x + radius > worldWidth) {
+      ball.x = worldWidth - radius // Клампим позицию
+      this.state.lastDirection.x = -Math.abs(this.state.lastDirection.x || 1)
       bounced = true
     }
 
-    // Предотвращаем застревание мяча при очень низкой скорости
-    if (Math.abs(ball.vx) < 5 && Math.abs(ball.vy) < 5 && !this.state.paused) {
-      // Добавляем минимальную скорость, если мяч почти остановился
-      const minSpeed = 20
-      if (Math.abs(ball.vx) > 0) {
-        ball.vx = ball.vx > 0 ? minSpeed : -minSpeed
-      }
-      if (Math.abs(ball.vy) > 0) {
-        ball.vy = ball.vy > 0 ? minSpeed : -minSpeed
-      }
+    // Проверяем верхнюю и нижнюю границы
+    if (ball.y - radius < 0) {
+      ball.y = radius // Клампим позицию
+      this.state.lastDirection.y = Math.abs(this.state.lastDirection.y || 1)
+      bounced = true
+    } else if (ball.y + radius > worldHeight) {
+      ball.y = worldHeight - radius // Клампим позицию
+      this.state.lastDirection.y = -Math.abs(this.state.lastDirection.y || 1)
+      bounced = true
     }
-
-    // Вызываем callback только один раз за кадр
+    
+    // Вызываем callback при отскоке
     if (bounced) {
       this.handleBounce()
     }
@@ -359,8 +361,10 @@ class PhysicsEngine {
       this.lastServerUpdate = performance.now()
     } else {
       // Этот блок теперь выполняется только на сервере
-      if (command.dirX !== undefined && command.dirY !== undefined) {
-        this.setDirection(command.dirX, command.dirY)
+      if (command.dirX !== undefined || command.dirY !== undefined) {
+        const newDx = (command.dirX !== undefined) ? command.dirX : this.state.lastDirection.x
+        const newDy = (command.dirY !== undefined) ? command.dirY : this.state.lastDirection.y
+        this.setDirection(newDx, newDy)
       }
       if (command.speed !== undefined) {
         this.setSpeed(command.speed)

@@ -18,6 +18,7 @@
     "format": "prettier --write \"server.js\" \"public/js/*.js\" \"public/*.html\"",
     "test:full": "npm run test && npm run health-test",
     "test:automated": "node test.js",
+    "test:ui": "node test/ui-tests.js",
     "test:basic": "node test.js basic",
     "test:sync": "node test.js sync",
     "test:quick": "node test.js quick",
@@ -66,6 +67,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "jsdom": "^26.1.0",
     "nodemon": "^3.1.10",
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "puppeteer": "^23.6.0"
   }
 }

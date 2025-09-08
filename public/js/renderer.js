@@ -35,6 +35,9 @@ class BallRenderer {
       ...options
     }
 
+    // Устанавливаем режим движка в зависимости от опции
+    this.physics.isViewer = !this.options.localPhysics;
+
     // Кэшируем часто используемые значения
     this.pi2 = Math.PI * 2
     this.fillRect = this.ctx.fillRect.bind(this.ctx)
@@ -118,11 +121,8 @@ class BallRenderer {
         this.onFrameCallback(clampedDeltaTime)
       }
 
-      // Обновляем физику только если включена локальная физика
-      if (this.options.localPhysics) {
-        // Используем более плавное обновление физики
-        this.physics.update(clampedDeltaTime / 1000)
-      }
+      // Обновляем физику всегда, движок сам решит, что делать
+      this.physics.update(clampedDeltaTime / 1000)
 
       // Рендерим сцену
       this.render()

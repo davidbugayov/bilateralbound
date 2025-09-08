@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>BilateralBound - Тест визуальной синхронизации</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background-color: #1a1a1a; color: white; }
+        header { padding: 10px; background-color: #333; text-align: center; border-bottom: 2px solid #555;}
+        .iframes-container { display: flex; flex: 1; border-bottom: 2px solid #555;}
+        iframe { width: 50%; height: 100%; border: none; }
+        .test-panel { padding: 15px; background-color: #222; font-family: monospace; font-size: 14px; display: flex; gap: 30px; justify-content: center; align-items: center; }
+        .test-panel div { border: 1px solid #444; padding: 10px; border-radius: 5px; }
+        .test-panel h3 { margin-top: 0; border-bottom: 1px solid #555; padding-bottom: 5px; }
+        .test-panel .status { font-weight: bold; }
+        .status.ok { color: #4ade80; }
+        .status.fail { color: #f87171; }
+        .loader { text-align: center; padding-top: 50px; font-size: 20px;}
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Тест визуальной синхронизации</h1>
+        <div id="loader" class="loader">Создание сессии...</div>
+    </header>
+
+    <div class="iframes-container">
+        <iframe id="controllerFrame" src="about:blank"></iframe>
+        <iframe id="viewerFrame" src="about:blank"></iframe>
+    </div>
+
+    <div class="test-panel">
+        <div id="preview-data">
+            <h3>Превью (Контроллер)</h3>
+            <div>Координаты: <span id="preview-coords">N/A</span></div>
+            <div>Радиус: <span id="preview-radius">N/A</span></div>
+        </div>
+        <div id="viewer-data">
+            <h3>Вьювер</h3>
+            <div>Координаты: <span id="viewer-coords">N/A</span></div>
+            <div>Радиус: <span id="viewer-radius">N/A</span></div>
+        </div>
+        <div id="sync-status">
+            <h3>Статус синхронизации</h3>
+            <div>Разница X: <span id="diff-x">N/A</span></div>
+            <div>Разница Y: <span id="diff-y">N/A</span></div>
+            <div>Разница Radius: <span id="diff-radius">N/A</span></div>
+            <hr>
+            <div>Статус: <span id="status-badge" class="status">ОЖИДАНИЕ</span></div>
+        </div>
+        <div id="logs">
+            <h3>Логи отладчика</h3>
+            <pre id="log-output" style="background: #111; padding: 10px; border-radius: 5px; max-height: 150px; overflow-y: auto; font-size: 12px;"></pre>
+        </div>
+    </div>
+
+    <script>
+        const logOutput = document.getElementById('log-output');
+
+        function testLog(message) {
+            console.log(`[SyncTest] ${message}`);
+            const time = new Date().toLocaleTimeString();
+            logOutput.innerHTML = `[${time}] ${message}\n` + logOutput.innerHTML;
+        }
+
+        async function initializeTest() {
+            testLog('Запуск теста...');
+            try {
+                // 1. Создаем сессию
+                const response = await fetch('/api/session', { method: 'POST' });
+                if (!response.ok) throw new Error('Не удалось создать сессию');
+                const data = await response.json();
+                const sessionId = data.sessionId;
+
+                document.getElementById('loader').style.display = 'none';
+
+                // 2. Устанавливаем iframes
+                const controllerFrame = document.getElementById('controllerFrame');
+                const viewerFrame = document.getElementById('viewerFrame');
+                
+                controllerFrame.src = `/c/${sessionId}`;
+                viewerFrame.src = `/s/${sessionId}`;
+
+                // 3. Начинаем мониторинг
+                testLog('Iframes загружены. Запуск мониторинга...');
+                setInterval(monitorSync, 1000); // Увеличим интервал для удобства чтения логов
+
+            } catch (error) {
+                document.getElementById('loader').textContent = `Ошибка: ${error.message}`;
+                testLog(`Критическая ошибка инициализации: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        function monitorSync() {
+            const controllerFrame = document.getElementById('controllerFrame');
+            const viewerFrame = document.getElementById('viewerFrame');
+
+            if (!controllerFrame || !viewerFrame) {
+                testLog('Ошибка: Iframe контроллера или вьювера не найден.');
+                return;
+            }
+
+            const controllerWindow = controllerFrame.contentWindow;
+            const viewerWindow = viewerFrame.contentWindow;
+
+            if (!controllerWindow || !viewerWindow) {
+                testLog('Ожидание загрузки контента в iframes...');
+                return;
+            }
+
+            const isControllerReady = !!controllerWindow.__previewPhysics;
+            const isViewerReady = !!viewerWindow.physicsEngine;
+
+            if (!isControllerReady || !isViewerReady) {
+                testLog(`Статус готовности: Контроллер (${isControllerReady}), Вьювер (${isViewerReady})`);
+                return;
+            }
+            
+            testLog('✅ Объекты физики найдены. Сбор данных...');
+
+            // Получаем данные из превью
+            const previewPhysics = controllerWindow.__previewPhysics;
+            const previewBall = previewPhysics.ball;
+            document.getElementById('preview-coords').textContent = `(${Math.round(previewBall.x)}, ${Math.round(previewBall.y)})`;
+            document.getElementById('preview-radius').textContent = Math.round(previewBall.radius);
+
+            // Получаем данные из вьювера
+            const viewerPhysics = viewerWindow.physicsEngine;
+            const viewerBall = viewerPhysics.ball;
+            document.getElementById('viewer-coords').textContent = `(${Math.round(viewerBall.x)}, ${Math.round(viewerBall.y)})`;
+            document.getElementById('viewer-radius').textContent = Math.round(viewerBall.radius);
+            
+            // Получаем размеры для масштабирования
+            const viewerSize = { width: viewerWindow.innerWidth, height: viewerWindow.innerHeight };
+            const previewCanvas = controllerWindow.document.getElementById('preview');
+
+            if (!previewCanvas || viewerSize.width === 0) {
+                return;
+            }
+            
+            const previewSize = { width: previewCanvas.width, height: previewCanvas.height };
+            
+            // Масштабируем данные вьювера до размеров превью
+            const scaleX = previewSize.width / viewerSize.width;
+            const scaleY = previewSize.height / viewerSize.height;
+            const scaleRadius = Math.min(scaleX, scaleY);
+
+            const scaledViewerX = viewerBall.x * scaleX;
+            const scaledViewerY = viewerBall.y * scaleY;
+            const scaledViewerRadius = viewerBall.radius * scaleRadius;
+
+            // Сравниваем
+            const diffX = Math.abs(previewBall.x - scaledViewerX);
+            const diffY = Math.abs(previewBall.y - scaledViewerY);
+            const diffRadius = Math.abs(previewBall.radius - scaledViewerRadius);
+            
+            document.getElementById('diff-x').textContent = diffX.toFixed(2);
+            document.getElementById('diff-y').textContent = diffY.toFixed(2);
+            document.getElementById('diff-radius').textContent = diffRadius.toFixed(2);
+
+            const statusBadge = document.getElementById('status-badge');
+            // Допускаем небольшую погрешность в 2 пикселя из-за интерполяции и округлений
+            if (diffX < 2 && diffY < 2 && diffRadius < 2) {
+                statusBadge.textContent = 'СИНХРОНИЗИРОВАНО';
+                statusBadge.className = 'status ok';
+            } else {
+                statusBadge.textContent = 'РАССИНХРОН';
+                statusBadge.className = 'status fail';
+            }
+        }
+
+        window.onload = initializeTest;
+    </script>
+</body>
+</html>

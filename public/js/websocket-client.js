@@ -17,7 +17,7 @@ class WebSocketClient {
       isSecure: false,
       maxReconnectAttempts: 5,
       reconnectInterval: 3000,
-      heartbeatInterval: 30000,
+      heartbeatInterval: 25000, // Уменьшаем до 25с для надежности
       messageTimeout: 5000,
       ...options
     }
@@ -265,7 +265,9 @@ class WebSocketClient {
   _startHeartbeat() {
     this.heartbeatTimer = setInterval(() => {
       if (this.isConnected) {
-        this._sendMessage({ type: 'ping', timestamp: Date.now() })
+        this.send('heartbeat', { timestamp: Date.now() }).catch(err => {
+          this.log(`Heartbeat failed: ${err.message}`, 'warning');
+        });
       }
     }, this.config.heartbeatInterval)
   }

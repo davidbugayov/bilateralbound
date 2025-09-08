@@ -7,6 +7,7 @@ const http = require('http')
 const path = require('path')
 const { v4: uuidv4 } = require('uuid')
 const { WebSocketServer } = require('ws') // WebSocket-сервер
+const PhysicsEngine = require('./public/js/physics-engine.js'); // Используем общий движок физики
 
 // Simple config inline
 const config = {
@@ -276,6 +277,15 @@ class SessionManager {
   // Делегирование методов к соответствующим классам
   createSession(ballState = {}) {
     const session = this.sessionRepository.create({ ballState })
+    
+    // Создаем и привязываем движок физики к сессии
+    session.physicsEngine = new PhysicsEngine({
+        ballRadius: session.ballState.radius,
+        maxSpeed: 1000 // Соответствует оригинальной логике сервера (100% speed = 1000px/sec)
+    });
+    // Синхронизируем начальное состояние из движка
+    Object.assign(session.ballState, session.physicsEngine.getState());
+
     this.startPhysics(session.id)
     return session
   }
@@ -295,18 +305,41 @@ class SessionManager {
     const lastUpdate = session.lastStateUpdate || 0;
     const throttleDelay = 50; // мс
 
-    if (now - lastUpdate < throttleDelay) {
-        // Игнорируем обновление, если оно слишком частое
+    const isDirectionChange = updates && (updates.dirX !== undefined || updates.dirY !== undefined)
+    const isPauseToggle = updates && (updates.paused !== undefined || updates.resume === true)
+    if (now - lastUpdate < throttleDelay && !updates.reset && !isDirectionChange && !isPauseToggle) { // Сброс/направление/пауза не ограничиваем
         return false;
     }
 
     session.lastStateUpdate = now;
 
-    const success = this.sessionRepository.updateBallState(sessionId, updates)
-    if (success) {
-      this.stateBroadcaster.broadcastState(sessionId)
+    // Нормализуем команды: поддерживаем resume=true как paused=false
+    if (updates && updates.resume === true && updates.paused === undefined) {
+        updates = { ...updates, paused: false };
     }
-    return success
+
+    // Применяем обновления через движок физики
+    if (session.physicsEngine) {
+        session.physicsEngine.applyCommand(updates);
+        // Если игра не на паузе — сразу пересчитаем скорость из направления/скорости
+        if (session.physicsEngine.state && session.physicsEngine.state.paused === false) {
+            session.physicsEngine.calculateTargetVelocity();
+            // Синхронизируем мгновенно ball.vx/vy с targetVx/targetVy
+            session.physicsEngine.ball.vx = session.physicsEngine.state.targetVx;
+            session.physicsEngine.ball.vy = session.physicsEngine.state.targetVy;
+            // Немедленно продвинем физику на один шаг ~0.2s, чтобы было заметно движение
+            const dt = 0.2; // 200ms
+            session.physicsEngine.update(dt);
+        }
+        // Синхронизируем ballState с состоянием движка
+        Object.assign(session.ballState, session.physicsEngine.getState());
+    } else {
+        // Fallback, которого не должно быть
+        this.sessionRepository.updateBallState(sessionId, updates);
+    }
+    
+    this.stateBroadcaster.broadcastState(sessionId);
+    return true;
   }
 
   // WebSocket management
@@ -349,12 +382,24 @@ class SessionManager {
 
     session.viewerScreenSize = screenSize
 
-    // Центрируем мяч при установке размера экрана вьювера
-    if (session.ballState) {
-      session.ballState.x = screenSize.width / 2
-      session.ballState.y = screenSize.height / 2
-      this.logger.logSession(sessionId, `Centered ball at (${session.ballState.x}, ${session.ballState.y})`)
+    // Используем движок физики для центрирования
+    if (session.physicsEngine) {
+        session.physicsEngine.setWorldSize(screenSize.width, screenSize.height);
+        session.physicsEngine.reset(); // Центрирует мяч и останавливает его
+        Object.assign(session.ballState, session.physicsEngine.getState()); // Синхронизируем состояние
+        this.logger.logSession(sessionId, `Centered ball via PhysicsEngine for screen size ${screenSize.width}×${screenSize.height}`);
+    } else {
+       // Старая логика на случай, если что-то пошло не так
+       session.ballState.x = screenSize.width / 2;
+       session.ballState.y = screenSize.height / 2;
+       session.ballState.vx = 0;
+       session.ballState.vy = 0;
+       session.ballState.paused = true;
     }
+
+    // Отправляем обновленное, центрированное состояние всем клиентам
+    this.stateBroadcaster.broadcastState(sessionId)
+    this.logger.logSession(sessionId, `Broadcasted state update after centering`)
 
     return true
   }
@@ -379,48 +424,59 @@ class SessionManager {
 
   updatePhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
-    if (!session || session.ballState.paused || !session.viewerScreenSize) {
+    if (!session || !session.physicsEngine || session.ballState.paused || !session.viewerScreenSize) {
       return
     }
 
-    const { ballState, viewerScreenSize } = session
-    const { x, y, radius, speed } = ballState
-    let { vx, vy } = ballState
+    const engine = session.physicsEngine;
+    const deltaTime = this.physicsInterval / 1000;
 
-    // Рассчитываем скорость в пикселях в секунду
-    const pixelsPerSecond = (speed / 100) * 1000
-    const deltaTime = this.physicsInterval / 1000
+    // Движок уже настроен через controller_update. Просто обновляем его.
+    // Он сам обработает движение и отскоки.
+    engine.update(deltaTime);
 
-    if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
-      vx = ballState.dirX * pixelsPerSecond
-      vy = ballState.dirY * pixelsPerSecond
+    // Защитное ограничение: гарантируем, что шар внутри мира и отражаем направление при выходе
+    const state = engine.getState();
+    const radius = state.radius || engine.options.ballRadius;
+    const worldWidth = engine.options.worldWidth;
+    const worldHeight = engine.options.worldHeight;
+    const maxX = worldWidth - radius;
+    const maxY = worldHeight - radius;
+    let dirChanged = false;
+
+    this.logger.logSession(sessionId, `[PHYSICS] Before clamp: x=${state.x.toFixed(2)}, y=${state.y.toFixed(2)}, dirX=${engine.state.lastDirection.x?.toFixed(2)}, dirY=${engine.state.lastDirection.y?.toFixed(2)}`);
+
+    if (state.x < radius) {
+      engine.ball.x = radius;
+      engine.state.lastDirection.x = Math.abs(engine.state.lastDirection.x || 1);
+      dirChanged = true;
+    } else if (state.x > maxX) {
+      engine.ball.x = maxX;
+      engine.state.lastDirection.x = -Math.abs(engine.state.lastDirection.x || 1);
+      dirChanged = true;
+    }
+    if (state.y < radius) {
+      engine.ball.y = radius;
+      engine.state.lastDirection.y = Math.abs(engine.state.lastDirection.y || 1);
+      dirChanged = true;
+    } else if (state.y > maxY) {
+      engine.ball.y = maxY;
+      engine.state.lastDirection.y = -Math.abs(engine.state.lastDirection.y || 1);
+      dirChanged = true;
     }
 
-    let newX = x + vx * deltaTime
-    let newY = y + vy * deltaTime
-
-    // Обработка отскоков
-    if (newX - radius < 0) {
-      newX = radius
-      vx = Math.abs(vx)
-    }
-    if (newX + radius > viewerScreenSize.width) {
-      newX = viewerScreenSize.width - radius
-      vx = -Math.abs(vx)
-    }
-    if (newY - radius < 0) {
-      newY = radius
-      vy = Math.abs(vy)
-    }
-    if (newY + radius > viewerScreenSize.height) {
-      newY = viewerScreenSize.height - radius
-      vy = -Math.abs(vy)
+    if (dirChanged) {
+      // Пересчитать скорость после смены направления, чтобы отражение было мгновенным
+      const speedPercent = engine.ball.speed / 100;
+      const pixelsPerSecond = speedPercent * (engine.options.maxSpeed || 1000);
+      engine.ball.vx = engine.state.lastDirection.x * pixelsPerSecond;
+      engine.ball.vy = engine.state.lastDirection.y * pixelsPerSecond;
+      this.logger.logSession(sessionId, `[PHYSICS] Bounce detected! New direction: dirX=${engine.state.lastDirection.x.toFixed(2)}, dirY=${engine.state.lastDirection.y.toFixed(2)}`);
     }
 
-    session.ballState.x = newX
-    session.ballState.y = newY
-    session.ballState.vx = vx
-    session.ballState.vy = vy
+    // Синхронизируем авторитетное состояние сессии с состоянием движка
+    Object.assign(session.ballState, engine.getState());
+    this.logger.logSession(sessionId, `[PHYSICS] After clamp: x=${session.ballState.x.toFixed(2)}, y=${session.ballState.y.toFixed(2)}`);
   }
 
   cleanupExpiredSessions() {
@@ -441,6 +497,16 @@ const sessionManager = new SessionManager()
 const app = express()
 const server = http.createServer(app)
 const wss = new WebSocketServer({ server }) // Создаем WebSocket-сервер
+
+// Добавляем механизм Heartbeat для поддержания соединений
+const heartbeatInterval = setInterval(function ping() {
+  wss.clients.forEach(function each(ws) {
+    if (ws.isAlive === false) return ws.terminate();
+
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, 30000);
 
 // Security middleware
 app.use(helmet({
@@ -662,13 +728,26 @@ wss.on('connection', (ws, req) => {
     return
   }
 
+  // Устанавливаем флаг для Heartbeat
+  ws.isAlive = true;
+  ws.on('pong', () => {
+    ws.isAlive = true;
+  });
+
   // Используем новый API sessionManager для обработки подключения
   sessionManager.handleWebSocketConnection(ws, sessionId, role)
 
   ws.on('message', (message) => {
     try {
       const data = JSON.parse(message)
+
+      // Игнорируем сообщения-пульс от клиента
+      if (data.type === 'heartbeat') {
+        return;
+      }
+
       if (role === 'controller' && data.type === 'controller_update') {
+        // Команда сброса теперь полностью обрабатывается движком через applyCommand
         sessionManager.updateBallState(sessionId, data.payload)
         logger.logSession(sessionId, `Controller updated state: ${JSON.stringify(data.payload)}`)
       }
@@ -717,6 +796,7 @@ setInterval(() => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully')
+  clearInterval(heartbeatInterval); // <-- Останавливаем интервал
   server.close(() => {
     logger.info('Server stopped')
     process.exit(0)
@@ -725,6 +805,7 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   logger.info('SIGINT received, shutting down gracefully')
+  clearInterval(heartbeatInterval); // <-- Останавливаем интервал
   server.close(() => {
     logger.info('Server stopped')
     process.exit(0)

@@ -32,7 +32,6 @@
 
     <!-- Preload critical resources -->
     <link rel="preload" href="/js/common.js" as="script" />
-    <link rel="preload" href="/js/module-factory.js" as="script" />
     <link rel="preload" href="/css/shared-components.css" as="style" />
     
     <!-- ===== STYLES ===== -->
@@ -368,10 +367,11 @@
                     isViewer: true, // Включаем режим интерполяции
                     bounceCallback: null
                 });
+                window.physicsEngine = physicsEngine; // <--- FIX: Expose for test harness
 
                 // Создаем рендерер с локальной физикой для плавности
                 ballRenderer = new BallRenderer(canvas, physicsEngine, {
-                    localPhysics: true, // Viewer сам интерполирует для плавности
+                    localPhysics: false, // Вьювер интерполирует состояние сервера
                     bounceCallback: null
                 });
 
@@ -380,16 +380,23 @@
 
                 // Инициализируем WebSocket-клиент
                 wsClient = new WebSocketClient(sessionId, 'viewer');
+                window.wsClient = wsClient;
                 
                 wsClient.on('initial_state', (state) => {
                     debugLog('✅ Получено начальное состояние', state);
                     physicsEngine.applyCommand(state); // Применяем полное состояние
+                    if (state && state.paused === false) {
+                        physicsEngine.setPaused(false);
+                    }
                     updateStatus(state); // Обновляем статус на основе полного состояния
                 });
 
                 wsClient.on('state_update', (command) => {
                     // Применяем команду от сервера
                     physicsEngine.applyCommand(command);
+                    if (command && command.paused === false) {
+                        physicsEngine.setPaused(false);
+                    }
                     // Обновляем статус
                     updateStatus(command);
                 });
