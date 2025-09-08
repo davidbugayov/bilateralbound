@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit')
 const http = require('http')
 const path = require('path')
 const { v4: uuidv4 } = require('uuid')
+const { WebSocketServer } = require('ws') // WebSocket-сервер
 
 // Simple config inline
 const config = {
@@ -31,59 +32,319 @@ const logger = {
   logSession: (sessionId, msg) => { if (DEBUG_MODE) console.log(`[SESSION:${sessionId}] ${msg}`) }
 }
 
-// Simple session manager inline
-const sessionManager = {
-  sessions: new Map(),
+// ===== МОДУЛЬНАЯ АРХИТЕКТУРА СЕРВЕРА =====
 
-  createSession: function () {
+// Интерфейс для управления данными сессий
+class SessionRepository {
+  constructor() {
+    this.sessions = new Map()
+  }
+
+  create(sessionData = {}) {
     const session = {
       id: uuidv4().substring(0, 6),
       ballState: {
-        // Начальные команды для клиента
         speed: 40,
         radius: 20,
         colorBall: '#60a5fa',
         colorBg: '#020617',
         paused: true,
-        // dirX, dirY будут добавлены контроллером
+        ...sessionData.ballState
       },
       controllerConnected: false,
       viewerConnected: false,
-      viewerScreenSize: null, // Будет установлен при подключении вьювера
+      viewerScreenSize: null,
       createdAt: Date.now(),
-      lastActivity: Date.now()
+      lastActivity: Date.now(),
+      clients: new Map(),
+      physicsLoop: null,
+      lastStateUpdate: 0, // Добавляем для отслеживания последнего обновления состояния
+      ...sessionData
     }
+
     this.sessions.set(session.id, session)
     return session
-  },
+  }
 
-  getSession: function (sessionId) { return this.sessions.get(sessionId) },
+  findById(sessionId) {
+    return this.sessions.get(sessionId) || null
+  }
 
-  updateBallState: function (sessionId, updates) {
-    const session = this.sessions.get(sessionId)
+  update(sessionId, updates) {
+    const session = this.findById(sessionId)
     if (!session) return false
 
-    // Сервер просто хранит командное состояние. Физика на клиенте.
-    Object.assign(session.ballState, updates)
+    Object.assign(session, updates)
+    session.lastActivity = Date.now()
     return true
-  },
+  }
 
-  setControllerConnected: function (sessionId, connected) {
-    const session = this.sessions.get(sessionId)
-    if (session) {
-      session.controllerConnected = connected
+  updateBallState(sessionId, ballUpdates) {
+    const session = this.findById(sessionId)
+    if (!session) return false
+
+    Object.assign(session.ballState, ballUpdates)
+    return true
+  }
+
+  delete(sessionId) {
+    return this.sessions.delete(sessionId)
+  }
+
+  getAll() {
+    return Array.from(this.sessions.values())
+  }
+
+  cleanupExpired(maxAge = 60 * 60 * 1000) { // 1 hour
+    const now = Date.now()
+    const expiredIds = []
+
+    for (const [id, session] of this.sessions) {
+      if (now - session.createdAt > maxAge) {
+        expiredIds.push(id)
+      }
     }
-  },
 
-  setViewerConnected: function (sessionId, connected) {
-    const session = this.sessions.get(sessionId)
-    if (session) {
-      session.viewerConnected = connected
+    expiredIds.forEach(id => this.delete(id))
+    return expiredIds.length
+  }
+}
+
+// Интерфейс для управления WebSocket соединениями
+class WebSocketManager {
+  constructor(sessionRepository) {
+    this.sessionRepository = sessionRepository
+    this.logger = logger
+  }
+
+  addClient(sessionId, ws, role) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return false
+
+    session.clients.set(ws, {
+      role,
+      connectedAt: Date.now(),
+      sessionId
+    })
+
+    // Обновляем статус подключения
+    if (role === 'controller') {
+      session.controllerConnected = true
+    } else if (role === 'viewer') {
+      session.viewerConnected = true
     }
-  },
 
-  setViewerScreenSize: function (sessionId, screenSize) {
-    const session = this.sessions.get(sessionId)
+    this.logger.logSession(sessionId, `${role} connected via WebSocket`)
+    return true
+  }
+
+  removeClient(ws) {
+    for (const session of this.sessionRepository.getAll()) {
+      if (session.clients.has(ws)) {
+        const clientInfo = session.clients.get(ws)
+        session.clients.delete(ws)
+
+        // Проверяем, остались ли клиенты этой роли
+        this._updateConnectionStatus(session, clientInfo.role)
+        this.logger.logSession(session.id, `${clientInfo.role} disconnected via WebSocket`)
+        return true
+      }
+    }
+    return false
+  }
+
+  _updateConnectionStatus(session, disconnectedRole) {
+    let hasController = false
+    let hasViewer = false
+
+    for (const [client, info] of session.clients) {
+      if (info.role === 'controller') hasController = true
+      if (info.role === 'viewer') hasViewer = true
+    }
+
+    if (disconnectedRole === 'controller') {
+      session.controllerConnected = hasController
+    } else if (disconnectedRole === 'viewer') {
+      session.viewerConnected = hasViewer
+    }
+  }
+
+  getClients(sessionId, role = null) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return []
+
+    if (role) {
+      return Array.from(session.clients.entries())
+        .filter(([client, info]) => info.role === role)
+        .map(([client, info]) => ({ client, info }))
+    }
+
+    return Array.from(session.clients.entries())
+      .map(([client, info]) => ({ client, info }))
+  }
+}
+
+// Интерфейс для рассылки состояния клиентам
+class StateBroadcaster {
+  constructor(sessionRepository, webSocketManager) {
+    this.sessionRepository = sessionRepository
+    this.webSocketManager = webSocketManager
+    this.logger = logger
+  }
+
+  broadcastState(sessionId, stateType = 'state_update', payload = null) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return false
+
+    const message = JSON.stringify({
+      type: stateType,
+      payload: payload || session.ballState
+    })
+
+    let sentCount = 0
+    for (const { client } of this.webSocketManager.getClients(sessionId)) {
+      if (this._isClientReady(client)) {
+        try {
+          client.send(message)
+          sentCount++
+        } catch (error) {
+          this.logger.error(`Error broadcasting to client: ${error.message}`)
+        }
+      }
+    }
+
+    if (sentCount > 0) {
+      this.logger.logSession(sessionId, `Broadcasted ${stateType} to ${sentCount} clients`)
+    }
+
+    return sentCount > 0
+  }
+
+  broadcastViewerStatus(sessionId) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return false
+
+    return this.broadcastState(sessionId, 'viewer_status', {
+      connected: session.viewerConnected,
+      screenSize: session.viewerScreenSize
+    })
+  }
+
+  broadcastInitialState(sessionId, client) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return false
+
+    const initialState = {
+      type: 'initial_state',
+      payload: {
+        ...session.ballState,
+        viewerConnected: session.viewerConnected,
+        controllerConnected: session.controllerConnected,
+        viewerScreenSize: session.viewerScreenSize
+      }
+    }
+
+    if (this._isClientReady(client)) {
+      try {
+        client.send(JSON.stringify(initialState))
+        this.logger.logSession(sessionId, 'Sent initial_state to client')
+        return true
+      } catch (error) {
+        this.logger.error(`Error sending initial state: ${error.message}`)
+        return false
+      }
+    }
+
+    return false
+  }
+
+  _isClientReady(client) {
+    return client && client.readyState === 1 // WebSocket.OPEN
+  }
+}
+
+// Основной оркестратор сессий
+class SessionManager {
+  constructor() {
+    this.sessionRepository = new SessionRepository()
+    this.webSocketManager = new WebSocketManager(this.sessionRepository)
+    this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
+    this.physicsInterval = 1000 / 60 // ~60 FPS
+    this.logger = logger
+  }
+
+  // Делегирование методов к соответствующим классам
+  createSession(ballState = {}) {
+    const session = this.sessionRepository.create({ ballState })
+    this.startPhysics(session.id)
+    return session
+  }
+
+  getSession(sessionId) {
+    return this.sessionRepository.findById(sessionId)
+  }
+
+  updateBallState(sessionId, updates) {
+    const session = this.sessionRepository.findById(sessionId);
+    if (!session) {
+        return false;
+    }
+
+    // Throttling: Ограничиваем частоту обновлений
+    const now = Date.now();
+    const lastUpdate = session.lastStateUpdate || 0;
+    const throttleDelay = 50; // мс
+
+    if (now - lastUpdate < throttleDelay) {
+        // Игнорируем обновление, если оно слишком частое
+        return false;
+    }
+
+    session.lastStateUpdate = now;
+
+    const success = this.sessionRepository.updateBallState(sessionId, updates)
+    if (success) {
+      this.stateBroadcaster.broadcastState(sessionId)
+    }
+    return success
+  }
+
+  // WebSocket management
+  handleWebSocketConnection(ws, sessionId, role) {
+    if (!this.webSocketManager.addClient(sessionId, ws, role)) {
+      ws.close(1011, 'Session not found')
+      return
+    }
+
+    // Отправляем начальное состояние
+    this.stateBroadcaster.broadcastInitialState(sessionId, ws)
+
+    // Отправляем статус viewer всем клиентам
+    this.stateBroadcaster.broadcastViewerStatus(sessionId)
+  }
+
+  handleWebSocketDisconnection(ws) {
+    const sessionId = this.webSocketManager.removeClient(ws)
+    if (sessionId) {
+      this.stateBroadcaster.broadcastViewerStatus(sessionId)
+    }
+  }
+
+  // Legacy methods for backward compatibility
+  broadcastState(sessionId) {
+    return this.stateBroadcaster.broadcastState(sessionId)
+  }
+
+  setControllerConnected(sessionId, connected) {
+    return this.sessionRepository.update(sessionId, { controllerConnected: connected })
+  }
+
+  setViewerConnected(sessionId, connected) {
+    return this.sessionRepository.update(sessionId, { viewerConnected: connected })
+  }
+
+  setViewerScreenSize(sessionId, screenSize) {
+    const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
     session.viewerScreenSize = screenSize
@@ -92,30 +353,94 @@ const sessionManager = {
     if (session.ballState) {
       session.ballState.x = screenSize.width / 2
       session.ballState.y = screenSize.height / 2
-      console.log(`🎯 Мяч центрирован при установке размера вьювера: ${screenSize.width}×${screenSize.height} -> (${session.ballState.x}, ${session.ballState.y})`)
+      this.logger.logSession(sessionId, `Centered ball at (${session.ballState.x}, ${session.ballState.y})`)
     }
 
     return true
-  },
+  }
 
-  getSessionCount: function () { return this.sessions.size },
+  startPhysics(sessionId) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session || session.physicsLoop) return
 
-  cleanupExpiredSessions: function () {
-    // Simple cleanup - remove sessions older than 1 hour
-    const now = Date.now()
-    const oneHour = 60 * 60 * 1000
+    session.physicsLoop = setInterval(() => {
+      this.updatePhysics(sessionId)
+      this.stateBroadcaster.broadcastState(sessionId)
+    }, this.physicsInterval)
+  }
 
-    for (const [sessionId, session] of this.sessions.entries()) {
-      if (now - session.createdAt > oneHour) {
-        this.sessions.delete(sessionId)
-      }
+  stopPhysics(sessionId) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (session && session.physicsLoop) {
+      clearInterval(session.physicsLoop)
+      session.physicsLoop = null
     }
   }
+
+  updatePhysics(sessionId) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session || session.ballState.paused || !session.viewerScreenSize) {
+      return
+    }
+
+    const { ballState, viewerScreenSize } = session
+    const { x, y, radius, speed } = ballState
+    let { vx, vy } = ballState
+
+    // Рассчитываем скорость в пикселях в секунду
+    const pixelsPerSecond = (speed / 100) * 1000
+    const deltaTime = this.physicsInterval / 1000
+
+    if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
+      vx = ballState.dirX * pixelsPerSecond
+      vy = ballState.dirY * pixelsPerSecond
+    }
+
+    let newX = x + vx * deltaTime
+    let newY = y + vy * deltaTime
+
+    // Обработка отскоков
+    if (newX - radius < 0) {
+      newX = radius
+      vx = Math.abs(vx)
+    }
+    if (newX + radius > viewerScreenSize.width) {
+      newX = viewerScreenSize.width - radius
+      vx = -Math.abs(vx)
+    }
+    if (newY - radius < 0) {
+      newY = radius
+      vy = Math.abs(vy)
+    }
+    if (newY + radius > viewerScreenSize.height) {
+      newY = viewerScreenSize.height - radius
+      vy = -Math.abs(vy)
+    }
+
+    session.ballState.x = newX
+    session.ballState.y = newY
+    session.ballState.vx = vx
+    session.ballState.vy = vy
+  }
+
+  cleanupExpiredSessions() {
+    return this.sessionRepository.cleanupExpired()
+  }
+
+  // Legacy compatibility methods
+  getSessionCount() {
+    return this.sessionRepository.getAll().length
+  }
 }
+
+// Создаем глобальный экземпляр для обратной совместимости
+const sessionManager = new SessionManager()
+
 
 // Simple Express server without complex class structure
 const app = express()
 const server = http.createServer(app)
+const wss = new WebSocketServer({ server }) // Создаем WebSocket-сервер
 
 // Security middleware
 app.use(helmet({
@@ -326,9 +651,49 @@ app.post('/api/session/:sessionId/viewer/screen-size', (req, res) => {
   }
 })
 
+// WebSocket-соединение
+wss.on('connection', (ws, req) => {
+  const url = new URL(req.url, `http://${req.headers.host}`)
+  const sessionId = url.searchParams.get('sessionId')
+  const role = url.searchParams.get('role') // 'controller' or 'viewer'
+
+  if (!sessionId || !role) {
+    ws.close(1008, 'Session ID and role are required')
+    return
+  }
+
+  // Используем новый API sessionManager для обработки подключения
+  sessionManager.handleWebSocketConnection(ws, sessionId, role)
+
+  ws.on('message', (message) => {
+    try {
+      const data = JSON.parse(message)
+      if (role === 'controller' && data.type === 'controller_update') {
+        sessionManager.updateBallState(sessionId, data.payload)
+        logger.logSession(sessionId, `Controller updated state: ${JSON.stringify(data.payload)}`)
+      }
+    } catch (error) {
+      logger.error(`Error parsing message from session ${sessionId}: ${error.message}`)
+    }
+  })
+
+  ws.on('close', () => {
+    sessionManager.handleWebSocketDisconnection(ws)
+  })
+
+  ws.on('error', (error) => {
+    logger.error(`WebSocket error for session ${sessionId}: ${error.message}`)
+  })
+})
+
 // Static routes for viewer
 app.get('/s/:sessionId', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'viewer.html'))
+})
+
+// Static routes for controller
+app.get('/c/:sessionId', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'session-controller.html'))
 })
 
 // Serve test files under /test/* from project /test directory (not in production build path)

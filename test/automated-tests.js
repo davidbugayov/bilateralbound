@@ -5,10 +5,12 @@
 
 const http = require('http');
 const { spawn } = require('child_process');
+const WebSocket = require('ws');
 
 class BilateralBoundTester {
   constructor() {
     this.baseUrl = 'http://localhost:3000';
+    this.wsUrl = 'ws://localhost:3000';
     this.testResults = [];
     this.serverProcess = null;
   }
@@ -111,6 +113,69 @@ class BilateralBoundTester {
       this.serverProcess.kill();
       this.serverProcess = null;
     }
+  }
+
+  async testWebSocketConnection(sessionId, role) {
+    this.log(`Тест: WebSocket-подключение для ${role}`);
+    return new Promise((resolve, reject) => {
+      const ws = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=${role}`);
+      
+      ws.on('open', () => {
+        this.log(`✅ WebSocket для ${role} подключен`, 'success');
+        ws.close();
+        resolve(true);
+      });
+
+      ws.on('error', (err) => {
+        this.log(`❌ Ошибка WebSocket для ${role}: ${err.message}`, 'error');
+        reject(err);
+      });
+    });
+  }
+
+  async testWebSocketSync(sessionId) {
+    this.log(`Тест: Синхронизация состояния через WebSocket для сессии ${sessionId}`);
+    return new Promise(async (resolve, reject) => {
+      const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+      const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+      let testPassed = false;
+      const testTimeout = setTimeout(() => {
+        if (!testPassed) {
+          this.log('❌ Тест синхронизации провален по таймауту', 'error');
+          cleanUpAndResolve(false);
+        }
+      }, 5000);
+
+      const cleanUpAndResolve = (result) => {
+        clearTimeout(testTimeout);
+        controllerSocket.close();
+        viewerSocket.close();
+        resolve(result);
+      };
+
+      viewerSocket.on('message', (message) => {
+        const data = JSON.parse(message);
+        if (data.type === 'state_update' && data.payload.speed === 88) {
+          this.log('✅ Вьювер получил корректное обновление состояния', 'success');
+          testPassed = true;
+          cleanUpAndResolve(true);
+        }
+      });
+      
+      controllerSocket.on('open', () => {
+        this.log('🎮 Контроллер готов к отправке команды');
+        const command = {
+          type: 'controller_update',
+          payload: { speed: 88, paused: false, dirX: 1, dirY: 0 }
+        };
+        controllerSocket.send(JSON.stringify(command));
+        this.log('📤 Команда отправлена на сервер');
+      });
+
+      controllerSocket.on('error', (err) => this.log(`❌ Ошибка сокета контроллера: ${err.message}`, 'error'));
+      viewerSocket.on('error', (err) => this.log(`❌ Ошибка сокета вьювера: ${err.message}`, 'error'));
+    });
   }
 
   async testHealthCheck() {
@@ -347,17 +412,14 @@ class BilateralBoundTester {
 
   async runAllTests() {
     this.log('🚀 Запуск всех автоматизированных тестов BilateralBound');
-    this.log('=' * 60);
+    this.log('='.repeat(60));
 
     const results = {
       healthCheck: false,
       sessionCreation: false,
-      sessionState: false,
-      ballMovement: false,
-      ballBouncing: false,
       viewerConnection: false,
       controllerConnection: false,
-      ballControl: false
+      webSocketSync: false,
     };
 
     try {
@@ -382,24 +444,14 @@ class BilateralBoundTester {
         return results;
       }
 
-      // Тест 3: Получение состояния сессии
-      const initialState = await this.testSessionState(sessionId);
-      results.sessionState = initialState !== null;
-
-      // Тест 4: Подключение вьювера
-      results.viewerConnection = await this.testViewerConnection(sessionId);
-
-      // Тест 5: Подключение контроллера
-      results.controllerConnection = await this.testControllerConnection(sessionId);
-
-      // Тест 6: Управление мячом
-      results.ballControl = await this.testBallControl(sessionId);
-
-      // Тест 7: Движение мяча
-      results.ballMovement = await this.testBallMovement(sessionId);
-
-      // Тест 8: Отскоки мяча
-      results.ballBouncing = await this.testBallBouncing(sessionId);
+      // Тест 3: Подключение вьювера через WebSocket
+      results.viewerConnection = await this.testWebSocketConnection(sessionId, 'viewer');
+      
+      // Тест 4: Подключение контроллера через WebSocket
+      results.controllerConnection = await this.testWebSocketConnection(sessionId, 'controller');
+      
+      // Тест 5: Синхронизация состояния через WebSocket
+      results.webSocketSync = await this.testWebSocketSync(sessionId);
 
     } catch (error) {
       this.log(`❌ Критическая ошибка тестирования: ${error.message}`, 'error');
@@ -408,19 +460,16 @@ class BilateralBoundTester {
     }
 
     // Выводим результаты
-    this.log('=' * 60);
+    this.log('='.repeat(60));
     this.log('📊 РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ:');
-    this.log('=' * 60);
+    this.log('='.repeat(60));
 
     const testNames = {
       healthCheck: 'Проверка здоровья сервера',
       sessionCreation: 'Создание сессии',
-      sessionState: 'Получение состояния сессии',
-      ballMovement: 'Движение мяча',
-      ballBouncing: 'Отскоки мяча',
-      viewerConnection: 'Подключение вьювера',
-      controllerConnection: 'Подключение контроллера',
-      ballControl: 'Управление мячом'
+      viewerConnection: 'Подключение вьювера (WebSocket)',
+      controllerConnection: 'Подключение контроллера (WebSocket)',
+      webSocketSync: 'Синхронизация состояния (WebSocket)'
     };
 
     let passedTests = 0;
@@ -434,7 +483,7 @@ class BilateralBoundTester {
       totalTests++;
     }
 
-    this.log('=' * 60);
+    this.log('='.repeat(60));
     this.log(`📈 ИТОГО: ${passedTests}/${totalTests} тестов пройдено`);
     
     if (passedTests === totalTests) {

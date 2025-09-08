@@ -9,7 +9,7 @@ const BilateralBoundTester = require('./automated-tests.js');
 
 async function main() {
   console.log('🧪 BilateralBound - Автоматизированное тестирование');
-  console.log('=' * 50);
+  console.log('='.repeat(50));
   
   const tester = new BilateralBoundTester();
   

@@ -12,7 +12,6 @@
  */
 
 const BilateralBoundTester = require('./test/automated-tests.js');
-const SyncTester = require('./test/sync-test.js');
 
 async function runBasicTests() {
   console.log('🧪 Запуск базовых тестов...');
@@ -22,8 +21,8 @@ async function runBasicTests() {
 
 async function runSyncTests() {
   console.log('🔄 Запуск тестов синхронизации...');
-  const tester = new SyncTester();
-  return await tester.runSyncTests();
+  // Синхронизационные тесты интегрированы в базовые тесты
+  return await runBasicTests();
 }
 
 async function runQuickTests() {
@@ -56,9 +55,9 @@ async function main() {
   const testType = process.argv[2] || 'all';
   
   console.log('🚀 BilateralBound - Автоматизированное тестирование');
-  console.log('=' * 60);
+  console.log('='.repeat(60));
   console.log(`📋 Тип тестов: ${testType}`);
-  console.log('=' * 60);
+  console.log('='.repeat(60));
   
   let results = {};
   
@@ -94,9 +93,9 @@ async function main() {
     const passedTests = allResults.filter(r => r === true).length;
     const totalTests = allResults.length;
     
-    console.log('=' * 60);
+    console.log('='.repeat(60));
     console.log('📊 ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ:');
-    console.log('=' * 60);
+    console.log('='.repeat(60));
     console.log(`✅ Пройдено: ${passedTests}`);
     console.log(`❌ Провалено: ${totalTests - passedTests}`);
     console.log(`📈 Общий процент: ${((passedTests / totalTests) * 100).toFixed(1)}%`);

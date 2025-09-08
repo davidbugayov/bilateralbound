@@ -179,36 +179,66 @@ class PhysicsEngine {
   }
 
   /**
+     * Продвинутая интерполяция для режима вьювера с предикцией движения
+     */
+  updateViewerInterpolation (deltaTime) {
+    if (this.state.targetX === undefined || this.state.targetY === undefined) {
+      return
+    }
+
+    const currentTime = performance.now()
+    const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
+
+    // Если прошло больше 100ms с момента последнего обновления сервера,
+    // используем предиктивную экстраполяцию
+    if (timeSinceLastUpdate > 100 && this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
+      // Предиктивная экстраполяция: продолжаем движение по последней известной траектории
+      const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.2) // Максимум 200ms предикции
+      const predictedX = this.state.targetX + this.state.lastVx * predictTime
+      const predictedY = this.state.targetY + this.state.lastVy * predictTime
+
+      // Плавно интерполируем к предсказанной позиции
+      const lerpFactor = this.options.positionLerpFactor || 0.15
+      this.ball.x += (predictedX - this.ball.x) * lerpFactor
+      this.ball.y += (predictedY - this.ball.y) * lerpFactor
+    } else {
+      // Стандартная интерполяция к цели
+      const lerpFactor = this.options.positionLerpFactor || 0.1
+      this.ball.x += (this.state.targetX - this.ball.x) * lerpFactor
+      this.ball.y += (this.state.targetY - this.ball.y) * lerpFactor
+    }
+
+    // Корректируем позицию если она сильно отклонилась (защита от рассинхронизации)
+    const distance = this.sqrt((this.ball.x - this.state.targetX) ** 2 + (this.ball.y - this.state.targetY) ** 2)
+    if (distance > 50) { // Если отклонение больше 50px, резко корректируем
+      const correctionFactor = 0.3
+      this.ball.x += (this.state.targetX - this.ball.x) * correctionFactor
+      this.ball.y += (this.state.targetY - this.ball.y) * correctionFactor
+    }
+  }
+
+  /**
      * Обновляет физику за указанное время
      */
   update (deltaTime) {
-    if (this.state.paused) return
-
-    // Используем плавную интерполяцию для предотвращения дергания
+    // В режиме вьювера (клиент) всегда используется интерполяция
     if (this.isViewer) {
-      // Для вьювера используем прямую скорость (как раньше)
-      this.ball.x += this.ball.vx * deltaTime
-      this.ball.y += this.ball.vy * deltaTime
-    } else {
-      // Для превью используем плавную интерполяцию
-      const lerpFactor = this.options.lerpFactor || 0.1
-      const positionLerpFactor = this.options.positionLerpFactor || 0.05
-      
-      // Плавно интерполируем к целевой скорости
-      this.ball.vx += (this.state.targetVx - this.ball.vx) * lerpFactor
-      this.ball.vy += (this.state.targetVy - this.ball.vy) * lerpFactor
-      
-      // Обновляем позицию с интерполированной скоростью
-      this.ball.x += this.ball.vx * deltaTime
-      this.ball.y += this.ball.vy * deltaTime
-      
-      // Плавно интерполируем к целевой позиции для коррекции "прилипания"
-      if (this.state.targetX !== undefined && this.state.targetY !== undefined) {
-        this.ball.x += (this.state.targetX - this.ball.x) * positionLerpFactor
-        this.ball.y += (this.state.targetY - this.ball.y) * positionLerpFactor
-      }
+      this.updateViewerInterpolation(deltaTime)
+      return
     }
 
+    // Этот код теперь выполняется только на сервере
+    if (this.state.paused) return
+
+    // Плавно интерполируем к целевой скорости
+    const lerpFactor = this.options.lerpFactor || 0.1
+    this.ball.vx += (this.state.targetVx - this.ball.vx) * lerpFactor
+    this.ball.vy += (this.state.targetVy - this.ball.vy) * lerpFactor
+    
+    // Обновляем позицию с интерполированной скоростью
+    this.ball.x += this.ball.vx * deltaTime
+    this.ball.y += this.ball.vy * deltaTime
+    
     // Обрабатываем коллизии с границами
     this.handleBoundaryCollisions()
   }
@@ -318,32 +348,35 @@ class PhysicsEngine {
   applyCommand (command) {
     if (!command) return
 
+    // Вьювер и превью контроллера напрямую устанавливают позицию для интерполяции
+    if (this.isViewer) {
+      if (typeof command.x === 'number') this.state.targetX = command.x
+      if (typeof command.y === 'number') this.state.targetY = command.y
+
+      // Сохраняем скорость и время обновления для предикции
+      if (typeof command.vx === 'number') this.state.lastVx = command.vx
+      if (typeof command.vy === 'number') this.state.lastVy = command.vy
+      this.lastServerUpdate = performance.now()
+    } else {
+      // Этот блок теперь выполняется только на сервере
+      if (command.dirX !== undefined && command.dirY !== undefined) {
+        this.setDirection(command.dirX, command.dirY)
+      }
+      if (command.speed !== undefined) {
+        this.setSpeed(command.speed)
+      }
+      if (!this.state.paused) {
+        this.calculateTargetVelocity()
+      }
+    }
+
+    // Общие команды для клиента и сервера
+    if (command.paused !== undefined) {
+      this.setPaused(command.paused)
+    }
+
     if (command.reset) {
       this.reset()
-    }
-
-    if (command.pause) {
-      this.stopMovement()
-    }
-    
-    if (command.resume) {
-      this.state.paused = false
-      // Направление и скорость должны прийти в этой же команде
-    }
-
-    if (command.dirX !== undefined && command.dirY !== undefined) {
-      this.setDirection(command.dirX, command.dirY)
-      // Если мяч уже движется, пересчитываем скорость
-      if (!this.state.paused) {
-        this.calculateTargetVelocity()
-      }
-    }
-
-    if (command.speed !== undefined) {
-      this.setSpeed(command.speed)
-      if (!this.state.paused) {
-        this.calculateTargetVelocity()
-      }
     }
 
     if (command.radius) {
