@@ -266,7 +266,7 @@ class BallRenderer {
           this.beginPath = this.ctx.beginPath.bind(this.ctx)
           this.arc = this.ctx.arc.bind(this.ctx)
           this.fill = this.ctx.fill.bind(this.ctx)
-          console.log('BallRenderer: Canvas context restored successfully')
+          // Тихо восстанавливаем контекст канваса
           return true
         }
       } catch (error) {
@@ -305,7 +305,7 @@ class BallRenderer {
     this.ball = this.physics.ball
     this.colors = this.physics.colors
 
-    console.log('BallRenderer: Physics engine updated successfully')
+    // Тихо обновляем рендерер
   }
 
   /**

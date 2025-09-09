@@ -9,6 +9,8 @@ const { v4: uuidv4 } = require('uuid')
 const { WebSocketServer } = require('ws') // WebSocket-сервер
 const PhysicsEngine = require('./public/js/physics-engine.js'); // Используем общий движок физики
 
+console.log(`\n\n--- SERVER RESTARTED WITH LATEST CODE (v.CacheFix) ---\n\n`);
+
 // Simple config inline
 const config = {
   getServerConfig: () => ({
@@ -231,14 +233,43 @@ class StateBroadcaster {
     })
   }
 
+  broadcastLog(sessionId, logMessage) {
+    const session = this.sessionRepository.findById(sessionId);
+    if (!session) return false;
+
+    const message = JSON.stringify({
+      type: 'server_log',
+      payload: logMessage,
+    });
+
+    for (const { client } of this.webSocketManager.getClients(sessionId)) {
+      if (this._isClientReady(client)) {
+        try {
+          client.send(message);
+        } catch (error) {
+          // Не логируем ошибку отправки лога, чтобы избежать бесконечного цикла
+        }
+      }
+    }
+  }
+
   broadcastInitialState(sessionId, client) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
+    // Если вьювер подключен, но размер экрана еще не установлен,
+    // отправляем состояние без координат мяча - он будет центрирован позже
+    let ballState = { ...session.ballState }
+    if (session.viewerConnected && !session.viewerScreenSize) {
+      ballState.x = undefined
+      ballState.y = undefined
+      this.logger.logSession(sessionId, 'Sending initial_state without coordinates - waiting for viewer screen size')
+    }
+
     const initialState = {
       type: 'initial_state',
       payload: {
-        ...session.ballState,
+        ...ballState,
         viewerConnected: session.viewerConnected,
         controllerConnected: session.controllerConnected,
         viewerScreenSize: session.viewerScreenSize
@@ -271,7 +302,15 @@ class SessionManager {
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
     this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
     this.physicsInterval = 1000 / 60 // ~60 FPS
-    this.logger = logger
+    this.logger = {
+      ...logger,
+      logSession: (sessionId, msg) => {
+        // Оригинальное логгирование в консоль сервера
+        if (DEBUG_MODE) console.log(`[SESSION:${sessionId}] ${msg}`);
+        // Новая функция: трансляция лога клиентам
+        this.stateBroadcaster.broadcastLog(sessionId, msg);
+      }
+    };
   }
 
   // Делегирование методов к соответствующим классам
@@ -280,7 +319,7 @@ class SessionManager {
     
     // Создаем и привязываем движок физики к сессии
     session.physicsEngine = new PhysicsEngine({
-        ballRadius: session.ballState.radius,
+        ballRadius: session.ballState.radius || 20, // Используем радиус из состояния или 20 по умолчанию
         maxSpeed: 1000 // Соответствует оригинальной логике сервера (100% speed = 1000px/sec)
     });
     // Синхронизируем начальное состояние из движка
@@ -318,21 +357,24 @@ class SessionManager {
         updates = { ...updates, paused: false };
     }
 
+    // КОРРЕКТИРОВКА: Убедимся, что `pause` преобразуется в `paused`
+    if (updates && updates.pause !== undefined && updates.paused === undefined) {
+        updates.paused = updates.pause;
+        delete updates.pause;
+    }
+
     // Применяем обновления через движок физики
     if (session.physicsEngine) {
         session.physicsEngine.applyCommand(updates);
-        // Если игра не на паузе — сразу пересчитаем скорость из направления/скорости
-        if (session.physicsEngine.state && session.physicsEngine.state.paused === false) {
-            session.physicsEngine.calculateTargetVelocity();
-            // Синхронизируем мгновенно ball.vx/vy с targetVx/targetVy
-            session.physicsEngine.ball.vx = session.physicsEngine.state.targetVx;
-            session.physicsEngine.ball.vy = session.physicsEngine.state.targetVy;
-            // Немедленно продвинем физику на один шаг ~0.2s, чтобы было заметно движение
-            const dt = 0.2; // 200ms
-            session.physicsEngine.update(dt);
-        }
-        // Синхронизируем ballState с состоянием движка
+        
+        // УПРОЩАЕМ ЛОГИКУ: Убираем сложный блок с предсказанием. 
+        // Основной цикл физики сам справится с обновлением.
+        // Главное - это синхронизировать состояние.
         Object.assign(session.ballState, session.physicsEngine.getState());
+        
+        // ДОБАВЛЯЕМ КОНТРОЛЬНЫЙ ЛОГ
+        this.logger.logSession(sessionId, `[STATE SYNC] Synced state from engine. New paused state: ${session.ballState.paused}`);
+
     } else {
         // Fallback, которого не должно быть
         this.sessionRepository.updateBallState(sessionId, updates);
@@ -384,7 +426,13 @@ class SessionManager {
 
     // Используем движок физики для центрирования
     if (session.physicsEngine) {
+        this.logger.logSession(sessionId, `[SET_SIZE] Received screenSize: ${screenSize.width}x${screenSize.height}`);
+        this.logger.logSession(sessionId, `[SET_SIZE] Before: engine.options.worldWidth=${session.physicsEngine.options.worldWidth}, _worldSizeSet=${session.physicsEngine._worldSizeSet}`);
+        
         session.physicsEngine.setWorldSize(screenSize.width, screenSize.height);
+        
+        this.logger.logSession(sessionId, `[SET_SIZE] After: engine.options.worldWidth=${session.physicsEngine.options.worldWidth}, _worldSizeSet=${session.physicsEngine._worldSizeSet}`);
+
         session.physicsEngine.reset(); // Центрирует мяч и останавливает его
         Object.assign(session.ballState, session.physicsEngine.getState()); // Синхронизируем состояние
         this.logger.logSession(sessionId, `Centered ball via PhysicsEngine for screen size ${screenSize.width}×${screenSize.height}`);
@@ -410,7 +458,8 @@ class SessionManager {
 
     session.physicsLoop = setInterval(() => {
       this.updatePhysics(sessionId)
-      this.stateBroadcaster.broadcastState(sessionId)
+      // Рассылка состояния теперь происходит ВНУТРИ updatePhysics, чтобы не спамить когда игра на паузе
+      // this.stateBroadcaster.broadcastState(sessionId)
     }, this.physicsInterval)
   }
 
@@ -424,6 +473,7 @@ class SessionManager {
 
   updatePhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
+
     if (!session || !session.physicsEngine || session.ballState.paused || !session.viewerScreenSize) {
       return
     }
@@ -431,52 +481,18 @@ class SessionManager {
     const engine = session.physicsEngine;
     const deltaTime = this.physicsInterval / 1000;
 
-    // Движок уже настроен через controller_update. Просто обновляем его.
+    // Движок теперь сам проверяет наличие размеров мира, так что просто обновляем его.
     // Он сам обработает движение и отскоки.
     engine.update(deltaTime);
 
-    // Защитное ограничение: гарантируем, что шар внутри мира и отражаем направление при выходе
-    const state = engine.getState();
-    const radius = state.radius || engine.options.ballRadius;
-    const worldWidth = engine.options.worldWidth;
-    const worldHeight = engine.options.worldHeight;
-    const maxX = worldWidth - radius;
-    const maxY = worldHeight - radius;
-    let dirChanged = false;
-
-    this.logger.logSession(sessionId, `[PHYSICS] Before clamp: x=${state.x.toFixed(2)}, y=${state.y.toFixed(2)}, dirX=${engine.state.lastDirection.x?.toFixed(2)}, dirY=${engine.state.lastDirection.y?.toFixed(2)}`);
-
-    if (state.x < radius) {
-      engine.ball.x = radius;
-      engine.state.lastDirection.x = Math.abs(engine.state.lastDirection.x || 1);
-      dirChanged = true;
-    } else if (state.x > maxX) {
-      engine.ball.x = maxX;
-      engine.state.lastDirection.x = -Math.abs(engine.state.lastDirection.x || 1);
-      dirChanged = true;
-    }
-    if (state.y < radius) {
-      engine.ball.y = radius;
-      engine.state.lastDirection.y = Math.abs(engine.state.lastDirection.y || 1);
-      dirChanged = true;
-    } else if (state.y > maxY) {
-      engine.ball.y = maxY;
-      engine.state.lastDirection.y = -Math.abs(engine.state.lastDirection.y || 1);
-      dirChanged = true;
-    }
-
-    if (dirChanged) {
-      // Пересчитать скорость после смены направления, чтобы отражение было мгновенным
-      const speedPercent = engine.ball.speed / 100;
-      const pixelsPerSecond = speedPercent * (engine.options.maxSpeed || 1000);
-      engine.ball.vx = engine.state.lastDirection.x * pixelsPerSecond;
-      engine.ball.vy = engine.state.lastDirection.y * pixelsPerSecond;
-      this.logger.logSession(sessionId, `[PHYSICS] Bounce detected! New direction: dirX=${engine.state.lastDirection.x.toFixed(2)}, dirY=${engine.state.lastDirection.y.toFixed(2)}`);
-    }
-
     // Синхронизируем авторитетное состояние сессии с состоянием движка
     Object.assign(session.ballState, engine.getState());
-    this.logger.logSession(sessionId, `[PHYSICS] After clamp: x=${session.ballState.x.toFixed(2)}, y=${session.ballState.y.toFixed(2)}`);
+    
+    // Оставляем только минимальное логгирование
+    this.logger.logSession(sessionId, `[PHYSICS] Updated: x=${session.ballState.x.toFixed(2)}, y=${session.ballState.y.toFixed(2)}`);
+
+    // Рассылаем состояние ТОЛЬКО если оно обновилось
+    this.stateBroadcaster.broadcastState(sessionId);
   }
 
   cleanupExpiredSessions() {
@@ -486,6 +502,16 @@ class SessionManager {
   // Legacy compatibility methods
   getSessionCount() {
     return this.sessionRepository.getAll().length
+  }
+
+  getClientInfo(ws) {
+    for (const session of this.sessionRepository.getAll()) {
+      if (session.clients.has(ws)) {
+        const clientInfo = session.clients.get(ws);
+        return { sessionId: clientInfo.sessionId, role: clientInfo.role };
+      }
+    }
+    return null;
   }
 }
 
@@ -737,9 +763,26 @@ wss.on('connection', (ws, req) => {
   // Используем новый API sessionManager для обработки подключения
   sessionManager.handleWebSocketConnection(ws, sessionId, role)
 
-  ws.on('message', (message) => {
+  ws.on('message', message => {
     try {
-      const data = JSON.parse(message)
+      // НАХОДИМ АКТУАЛЬНУЮ СЕССИЮ ДЛЯ КАЖДОГО СООБЩЕНИЯ
+      const clientInfo = sessionManager.getClientInfo(ws);
+      if (!clientInfo) {
+        logger.error('Could not find client info for incoming message.');
+        return;
+      }
+      const { sessionId, role } = clientInfo;
+      const data = JSON.parse(message);
+
+      // DEBUG: Логируем тип каждого входящего сообщения
+      if (sessionId) {
+          sessionManager.logger.logSession(sessionId, `[MSG IN] role=${role}, type=${data.type}`);
+      }
+
+      if (!sessionId) {
+        logger.info('No session ID found for message');
+        return;
+      }
 
       // Игнорируем сообщения-пульс от клиента
       if (data.type === 'heartbeat') {
@@ -749,10 +792,13 @@ wss.on('connection', (ws, req) => {
       if (role === 'controller' && data.type === 'controller_update') {
         // Команда сброса теперь полностью обрабатывается движком через applyCommand
         sessionManager.updateBallState(sessionId, data.payload)
-        logger.logSession(sessionId, `Controller updated state: ${JSON.stringify(data.payload)}`)
+        sessionManager.logger.logSession(sessionId, `Controller updated state: ${JSON.stringify(data.payload)}`)
       }
     } catch (error) {
-      logger.error(`Error parsing message from session ${sessionId}: ${error.message}`)
+      // Пытаемся получить sessionId даже если парсинг data не удался
+      const clientInfoForError = sessionManager.getClientInfo(ws);
+      const sid = clientInfoForError ? clientInfoForError.sessionId : 'unknown';
+      logger.error(`Error parsing message from session ${sid}: ${error.message}`)
     }
   })
 

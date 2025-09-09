@@ -23,6 +23,7 @@ class PhysicsEngine {
 
     // Флаг для определения режима вьювера
     this.isViewer = false
+    this._worldSizeSet = false // Флаг, что размеры мира установлены
 
     // Предварительно вычисляем центр мира
     this.centerX = this.options.worldWidth / 2
@@ -43,12 +44,12 @@ class PhysicsEngine {
     }
 
     this.state = {
-      paused: true,
+      paused: true, // Игра начинается на паузе
       lastDirection: { x: 0, y: 0 },
       targetVx: 0,
       targetVy: 0,
-      targetX: undefined,
-      targetY: undefined
+      targetX: this.centerX, // Устанавливаем начальную позицию в центре
+      targetY: this.centerY
     }
 
     this.bounceCallback = this.options.bounceCallback
@@ -70,6 +71,7 @@ class PhysicsEngine {
     this.options.worldHeight = height
     this.centerX = width / 2
     this.centerY = height / 2
+    this._worldSizeSet = true // Устанавливаем флаг
   }
 
   /**
@@ -78,6 +80,12 @@ class PhysicsEngine {
   setPosition (x, y) {
     this.ball.x = x
     this.ball.y = y
+    // Для режима "зрителя" (вьювер/превью) также обновляем цель интерполяции,
+    // чтобы мяч не "уезжал" к старой цели после установки новой позиции.
+    if (this.isViewer) {
+      this.state.targetX = x
+      this.state.targetY = y
+    }
   }
 
   /**
@@ -208,11 +216,12 @@ class PhysicsEngine {
       this.ball.y += (this.state.targetY - this.ball.y) * lerpFactor
     }
 
-    if (Math.abs(this.ball.x - this.state.targetX) > 0.01 || Math.abs(this.ball.y - this.state.targetY) > 0.01) {
-        if (!this.state.paused) {
-            console.log(`[PhysicsEngine] Interpolation: Target(${this.state.targetX.toFixed(1)}, ${this.state.targetY.toFixed(1)}), Current(${this.ball.x.toFixed(1)}, ${this.ball.y.toFixed(1)}) -> New(${this.ball.x.toFixed(1)}, ${this.ball.y.toFixed(1)})`);
-        }
-    }
+    // Убираем лог интерполяции, так как он больше не нужен для отладки
+    // if (Math.abs(this.ball.x - this.state.targetX) > 0.01 || Math.abs(this.ball.y - this.state.targetY) > 0.01) {
+    //     if (!this.state.paused) {
+    //         console.log(`[PhysicsEngine] Interpolation: Target(${this.state.targetX.toFixed(1)}, ${this.state.targetY.toFixed(1)}), Current(${this.ball.x.toFixed(1)}, ${this.ball.y.toFixed(1)}) -> New(${this.ball.x.toFixed(1)}, ${this.ball.y.toFixed(1)})`);
+    //     }
+    // }
 
     // Корректируем позицию если она сильно отклонилась (защита от рассинхронизации)
     const distance = this.sqrt((this.ball.x - this.state.targetX) ** 2 + (this.ball.y - this.state.targetY) ** 2)
@@ -224,8 +233,8 @@ class PhysicsEngine {
   }
 
   /**
-     * Обновляет физику за указанное время
-     */
+   * Обновляет физику за указанное время
+   */
   update (deltaTime) {
     // В режиме вьювера (клиент) всегда используется интерполяция
     if (this.isViewer) {
@@ -233,8 +242,34 @@ class PhysicsEngine {
       return
     }
 
-    // Этот код теперь выполняется только для локальной физики (превью)
-    this.updateLocalPhysics(deltaTime);
+    // Для сервера используем полную физику с отскоками
+    this.updateServerPhysics(deltaTime);
+  }
+
+  /**
+   * Обновляет серверную физику с полной обработкой отскоков
+   */
+  updateServerPhysics(deltaTime) {
+    if (this.state.paused) return
+
+    // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
+    // Не обновляем физику, пока размеры мира не будут явно установлены
+    if (!this._worldSizeSet) {
+      return;
+    }
+
+    // Пересчитываем скорость напрямую из направления и процента скорости
+    const speedPercent = this.ball.speed / 100
+    const pixelsPerSecond = speedPercent * this.options.maxSpeed
+    this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
+    this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
+
+    // Обновляем позицию
+    this.ball.x += this.ball.vx * deltaTime
+    this.ball.y += this.ball.vy * deltaTime
+
+    // Обрабатываем коллизии с границами
+    this.handleBoundaryCollisions()
   }
 
   /**
@@ -242,6 +277,12 @@ class PhysicsEngine {
    */
   updateLocalPhysics(deltaTime) {
     if (this.state.paused) return
+
+    // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
+    // Не обновляем физику, пока размеры мира не будут явно установлены
+    if (!this._worldSizeSet) {
+        return;
+    }
 
     // Пересчитываем скорость напрямую из направления и процента скорости
     const speedPercent = this.ball.speed / 100
@@ -289,7 +330,7 @@ class PhysicsEngine {
       this.state.lastDirection.y = -Math.abs(this.state.lastDirection.y || 1)
       bounced = true
     }
-    
+
     // Вызываем callback при отскоке
     if (bounced) {
       this.handleBounce()
@@ -446,13 +487,14 @@ class PhysicsEngine {
     this.ball.vy = 0
     this.ball.speed = 40
     this.ball.radius = this.options.ballRadius
-    this.state.paused = true
+    // Не устанавливаем паузу при сбросе - игра должна быть активной
+    // this.state.paused = true
     this.state.lastDirection.x = 0
     this.state.lastDirection.y = 0
     this.state.targetVx = 0
     this.state.targetVy = 0
-    this.state.targetX = undefined
-    this.state.targetY = undefined
+    this.state.targetX = this.centerX
+    this.state.targetY = this.centerY
   }
 
   /**

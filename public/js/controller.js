@@ -26,7 +26,7 @@ let isInitialized = false; // Флаг для предотвращения по�
 
 // 4. Остальная логика выполняется после полной загрузки страницы
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('%c[Controller] DOMContentLoaded: Инициализация страницы', 'color: #purple; font-weight: bold;');
+    // Тихая инициализация
     initializeController();
 });
 
@@ -208,7 +208,7 @@ function setupWebSocketEventHandlers(wsClient, logger) {
 
         // ВАЖНО: Сначала обновляем размер превью, если есть данные,
         // и только потом применяем состояние. Это решает проблему гонки состояний.
-        if (state.viewerScreenSize) {
+        if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
             window.__current.viewerScreenSize = state.viewerScreenSize;
             updatePreviewSize(); 
         }
@@ -219,7 +219,11 @@ function setupWebSocketEventHandlers(wsClient, logger) {
 
     // Включаем обратно: превью теперь "глупый" рендерер состояния сервера
     wsClient.on('state_update', (state) => {
-        console.log('%c[Controller] Received state_update:', 'color: #f59e0b; font-weight: bold;', state);
+        // Игнорируем обновления и логи, пока вьювер не подключится.
+        if (!window.__current.viewerConnected) {
+            return;
+        }
+        // Тихая обработка обновлений состояния
         lastServerState = state; // Кэшируем состояние
         applyServerStateToPreview(state);
     })
@@ -236,19 +240,30 @@ function setupWebSocketEventHandlers(wsClient, logger) {
  */
 function applyServerStateToPreview(state) {
     // ВАЖНО: Не применяем состояние, пока не известен размер экрана вьювера.
-    // Это предотвращает гонку состояний, когда initial_state приходит раньше viewer_status.
-    if (!window.__previewPhysics || !state || !window.__current.viewerScreenSize || window.__current.viewerScreenSize.width === 0) {
-        debugWarn('applyServerStateToPreview skipped: viewerScreenSize is not yet known.');
+    // Но если размер экрана еще не установлен, но состояние пришло от сервера,
+    // мы можем использовать размер канваса превью как временную меру
+    if (!window.__previewPhysics || !state) {
         return;
+    }
+
+    // Если размер экрана вьювера не установлен, но у нас есть канвас превью,
+    // используем его размер как временное решение
+    if (!window.__current.viewerScreenSize || window.__current.viewerScreenSize.width === 0) {
+        if (window.__previewCanvas) {
+            // Устанавливаем временный размер экрана вьювера равный размеру превью
+            window.__current.viewerScreenSize = {
+                width: window.__previewCanvas.width,
+                height: window.__previewCanvas.height
+            };
+            // Тихо используем размер превью как временный
+        } else {
+            return; // Все еще нет информации о размерах
+        }
     }
 
     const scaledState = getScaledState(state);
 
-    console.log(`%c[Controller] Applying scaled state to preview:`, 'color: #06b6d4;', { 
-        x: scaledState.x ? scaledState.x.toFixed(1) : 'N/A', 
-        y: scaledState.y ? scaledState.y.toFixed(1) : 'N/A', 
-        paused: scaledState.paused 
-    });
+    // Тихое применение состояния к превью
 
     // Всегда обновляем радиус и применяем команду.
     // applyCommand обновит targetX/Y и статус паузы.
@@ -260,7 +275,7 @@ function applyServerStateToPreview(state) {
     // Если это первый раз, когда мы получаем координаты,
     // прыгаем в эту позицию, чтобы избежать долгой интерполяции от центра.
     if (!window.__previewHasServerPos && typeof scaledState.x === 'number' && typeof scaledState.y === 'number') {
-        console.log(`[Controller] First server position. Snapping preview ball to (${scaledState.x.toFixed(1)}, ${scaledState.y.toFixed(1)})`);
+        // Тихо устанавливаем первую позицию мяча
         window.__previewPhysics.setPosition(scaledState.x, scaledState.y);
         // targetX/Y уже установлены в applyCommand, нет нужды дублировать
         window.__previewHasServerPos = true;
@@ -326,10 +341,10 @@ function showErrorNotification(message) {
 function createLogger(moduleName) {
     return {
         info: (message, data) => {
-            console.log(`%c[${moduleName}] ${message}`, 'color: #3b82f6; font-weight: bold;', data || '')
+            // Тихое логирование информации
         },
         success: (message, data) => {
-            console.log(`%c[${moduleName}] ✅ ${message}`, 'color: #10b981; font-weight: bold;', data || '')
+            // Тихое логирование успехов
         },
         warning: (message, data) => {
             console.warn(`%c[${moduleName}] ⚠️ ${message}`, 'color: #f59e0b; font-weight: bold;', data || '')
@@ -419,6 +434,7 @@ function syncUIWithState(ballState) {
             components.bgColor.setColor(ballState.colorBg)
         }
         if (ballState.paused !== undefined) {
+            debugLog(`🎮 Обновляем состояние игры: paused=${ballState.paused}, isPlaying будет=${!ballState.paused}`)
             isPlaying = !ballState.paused
             updatePlayPauseButton()
         }
@@ -527,7 +543,7 @@ async function updateSpeed(speed) {
   try {
     // Оптимизация: меньше обновлений когда нет вьювера
     if (!window.__current.viewerConnected) {
-      console.log('⏭️ Skipping speed update - no viewer connected')
+      // Тихо пропускаем обновление скорости
       return
     }
 
@@ -631,8 +647,6 @@ async function initializePreview() {
 
             // Устанавливаем позицию и сбрасываем target координаты для корректной интерполяции
             window.__previewPhysics.setPosition(initialX, initialY)
-            window.__previewPhysics.state.targetX = initialX
-            window.__previewPhysics.state.targetY = initialY
             // Скорость управляется интерполяцией, локальную скорость обнуляем
             window.__previewPhysics.setVelocity(0, 0)
 
@@ -658,18 +672,14 @@ function showWaitingForViewer() {
 
 function updatePreviewSize(viewerScreenSize) {
     if (!viewerScreenSize || !window.__previewRenderer || !window.__previewPhysics) {
-        console.log('⚠️ Skipping preview size update - missing viewer screen size or components')
         showWaitingForViewer()
         return
     }
 
     const canvas = document.getElementById('preview')
     if (!canvas) {
-        console.log('⚠️ Preview canvas not found')
         return
     }
-
-    console.log('🔧 Updating preview size with viewer screen:', viewerScreenSize)
 
     const container = canvas.parentElement
     const containerRect = container.getBoundingClientRect()
@@ -679,7 +689,6 @@ function updatePreviewSize(viewerScreenSize) {
     const maxHeight = Math.min(400, maxWidth * 0.75)
 
     const viewerRatio = viewerScreenSize.width / viewerScreenSize.height
-    console.log(`📐 Вьювер соотношение: ${viewerRatio.toFixed(3)} (${viewerScreenSize.width}×${viewerScreenSize.height})`)
 
     // **ИСПРАВЛЕННАЯ ЛОГИКА СОХРАНЕНИЯ ПРОПОРЦИЙ**
     let previewWidth = maxWidth;
@@ -698,7 +707,7 @@ function updatePreviewSize(viewerScreenSize) {
     canvas.style.width = canvas.width + 'px';
     canvas.style.height = canvas.height + 'px';
 
-    console.log(`📏 Превью размер: ${canvas.width}×${canvas.height} (соотношение: ${(canvas.width/canvas.height).toFixed(3)})`)
+    // Тихо устанавливаем размер превью
 
     window.__previewRenderer.resize(canvas.width, canvas.height)
     window.__previewPhysics.setWorldSize(canvas.width, canvas.height)
@@ -732,8 +741,6 @@ function updatePreviewSize(viewerScreenSize) {
             const previewCenterY = viewerCenterY * scaleY
 
             window.__previewPhysics.setPosition(previewCenterX, previewCenterY);
-            window.__previewPhysics.state.targetX = previewCenterX;
-            window.__previewPhysics.state.targetY = previewCenterY;
             debugLog(`📏 Размер превью обновлен, мяч центрирован: (${viewerCenterX}, ${viewerCenterY}) → (${previewCenterX.toFixed(1)}, ${previewCenterY.toFixed(1)})`)
         }
     }
@@ -744,12 +751,7 @@ function updatePreviewSize(viewerScreenSize) {
         viewerInfo.style.display = 'block'
     }
 
-    console.log('✅ Preview size updated:', {
-        finalSize: { width: canvas.width, height: canvas.height },
-        containerSize: { width: containerRect.width, height: containerRect.height },
-        viewerRatio: viewerRatio,
-        maxDimensions: { width: maxWidth, height: maxHeight }
-    })
+    // Тихо завершаем обновление размера превью
 }
 
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ НАПРАВЛЕНИЕМ =====
@@ -856,8 +858,6 @@ function resetCenter(){
 
       // Устанавливаем позицию и target координаты для корректной интерполяции
       window.__previewPhysics.setPosition(previewCenterX, previewCenterY);
-      window.__previewPhysics.state.targetX = previewCenterX;
-      window.__previewPhysics.state.targetY = previewCenterY;
 
       debugLog(`✅ Мяч центрирован относительно вьювера: (${viewerCenterX}, ${viewerCenterY}) → (${previewCenterX.toFixed(1)}, ${previewCenterY.toFixed(1)})`)
   } else if (window.__previewPhysics && window.__previewCanvas) {
@@ -865,8 +865,6 @@ function resetCenter(){
       const centerX = window.__previewCanvas.width / 2;
       const centerY = window.__previewCanvas.height / 2;
       window.__previewPhysics.setPosition(centerX, centerY);
-      window.__previewPhysics.state.targetX = centerX;
-      window.__previewPhysics.state.targetY = centerY;
       debugLog('✅ Мяч центрирован относительно превью (размеры вьювера неизвестны)')
   }
   debugLog('✅ Команда центрирования отправлена, превью обновлено локально')
@@ -902,7 +900,7 @@ function resetSession(){
 function setBallColor(color) {
   // Оптимизация: меньше обновлений когда нет вьювера
   if (!window.__current.viewerConnected) {
-    console.log('⏭️ Skipping ball color update - no viewer connected')
+    // Тихо пропускаем обновление цвета мяча
     return
   }
   wsClient.send('controller_update', { colorBall: color })
@@ -911,7 +909,7 @@ function setBallColor(color) {
 function setBgColor(color) {
   // Оптимизация: меньше обновлений когда нет вьювера
   if (!window.__current.viewerConnected) {
-    console.log('⏭️ Skipping background color update - no viewer connected')
+    // Тихо пропускаем обновление цвета фона
     return
   }
   wsClient.send('controller_update', { colorBg: color })
@@ -920,7 +918,7 @@ function setBgColor(color) {
 function setBallSize(size) {
   // Оптимизация: меньше обновлений когда нет вьювера
   if (!window.__current.viewerConnected) {
-    console.log('⏭️ Skipping ball size update - no viewer connected')
+    // Тихо пропускаем обновление размера мяча
     return
   }
   wsClient.send('controller_update', { radius: size })
@@ -941,6 +939,7 @@ function updatePlayPauseButton() {
   const button = document.getElementById('playPauseBtn')
   if (!button) return
 
+  debugLog(`🎮 Обновляем кнопку: isPlaying=${isPlaying}`)
   if (isPlaying) {
     button.textContent = '⏸ Стоп'
     button.style.background = '#f59e0b'
@@ -953,7 +952,7 @@ function updatePlayPauseButton() {
 function togglePlayPause(){
   if (isPlaying) {
     // Останавливаем игру
-    wsClient.send('controller_update', { pause: true })
+    wsClient.send('controller_update', { paused: true })
     isPlaying = false
     updatePlayPauseButton()
     debugLog('⏸ Игра остановлена через WS')
@@ -1018,6 +1017,7 @@ function getScaledState(state) {
     const scaledState = { ...state };
 
     // Фолбэк: если координаты нечисловые (undefined/null/NaN) — ставим центр экрана вьювера
+    // Это происходит когда вьювер подключился, но размер экрана еще не установлен
     const rawX = (typeof state.x === 'number' && !Number.isNaN(state.x))
       ? state.x
       : (viewerSize.width / 2);
@@ -1060,7 +1060,7 @@ function goBack() {
 }
 
 function updateViewerStatusUI() {
-    console.log(`%c[Controller] Вызвана updateViewerStatusUI. Статус: ${window.__current.viewerConnected}`, 'color: #purple; font-weight: bold;')
+    // Тихо обновляем статус вьювера
     const viewerStatusEl = document.getElementById('viewerStatus')
     if(viewerStatusEl) {
         if (window.__current.viewerConnected) {
