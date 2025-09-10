@@ -222,6 +222,17 @@ function setupWebSocketEventHandlers(wsClient, logger) {
             updatePreviewSize(); 
         }
 
+        // Мгновенно выравниваем позицию в превью по центру из initial_state (без интерполяции),
+        // используем СЫРЫЕ координаты вьювера (скейл будет на отрисовке)
+        try {
+            if (previewPhysicsEngine && state.x !== undefined && state.y !== undefined) {
+                previewPhysicsEngine.setPosition(state.x, state.y);
+                previewPhysicsEngine.setVelocity(0, 0);
+            }
+        } catch (e) {
+            // Тихо игнорируем, если в момент старта ещё нет канваса
+        }
+
         applyServerStateToPreview(state);
         syncUIWithState(state);
     })
@@ -249,12 +260,13 @@ function setupWebSocketEventHandlers(wsClient, logger) {
  */
 function applyServerStateToPreview(state) {
     if (!previewPhysicsEngine || !state) return;
-    // Сначала синхронизируем размер мира
-    if (state.viewerScreenSize) {
-      previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height);
-    }
-    // Для превью в режиме зрителя используем applyCommand,
-    // чтобы задействовать целевую интерполяцию и синхронизацию без двойного масштабирования
+    
+    // НЕ меняем размер мира движка под viewerScreenSize, 
+    // движок хранит сырые viewer-координаты, масштабирование делает отрисовка
+    // if (state.viewerScreenSize) {
+    //   previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height);
+    // }
+    // Применяем состояние от сервера, чтобы обновить целевые координаты для интерполяции (в viewer-координатах)
     previewPhysicsEngine.applyCommand(state);
 }
 
@@ -680,24 +692,13 @@ function updatePreviewSize(viewerScreenSize) {
 
     // Тихо устанавливаем размер превью
 
-    previewPhysicsEngine.setWorldSize(canvas.width, canvas.height)
-
-    // Масштабируем радиус шара под новый размер превью
-    const scaleX = canvas.width / window.__current.viewerScreenSize.width
-    const scaleY = canvas.height / window.__current.viewerScreenSize.height
-    const scaleRadius = Math.min(scaleX, scaleY)
-    const baseRadius = (lastServerState && typeof lastServerState.radius === 'number') ? lastServerState.radius : 20
-    previewPhysicsEngine.setBallSize(baseRadius * scaleRadius)
+    // ВАЖНО: Не масштабируем радиус в движке, масштаб произойдёт в отрисовке
 
     // После изменения размера, немедленно перерисовываем последнее известное состояние в новом масштабе
     if(lastServerState) {
-        const scaledState = getScaledState(lastServerState);
-        // Обновляем радиус в scaledState, чтобы превью сразу отрендерилось корректного размера
-        if (typeof scaledState.radius !== 'number') {
-            const baseRadius = (lastServerState && typeof lastServerState.radius === 'number') ? lastServerState.radius : 20
-            scaledState.radius = baseRadius * scaleRadius
-        }
-        previewPhysicsEngine.applyCommand(scaledState);
+        // Применяем СЫРОЕ состояние сервера (в координатах вьювера),
+        // отрисовка сама выполнит масштабирование
+        previewPhysicsEngine.applyCommand(lastServerState);
     } else {
         // Если нет состояния сервера, но есть размеры вьювера, центрируем мяч относительно них
         if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {

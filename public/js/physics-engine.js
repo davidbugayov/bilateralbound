@@ -15,6 +15,8 @@ class PhysicsEngine {
       maxSpeed: 1280,
       lerpFactor: 0.1, // Плавная интерполяция скорости
       positionLerpFactor: 0.02, // Плавная интерполяция позиции для превью
+      minLerpFactor: 0.01,      // Минимальный коэффициент интерполяции
+      maxLerpFactor: 0.25,      // Максимальный коэффициент интерполяции
       bounceCallback: null,
       friction: 1.0, // Убираем трение для постоянного движения
       bounceDamping: 1.0, // Убираем затухание для идеальных отскоков
@@ -149,6 +151,15 @@ class PhysicsEngine {
      */
   setPaused (paused) {
     this.state.paused = Boolean(paused)
+    // Для клиентского режима: при паузе фиксируем цель и сбрасываем предсказание,
+    // чтобы избежать рывка/дотягивания в момент остановки
+    if (this.isViewer && this.state.paused) {
+      this.state.targetX = this.ball.x
+      this.state.targetY = this.ball.y
+      this.state.lastVx = 0
+      this.state.lastVy = 0
+      this.lastServerUpdate = performance.now()
+    }
   }
 
   /**
@@ -190,6 +201,8 @@ class PhysicsEngine {
      * Продвинутая интерполяция для режима вьювера с предикцией движения
      */
   updateViewerInterpolation (deltaTime) {
+    // При паузе ничего не интерполируем, оставляем текущую позицию
+    if (this.state.paused) return
     if (this.state.targetX === undefined || this.state.targetY === undefined) {
       return
     }
@@ -201,27 +214,50 @@ class PhysicsEngine {
     // используем предиктивную экстраполяцию
     if (timeSinceLastUpdate > 100 && this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
       // Предиктивная экстраполяция: продолжаем движение по последней известной траектории
-      const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.2) // Максимум 200ms предикции
+      const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.25) // Максимум 250ms предикции
       const predictedX = this.state.targetX + this.state.lastVx * predictTime
       const predictedY = this.state.targetY + this.state.lastVy * predictTime
 
-      // Плавно интерполируем к предсказанной позиции
-      const lerpFactor = this.options.positionLerpFactor || 0.15
-      this.ball.x += (predictedX - this.ball.x) * lerpFactor
-      this.ball.y += (predictedY - this.ball.y) * lerpFactor
-    } else {
-      // Стандартная интерполяция к цели
-      const lerpFactor = this.options.positionLerpFactor || 0.1
-      this.ball.x += (this.state.targetX - this.ball.x) * lerpFactor
-      this.ball.y += (this.state.targetY - this.ball.y) * lerpFactor
-    }
+      // Адаптивный lerp с учётом deltaTime и ограничениями
+      const base = this.options.positionLerpFactor || 0.1
+      const adaptive = 1 - Math.pow(1 - base, Math.max(deltaTime * 60, 1))
+      const lerpFactor = Math.min(this.options.maxLerpFactor, Math.max(this.options.minLerpFactor, adaptive))
 
-    // Убираем лог интерполяции, так как он больше не нужен для отладки
-    // if (Math.abs(this.ball.x - this.state.targetX) > 0.01 || Math.abs(this.ball.y - this.state.targetY) > 0.01) {
-    //     if (!this.state.paused) {
-    //         console.log(`[PhysicsEngine] Interpolation: Target(${this.state.targetX.toFixed(1)}, ${this.state.targetY.toFixed(1)}), Current(${this.ball.x.toFixed(1)}, ${this.ball.y.toFixed(1)}) -> New(${this.ball.x.toFixed(1)}, ${this.ball.y.toFixed(1)})`);
-    //     }
-    // }
+      // Ограничение шага (anti-teleport)
+      const intendedDx = (predictedX - this.ball.x) * lerpFactor
+      const intendedDy = (predictedY - this.ball.y) * lerpFactor
+      const lastSpeed = Math.hypot(this.state.lastVx || 0, this.state.lastVy || 0) || 600
+      const maxStep = lastSpeed * deltaTime * 1.2
+      const stepLen = Math.hypot(intendedDx, intendedDy)
+      const clampScale = stepLen > maxStep && stepLen > 0 ? (maxStep / stepLen) : 1
+
+      this.ball.x += intendedDx * clampScale
+      this.ball.y += intendedDy * clampScale
+    } else {
+      // Стандартная интерполяция к цели с адаптацией и лёгким easing
+      const base = this.options.positionLerpFactor || 0.1
+      const adaptive = 1 - Math.pow(1 - base, Math.max(deltaTime * 60, 1))
+      let lerpFactor = Math.min(this.options.maxLerpFactor, Math.max(this.options.minLerpFactor, adaptive))
+
+      // Easing при приближении к цели
+      const dist = Math.hypot(this.state.targetX - this.ball.x, this.state.targetY - this.ball.y)
+      if (dist < 20) {
+        lerpFactor *= 0.6
+      } else if (dist < 8) {
+        lerpFactor *= 0.35
+      }
+
+      // Ограничение шага
+      const intendedDx = (this.state.targetX - this.ball.x) * lerpFactor
+      const intendedDy = (this.state.targetY - this.ball.y) * lerpFactor
+      const lastSpeed = Math.hypot(this.state.lastVx || 0, this.state.lastVy || 0) || 600
+      const maxStep = lastSpeed * deltaTime * 1.1
+      const stepLen = Math.hypot(intendedDx, intendedDy)
+      const clampScale = stepLen > maxStep && stepLen > 0 ? (maxStep / stepLen) : 1
+
+      this.ball.x += intendedDx * clampScale
+      this.ball.y += intendedDy * clampScale
+    }
 
     // Корректируем позицию если она сильно отклонилась (защита от рассинхронизации)
     const distance = this.sqrt((this.ball.x - this.state.targetX) ** 2 + (this.ball.y - this.state.targetY) ** 2)
