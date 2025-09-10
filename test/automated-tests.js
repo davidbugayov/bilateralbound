@@ -494,6 +494,64 @@ class Tester {
     return handlesNegative && handlesZero && handlesLarge && handlesInvalid;
   }
 
+  async testWebSocketReconnect() {
+    this.log('Тест: Переподключение WebSocket после обрыва');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    // 1. Устанавливаем первоначальные соединения
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    let viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+      new Promise(resolve => controllerSocket.on('open', resolve)),
+      new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+    this.log('✅ Первичные сокеты подключены');
+
+    // 2. Рвем соединение вьювера
+    viewerSocket.close(1000, 'Simulated disconnect');
+    this.log('ℹ️ Соединение вьювера разорвано для теста');
+    await new Promise(r => setTimeout(r, 500)); // Даем серверу время обработать отключение
+
+    // 3. Переподключаем вьювер
+    viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+    await new Promise(resolve => viewerSocket.on('open', resolve));
+    this.log('✅ Вьювер переподключен');
+
+    // 4. Начинаем слушать обновления на новом сокете
+    const updatePromise = new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        resolve(null); // Если сообщение не пришло за 2 секунды, считаем тест проваленным
+      }, 2000);
+
+      viewerSocket.on('message', (message) => {
+        const data = JSON.parse(message);
+        if (data.type === 'state_update' && data.payload.speed === 50) {
+          clearTimeout(timeout);
+          resolve(data.payload);
+        }
+      });
+    });
+
+    // 5. Отправляем команду с контроллера, чтобы вызвать обновление
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 800, height: 600 } });
+    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 0, speed: 50 } }));
+
+    // 6. Ждем обновления
+    const updatedState = await updatePromise;
+    const updateReceived = updatedState && updatedState.speed === 50;
+    this.log(updateReceived ? '✅ Обновление получено после переподключения' : '❌ Обновление не пришло', updateReceived ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return updateReceived;
+  }
+
   async testMovementStateUpdates() {
     this.log('Тест: Состояние движения содержит корректные обновления');
     const sessionId = await this.createSession();
@@ -576,6 +634,7 @@ class Tester {
       { name: 'testResetCommand', fn: this.testResetCommand.bind(this) },
       { name: 'testDirectionChange', fn: this.testDirectionChange.bind(this) },
       { name: 'testNegativeInput', fn: this.testNegativeInput.bind(this) },
+      { name: 'testWebSocketReconnect', fn: this.testWebSocketReconnect.bind(this) },
       { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) }
     ];
 
