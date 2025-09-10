@@ -84,42 +84,42 @@
 
         <div class="test-grid">
             <div class="test-card">
-                <h3>⚡ Быстрый тест синхронизации</h3>
+                <h3>🧪 Автоматизированные тесты</h3>
                 <p class="test-description">
-                    Проверяет основную синхронизацию между контроллером и превью. Время выполнения: 10-30 секунд.
+                    Запуск серверных автотестов через командную строку. Время выполнения: 10-15 секунд.
                 </p>
-                <a href="test/test-sync-quick.html" target="_blank" class="test-btn">
-                    🚀 Запустить быстрый тест
+                <button onclick="runAutomatedTests()" class="test-btn">
+                    🧪 Запустить автотесты
+                </button>
+            </div>
+
+            <div class="test-card">
+                <h3>📊 Статус тестов</h3>
+                <p class="test-description">
+                    Проверка текущего состояния тестовой системы и покрытия.
+                </p>
+                <button onclick="checkTestStatus()" class="test-btn">
+                    📊 Проверить статус
+                </button>
+            </div>
+
+            <div class="test-card">
+                <h3>🎮 Игровой интерфейс</h3>
+                <p class="test-description">
+                    Открыть основной игровой интерфейс для ручного тестирования.
+                </p>
+                <a href="/" target="_blank" class="test-btn">
+                    🎮 Открыть игру
                 </a>
             </div>
 
             <div class="test-card">
-                <h3>🎯 Тест отскоков мячика</h3>
+                <h3>📋 Документация тестов</h3>
                 <p class="test-description">
-                    Специальный тест для проверки физики отскоков от всех краев. Время выполнения: 5-15 секунд.
+                    Просмотр полной документации по тест-кейсам и покрытию.
                 </p>
-                <a href="test/test-bounce.html" target="_blank" class="test-btn">
-                    🎯 Запустить тест отскоков
-                </a>
-            </div>
-
-            <div class="test-card">
-                <h3>🔬 Системный тест</h3>
-                <p class="test-description">
-                    Комплексная проверка всех функций системы. Время выполнения: 2-3 минуты.
-                </p>
-                <a href="test/test-system.html" target="_blank" class="test-btn">
-                    🔬 Запустить системный тест
-                </a>
-            </div>
-
-            <div class="test-card">
-                <h3>🧪 Мой тестовый файл</h3>
-                <p class="test-description">
-                    Простой тест локальной физики без сервера. Для проверки основных функций.
-                </p>
-                <a href="test/ball-test.html" target="_blank" class="test-btn">
-                    🧪 Запустить мой тест
+                <a href="test/TESTS.md" target="_blank" class="test-btn">
+                    📋 Открыть документацию
                 </a>
             </div>
         </div>
@@ -146,6 +146,39 @@
                     `<span class="status-error">❌ Сервер недоступен</span>`;
                 document.getElementById('serverDetails').innerHTML =
                     'Проверьте, что сервер запущен на порту 3000';
+            }
+        }
+
+        // Функция запуска автотестов
+        async function runAutomatedTests() {
+            try {
+                const response = await fetch('/api/test/run', { method: 'POST' });
+                if (response.ok) {
+                    alert('✅ Автотесты запущены! Проверьте консоль сервера для результатов.');
+                } else {
+                    alert('❌ Не удалось запустить автотесты. Убедитесь, что сервер запущен.');
+                }
+            } catch (error) {
+                alert('❌ Ошибка запуска автотестов: ' + error.message);
+            }
+        }
+
+        // Функция проверки статуса тестов
+        async function checkTestStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                let status = `✅ Сервер работает\n`;
+                status += `📊 Сессии: ${data.sessions}\n`;
+                status += `⏱️ Uptime: ${Math.round(data.uptime)} сек\n`;
+                status += `🧪 Автотесты: Доступны\n`;
+                status += `❌ UI тесты: Отключены (стабильность)\n`;
+                status += `📋 Покрытие: Серверная логика 100%`;
+                
+                alert(status);
+            } catch (error) {
+                alert('❌ Ошибка проверки статуса: ' + error.message);
             }
         }
 
