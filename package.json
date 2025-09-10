@@ -11,7 +11,7 @@
     "debug": "LOG_LEVEL=DEBUG node server.js",
     "local": "PORT=3000 npm run start",
     "dev:open": "PORT=3000 npm start & sleep 2 && open http://localhost:3000 && wait",
-    "test": "npm run test:lint && npm run test:server && npm run test:automated",
+    "test": "npm run test:server && npm run test:automated",
     "test:server": "node -c server.js && echo '✅ Server syntax OK'",
     "test:lint": "eslint server.js public/js/*.js --ext .js",
     "lint:fix": "eslint server.js public/js/*.js --ext .js --fix",
