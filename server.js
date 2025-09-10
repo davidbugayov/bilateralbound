@@ -362,8 +362,11 @@ class SessionManager {
         ballRadius: session.ballState.radius || 20, // Используем радиус из состояния или 20 по умолчанию
         maxSpeed: 1000 // Соответствует оригинальной логике сервера (100% speed = 1000px/sec)
     });
-    // Синхронизируем начальное состояние из движка
-    Object.assign(session.ballState, session.physicsEngine.getState());
+    // Синхронизируем начальное состояние из движка, но сохраняем paused: true
+    const engineState = session.physicsEngine.getState();
+    Object.assign(session.ballState, engineState);
+    session.ballState.paused = true; // Принудительно устанавливаем паузу для новой сессии
+    session.physicsEngine.setPaused(true); // Также устанавливаем паузу в движке физики
 
     this.startPhysics(session.id)
     return session
@@ -535,9 +538,9 @@ class SessionManager {
         this.logger.logSession(sessionId, `[SET_SIZE] After: engine.options.worldWidth=${session.physicsEngine.options.worldWidth}, _worldSizeSet=${session.physicsEngine._worldSizeSet}`);
 
         session.physicsEngine.reset(); // Центрирует мяч и останавливает его
-        // Жестко фиксируем стоп-кадр и нулевую скорость, чтобы исключить дрейф
-        session.physicsEngine.setPaused(true);
-        session.physicsEngine.setVelocity(0, 0);
+        // НЕ устанавливаем принудительно paused: true - оставляем текущее состояние игры
+        // session.physicsEngine.setPaused(true);
+        // session.physicsEngine.setVelocity(0, 0);
         
         Object.assign(session.ballState, session.physicsEngine.getState()); // Синхронизируем состояние
         this.logger.logSession(sessionId, `Centered ball via PhysicsEngine for screen size ${screenSize.width}×${screenSize.height}`);
@@ -547,7 +550,8 @@ class SessionManager {
        session.ballState.y = screenSize.height / 2;
        session.ballState.vx = 0;
        session.ballState.vy = 0;
-       session.ballState.paused = true;
+       // НЕ устанавливаем принудительно paused: true
+       // session.ballState.paused = true;
     }
 
     // Отправляем обновленное, центрированное состояние всем клиентам
