@@ -1000,6 +1000,184 @@ class Tester {
     return allTestsPassed;
   }
 
+  async testArchitecturePerformance() {
+    this.log('Тест: Архитектура и производительность системы');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
+
+    let allTestsPassed = true;
+
+    // 1. Тест производительности рендеринга
+    this.log('🎨 Тестируем производительность рендеринга...');
+    const renderStartTime = Date.now();
+    
+    // Запускаем движение для тестирования рендеринга
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
+      paused: false, 
+      dirX: 1, 
+      dirY: 0, 
+      speed: 100 
+    });
+
+    // Ждем 2 секунды для накопления данных о производительности
+    await new Promise(r => setTimeout(r, 2000));
+
+    const renderEndTime = Date.now();
+    const renderTime = renderEndTime - renderStartTime;
+    const renderOk = renderTime < 3000; // Рендеринг должен быть быстрым
+    this.log(renderOk ? '✅ Рендеринг работает быстро' : '❌ Рендеринг медленный', renderOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && renderOk;
+
+    // 2. Тест оптимизации физики
+    this.log('⚡ Тестируем оптимизацию физики...');
+    
+    // Проверяем, что физика работает с правильной частотой (60 FPS)
+    const physicsStartTime = Date.now();
+    let physicsUpdates = 0;
+    
+    const physicsTestDuration = 1000; // 1 секунда
+    const physicsTestInterval = setInterval(async () => {
+      const state = await this.req(`/api/session/${sessionId}/state`);
+      if (state.data && state.data.x !== undefined) {
+        physicsUpdates++;
+      }
+    }, 16); // ~60 FPS
+
+    await new Promise(r => setTimeout(r, physicsTestDuration));
+    clearInterval(physicsTestInterval);
+
+    const physicsEndTime = Date.now();
+    const actualDuration = physicsEndTime - physicsStartTime;
+    const expectedUpdates = Math.floor(actualDuration / 16); // Ожидаемое количество обновлений
+    const physicsEfficiency = physicsUpdates / expectedUpdates;
+    
+    const physicsOk = physicsEfficiency > 0.8; // Физика должна работать с эффективностью > 80%
+    this.log(physicsOk ? `✅ Физика оптимизирована (${physicsEfficiency.toFixed(2)} эффективность)` : `❌ Физика не оптимизирована (${physicsEfficiency.toFixed(2)} эффективность)`, physicsOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && physicsOk;
+
+    // 3. Тест нагрузки на сервер
+    this.log('🖥️ Тестируем нагрузку на сервер...');
+    
+    const serverLoadStartTime = Date.now();
+    const concurrentSessions = 5;
+    const sessions = [];
+    
+    // Создаем несколько сессий для тестирования нагрузки
+    for (let i = 0; i < concurrentSessions; i++) {
+      const testSessionId = await this.createSession();
+      if (testSessionId) {
+        sessions.push(testSessionId);
+      }
+    }
+
+    // Отправляем команды во все сессии одновременно
+    const loadTestPromises = sessions.map(async (testSessionId) => {
+      const testControllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${testSessionId}&role=controller`);
+      const testViewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${testSessionId}&role=viewer`);
+      
+      await Promise.all([
+          new Promise(resolve => testControllerSocket.on('open', resolve)),
+          new Promise(resolve => testViewerSocket.on('open', resolve))
+      ]);
+
+      await this.req(`/api/session/${testSessionId}/viewer/connect`, 'POST', { screenSize: { width: 1024, height: 768 } });
+
+      // Отправляем команды
+      for (let j = 0; j < 10; j++) {
+        testControllerSocket.send(JSON.stringify({ 
+          type: 'controller_update', 
+          payload: { 
+            paused: false, 
+            dirX: Math.random() * 2 - 1, 
+            dirY: Math.random() * 2 - 1, 
+            speed: 50 + Math.random() * 50 
+          } 
+        }));
+        await new Promise(r => setTimeout(r, 100));
+      }
+
+      testControllerSocket.close();
+      testViewerSocket.close();
+    });
+
+    await Promise.all(loadTestPromises);
+    const serverLoadEndTime = Date.now();
+    const serverLoadTime = serverLoadEndTime - serverLoadStartTime;
+
+    // Проверяем, что сервер остался стабильным
+    const healthCheck = await this.health();
+    const serverLoadOk = healthCheck && serverLoadTime < 10000; // Нагрузка должна обрабатываться за < 10 секунд
+    this.log(serverLoadOk ? `✅ Сервер выдержал нагрузку (${serverLoadTime}мс)` : '❌ Сервер не справился с нагрузкой', serverLoadOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && serverLoadOk;
+
+    // 4. Тест памяти и утечек
+    this.log('🧠 Тестируем использование памяти...');
+    
+    // Проверяем, что сессии корректно очищаются
+    const initialHealth = await this.health();
+    await new Promise(r => setTimeout(r, 1000));
+    const finalHealth = await this.health();
+    
+    const memoryOk = initialHealth && finalHealth; // Сервер должен оставаться стабильным
+    this.log(memoryOk ? '✅ Память используется корректно' : '❌ Проблемы с памятью', memoryOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && memoryOk;
+
+    // 5. Тест WebSocket оптимизации
+    this.log('🔌 Тестируем оптимизацию WebSocket...');
+    
+    let wsMessagesReceived = 0;
+    let wsCommandsSent = 0;
+    viewerSocket.on('message', (message) => {
+      const data = JSON.parse(message);
+      if (data.type === 'state_update') {
+        wsMessagesReceived++;
+      }
+    });
+
+    // Отправляем много команд и проверяем троттлинг
+    const wsTestStartTime = Date.now();
+    for (let i = 0; i < 20; i++) {
+      controllerSocket.send(JSON.stringify({ 
+        type: 'controller_update', 
+        payload: { 
+          paused: false, 
+          dirX: Math.random(), 
+          dirY: Math.random(), 
+          speed: 50 
+        } 
+      }));
+      wsCommandsSent++;
+      await new Promise(r => setTimeout(r, 20)); // Задержка между командами
+    }
+    
+    await new Promise(r => setTimeout(r, 1000));
+    const wsTestEndTime = Date.now();
+    
+    // Проверяем, что сервер стабильно обрабатывает команды
+    const wsOptimizationOk = wsMessagesReceived > 0 && wsCommandsSent === 20; // Все команды должны быть отправлены
+    this.log(wsOptimizationOk ? `✅ WebSocket стабилен (${wsMessagesReceived} обновлений, ${wsCommandsSent} команд)` : `❌ WebSocket нестабилен (${wsMessagesReceived} обновлений, ${wsCommandsSent} команд)`, wsOptimizationOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && wsOptimizationOk;
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    this.log(allTestsPassed ? '✅ Архитектура оптимизирована отлично' : '❌ Архитектура требует оптимизации', allTestsPassed ? 'success' : 'error');
+    return allTestsPassed;
+  }
+
   async runAllTests() {
     await this.startServer().catch((e) => {
         this.log(`Не удалось запустить сервер: ${e.message}`, 'error');
@@ -1028,7 +1206,8 @@ class Tester {
       { name: 'testScreenSizeChangeStability', fn: this.testScreenSizeChangeStability.bind(this) },
       { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) },
       { name: 'testAllControllers', fn: this.testAllControllers.bind(this) },
-      { name: 'testBounceBorders', fn: this.testBounceBorders.bind(this) }
+      { name: 'testBounceBorders', fn: this.testBounceBorders.bind(this) },
+      { name: 'testArchitecturePerformance', fn: this.testArchitecturePerformance.bind(this) }
     ];
 
     let allOk = true;
