@@ -537,10 +537,22 @@ class SessionManager {
         
         this.logger.logSession(sessionId, `[SET_SIZE] After: engine.options.worldWidth=${session.physicsEngine.options.worldWidth}, _worldSizeSet=${session.physicsEngine._worldSizeSet}`);
 
-        session.physicsEngine.reset(); // Центрирует мяч и останавливает его
-        // НЕ устанавливаем принудительно paused: true - оставляем текущее состояние игры
-        // session.physicsEngine.setPaused(true);
-        // session.physicsEngine.setVelocity(0, 0);
+        // Сохраняем текущее состояние перед центрированием
+        const currentState = session.physicsEngine.getState();
+        const currentSpeed = currentState.speed;
+        const currentVx = currentState.vx;
+        const currentVy = currentState.vy;
+        const currentPaused = currentState.paused;
+
+        // Центрируем мяч, но сохраняем скорость и направление
+        session.physicsEngine.ball.x = screenSize.width / 2;
+        session.physicsEngine.ball.y = screenSize.height / 2;
+        
+        // Восстанавливаем сохраненное состояние
+        session.physicsEngine.ball.speed = currentSpeed;
+        session.physicsEngine.ball.vx = currentVx;
+        session.physicsEngine.ball.vy = currentVy;
+        session.physicsEngine.state.paused = currentPaused;
         
         Object.assign(session.ballState, session.physicsEngine.getState()); // Синхронизируем состояние
         this.logger.logSession(sessionId, `Centered ball via PhysicsEngine for screen size ${screenSize.width}×${screenSize.height}`);

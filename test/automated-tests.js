@@ -564,8 +564,8 @@ class Tester {
     const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
 
     await Promise.all([
-      new Promise(resolve => controllerSocket.on('open', resolve)),
-      new Promise(resolve => viewerSocket.on('open', resolve))
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
     ]);
 
     await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1024, height: 768 } });
@@ -597,6 +597,108 @@ class Tester {
     viewerSocket.close();
 
     return healthCheckPassed;
+  }
+
+  async testScreenSizeChangeStability() {
+    this.log('Тест: Стабильность при изменении размера экрана');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    // 1. Устанавливаем начальный размер экрана
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1280, height: 720 } });
+    await new Promise(r => setTimeout(r, 200));
+
+    // 2. Запускаем движение с определенными параметрами
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
+      paused: false, 
+      dirX: 1, 
+      dirY: 0, 
+      speed: 50 
+    });
+    await new Promise(r => setTimeout(r, 300));
+
+    // 3. Получаем состояние до изменения размера
+    const stateBefore = await this.req(`/api/session/${sessionId}/state`);
+    if (stateBefore.status !== 200) {
+      this.log('❌ Не удалось получить состояние до изменения размера', 'error');
+      controllerSocket.close();
+      viewerSocket.close();
+      return false;
+    }
+
+    const beforeState = stateBefore.data;
+    this.log(`ℹ️ Состояние до изменения: speed=${beforeState.speed}, dirX=${beforeState.vx}, dirY=${beforeState.vy}`);
+
+    // 4. Изменяем размер экрана
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
+    await new Promise(r => setTimeout(r, 300));
+
+    // 5. Получаем состояние после изменения размера
+    const stateAfter = await this.req(`/api/session/${sessionId}/state`);
+    if (stateAfter.status !== 200) {
+      this.log('❌ Не удалось получить состояние после изменения размера', 'error');
+      controllerSocket.close();
+      viewerSocket.close();
+      return false;
+    }
+
+    const afterState = stateAfter.data;
+
+    // 6. Проверяем, что скорость не изменилась
+    const speedUnchanged = afterState.speed === beforeState.speed;
+    this.log(speedUnchanged ? '✅ Скорость не изменилась' : `❌ Скорость изменилась: ${beforeState.speed} -> ${afterState.speed}`, speedUnchanged ? 'success' : 'error');
+
+    // 7. Проверяем, что направление не изменилось (с учетом нормализации)
+    const beforeDirX = beforeState.vx > 0 ? 1 : beforeState.vx < 0 ? -1 : 0;
+    const beforeDirY = beforeState.vy > 0 ? 1 : beforeState.vy < 0 ? -1 : 0;
+    const afterDirX = afterState.vx > 0 ? 1 : afterState.vx < 0 ? -1 : 0;
+    const afterDirY = afterState.vy > 0 ? 1 : afterState.vy < 0 ? -1 : 0;
+    
+    const directionUnchanged = (beforeDirX === afterDirX) && (beforeDirY === afterDirY);
+    this.log(directionUnchanged ? '✅ Направление не изменилось' : `❌ Направление изменилось: (${beforeDirX},${beforeDirY}) -> (${afterDirX},${afterDirY})`, directionUnchanged ? 'success' : 'error');
+
+    // 8. Проверяем, что игра продолжает работать (не на паузе)
+    const gameStillRunning = afterState.paused === false;
+    this.log(gameStillRunning ? '✅ Игра продолжает работать' : '❌ Игра остановилась', gameStillRunning ? 'success' : 'error');
+
+    // 9. Тестируем старт/стоп после изменения размера
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: true });
+    await new Promise(r => setTimeout(r, 200));
+    
+    const stoppedState = await this.req(`/api/session/${sessionId}/state`);
+    const gameStopped = stoppedState.data.paused === true;
+    this.log(gameStopped ? '✅ Игра остановилась после команды стоп' : '❌ Игра не остановилась', gameStopped ? 'success' : 'error');
+
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false });
+    await new Promise(r => setTimeout(r, 200));
+    
+    const startedState = await this.req(`/api/session/${sessionId}/state`);
+    const gameStarted = startedState.data.paused === false;
+    this.log(gameStarted ? '✅ Игра запустилась после команды старт' : '❌ Игра не запустилась', gameStarted ? 'success' : 'error');
+
+    // 10. Тестируем команду "Центр"
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { reset: true });
+    await new Promise(r => setTimeout(r, 300));
+    
+    const centeredState = await this.req(`/api/session/${sessionId}/state`);
+    const isCentered = Math.abs(centeredState.data.x - 960) < 10 && Math.abs(centeredState.data.y - 540) < 10;
+    this.log(isCentered ? '✅ Мяч вернулся в центр' : `❌ Мяч не в центре: (${centeredState.data.x}, ${centeredState.data.y})`, isCentered ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return speedUnchanged && directionUnchanged && gameStillRunning && gameStopped && gameStarted && isCentered;
   }
 
   async testMovementStateUpdates() {
@@ -683,6 +785,7 @@ class Tester {
       { name: 'testNegativeInput', fn: this.testNegativeInput.bind(this) },
       { name: 'testWebSocketReconnect', fn: this.testWebSocketReconnect.bind(this) },
       { name: 'testThrottlingPerformance', fn: this.testThrottlingPerformance.bind(this) },
+      { name: 'testScreenSizeChangeStability', fn: this.testScreenSizeChangeStability.bind(this) },
       { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) }
     ];
 
