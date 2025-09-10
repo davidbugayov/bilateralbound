@@ -760,6 +760,138 @@ class Tester {
     return hasMovement && sizePresent;
   }
 
+  async testAllControllers() {
+    this.log('Тест: Проверка всех контроллеров в системе');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1024, height: 768 } });
+
+    let allTestsPassed = true;
+
+    // 1. Тест API контроллера подключения
+    this.log('🔌 Тестируем API контроллер подключения...');
+    const connectResponse = await this.req(`/api/session/${sessionId}/controller/connect`, 'POST', {});
+    const connectOk = connectResponse.status === 200;
+    this.log(connectOk ? '✅ API контроллер подключения работает' : '❌ API контроллер подключения не работает', connectOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && connectOk;
+
+    // 2. Тест WebSocket контроллера команд
+    this.log('🎮 Тестируем WebSocket контроллер команд...');
+    let wsCommandReceived = false;
+    controllerSocket.on('message', (message) => {
+      const data = JSON.parse(message);
+      if (data.type === 'state_update') {
+        wsCommandReceived = true;
+      }
+    });
+
+    // Отправляем команду через WebSocket
+    controllerSocket.send(JSON.stringify({ 
+      type: 'controller_update', 
+      payload: { paused: false, dirX: 1, dirY: 0, speed: 50 } 
+    }));
+    await new Promise(r => setTimeout(r, 500));
+
+    this.log(wsCommandReceived ? '✅ WebSocket контроллер команд работает' : '❌ WebSocket контроллер команд не работает', wsCommandReceived ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && wsCommandReceived;
+
+    // 3. Тест API контроллера обновлений
+    this.log('📡 Тестируем API контроллер обновлений...');
+    const updateResponse = await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
+      paused: true, 
+      dirX: -1, 
+      dirY: 0, 
+      speed: 60 
+    });
+    const updateOk = updateResponse.status === 200;
+    this.log(updateOk ? '✅ API контроллер обновлений работает' : '❌ API контроллер обновлений не работает', updateOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && updateOk;
+
+    // 4. Тест команды Reset через API
+    this.log('🎯 Тестируем команду Reset через API...');
+    const resetResponse = await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { reset: true });
+    const resetOk = resetResponse.status === 200;
+    this.log(resetOk ? '✅ Команда Reset через API работает' : '❌ Команда Reset через API не работает', resetOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && resetOk;
+
+    // 5. Тест команды Reset через WebSocket
+    this.log('🎯 Тестируем команду Reset через WebSocket...');
+    controllerSocket.send(JSON.stringify({ 
+      type: 'controller_update', 
+      payload: { reset: true } 
+    }));
+    await new Promise(r => setTimeout(r, 300));
+
+    const stateAfterReset = await this.req(`/api/session/${sessionId}/state`);
+    const isCentered = Math.abs(stateAfterReset.data.x - 512) < 10 && Math.abs(stateAfterReset.data.y - 384) < 10;
+    this.log(isCentered ? '✅ Команда Reset через WebSocket работает' : '❌ Команда Reset через WebSocket не работает', isCentered ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && isCentered;
+
+    // 6. Тест изменения направления через API
+    this.log('🧭 Тестируем изменение направления через API...');
+    const directionResponse = await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
+      paused: false, 
+      dirX: 0, 
+      dirY: 1, 
+      speed: 40 
+    });
+    const directionOk = directionResponse.status === 200;
+    this.log(directionOk ? '✅ Изменение направления через API работает' : '❌ Изменение направления через API не работает', directionOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && directionOk;
+
+    // 7. Тест изменения скорости через API
+    this.log('⚡ Тестируем изменение скорости через API...');
+    const speedResponse = await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
+      paused: false, 
+      dirX: 1, 
+      dirY: 0, 
+      speed: 80 
+    });
+    const speedOk = speedResponse.status === 200;
+    this.log(speedOk ? '✅ Изменение скорости через API работает' : '❌ Изменение скорости через API не работает', speedOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && speedOk;
+
+    // 8. Тест паузы/возобновления через API
+    this.log('⏸️ Тестируем паузу/возобновление через API...');
+    const pauseResponse = await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: true });
+    const pauseOk = pauseResponse.status === 200;
+    this.log(pauseOk ? '✅ Пауза через API работает' : '❌ Пауза через API не работает', pauseOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && pauseOk;
+
+    const resumeResponse = await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false });
+    const resumeOk = resumeResponse.status === 200;
+    this.log(resumeOk ? '✅ Возобновление через API работает' : '❌ Возобновление через API не работает', resumeOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && resumeOk;
+
+    // 9. Тест обработки некорректных команд
+    this.log('🛡️ Тестируем обработку некорректных команд...');
+    const invalidResponse = await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
+      invalidField: 'test',
+      speed: 'not_a_number'
+    });
+    const invalidOk = invalidResponse.status === 200; // Сервер должен обработать и вернуть 200
+    this.log(invalidOk ? '✅ Обработка некорректных команд работает' : '❌ Обработка некорректных команд не работает', invalidOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && invalidOk;
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    this.log(allTestsPassed ? '✅ Все контроллеры работают корректно' : '❌ Некоторые контроллеры не работают', allTestsPassed ? 'success' : 'error');
+    return allTestsPassed;
+  }
+
   async runAllTests() {
     await this.startServer().catch((e) => {
         this.log(`Не удалось запустить сервер: ${e.message}`, 'error');
@@ -786,7 +918,8 @@ class Tester {
       { name: 'testWebSocketReconnect', fn: this.testWebSocketReconnect.bind(this) },
       { name: 'testThrottlingPerformance', fn: this.testThrottlingPerformance.bind(this) },
       { name: 'testScreenSizeChangeStability', fn: this.testScreenSizeChangeStability.bind(this) },
-      { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) }
+      { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) },
+      { name: 'testAllControllers', fn: this.testAllControllers.bind(this) }
     ];
 
     let allOk = true;

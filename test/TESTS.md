@@ -223,6 +223,21 @@ node test/ui-tests.js
     -   **Теги:** `[Граничные условия]`, `[API]`
     -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` (валидация ввода)
 
+### 🎮 Тесты контроллеров
+
+1.  **Проверка всех контроллеров в системе**
+    -   **Теги:** `[API]`, `[WebSocket]`, `[Контроллеры]`
+    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` (testAllControllers)
+    -   **Проверяет:**
+        -   API контроллер подключения (`/api/session/:sessionId/controller/connect`)
+        -   WebSocket контроллер команд (`controller_update`)
+        -   API контроллер обновлений (`/api/session/:sessionId/controller/update`)
+        -   Команды Reset через API и WebSocket
+        -   Изменение направления через API
+        -   Изменение скорости через API
+        -   Пауза/возобновление через API
+        -   Обработка некорректных команд
+
 ---
 
 ## 💡 Идеи для будущих тестов
