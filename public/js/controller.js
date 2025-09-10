@@ -29,6 +29,10 @@ let sessionId = null
 let ws = null
 let previewPhysicsEngine = null; // Локальный движок физики для превью
 let lastPreviewRenderTime = 0;
+let hiddenThrottleMs = 100; // при скрытой вкладке обновляем ~10 FPS
+if (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.rendering && typeof window.BBConfig.rendering.hiddenThrottleMs === 'number') {
+  hiddenThrottleMs = window.BBConfig.rendering.hiddenThrottleMs;
+}
 
 // --- Elements ---
 const previewCanvas = document.getElementById('preview')
@@ -248,6 +252,17 @@ function setupWebSocketEventHandlers(wsClient, logger) {
         applyServerStateToPreview(state);
     })
 
+    // Адаптация сглаживания по сетевым метрикам
+    wsClient.on('net_metrics', ({ rttMs, jitterMs }) => {
+        if (!previewPhysicsEngine) return;
+        // Чем больше джиттер — тем выше демпфирование и шире окно предикции
+        const base = (window.BBConfig && window.BBConfig.smoothing) || {};
+        const damping = Math.min(22, Math.max(8, (base.damping || 10) + (jitterMs/20)));
+        const stiffness = Math.min(50, Math.max(15, (base.stiffness || 30) - (jitterMs/40)));
+        const maxPredictSec = Math.min(0.35, Math.max(0.06, (base.maxPredictSec || 0.25) + (rttMs/1000 - 0.1)*0.25));
+        previewPhysicsEngine.setSmoothingOptions({ damping, stiffness, maxPredictSec });
+    })
+
     wsClient.on('maxReconnectAttemptsReached', () => {
         logger.error('Исчерпаны попытки переподключения')
         showErrorNotification('Не удается подключиться к серверу. Проверьте интернет-соединение.')
@@ -280,7 +295,16 @@ function renderPreviewLoop(timestamp) {
   lastPreviewRenderTime = timestamp;
 
   // Обновляем локальную симуляцию превью для интерполяции
-  previewPhysicsEngine.update(deltaTime);
+  // Frame skipping: большие провалы делим на равные шаги по 16ms
+  if (deltaTime > 0.032) {
+    const steps = Math.min(3, Math.ceil(deltaTime / 0.016));
+    const stepDt = deltaTime / steps;
+    for (let i = 0; i < steps; i++) {
+      previewPhysicsEngine.update(stepDt);
+    }
+  } else {
+    previewPhysicsEngine.update(deltaTime);
+  }
   const state = previewPhysicsEngine.getState();
 
   // Масштабируем состояние, если вьювер подключен
@@ -291,7 +315,12 @@ function renderPreviewLoop(timestamp) {
       window.__previewRenderer.drawFrame(stateToRender);
   }
 
-  requestAnimationFrame(renderPreviewLoop);
+  if (document.hidden) {
+    // при скрытой вкладке — редкий апдейт, чтобы экономить ресурсы
+    setTimeout(() => requestAnimationFrame(renderPreviewLoop), hiddenThrottleMs);
+  } else {
+    requestAnimationFrame(renderPreviewLoop);
+  }
 }
 
 /**
@@ -605,6 +634,10 @@ async function initializePreview() {
         previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' });
         // Включаем режим зрителя для корректной интерполяции
         previewPhysicsEngine.isViewer = true;
+        // Применяем глобальные настройки сглаживания, если есть
+        if (window.BBConfig && window.BBConfig.smoothing) {
+            previewPhysicsEngine.setSmoothingOptions(window.BBConfig.smoothing);
+        }
         
         // Запускаем цикл рендеринга для превью
         requestAnimationFrame(renderPreviewLoop);

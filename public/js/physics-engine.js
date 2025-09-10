@@ -17,10 +17,23 @@ class PhysicsEngine {
       positionLerpFactor: 0.02, // Плавная интерполяция позиции для превью
       minLerpFactor: 0.01,      // Минимальный коэффициент интерполяции
       maxLerpFactor: 0.25,      // Максимальный коэффициент интерполяции
+      smoothing: {              // Параметры пружинного сглаживания (viewer)
+        stiffness: 30,          // k
+        damping: 10,            // c
+        maxPredictSec: 0.25,    // максимум предикции
+        snapDistance: 2         // авто-снап к цели в пикселях
+      },
       bounceCallback: null,
       friction: 1.0, // Убираем трение для постоянного движения
       bounceDamping: 1.0, // Убираем затухание для идеальных отскоков
       ...options
+    }
+
+    // Применяем глобальную конфигурацию при наличии
+    if (typeof window !== 'undefined' && window.BBConfig) {
+      if (window.BBConfig.smoothing) {
+        this.options.smoothing = { ...this.options.smoothing, ...window.BBConfig.smoothing }
+      }
     }
 
     // Флаг для определения режима вьювера
@@ -51,7 +64,10 @@ class PhysicsEngine {
       targetVx: 0,
       targetVy: 0,
       targetX: this.centerX, // Устанавливаем начальную позицию в центре
-      targetY: this.centerY
+      targetY: this.centerY,
+      // Сглаживание (пружина) в viewer-режиме
+      smoothVx: 0,
+      smoothVy: 0
     }
 
     this.bounceCallback = this.options.bounceCallback
@@ -61,6 +77,20 @@ class PhysicsEngine {
     this.min = Math.min
     this.max = Math.max
     this.abs = Math.abs
+  }
+
+  setOptions (opts = {}) {
+    if (!opts || typeof opts !== 'object') return
+    // Только известные поля
+    const allowed = ['worldWidth','worldHeight','ballRadius','minSpeed','maxSpeed','lerpFactor','positionLerpFactor']
+    for (const k of allowed) {
+      if (opts[k] !== undefined) this.options[k] = opts[k]
+    }
+  }
+
+  setSmoothingOptions (opts = {}) {
+    if (!opts || typeof opts !== 'object') return
+    this.options.smoothing = { ...this.options.smoothing, ...opts }
   }
 
   // === ОСНОВНЫЕ МЕТОДЫ ===
@@ -158,6 +188,8 @@ class PhysicsEngine {
       this.state.targetY = this.ball.y
       this.state.lastVx = 0
       this.state.lastVy = 0
+      this.state.smoothVx = 0
+      this.state.smoothVy = 0
       this.lastServerUpdate = performance.now()
     }
   }
@@ -214,49 +246,13 @@ class PhysicsEngine {
     // используем предиктивную экстраполяцию
     if (timeSinceLastUpdate > 100 && this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
       // Предиктивная экстраполяция: продолжаем движение по последней известной траектории
-      const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.25) // Максимум 250ms предикции
+      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.25)
       const predictedX = this.state.targetX + this.state.lastVx * predictTime
       const predictedY = this.state.targetY + this.state.lastVy * predictTime
-
-      // Адаптивный lerp с учётом deltaTime и ограничениями
-      const base = this.options.positionLerpFactor || 0.1
-      const adaptive = 1 - Math.pow(1 - base, Math.max(deltaTime * 60, 1))
-      const lerpFactor = Math.min(this.options.maxLerpFactor, Math.max(this.options.minLerpFactor, adaptive))
-
-      // Ограничение шага (anti-teleport)
-      const intendedDx = (predictedX - this.ball.x) * lerpFactor
-      const intendedDy = (predictedY - this.ball.y) * lerpFactor
-      const lastSpeed = Math.hypot(this.state.lastVx || 0, this.state.lastVy || 0) || 600
-      const maxStep = lastSpeed * deltaTime * 1.2
-      const stepLen = Math.hypot(intendedDx, intendedDy)
-      const clampScale = stepLen > maxStep && stepLen > 0 ? (maxStep / stepLen) : 1
-
-      this.ball.x += intendedDx * clampScale
-      this.ball.y += intendedDy * clampScale
+      this._springTo(predictedX, predictedY, deltaTime)
     } else {
-      // Стандартная интерполяция к цели с адаптацией и лёгким easing
-      const base = this.options.positionLerpFactor || 0.1
-      const adaptive = 1 - Math.pow(1 - base, Math.max(deltaTime * 60, 1))
-      let lerpFactor = Math.min(this.options.maxLerpFactor, Math.max(this.options.minLerpFactor, adaptive))
-
-      // Easing при приближении к цели
-      const dist = Math.hypot(this.state.targetX - this.ball.x, this.state.targetY - this.ball.y)
-      if (dist < 20) {
-        lerpFactor *= 0.6
-      } else if (dist < 8) {
-        lerpFactor *= 0.35
-      }
-
-      // Ограничение шага
-      const intendedDx = (this.state.targetX - this.ball.x) * lerpFactor
-      const intendedDy = (this.state.targetY - this.ball.y) * lerpFactor
-      const lastSpeed = Math.hypot(this.state.lastVx || 0, this.state.lastVy || 0) || 600
-      const maxStep = lastSpeed * deltaTime * 1.1
-      const stepLen = Math.hypot(intendedDx, intendedDy)
-      const clampScale = stepLen > maxStep && stepLen > 0 ? (maxStep / stepLen) : 1
-
-      this.ball.x += intendedDx * clampScale
-      this.ball.y += intendedDy * clampScale
+      // Плавное «пружинное» стремление к цели
+      this._springTo(this.state.targetX, this.state.targetY, deltaTime)
     }
 
     // Корректируем позицию если она сильно отклонилась (защита от рассинхронизации)
@@ -266,6 +262,39 @@ class PhysicsEngine {
       this.ball.x += (this.state.targetX - this.ball.x) * correctionFactor
       this.ball.y += (this.state.targetY - this.ball.y) * correctionFactor
     }
+  }
+
+  // Критически демпфированная пружина для мягкого следования к цели
+  _springTo(targetX, targetY, deltaTime) {
+    const k = (this.options.smoothing && this.options.smoothing.stiffness) || 30
+    const c = (this.options.smoothing && this.options.smoothing.damping) || 10
+
+    // Ускорение по «пружине»: a = k*(target - x) - c*v
+    const ax = k * (targetX - this.ball.x) - c * this.state.smoothVx
+    const ay = k * (targetY - this.ball.y) - c * this.state.smoothVy
+
+    // Интегрируем скорость и позицию
+    this.state.smoothVx += ax * deltaTime
+    this.state.smoothVy += ay * deltaTime
+
+    // Ограничение максимального шага во избежание скачков
+    const maxStep = (Math.hypot(this.state.lastVx || 0, this.state.lastVy || 0) || 600) * deltaTime * 1.2
+    let dx = this.state.smoothVx * deltaTime
+    let dy = this.state.smoothVy * deltaTime
+    const stepLen = Math.hypot(dx, dy)
+    if (stepLen > maxStep && stepLen > 0) {
+      const s = maxStep / stepLen
+      dx *= s
+      dy *= s
+    }
+
+    this.ball.x += dx
+    this.ball.y += dy
+
+    // Авто-снап близко к цели, чтобы исключить «залипание» недолетом
+    const snap = (this.options.smoothing && this.options.smoothing.snapDistance) || 2
+    if (Math.abs(this.ball.x - targetX) < snap) this.ball.x = targetX
+    if (Math.abs(this.ball.y - targetY) < snap) this.ball.y = targetY
   }
 
   /**

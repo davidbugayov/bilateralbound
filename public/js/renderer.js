@@ -48,6 +48,14 @@ class BallRenderer {
     // Предварительно создаем объекты для переиспользования
     this.ball = this.physics.ball
     this.colors = this.physics.colors
+
+    // Кэш для градиента и формы круга
+    this._cached = {
+      radius: null,
+      color: null,
+      gradient: null,
+      path: null
+    }
   }
 
   /**
@@ -179,25 +187,37 @@ class BallRenderer {
     }
 
     try {
-      // Создаем градиент для более плавного отображения
-      const gradient = this.ctx.createRadialGradient(
-        ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, 0,
-        ball.x, ball.y, ball.radius
-      )
-      gradient.addColorStop(0, ball.colorBall || this.colors.ball)
-      gradient.addColorStop(1, this.adjustBrightness(ball.colorBall || this.colors.ball, -20))
+      // Кэшируем градиент и геометрию круга по (radius,color)
+      const col = ball.colorBall || this.colors.ball
+      if (this._cached.radius !== ball.radius || this._cached.color !== col) {
+        this._cached.radius = ball.radius
+        this._cached.color = col
+        const g = this.ctx.createRadialGradient(
+          ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, 0,
+          ball.x, ball.y, ball.radius
+        )
+        g.addColorStop(0, col)
+        g.addColorStop(1, this.adjustBrightness(col, -20))
+        this._cached.gradient = g
 
+        const p = new Path2D()
+        p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2)
+        this._cached.path = p
+      }
+ 
       this.beginPath()
-      // Рисуем мяч с градиентом
-      this.arc(ball.x, ball.y, Math.max(ball.radius, 2), 0, this.pi2)
-      this.ctx.fillStyle = gradient
+      // Рисуем мяч с градиентом и переиспользуемой формой
+      this.ctx.save()
+      this.ctx.translate(ball.x, ball.y)
+      this.ctx.fillStyle = this._cached.gradient
       
       // Добавляем мягкую тень для объема
       this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
       this.ctx.shadowBlur = 4
       this.ctx.shadowOffsetX = 2
       this.ctx.shadowOffsetY = 2
-      this.fill()
+      this.ctx.fill(this._cached.path)
+      this.ctx.restore()
       
       // Сбрасываем тень для следующих элементов
       this.ctx.shadowColor = 'transparent'

@@ -16,6 +16,9 @@ const config = {
   getServerConfig: () => ({
     PORT: process.env.PORT || 3000
   }),
+  getRuntimeTuning: () => ({
+    DEAD_RECKON_EPS: Math.max(0, parseFloat(process.env.DEAD_RECKON_EPS || '0.5') || 0.5)
+  }),
   getCorsConfig: () => ({
     origins: [
       'https://davidbugayov.github.io',
@@ -604,8 +607,15 @@ class SessionManager {
         currentSession.physicsEngine.update(deltaTime);
         Object.assign(currentSession.ballState, currentSession.physicsEngine.getState());
 
-        // 2. Рассылка нового состояния
-        this.stateBroadcaster.broadcastState(sessionId);
+        // 2. Dead-reckoning suppression: шлём только если сдвиг заметен
+        const prevSent = currentSession._lastBroadcast || { x: NaN, y: NaN };
+        const dx = Math.abs((currentSession.ballState.x || 0) - (prevSent.x || 0));
+        const dy = Math.abs((currentSession.ballState.y || 0) - (prevSent.y || 0));
+        const moved = dx > config.getRuntimeTuning().DEAD_RECKON_EPS || dy > config.getRuntimeTuning().DEAD_RECKON_EPS; // порог чувствительности в px
+        if (moved) {
+          this.stateBroadcaster.broadcastState(sessionId);
+          currentSession._lastBroadcast = { x: currentSession.ballState.x, y: currentSession.ballState.y };
+        }
       }, this.physicsInterval);
 
       this.logger.logSession(sessionId, `Main loop started at ${Math.round(1000/this.physicsInterval)} FPS.`);

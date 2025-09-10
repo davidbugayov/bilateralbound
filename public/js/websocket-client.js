@@ -47,7 +47,10 @@ class WebSocketClient {
       messagesSent: 0,
       messagesReceived: 0,
       reconnectCount: 0,
-      lastActivity: Date.now()
+      lastActivity: Date.now(),
+      rttMs: 0,
+      jitterMs: 0,
+      _lastRttSamples: []
     }
   }
 
@@ -222,6 +225,21 @@ class WebSocketClient {
       // Обработка обычных сообщений
       this._emit(message.type, message.payload)
       this._emit('message', message)
+
+      // Пробуем оценить сетевые метрики если есть timestamp
+      if (message && typeof message.timestamp === 'number') {
+        const now = performance.now()
+        const rtt = Math.max(0, now - message.timestamp)
+        this._stats._lastRttSamples.push(rtt)
+        if (this._stats._lastRttSamples.length > 20) this._stats._lastRttSamples.shift()
+        const n = this._stats._lastRttSamples.length
+        const avg = this._stats._lastRttSamples.reduce((a,b)=>a+b,0) / n
+        const varSum = this._stats._lastRttSamples.reduce((a,b)=>a + Math.pow(b-avg,2), 0) / n
+        const jitter = Math.sqrt(varSum)
+        this._stats.rttMs = Math.round(avg)
+        this._stats.jitterMs = Math.round(jitter)
+        this._emit('net_metrics', { rttMs: this._stats.rttMs, jitterMs: this._stats.jitterMs })
+      }
 
     } catch (error) {
       this.log(`Failed to parse message: ${error.message}`, 'error')
