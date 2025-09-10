@@ -33,11 +33,11 @@ node test/ui-tests.js
 
 2.  **Старт движения**
     -   **Теги:** `[UI]`, `[E2E]`, `[API]`
-    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` и `ui-tests.js`
+    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` (testStartMovement) и `ui-tests.js`
 
 3.  **Стоп движения**
     -   **Теги:** `[UI]`, `[E2E]`, `[API]`
-    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js`
+    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` (testStopMovement)
 
 4.  **Изменение положения мяча (команда контроллера)**
     -   **Теги:** `[API]`, `[Интеграционный]`
@@ -45,7 +45,7 @@ node test/ui-tests.js
 
 5.  **Изменение скорости**
     -   **Теги:** `[UI]`, `[E2E]`, `[API]`
-    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` и `ui-tests.js`
+    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` (testSpeedChange) и `ui-tests.js`
 
 6.  **Синхронизация превью ↔ вьювер**
     -   **Теги:** `[UI]`, `[E2E]`, `[Масштабирование]`
@@ -61,11 +61,11 @@ node test/ui-tests.js
 
 9.  **Команда Reset (центр)**
     -   **Теги:** `[UI]`, `[E2E]`, `[API]`
-    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` и `ui-tests.js`
+    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` (testResetCommand) и `ui-tests.js`
 
 10. **Изменение направления (все режимы)**
     -   **Теги:** `[UI]`, `[E2E]`, `[API]`
-    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` и `ui-tests.js`
+    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` (testDirectionChange) и `ui-tests.js`
 
 11. **Масштабирование при изменении размера вьювера**
     -   **Теги:** `[API]`, `[Масштабирование]`
@@ -117,7 +117,7 @@ node test/ui-tests.js
 
 2.  **Негативные входные данные (Negative Input)**
     -   **Теги:** `[Безопасность]`, `[API]`
-    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` (валидация и граничные условия)
+    -   **Статус:** `[ПОКРЫТО]` в `automated-tests.js` (testNegativeInput + валидация и граничные условия)
 
 ### 🎨 Тесты пользовательского интерфейса
 

@@ -173,6 +173,327 @@ class Tester {
     return ok;
   }
 
+  async testStartMovement() {
+    this.log('Тест: Команда старта движения');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    // 1. Устанавливаем соединения
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    // 2. Подключаем вьювер через HTTP
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
+    await new Promise(r => setTimeout(r, 100));
+
+    // 3. Проверяем начальное состояние через REST API (надежнее)
+    const initialStateResponse = await this.req(`/api/session/${sessionId}/state`);
+    if (initialStateResponse.status !== 200) {
+      this.log('❌ Не удалось получить начальное состояние', 'error');
+      controllerSocket.close();
+      viewerSocket.close();
+      return false;
+    }
+
+    const initialState = initialStateResponse.data;
+    const initiallyPaused = initialState.paused === true;
+    this.log(initiallyPaused ? '✅ Игра изначально на паузе' : '❌ Игра не на паузе изначально', initiallyPaused ? 'success' : 'error');
+
+    // 4. Отправляем команду старта движения
+    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 0, speed: 40 } }));
+
+    // 5. Ждем обновления состояния через REST API
+    await new Promise(r => setTimeout(r, 200)); // Даем время на обработку команды
+    const updatedStateResponse = await this.req(`/api/session/${sessionId}/state`);
+
+    if (updatedStateResponse.status !== 200) {
+      this.log('❌ Не удалось получить обновленное состояние', 'error');
+      controllerSocket.close();
+      viewerSocket.close();
+      return false;
+    }
+
+    const updatedState = updatedStateResponse.data;
+    const movementStarted = updatedState.paused === false;
+    this.log(movementStarted ? '✅ Движение запущено' : '❌ Движение не запустилось', movementStarted ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return initiallyPaused && movementStarted;
+  }
+
+  async testStopMovement() {
+    this.log('Тест: Команда стоп движения');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    // 1. Устанавливаем соединения
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    // 2. Подключаем вьювер через HTTP
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
+    await new Promise(r => setTimeout(r, 100));
+
+    // 3. Запускаем движение через REST API
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 1, dirY: 0, speed: 40 });
+    await new Promise(r => setTimeout(r, 200));
+
+    // Проверяем что движение запущено
+    const startedStateResponse = await this.req(`/api/session/${sessionId}/state`);
+    if (startedStateResponse.status !== 200) {
+      this.log('❌ Не удалось получить состояние после запуска', 'error');
+      controllerSocket.close();
+      viewerSocket.close();
+      return false;
+    }
+
+    const startedState = startedStateResponse.data;
+    const movementWasStarted = startedState.paused === false;
+    this.log(movementWasStarted ? '✅ Движение было запущено' : '❌ Движение не было запущено', movementWasStarted ? 'success' : 'error');
+
+    // 4. Отправляем команду стоп
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: true, dirX: 0, dirY: 0, speed: 0 });
+    await new Promise(r => setTimeout(r, 200));
+
+    // 5. Проверяем состояние через REST API
+    const stoppedStateResponse = await this.req(`/api/session/${sessionId}/state`);
+    if (stoppedStateResponse.status !== 200) {
+      this.log('❌ Не удалось получить состояние после остановки', 'error');
+      controllerSocket.close();
+      viewerSocket.close();
+      return false;
+    }
+
+    const stoppedState = stoppedStateResponse.data;
+    const movementStopped = stoppedState.paused === true;
+    this.log(movementStopped ? '✅ Движение остановлено' : '❌ Движение не остановилось', movementStopped ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return movementWasStarted && movementStopped;
+  }
+
+  async testSpeedChange() {
+    this.log('Тест: Изменение скорости');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    // 1. Устанавливаем соединения
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    // 2. Подключаем вьювер через HTTP
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
+    await new Promise(r => setTimeout(r, 100));
+
+    // 3. Запускаем движение с начальной скоростью
+    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 0, speed: 20 } }));
+
+    // Ждем немного
+    await new Promise(r => setTimeout(r, 200));
+
+    // 4. Изменяем скорость
+    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 0, speed: 80 } }));
+
+    // 5. Ждем обновления состояния
+    const stateUpdatePromise = new Promise((resolve) => {
+      viewerSocket.on('message', (message) => {
+        const data = JSON.parse(message);
+        if (data.type === 'state_update') {
+          resolve(data.payload);
+        }
+      });
+    });
+
+    const updatedState = await stateUpdatePromise;
+    const speedChanged = updatedState.speed === 80;
+    this.log(speedChanged ? '✅ Скорость изменена' : `❌ Скорость не изменилась: ${updatedState.speed}`, speedChanged ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return speedChanged;
+  }
+
+  async testResetCommand() {
+    this.log('Тест: Команда Reset (центр)');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    // 1. Устанавливаем соединения
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    // 2. Подключаем вьювер через HTTP
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
+    await new Promise(r => setTimeout(r, 100));
+
+    // 3. Запускаем движение, чтобы мяч ушел из центра
+    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 1, speed: 40 } }));
+    await new Promise(r => setTimeout(r, 500));
+
+    // 4. Получаем текущее положение мяча
+    const getCurrentPosition = () => {
+      return new Promise((resolve) => {
+        viewerSocket.on('message', (message) => {
+          const data = JSON.parse(message);
+          if (data.type === 'state_update') {
+            resolve(data.payload);
+          }
+        });
+      });
+    };
+
+    const currentPosition = await getCurrentPosition();
+    const wasNotCentered = Math.abs(currentPosition.x - 960) > 10 || Math.abs(currentPosition.y - 540) > 10;
+    this.log(wasNotCentered ? '✅ Мяч ушел из центра' : '❌ Мяч остался в центре', wasNotCentered ? 'success' : 'error');
+
+    // 5. Отправляем команду reset
+    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { reset: true } }));
+
+    // 6. Ждем обновления состояния
+    const resetPosition = await getCurrentPosition();
+    const isCentered = Math.abs(resetPosition.x - 960) < 5 && Math.abs(resetPosition.y - 540) < 5;
+    this.log(isCentered ? '✅ Мяч вернулся в центр' : `❌ Мяч не в центре: (${resetPosition.x}, ${resetPosition.y})`, isCentered ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return wasNotCentered && isCentered;
+  }
+
+  async testDirectionChange() {
+    this.log('Тест: Изменение направления');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    // 1. Устанавливаем соединения
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    // 2. Подключаем вьювер через HTTP
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
+    await new Promise(r => setTimeout(r, 100));
+
+    // 3. Запускаем движение вправо
+    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 0, speed: 40 } }));
+    await new Promise(r => setTimeout(r, 300));
+
+    // 4. Получаем позицию после движения вправо
+    const getPosition = () => {
+      return new Promise((resolve) => {
+        viewerSocket.on('message', (message) => {
+          const data = JSON.parse(message);
+          if (data.type === 'state_update') {
+            resolve(data.payload);
+          }
+        });
+      });
+    };
+
+    const positionAfterRight = await getPosition();
+    const movedRight = positionAfterRight.x > 960;
+
+    // 5. Меняем направление на лево
+    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: -1, dirY: 0, speed: 40 } }));
+    await new Promise(r => setTimeout(r, 300));
+
+    // 6. Получаем позицию после движения влево
+    const positionAfterLeft = await getPosition();
+    const movedLeft = positionAfterLeft.x < positionAfterRight.x;
+
+    this.log(movedRight ? '✅ Мяч двигался вправо' : '❌ Мяч не двигался вправо', movedRight ? 'success' : 'error');
+    this.log(movedLeft ? '✅ Направление изменилось на лево' : '❌ Направление не изменилось', movedLeft ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return movedRight && movedLeft;
+  }
+
+  async testNegativeInput() {
+    this.log('Тест: Негативные входные данные');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    // 1. Тест с отрицательными значениями
+    const negativeResult = await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', {
+      screenSize: { width: -100, height: -200 }
+    });
+    const handlesNegative = negativeResult.status === 400 || negativeResult.status === 200; // 400 - отклонено, 200 - обработано корректно
+
+    // 2. Тест с нулевыми значениями
+    const zeroResult = await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', {
+      screenSize: { width: 0, height: 0 }
+    });
+    const handlesZero = zeroResult.status === 400 || zeroResult.status === 200;
+
+    // 3. Тест с очень большими значениями
+    const largeResult = await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', {
+      screenSize: { width: 999999, height: 999999 }
+    });
+    const handlesLarge = largeResult.status === 200; // Должно обработать
+
+    // 4. Тест с некорректным JSON
+    const invalidResult = await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', {
+      invalidField: 'test'
+    });
+    const handlesInvalid = invalidResult.status === 400 || invalidResult.status === 200;
+
+    this.log(handlesNegative ? '✅ Отрицательные значения обработаны' : '❌ Отрицательные значения не обработаны', handlesNegative ? 'success' : 'error');
+    this.log(handlesZero ? '✅ Нулевые значения обработаны' : '❌ Нулевые значения не обработаны', handlesZero ? 'success' : 'error');
+    this.log(handlesLarge ? '✅ Большие значения обработаны' : '❌ Большие значения не обработаны', handlesLarge ? 'success' : 'error');
+    this.log(handlesInvalid ? '✅ Некорректный JSON обработан' : '❌ Некорректный JSON не обработан', handlesInvalid ? 'success' : 'error');
+
+    return handlesNegative && handlesZero && handlesLarge && handlesInvalid;
+  }
+
   async testMovementStateUpdates() {
     this.log('Тест: Состояние движения содержит корректные обновления');
     const sessionId = await this.createSession();
@@ -184,7 +505,7 @@ class Tester {
     // 1. Устанавливаем соединения
     const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
     const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
-    
+
     // Ждем, пока ОБА сокета откроются, чтобы избежать гонки состояний
     await Promise.all([
         new Promise(resolve => controllerSocket.on('open', resolve)),
@@ -222,13 +543,13 @@ class Tester {
     // 6. Проверяем результат
     const hasMovement = updates.length > 1 && updates[updates.length - 1].x !== updates[0].x;
     const sizePresent = updates.every(u => u.viewerScreenSize && u.viewerScreenSize.width > 0);
-    
+
     this.log(hasMovement ? '✅ Имеются изменения координат (движение есть)' : '❌ Координаты не меняются', hasMovement ? 'success' : 'error');
     this.log(sizePresent ? '✅ viewerScreenSize присутствует в апдейтах' : '❌ viewerScreenSize отсутствует', sizePresent ? 'success' : 'error');
-    
-    controllerSocket.close(); 
+
+    controllerSocket.close();
     viewerSocket.close();
-    
+
     return hasMovement && sizePresent;
   }
 
@@ -249,6 +570,12 @@ class Tester {
     const tests = [
       { name: 'testNoInitialStateBeforeViewerSize', fn: this.testNoInitialStateBeforeViewerSize.bind(this) },
       { name: 'testCenteringOnViewerConnect', fn: this.testCenteringOnViewerConnect.bind(this) },
+      { name: 'testStartMovement', fn: this.testStartMovement.bind(this) },
+      { name: 'testStopMovement', fn: this.testStopMovement.bind(this) },
+      { name: 'testSpeedChange', fn: this.testSpeedChange.bind(this) },
+      { name: 'testResetCommand', fn: this.testResetCommand.bind(this) },
+      { name: 'testDirectionChange', fn: this.testDirectionChange.bind(this) },
+      { name: 'testNegativeInput', fn: this.testNegativeInput.bind(this) },
       { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) }
     ];
 
