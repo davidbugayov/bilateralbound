@@ -892,6 +892,114 @@ class Tester {
     return allTestsPassed;
   }
 
+  async testBounceBorders() {
+    this.log('Тест: Отскоки от границ экрана');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 800, height: 600 } });
+
+    let allTestsPassed = true;
+
+    // Функция для ожидания изменения направления
+    const waitForDirectionChange = async (expectedVx, expectedVy, timeout = 5000) => {
+      const startTime = Date.now();
+      while (Date.now() - startTime < timeout) {
+        const state = await this.req(`/api/session/${sessionId}/state`);
+        const vx = state.data.vx;
+        const vy = state.data.vy;
+        
+        if (expectedVx !== null && vx * expectedVx > 0) return true; // Направление изменилось
+        if (expectedVy !== null && vy * expectedVy > 0) return true; // Направление изменилось
+        
+        await new Promise(r => setTimeout(r, 100));
+      }
+      return false;
+    };
+
+    // 1. Тест отскока от правой границы
+    this.log('🔴 Тестируем отскок от правой границы...');
+    
+    // Устанавливаем мяч близко к правой границе и направляем вправо
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
+      paused: false, 
+      dirX: 1, 
+      dirY: 0, 
+      speed: 100 
+    });
+
+    const rightBounceOk = await waitForDirectionChange(-1, null, 3000);
+    this.log(rightBounceOk ? '✅ Отскок от правой границы работает' : '❌ Отскок от правой границы не работает', rightBounceOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && rightBounceOk;
+
+    // 2. Тест отскока от левой границы
+    this.log('🔵 Тестируем отскок от левой границы...');
+    
+    const leftBounceOk = await waitForDirectionChange(1, null, 3000);
+    this.log(leftBounceOk ? '✅ Отскок от левой границы работает' : '❌ Отскок от левой границы не работает', leftBounceOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && leftBounceOk;
+
+    // 3. Тест отскока от нижней границы
+    this.log('🟡 Тестируем отскок от нижней границы...');
+    
+    // Направляем мяч вниз
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
+      paused: false, 
+      dirX: 0, 
+      dirY: 1, 
+      speed: 100 
+    });
+
+    const bottomBounceOk = await waitForDirectionChange(null, -1, 3000);
+    this.log(bottomBounceOk ? '✅ Отскок от нижней границы работает' : '❌ Отскок от нижней границы не работает', bottomBounceOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && bottomBounceOk;
+
+    // 4. Тест отскока от верхней границы
+    this.log('🟢 Тестируем отскок от верхней границы...');
+    
+    const topBounceOk = await waitForDirectionChange(null, 1, 3000);
+    this.log(topBounceOk ? '✅ Отскок от верхней границы работает' : '❌ Отскок от верхней границы не работает', topBounceOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && topBounceOk;
+
+    // 5. Тест сохранения скорости после отскока
+    this.log('⚡ Тестируем сохранение скорости после отскока...');
+    
+    const stateAfterSpeedTest = await this.req(`/api/session/${sessionId}/state`);
+    const speedAfterBounce = Math.sqrt(stateAfterSpeedTest.data.vx * stateAfterSpeedTest.data.vx + stateAfterSpeedTest.data.vy * stateAfterSpeedTest.data.vy);
+    const speedOk = speedAfterBounce >= 50; // Скорость должна быть не меньше минимальной (50)
+    this.log(speedOk ? '✅ Скорость сохраняется после отскока' : '❌ Скорость не сохраняется после отскока', speedOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && speedOk;
+
+    // 6. Тест позиционирования мяча после отскока
+    this.log('📍 Тестируем позиционирование мяча после отскока...');
+    
+    const finalState = await this.req(`/api/session/${sessionId}/state`);
+    const radius = 20; // Радиус мяча
+    const positionOk = finalState.data.x >= radius && 
+                      finalState.data.x <= 800 - radius && 
+                      finalState.data.y >= radius && 
+                      finalState.data.y <= 600 - radius;
+    this.log(positionOk ? '✅ Мяч остается в пределах границ' : '❌ Мяч выходит за границы', positionOk ? 'success' : 'error');
+    allTestsPassed = allTestsPassed && positionOk;
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    this.log(allTestsPassed ? '✅ Все отскоки работают корректно' : '❌ Некоторые отскоки не работают', allTestsPassed ? 'success' : 'error');
+    return allTestsPassed;
+  }
+
   async runAllTests() {
     await this.startServer().catch((e) => {
         this.log(`Не удалось запустить сервер: ${e.message}`, 'error');
@@ -919,7 +1027,8 @@ class Tester {
       { name: 'testThrottlingPerformance', fn: this.testThrottlingPerformance.bind(this) },
       { name: 'testScreenSizeChangeStability', fn: this.testScreenSizeChangeStability.bind(this) },
       { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) },
-      { name: 'testAllControllers', fn: this.testAllControllers.bind(this) }
+      { name: 'testAllControllers', fn: this.testAllControllers.bind(this) },
+      { name: 'testBounceBorders', fn: this.testBounceBorders.bind(this) }
     ];
 
     let allOk = true;
