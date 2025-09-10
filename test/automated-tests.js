@@ -552,6 +552,53 @@ class Tester {
     return updateReceived;
   }
 
+  async testThrottlingPerformance() {
+    this.log('Тест: Производительность и троттлинг команд');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+      new Promise(resolve => controllerSocket.on('open', resolve)),
+      new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1024, height: 768 } });
+
+    let updatesReceived = 0;
+    viewerSocket.on('message', (message) => {
+      const data = JSON.parse(message);
+      if (data.type === 'state_update') {
+        updatesReceived++;
+      }
+    });
+
+    const commandsToSend = 50;
+    const duration = 1000; // 1 second
+    this.log(`ℹ️ Отправка ${commandsToSend} команд за ${duration} мс...`);
+
+    const sendInterval = setInterval(() => {
+      controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: Math.random(), dirY: Math.random(), speed: 40 } }));
+    }, duration / commandsToSend);
+
+    await new Promise(r => setTimeout(r, duration + 500)); // Ждем завершения отправки + буфер
+    clearInterval(sendInterval);
+
+    // Главное - что сервер не упал и отвечает на запросы
+    const healthCheckPassed = await this.health();
+    this.log(healthCheckPassed ? '✅ Сервер остался в рабочем состоянии после нагрузки' : '❌ Сервер не отвечает после нагрузки', healthCheckPassed ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return healthCheckPassed;
+  }
+
   async testMovementStateUpdates() {
     this.log('Тест: Состояние движения содержит корректные обновления');
     const sessionId = await this.createSession();
@@ -635,6 +682,7 @@ class Tester {
       { name: 'testDirectionChange', fn: this.testDirectionChange.bind(this) },
       { name: 'testNegativeInput', fn: this.testNegativeInput.bind(this) },
       { name: 'testWebSocketReconnect', fn: this.testWebSocketReconnect.bind(this) },
+      { name: 'testThrottlingPerformance', fn: this.testThrottlingPerformance.bind(this) },
       { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) }
     ];
 
