@@ -1,145 +1,144 @@
 #!/usr/bin/env node
 
 /**
- * Основной тест для физики мячика
- * Проверяет корректность отскоков и граничных условий
+ * Главный скрипт для запуска всех тестов BilateralBound
+ * Использование: node test.js [тип_тестов]
+ * 
+ * Типы тестов:
+ * - all (по умолчанию) - все тесты
+ * - basic - базовые тесты
+ * - sync - тесты синхронизации
+ * - quick - быстрые тесты
  */
 
-// Импорт физики мячика (используем Node.js версию для тестов)
-const BallPhysics = require('./test-physics.js');
+const BilateralBoundTester = require('./test/automated-tests.js');
 
-// Настройки теста
-const TEST_WORLD_WIDTH = 800;
-const TEST_WORLD_HEIGHT = 600;
-const TEST_BALL_RADIUS = 40;
-const TEST_MIN_SPEED = 500;
-const TEST_EDGE_PADDING = 15;
-
-// Тестовая функция
-function simulateMovement(physics, direction, frames = 100) {
-    const beforeUpdate = {
-        x: physics.ball.x,
-        y: physics.ball.y,
-        vx: physics.ball.vx,
-        vy: physics.ball.vy
-    };
-
-    // Имитируем несколько кадров движения
-    for (let i = 0; i < frames; i++) {
-        physics.updateWithDirection(direction.x, direction.y, TEST_MIN_SPEED);
-    }
-
-    const afterUpdate = {
-        x: physics.ball.x,
-        y: physics.ball.y,
-        vx: physics.ball.vx,
-        vy: physics.ball.vy
-    };
-
-    // Проверяем, был ли отскок
-    const bounced = beforeUpdate.vx !== afterUpdate.vx || beforeUpdate.vy !== afterUpdate.vy;
-
-    return { beforeUpdate, afterUpdate, bounced };
+async function runBasicTests() {
+  console.log('🧪 Запуск базовых тестов...');
+  const tester = new BilateralBoundTester();
+  return await tester.runAllTests();
 }
 
-function runBasicTest() {
-    console.log('🎾 ТЕСТИРОВАНИЕ ФИЗИКИ МЯЧИКА\n');
-    console.log('='.repeat(40));
+async function runSyncTests() {
+  console.log('🔄 Запуск тестов синхронизации...');
+  // Синхронизационные тесты интегрированы в базовые тесты
+  return await runBasicTests();
+}
 
-    // Создаем экземпляр физики
-    const physics = new BallPhysics();
-    physics.setWorldSize(TEST_WORLD_WIDTH, TEST_WORLD_HEIGHT);
-    physics.setPosition(TEST_WORLD_WIDTH / 2, TEST_WORLD_HEIGHT / 2); // Начинаем с центра
-    physics.setPaused(false); // Снимаем паузу для теста
+async function runQuickTests() {
+  console.log('⚡ Запуск быстрых тестов...');
+  const tester = new BilateralBoundTester();
+  
+  // Запускаем только критически важные тесты
+  try {
+    await tester.startServer();
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const healthCheck = await tester.testHealthCheck();
+    const sessionId = await tester.testSessionCreation();
+    const sessionState = sessionId ? await tester.testSessionState(sessionId) : false;
+    
+    await tester.stopServer();
+    
+    return {
+      healthCheck,
+      sessionCreation: sessionId !== null,
+      sessionState: sessionState !== null
+    };
+  } catch (error) {
+    console.error('❌ Ошибка быстрых тестов:', error.message);
+    return { healthCheck: false, sessionCreation: false, sessionState: false };
+  }
+}
 
-    console.log('📍 Тест 1: Движение вправо до правой границы');
-    console.log(`Начальная позиция: (${physics.ball.x}, ${physics.ball.y})`);
-
-    // Двигаемся вправо до границы
-    const result1 = simulateMovement(physics, { x: 1, y: 0 }, 200);
-
-    console.log(`После движения: (${result1.afterUpdate.x.toFixed(1)}, ${result1.afterUpdate.y.toFixed(1)})`);
-    console.log(`Скорость: vx=${result1.afterUpdate.vx.toFixed(1)}, vy=${result1.afterUpdate.vy.toFixed(1)}`);
-    console.log(`Отскок: ${result1.bounced ? '✅' : '❌'}`);
-
-    // Проверяем границы
-    const minX = TEST_BALL_RADIUS + TEST_EDGE_PADDING;
-    const maxX = TEST_WORLD_WIDTH - TEST_BALL_RADIUS - TEST_EDGE_PADDING;
-    const minY = TEST_BALL_RADIUS + TEST_EDGE_PADDING;
-    const maxY = TEST_WORLD_HEIGHT - TEST_BALL_RADIUS - TEST_EDGE_PADDING;
-
-    const inBounds = result1.afterUpdate.x >= minX && result1.afterUpdate.x <= maxX &&
-                    result1.afterUpdate.y >= minY && result1.afterUpdate.y <= maxY;
-
-    console.log(`В границах: ${inBounds ? '✅' : '❌'}`);
-    console.log(`Ожидаемая скорость при отскоке: vx <= -${TEST_MIN_SPEED}, actual: ${result1.afterUpdate.vx.toFixed(1)}`);
-
-    const correctBounce = result1.bounced && result1.afterUpdate.vx <= -TEST_MIN_SPEED && inBounds;
-
-    console.log('\n📍 Тест 2: Движение влево после отскока');
-
-    // Теперь двигаемся влево
-    const result2 = simulateMovement(physics, { x: -1, y: 0 }, 200);
-
-    console.log(`После движения: (${result2.afterUpdate.x.toFixed(1)}, ${result2.afterUpdate.y.toFixed(1)})`);
-    console.log(`Скорость: vx=${result2.afterUpdate.vx.toFixed(1)}, vy=${result2.afterUpdate.vy.toFixed(1)}`);
-    console.log(`Отскок: ${result2.bounced ? '✅' : '❌'}`);
-
-    const correctBounce2 = result2.bounced && result2.afterUpdate.vx >= TEST_MIN_SPEED;
-
-    console.log('\n📊 РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ:');
-    console.log('='.repeat(30));
-
-    if (correctBounce && correctBounce2) {
-        console.log('🎉 ВСЕ ТЕСТЫ ПРОЙДЕНЫ! Физика работает корректно.');
+async function main() {
+  const testType = process.argv[2] || 'all';
+  
+  console.log('🚀 BilateralBound - Автоматизированное тестирование');
+  console.log('='.repeat(60));
+  console.log(`📋 Тип тестов: ${testType}`);
+  console.log('='.repeat(60));
+  
+  let results = {};
+  
+  try {
+    switch (testType) {
+      case 'basic':
+        results = await runBasicTests();
+        break;
+        
+      case 'sync':
+        results = await runSyncTests();
+        break;
+        
+      case 'quick':
+        results = await runQuickTests();
+        break;
+        
+      case 'all':
+      default:
+        console.log('🔄 Запуск всех тестов...');
+        const basicResults = await runBasicTests();
+        const syncResults = await runSyncTests();
+        
+        results = {
+          ...basicResults,
+          ...syncResults
+        };
+        break;
+    }
+    
+    // Подсчитываем общие результаты
+    const allResults = Object.values(results);
+    const passedTests = allResults.filter(r => r === true).length;
+    const totalTests = allResults.length;
+    
+    console.log('='.repeat(60));
+    console.log('📊 ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ:');
+    console.log('='.repeat(60));
+    console.log(`✅ Пройдено: ${passedTests}`);
+    console.log(`❌ Провалено: ${totalTests - passedTests}`);
+    console.log(`📈 Общий процент: ${((passedTests / totalTests) * 100).toFixed(1)}%`);
+    
+    if (passedTests === totalTests) {
+      console.log('🎉 ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО!');
+      process.exit(0);
     } else {
-        console.log('❌ НЕКОТОРЫЕ ТЕСТЫ ПРОВАЛИЛИСЬ!');
-        console.log(`Тест 1 (отскок вправо): ${correctBounce ? '✅' : '❌'}`);
-        console.log(`Тест 2 (отскок влево): ${correctBounce2 ? '✅' : '❌'}`);
+      console.log(`⚠️ ${totalTests - passedTests} тестов провалено`);
+      process.exit(1);
     }
-
-    return correctBounce && correctBounce2;
+    
+  } catch (error) {
+    console.error('💥 Критическая ошибка тестирования:', error.message);
+    process.exit(1);
+  }
 }
 
-function runDiagnosticTest() {
-    console.log('\n🔍 ДИАГНОСТИЧЕСКИЙ ТЕСТ');
-    console.log('='.repeat(30));
+// Показываем справку
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log(`
+🧪 BilateralBound - Автоматизированное тестирование
 
-    const physics = new BallPhysics();
-    physics.setWorldSize(TEST_WORLD_WIDTH, TEST_WORLD_HEIGHT);
-    physics.setPosition(TEST_BALL_RADIUS + TEST_EDGE_PADDING, TEST_WORLD_HEIGHT / 2);
-    physics.setPaused(false); // Снимаем паузу для теста
+Использование:
+  node test.js [тип_тестов]
 
-    console.log('Проверяем реакцию на различные сценарии...');
+Типы тестов:
+  all     - Все тесты (по умолчанию)
+  basic   - Базовые тесты (сервер, сессии, движение)
+  sync    - Тесты синхронизации (частота, точность, границы)
+  quick   - Быстрые тесты (только критически важные)
 
-    // Тест 1: Нормальное движение
-    console.log('\n1. Нормальное движение вправо:');
-    const result1 = simulateMovement(physics, { x: 1, y: 0 }, 50);
-    console.log(`   Позиция: ${result1.afterUpdate.x.toFixed(1)}, Скорость: ${result1.afterUpdate.vx.toFixed(1)}`);
+Примеры:
+  node test.js           # Все тесты
+  node test.js basic     # Только базовые тесты
+  node test.js sync      # Только тесты синхронизации
+  node test.js quick     # Быстрые тесты
 
-    // Тест 2: Резкая смена направления
-    console.log('\n2. Резкая смена направления:');
-    const result2 = simulateMovement(physics, { x: -1, y: 0 }, 50);
-    console.log(`   Позиция: ${result2.afterUpdate.x.toFixed(1)}, Скорость: ${result2.afterUpdate.vx.toFixed(1)}`);
-
-    // Тест 3: Диагональное движение
-    console.log('\n3. Диагональное движение:');
-    physics.setPosition(TEST_WORLD_WIDTH / 2, TEST_WORLD_HEIGHT / 2);
-    physics.setPaused(false); // Снимаем паузу для теста
-    const result3 = simulateMovement(physics, { x: 1, y: 1 }, 30);
-    console.log(`   Позиция: (${result3.afterUpdate.x.toFixed(1)}, ${result3.afterUpdate.y.toFixed(1)})`);
-    console.log(`   Скорость: (${result3.afterUpdate.vx.toFixed(1)}, ${result3.afterUpdate.vy.toFixed(1)})`);
-
-    console.log('\n✅ Диагностика завершена');
+Коды выхода:
+  0 - Все тесты пройдены
+  1 - Один или более тестов провалены
+  `);
+  process.exit(0);
 }
 
-// Запуск тестов
-if (require.main === module) {
-    const success = runBasicTest();
-    runDiagnosticTest();
-
-    console.log('\n🏁 ТЕСТИРОВАНИЕ ЗАВЕРШЕНО');
-    process.exit(success ? 0 : 1);
-}
-
-module.exports = { runBasicTest, runDiagnosticTest, simulateMovement };
+main();

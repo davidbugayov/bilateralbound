@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <style>
+      .eye-fill { fill: #3b82f6; }
+      .eye-stroke { fill: none; stroke: #3b82f6; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .pupil { fill: #1d4ed8; }
+    </style>
+  </defs>
+
+  <!-- Eye outline -->
+  <path class="eye-stroke" d="M16 8c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8z"/>
+  <!-- Eye iris -->
+  <circle class="eye-fill" cx="16" cy="16" r="6"/>
+  <!-- Eye pupil -->
+  <circle class="pupil" cx="16" cy="16" r="3"/>
+  <!-- Eye highlight -->
+  <circle fill="#ffffff" cx="14" cy="14" r="1.5"/>
+  <!-- View indicator -->
+  <rect fill="#3b82f6" x="12" y="25" width="8" height="1" rx="0.5"/>
+</svg>

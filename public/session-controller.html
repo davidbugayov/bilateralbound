@@ -1,0 +1,330 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="public, max-age=3600" />
+  <meta http-equiv="Pragma" content="cache" />
+  <meta http-equiv="Expires" content="3600" />
+
+  <!-- SEO Meta Tags -->
+  <title>BilateralBound - EMDR терапия контроллер</title>
+  <meta name="description" content="EMDR терапия контроллер для управления биодинамической стимуляцией. Инструмент для EMDR терапевта при проведении парной терапии" />
+  <meta name="keywords" content="EMDR терапия, EMDR контроллер, биодинамическая стимуляция, парная терапия, психолог для пар, управление сессией" />
+  <meta name="author" content="BilateralBound Team" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#2563eb" />
+
+  <!-- EMDR Specific Meta Tags -->
+  <meta name="therapy-type" content="EMDR Controller" />
+  <meta name="target-audience" content="EMDR Therapists, Couples Therapists" />
+
+  <!-- Preload critical resources -->
+  <link rel="preload" href="/js/common.js" as="script" />
+  <link rel="preload" href="/css/common.css" as="style" />
+  <link rel="preload" href="/css/shared-components.css?v=202501031200" as="style" />
+
+  <!-- Favicon for Controller -->
+  <link rel="icon" type="image/svg+xml" href="/favicon-controller.svg?v=202509031200" />
+  <link rel="icon" type="image/x-icon" href="/favicon-controller.ico?v=202509031200" />
+  <link rel="apple-touch-icon" href="/favicon-controller.svg?v=202509031200" />
+  <link rel="shortcut icon" href="/favicon-controller.ico?v=202509031200" />
+
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/shared-components.css?v=202501031200">
+  <style>
+    /* Специфичные стили для session-controller.html */
+
+    .control-section {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 0;
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    .floating-preview {
+      position: sticky;
+      top: 20px;
+      z-index: 10;
+      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.3), 0 4px 16px -2px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(15px);
+    }
+
+    .drag-handle {
+      cursor: move;
+      margin: 0 0 16px 0;
+      padding: 8px 12px;
+      background: #1f2937;
+      border-radius: 8px;
+      user-select: none;
+    }
+
+    button { background: #2563eb; color: white; border: 0; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+
+    button:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+
+    .btn { padding: 8px 16px; font-size: 14px; font-weight: 500; }
+    .btn.outline { background: transparent; border: 1px solid #374151; color: #9ca3af; }
+    .btn.outline:hover { background: #374151; color: white; }
+
+    .direction-btn { padding: 10px 16px; font-size: 13px; min-width: 140px; }
+    .direction-btn.active { background: #1d4ed8 !important; transform: scale(1.05); box-shadow: 0 0 10px rgba(37, 99, 235, 0.3); }
+
+    .color-btn { padding: 8px 16px; font-size: 14px; border-radius: 6px; transition: all 0.2s ease; }
+    .color-btn:hover { transform: scale(1.05); }
+
+    .size-btn { padding: 8px 16px; font-size: 14px; background: #374151; color: #9ca3af; border-radius: 6px; transition: all 0.2s ease; }
+    .size-btn:hover { background: #4b5563; color: white; }
+    .size-btn.active { background: #2563eb; color: white; }
+
+    .viewer-link-container { margin: 12px 0; }
+
+    .link-input-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .link-input-group input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #374151;
+      border-radius: 6px;
+      background: #1f2937;
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+
+    .link-input-group input:focus {
+      outline: none;
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
+    }
+
+    .copy-btn { padding: 8px 12px; font-size: 12px; background: #374151; color: #9ca3af; border: 1px solid #4b5563; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; }
+    .copy-btn:hover { background: #4b5563; color: white; }
+
+    .speed-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .speed-container input[type="range"] {
+      width: 100%;
+      max-width: 300px;
+      height: 6px;
+      background: #374151;
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .speed-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #60a5fa;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .speed-container input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: #60a5fa;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .speed-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 300px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+
+    .speed-value {
+      font-weight: 600;
+      color: #60a5fa;
+    }
+
+    /* Улучшенная компоновка внутри блока управления */
+    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-items: start; }
+    .controls-card { background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 12px; }
+    .controls-title { margin: 0 0 8px 0; font-size: 14px; color: #9ca3af; font-weight: 500; }
+    .direction-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+    /* Действия: улучшенная раскладка */
+    .actions-grid { display: grid; grid-template-columns: 1.2fr .9fr .9fr; gap: 8px; align-items: stretch; }
+    .actions-grid .btn { width: 100%; }
+    .actions-grid .btn.primary { font-weight: 600; }
+
+    /* Сегментированный контрол направлений */
+    .segmented { display: flex; gap: 0; border: 1px solid #1f2937; border-radius: 10px; overflow: hidden; background: #0d1526; }
+    .segmented .seg-btn { flex: 1; padding: 10px 12px; font-size: 13px; color: #9ca3af; background: transparent; border: 0; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
+    .segmented .seg-btn + .seg-btn { border-left: 1px solid #1f2937; }
+    .segmented .seg-btn:hover { background: #152139; color: #e5e7eb; }
+    .segmented .seg-btn.active { background: #1d4ed8; color: #ffffff; }
+    .segmented .seg-btn strong { font-weight: 600; }
+
+    @media (max-width: 768px) {
+      .controls-grid { grid-template-columns: 1fr; }
+      .actions-grid { grid-template-columns: 1fr; }
+      .segmented { flex-direction: column; }
+      .segmented .seg-btn + .seg-btn { border-left: 0; border-top: 1px solid #1f2937; }
+    }
+
+    /* Внешний вид: общая сетка */
+    .appearance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; align-items: start; }
+    @media (max-width: 1024px) { .appearance-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px) { .appearance-grid { grid-template-columns: 1fr; } }
+
+    /* Мобильные стили */
+    @media (max-width: 768px) {
+      body { padding: 16px; }
+
+      .wrap { gap: 16px; }
+
+      .control-section { padding: 16px; }
+
+      .direction-btn { min-width: 120px; padding: 12px; }
+
+      .mobile-controls { display: block !important; }
+
+      .speed-container input[type="range"] { max-width: 250px; }
+    }
+
+    .mobile-controls { display: none; }
+
+    .control-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .big-btn {
+      flex: 1;
+      padding: 16px;
+      font-size: 16px;
+      min-height: 50px;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #374151;
+      color: #9ca3af;
+      border: 1px solid #4b5563;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 1000;
+    }
+
+    .back-btn:hover {
+      background: #4b5563;
+      color: white;
+    }
+
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #1f2937; border: 1px solid #374151; border-bottom-width: 3px; border-radius: 6px; padding: 2px 6px; }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="goBack()">← На главную</button>
+
+  <div class="wrap">
+    <div class="control-section">
+      <h3>🎮 Сессия: <span id="curSid">...</span></h3>
+      <p id="sessionInfo" style="margin: 4px 0; font-size: 14px; color: #9ca3af;">Сессия: загрузка...</p>
+      <p style="margin: 8px 0;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
+      <div class="viewer-link-container">
+        <div class="link-input-group">
+          <input id="view" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
+          <button onclick="copy('view')" class="copy-btn">📋 Копировать</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="previewWrap" style="display: none;" class="control-section floating-preview">
+      <h3 class="drag-handle">👁️ Превью движения</h3>
+      <div style="text-align: center; position: relative; padding-bottom: 35px;">
+        <canvas id="preview" style="border: 1px solid #374151; background: #020617;"></canvas>
+        <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
+          Вьювер и размер экрана
+        </div>
+      </div>
+    </div>
+
+    <div class="control-section">
+      <h3>🎮 Управление и направление</h3>
+      <div class="controls-grid">
+        <div class="controls-card">
+          <p class="controls-title">Действия</p>
+          <div class="actions-grid">
+            <button id="playPauseBtn" class="btn primary" onclick="togglePlayPause()" style="background: #10b981; padding: 12px 16px;">▶️ Старт</button>
+            <button class="btn outline" onclick="resetCenter()" style="padding: 12px 16px;">🎯 Центр</button>
+            <button class="btn" onclick="resetSession()" style="background: #dc2626; padding: 12px 16px;">🔄 Сброс</button>
+          </div>
+          <p class="controls-title" style="margin-top: 12px;">Направление</p>
+          <div class="direction-row">
+            <div class="segmented" id="directionSegmented">
+              <button class="seg-btn" data-mode="horizontal" onclick="setDirection('horizontal')"><strong>↔️</strong> Гориз.</button>
+              <button class="seg-btn" data-mode="vertical" onclick="setDirection('vertical')"><strong>↕️</strong> Вертик.</button>
+              <button class="seg-btn" data-mode="diagRL" onclick="setDirection('diagRL')"><strong>↖️↗️</strong> L→R</button>
+              <button class="seg-btn" data-mode="diagRLL" onclick="setDirection('diagRLL')"><strong>↙️↘️</strong> R→L</button>
+            </div>
+          </div>
+          <p style="text-align: center; margin: 8px 0; font-size: 13px; color: #6b7280;">
+            <span id="currentDirection">↔️ Горизонтально</span>
+          </p>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">Скорость</p>
+          <div id="speedControl"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-section">
+      <h3>🎨 Оформление</h3>
+      <div class="appearance-grid">
+        <div class="controls-card">
+          <p class="controls-title">Цвет шарика</p>
+          <div id="ballColorControl"></div>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">Цвет фона</p>
+          <div id="bgColorControl"></div>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">Размер шарика</p>
+          <div id="sizeControl"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="/js/common.js"></script>
+  <script src="/js/physics-engine.js"></script>
+  <script src="/js/renderer.js"></script>
+  <script src="/js/shared-components.js"></script>
+  <script src="/js/websocket-client.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/controller.js"></script>
+
+  <script>
+</html>

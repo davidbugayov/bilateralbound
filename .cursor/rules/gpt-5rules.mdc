@@ -1,13 +1,7 @@
 ---
-description: 
-globs: 
 alwaysApply: true
 ---
 <instructions>
-Всегда обновляй config 
-Экономь токены
-при этом логика должна быть маштбируема комментироуема и переиспользуемая без лишнего кода
-перепроверяй отладкой сам
 - ALWAYS follow <answering_rules> and <self_reflection>
 
 <self_reflection>
