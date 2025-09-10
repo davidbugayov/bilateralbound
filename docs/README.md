@@ -177,3 +177,73 @@ POST /api/session/:id/viewer/connect
 ---
 
 *EMDR Bilateral Stimulation - современное решение для эффективной психотерапии с использованием веб-технологий.*
+
+## 🚦 Как пользоваться (Controller/Viewer)
+
+- Контроллер: откройте `http://localhost:3000/c/:sessionId`
+- Вьювер: откройте `http://localhost:3000/s/:sessionId`
+- Создать новую сессию через API: `POST /api/session` — вернёт `sessionId`
+
+Пример быстрой проверки локально:
+
+```bash
+# 1) создать сессию
+curl -s http://localhost:3000/api/session -X POST | jq
+# → { "sessionId": "abcdef" }
+# 2) открыть в браузере контроллер и вьювер
+open "http://localhost:3000/c/abcdef"
+open "http://localhost:3000/s/abcdef"
+```
+
+## 🧪 Тесты
+
+- Автотесты: `node test/automated-tests.js`
+  - Каждый тест имеет глобальный таймаут 10 секунд (fail-fast при зависаниях)
+  - Проверяется:
+    - Отсутствие `initial_state` до `viewer.connect`
+    - Корректное центрирование после подключения вьювера
+    - Наличие движения и `viewerScreenSize` в `state_update`
+- UI-тесты (Puppeteer): `node test/ui-tests.js` (если нужен e2e)
+
+Советы по стабильности тестов:
+- Всегда дожидаться открытия WS перед отправкой команд
+- Ставить слушателей на сообщения до действия, которое их вызовет
+- Избегать «магических» случайных задержек — лучше `await` событий
+
+## 🔌 Сообщения WebSocket
+
+- `initial_state` — отправляется:
+  - Вьюверу сразу после подключения
+  - Контроллеру — только после того, как известен `viewerScreenSize`
+  - Поля: состояние шара, `viewerConnected`, `controllerConnected`, `viewerScreenSize`
+- `state_update` — периодические обновления при движении шара
+  - Всегда содержит `viewerScreenSize` для корректного масштабирования на клиентах
+
+## 🧠 Клиентская отрисовка
+
+- Превью в контроллере использует `BallRenderer` и единый внешний рендер-цикл
+- Исключены конкурирующие циклы отрисовки, чтобы мяч не исчезал
+- При отсутствии вьювера мяч в превью показывается по центру превью-канваса
+
+## 🖥️ Сервер: главное
+
+- Единый цикл `mainLoop` управляет и физикой, и рассылкой состояний
+  - Запускается только если есть активные клиенты и мяч движется
+  - Останавливается автоматически при паузе/отсутствии клиентов
+- `StateBroadcaster.broadcastState` всегда добавляет `viewerScreenSize`
+
+## ⚙️ Полезные эндпоинты
+
+- `POST /api/session` — создать сессию
+- `GET  /api/session/:sessionId/state` — текущее состояние (кэшируется на ~100мс)
+- `POST /api/session/:sessionId/viewer/connect` — отметить вьювера и задать `screenSize`
+- `POST /api/session/:sessionId/controller/update` — команды контроллера (speed, dir, pause, reset)
+
+## 🧹 Отладка
+
+- Логи сервера по умолчанию «тихие» для производительности
+- При необходимости включить `LOG_LEVEL=DEBUG`
+
+```bash
+LOG_LEVEL=DEBUG node server.js
+```

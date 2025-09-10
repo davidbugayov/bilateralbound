@@ -62,7 +62,7 @@ class SessionRepository {
       createdAt: Date.now(),
       lastActivity: Date.now(),
       clients: new Map(),
-      physicsLoop: null,
+      mainLoop: null, // Единый цикл для физики и рассылки
       lastStateUpdate: 0, // Добавляем для отслеживания последнего обновления состояния
       ...sessionData
     }
@@ -245,7 +245,7 @@ class StateBroadcaster {
 
     const message = JSON.stringify({
       type: stateType,
-      payload: payload || session.ballState
+      payload: payload || { ...session.ballState, viewerScreenSize: session.viewerScreenSize }
     })
 
     let sentCount = 0
@@ -339,7 +339,6 @@ class SessionManager {
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
     this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
     this.physicsInterval = 1000 / 60 // ~60 FPS
-    this.lowPowerInterval = 1000 / 10 // ~10 FPS для неактивных сессий
     this.logger = {
       ...logger,
       logSession: (sessionId, msg, level = 'info') => {
@@ -567,102 +566,59 @@ class SessionManager {
 
   startPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
-    if (!session || session.physicsLoop) return
-
-    // Инициализируем параметры производительности
-    session.lastActivityCheck = Date.now()
-    session.performanceMode = 'high' // 'high' | 'low' | 'idle'
+    if (!session) return
 
     this._schedulePhysicsUpdate(sessionId)
-    this.logger.logSession(sessionId, 'Physics engine started', 'debug')
+    this.logger.logSession(sessionId, 'Physics manager initialized', 'debug')
   }
 
   _schedulePhysicsUpdate(sessionId) {
-    const session = this.sessionRepository.findById(sessionId)
-    if (!session) return
+    const session = this.sessionRepository.findById(sessionId);
+    if (!session) return;
 
-    // Определяем режим производительности
-    const hasActiveClients = session.controllerConnected || session.viewerConnected
-    const isBallMoving = session.ballState && !session.ballState.paused
-    const timeSinceActivity = Date.now() - (session.lastActivity || 0)
-
-    let newMode = 'high'
-    if (!hasActiveClients && !isBallMoving) {
-      newMode = 'idle'
-    } else if (!hasActiveClients || !isBallMoving) {
-      newMode = 'low'
+    // Централизованное управление: всегда останавливаем цикл перед принятием нового решения.
+    if (session.mainLoop) {
+      clearInterval(session.mainLoop);
+      session.mainLoop = null;
     }
 
-    // Меняем режим если необходимо
-    if (session.performanceMode !== newMode) {
-      if (session.physicsLoop) {
-        clearInterval(session.physicsLoop)
-        session.physicsLoop = null
-      }
+    const hasActiveClients = session.controllerConnected || session.viewerConnected;
+    const isBallMoving = session.ballState && !session.ballState.paused;
 
-      session.performanceMode = newMode
-
-      if (newMode === 'idle') {
-        // Полностью останавливаем симуляцию
-        this.logger.logSession(sessionId, 'Physics paused (idle mode)', 'debug')
-        return
-      }
-
-      // Запускаем с соответствующей частотой
-      const interval = newMode === 'high' ? this.physicsInterval : this.lowPowerInterval
-      session.physicsLoop = setInterval(() => {
-        this.updatePhysics(sessionId)
-      }, interval)
-
-      this.logger.logSession(sessionId, `Physics mode: ${newMode} (${Math.round(1000/interval)} FPS)`, 'debug')
-    }
-
-    // Запускаем цикл рассылки только если есть активные клиенты
-    if (hasActiveClients && !session.broadcastLoop) {
-      session.broadcastLoop = setInterval(() => {
-        if (session.ballState && !session.ballState.paused) {
-          this.stateBroadcaster.broadcastState(sessionId);
+    // Цикл нужен, только если мяч движется И есть клиенты.
+    if (hasActiveClients && isBallMoving) {
+      session.mainLoop = setInterval(() => {
+        const currentSession = this.sessionRepository.findById(sessionId);
+        // Внутренняя проверка безопасности: если условия изменились, останавливаем цикл изнутри.
+        if (!currentSession || !currentSession.physicsEngine || currentSession.ballState.paused || !(currentSession.controllerConnected || currentSession.viewerConnected)) {
+          if (session.mainLoop) {
+             clearInterval(session.mainLoop);
+             session.mainLoop = null;
+             this.logger.logSession(sessionId, 'Main loop self-terminated due to state change.');
+          }
+          return;
         }
-      }, 100) // 10 FPS
-    } else if (!hasActiveClients && session.broadcastLoop) {
-      clearInterval(session.broadcastLoop)
-      session.broadcastLoop = null
+
+        // 1. Обсчет физики
+        const deltaTime = this.physicsInterval / 1000;
+        currentSession.physicsEngine.update(deltaTime);
+        Object.assign(currentSession.ballState, currentSession.physicsEngine.getState());
+
+        // 2. Рассылка нового состояния
+        this.stateBroadcaster.broadcastState(sessionId);
+      }, this.physicsInterval);
+
+      this.logger.logSession(sessionId, `Main loop started at ${Math.round(1000/this.physicsInterval)} FPS.`);
+    } else {
+      this.logger.logSession(sessionId, `Main loop not started (isBallMoving: ${isBallMoving}, hasActiveClients: ${hasActiveClients}).`);
     }
   }
 
   stopPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
-    if (session) {
-      if (session.physicsLoop) {
-        clearInterval(session.physicsLoop)
-        session.physicsLoop = null
-      }
-      if (session.broadcastLoop) {
-        clearInterval(session.broadcastLoop)
-        session.broadcastLoop = null
-      }
-    }
-  }
-
-  updatePhysics(sessionId) {
-    const session = this.sessionRepository.findById(sessionId)
-
-    if (!session || !session.physicsEngine || session.ballState.paused || !session.viewerScreenSize) {
-      return
-    }
-
-    const engine = session.physicsEngine;
-    const deltaTime = session.performanceMode === 'high' ? this.physicsInterval / 1000 : this.lowPowerInterval / 1000;
-
-    engine.update(deltaTime);
-
-    // Синхронизируем авторитетное состояние сессии с состоянием движка
-    Object.assign(session.ballState, engine.getState());
-
-    // Оптимизированное логирование - только в debug режиме и не чаще раза в секунду
-    if (DEBUG_MODE && (!session.lastPhysicsLog || Date.now() - session.lastPhysicsLog > 1000)) {
-      this.logger.logSession(sessionId, `[PHYSICS:${session.performanceMode}] x=${session.ballState.x.toFixed(1)}, y=${session.ballState.y.toFixed(1)}`, 'debug');
-      session.lastPhysicsLog = Date.now();
+    if (session && session.mainLoop) {
+        clearInterval(session.mainLoop)
+        session.mainLoop = null
     }
   }
 

@@ -249,14 +249,13 @@ function setupWebSocketEventHandlers(wsClient, logger) {
  */
 function applyServerStateToPreview(state) {
     if (!previewPhysicsEngine || !state) return;
-    
-    // Синхронизируем локальный движок с состоянием сервера
-    previewPhysicsEngine.setState(state);
-
-    // Обновляем размер мира в движке, если он есть в состоянии
+    // Сначала синхронизируем размер мира
     if (state.viewerScreenSize) {
       previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height);
     }
+    // Для превью в режиме зрителя используем applyCommand,
+    // чтобы задействовать целевую интерполяцию и синхронизацию без двойного масштабирования
+    previewPhysicsEngine.applyCommand(state);
 }
 
 function renderPreviewLoop(timestamp) {
@@ -268,24 +267,18 @@ function renderPreviewLoop(timestamp) {
   const deltaTime = lastPreviewRenderTime > 0 ? (timestamp - lastPreviewRenderTime) / 1000 : 0;
   lastPreviewRenderTime = timestamp;
 
-  // Обновляем локальную симуляцию превью
+  // Обновляем локальную симуляцию превью для интерполяции
   previewPhysicsEngine.update(deltaTime);
   const state = previewPhysicsEngine.getState();
-  
-  // Масштабируем состояние из мира вьювера в размеры канваса превью
-  const scaledState = getScaledState(state, state.viewerScreenSize, previewCanvas);
 
-  const ctx = previewCanvas.getContext('2d');
-  ctx.fillStyle = scaledState.colorBg || '#000000';
-  ctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+  // Масштабируем состояние, если вьювер подключен
+  const stateToRender = getScaledState(state);
 
-  if (scaledState.x !== undefined) {
-    ctx.beginPath();
-    ctx.arc(scaledState.x, scaledState.y, scaledState.radius, 0, 2 * Math.PI);
-    ctx.fillStyle = scaledState.colorBall || '#FFFFFF';
-    ctx.fill();
+  // Используем рендерер для отрисовки
+  if (window.__previewRenderer) {
+      window.__previewRenderer.drawFrame(stateToRender);
   }
-  
+
   requestAnimationFrame(renderPreviewLoop);
 }
 
@@ -598,6 +591,8 @@ async function initializePreview() {
     try {
         // Создаем движок физики для превью
         previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' });
+        // Включаем режим зрителя для корректной интерполяции
+        previewPhysicsEngine.isViewer = true;
         
         // Запускаем цикл рендеринга для превью
         requestAnimationFrame(renderPreviewLoop);
@@ -616,8 +611,8 @@ async function initializePreview() {
         window.__previewCanvas = canvas
         debugLog('✅ Глобальные переменные установлены')
 
-        window.__previewRenderer.start()
-        debugLog('✅ Renderer запущен')
+        // window.__previewRenderer.start() // Отключаем внутренний цикл рендерера
+        // debugLog('✅ Renderer запущен')
 
         // Если вьювер ещё не подключен, показываем мяч по центру превью
         if (!window.__current.viewerScreenSize || !window.__current.viewerScreenSize.width) {

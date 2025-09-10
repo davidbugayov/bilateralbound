@@ -125,16 +125,166 @@ class Tester {
     return centered;
   }
 
-  async run() {
-    await this.startServer().catch(() => {});
+  async testNoInitialStateBeforeViewerSize() {
+    this.log('Тест: Нет initial_state до установки размера вьювера');
+    const sessionId = await this.createSession();
+    if (!sessionId) { this.log('Не удалось создать сессию', 'error'); return false; }
+
+    // Подключаем контроллер и убеждаемся, что initial_state не приходит до viewer/connect
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+
+    let gotInitial = false;
+    const gotUnexpected = await new Promise((resolve) => {
+      controllerSocket.on('message', (m) => {
+        const msg = JSON.parse(m);
+        if (msg.type === 'initial_state') gotInitial = true;
+      });
+      setTimeout(() => resolve(gotInitial), 500); // 0.5s до подключения вьювера
+    });
+
+    if (gotUnexpected) {
+      this.log('❌ initial_state пришёл до viewer.connect', 'error');
+      controllerSocket.close();
+      return false;
+    } else {
+      this.log('✅ initial_state не пришёл до viewer.connect', 'success');
+    }
+
+    // Теперь подключаем вьювер с размером, ожидаем initial_state по центру
+    const waitInitial = new Promise((resolve) => {
+      const timeout = setTimeout(() => { resolve(false); controllerSocket.close(); }, 3000);
+      controllerSocket.on('message', (m) => {
+        const msg = JSON.parse(m);
+        if (msg.type === 'initial_state') {
+          const st = msg.payload;
+          const expX = 1920/2, expY = 1080/2;
+          const ok = Math.abs(st.x - expX) < 1 && Math.abs(st.y - expY) < 1;
+          clearTimeout(timeout);
+          controllerSocket.close();
+          resolve(ok);
+        }
+      });
+    });
+
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
+
+    const ok = await waitInitial;
+    this.log(ok ? '✅ initial_state пришёл после viewer.connect и по центру' : '❌ initial_state не центрирован/не пришёл', ok ? 'success' : 'error');
+    return ok;
+  }
+
+  async testMovementStateUpdates() {
+    this.log('Тест: Состояние движения содержит корректные обновления');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    // 1. Устанавливаем соединения
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+    
+    // Ждем, пока ОБА сокета откроются, чтобы избежать гонки состояний
+    await Promise.all([
+        new Promise(resolve => controllerSocket.on('open', resolve)),
+        new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+    this.log('Sockets connected');
+
+    // 2. ЗАРАНЕЕ начинаем слушать обновления от вьювера
+    const updatesPromise = new Promise((resolve) => {
+        const receivedUpdates = [];
+        viewerSocket.on('message', (message) => {
+            const data = JSON.parse(message);
+            if (data.type === 'state_update') {
+                receivedUpdates.push(data.payload);
+                // Как только набрали достаточно обновлений, завершаем promise
+                if (receivedUpdates.length >= 3) {
+                    resolve(receivedUpdates);
+                }
+            }
+        });
+    });
+
+    // 3. Подключаем вьювер через HTTP, чтобы задать размер мира
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
+
+    // Небольшая пауза, чтобы сервер гарантированно обработал HTTP запрос перед WebSocket командой
+    await new Promise(r => setTimeout(r, 100));
+
+    // 4. Отправляем команду на запуск движения
+    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 0, speed: 40 } }));
+
+    // 5. Ждем, пока промис с обновлениями зарезолвится (или пока не сработает глобальный таймаут)
+    const updates = await updatesPromise;
+
+    // 6. Проверяем результат
+    const hasMovement = updates.length > 1 && updates[updates.length - 1].x !== updates[0].x;
+    const sizePresent = updates.every(u => u.viewerScreenSize && u.viewerScreenSize.width > 0);
+    
+    this.log(hasMovement ? '✅ Имеются изменения координат (движение есть)' : '❌ Координаты не меняются', hasMovement ? 'success' : 'error');
+    this.log(sizePresent ? '✅ viewerScreenSize присутствует в апдейтах' : '❌ viewerScreenSize отсутствует', sizePresent ? 'success' : 'error');
+    
+    controllerSocket.close(); 
+    viewerSocket.close();
+    
+    return hasMovement && sizePresent;
+  }
+
+  async runAllTests() {
+    await this.startServer().catch((e) => {
+        this.log(`Не удалось запустить сервер: ${e.message}`, 'error');
+        // Если сервер не стартует, нет смысла продолжать
+        return false;
+    });
     // Даем серверу проснуться
     await new Promise(r => setTimeout(r, 1000));
     const okHealth = await this.health();
     this.log(okHealth ? 'Сервер OK' : 'Сервер не OK', okHealth ? 'success' : 'error');
-    const okCenter = await this.testCenteringOnViewerConnect();
-    this.log(`ИТОГО: ${okCenter ? 'Все ок' : 'Провал'}`, okCenter ? 'success' : 'error');
+    if (!okHealth) {
+        return false;
+    }
+    
+    const tests = [
+      { name: 'testNoInitialStateBeforeViewerSize', fn: this.testNoInitialStateBeforeViewerSize.bind(this) },
+      { name: 'testCenteringOnViewerConnect', fn: this.testCenteringOnViewerConnect.bind(this) },
+      { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) }
+    ];
+
+    let allOk = true;
+    const TEST_TIMEOUT = 10000; // 10 секунд на тест
+
+    for (const test of tests) {
+      this.log(`🚀 Запуск теста: ${test.name}`);
+      try {
+        const testPromise = test.fn();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Test timed out')), TEST_TIMEOUT)
+        );
+
+        const result = await Promise.race([testPromise, timeoutPromise]);
+        
+        if (result) {
+          this.log(`✅ Тест ${test.name} пройден`, 'success');
+        } else {
+          allOk = false;
+          this.log(`❌ Тест ${test.name} провален`, 'error');
+        }
+      } catch (error) {
+        allOk = false;
+        this.log(`❌ Тест ${test.name} завершился с ошибкой: ${error.message}`, 'error');
+      }
+    }
+
+    this.log(`ИТОГО: ${allOk ? 'Все тесты пройдены' : 'Есть проваленные тесты'}`, allOk ? 'success' : 'error');
+    return allOk;
+}
+
+  async run() {
+    const allOk = await this.runAllTests();
     await this.stopServer();
-    return okCenter ? 0 : 1;
+    return allOk ? 0 : 1;
   }
 }
 

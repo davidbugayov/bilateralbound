@@ -163,14 +163,14 @@ class BallRenderer {
   /**
      * Рисует шарик (оптимизированная версия)
      */
-  renderBall () {
+  renderBall (ballState) {
+    const ball = ballState || this.ball
+
     // Проверяем валидность данных шарика
-    if (!this.ball || typeof this.ball.x !== 'number' || typeof this.ball.y !== 'number') {
+    if (!ball || typeof ball.x !== 'number' || typeof ball.y !== 'number') {
       console.warn('BallRenderer: Invalid ball data, skipping render')
       return
     }
-
-    const ball = this.ball
 
     // Проверяем разумные значения
     if (ball.radius <= 0 || ball.radius > 1000) {
@@ -184,8 +184,8 @@ class BallRenderer {
         ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, 0,
         ball.x, ball.y, ball.radius
       )
-      gradient.addColorStop(0, this.colors.ball)
-      gradient.addColorStop(1, this.adjustBrightness(this.colors.ball, -20))
+      gradient.addColorStop(0, ball.colorBall || this.colors.ball)
+      gradient.addColorStop(1, this.adjustBrightness(ball.colorBall || this.colors.ball, -20))
 
       this.beginPath()
       // Рисуем мяч с градиентом
@@ -327,6 +327,28 @@ class BallRenderer {
      */
   getFPS () {
     return 1000 / this.targetFrameTime
+  }
+
+  /**
+   * Рендерит один кадр с переданным состоянием.
+   * Удобно для внешнего цикла рендеринга.
+   * @param {object} state - Состояние для рендеринга.
+   */
+  drawFrame(state) {
+    if (!this.validateCanvas() || !state) {
+      return;
+    }
+
+    try {
+      // Очищаем canvas
+      this.ctx.fillStyle = state.colorBg || this.colors.bg;
+      this.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+      // Рисуем шарик
+      this.renderBall(state);
+    } catch (error) {
+      console.error('BallRenderer: Error during drawFrame:', error);
+    }
   }
 
   /**
