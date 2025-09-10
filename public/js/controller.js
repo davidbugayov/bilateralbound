@@ -24,6 +24,15 @@ let currentDirectionMode = 'horizontal';
 let wsClient;
 let isInitialized = false; // Флаг для предотвращения повторной инициализации
 
+// --- State ---
+let sessionId = null
+let ws = null
+let previewPhysicsEngine = null; // Локальный движок физики для превью
+let lastPreviewRenderTime = 0;
+
+// --- Elements ---
+const previewCanvas = document.getElementById('preview')
+
 // 4. Остальная логика выполняется после полной загрузки страницы
 document.addEventListener('DOMContentLoaded', () => {
     // Тихая инициализация
@@ -239,47 +248,45 @@ function setupWebSocketEventHandlers(wsClient, logger) {
  * @param {object} state - Состояние мяча от сервера.
  */
 function applyServerStateToPreview(state) {
-    // ВАЖНО: Не применяем состояние, пока не известен размер экрана вьювера.
-    // Но если размер экрана еще не установлен, но состояние пришло от сервера,
-    // мы можем использовать размер канваса превью как временную меру
-    if (!window.__previewPhysics || !state) {
-        return;
+    if (!previewPhysicsEngine || !state) return;
+    
+    // Синхронизируем локальный движок с состоянием сервера
+    previewPhysicsEngine.setState(state);
+
+    // Обновляем размер мира в движке, если он есть в состоянии
+    if (state.viewerScreenSize) {
+      previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height);
     }
+}
 
-    // Если размер экрана вьювера не установлен, но у нас есть канвас превью,
-    // используем его размер как временное решение
-    if (!window.__current.viewerScreenSize || window.__current.viewerScreenSize.width === 0) {
-        if (window.__previewCanvas) {
-            // Устанавливаем временный размер экрана вьювера равный размеру превью
-            window.__current.viewerScreenSize = {
-                width: window.__previewCanvas.width,
-                height: window.__previewCanvas.height
-            };
-            // Тихо используем размер превью как временный
-        } else {
-            return; // Все еще нет информации о размерах
-        }
-    }
+function renderPreviewLoop(timestamp) {
+  if (!previewPhysicsEngine) {
+    requestAnimationFrame(renderPreviewLoop);
+    return;
+  }
 
-    const scaledState = getScaledState(state);
+  const deltaTime = lastPreviewRenderTime > 0 ? (timestamp - lastPreviewRenderTime) / 1000 : 0;
+  lastPreviewRenderTime = timestamp;
 
-    // Тихое применение состояния к превью
+  // Обновляем локальную симуляцию превью
+  previewPhysicsEngine.update(deltaTime);
+  const state = previewPhysicsEngine.getState();
+  
+  // Масштабируем состояние из мира вьювера в размеры канваса превью
+  const scaledState = getScaledState(state, state.viewerScreenSize, previewCanvas);
 
-    // Всегда обновляем радиус и применяем команду.
-    // applyCommand обновит targetX/Y и статус паузы.
-    if (typeof scaledState.radius === 'number') {
-        window.__previewPhysics.setBallSize(scaledState.radius);
-    }
-    window.__previewPhysics.applyCommand(scaledState);
+  const ctx = previewCanvas.getContext('2d');
+  ctx.fillStyle = scaledState.colorBg || '#000000';
+  ctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
 
-    // Если это первый раз, когда мы получаем координаты,
-    // прыгаем в эту позицию, чтобы избежать долгой интерполяции от центра.
-    if (!window.__previewHasServerPos && typeof scaledState.x === 'number' && typeof scaledState.y === 'number') {
-        // Тихо устанавливаем первую позицию мяча
-        window.__previewPhysics.setPosition(scaledState.x, scaledState.y);
-        // targetX/Y уже установлены в applyCommand, нет нужды дублировать
-        window.__previewHasServerPos = true;
-    }
+  if (scaledState.x !== undefined) {
+    ctx.beginPath();
+    ctx.arc(scaledState.x, scaledState.y, scaledState.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = scaledState.colorBall || '#FFFFFF';
+    ctx.fill();
+  }
+  
+  requestAnimationFrame(renderPreviewLoop);
 }
 
 /**
@@ -590,16 +597,14 @@ async function initializePreview() {
 
     try {
         // Создаем движок физики для превью
-        window.__previewPhysics = new PhysicsEngine({
-            worldWidth: canvas.width,
-            worldHeight: canvas.height,
-            bounceCallback: null,
-            isViewer: true // Превью теперь работает в режиме "зрителя"
-        })
+        previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' });
+        
+        // Запускаем цикл рендеринга для превью
+        requestAnimationFrame(renderPreviewLoop);
         debugLog('✅ PhysicsEngine создан')
 
         // Создаем рендерер, который будет сам обновлять физику (для интерполяции)
-        window.__previewRenderer = new BallRenderer(canvas, window.__previewPhysics, {
+        window.__previewRenderer = new BallRenderer(canvas, previewPhysicsEngine, {
             localPhysics: false // ВАЖНО: Превью теперь не симулирует физику, а только отображает
         })
         debugLog('✅ BallRenderer создан')
@@ -614,44 +619,15 @@ async function initializePreview() {
         window.__previewRenderer.start()
         debugLog('✅ Renderer запущен')
 
-        // Устанавливаем мяч в центр относительно размеров вьювера (если известны)
-        setTimeout(() => {
-            // Не ставим на паузу: пусть сразу интерполирует к server target
-
-            // Всегда центрируем относительно известных размеров вьювера или превью
-            let initialX, initialY;
-
-            if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
-                // Центрируем относительно размеров вьювера и масштабируем
-                const viewerCenterX = window.__current.viewerScreenSize.width / 2
-                const viewerCenterY = window.__current.viewerScreenSize.height / 2
-
-                const scaleX = canvas.width / window.__current.viewerScreenSize.width
-                const scaleY = canvas.height / window.__current.viewerScreenSize.height
-                const scaleRadius = Math.min(scaleX, scaleY)
-
-                initialX = viewerCenterX * scaleX
-                initialY = viewerCenterY * scaleY
-
-                // Масштабируем радиус в соответствии с превью
-                const baseRadius = (lastServerState && typeof lastServerState.radius === 'number') ? lastServerState.radius : 20
-                window.__previewPhysics.setBallSize(baseRadius * scaleRadius)
-
-                debugLog(`✅ Мяч инициализирован в центре вьювера: (${viewerCenterX}, ${viewerCenterY}) → (${initialX.toFixed(1)}, ${initialY.toFixed(1)})`)
-            } else {
-                // Если размеры вьювера неизвестны, центрируем относительно превью
-                initialX = canvas.width / 2
-                initialY = canvas.height / 2
-                debugLog('✅ Мяч инициализирован в центре превью (размеры вьювера неизвестны)')
-            }
-
-            // Устанавливаем позицию и сбрасываем target координаты для корректной интерполяции
-            window.__previewPhysics.setPosition(initialX, initialY)
-            // Скорость управляется интерполяцией, локальную скорость обнуляем
-            window.__previewPhysics.setVelocity(0, 0)
-
-            debugLog(`🎯 Начальная позиция мяча: (${initialX.toFixed(1)}, ${initialY.toFixed(1)})`)
-        }, 500)
+        // Если вьювер ещё не подключен, показываем мяч по центру превью
+        if (!window.__current.viewerScreenSize || !window.__current.viewerScreenSize.width) {
+            // Настраиваем мир превью под размеры canvas
+            previewPhysicsEngine.setWorldSize(canvas.width, canvas.height)
+            // Ставим мяч в центр превью и останавливаем
+            previewPhysicsEngine.setPosition(canvas.width / 2, canvas.height / 2)
+            previewPhysicsEngine.setVelocity(0, 0)
+            debugLog('✅ Мяч инициализирован в центре превью (вьювер не подключен)')
+        }
 
         debugLog('🎉 Инициализация превью завершена успешно')
 
@@ -671,7 +647,7 @@ function showWaitingForViewer() {
 }
 
 function updatePreviewSize(viewerScreenSize) {
-    if (!viewerScreenSize || !window.__previewRenderer || !window.__previewPhysics) {
+    if (!viewerScreenSize || !window.__previewRenderer || !previewPhysicsEngine) {
         showWaitingForViewer()
         return
     }
@@ -709,15 +685,14 @@ function updatePreviewSize(viewerScreenSize) {
 
     // Тихо устанавливаем размер превью
 
-    window.__previewRenderer.resize(canvas.width, canvas.height)
-    window.__previewPhysics.setWorldSize(canvas.width, canvas.height)
+    previewPhysicsEngine.setWorldSize(canvas.width, canvas.height)
 
     // Масштабируем радиус шара под новый размер превью
     const scaleX = canvas.width / window.__current.viewerScreenSize.width
     const scaleY = canvas.height / window.__current.viewerScreenSize.height
     const scaleRadius = Math.min(scaleX, scaleY)
     const baseRadius = (lastServerState && typeof lastServerState.radius === 'number') ? lastServerState.radius : 20
-    window.__previewPhysics.setBallSize(baseRadius * scaleRadius)
+    previewPhysicsEngine.setBallSize(baseRadius * scaleRadius)
 
     // После изменения размера, немедленно перерисовываем последнее известное состояние в новом масштабе
     if(lastServerState) {
@@ -727,7 +702,7 @@ function updatePreviewSize(viewerScreenSize) {
             const baseRadius = (lastServerState && typeof lastServerState.radius === 'number') ? lastServerState.radius : 20
             scaledState.radius = baseRadius * scaleRadius
         }
-        window.__previewPhysics.applyCommand(scaledState);
+        previewPhysicsEngine.applyCommand(scaledState);
     } else {
         // Если нет состояния сервера, но есть размеры вьювера, центрируем мяч относительно них
         if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
@@ -740,7 +715,7 @@ function updatePreviewSize(viewerScreenSize) {
             const previewCenterX = viewerCenterX * scaleX
             const previewCenterY = viewerCenterY * scaleY
 
-            window.__previewPhysics.setPosition(previewCenterX, previewCenterY);
+            previewPhysicsEngine.setPosition(previewCenterX, previewCenterY);
             debugLog(`📏 Размер превью обновлен, мяч центрирован: (${viewerCenterX}, ${viewerCenterY}) → (${previewCenterX.toFixed(1)}, ${previewCenterY.toFixed(1)})`)
         }
     }
@@ -844,27 +819,27 @@ function resetCenter(){
   wsClient.send('controller_update', { reset: true })
 
   // И немедленно центрируем мяч в локальном превью для мгновенной обратной связи
-  if (window.__previewPhysics && window.__previewCanvas && window.__current.viewerScreenSize) {
+  if (previewPhysicsEngine && previewCanvas && window.__current.viewerScreenSize) {
       // Центрируем относительно размеров вьювера, а не превью
       const viewerCenterX = window.__current.viewerScreenSize.width / 2
       const viewerCenterY = window.__current.viewerScreenSize.height / 2
 
       // Масштабируем центр вьювера к размерам превью
-      const scaleX = window.__previewCanvas.width / window.__current.viewerScreenSize.width
-      const scaleY = window.__previewCanvas.height / window.__current.viewerScreenSize.height
+      const scaleX = previewCanvas.width / window.__current.viewerScreenSize.width
+      const scaleY = previewCanvas.height / window.__current.viewerScreenSize.height
 
       const previewCenterX = viewerCenterX * scaleX
       const previewCenterY = viewerCenterY * scaleY
 
       // Устанавливаем позицию и target координаты для корректной интерполяции
-      window.__previewPhysics.setPosition(previewCenterX, previewCenterY);
+      previewPhysicsEngine.setPosition(previewCenterX, previewCenterY);
 
       debugLog(`✅ Мяч центрирован относительно вьювера: (${viewerCenterX}, ${viewerCenterY}) → (${previewCenterX.toFixed(1)}, ${previewCenterY.toFixed(1)})`)
-  } else if (window.__previewPhysics && window.__previewCanvas) {
+  } else if (previewPhysicsEngine && previewCanvas) {
       // Fallback: центрируем относительно превью, если размеры вьювера неизвестны
-      const centerX = window.__previewCanvas.width / 2;
-      const centerY = window.__previewCanvas.height / 2;
-      window.__previewPhysics.setPosition(centerX, centerY);
+      const centerX = previewCanvas.width / 2;
+      const centerY = previewCanvas.height / 2;
+      previewPhysicsEngine.setPosition(centerX, centerY);
       debugLog('✅ Мяч центрирован относительно превью (размеры вьювера неизвестны)')
   }
   debugLog('✅ Команда центрирования отправлена, превью обновлено локально')
@@ -950,32 +925,39 @@ function updatePlayPauseButton() {
 }
 
 function togglePlayPause(){
+  const payload = {};
+
   if (isPlaying) {
     // Останавливаем игру
-    wsClient.send('controller_update', { paused: true })
-    isPlaying = false
-    updatePlayPauseButton()
-    debugLog('⏸ Игра остановлена через WS')
-    // PREVIEW STATE WILL BE UPDATED BY `state_update` event
+    payload.paused = true;
+    wsClient.send('controller_update', { paused: true });
+    isPlaying = false;
+    debugLog('⏸ Игра остановлена через WS');
   } else {
-    // Запускаем игру (используем выбранное направление или горизонтальное по умолчанию)
-    // Убеждаемся что направление не нулевое
-    let currentDirection = directionState || { dx: 1, dy: 0 }
+    // Запускаем игру
+    let currentDirection = directionState || { dx: 1, dy: 0 };
     if (currentDirection.dx === 0 && currentDirection.dy === 0) {
-      currentDirection = { dx: 1, dy: 0 } // По умолчанию горизонтальное движение
+      currentDirection = { dx: 1, dy: 0 };
     }
-    debugLog(`▶️ Запуск движения: направление dx=${currentDirection.dx}, dy=${currentDirection.dy}`)
-    wsClient.send('controller_update', {
+    
+    Object.assign(payload, {
       paused: false,
       dirX: currentDirection.dx,
       dirY: currentDirection.dy,
       speed: components.speed ? components.speed.getSpeed() : 40
-    })
-    isPlaying = true
-    updatePlayPauseButton()
-    debugLog('▶️ Игра запущена через WS')
-    // PREVIEW STATE WILL BE UPDATED BY `state_update` event
+    });
+
+    wsClient.send('controller_update', payload);
+    isPlaying = true;
+    debugLog('▶️ Игра запущена через WS');
   }
+
+  // Немедленно применяем команду к локальному движку для мгновенной реакции
+  if (previewPhysicsEngine) {
+    previewPhysicsEngine.applyCommand(payload);
+  }
+
+  updatePlayPauseButton();
 }
 
 // Устаревшие функции (оставлены для совместимости)

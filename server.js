@@ -41,6 +41,8 @@ const logger = {
 class SessionRepository {
   constructor() {
     this.sessions = new Map()
+    this.sessionCache = new Map() // Кэш для часто запрашиваемых сессий
+    this.cacheExpiration = 30000 // 30 секунд
   }
 
   create(sessionData = {}) {
@@ -70,7 +72,24 @@ class SessionRepository {
   }
 
   findById(sessionId) {
-    return this.sessions.get(sessionId) || null
+    // Проверяем кэш сначала
+    const cached = this.sessionCache.get(sessionId);
+    if (cached && Date.now() - cached.timestamp < this.cacheExpiration) {
+      return cached.session;
+    }
+
+    // Ищем в основном хранилище
+    const session = this.sessions.get(sessionId) || null;
+
+    // Кэшируем результат (даже если null)
+    if (session) {
+      this.sessionCache.set(sessionId, {
+        session: session,
+        timestamp: Date.now()
+      });
+    }
+
+    return session;
   }
 
   update(sessionId, updates) {
@@ -79,6 +98,10 @@ class SessionRepository {
 
     Object.assign(session, updates)
     session.lastActivity = Date.now()
+
+    // Инвалидируем кэш
+    this.sessionCache.delete(sessionId)
+
     return true
   }
 
@@ -87,11 +110,26 @@ class SessionRepository {
     if (!session) return false
 
     Object.assign(session.ballState, ballUpdates)
+
+    // Инвалидируем кэш
+    this.sessionCache.delete(sessionId)
+
     return true
   }
 
   delete(sessionId) {
+    this.sessionCache.delete(sessionId); // Очищаем кэш
     return this.sessions.delete(sessionId)
+  }
+
+  // Очистка устаревшего кэша для оптимизации памяти
+  cleanupCache() {
+    const now = Date.now();
+    for (const [sessionId, cached] of this.sessionCache) {
+      if (now - cached.timestamp > this.cacheExpiration) {
+        this.sessionCache.delete(sessionId);
+      }
+    }
   }
 
   getAll() {
@@ -103,12 +141,18 @@ class SessionRepository {
     const expiredIds = []
 
     for (const [id, session] of this.sessions) {
-      if (now - session.createdAt > maxAge) {
+      // Удаляем сессии старше maxAge ИЛИ неактивные более 30 минут
+      const inactiveTime = now - (session.lastActivity || session.createdAt);
+      if (now - session.createdAt > maxAge || inactiveTime > 30 * 60 * 1000) {
         expiredIds.push(id)
       }
     }
 
     expiredIds.forEach(id => this.delete(id))
+
+    // Также очищаем устаревший кэш
+    this.cleanupCache();
+
     return expiredIds.length
   }
 }
@@ -253,18 +297,12 @@ class StateBroadcaster {
     }
   }
 
-  broadcastInitialState(sessionId, client) {
-    const session = this.sessionRepository.findById(sessionId)
-    if (!session) return false
+  broadcastInitialState(sessionId, client, currentState) {
+    const session = this.sessionRepository.findById(sessionId);
+    if (!session) return false;
 
-    // Если вьювер подключен, но размер экрана еще не установлен,
-    // отправляем состояние без координат мяча - он будет центрирован позже
-    let ballState = { ...session.ballState }
-    if (session.viewerConnected && !session.viewerScreenSize) {
-      ballState.x = undefined
-      ballState.y = undefined
-      this.logger.logSession(sessionId, 'Sending initial_state without coordinates - waiting for viewer screen size')
-    }
+    // Используем переданное состояние, если оно есть, иначе берем из сессии
+    const ballState = currentState || session.ballState;
 
     const initialState = {
       type: 'initial_state',
@@ -274,20 +312,19 @@ class StateBroadcaster {
         controllerConnected: session.controllerConnected,
         viewerScreenSize: session.viewerScreenSize
       }
-    }
+    };
 
     if (this._isClientReady(client)) {
       try {
-        client.send(JSON.stringify(initialState))
-        this.logger.logSession(sessionId, 'Sent initial_state to client')
-        return true
+        client.send(JSON.stringify(initialState));
+        this.logger.logSession(sessionId, 'Sent initial_state to client');
+        return true;
       } catch (error) {
-        this.logger.error(`Error sending initial state: ${error.message}`)
-        return false
+        this.logger.error(`Error sending initial state: ${error.message}`);
+        return false;
       }
     }
-
-    return false
+    return false;
   }
 
   _isClientReady(client) {
@@ -302,13 +339,14 @@ class SessionManager {
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
     this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
     this.physicsInterval = 1000 / 60 // ~60 FPS
+    this.lowPowerInterval = 1000 / 10 // ~10 FPS для неактивных сессий
     this.logger = {
       ...logger,
-      logSession: (sessionId, msg) => {
-        // Оригинальное логгирование в консоль сервера
-        if (DEBUG_MODE) console.log(`[SESSION:${sessionId}] ${msg}`);
-        // Новая функция: трансляция лога клиентам
-        this.stateBroadcaster.broadcastLog(sessionId, msg);
+      logSession: (sessionId, msg, level = 'info') => {
+        // Оптимизированное логирование - только для отладки
+        if (DEBUG_MODE && level === 'debug') console.log(`[SESSION:${sessionId}] ${msg}`);
+        // Убираем автоматическую рассылку логов клиентам для снижения нагрузки
+        // this.stateBroadcaster.broadcastLog(sessionId, msg);
       }
     };
   }
@@ -350,36 +388,83 @@ class SessionManager {
         return false;
     }
 
+    // === ВАЛИДАЦИЯ И САНИТИЗАЦИЯ ВХОДНЫХ ДАННЫХ ===
+    this.logger.logSession(sessionId, `[VALIDATION] Processing updates: ${JSON.stringify(updates)}`);
+    const validatedUpdates = {};
+    if (updates) {
+        // speed: number, 0-100
+        if (typeof updates.speed === 'number' && updates.speed >= 0 && updates.speed <= 100 && !isNaN(updates.speed)) {
+            validatedUpdates.speed = updates.speed;
+        }
+        // radius: number, 1-1000
+        if (typeof updates.radius === 'number' && updates.radius > 0 && updates.radius <= 1000 && !isNaN(updates.radius)) {
+            validatedUpdates.radius = updates.radius;
+        }
+        // paused: boolean
+        if (typeof updates.paused === 'boolean') {
+            validatedUpdates.paused = updates.paused;
+        }
+        // dirX, dirY: number, -1 to 1
+        if (typeof updates.dirX === 'number' && Math.abs(updates.dirX) <= 1 && !isNaN(updates.dirX)) {
+            validatedUpdates.dirX = updates.dirX;
+        }
+        if (typeof updates.dirY === 'number' && Math.abs(updates.dirY) <= 1 && !isNaN(updates.dirY)) {
+            validatedUpdates.dirY = updates.dirY;
+        }
+        // colorBall, colorBg: string, hex format
+        if (typeof updates.colorBall === 'string' && /^#[0-9a-fA-F]{6}$/.test(updates.colorBall)) {
+            validatedUpdates.colorBall = updates.colorBall;
+        }
+        if (typeof updates.colorBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(updates.colorBg)) {
+            validatedUpdates.colorBg = updates.colorBg;
+        }
+        // reset: boolean
+        if (updates.reset === true) {
+            validatedUpdates.reset = true;
+        }
+        // resume: boolean (для обратной совместимости)
+        if (updates.resume === true) {
+            validatedUpdates.paused = false;
+        }
+        // pause: boolean (для обратной совместимости)
+        if (updates.pause === true) {
+            validatedUpdates.paused = true;
+        }
+    }
+
+    this.logger.logSession(sessionId, `[VALIDATION] Validated updates: ${JSON.stringify(validatedUpdates)}`);
+
+    // Если нет валидных полей для обновления, выходим
+    if (Object.keys(validatedUpdates).length === 0) {
+        this.logger.logSession(sessionId, `[VALIDATION] No valid fields in update, ignoring`);
+        return false;
+    }
+    // ============================================
+
     session.lastStateUpdate = now;
+    session.lastActivity = now; // Обновляем время активности
 
-    // Нормализуем команды: поддерживаем resume=true как paused=false
-    if (updates && updates.resume === true && updates.paused === undefined) {
-        updates = { ...updates, paused: false };
-    }
-
-    // КОРРЕКТИРОВКА: Убедимся, что `pause` преобразуется в `paused`
-    if (updates && updates.pause !== undefined && updates.paused === undefined) {
-        updates.paused = updates.pause;
-        delete updates.pause;
-    }
-
-    // Применяем обновления через движок физики
+    // Применяем ТОЛЬКО валидированные обновления через движок физики
     if (session.physicsEngine) {
-        session.physicsEngine.applyCommand(updates);
-        
-        // УПРОЩАЕМ ЛОГИКУ: Убираем сложный блок с предсказанием. 
-        // Основной цикл физики сам справится с обновлением.
-        // Главное - это синхронизировать состояние.
+        session.physicsEngine.applyCommand(validatedUpdates);
+
+        // Синхронизируем состояние сессии с состоянием движка
         Object.assign(session.ballState, session.physicsEngine.getState());
-        
-        // ДОБАВЛЯЕМ КОНТРОЛЬНЫЙ ЛОГ
-        this.logger.logSession(sessionId, `[STATE SYNC] Synced state from engine. New paused state: ${session.ballState.paused}`);
+
+        // Оптимизированное логирование - только для отладки
+        this.logger.logSession(sessionId, `[STATE SYNC] Applied ${Object.keys(validatedUpdates).length} updates`, 'debug');
 
     } else {
         // Fallback, которого не должно быть
-        this.sessionRepository.updateBallState(sessionId, updates);
+        this.sessionRepository.updateBallState(sessionId, validatedUpdates);
     }
-    
+
+    // Пересчитываем режим производительности после изменения состояния
+    this._schedulePhysicsUpdate(sessionId);
+
+    // Инвалидируем кэш API
+    apiCache.delete(`state_${sessionId}`);
+
     this.stateBroadcaster.broadcastState(sessionId);
     return true;
   }
@@ -391,16 +476,30 @@ class SessionManager {
       return
     }
 
-    // Отправляем начальное состояние
-    this.stateBroadcaster.broadcastInitialState(sessionId, ws)
+    const session = this.sessionRepository.findById(sessionId)
+    if (session) {
+      session.lastActivity = Date.now()
+      this._schedulePhysicsUpdate(sessionId)
+      
+      // Отправляем initial_state только ВЬЮВЕРУ.
+      // Контроллер получит initial_state после установки размеров экрана вьювера.
+      if (role === 'viewer') {
+        this.stateBroadcaster.broadcastInitialState(sessionId, ws, session.ballState)
+      } else {
+        // пометим сокет как ожидающий начального состояния
+        try { ws.initialStateSent = false } catch (e) {}
+        this.logger.logSession(sessionId, `Controller connected, deferring initial_state until viewer screen size is set.`);
+      }
+    }
 
-    // Отправляем статус viewer всем клиентам
     this.stateBroadcaster.broadcastViewerStatus(sessionId)
   }
 
   handleWebSocketDisconnection(ws) {
     const sessionId = this.webSocketManager.removeClient(ws)
     if (sessionId) {
+      // Пересчитываем режим производительности после отключения клиента
+      this._schedulePhysicsUpdate(sessionId)
       this.stateBroadcaster.broadcastViewerStatus(sessionId)
     }
   }
@@ -434,6 +533,10 @@ class SessionManager {
         this.logger.logSession(sessionId, `[SET_SIZE] After: engine.options.worldWidth=${session.physicsEngine.options.worldWidth}, _worldSizeSet=${session.physicsEngine._worldSizeSet}`);
 
         session.physicsEngine.reset(); // Центрирует мяч и останавливает его
+        // Жестко фиксируем стоп-кадр и нулевую скорость, чтобы исключить дрейф
+        session.physicsEngine.setPaused(true);
+        session.physicsEngine.setVelocity(0, 0);
+        
         Object.assign(session.ballState, session.physicsEngine.getState()); // Синхронизируем состояние
         this.logger.logSession(sessionId, `Centered ball via PhysicsEngine for screen size ${screenSize.width}×${screenSize.height}`);
     } else {
@@ -449,6 +552,16 @@ class SessionManager {
     this.stateBroadcaster.broadcastState(sessionId)
     this.logger.logSession(sessionId, `Broadcasted state update after centering`)
 
+    // Проверяем, есть ли "ожидающие" контроллеры, и отправляем им initial_state
+    const clients = this.webSocketManager.getClients(sessionId);
+    const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState; // Получаем самое свежее состояние
+    for (const { client, info } of clients) {
+        if (info.role === 'controller' && !client.initialStateSent) {
+            this.stateBroadcaster.broadcastInitialState(sessionId, client, finalState);
+            client.initialStateSent = true;
+        }
+    }
+
     return true
   }
 
@@ -456,18 +569,78 @@ class SessionManager {
     const session = this.sessionRepository.findById(sessionId)
     if (!session || session.physicsLoop) return
 
-    session.physicsLoop = setInterval(() => {
-      this.updatePhysics(sessionId)
-      // Рассылка состояния теперь происходит ВНУТРИ updatePhysics, чтобы не спамить когда игра на паузе
-      // this.stateBroadcaster.broadcastState(sessionId)
-    }, this.physicsInterval)
+    // Инициализируем параметры производительности
+    session.lastActivityCheck = Date.now()
+    session.performanceMode = 'high' // 'high' | 'low' | 'idle'
+
+    this._schedulePhysicsUpdate(sessionId)
+    this.logger.logSession(sessionId, 'Physics engine started', 'debug')
+  }
+
+  _schedulePhysicsUpdate(sessionId) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return
+
+    // Определяем режим производительности
+    const hasActiveClients = session.controllerConnected || session.viewerConnected
+    const isBallMoving = session.ballState && !session.ballState.paused
+    const timeSinceActivity = Date.now() - (session.lastActivity || 0)
+
+    let newMode = 'high'
+    if (!hasActiveClients && !isBallMoving) {
+      newMode = 'idle'
+    } else if (!hasActiveClients || !isBallMoving) {
+      newMode = 'low'
+    }
+
+    // Меняем режим если необходимо
+    if (session.performanceMode !== newMode) {
+      if (session.physicsLoop) {
+        clearInterval(session.physicsLoop)
+        session.physicsLoop = null
+      }
+
+      session.performanceMode = newMode
+
+      if (newMode === 'idle') {
+        // Полностью останавливаем симуляцию
+        this.logger.logSession(sessionId, 'Physics paused (idle mode)', 'debug')
+        return
+      }
+
+      // Запускаем с соответствующей частотой
+      const interval = newMode === 'high' ? this.physicsInterval : this.lowPowerInterval
+      session.physicsLoop = setInterval(() => {
+        this.updatePhysics(sessionId)
+      }, interval)
+
+      this.logger.logSession(sessionId, `Physics mode: ${newMode} (${Math.round(1000/interval)} FPS)`, 'debug')
+    }
+
+    // Запускаем цикл рассылки только если есть активные клиенты
+    if (hasActiveClients && !session.broadcastLoop) {
+      session.broadcastLoop = setInterval(() => {
+        if (session.ballState && !session.ballState.paused) {
+          this.stateBroadcaster.broadcastState(sessionId);
+        }
+      }, 100) // 10 FPS
+    } else if (!hasActiveClients && session.broadcastLoop) {
+      clearInterval(session.broadcastLoop)
+      session.broadcastLoop = null
+    }
   }
 
   stopPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
-    if (session && session.physicsLoop) {
-      clearInterval(session.physicsLoop)
-      session.physicsLoop = null
+    if (session) {
+      if (session.physicsLoop) {
+        clearInterval(session.physicsLoop)
+        session.physicsLoop = null
+      }
+      if (session.broadcastLoop) {
+        clearInterval(session.broadcastLoop)
+        session.broadcastLoop = null
+      }
     }
   }
 
@@ -479,24 +652,28 @@ class SessionManager {
     }
 
     const engine = session.physicsEngine;
-    const deltaTime = this.physicsInterval / 1000;
+    const deltaTime = session.performanceMode === 'high' ? this.physicsInterval / 1000 : this.lowPowerInterval / 1000;
 
-    // Движок теперь сам проверяет наличие размеров мира, так что просто обновляем его.
-    // Он сам обработает движение и отскоки.
     engine.update(deltaTime);
 
     // Синхронизируем авторитетное состояние сессии с состоянием движка
     Object.assign(session.ballState, engine.getState());
-    
-    // Оставляем только минимальное логгирование
-    this.logger.logSession(sessionId, `[PHYSICS] Updated: x=${session.ballState.x.toFixed(2)}, y=${session.ballState.y.toFixed(2)}`);
 
-    // Рассылаем состояние ТОЛЬКО если оно обновилось
-    this.stateBroadcaster.broadcastState(sessionId);
+    // Оптимизированное логирование - только в debug режиме и не чаще раза в секунду
+    if (DEBUG_MODE && (!session.lastPhysicsLog || Date.now() - session.lastPhysicsLog > 1000)) {
+      this.logger.logSession(sessionId, `[PHYSICS:${session.performanceMode}] x=${session.ballState.x.toFixed(1)}, y=${session.ballState.y.toFixed(1)}`, 'debug');
+      session.lastPhysicsLog = Date.now();
+    }
   }
 
   cleanupExpiredSessions() {
-    return this.sessionRepository.cleanupExpired()
+    // При очистке сессии, также останавливаем ее циклы
+    const expiredIds = this.sessionRepository.cleanupExpired()
+    if (expiredIds.length > 0) {
+      this.logger.info(`Cleaned up ${expiredIds.length} expired sessions.`);
+      expiredIds.forEach(id => this.stopPhysics(id));
+    }
+    return expiredIds.length;
   }
 
   // Legacy compatibility methods
@@ -606,9 +783,10 @@ app.use('/test', express.static(path.join(__dirname)))
 app.post('/api/session', (req, res) => {
   try {
     const session = sessionManager.createSession()
+    if (DEBUG_MODE) logger.info(`New session created: ${session.id}`)
     res.json({ sessionId: session.id })
   } catch (error) {
-    logger.error('Error creating session:', error)
+    if (DEBUG_MODE) logger.error('Error creating session:', error)
     res.status(500).json({ error: error.message })
   }
 })
@@ -631,29 +809,49 @@ app.get('/api/session/:sessionId', (req, res) => {
       lastActivity: session.lastActivity
     })
   } catch (error) {
-    logger.error('Error getting session:', error)
+    if (DEBUG_MODE) logger.error('Error getting session:', error)
     res.status(500).json({ error: error.message })
   }
 })
+
+// Простой кэш для API ответов
+const apiCache = new Map()
+const API_CACHE_TTL = 100 // 100ms - очень короткий TTL для realtime данных
 
 // Get ball state for viewer
 app.get('/api/session/:sessionId/state', (req, res) => {
   try {
     const { sessionId } = req.params
+    const cacheKey = `state_${sessionId}`
+
+    // Проверяем кэш
+    const cached = apiCache.get(cacheKey)
+    if (cached && Date.now() - cached.timestamp < API_CACHE_TTL) {
+      return res.json(cached.data)
+    }
+
     const session = sessionManager.getSession(sessionId)
 
     if (!session) {
       return res.status(404).json({ error: 'Session not found' })
     }
 
-    res.json({
+    const responseData = {
       ...session.ballState,
       viewerConnected: session.viewerConnected,
       controllerConnected: session.controllerConnected,
       viewerScreenSize: session.viewerScreenSize
+    }
+
+    // Кэшируем ответ
+    apiCache.set(cacheKey, {
+      data: responseData,
+      timestamp: Date.now()
     })
+
+    res.json(responseData)
   } catch (error) {
-    logger.error('Error getting ball state:', error)
+    if (DEBUG_MODE) logger.error('Error getting ball state:', error)
     res.status(500).json({ error: error.message })
   }
 })
@@ -670,9 +868,13 @@ app.post('/api/session/:sessionId/controller/connect', (req, res) => {
 
     sessionManager.updateBallState(sessionId, req.body)
     sessionManager.setControllerConnected(sessionId, true)
+
+    // Инвалидируем кэш
+    apiCache.delete(`state_${sessionId}`);
+
     res.json({ success: true, message: 'Controller connected' })
   } catch (error) {
-    logger.error('Error connecting controller:', error)
+    if (DEBUG_MODE) logger.error('Error connecting controller:', error)
     res.status(500).json({ error: error.message })
   }
 })
@@ -687,12 +889,13 @@ app.post('/api/session/:sessionId/controller/update', (req, res) => {
       return res.status(404).json({ error: 'Session not found' })
     }
 
-    console.log(`🎮 Server: Controller update for session ${sessionId}:`, req.body)
+    if (DEBUG_MODE) console.log(`🎮 Server: Controller update for session ${sessionId}:`, req.body)
     const result = sessionManager.updateBallState(sessionId, req.body)
-    console.log(`🎮 Server: Update result:`, result, 'New state:', session.ballState)
+    if (DEBUG_MODE) console.log(`🎮 Server: Update result:`, result, 'New state:', session.ballState)
+
     res.json({ success: true, message: 'Controller update processed' })
   } catch (error) {
-    logger.error('Error updating controller:', error)
+    if (DEBUG_MODE) logger.error('Error updating controller:', error)
     res.status(500).json({ error: error.message })
   }
 })
@@ -711,10 +914,12 @@ app.post('/api/session/:sessionId/viewer/connect', (req, res) => {
     sessionManager.setViewerConnected(sessionId, true)
     if (screenSize) {
       sessionManager.setViewerScreenSize(sessionId, screenSize)
+      // Инвалидируем кэш при изменении размера экрана
+      apiCache.delete(`state_${sessionId}`);
     }
     res.json({ success: true, message: 'Viewer connected' })
   } catch (error) {
-    logger.error('Error connecting viewer:', error)
+    if (DEBUG_MODE) logger.error('Error connecting viewer:', error)
     res.status(500).json({ error: error.message })
   }
 })
@@ -731,17 +936,20 @@ app.post('/api/session/:sessionId/viewer/screen-size', (req, res) => {
     }
 
     if (typeof width === 'number' && typeof height === 'number') {
-      console.log(`📏 Вьювер обновил размер экрана: ${width}×${height} (сессия: ${sessionId})`);
+      if (DEBUG_MODE) console.log(`📏 Вьювер обновил размер экрана: ${width}×${height} (сессия: ${sessionId})`);
       sessionManager.setViewerScreenSize(sessionId, { width, height })
+      // Инвалидируем кэш
+      apiCache.delete(`state_${sessionId}`);
       return res.json({ success: true })
     }
 
     return res.status(400).json({ error: 'Invalid screen size' })
   } catch (error) {
-    logger.error('Error updating viewer screen size:', error)
+    if (DEBUG_MODE) logger.error('Error updating viewer screen size:', error)
     res.status(500).json({ error: error.message })
   }
 })
+
 
 // WebSocket-соединение
 wss.on('connection', (ws, req) => {
@@ -765,40 +973,34 @@ wss.on('connection', (ws, req) => {
 
   ws.on('message', message => {
     try {
-      // НАХОДИМ АКТУАЛЬНУЮ СЕССИЮ ДЛЯ КАЖДОГО СООБЩЕНИЯ
       const clientInfo = sessionManager.getClientInfo(ws);
       if (!clientInfo) {
-        logger.error('Could not find client info for incoming message.');
         return;
       }
       const { sessionId, role } = clientInfo;
       const data = JSON.parse(message);
 
-      // DEBUG: Логируем тип каждого входящего сообщения
-      if (sessionId) {
-          sessionManager.logger.logSession(sessionId, `[MSG IN] role=${role}, type=${data.type}`);
+      // Оптимизированное логирование - только для heartbeat и ошибок
+      if (data.type !== 'heartbeat' && DEBUG_MODE) {
+        sessionManager.logger.logSession(sessionId, `[MSG IN] ${role}:${data.type}`, 'debug');
       }
 
-      if (!sessionId) {
-        logger.info('No session ID found for message');
-        return;
-      }
-
-      // Игнорируем сообщения-пульс от клиента
+      // Игнорируем сообщения-пульс от клиента (они приходят часто)
       if (data.type === 'heartbeat') {
         return;
       }
 
       if (role === 'controller' && data.type === 'controller_update') {
-        // Команда сброса теперь полностью обрабатывается движком через applyCommand
-        sessionManager.updateBallState(sessionId, data.payload)
-        sessionManager.logger.logSession(sessionId, `Controller updated state: ${JSON.stringify(data.payload)}`)
+        sessionManager.updateBallState(sessionId, data.payload);
+        // Логируем только значимые команды
+        if (data.payload && (data.payload.reset || data.payload.dirX !== undefined || data.payload.dirY !== undefined)) {
+          sessionManager.logger.logSession(sessionId, `[WS] Controller command: ${Object.keys(data.payload).join(',')}`, 'debug');
+        }
       }
     } catch (error) {
-      // Пытаемся получить sessionId даже если парсинг data не удался
       const clientInfoForError = sessionManager.getClientInfo(ws);
       const sid = clientInfoForError ? clientInfoForError.sessionId : 'unknown';
-      logger.error(`Error parsing message from session ${sid}: ${error.message}`)
+      if (DEBUG_MODE) logger.error(`WebSocket error from session ${sid}: ${error.message}`);
     }
   })
 
@@ -838,6 +1040,19 @@ server.listen(PORT, () => {
 setInterval(() => {
   sessionManager.cleanupExpiredSessions()
 }, 60000)
+
+// Очистка кэша каждые 5 минут
+setInterval(() => {
+  sessionManager.sessionRepository.cleanupCache()
+
+  // Очищаем API кэш от устаревших записей
+  const now = Date.now()
+  for (const [key, cached] of apiCache) {
+    if (now - cached.timestamp > API_CACHE_TTL * 2) {
+      apiCache.delete(key)
+    }
+  }
+}, 5 * 60 * 1000)
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

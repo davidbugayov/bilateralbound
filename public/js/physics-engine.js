@@ -391,14 +391,62 @@ class PhysicsEngine {
   applyCommand (command) {
     if (!command) return
 
+    // === ВАЛИДАЦИЯ ВХОДНЫХ ДАННЫХ ===
+    const validatedCommand = {}
+
+    // Валидация для вьювера (клиентского режима)
+    if (this.isViewer) {
+      if (typeof command.x === 'number' && !isNaN(command.x)) validatedCommand.x = command.x
+      if (typeof command.y === 'number' && !isNaN(command.y)) validatedCommand.y = command.y
+      if (typeof command.vx === 'number' && !isNaN(command.vx)) validatedCommand.vx = command.vx
+      if (typeof command.vy === 'number' && !isNaN(command.vy)) validatedCommand.vy = command.vy
+    } else {
+      // Валидация для серверного режима
+      if (typeof command.dirX === 'number' && Math.abs(command.dirX) <= 1 && !isNaN(command.dirX)) {
+        validatedCommand.dirX = command.dirX
+      }
+      if (typeof command.dirY === 'number' && Math.abs(command.dirY) <= 1 && !isNaN(command.dirY)) {
+        validatedCommand.dirY = command.dirY
+      }
+      if (typeof command.speed === 'number' && command.speed >= 0 && command.speed <= 100 && !isNaN(command.speed)) {
+        validatedCommand.speed = command.speed
+      }
+    }
+
+    // Общие валидации для всех режимов
+    if (typeof command.paused === 'boolean') {
+      validatedCommand.paused = command.paused
+    }
+    if (command.reset === true) {
+      validatedCommand.reset = true
+    }
+    if (typeof command.radius === 'number' && command.radius > 0 && command.radius <= 1000 && !isNaN(command.radius)) {
+      validatedCommand.radius = command.radius
+    }
+    if (typeof command.colorBall === 'string' && /^#[0-9a-fA-F]{6}$/.test(command.colorBall)) {
+      validatedCommand.colorBall = command.colorBall
+    }
+    if (typeof command.colorBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(command.colorBg)) {
+      validatedCommand.colorBg = command.colorBg
+    }
+
+    // Если нет валидных полей, выходим
+    if (Object.keys(validatedCommand).length === 0) {
+      return
+    }
+
+    // Используем только валидированные данные
+    command = validatedCommand
+    // ====================================
+
     // Вьювер и превью контроллера напрямую устанавливают позицию для интерполяции
     if (this.isViewer) {
-      if (typeof command.x === 'number') this.state.targetX = command.x
-      if (typeof command.y === 'number') this.state.targetY = command.y
+      if (command.x !== undefined) this.state.targetX = command.x
+      if (command.y !== undefined) this.state.targetY = command.y
 
       // Сохраняем скорость и время обновления для предикции
-      if (typeof command.vx === 'number') this.state.lastVx = command.vx
-      if (typeof command.vy === 'number') this.state.lastVy = command.vy
+      if (command.vx !== undefined) this.state.lastVx = command.vx
+      if (command.vy !== undefined) this.state.lastVy = command.vy
       this.lastServerUpdate = performance.now()
     } else {
       // Этот блок теперь выполняется только на сервере
@@ -424,15 +472,15 @@ class PhysicsEngine {
       this.reset()
     }
 
-    if (command.radius) {
+    if (command.radius !== undefined) {
       this.setBallSize(command.radius)
     }
 
-    if (command.colorBall) {
+    if (command.colorBall !== undefined) {
       this.setBallColor(command.colorBall)
     }
 
-    if (command.colorBg) {
+    if (command.colorBg !== undefined) {
       this.setBgColor(command.colorBg)
     }
   }
@@ -451,6 +499,17 @@ class PhysicsEngine {
       colorBg: this.colors.bg,
       paused: this.state.paused
     }
+  }
+
+  // Новый метод для принудительной установки состояния (для синхронизации с сервером)
+  setState(newState) {
+    if (!newState) return;
+    // Применяем только те поля, которые пришли от сервера, чтобы не затереть локальные вычисления
+    Object.keys(this.ball).forEach(key => {
+      if (newState[key] !== undefined) {
+        this.ball[key] = newState[key];
+      }
+    });
   }
 
   getCurrentSpeed () {
