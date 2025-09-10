@@ -253,7 +253,7 @@ class Tester {
     ];
 
     let allOk = true;
-    const TEST_TIMEOUT = 10000; // 10 секунд на тест
+    const TEST_TIMEOUT = Number.parseInt(process.env.TEST_TIMEOUT_MS || '10000', 10); // 10 секунд по умолчанию
 
     for (const test of tests) {
       this.log(`🚀 Запуск теста: ${test.name}`);
