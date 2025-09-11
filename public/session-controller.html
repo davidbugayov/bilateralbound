@@ -146,7 +146,7 @@
 
     .speed-labels {
       display: flex;
-      justify-content: space-between;
+      justify-content: space_between;
       align-items: center;
       width: 100%;
       max-width: 300px;
@@ -180,7 +180,7 @@
 
     @media (max-width: 768px) {
       .controls-grid { grid-template-columns: 1fr; }
-      .actions-grid { grid-template-columns: 1fr; }
+      .actions_grid { grid-template-columns: 1fr; }
       .segmented { flex-direction: column; }
       .segmented .seg-btn + .seg-btn { border-left: 0; border-top: 1px solid #1f2937; }
     }
@@ -318,13 +318,13 @@
   </div>
 
   <!-- SCRIPTS -->
-  <script src="/js/common.js"></script>
-  <script src="/js/physics-engine.js"></script>
-  <script src="/js/renderer.js"></script>
-  <script src="/js/shared-components.js"></script>
-  <script src="/js/websocket-client.js"></script>
-  <script src="/js/config.js"></script>
-  <script src="/js/controller.js"></script>
+  <script src="/js/common.js" defer></script>
+  <script src="/js/physics-engine.js" defer></script>
+  <script src="/js/renderer.js" defer></script>
+  <script src="/js/shared-components.js" defer></script>
+  <script src="/js/websocket-client.js" defer></script>
+  <script src="/js/config.js" defer></script>
+  <script src="/js/controller.js" defer></script>
 
   <script>
 </html>

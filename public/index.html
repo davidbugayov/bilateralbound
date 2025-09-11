@@ -60,9 +60,10 @@
   <meta name="twitter:alt-title" content="BilateralBound - Создать игровую сессию" />
   <meta name="twitter:alt-description" content="Создайте новую сессию для игры BilateralBound - интерактивной игры с управлением движением шарика в реальном времени" />
 
-  <!-- Preload only essential resources for main page -->
+  <!-- Preload and connection hints -->
   <link rel="preload" href="./js/common.js" as="script" />
   <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+  <link rel="preconnect" href="https://bilateralbound.onrender.com" crossorigin>
 
   <!-- Structured Data for SEO -->
   <script type="application/ld+json">
@@ -214,7 +215,7 @@
     }
   </style>
   <!-- Load only essential scripts for main page -->
-  <script src="./js/common.js"></script>
+  <script src="./js/common.js" defer></script>
 </head>
 <body>
   <div class="wrap">
@@ -308,6 +309,7 @@
         scripts.forEach(src => {
           const script = document.createElement('script');
           script.src = src;
+          script.defer = true;
           script.onload = () => {
             loadedCount++;
             if (loadedCount === totalScripts) {
