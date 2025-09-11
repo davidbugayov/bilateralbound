@@ -28,11 +28,24 @@ class BallRenderer {
     this.targetFrameTime = 1000 / 60 // 60 FPS для стабильности
     this.frameCount = 0
     this.fps = 60
+    this.actualFps = 60
+    this.frameTimeHistory = [] // История времен кадров для расчета реального FPS
+    this.adaptiveFrameRate = true // Адаптивная частота кадров
 
     this.onFrameCallback = null
     this.options = {
       localPhysics: false, // Флаг для локальной физики (для вьювера)
       ...options
+    }
+
+    // Применяем глобальную конфигурацию рендеринга
+    if (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.rendering) {
+      if (window.BBConfig.rendering.adaptiveFrameRate !== undefined) {
+        this.adaptiveFrameRate = window.BBConfig.rendering.adaptiveFrameRate
+      }
+      if (window.BBConfig.rendering.maxFrameTime) {
+        this.maxFrameTime = window.BBConfig.rendering.maxFrameTime
+      }
     }
 
     // Устанавливаем режим движка в зависимости от опции
@@ -118,8 +131,31 @@ class BallRenderer {
 
     // Ограничиваем deltaTime для предотвращения огромных прыжков (максимум 50ms для стабильности)
     const clampedDeltaTime = Math.min(deltaTime, 50)
-    
-    // Обновляем счетчик кадров для FPS
+
+    // Обновляем историю кадров для расчета реального FPS
+    this.frameTimeHistory.push(clampedDeltaTime)
+    if (this.frameTimeHistory.length > 60) { // Храним историю 60 кадров
+      this.frameTimeHistory.shift()
+    }
+
+    // Рассчитываем реальный FPS каждые 10 кадров
+    if (this.frameCount % 10 === 0 && this.frameTimeHistory.length > 10) {
+      const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
+      this.actualFps = Math.round(1000 / avgFrameTime)
+
+      // Адаптивная регулировка частоты кадров
+      if (this.adaptiveFrameRate) {
+        if (this.actualFps < 50 && this.targetFrameTime < 1000/30) {
+          // Если FPS низкий, снижаем целевую частоту до 30 FPS
+          this.targetFrameTime = 1000/30
+        } else if (this.actualFps > 55 && this.targetFrameTime > 1000/60) {
+          // Если FPS высокий, повышаем до 60 FPS
+          this.targetFrameTime = 1000/60
+        }
+      }
+    }
+
+    // Обновляем счетчик кадров
     this.frameCount++
 
     // Всегда обновляем физику с плавным deltaTime

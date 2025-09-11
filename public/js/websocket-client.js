@@ -12,13 +12,14 @@ class WebSocketClient {
       throw new Error('Valid role ("controller" or "viewer") is required for WebSocket connection')
     }
 
-    // Конфигурация с умолчаниями
+    // Конфигурация с умолчаниями - используем глобальную конфигурацию
+    const globalConfig = (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.network) || {}
     this.config = {
       isSecure: false,
-      maxReconnectAttempts: 5,
-      reconnectInterval: 3000,
-      heartbeatInterval: 25000, // Уменьшаем до 25с для надежности
-      messageTimeout: 5000,
+      maxReconnectAttempts: globalConfig.maxReconnectAttempts || 5,
+      reconnectInterval: globalConfig.reconnectDelay || 3000,
+      heartbeatInterval: globalConfig.heartbeatInterval || 25000,
+      messageTimeout: globalConfig.messageTimeout || 5000,
       ...options
     }
 

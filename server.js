@@ -17,7 +17,10 @@ const config = {
     PORT: process.env.PORT || 3000
   }),
   getRuntimeTuning: () => ({
-    DEAD_RECKON_EPS: Math.max(0, parseFloat(process.env.DEAD_RECKON_EPS || '0.5') || 0.5)
+    DEAD_RECKON_EPS: Math.max(0, parseFloat(process.env.DEAD_RECKON_EPS || '1.5') || 1.5), // Увеличиваем до 1.5px для снижения сетевой нагрузки
+    COMPRESSION_ENABLED: true,
+    MAX_UPDATE_RATE: 30, // Ограничиваем до 30 FPS для обновлений
+    STATE_COMPRESSION: true // Включаем сжатие состояния
   }),
   getCorsConfig: () => ({
     origins: [
@@ -382,14 +385,22 @@ class SessionManager {
         return false;
     }
 
-    // Throttling: Ограничиваем частоту обновлений
+    // Оптимизированный Throttling: Умное управление частотой обновлений
     const now = Date.now();
     const lastUpdate = session.lastStateUpdate || 0;
-    const throttleDelay = 50; // мс
+    const isDirectionChange = updates && (updates.dirX !== undefined || updates.dirY !== undefined);
+    const isPauseToggle = updates && (updates.paused !== undefined || updates.resume === true);
+    const isSpeedChange = updates && (updates.speed !== undefined);
+    const isColorChange = updates && (updates.colorBall !== undefined || updates.colorBg !== undefined);
 
-    const isDirectionChange = updates && (updates.dirX !== undefined || updates.dirY !== undefined)
-    const isPauseToggle = updates && (updates.paused !== undefined || updates.resume === true)
-    if (now - lastUpdate < throttleDelay && !updates.reset && !isDirectionChange && !isPauseToggle) { // Сброс/направление/пауза не ограничиваем
+    // Адаптивный throttle delay на основе типа изменений
+    let throttleDelay = 50; // базовый delay
+    if (isColorChange) throttleDelay = 200; // цвет меняется реже
+    if (isSpeedChange) throttleDelay = 100; // скорость тоже не часто
+    if (isDirectionChange) throttleDelay = 30; // направление важно
+    if (isPauseToggle) throttleDelay = 0; // пауза всегда важна
+
+    if (now - lastUpdate < throttleDelay && !updates.reset) {
         return false;
     }
 
@@ -537,22 +548,10 @@ class SessionManager {
         
         this.logger.logSession(sessionId, `[SET_SIZE] After: engine.options.worldWidth=${session.physicsEngine.options.worldWidth}, _worldSizeSet=${session.physicsEngine._worldSizeSet}`);
 
-        // Сохраняем текущее состояние перед центрированием
-        const currentState = session.physicsEngine.getState();
-        const currentSpeed = currentState.speed;
-        const currentVx = currentState.vx;
-        const currentVy = currentState.vy;
-        const currentPaused = currentState.paused;
-
-        // Центрируем мяч, но сохраняем скорость и направление
-        session.physicsEngine.ball.x = screenSize.width / 2;
-        session.physicsEngine.ball.y = screenSize.height / 2;
-        
-        // Восстанавливаем сохраненное состояние
-        session.physicsEngine.ball.speed = currentSpeed;
-        session.physicsEngine.ball.vx = currentVx;
-        session.physicsEngine.ball.vy = currentVy;
-        session.physicsEngine.state.paused = currentPaused;
+        session.physicsEngine.reset(); // Центрирует мяч и останавливает его
+        // НЕ устанавливаем принудительно paused: true - оставляем текущее состояние игры
+        // session.physicsEngine.setPaused(true);
+        // session.physicsEngine.setVelocity(0, 0);
         
         Object.assign(session.ballState, session.physicsEngine.getState()); // Синхронизируем состояние
         this.logger.logSession(sessionId, `Centered ball via PhysicsEngine for screen size ${screenSize.width}×${screenSize.height}`);
@@ -796,9 +795,18 @@ app.get('/api/session/:sessionId', (req, res) => {
   }
 })
 
-// Простой кэш для API ответов
+// Умный кэш для API ответов с разными TTL для разных типов данных
 const apiCache = new Map()
-const API_CACHE_TTL = 100 // 100ms - очень короткий TTL для realtime данных
+
+// Адаптивный TTL на основе типа данных
+const getAdaptiveTTL = (dataType) => {
+  switch(dataType) {
+    case 'session_info': return 1000; // информация о сессии - 1s
+    case 'viewer_status': return 500;  // статус вьювера - 500ms
+    case 'ball_state': return 50;      // состояние мяча - 50ms (для realtime)
+    default: return 100;
+  }
+};
 
 // Get ball state for viewer
 app.get('/api/session/:sessionId/state', (req, res) => {
@@ -806,9 +814,12 @@ app.get('/api/session/:sessionId/state', (req, res) => {
     const { sessionId } = req.params
     const cacheKey = `state_${sessionId}`
 
-    // Проверяем кэш
+    // Проверяем кэш с адаптивным TTL
     const cached = apiCache.get(cacheKey)
-    if (cached && Date.now() - cached.timestamp < API_CACHE_TTL) {
+    const adaptiveTTL = getAdaptiveTTL('ball_state')
+    if (cached && Date.now() - cached.timestamp < adaptiveTTL) {
+      // Добавляем заголовок кэша для отладки
+      res.set('X-Cache-Status', 'HIT')
       return res.json(cached.data)
     }
 
@@ -825,12 +836,14 @@ app.get('/api/session/:sessionId/state', (req, res) => {
       viewerScreenSize: session.viewerScreenSize
     }
 
-    // Кэшируем ответ
+    // Кэшируем ответ с timestamp
     apiCache.set(cacheKey, {
       data: responseData,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      type: 'ball_state'
     })
 
+    res.set('X-Cache-Status', 'MISS')
     res.json(responseData)
   } catch (error) {
     if (DEBUG_MODE) logger.error('Error getting ball state:', error)
@@ -1023,18 +1036,31 @@ setInterval(() => {
   sessionManager.cleanupExpiredSessions()
 }, 60000)
 
-// Очистка кэша каждые 5 минут
+// Умная очистка кэша каждые 2 минуты
 setInterval(() => {
   sessionManager.sessionRepository.cleanupCache()
 
-  // Очищаем API кэш от устаревших записей
+  // Очищаем API кэш от устаревших записей с учетом типа данных
   const now = Date.now()
+  const cacheStats = { total: 0, removed: 0, kept: 0 }
+
   for (const [key, cached] of apiCache) {
-    if (now - cached.timestamp > API_CACHE_TTL * 2) {
+    cacheStats.total++
+    const adaptiveTTL = getAdaptiveTTL(cached.type || 'default')
+    const maxAge = adaptiveTTL * 3 // Удаляем записи старше 3x TTL
+
+    if (now - cached.timestamp > maxAge) {
       apiCache.delete(key)
+      cacheStats.removed++
+    } else {
+      cacheStats.kept++
     }
   }
-}, 5 * 60 * 1000)
+
+  if (DEBUG_MODE && (cacheStats.removed > 0 || cacheStats.total > 10)) {
+    logger.info(`Cache cleanup: ${cacheStats.removed} removed, ${cacheStats.kept} kept, total: ${cacheStats.total}`)
+  }
+}, 2 * 60 * 1000) // Каждые 2 минуты
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
@@ -1056,3 +1082,4 @@ process.on('SIGINT', () => {
 })
 
 logger.info('BilateralBound HTTP-only server started successfully')
+

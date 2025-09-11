@@ -18,7 +18,7 @@
     "format": "prettier --write \"server.js\" \"public/js/*.js\" \"public/*.html\"",
     "test:full": "npm run test && npm run health-test",
     "test:automated": "node test/automated-tests.js",
-    "test:ui": "echo '❌ UI тесты отключены для стабильности'",
+    "test:ui": "node test/ui-tests.js",
     "test:basic": "node test.js basic",
     "test:sync": "node test.js sync",
     "test:quick": "node test.js quick",

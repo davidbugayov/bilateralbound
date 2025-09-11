@@ -13,15 +13,17 @@ class PhysicsEngine {
       ballRadius: 20,
       minSpeed: 50,
       maxSpeed: 1280,
-      lerpFactor: 0.1, // Плавная интерполяция скорости
-      positionLerpFactor: 0.02, // Плавная интерполяция позиции для превью
-      minLerpFactor: 0.01,      // Минимальный коэффициент интерполяции
-      maxLerpFactor: 0.25,      // Максимальный коэффициент интерполяции
-      smoothing: {              // Параметры пружинного сглаживания (viewer)
-        stiffness: 30,          // k
-        damping: 10,            // c
-        maxPredictSec: 0.25,    // максимум предикции
-        snapDistance: 2         // авто-снап к цели в пикселях
+      lerpFactor: 0.15, // Увеличиваем для более плавной интерполяции
+      positionLerpFactor: 0.08, // Увеличиваем для лучшей плавности
+      minLerpFactor: 0.05,      // Увеличиваем минимальный коэффициент
+      maxLerpFactor: 0.35,      // Увеличиваем максимальный коэффициент
+      adaptiveLerp: true,       // Включаем адаптивную интерполяцию
+      smoothing: {              // Оптимизированные параметры пружинного сглаживания
+        stiffness: 45,          // Увеличиваем для более быстрого отклика
+        damping: 15,            // Увеличиваем для лучшего демпфирования
+        maxPredictSec: 0.4,     // Увеличиваем время предикции
+        snapDistance: 3,        // Увеличиваем дистанцию авто-снапа
+        predictionEnabled: true // Включаем предикцию движения
       },
       bounceCallback: null,
       friction: 1.0, // Убираем трение для постоянного движения
@@ -33,6 +35,12 @@ class PhysicsEngine {
     if (typeof window !== 'undefined' && window.BBConfig) {
       if (window.BBConfig.smoothing) {
         this.options.smoothing = { ...this.options.smoothing, ...window.BBConfig.smoothing }
+      }
+      if (window.BBConfig.performance) {
+        // Применяем настройки производительности
+        if (window.BBConfig.performance.deadReckonEps) {
+          this.options.deadReckonEps = window.BBConfig.performance.deadReckonEps
+        }
       }
     }
 
@@ -230,7 +238,7 @@ class PhysicsEngine {
   }
 
   /**
-     * Продвинутая интерполяция для режима вьювера с предикцией движения
+     * Продвинутая адаптивная интерполяция для режима вьювера с предикцией движения
      */
   updateViewerInterpolation (deltaTime) {
     // При паузе ничего не интерполируем, оставляем текущую позицию
@@ -242,32 +250,50 @@ class PhysicsEngine {
     const currentTime = performance.now()
     const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
 
-    // Если прошло больше 100ms с момента последнего обновления сервера,
-    // используем предиктивную экстраполяцию
-    if (timeSinceLastUpdate > 100 && this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
-      // Предиктивная экстраполяция: продолжаем движение по последней известной траектории
-      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.25)
-      const predictedX = this.state.targetX + this.state.lastVx * predictTime
-      const predictedY = this.state.targetY + this.state.lastVy * predictTime
-      this._springTo(predictedX, predictedY, deltaTime)
-    } else {
-      // Плавное «пружинное» стремление к цели
-      this._springTo(this.state.targetX, this.state.targetY, deltaTime)
+    // Адаптивная логика интерполяции
+    let targetX = this.state.targetX
+    let targetY = this.state.targetY
+    let adaptiveStiffness = this.options.smoothing.stiffness
+    let adaptiveDamping = this.options.smoothing.damping
+
+    // Предиктивная экстраполяция для больших задержек
+    if (timeSinceLastUpdate > 120 && this.state.lastVx !== undefined && this.state.lastVy !== undefined && this.options.smoothing.predictionEnabled) {
+      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.4)
+      targetX = this.state.targetX + this.state.lastVx * predictTime
+      targetY = this.state.targetY + this.state.lastVy * predictTime
+
+      // Увеличиваем жесткость для предиктивного режима
+      adaptiveStiffness *= 1.3
+      adaptiveDamping *= 1.2
     }
 
-    // Корректируем позицию если она сильно отклонилась (защита от рассинхронизации)
-    const distance = this.sqrt((this.ball.x - this.state.targetX) ** 2 + (this.ball.y - this.state.targetY) ** 2)
-    if (distance > 50) { // Если отклонение больше 50px, резко корректируем
-      const correctionFactor = 0.3
-      this.ball.x += (this.state.targetX - this.ball.x) * correctionFactor
-      this.ball.y += (this.state.targetY - this.ball.y) * correctionFactor
+    // Адаптивная корректировка параметров на основе расстояния
+    const distance = this.sqrt((this.ball.x - targetX) ** 2 + (this.ball.y - targetY) ** 2)
+    if (distance > 30) {
+      // Для больших расстояний увеличиваем скорость сходимости
+      adaptiveStiffness *= 1.5
+      adaptiveDamping *= 0.8
+    } else if (distance < 5) {
+      // Для малых расстояний уменьшаем скорость для плавности
+      adaptiveStiffness *= 0.7
+      adaptiveDamping *= 1.3
+    }
+
+    // Плавное «пружинное» стремление к цели с адаптивными параметрами
+    this._springTo(targetX, targetY, deltaTime, adaptiveStiffness, adaptiveDamping)
+
+    // Улучшенная корректировка позиции при сильной рассинхронизации
+    if (distance > 80) { // Если отклонение больше 80px, резко корректируем
+      const correctionFactor = 0.4
+      this.ball.x += (targetX - this.ball.x) * correctionFactor
+      this.ball.y += (targetY - this.ball.y) * correctionFactor
     }
   }
 
-  // Критически демпфированная пружина для мягкого следования к цели
-  _springTo(targetX, targetY, deltaTime) {
-    const k = (this.options.smoothing && this.options.smoothing.stiffness) || 30
-    const c = (this.options.smoothing && this.options.smoothing.damping) || 10
+  // Критически демпфированная пружина для мягкого следования к цели с адаптивными параметрами
+  _springTo(targetX, targetY, deltaTime, adaptiveStiffness = null, adaptiveDamping = null) {
+    const k = adaptiveStiffness || (this.options.smoothing && this.options.smoothing.stiffness) || 45
+    const c = adaptiveDamping || (this.options.smoothing && this.options.smoothing.damping) || 15
 
     // Ускорение по «пружине»: a = k*(target - x) - c*v
     const ax = k * (targetX - this.ball.x) - c * this.state.smoothVx
