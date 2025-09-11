@@ -31,6 +31,7 @@ class BallRenderer {
     this.actualFps = 60
     this.frameTimeHistory = [] // История времен кадров для расчета реального FPS
     this.adaptiveFrameRate = true // Адаптивная частота кадров
+    this.maxFrameTime = 50 // Максимальное время кадра в ms
 
     this.onFrameCallback = null
     this.options = {
@@ -129,33 +130,34 @@ class BallRenderer {
 
     const deltaTime = currentTime - this.lastTime
 
-    // Ограничиваем deltaTime для предотвращения огромных прыжков (максимум 50ms для стабильности)
-    const clampedDeltaTime = Math.min(deltaTime, 50)
-
-    // Обновляем историю кадров для расчета реального FPS
-    this.frameTimeHistory.push(clampedDeltaTime)
-    if (this.frameTimeHistory.length > 60) { // Храним историю 60 кадров
-      this.frameTimeHistory.shift()
-    }
-
-    // Рассчитываем реальный FPS каждые 10 кадров
-    if (this.frameCount % 10 === 0 && this.frameTimeHistory.length > 10) {
-      const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
-      this.actualFps = Math.round(1000 / avgFrameTime)
-
-      // Адаптивная регулировка частоты кадров
-      if (this.adaptiveFrameRate) {
-        if (this.actualFps < 50 && this.targetFrameTime < 1000/30) {
-          // Если FPS низкий, снижаем целевую частоту до 30 FPS
-          this.targetFrameTime = 1000/30
-        } else if (this.actualFps > 55 && this.targetFrameTime > 1000/60) {
-          // Если FPS высокий, повышаем до 60 FPS
-          this.targetFrameTime = 1000/60
+    // Адаптивная регулировка FPS
+    if (this.adaptiveFrameRate) {
+        this.frameTimeHistory.push(deltaTime);
+        if (this.frameTimeHistory.length > 20) {
+            this.frameTimeHistory.shift();
         }
-      }
+        const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length;
+        this.actualFps = 1000 / avgFrameTime;
+
+        // Если производительность падает, снижаем целевой FPS
+        if (avgFrameTime > this.targetFrameTime * 1.2 && this.targetFrameTime < 1000 / 30) {
+            this.targetFrameTime *= 1.05; // Плавно снижаем до ~30 FPS
+        } else if (avgFrameTime < this.targetFrameTime * 0.8) {
+            this.targetFrameTime /= 1.05; // Плавно повышаем до 60 FPS
+        }
+        this.targetFrameTime = Math.max(1000 / 65, Math.min(1000 / 25, this.targetFrameTime));
     }
 
-    // Обновляем счетчик кадров
+
+    if (deltaTime < this.targetFrameTime) {
+        this.animationFrameId = requestAnimationFrame(this.renderLoop.bind(this))
+        return
+    }
+
+    // Ограничиваем deltaTime для предотвращения огромных прыжков
+    const clampedDeltaTime = Math.min(deltaTime, this.maxFrameTime);
+
+    // Обновляем счетчик кадров для FPS
     this.frameCount++
 
     // Всегда обновляем физику с плавным deltaTime

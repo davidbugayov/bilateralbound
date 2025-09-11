@@ -17,10 +17,7 @@ const config = {
     PORT: process.env.PORT || 3000
   }),
   getRuntimeTuning: () => ({
-    DEAD_RECKON_EPS: Math.max(0, parseFloat(process.env.DEAD_RECKON_EPS || '1.5') || 1.5), // Увеличиваем до 1.5px для снижения сетевой нагрузки
-    COMPRESSION_ENABLED: true,
-    MAX_UPDATE_RATE: 30, // Ограничиваем до 30 FPS для обновлений
-    STATE_COMPRESSION: true // Включаем сжатие состояния
+    DEAD_RECKON_EPS: Math.max(0, parseFloat(process.env.DEAD_RECKON_EPS || '1.5') || 1.5) // Увеличиваем до 1.5px для снижения сетевой нагрузки
   }),
   getCorsConfig: () => ({
     origins: [
