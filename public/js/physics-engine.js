@@ -13,16 +13,21 @@ class PhysicsEngine {
       ballRadius: 20,
       minSpeed: 50,
       maxSpeed: 1280,
-      lerpFactor: 0.15, // Увеличиваем для более плавной интерполяции
-      positionLerpFactor: 0.08, // Увеличиваем для лучшей плавности
-      minLerpFactor: 0.05,      // Увеличиваем минимальный коэффициент
-      maxLerpFactor: 0.35,      // Увеличиваем максимальный коэффициент
+      lerpFactor: 0.12, // Оптимизировано для плавности
+      positionLerpFactor: 0.06, // Оптимизировано для лучшей плавности
+      minLerpFactor: 0.03,      // Уменьшено для более плавного движения
+      maxLerpFactor: 0.25,      // Уменьшено для предотвращения рывков
       adaptiveLerp: true,       // Включаем адаптивную интерполяцию
+      frameRateCompensation: true, // Компенсация задержек кадров
       smoothing: {              // Оптимизированные параметры пружинного сглаживания
-        stiffness: 45,          // k - Увеличено для более быстрой реакции
-        damping: 15,            // c - Увеличено для лучшего гашения колебаний
-        maxPredictSec: 0.4,    // максимум предикции - Увеличено для лучшего сглаживания
-        snapDistance: 3         // авто-снап к цели в пикселях - Увеличено
+        stiffness: 25,          // k - Уменьшено для более плавного движения
+        damping: 12,            // c - Оптимизировано для критического демпфирования
+        maxPredictSec: 0.6,    // максимум предикции - Увеличено для лучшего сглаживания
+        snapDistance: 2,        // авто-снап к цели в пикселях - Уменьшено для точности
+        adaptiveStiffness: true, // Адаптивная жесткость в зависимости от скорости
+        minStiffness: 15,       // Минимальная жесткость для медленного движения
+        maxStiffness: 40,       // Максимальная жестность для быстрого движения
+        velocityThreshold: 200  // Порог скорости для переключения параметров
       },
       bounceCallback: null,
       friction: 1.0, // Убираем трение для постоянного движения
@@ -249,28 +254,50 @@ class PhysicsEngine {
     const currentTime = performance.now()
     const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
 
+    // Компенсация задержек кадров для более плавного движения
+    let compensatedDeltaTime = deltaTime
+    if (this.options.frameRateCompensation && deltaTime > 0.033) { // Если FPS < 30
+      compensatedDeltaTime = Math.min(deltaTime, 0.016) // Ограничиваем максимальный шаг
+    }
+
+    // Вычисляем текущую скорость движения для адаптивных параметров
+    const currentVelocity = Math.hypot(this.state.smoothVx, this.state.smoothVy)
+    const targetVelocity = Math.hypot(this.state.lastVx || 0, this.state.lastVy || 0)
+
+    // Адаптивные параметры пружины в зависимости от скорости
+    let stiffness, damping
+    if (this.options.smoothing.adaptiveStiffness && targetVelocity > 0) {
+      const velocityRatio = Math.min(currentVelocity / (this.options.smoothing.velocityThreshold || 200), 1)
+      stiffness = this.options.smoothing.minStiffness + 
+                 (this.options.smoothing.maxStiffness - this.options.smoothing.minStiffness) * velocityRatio
+      damping = stiffness * 0.48 // Критическое демпфирование для плавности
+    } else {
+      stiffness = this.options.smoothing.stiffness
+      damping = this.options.smoothing.damping
+    }
+
     // Если прошло больше 100ms с момента последнего обновления сервера,
     // используем предиктивную экстраполяцию
     if (timeSinceLastUpdate > 100 && this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
       // Предиктивная экстраполяция: продолжаем движение по последней известной траектории
-      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.4);
+      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.6);
       
       const predictedX = this.state.targetX + this.state.lastVx * predictTime;
       const predictedY = this.state.targetY + this.state.lastVy * predictTime;
 
-      // Используем пружину для плавного движения к предсказанной точке
-      this._springTo(predictedX, predictedY, deltaTime, 40, 12); // Используем более мягкие параметры для предикции
+      // Используем адаптивную пружину для плавного движения к предсказанной точке
+      this._springTo(predictedX, predictedY, compensatedDeltaTime, stiffness * 0.8, damping * 0.8); // Более мягкие параметры для предикции
 
     } else {
       // Стандартная интерполяция к последней известной позиции сервера
-      this._springTo(this.state.targetX, this.state.targetY, deltaTime);
+      this._springTo(this.state.targetX, this.state.targetY, compensatedDeltaTime, stiffness, damping);
     }
   }
 
   // Критически демпфированная пружина для мягкого следования к цели
-  _springTo(targetX, targetY, deltaTime) {
-    const k = (this.options.smoothing && this.options.smoothing.stiffness) || 45
-    const c = (this.options.smoothing && this.options.smoothing.damping) || 15
+  _springTo(targetX, targetY, deltaTime, customStiffness, customDamping) {
+    const k = customStiffness || (this.options.smoothing && this.options.smoothing.stiffness) || 25
+    const c = customDamping || (this.options.smoothing && this.options.smoothing.damping) || 12
 
     // Ускорение по «пружине»: a = k*(target - x) - c*v
     const ax = k * (targetX - this.ball.x) - c * this.state.smoothVx
@@ -509,8 +536,25 @@ class PhysicsEngine {
 
     // Вьювер и превью контроллера напрямую устанавливают позицию для интерполяции
     if (this.isViewer) {
-      if (command.x !== undefined) this.state.targetX = command.x
-      if (command.y !== undefined) this.state.targetY = command.y
+      // Плавное обновление целевой позиции для уменьшения резких скачков
+      if (command.x !== undefined) {
+        // Если мяч далеко от цели, используем более агрессивную интерполяцию
+        const distance = Math.abs(command.x - this.state.targetX)
+        if (distance > 50) {
+          this.state.targetX = command.x
+        } else {
+          // Плавное приближение к цели
+          this.state.targetX = this.state.targetX + (command.x - this.state.targetX) * 0.3
+        }
+      }
+      if (command.y !== undefined) {
+        const distance = Math.abs(command.y - this.state.targetY)
+        if (distance > 50) {
+          this.state.targetY = command.y
+        } else {
+          this.state.targetY = this.state.targetY + (command.y - this.state.targetY) * 0.3
+        }
+      }
 
       // Сохраняем скорость и время обновления для предикции
       if (command.vx !== undefined) this.state.lastVx = command.vx

@@ -246,6 +246,11 @@ class BallRenderer {
       this.beginPath()
       // Рисуем мяч с градиентом и переиспользуемой формой
       this.ctx.save()
+      
+      // Включаем сглаживание для более плавного рендеринга
+      this.ctx.imageSmoothingEnabled = true
+      this.ctx.imageSmoothingQuality = 'high'
+      
       this.ctx.translate(ball.x, ball.y)
       this.ctx.fillStyle = this._cached.gradient
       

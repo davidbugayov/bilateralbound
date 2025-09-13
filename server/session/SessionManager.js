@@ -2,6 +2,7 @@ const PhysicsEngine = require('../../public/js/physics-engine.js');
 const SessionRepository = require('./SessionRepository.js');
 const WebSocketManager = require('./WebSocketManager.js');
 const StateBroadcaster = require('./StateBroadcaster.js');
+const ValidationUtils = require('../utils/validation.js');
 const { logger, DEBUG_MODE } = require('../logger.js');
 const config = require('../config.js');
 
@@ -44,44 +45,20 @@ class SessionManager {
 
   updateBallState(sessionId, updates) {
     const session = this.sessionRepository.findById(sessionId);
-    if (!session) {
-        return false;
-    }
+    if (!session) return false;
 
     const now = Date.now();
     const lastUpdate = session.lastStateUpdate || 0;
-    const isDirectionChange = updates && (updates.dirX !== undefined || updates.dirY !== undefined);
-    const isPauseToggle = updates && (updates.paused !== undefined || updates.resume === true);
-    const isSpeedChange = updates && (updates.speed !== undefined);
-    const isColorChange = updates && (updates.colorBall !== undefined || updates.colorBg !== undefined);
-
-    let throttleDelay = 50;
-    if (isColorChange) throttleDelay = 200;
-    if (isSpeedChange) throttleDelay = 100;
-    if (isDirectionChange) throttleDelay = 30;
-    if (isPauseToggle) throttleDelay = 0;
-
-    if (now - lastUpdate < throttleDelay && !updates.reset) {
+    
+    // Упрощенное throttling
+    const throttleDelay = this._getThrottleDelay(updates);
+    if (now - lastUpdate < throttleDelay && !updates?.reset) {
         return false;
     }
 
-    this.logger.logSession(sessionId, `[VALIDATION] Processing updates: ${JSON.stringify(updates)}`);
-    const validatedUpdates = {};
-    if (updates) {
-        if (typeof updates.speed === 'number' && updates.speed >= 0 && updates.speed <= 100 && !isNaN(updates.speed)) validatedUpdates.speed = updates.speed;
-        if (typeof updates.radius === 'number' && updates.radius > 0 && updates.radius <= 1000 && !isNaN(updates.radius)) validatedUpdates.radius = updates.radius;
-        if (typeof updates.paused === 'boolean') validatedUpdates.paused = updates.paused;
-        if (typeof updates.dirX === 'number' && Math.abs(updates.dirX) <= 1 && !isNaN(updates.dirX)) validatedUpdates.dirX = updates.dirX;
-        if (typeof updates.dirY === 'number' && Math.abs(updates.dirY) <= 1 && !isNaN(updates.dirY)) validatedUpdates.dirY = updates.dirY;
-        if (typeof updates.colorBall === 'string' && /^#[0-9a-fA-F]{6}$/.test(updates.colorBall)) validatedUpdates.colorBall = updates.colorBall;
-        if (typeof updates.colorBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(updates.colorBg)) validatedUpdates.colorBg = updates.colorBg;
-        if (updates.reset === true) validatedUpdates.reset = true;
-        if (updates.resume === true) validatedUpdates.paused = false;
-        if (updates.pause === true) validatedUpdates.paused = true;
-    }
-
-    this.logger.logSession(sessionId, `[VALIDATION] Validated updates: ${JSON.stringify(validatedUpdates)}`);
-
+    // Используем централизованную валидацию
+    const validatedUpdates = ValidationUtils.validateBallStateUpdates(updates);
+    
     if (Object.keys(validatedUpdates).length === 0) {
         this.logger.logSession(sessionId, `[VALIDATION] No valid fields in update, ignoring`);
         return false;
@@ -93,7 +70,6 @@ class SessionManager {
     if (session.physicsEngine) {
         session.physicsEngine.applyCommand(validatedUpdates);
         Object.assign(session.ballState, session.physicsEngine.getState());
-        this.logger.logSession(sessionId, `[STATE SYNC] Applied ${Object.keys(validatedUpdates).length} updates`, 'debug');
     } else {
         this.sessionRepository.updateBallState(sessionId, validatedUpdates);
     }
@@ -102,6 +78,20 @@ class SessionManager {
     this.apiCache.delete(`state_${sessionId}`);
     this.stateBroadcaster.broadcastState(sessionId);
     return true;
+  }
+
+  /**
+   * Определяет задержку throttling в зависимости от типа обновления
+   */
+  _getThrottleDelay(updates) {
+    if (!updates) return 50;
+    
+    if (updates.colorBall !== undefined || updates.colorBg !== undefined) return 200;
+    if (updates.speed !== undefined) return 100;
+    if (updates.dirX !== undefined || updates.dirY !== undefined) return 30;
+    if (updates.paused !== undefined || updates.resume === true) return 0;
+    
+    return 50;
   }
 
   handleWebSocketConnection(ws, sessionId, role) {
@@ -138,29 +128,26 @@ class SessionManager {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
-    session.viewerScreenSize = screenSize
+    // Валидируем размеры экрана
+    const validatedSize = ValidationUtils.validateScreenSize(screenSize)
+    if (!validatedSize) return false
+
+    session.viewerScreenSize = validatedSize
 
     if (session.physicsEngine) {
-        this.logger.logSession(sessionId, `[SET_SIZE] Received screenSize: ${screenSize.width}x${screenSize.height}`);
-        this.logger.logSession(sessionId, `[SET_SIZE] Before: engine.options.worldWidth=${session.physicsEngine.options.worldWidth}, _worldSizeSet=${session.physicsEngine._worldSizeSet}`);
-        
-        session.physicsEngine.setWorldSize(screenSize.width, screenSize.height);
-        
-        this.logger.logSession(sessionId, `[SET_SIZE] After: engine.options.worldWidth=${session.physicsEngine.options.worldWidth}, _worldSizeSet=${session.physicsEngine._worldSizeSet}`);
-
+        session.physicsEngine.setWorldSize(validatedSize.width, validatedSize.height);
         session.physicsEngine.reset();
         Object.assign(session.ballState, session.physicsEngine.getState());
-        this.logger.logSession(sessionId, `Centered ball via PhysicsEngine for screen size ${screenSize.width}×${screenSize.height}`);
     } else {
-       session.ballState.x = screenSize.width / 2;
-       session.ballState.y = screenSize.height / 2;
+       session.ballState.x = validatedSize.width / 2;
+       session.ballState.y = validatedSize.height / 2;
        session.ballState.vx = 0;
        session.ballState.vy = 0;
     }
 
     this.stateBroadcaster.broadcastState(sessionId)
-    this.logger.logSession(sessionId, `Broadcasted state update after centering`)
 
+    // Отправляем начальное состояние контроллеру
     const clients = this.webSocketManager.getClients(sessionId);
     const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState;
     for (const { client, info } of clients) {
