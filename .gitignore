@@ -51,9 +51,6 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env
-
 # IDE files
 .vscode/
 .idea/
@@ -80,4 +77,7 @@ sshlt.pid
 
 # Render specific
 .render-buildlogs/
+
+# IMPORTANT: emdr-therapy/ directory should NEVER be deleted!
+# It contains professional EMDR therapy pages for couples
 
