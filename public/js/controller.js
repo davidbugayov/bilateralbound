@@ -563,20 +563,6 @@ function initializeComponents() {
   }
 }
 
-/**
- * Определяет оптимальную задержку обновления в зависимости от окружения
- */
-function getOptimalUpdateDelay() {
-  // Проверяем, работаем ли на продакшене (Render.com)
-  const isProduction = window.location.hostname.includes('onrender.com') || 
-                      window.location.hostname.includes('bilateralbound.onrender.com')
-  
-  if (isProduction) {
-    return 3000 // 3 секунды для продакшена чтобы избежать 429 ошибок
-  } else {
-    return 200 // 200ms для локальной разработки
-  }
-}
 
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 

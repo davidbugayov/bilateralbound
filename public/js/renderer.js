@@ -414,69 +414,6 @@ class BallRenderer {
     }
   }
 
-  /**
-     * Рендерит с дополнительными эффектами
-     */
-  renderWithEffects (effects = {}) {
-    // Основной рендеринг
-    this.render()
-
-    // Применяем дополнительные эффекты
-    if (effects.shadow) {
-      this.renderShadow()
-    }
-    if (effects.glow) {
-      this.renderGlow()
-    }
-    if (effects.trail) {
-      this.renderTrail()
-    }
-  }
-
-  /**
-     * Рендерит тень шарика
-     */
-  renderShadow () {
-    const ball = this.ball
-
-    this.ctx.save()
-    this.ctx.globalAlpha = 0.3
-    this.ctx.fillStyle = '#000000'
-    this.beginPath()
-    this.arc(ball.x + 2, ball.y + 2, ball.radius, 0, this.pi2)
-    this.fill()
-    this.ctx.restore()
-  }
-
-  /**
-     * Рендерит свечение шарика
-     */
-  renderGlow () {
-    const ball = this.ball
-
-    this.ctx.save()
-    this.ctx.shadowColor = this.colors.ball
-    this.ctx.shadowBlur = 20
-    this.ctx.fillStyle = this.colors.ball
-    this.beginPath()
-    this.arc(ball.x, ball.y, ball.radius, 0, this.pi2)
-    this.fill()
-    this.ctx.restore()
-  }
-
-  /**
-     * Рендерит след шарика
-     */
-  renderTrail () {
-    // Простая реализация следа
-    this.ctx.save()
-    this.ctx.globalAlpha = 0.1
-    this.ctx.fillStyle = this.colors.ball
-    this.beginPath()
-    this.arc(this.ball.x, this.ball.y, this.ball.radius * 1.5, 0, this.pi2)
-    this.fill()
-    this.ctx.restore()
-  }
 }
 
 // Экспортируем для использования

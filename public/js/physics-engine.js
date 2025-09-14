@@ -91,14 +91,6 @@ class PhysicsEngine {
     this.abs = Math.abs
   }
 
-  setOptions (opts = {}) {
-    if (!opts || typeof opts !== 'object') return
-    // Только известные поля
-    const allowed = ['worldWidth','worldHeight','ballRadius','minSpeed','maxSpeed','lerpFactor','positionLerpFactor']
-    for (const k of allowed) {
-      if (opts[k] !== undefined) this.options[k] = opts[k]
-    }
-  }
 
   setSmoothingOptions (opts = {}) {
     if (!opts || typeof opts !== 'object') return
@@ -668,30 +660,6 @@ class PhysicsEngine {
     this.state.targetY = this.centerY
   }
 
-  /**
-     * Устанавливает несколько параметров одновременно
-     */
-  setMultipleParams (params) {
-    if (params.worldSize) {
-      this.setWorldSize(params.worldSize.width, params.worldSize.height)
-    }
-    if (params.position) {
-      this.setPosition(params.position.x, params.position.y)
-    }
-    if (params.speed !== undefined) {
-      this.setSpeed(params.speed)
-    }
-    if (params.direction) {
-      this.setDirection(params.direction.x, params.direction.y)
-    }
-    if (params.radius !== undefined) {
-      this.ball.radius = params.radius
-    }
-    if (params.colors) {
-      if (params.colors.ball) this.colors.ball = params.colors.ball
-      if (params.colors.bg) this.colors.bg = params.colors.bg
-    }
-  }
 }
 
 // Экспортируем для использования
