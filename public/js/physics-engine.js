@@ -440,6 +440,14 @@ class PhysicsEngine {
         vy: this.ball.vy
       })
     }
+
+    // Дополнительно инициируем DOM-событие для счётчика пасов на стороне контроллера
+    try {
+      if (typeof window !== 'undefined') {
+        const ev = new CustomEvent('bb_bounce', { detail: { x: this.ball.x, y: this.ball.y } })
+        window.dispatchEvent(ev)
+      }
+    } catch (_) {}
   }
 
   /**

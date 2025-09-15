@@ -256,6 +256,23 @@
           <button onclick="copy('view')" class="copy-btn">📋 Копировать</button>
         </div>
       </div>
+      <div id="bbCounters" style="margin-top: 12px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; gap: 18px; align-items: center; background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 10px 14px;">
+          <div style="min-width: 110px; text-align: center;">
+            <div style="font-size: 20px; color: #e5e7eb; font-weight: 600;">Таймер</div>
+            <div id="bbTimer" style="font-size: 36px; font-weight: 700; color: #111827; background: #e5e7eb; padding: 2px 10px; border-radius: 8px;">0:00</div>
+          </div>
+          <div style="min-width: 90px; text-align: center;">
+            <div style="font-size: 20px; color: #e5e7eb; font-weight: 600;">Пасы</div>
+            <div id="bbPasses" style="font-size: 36px; font-weight: 700; color: #e5e7eb;">0</div>
+          </div>
+          <div style="min-width: 90px; text-align: center;">
+            <div style="font-size: 20px; color: #e5e7eb; font-weight: 600;">Сеты</div>
+            <div id="bbSets" style="font-size: 36px; font-weight: 700; color: #e5e7eb;">0</div>
+          </div>
+        </div>
+        <button id="bbResetBtn" class="btn outline" style="height: 44px; min-width: 90px;">Сброс</button>
+      </div>
     </div>
 
     <div id="previewWrap" style="display: none;" class="control-section floating-preview">

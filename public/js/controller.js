@@ -23,6 +23,8 @@ let isPlaying = false;
 let currentDirectionMode = 'horizontal';
 let wsClient;
 let isInitialized = false; // Флаг для предотвращения повторной инициализации
+let forcePauseUntilUserAction = false; // После ресайза вьювера игнорировать paused=false до нажатия Старт
+let __ignoreServerPausedUntilTs = 0; // Кратковременная блокировка переопределения isPlaying сервером
 
 // --- State ---
 let sessionId = null
@@ -37,10 +39,142 @@ if (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.renderin
 // --- Elements ---
 const previewCanvas = document.getElementById('preview')
 
+// ====== СЧЁТЧИКИ: таймер/пасы/сеты ======
+const bbCounters = {
+  timerMs: 0,
+  passes: 0,
+  sets: 0,
+  running: false,
+  lastTickTs: 0,
+  $timer: null,
+  $passes: null,
+  $sets: null,
+  _lastBounceTs: 0,
+  initDom() {
+    this.$timer = document.getElementById('bbTimer')
+    this.$passes = document.getElementById('bbPasses')
+    this.$sets = document.getElementById('bbSets')
+    const resetBtn = document.getElementById('bbResetBtn')
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => this.resetAll())
+    }
+    this.render()
+  },
+  start() {
+    this.running = true
+    this.lastTickTs = performance.now()
+  },
+  stop(incrementSet = false) {
+    this.tick(performance.now())
+    this.running = false
+    if (incrementSet) {
+      this.sets += 1
+    }
+    // По требованию: после Стоп таймер обнулять
+    this.timerMs = 0
+    this.render()
+  },
+  resetAll() {
+    this.timerMs = 0
+    this.passes = 0
+    this.sets = 0
+    this.render()
+  },
+  onBounce() {
+    if (!this.running) return
+    const now = performance.now()
+    if (now - this._lastBounceTs < 120) return
+    this._lastBounceTs = now
+    this.passes += 1
+    this.render()
+  },
+  tick(nowTs) {
+    if (!this.running) return
+    const dt = nowTs - this.lastTickTs
+    if (dt > 0) {
+      this.timerMs += dt
+      this.lastTickTs = nowTs
+      // не перерисовываем чаще 10/с
+      if (this._lastRenderTs === undefined || nowTs - this._lastRenderTs > 100) {
+        this._lastRenderTs = nowTs
+        this.render()
+      }
+    }
+  },
+  formatTime(ms) {
+    const totalSec = Math.floor(ms / 1000)
+    const m = Math.floor(totalSec / 60)
+    const s = totalSec % 60
+    return `${m}:${String(s).padStart(2, '0')}`
+  },
+  render() {
+    if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
+    if (this.$passes) this.$passes.textContent = String(this.passes)
+    if (this.$sets) this.$sets.textContent = String(this.sets)
+  }
+}
+
+// Детектор отскоков по серверным state_update (для подсчёта пасов)
+let __lastBounceTs = 0;
+let __lastVxSign = 0;
+let __lastVySign = 0;
+function detectAndCountBounceFromServer(prev, curr) {
+  try {
+    if (!prev || !curr) return;
+    if (!bbCounters.running) return;
+    const now = performance.now();
+    if (now - __lastBounceTs < 120) return; // защита от дабл‑триггера
+
+    const minSpeed = 10; // пикс/с, фильтр дрожания
+
+    const prevVx = typeof prev.vx === 'number' ? prev.vx : 0;
+    const prevVy = typeof prev.vy === 'number' ? prev.vy : 0;
+    const currVx = typeof curr.vx === 'number' ? curr.vx : 0;
+    const currVy = typeof curr.vy === 'number' ? curr.vy : 0;
+
+    // Восстанавливаем последние ненулевые знаки, чтобы переживать кадры с vx/vy=0
+    const prevSignX = Math.sign(prevVx);
+    const prevSignY = Math.sign(prevVy);
+    if (__lastVxSign === 0 && prevSignX !== 0) __lastVxSign = prevSignX;
+    if (__lastVySign === 0 && prevSignY !== 0) __lastVySign = prevSignY;
+
+    const currSignX = Math.sign(currVx);
+    const currSignY = Math.sign(currVy);
+
+    let bounced = false;
+
+    if (currSignX !== 0 && __lastVxSign !== 0 && currSignX !== __lastVxSign && Math.abs(currVx) > minSpeed) {
+      bounced = true;
+    }
+    if (currSignY !== 0 && __lastVySign !== 0 && currSignY !== __lastVySign && Math.abs(currVy) > minSpeed) {
+      bounced = true;
+    }
+
+    if (bounced) {
+      __lastBounceTs = now;
+      bbCounters.onBounce();
+    }
+
+    // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
+    if (currSignX !== 0) __lastVxSign = currSignX;
+    if (currSignY !== 0) __lastVySign = currSignY;
+  } catch {}
+}
+
 // 4. Остальная логика выполняется после полной загрузки страницы
 document.addEventListener('DOMContentLoaded', () => {
     // Тихая инициализация
     initializeController();
+    // Инициализируем DOM для счётчиков
+    bbCounters.initDom();
+
+    // При изменении размера окна контроллера — пересчитать превью по текущим размерам вьювера
+    window.addEventListener('resize', () => {
+        const size = window.__current && window.__current.viewerScreenSize;
+        if (size && size.width > 0 && size.height > 0) {
+            updatePreviewSize(size);
+        }
+    });
 });
 
 /**
@@ -249,6 +383,24 @@ function setupWebSocketEventHandlers(wsClient, logger) {
         }
         // Тихая обработка обновлений состояния
         lastServerState = state; // Кэшируем состояние
+        // Если пришли новые размеры экрана вьювера — обновим превью
+        if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
+            const prevSize = window.__current.viewerScreenSize || { width: 0, height: 0 };
+            const nextSize = state.viewerScreenSize;
+            const sizeChanged = !prevSize || prevSize.width !== nextSize.width || prevSize.height !== nextSize.height;
+
+            window.__current.viewerConnected = true;
+            window.__current.viewerScreenSize = nextSize;
+
+            if (sizeChanged) {
+                updatePreviewSize(nextSize);
+                updateViewerStatusUI();
+                // Только при реальном изменении размеров — переводим UI в паузу и ждём ручного старта
+                isPlaying = false;
+                forcePauseUntilUserAction = true;
+                updatePlayPauseButton();
+            }
+        }
         applyServerStateToPreview(state);
     })
 
@@ -283,6 +435,20 @@ function applyServerStateToPreview(state) {
     // }
     // Применяем состояние от сервера, чтобы обновить целевые координаты для интерполяции (в viewer-координатах)
     previewPhysicsEngine.applyCommand(state);
+
+    // Если пришло новое значение paused — синхронизируем таймеры
+    if (typeof state.paused === 'boolean') {
+        if (state.paused) {
+            bbCounters.stop(false);
+        } else {
+            bbCounters.start();
+        }
+    }
+
+    // Детект пасов на основе смены направления — на каждом апдейте состояния
+    if (lastServerState) {
+        detectAndCountBounceFromServer(lastServerState, state);
+    }
 }
 
 function renderPreviewLoop(timestamp) {
@@ -293,6 +459,9 @@ function renderPreviewLoop(timestamp) {
 
   const deltaTime = lastPreviewRenderTime > 0 ? (timestamp - lastPreviewRenderTime) / 1000 : 0;
   lastPreviewRenderTime = timestamp;
+
+  // Обновляем таймер счётчиков (в миллисекундах)
+  bbCounters.tick(timestamp);
 
   // Обновляем локальную симуляцию превью для интерполяции
   // Frame skipping: большие провалы делим на равные шаги по 16ms
@@ -449,10 +618,10 @@ async function handleInitializationError(error, logger) {
 
 function syncUIWithState(ballState) {
     try {
-        debugLog('🔄 Синхронизируем UI с состоянием от сервера', ballState)
+        // debugLog('🔄 Синхронизируем UI с состоянием от сервера', ballState)
 
         if (!ballState) {
-            debugWarn('syncUIWithState вызван с пустым состоянием.')
+            // debugWarn('syncUIWithState вызван с пустым состоянием.')
             return
         }
 
@@ -475,8 +644,19 @@ function syncUIWithState(ballState) {
             components.bgColor.setColor(ballState.colorBg)
         }
         if (ballState.paused !== undefined) {
-            debugLog(`🎮 Обновляем состояние игры: paused=${ballState.paused}, isPlaying будет=${!ballState.paused}`)
-            isPlaying = !ballState.paused
+            // Если только что был локальный клик Старт/Стоп — не даём серверу мгновенно
+            // перетянуть состояние кнопки обратно (оптимистичный UI)
+            const now = performance.now();
+            if (now < __ignoreServerPausedUntilTs) {
+                // Но всё равно обновим предупреждающе фон кнопки, если рассинхрон
+                updatePlayPauseButton();
+                return;
+            }
+            // Если стоит принудительная пауза (после ресайза), игнорируем paused=false,
+            // пока пользователь явно не нажмёт «Старт»
+            const effectivePaused = forcePauseUntilUserAction ? true : ballState.paused
+            // debugLog(`🎮 Обновляем состояние игры: paused=${ballState.paused} (effective=${effectivePaused}), isPlaying будет=${!effectivePaused}`)
+            isPlaying = !effectivePaused
             updatePlayPauseButton()
         }
 
@@ -493,7 +673,7 @@ function syncUIWithState(ballState) {
             updateDirectionDisplay(ballState.dirX, ballState.dirY)
         }
 
-        debugLog('✅ UI синхронизирован')
+        // debugLog('✅ UI синхронизирован')
     } catch (error) {
         debugError('Ошибка при синхронизации UI:', error)
     }
@@ -566,6 +746,14 @@ function initializeComponents() {
 
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 
+function safeSend(type, payload) {
+  try {
+    if (wsClient && typeof wsClient.send === 'function') {
+      wsClient.send(type, payload);
+    }
+  } catch (_) {}
+}
+
 async function updateSpeed(speed) {
   try {
     // Оптимизация: меньше обновлений когда нет вьювера
@@ -620,6 +808,8 @@ async function initializePreview() {
         previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' });
         // Включаем режим зрителя для корректной интерполяции
         previewPhysicsEngine.isViewer = true;
+        // Считаем пасы по локальным событиям отскока
+        window.addEventListener('bb_bounce', () => bbCounters.onBounce());
         // Применяем глобальные настройки сглаживания, если есть
         if (window.BBConfig && window.BBConfig.smoothing) {
             previewPhysicsEngine.setSmoothingOptions(window.BBConfig.smoothing);
@@ -759,7 +949,7 @@ function setDir(mode){
   updateDirectionDisplay(dx, dy)
 
   // Отправляем команду изменения направления через WebSocket
-  wsClient.send('controller_update', {
+  safeSend('controller_update', {
     dirX: dx,
     dirY: dy,
     resume: true // Если мяч движется, сразу меняем направление
@@ -795,7 +985,7 @@ function setDirection(mode) {
     updateDirectionButtons() // Обновляем выделение кнопок
 
     // Отправляем команду на сервер (только установка направления, без запуска движения)
-    wsClient.send('controller_update', {
+    safeSend('controller_update', {
         dirX: dx,
         dirY: dy
     })
@@ -809,7 +999,7 @@ function setDirFromDirection(direction) {
   directionState = { dx, dy }
   updateDirectionDisplay(dx, dy)
 
-  wsClient.send('controller_update', { dirX: dx, dirY: dy })
+  safeSend('controller_update', { dirX: dx, dirY: dy })
 }
 
 function updateDirectionDisplay(dx, dy) {
@@ -831,7 +1021,7 @@ function updateDirectionDisplay(dx, dy) {
 function resetCenter(){
   debugLog('🎯 Центрирование мяча...')
   // Отправляем команду на сервер
-  wsClient.send('controller_update', { reset: true })
+  safeSend('controller_update', { reset: true })
 
   // И немедленно центрируем мяч в локальном превью для мгновенной обратной связи
   if (previewPhysicsEngine && previewCanvas && window.__current.viewerScreenSize) {
@@ -893,7 +1083,7 @@ function setBallColor(color) {
     // Тихо пропускаем обновление цвета мяча
     return
   }
-  wsClient.send('controller_update', { colorBall: color })
+  safeSend('controller_update', { colorBall: color })
 }
 
 function setBgColor(color) {
@@ -902,7 +1092,7 @@ function setBgColor(color) {
     // Тихо пропускаем обновление цвета фона
     return
   }
-  wsClient.send('controller_update', { colorBg: color })
+  safeSend('controller_update', { colorBg: color })
 }
 
 function setBallSize(size) {
@@ -911,7 +1101,7 @@ function setBallSize(size) {
     // Тихо пропускаем обновление размера мяча
     return
   }
-  wsClient.send('controller_update', { radius: size })
+  safeSend('controller_update', { radius: size })
 }
 
 // ===== ФУНКЦИИ ВОСПРОИЗВЕДЕНИЯ =====
@@ -929,7 +1119,6 @@ function updatePlayPauseButton() {
   const button = document.getElementById('playPauseBtn')
   if (!button) return
 
-  debugLog(`🎮 Обновляем кнопку: isPlaying=${isPlaying}`)
   if (isPlaying) {
     button.textContent = '⏸ Стоп'
     button.style.background = '#f59e0b'
@@ -945,9 +1134,16 @@ function togglePlayPause(){
   if (isPlaying) {
     // Останавливаем игру
     payload.paused = true;
-    wsClient.send('controller_update', { paused: true });
+    safeSend('controller_update', { paused: true });
     isPlaying = false;
-    debugLog('⏸ Игра остановлена через WS');
+    updatePlayPauseButton(); // мгновенный отклик UI
+    // При остановке увеличиваем сет
+    bbCounters.stop(true);
+    // Не позволяем серверному paused мгновенно вернуть кнопку в Старт/Стоп некорректно
+    __ignoreServerPausedUntilTs = performance.now() + 800;
+    // Двойная фиксация UI после возможных синхронных апдейтов
+    setTimeout(updatePlayPauseButton, 0);
+    setTimeout(updatePlayPauseButton, 300);
   } else {
     // Запускаем игру
     let currentDirection = directionState || { dx: 1, dy: 0 };
@@ -962,16 +1158,29 @@ function togglePlayPause(){
       speed: components.speed ? components.speed.getSpeed() : 40
     });
 
-    wsClient.send('controller_update', payload);
+    safeSend('controller_update', payload);
     isPlaying = true;
-    debugLog('▶️ Игра запущена через WS');
+    updatePlayPauseButton(); // мгновенный отклик UI
+    // Запускаем таймер
+    bbCounters.start();
+    __ignoreServerPausedUntilTs = performance.now() + 800;
+    setTimeout(updatePlayPauseButton, 0);
+    setTimeout(updatePlayPauseButton, 300);
   }
 
   // Немедленно применяем команду к локальному движку для мгновенной реакции
   if (previewPhysicsEngine) {
     previewPhysicsEngine.applyCommand(payload);
   }
+  // Пользователь явно нажал кнопку — снимаем принудительную паузу
+  if (!isPlaying) {
+    // сейчас мы перешли в режим паузы
+  } else {
+    // режим «Старт» — больше не блокируем paused=false от сервера
+    forcePauseUntilUserAction = false;
+  }
 
+  // Финальное подтверждение состояния на кнопке
   updatePlayPauseButton();
 }
 
