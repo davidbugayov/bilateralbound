@@ -17,7 +17,6 @@ window.__previewScale = 1; // Коэффициент масштабирован�
 // 3. Глобальные переменные для логики контроллера
 let components = {};
 let lastServerState = null; // Кэшируем последнее состояние от сервера
-let speedManager;
 let directionState = { dx: 1, dy: 0 };
 let isPlaying = false;
 let currentDirectionMode = 'horizontal';
@@ -27,8 +26,7 @@ let forcePauseUntilUserAction = false; // После ресайза вьювер
 let __ignoreServerPausedUntilTs = 0; // Кратковременная блокировка переопределения isPlaying сервером
 
 // --- State ---
-let sessionId = null
-let ws = null
+// Удалены неиспользуемые sessionId, ws, speedManager
 let previewPhysicsEngine = null; // Локальный движок физики для превью
 let lastPreviewRenderTime = 0;
 let hiddenThrottleMs = 100; // при скрытой вкладке обновляем ~10 FPS
@@ -733,14 +731,7 @@ function initializeComponents() {
     }
   )
 
-  // Инициализируем менеджер скорости
-  speedManager = {
-    lastUpdateTime: 0,
-    updateDelay: 200, // Фиксированная задержка для локальной разработки
-    getCurrentSpeed: function() {
-      return components.speed ? components.speed.getSpeed() : 40
-    }
-  }
+  // Менеджер скорости не требуется: используем components.speed.getSpeed()
 }
 
 
