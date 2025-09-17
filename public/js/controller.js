@@ -2,7 +2,7 @@
  * Controller - Логика управления сессией BilateralBound
  * Современная модульная архитектура с улучшенной обработкой ошибок
  */
-
+/* global WebSocketClient, PhysicsEngine, BallRenderer, sharedComponents, debugLog, debugError, throttle */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 window.__current = {
     sessionId: null,
