@@ -504,40 +504,19 @@ function updateConnectionStatus (isConnected) {
  * Показ уведомления об ошибке
  */
 function showErrorNotification (message) {
-  // Создаем временное уведомление
-  const notification = document.createElement('div')
-  notification.className = 'error-notification'
-  notification.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ef4444;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 10000;
-            max-width: 300px;
-        ">
-            <strong>Ошибка:</strong> ${message}
-            <button onclick="this.parentElement.remove()" style="
-                float: right;
-                background: none;
-                border: none;
-                color: white;
-                font-size: 18px;
-                cursor: pointer;
-                margin-left: 10px;
-            ">×</button>
-        </div>
-    `
-  document.body.appendChild(notification)
+  const wrapper = document.createElement('div')
+  wrapper.className = 'bb-toast'
+  wrapper.innerHTML = `
+    <div class="bb-toast__content">
+      <strong>Ошибка:</strong> <span>${message}</span>
+      <button class="bb-toast__close" aria-label="Close" onclick="this.closest('.bb-toast').remove()">×</button>
+    </div>
+  `
+  document.body.appendChild(wrapper)
 
-  // Автоматическое удаление через 5 секунд
   setTimeout(() => {
-    if (notification.parentElement) {
-      notification.remove()
+    if (wrapper.parentElement) {
+      wrapper.remove()
     }
   }, 5000)
 }
