@@ -26,7 +26,6 @@ let forcePauseUntilUserAction = false; // После ресайза вьювер
 let __ignoreServerPausedUntilTs = 0; // Кратковременная блокировка переопределения isPlaying сервером
 
 // --- State ---
-// Удалены неиспользуемые sessionId, ws, speedManager
 let previewPhysicsEngine = null; // Локальный движок физики для превью
 let lastPreviewRenderTime = 0;
 let hiddenThrottleMs = 100; // при скрытой вкладке обновляем ~10 FPS
@@ -731,7 +730,7 @@ function initializeComponents() {
     }
   )
 
-  // Менеджер скорости не требуется: используем components.speed.getSpeed()
+  
 }
 
 
