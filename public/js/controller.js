@@ -346,7 +346,7 @@ function setupWebSocketEventHandlers (wsClient, logger) {
     updateViewerStatusUI()
   })
 
-  wsClient.on('initial_state', (state) => {
+  wsClient.on(WS_MSG.initialState, (state) => {
     logger.info('Получено начальное состояние', state)
     lastServerState = state // Кэшируем состояние
 
@@ -373,7 +373,7 @@ function setupWebSocketEventHandlers (wsClient, logger) {
   })
 
   // Включаем обратно: превью теперь "глупый" рендерер состояния сервера
-  wsClient.on('state_update', (state) => {
+  wsClient.on(WS_MSG.stateUpdate, (state) => {
     // Игнорируем обновления и логи, пока вьювер не подключится.
     if (!window.__current.viewerConnected) {
       return
@@ -728,7 +728,7 @@ async function updateSpeed (speed) {
       return
     }
 
-    await wsClient.send('controller_update', { speed })
+    await wsClient.send(WS_MSG.controllerUpdate, { speed })
     debugLog('✅ Скорость обновлена через WebSocket:', speed)
   } catch (error) {
     debugError('Ошибка при обновлении скорости:', error)
@@ -913,7 +913,7 @@ function setDir (mode) {
   updateDirectionDisplay(dx, dy)
 
   // Отправляем команду изменения направления через WebSocket
-  safeSend('controller_update', {
+  safeSend(WS_MSG.controllerUpdate, {
     dirX: dx,
     dirY: dy,
     resume: true // Если мяч движется, сразу меняем направление
@@ -949,7 +949,7 @@ function setDirection (mode) {
   updateDirectionButtons() // Обновляем выделение кнопок
 
   // Отправляем команду на сервер (только установка направления, без запуска движения)
-  safeSend('controller_update', {
+  safeSend(WS_MSG.controllerUpdate, {
     dirX: dx,
     dirY: dy
   })
@@ -963,7 +963,7 @@ function setDirFromDirection (direction) {
   directionState = { dx, dy }
   updateDirectionDisplay(dx, dy)
 
-  safeSend('controller_update', { dirX: dx, dirY: dy })
+  safeSend(WS_MSG.controllerUpdate, { dirX: dx, dirY: dy })
 }
 
 function updateDirectionDisplay (dx, dy) {
@@ -985,7 +985,7 @@ function updateDirectionDisplay (dx, dy) {
 function resetCenter () {
   debugLog('🎯 Центрирование мяча...')
   // Отправляем команду на сервер
-  safeSend('controller_update', { reset: true })
+  safeSend(WS_MSG.controllerUpdate, { reset: true })
 
   // И немедленно центрируем мяч в локальном превью для мгновенной обратной связи
   if (previewPhysicsEngine && previewCanvas && window.__current.viewerScreenSize) {
@@ -1046,7 +1046,7 @@ function setBallColor (color) {
     // Тихо пропускаем обновление цвета мяча
     return
   }
-  safeSend('controller_update', { colorBall: color })
+  safeSend(WS_MSG.controllerUpdate, { colorBall: color })
 }
 
 function setBgColor (color) {
@@ -1055,7 +1055,7 @@ function setBgColor (color) {
     // Тихо пропускаем обновление цвета фона
     return
   }
-  safeSend('controller_update', { colorBg: color })
+  safeSend(WS_MSG.controllerUpdate, { colorBg: color })
 }
 
 function setBallSize (size) {
@@ -1064,7 +1064,7 @@ function setBallSize (size) {
     // Тихо пропускаем обновление размера мяча
     return
   }
-  safeSend('controller_update', { radius: size })
+  safeSend(WS_MSG.controllerUpdate, { radius: size })
 }
 
 // ===== ФУНКЦИИ ВОСПРОИЗВЕДЕНИЯ =====
@@ -1097,7 +1097,7 @@ function togglePlayPause () {
   if (isPlaying) {
     // Останавливаем игру
     payload.paused = true
-    safeSend('controller_update', { paused: true })
+    safeSend(WS_MSG.controllerUpdate, { paused: true })
     isPlaying = false
     updatePlayPauseButton() // мгновенный отклик UI
     // При остановке увеличиваем сет

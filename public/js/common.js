@@ -59,4 +59,13 @@ if (typeof window !== 'undefined') {
   window.getSessionIdFromUrl = getSessionIdFromUrl
   window.toggleFullscreen = toggleFullscreen
   window.throttle = throttle
+  // Единые типы WS-сообщений (без изменения логики)
+  window.WS_MSG = Object.freeze({
+    controllerUpdate: 'controller_update',
+    heartbeat: 'heartbeat',
+    initialState: 'initial_state',
+    stateUpdate: 'state_update',
+    viewerStatus: 'viewer_status',
+    netMetrics: 'net_metrics'
+  })
 }
