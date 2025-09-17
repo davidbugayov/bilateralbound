@@ -262,6 +262,8 @@ export class OptimizedRenderer extends BallRenderer {
 
 Статус: [ ] Не выполнено
 
+— 17.09.2025: Выполнена безопасная микро‑оптимизация `BallRenderer.renderLoop` — удалены лишние `.bind(this)` при `requestAnimationFrame`, так как метод уже бинден в `start()`. Логика, дизайн и синхронизация не изменены.
+
 ### 🧪 Улучшение тестирования
 
 #### 1. Покрытие кода

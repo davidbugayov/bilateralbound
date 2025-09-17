@@ -150,7 +150,7 @@ class BallRenderer {
 
 
     if (deltaTime < this.targetFrameTime) {
-        this.animationFrameId = requestAnimationFrame(this.renderLoop.bind(this))
+        this.animationFrameId = requestAnimationFrame(this.renderLoop)
         return
     }
 
@@ -180,7 +180,7 @@ class BallRenderer {
       return
     }
 
-    this.animationFrameId = requestAnimationFrame((timestamp) => this.renderLoop(timestamp))
+    this.animationFrameId = requestAnimationFrame(this.renderLoop)
   };
 
   /**
