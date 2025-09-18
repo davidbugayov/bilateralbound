@@ -1,5 +1,5 @@
-(function(){
-  if (typeof window === 'undefined') return;
+(function () {
+  if (typeof window === 'undefined') return
   window.BBConfig = window.BBConfig || {
     rendering: {
       hiddenThrottleMs: 100, // при скрытой вкладке ~10 FPS
@@ -24,5 +24,5 @@
       throttleDelay: 50, // Базовая задержка throttling
       adaptiveThrottling: true // Адаптивное throttling
     }
-  };
-})();
+  }
+})()

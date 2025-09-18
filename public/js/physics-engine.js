@@ -15,19 +15,19 @@ class PhysicsEngine {
       maxSpeed: 1280,
       lerpFactor: 0.12, // Оптимизировано для плавности
       positionLerpFactor: 0.06, // Оптимизировано для лучшей плавности
-      minLerpFactor: 0.03,      // Уменьшено для более плавного движения
-      maxLerpFactor: 0.25,      // Уменьшено для предотвращения рывков
-      adaptiveLerp: true,       // Включаем адаптивную интерполяцию
+      minLerpFactor: 0.03, // Уменьшено для более плавного движения
+      maxLerpFactor: 0.25, // Уменьшено для предотвращения рывков
+      adaptiveLerp: true, // Включаем адаптивную интерполяцию
       frameRateCompensation: true, // Компенсация задержек кадров
-      smoothing: {              // Оптимизированные параметры пружинного сглаживания
-        stiffness: 25,          // k - Уменьшено для более плавного движения
-        damping: 12,            // c - Оптимизировано для критического демпфирования
-        maxPredictSec: 0.6,    // максимум предикции - Увеличено для лучшего сглаживания
-        snapDistance: 2,        // авто-снап к цели в пикселях - Уменьшено для точности
+      smoothing: { // Оптимизированные параметры пружинного сглаживания
+        stiffness: 25, // k - Уменьшено для более плавного движения
+        damping: 12, // c - Оптимизировано для критического демпфирования
+        maxPredictSec: 0.6, // максимум предикции - Увеличено для лучшего сглаживания
+        snapDistance: 2, // авто-снап к цели в пикселях - Уменьшено для точности
         adaptiveStiffness: true, // Адаптивная жесткость в зависимости от скорости
-        minStiffness: 15,       // Минимальная жесткость для медленного движения
-        maxStiffness: 40,       // Максимальная жестность для быстрого движения
-        velocityThreshold: 200  // Порог скорости для переключения параметров
+        minStiffness: 15, // Минимальная жесткость для медленного движения
+        maxStiffness: 40, // Максимальная жестность для быстрого движения
+        velocityThreshold: 200 // Порог скорости для переключения параметров
       },
       bounceCallback: null,
       friction: 1.0, // Убираем трение для постоянного движения
@@ -90,7 +90,6 @@ class PhysicsEngine {
     this.max = Math.max
     this.abs = Math.abs
   }
-
 
   setSmoothingOptions (opts = {}) {
     if (!opts || typeof opts !== 'object') return
@@ -260,7 +259,7 @@ class PhysicsEngine {
     let stiffness, damping
     if (this.options.smoothing.adaptiveStiffness && targetVelocity > 0) {
       const velocityRatio = Math.min(currentVelocity / (this.options.smoothing.velocityThreshold || 200), 1)
-      stiffness = this.options.smoothing.minStiffness + 
+      stiffness = this.options.smoothing.minStiffness +
                  (this.options.smoothing.maxStiffness - this.options.smoothing.minStiffness) * velocityRatio
       damping = stiffness * 0.48 // Критическое демпфирование для плавности
     } else {
@@ -272,22 +271,21 @@ class PhysicsEngine {
     // используем предиктивную экстраполяцию
     if (timeSinceLastUpdate > 100 && this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
       // Предиктивная экстраполяция: продолжаем движение по последней известной траектории
-      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.6);
-      
-      const predictedX = this.state.targetX + this.state.lastVx * predictTime;
-      const predictedY = this.state.targetY + this.state.lastVy * predictTime;
+      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.6)
+
+      const predictedX = this.state.targetX + this.state.lastVx * predictTime
+      const predictedY = this.state.targetY + this.state.lastVy * predictTime
 
       // Используем адаптивную пружину для плавного движения к предсказанной точке
-      this._springTo(predictedX, predictedY, compensatedDeltaTime, stiffness * 0.8, damping * 0.8); // Более мягкие параметры для предикции
-
+      this._springTo(predictedX, predictedY, compensatedDeltaTime, stiffness * 0.8, damping * 0.8) // Более мягкие параметры для предикции
     } else {
       // Стандартная интерполяция к последней известной позиции сервера
-      this._springTo(this.state.targetX, this.state.targetY, compensatedDeltaTime, stiffness, damping);
+      this._springTo(this.state.targetX, this.state.targetY, compensatedDeltaTime, stiffness, damping)
     }
   }
 
   // Критически демпфированная пружина для мягкого следования к цели
-  _springTo(targetX, targetY, deltaTime, customStiffness, customDamping) {
+  _springTo (targetX, targetY, deltaTime, customStiffness, customDamping) {
     const k = customStiffness || (this.options.smoothing && this.options.smoothing.stiffness) || 25
     const c = customDamping || (this.options.smoothing && this.options.smoothing.damping) || 12
 
@@ -330,19 +328,19 @@ class PhysicsEngine {
     }
 
     // Для сервера используем полную физику с отскоками
-    this.updateServerPhysics(deltaTime);
+    this.updateServerPhysics(deltaTime)
   }
 
   /**
    * Обновляет серверную физику с полной обработкой отскоков
    */
-  updateServerPhysics(deltaTime) {
+  updateServerPhysics (deltaTime) {
     if (this.state.paused) return
 
     // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
     // Не обновляем физику, пока размеры мира не будут явно установлены
     if (!this._worldSizeSet) {
-      return;
+      return
     }
 
     // Пересчитываем скорость напрямую из направления и процента скорости
@@ -362,13 +360,13 @@ class PhysicsEngine {
   /**
    * Обновляет локальную физику для превью
    */
-  updateLocalPhysics(deltaTime) {
+  updateLocalPhysics (deltaTime) {
     if (this.state.paused) return
 
     // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
     // Не обновляем физику, пока размеры мира не будут явно установлены
     if (!this._worldSizeSet) {
-        return;
+      return
     }
 
     // Пересчитываем скорость напрямую из направления и процента скорости
@@ -614,14 +612,14 @@ class PhysicsEngine {
   }
 
   // Новый метод для принудительной установки состояния (для синхронизации с сервером)
-  setState(newState) {
-    if (!newState) return;
+  setState (newState) {
+    if (!newState) return
     // Применяем только те поля, которые пришли от сервера, чтобы не затереть локальные вычисления
     Object.keys(this.ball).forEach(key => {
       if (newState[key] !== undefined) {
-        this.ball[key] = newState[key];
+        this.ball[key] = newState[key]
       }
-    });
+    })
   }
 
   getCurrentSpeed () {
@@ -667,7 +665,6 @@ class PhysicsEngine {
     this.state.targetX = this.centerX
     this.state.targetY = this.centerY
   }
-
 }
 
 // Экспортируем для использования

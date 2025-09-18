@@ -1,100 +1,100 @@
-const PhysicsEngine = require('../../public/js/physics-engine.js');
-const SessionRepository = require('./SessionRepository.js');
-const WebSocketManager = require('./WebSocketManager.js');
-const StateBroadcaster = require('./StateBroadcaster.js');
-const ValidationUtils = require('../utils/validation.js');
-const { logger, DEBUG_MODE } = require('../logger.js');
-const config = require('../config.js');
+const PhysicsEngine = require('../../public/js/physics-engine.js')
+const SessionRepository = require('./SessionRepository.js')
+const WebSocketManager = require('./WebSocketManager.js')
+const StateBroadcaster = require('./StateBroadcaster.js')
+const ValidationUtils = require('../utils/validation.js')
+const { logger, DEBUG_MODE } = require('../logger.js')
+const config = require('../config.js')
 
 // Основной оркестратор сессий
 class SessionManager {
-  constructor(apiCache) {
+  constructor (apiCache) {
     this.sessionRepository = new SessionRepository()
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
     this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
     this.physicsInterval = 1000 / 60 // ~60 FPS
-    this.apiCache = apiCache; // Получаем ссылку на кэш API
+    this.apiCache = apiCache // Получаем ссылку на кэш API
     this.logger = {
       ...logger,
       logSession: (sessionId, msg, level = 'info') => {
         // Оптимизированное логирование - только для отладки
-        if (DEBUG_MODE && level === 'debug') console.log(`[SESSION:${sessionId}] ${msg}`);
+        if (DEBUG_MODE && level === 'debug') console.log(`[SESSION:${sessionId}] ${msg}`)
       }
-    };
+    }
   }
 
-  createSession(ballState = {}) {
+  createSession (ballState = {}) {
     const session = this.sessionRepository.create({ ballState })
-    
+
     session.physicsEngine = new PhysicsEngine({
-        ballRadius: session.ballState.radius || 20,
-        maxSpeed: 1000
-    });
-    const engineState = session.physicsEngine.getState();
-    Object.assign(session.ballState, engineState);
-    session.ballState.paused = true;
-    session.physicsEngine.setPaused(true);
+      ballRadius: session.ballState.radius || 20,
+      maxSpeed: 1000
+    })
+    const engineState = session.physicsEngine.getState()
+    Object.assign(session.ballState, engineState)
+    session.ballState.paused = true
+    session.physicsEngine.setPaused(true)
 
     this.startPhysics(session.id)
     return session
   }
 
-  getSession(sessionId) {
+  getSession (sessionId) {
     return this.sessionRepository.findById(sessionId)
   }
 
-  updateBallState(sessionId, updates) {
-    const session = this.sessionRepository.findById(sessionId);
-    if (!session) return false;
+  updateBallState (sessionId, updates) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return false
 
-    const now = Date.now();
-    const lastUpdate = session.lastStateUpdate || 0;
-    
+    const now = Date.now()
+    const lastUpdate = session.lastStateUpdate || 0
+
     // Упрощенное throttling
-    const throttleDelay = this._getThrottleDelay(updates);
+    const throttleDelay = this._getThrottleDelay(updates)
     if (now - lastUpdate < throttleDelay && !updates?.reset) {
-        return false;
+      return false
     }
 
     // Используем централизованную валидацию
-    const validatedUpdates = ValidationUtils.validateBallStateUpdates(updates);
-    
+    const validatedUpdates = ValidationUtils.validateBallStateUpdates(updates)
+
     if (Object.keys(validatedUpdates).length === 0) {
-        this.logger.logSession(sessionId, `[VALIDATION] No valid fields in update, ignoring`);
-        return false;
+      this.logger.logSession(sessionId, '[VALIDATION] No valid fields in update, ignoring')
+      return false
     }
 
-    session.lastStateUpdate = now;
-    session.lastActivity = now;
+    session.lastStateUpdate = now
+    session.lastActivity = now
 
     if (session.physicsEngine) {
-        session.physicsEngine.applyCommand(validatedUpdates);
-        Object.assign(session.ballState, session.physicsEngine.getState());
+      session.physicsEngine.applyCommand(validatedUpdates)
+      Object.assign(session.ballState, session.physicsEngine.getState())
     } else {
-        this.sessionRepository.updateBallState(sessionId, validatedUpdates);
+      this.sessionRepository.updateBallState(sessionId, validatedUpdates)
     }
 
-    this._schedulePhysicsUpdate(sessionId);
-    this.apiCache.delete(`state_${sessionId}`);
-    this.stateBroadcaster.broadcastState(sessionId);
-    return true;
+    this._schedulePhysicsUpdate(sessionId)
+    this.apiCache.delete(`state_${sessionId}`)
+    this.stateBroadcaster.broadcastState(sessionId)
+    return true
   }
 
   /**
    * Определяет задержку throttling в зависимости от типа обновления
    */
-  _getThrottleDelay(updates) {
-    if (!updates) return 50;
-    
-    if (updates.colorBall !== undefined || updates.colorBg !== undefined) return 200;
-    if (updates.speed !== undefined) return 100;
-    if (updates.dirX !== undefined || updates.dirY !== undefined) return 30;
-    if (updates.paused !== undefined || updates.resume === true) return 0;
-    
-    return 50;
+  _getThrottleDelay (updates) {
+    if (!updates) return 50
+
+    if (updates.colorBall !== undefined || updates.colorBg !== undefined) return 200
+    if (updates.speed !== undefined) return 100
+    if (updates.dirX !== undefined || updates.dirY !== undefined) return 30
+    if (updates.paused !== undefined || updates.resume === true) return 0
+
+    return 50
   }
 
-  handleWebSocketConnection(ws, sessionId, role) {
+  handleWebSocketConnection (ws, sessionId, role) {
     if (!this.webSocketManager.addClient(sessionId, ws, role)) {
       ws.close(1011, 'Session not found')
       return
@@ -104,19 +104,19 @@ class SessionManager {
     if (session) {
       session.lastActivity = Date.now()
       this._schedulePhysicsUpdate(sessionId)
-      
+
       if (role === 'viewer') {
         this.stateBroadcaster.broadcastInitialState(sessionId, ws, session.ballState)
       } else {
         try { ws.initialStateSent = false } catch (e) {}
-        this.logger.logSession(sessionId, `Controller connected, deferring initial_state until viewer screen size is set.`);
+        this.logger.logSession(sessionId, 'Controller connected, deferring initial_state until viewer screen size is set.')
       }
     }
 
     this.stateBroadcaster.broadcastViewerStatus(sessionId)
   }
 
-  handleWebSocketDisconnection(ws) {
+  handleWebSocketDisconnection (ws) {
     const sessionId = this.webSocketManager.removeClient(ws)
     if (sessionId) {
       this._schedulePhysicsUpdate(sessionId)
@@ -124,7 +124,7 @@ class SessionManager {
     }
   }
 
-  setViewerScreenSize(sessionId, screenSize) {
+  setViewerScreenSize (sessionId, screenSize) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
@@ -135,32 +135,32 @@ class SessionManager {
     session.viewerScreenSize = validatedSize
 
     if (session.physicsEngine) {
-        session.physicsEngine.setWorldSize(validatedSize.width, validatedSize.height);
-        session.physicsEngine.reset();
-        Object.assign(session.ballState, session.physicsEngine.getState());
+      session.physicsEngine.setWorldSize(validatedSize.width, validatedSize.height)
+      session.physicsEngine.reset()
+      Object.assign(session.ballState, session.physicsEngine.getState())
     } else {
-       session.ballState.x = validatedSize.width / 2;
-       session.ballState.y = validatedSize.height / 2;
-       session.ballState.vx = 0;
-       session.ballState.vy = 0;
+      session.ballState.x = validatedSize.width / 2
+      session.ballState.y = validatedSize.height / 2
+      session.ballState.vx = 0
+      session.ballState.vy = 0
     }
 
     this.stateBroadcaster.broadcastState(sessionId)
 
     // Отправляем начальное состояние контроллеру
-    const clients = this.webSocketManager.getClients(sessionId);
-    const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState;
+    const clients = this.webSocketManager.getClients(sessionId)
+    const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
     for (const { client, info } of clients) {
-        if (info.role === 'controller' && !client.initialStateSent) {
-            this.stateBroadcaster.broadcastInitialState(sessionId, client, finalState);
-            client.initialStateSent = true;
-        }
+      if (info.role === 'controller' && !client.initialStateSent) {
+        this.stateBroadcaster.broadcastInitialState(sessionId, client, finalState)
+        client.initialStateSent = true
+      }
     }
 
     return true
   }
 
-  startPhysics(sessionId) {
+  startPhysics (sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
 
@@ -168,79 +168,79 @@ class SessionManager {
     this.logger.logSession(sessionId, 'Physics manager initialized', 'debug')
   }
 
-  _schedulePhysicsUpdate(sessionId) {
-    const session = this.sessionRepository.findById(sessionId);
-    if (!session) return;
+  _schedulePhysicsUpdate (sessionId) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return
 
     if (session.mainLoop) {
-      clearInterval(session.mainLoop);
-      session.mainLoop = null;
+      clearInterval(session.mainLoop)
+      session.mainLoop = null
     }
 
-    const hasActiveClients = session.controllerConnected || session.viewerConnected;
-    const isBallMoving = session.ballState && !session.ballState.paused;
+    const hasActiveClients = session.controllerConnected || session.viewerConnected
+    const isBallMoving = session.ballState && !session.ballState.paused
 
     if (hasActiveClients && isBallMoving) {
       session.mainLoop = setInterval(() => {
-        const currentSession = this.sessionRepository.findById(sessionId);
+        const currentSession = this.sessionRepository.findById(sessionId)
         if (!currentSession || !currentSession.physicsEngine || currentSession.ballState.paused || !(currentSession.controllerConnected || currentSession.viewerConnected)) {
           if (session.mainLoop) {
-             clearInterval(session.mainLoop);
-             session.mainLoop = null;
-             this.logger.logSession(sessionId, 'Main loop self-terminated due to state change.');
+            clearInterval(session.mainLoop)
+            session.mainLoop = null
+            this.logger.logSession(sessionId, 'Main loop self-terminated due to state change.')
           }
-          return;
+          return
         }
 
-        const deltaTime = this.physicsInterval / 1000;
-        currentSession.physicsEngine.update(deltaTime);
-        Object.assign(currentSession.ballState, currentSession.physicsEngine.getState());
+        const deltaTime = this.physicsInterval / 1000
+        currentSession.physicsEngine.update(deltaTime)
+        Object.assign(currentSession.ballState, currentSession.physicsEngine.getState())
 
-        const prevSent = currentSession._lastBroadcast || { x: NaN, y: NaN };
-        const dx = Math.abs((currentSession.ballState.x || 0) - (prevSent.x || 0));
-        const dy = Math.abs((currentSession.ballState.y || 0) - (prevSent.y || 0));
-        const moved = dx > config.getRuntimeTuning().DEAD_RECKON_EPS || dy > config.getRuntimeTuning().DEAD_RECKON_EPS;
+        const prevSent = currentSession._lastBroadcast || { x: NaN, y: NaN }
+        const dx = Math.abs((currentSession.ballState.x || 0) - (prevSent.x || 0))
+        const dy = Math.abs((currentSession.ballState.y || 0) - (prevSent.y || 0))
+        const moved = dx > config.getRuntimeTuning().DEAD_RECKON_EPS || dy > config.getRuntimeTuning().DEAD_RECKON_EPS
         if (moved) {
-          this.stateBroadcaster.broadcastState(sessionId);
-          currentSession._lastBroadcast = { x: currentSession.ballState.x, y: currentSession.ballState.y };
+          this.stateBroadcaster.broadcastState(sessionId)
+          currentSession._lastBroadcast = { x: currentSession.ballState.x, y: currentSession.ballState.y }
         }
-      }, this.physicsInterval);
+      }, this.physicsInterval)
 
-      this.logger.logSession(sessionId, `Main loop started at ${Math.round(1000/this.physicsInterval)} FPS.`);
+      this.logger.logSession(sessionId, `Main loop started at ${Math.round(1000 / this.physicsInterval)} FPS.`)
     } else {
-      this.logger.logSession(sessionId, `Main loop not started (isBallMoving: ${isBallMoving}, hasActiveClients: ${hasActiveClients}).`);
+      this.logger.logSession(sessionId, `Main loop not started (isBallMoving: ${isBallMoving}, hasActiveClients: ${hasActiveClients}).`)
     }
   }
 
-  stopPhysics(sessionId) {
+  stopPhysics (sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (session && session.mainLoop) {
-        clearInterval(session.mainLoop)
-        session.mainLoop = null
+      clearInterval(session.mainLoop)
+      session.mainLoop = null
     }
   }
 
-  cleanupExpiredSessions() {
+  cleanupExpiredSessions () {
     const expiredIds = this.sessionRepository.cleanupExpired()
     if (expiredIds.length > 0) {
-      this.logger.info(`Cleaned up ${expiredIds.length} expired sessions.`);
-      expiredIds.forEach(id => this.stopPhysics(id));
+      this.logger.info(`Cleaned up ${expiredIds.length} expired sessions.`)
+      expiredIds.forEach(id => this.stopPhysics(id))
     }
-    return expiredIds.length;
+    return expiredIds.length
   }
 
-  getSessionCount() {
+  getSessionCount () {
     return this.sessionRepository.getAll().length
   }
 
-  getClientInfo(ws) {
+  getClientInfo (ws) {
     for (const session of this.sessionRepository.getAll()) {
       if (session.clients.has(ws)) {
-        const clientInfo = session.clients.get(ws);
-        return { sessionId: clientInfo.sessionId, role: clientInfo.role };
+        const clientInfo = session.clients.get(ws)
+        return { sessionId: clientInfo.sessionId, role: clientInfo.role }
       }
     }
-    return null;
+    return null
   }
 }
 

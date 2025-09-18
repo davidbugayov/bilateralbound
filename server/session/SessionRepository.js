@@ -2,13 +2,13 @@ const { v4: uuidv4 } = require('uuid')
 
 // Интерфейс для управления данными сессий
 class SessionRepository {
-  constructor() {
+  constructor () {
     this.sessions = new Map()
     this.sessionCache = new Map() // Кэш для часто запрашиваемых сессий
     this.cacheExpiration = 30000 // 30 секунд
   }
 
-  create(sessionData = {}) {
+  create (sessionData = {}) {
     const session = {
       id: uuidv4().substring(0, 6),
       ballState: {
@@ -34,28 +34,28 @@ class SessionRepository {
     return session
   }
 
-  findById(sessionId) {
+  findById (sessionId) {
     // Проверяем кэш сначала
-    const cached = this.sessionCache.get(sessionId);
+    const cached = this.sessionCache.get(sessionId)
     if (cached && Date.now() - cached.timestamp < this.cacheExpiration) {
-      return cached.session;
+      return cached.session
     }
 
     // Ищем в основном хранилище
-    const session = this.sessions.get(sessionId) || null;
+    const session = this.sessions.get(sessionId) || null
 
     // Кэшируем результат (даже если null)
     if (session) {
       this.sessionCache.set(sessionId, {
-        session: session,
+        session,
         timestamp: Date.now()
-      });
+      })
     }
 
-    return session;
+    return session
   }
 
-  update(sessionId, updates) {
+  update (sessionId, updates) {
     const session = this.findById(sessionId)
     if (!session) return false
 
@@ -68,7 +68,7 @@ class SessionRepository {
     return true
   }
 
-  updateBallState(sessionId, ballUpdates) {
+  updateBallState (sessionId, ballUpdates) {
     const session = this.findById(sessionId)
     if (!session) return false
 
@@ -80,32 +80,32 @@ class SessionRepository {
     return true
   }
 
-  delete(sessionId) {
-    this.sessionCache.delete(sessionId); // Очищаем кэш
+  delete (sessionId) {
+    this.sessionCache.delete(sessionId) // Очищаем кэш
     return this.sessions.delete(sessionId)
   }
 
   // Очистка устаревшего кэша для оптимизации памяти
-  cleanupCache() {
-    const now = Date.now();
+  cleanupCache () {
+    const now = Date.now()
     for (const [sessionId, cached] of this.sessionCache) {
       if (now - cached.timestamp > this.cacheExpiration) {
-        this.sessionCache.delete(sessionId);
+        this.sessionCache.delete(sessionId)
       }
     }
   }
 
-  getAll() {
+  getAll () {
     return Array.from(this.sessions.values())
   }
 
-  cleanupExpired(maxAge = 60 * 60 * 1000) { // 1 hour
+  cleanupExpired (maxAge = 60 * 60 * 1000) { // 1 hour
     const now = Date.now()
     const expiredIds = []
 
     for (const [id, session] of this.sessions) {
       // Удаляем сессии старше maxAge ИЛИ неактивные более 30 минут
-      const inactiveTime = now - (session.lastActivity || session.createdAt);
+      const inactiveTime = now - (session.lastActivity || session.createdAt)
       if (now - session.createdAt > maxAge || inactiveTime > 30 * 60 * 1000) {
         expiredIds.push(id)
       }
@@ -114,7 +114,7 @@ class SessionRepository {
     expiredIds.forEach(id => this.delete(id))
 
     // Также очищаем устаревший кэш
-    this.cleanupCache();
+    this.cleanupCache()
 
     return expiredIds.length
   }

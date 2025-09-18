@@ -227,10 +227,10 @@ class SharedComponents {
 
         container.appendChild(colorControl)
         this.setupEventListeners()
-        
+
         // Устанавливаем дефолтный цвет как активный
         this.setColor(this.currentColor)
-        
+
         return this
       },
 
@@ -308,10 +308,10 @@ class SharedComponents {
 
         container.appendChild(sizeControl)
         this.setupEventListeners()
-        
+
         // Устанавливаем дефолтный размер как активный
         this.setSize(this.currentSize)
-        
+
         return this
       },
 

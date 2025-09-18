@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require('uuid')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
 
-function setupExpressApp(sessionManager, apiCache) {
+function setupExpressApp (sessionManager, apiCache) {
   const app = express()
 
   // Request ID middleware for traceability
@@ -21,16 +21,16 @@ function setupExpressApp(sessionManager, apiCache) {
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        styleSrcAttr: ["'self'", "'unsafe-inline'"],
-        styleSrcElem: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'self'", "'unsafe-inline'"],
-        scriptSrcElem: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:', 'https:'],
-      },
-    },
+        defaultSrc: ['\'self\''],
+        styleSrc: ['\'self\'', '\'unsafe-inline\''],
+        styleSrcAttr: ['\'self\'', '\'unsafe-inline\''],
+        styleSrcElem: ['\'self\'', '\'unsafe-inline\''],
+        scriptSrc: ['\'self\'', '\'unsafe-inline\''],
+        scriptSrcAttr: ['\'self\'', '\'unsafe-inline\''],
+        scriptSrcElem: ['\'self\'', '\'unsafe-inline\''],
+        imgSrc: ['\'self\'', 'data:', 'https:']
+      }
+    }
   }))
 
   // Rate limiting
@@ -41,7 +41,7 @@ function setupExpressApp(sessionManager, apiCache) {
       max: 100,
       message: 'Too many requests from this IP, please try again later.',
       standardHeaders: true,
-      legacyHeaders: false,
+      legacyHeaders: false
     })
     app.use('/api/', limiter)
   }
@@ -52,7 +52,7 @@ function setupExpressApp(sessionManager, apiCache) {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept', 'X-Request-Id'],
     credentials: true,
-    optionsSuccessStatus: 200,
+    optionsSuccessStatus: 200
   }))
 
   app.use((req, res, next) => {
@@ -72,7 +72,7 @@ function setupExpressApp(sessionManager, apiCache) {
       status: 'ok',
       timestamp: new Date().toISOString(),
       sessions: sessionManager.getSessionCount(),
-      uptime: process.uptime(),
+      uptime: process.uptime()
     })
   })
 
@@ -101,7 +101,7 @@ function setupExpressApp(sessionManager, apiCache) {
       controllerConnected: session.controllerConnected,
       viewerConnected: session.viewerConnected,
       createdAt: session.createdAt,
-      lastActivity: session.lastActivity,
+      lastActivity: session.lastActivity
     })
   })
 
@@ -163,7 +163,7 @@ function setupExpressApp(sessionManager, apiCache) {
     }
     return res.status(400).json({ error: 'Invalid screen size', requestId: req.id })
   })
-  
+
   // Static routes
   app.get('/s/:sessionId', (req, res) => {
     res.sendFile(path.join(publicPath, 'viewer.html'))

@@ -3,7 +3,7 @@
  * Использует современные возможности JavaScript для лучшей надежности
  */
 class WebSocketClient {
-  constructor(sessionId, role, options = {}) {
+  constructor (sessionId, role, options = {}) {
     // Валидация входных параметров
     if (!sessionId || typeof sessionId !== 'string') {
       throw new Error('Valid sessionId (string) is required for WebSocket connection')
@@ -55,7 +55,7 @@ class WebSocketClient {
     }
   }
 
-  _generateWebSocketUrl() {
+  _generateWebSocketUrl () {
     const protocol = this.config.isSecure ? 'wss:' : 'ws:'
     const host = window.location.host
     const url = new URL(`${protocol}//${host}`)
@@ -69,7 +69,7 @@ class WebSocketClient {
   /**
    * Подключение к WebSocket серверу
    */
-  async connect() {
+  async connect () {
     if (this.isConnected || this.isConnecting) {
       this.log('Connection already in progress or established')
       return Promise.resolve()
@@ -103,7 +103,6 @@ class WebSocketClient {
           this._handleConnectionError(error)
           reject(error)
         }
-
       } catch (error) {
         this.isConnecting = false
         reject(error)
@@ -114,7 +113,7 @@ class WebSocketClient {
   /**
    * Отправка сообщения с подтверждением доставки
    */
-  async send(type, payload, options = {}) {
+  async send (type, payload, options = {}) {
     if (!this.isConnected) {
       throw new Error('WebSocket is not connected')
     }
@@ -146,7 +145,7 @@ class WebSocketClient {
   /**
    * Регистрация обработчика события
    */
-  on(eventType, handler) {
+  on (eventType, handler) {
     if (!this.eventHandlers.has(eventType)) {
       this.eventHandlers.set(eventType, [])
     }
@@ -156,7 +155,7 @@ class WebSocketClient {
   /**
    * Отписка от события
    */
-  off(eventType, handler = null) {
+  off (eventType, handler = null) {
     if (!this.eventHandlers.has(eventType)) return
 
     if (handler) {
@@ -173,7 +172,7 @@ class WebSocketClient {
   /**
    * Отключение от сервера
    */
-  disconnect(code = 1000, reason = 'Client disconnect') {
+  disconnect (code = 1000, reason = 'Client disconnect') {
     this._clearTimers()
     this.isConnected = false
     this.isConnecting = false
@@ -186,13 +185,13 @@ class WebSocketClient {
 
   // ===== ВНУТРЕННИЕ МЕТОДЫ =====
 
-  _setupEventHandlers() {
+  _setupEventHandlers () {
     this.ws.onmessage = this._handleMessage.bind(this)
     this.ws.onclose = this._handleClose.bind(this)
     this.ws.onerror = this._handleError.bind(this)
   }
 
-  _handleConnectionSuccess() {
+  _handleConnectionSuccess () {
     this.isConnected = true
     this.isConnecting = false
     this._stats.reconnectCount = 0
@@ -203,12 +202,12 @@ class WebSocketClient {
     this.log('Connected successfully')
   }
 
-  _handleConnectionError(error) {
+  _handleConnectionError (error) {
     this._emit('error', { error, type: 'connection' })
     this._scheduleReconnect()
   }
 
-  _handleMessage(event) {
+  _handleMessage (event) {
     try {
       const message = JSON.parse(event.data)
       this._stats.messagesReceived++
@@ -234,21 +233,20 @@ class WebSocketClient {
         this._stats._lastRttSamples.push(rtt)
         if (this._stats._lastRttSamples.length > 20) this._stats._lastRttSamples.shift()
         const n = this._stats._lastRttSamples.length
-        const avg = this._stats._lastRttSamples.reduce((a,b)=>a+b,0) / n
-        const varSum = this._stats._lastRttSamples.reduce((a,b)=>a + Math.pow(b-avg,2), 0) / n
+        const avg = this._stats._lastRttSamples.reduce((a, b) => a + b, 0) / n
+        const varSum = this._stats._lastRttSamples.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / n
         const jitter = Math.sqrt(varSum)
         this._stats.rttMs = Math.round(avg)
         this._stats.jitterMs = Math.round(jitter)
         this._emit('net_metrics', { rttMs: this._stats.rttMs, jitterMs: this._stats.jitterMs })
       }
-
     } catch (error) {
       this.log(`Failed to parse message: ${error.message}`, 'error')
       this._emit('error', { error, type: 'parse', rawData: event.data })
     }
   }
 
-  _handleClose(event) {
+  _handleClose (event) {
     this.isConnected = false
     this._clearTimers()
     this._emit('close', event)
@@ -258,11 +256,11 @@ class WebSocketClient {
     }
   }
 
-  _handleError(error) {
+  _handleError (error) {
     this._emit('error', { error, type: 'websocket' })
   }
 
-  _scheduleReconnect() {
+  _scheduleReconnect () {
     if (this._stats.reconnectCount >= this.config.maxReconnectAttempts) {
       this.log('Max reconnection attempts reached', 'error')
       this._emit('maxReconnectAttemptsReached')
@@ -281,17 +279,17 @@ class WebSocketClient {
     }, delay)
   }
 
-  _startHeartbeat() {
+  _startHeartbeat () {
     this.heartbeatTimer = setInterval(() => {
       if (this.isConnected) {
         this.send('heartbeat', { timestamp: Date.now() }).catch(err => {
-          this.log(`Heartbeat failed: ${err.message}`, 'warning');
-        });
+          this.log(`Heartbeat failed: ${err.message}`, 'warning')
+        })
       }
     }, this.config.heartbeatInterval)
   }
 
-  _sendMessage(message) {
+  _sendMessage (message) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message))
       this._stats.messagesSent++
@@ -300,7 +298,7 @@ class WebSocketClient {
     }
   }
 
-  _emit(eventType, data) {
+  _emit (eventType, data) {
     const handlers = this.eventHandlers.get(eventType)
     if (handlers) {
       handlers.forEach(handler => {
@@ -313,7 +311,7 @@ class WebSocketClient {
     }
   }
 
-  _clearTimers() {
+  _clearTimers () {
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = null
@@ -326,25 +324,27 @@ class WebSocketClient {
     this.messageTimeouts.clear()
   }
 
-  log(message, type = 'info') {
+  log (message, type = 'info') {
     const timestamp = new Date().toLocaleTimeString()
     const prefix = `[WS:${this.role}]`
     const coloredMessage = `%c${prefix} ${message}`
 
-    const style = type === 'error' ? 'color: #ef4444; font-weight: bold;' :
-                  type === 'warning' ? 'color: #f59e0b; font-weight: bold;' :
-                  'color: #3b82f6; font-weight: bold;'
+    const style = type === 'error'
+      ? 'color: #ef4444; font-weight: bold;'
+      : type === 'warning'
+        ? 'color: #f59e0b; font-weight: bold;'
+        : 'color: #3b82f6; font-weight: bold;'
 
     console[type === 'error' ? 'error' : 'log'](coloredMessage, style, timestamp)
   }
 
   // ===== ГЕТТЕРЫ =====
 
-  get isReady() {
+  get isReady () {
     return this.isConnected && this.ws?.readyState === WebSocket.OPEN
   }
 
-  get stats() {
+  get stats () {
     return { ...this._stats }
   }
 }

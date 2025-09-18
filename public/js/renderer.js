@@ -50,7 +50,7 @@ class BallRenderer {
     }
 
     // Устанавливаем режим движка в зависимости от опции
-    this.physics.isViewer = !this.options.localPhysics;
+    this.physics.isViewer = !this.options.localPhysics
 
     // Кэшируем часто используемые значения
     this.pi2 = Math.PI * 2
@@ -132,30 +132,29 @@ class BallRenderer {
 
     // Адаптивная регулировка FPS
     if (this.adaptiveFrameRate) {
-        this.frameTimeHistory.push(deltaTime);
-        if (this.frameTimeHistory.length > 20) {
-            this.frameTimeHistory.shift();
-        }
-        const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length;
-        this.actualFps = 1000 / avgFrameTime;
+      this.frameTimeHistory.push(deltaTime)
+      if (this.frameTimeHistory.length > 20) {
+        this.frameTimeHistory.shift()
+      }
+      const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
+      this.actualFps = 1000 / avgFrameTime
 
-        // Если производительность падает, снижаем целевой FPS
-        if (avgFrameTime > this.targetFrameTime * 1.2 && this.targetFrameTime < 1000 / 30) {
-            this.targetFrameTime *= 1.05; // Плавно снижаем до ~30 FPS
-        } else if (avgFrameTime < this.targetFrameTime * 0.8) {
-            this.targetFrameTime /= 1.05; // Плавно повышаем до 60 FPS
-        }
-        this.targetFrameTime = Math.max(1000 / 65, Math.min(1000 / 25, this.targetFrameTime));
+      // Если производительность падает, снижаем целевой FPS
+      if (avgFrameTime > this.targetFrameTime * 1.2 && this.targetFrameTime < 1000 / 30) {
+        this.targetFrameTime *= 1.05 // Плавно снижаем до ~30 FPS
+      } else if (avgFrameTime < this.targetFrameTime * 0.8) {
+        this.targetFrameTime /= 1.05 // Плавно повышаем до 60 FPS
+      }
+      this.targetFrameTime = Math.max(1000 / 65, Math.min(1000 / 25, this.targetFrameTime))
     }
 
-
     if (deltaTime < this.targetFrameTime) {
-        this.animationFrameId = requestAnimationFrame(this.renderLoop)
-        return
+      this.animationFrameId = requestAnimationFrame(this.renderLoop)
+      return
     }
 
     // Ограничиваем deltaTime для предотвращения огромных прыжков
-    const clampedDeltaTime = Math.min(deltaTime, this.maxFrameTime);
+    const clampedDeltaTime = Math.min(deltaTime, this.maxFrameTime)
 
     // Обновляем счетчик кадров для FPS
     this.frameCount++
@@ -242,18 +241,18 @@ class BallRenderer {
         p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2)
         this._cached.path = p
       }
- 
+
       this.beginPath()
       // Рисуем мяч с градиентом и переиспользуемой формой
       this.ctx.save()
-      
+
       // Включаем сглаживание для более плавного рендеринга
       this.ctx.imageSmoothingEnabled = true
       this.ctx.imageSmoothingQuality = 'high'
-      
+
       this.ctx.translate(ball.x, ball.y)
       this.ctx.fillStyle = this._cached.gradient
-      
+
       // Добавляем мягкую тень для объема
       this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
       this.ctx.shadowBlur = 4
@@ -261,7 +260,7 @@ class BallRenderer {
       this.ctx.shadowOffsetY = 2
       this.ctx.fill(this._cached.path)
       this.ctx.restore()
-      
+
       // Сбрасываем тень для следующих элементов
       this.ctx.shadowColor = 'transparent'
       this.ctx.shadowBlur = 0
@@ -275,7 +274,7 @@ class BallRenderer {
   /**
    * Изменяет яркость цвета
    */
-  adjustBrightness(color, amount) {
+  adjustBrightness (color, amount) {
     const hex = color.replace('#', '')
     const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount))
     const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount))
@@ -397,23 +396,22 @@ class BallRenderer {
    * Удобно для внешнего цикла рендеринга.
    * @param {object} state - Состояние для рендеринга.
    */
-  drawFrame(state) {
+  drawFrame (state) {
     if (!this.validateCanvas() || !state) {
-      return;
+      return
     }
 
     try {
       // Очищаем canvas
-      this.ctx.fillStyle = state.colorBg || this.colors.bg;
-      this.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.fillStyle = state.colorBg || this.colors.bg
+      this.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
       // Рисуем шарик
-      this.renderBall(state);
+      this.renderBall(state)
     } catch (error) {
-      console.error('BallRenderer: Error during drawFrame:', error);
+      console.error('BallRenderer: Error during drawFrame:', error)
     }
   }
-
 }
 
 // Экспортируем для использования

@@ -1,14 +1,14 @@
-const { logger, DEBUG_MODE } = require('../logger.js');
+const { logger, DEBUG_MODE } = require('../logger.js')
 
 // Интерфейс для рассылки состояния клиентам
 class StateBroadcaster {
-  constructor(sessionRepository, webSocketManager) {
+  constructor (sessionRepository, webSocketManager) {
     this.sessionRepository = sessionRepository
     this.webSocketManager = webSocketManager
     this.logger = logger
   }
 
-  broadcastState(sessionId, stateType = 'state_update', payload = null) {
+  broadcastState (sessionId, stateType = 'state_update', payload = null) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
@@ -36,7 +36,7 @@ class StateBroadcaster {
     return sentCount > 0
   }
 
-  broadcastViewerStatus(sessionId) {
+  broadcastViewerStatus (sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
@@ -46,19 +46,19 @@ class StateBroadcaster {
     })
   }
 
-  broadcastLog(sessionId, logMessage) {
-    const session = this.sessionRepository.findById(sessionId);
-    if (!session) return false;
+  broadcastLog (sessionId, logMessage) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return false
 
     const message = JSON.stringify({
       type: 'server_log',
-      payload: logMessage,
-    });
+      payload: logMessage
+    })
 
     for (const { client } of this.webSocketManager.getClients(sessionId)) {
       if (this._isClientReady(client)) {
         try {
-          client.send(message);
+          client.send(message)
         } catch (error) {
           // Не логируем ошибку отправки лога, чтобы избежать бесконечного цикла
         }
@@ -66,12 +66,12 @@ class StateBroadcaster {
     }
   }
 
-  broadcastInitialState(sessionId, client, currentState) {
-    const session = this.sessionRepository.findById(sessionId);
-    if (!session) return false;
+  broadcastInitialState (sessionId, client, currentState) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return false
 
     // Используем переданное состояние, если оно есть, иначе берем из сессии
-    const ballState = currentState || session.ballState;
+    const ballState = currentState || session.ballState
 
     const initialState = {
       type: 'initial_state',
@@ -81,22 +81,22 @@ class StateBroadcaster {
         controllerConnected: session.controllerConnected,
         viewerScreenSize: session.viewerScreenSize
       }
-    };
+    }
 
     if (this._isClientReady(client)) {
       try {
-        client.send(JSON.stringify(initialState));
-        this.logger.logSession(sessionId, 'Sent initial_state to client');
-        return true;
+        client.send(JSON.stringify(initialState))
+        this.logger.logSession(sessionId, 'Sent initial_state to client')
+        return true
       } catch (error) {
-        this.logger.error(`Error sending initial state: ${error.message}`);
-        return false;
+        this.logger.error(`Error sending initial state: ${error.message}`)
+        return false
       }
     }
-    return false;
+    return false
   }
 
-  _isClientReady(client) {
+  _isClientReady (client) {
     return client && client.readyState === 1 // WebSocket.OPEN
   }
 }
