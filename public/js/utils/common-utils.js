@@ -27,7 +27,7 @@ class CommonUtils {
   static toggleFullscreen(element = document.documentElement) {
     if (!document.fullscreenElement) {
       element.requestFullscreen().catch(err => {
-        console.warn('Error attempting to enable fullscreen:', err);
+        // Error attempting to enable fullscreen
       });
     } else {
       document.exitFullscreen();
@@ -42,7 +42,7 @@ class CommonUtils {
       await navigator.clipboard.writeText(text);
       return true;
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      // Failed to copy text
       return false;
     }
   }

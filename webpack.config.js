@@ -4,7 +4,6 @@ module.exports = {
   mode: 'production',
   entry: {
     controller: './public/js/controller.js',
-    viewer: './public/viewer.html',
     shared: './public/js/shared-components.js'
   },
   

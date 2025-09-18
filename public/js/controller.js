@@ -2,7 +2,7 @@
  * Controller - Логика управления сессией BilateralBound
  * Современная модульная архитектура с улучшенной обработкой ошибок
  */
-/* global WebSocketClient, PhysicsEngine, BallRenderer, sharedComponents, debugLog, debugError, throttle, getSessionIdFromUrl */
+/* global WebSocketClient, PhysicsEngine, BallRenderer, sharedComponents, throttle, getSessionIdFromUrl */
 /* exported setDir, setDirection, setDirFromDirection, resetCenter, resetSession, resumePlay, pausePlay, copy, goBack */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 window.__current = {
@@ -526,18 +526,10 @@ function showErrorNotification (message) {
  */
 function createLogger (moduleName) {
   return {
-    info: (message, data) => {
-      // Тихое логирование информации
-    },
-    success: (message, data) => {
-      // Тихое логирование успехов
-    },
-    warning: (message, data) => {
-      console.warn(`%c[${moduleName}] ⚠️ ${message}`, 'color: #f59e0b; font-weight: bold;', data || '')
-    },
-    error: (message, data) => {
-      console.error(`%c[${moduleName}] ❌ ${message}`, 'color: #ef4444; font-weight: bold;', data || '')
-    }
+    info: (message, data) => {},
+    success: (message, data) => {},
+    warning: (message, data) => {},
+    error: (message, data) => {}
   }
 }
 
@@ -578,26 +570,14 @@ async function handleInitializationError (error, logger) {
   }
 
   // Показываем ошибку пользователю
-  alert(`Ошибка инициализации: ${userMessage}`)
-
   // Логируем для отладки
-  console.error('Полная информация об ошибке:', {
-    name: error.name,
-    message: error.message,
-    stack: error.stack,
-    code: error.code,
-    timestamp: new Date().toISOString()
-  })
 }
 
 // ===== СИНХРОНИЗАЦИЯ UI =====
 
 function syncUIWithState (ballState) {
   try {
-    // debugLog('🔄 Синхронизируем UI с состоянием от сервера', ballState)
-
     if (!ballState) {
-      // debugWarn('syncUIWithState вызван с пустым состоянием.')
       return
     }
 
@@ -631,7 +611,6 @@ function syncUIWithState (ballState) {
       // Если стоит принудительная пауза (после ресайза), игнорируем paused=false,
       // пока пользователь явно не нажмёт «Старт»
       const effectivePaused = forcePauseUntilUserAction ? true : ballState.paused
-      // debugLog(`🎮 Обновляем состояние игры: paused=${ballState.paused} (effective=${effectivePaused}), isPlaying будет=${!effectivePaused}`)
       isPlaying = !effectivePaused
       updatePlayPauseButton()
     }
@@ -649,9 +628,8 @@ function syncUIWithState (ballState) {
       updateDirectionDisplay(ballState.dirX, ballState.dirY)
     }
 
-    // debugLog('✅ UI синхронизирован')
   } catch (error) {
-    debugError('Ошибка при синхронизации UI:', error)
+    // Ошибка при синхронизации UI
   }
 }
 
@@ -729,17 +707,14 @@ async function updateSpeed (speed) {
     }
 
     safeSend(WS_MSG.controllerUpdate, { speed })
-    debugLog('✅ Скорость обновлена через WebSocket:', speed)
   } catch (error) {
-    debugError('Ошибка при обновлении скорости:', error)
-    alert('Ошибка при обновлении скорости', error.message)
+    // Ошибка при обновлении скорости
   }
 }
 
 // ===== ПРЕВЬЮ =====
 
 async function initializePreview () {
-  debugLog('🎮 Начинаем инициализацию превью')
 
   // Показываем текст ожидания подключения вьювера
   showWaitingForViewer()
@@ -747,20 +722,15 @@ async function initializePreview () {
   const previewWrap = document.getElementById('previewWrap')
   if (previewWrap) {
     previewWrap.style.display = 'block'
-    debugLog('✅ Превью контейнер показан')
   }
 
   const canvas = document.getElementById('preview')
   if (!canvas) {
-    debugError('Preview canvas not found')
     return
   }
-  debugLog('✅ Canvas элемент найден')
 
   // Проверяем размеры canvas
-  debugLog(`📏 Исходные размеры canvas: ${canvas.width}x${canvas.height}`)
   if (canvas.width === 0 || canvas.height === 0) {
-    debugLog('⚠️ Неверные размеры canvas, устанавливаем по умолчанию')
     canvas.width = 400
     canvas.height = 300
     // Жестко задаем CSS размеры, чтобы исключить неравномерное масштабирование
@@ -782,23 +752,19 @@ async function initializePreview () {
 
     // Запускаем цикл рендеринга для превью
     requestAnimationFrame(renderPreviewLoop)
-    debugLog('✅ PhysicsEngine создан')
 
     // Создаем рендерер, который будет сам обновлять физику (для интерполяции)
     window.__previewRenderer = new BallRenderer(canvas, previewPhysicsEngine, {
       localPhysics: false // ВАЖНО: Превью теперь не симулирует физику, а только отображает
     })
-    debugLog('✅ BallRenderer создан')
 
     window.__previewRenderer.setFrameCallback((deltaTime) => {
       // Дополнительная логика для превью может быть добавлена здесь
     })
 
     window.__previewCanvas = canvas
-    debugLog('✅ Глобальные переменные установлены')
 
     // window.__previewRenderer.start() // Отключаем внутренний цикл рендерера
-    // debugLog('✅ Renderer запущен')
 
     // Если вьювер ещё не подключен, показываем мяч по центру превью
     if (!window.__current.viewerScreenSize || !window.__current.viewerScreenSize.width) {
@@ -807,14 +773,9 @@ async function initializePreview () {
       // Ставим мяч в центр превью и останавливаем
       previewPhysicsEngine.setPosition(canvas.width / 2, canvas.height / 2)
       previewPhysicsEngine.setVelocity(0, 0)
-      debugLog('✅ Мяч инициализирован в центре превью (вьювер не подключен)')
     }
 
-    debugLog('🎉 Инициализация превью завершена успешно')
   } catch (error) {
-    debugError('❌ Ошибка при инициализации превью: ' + error.message)
-    console.error('Preview initialization error:', error)
-    alert('Ошибка при инициализации превью', error.message)
   }
 }
 
@@ -885,7 +846,6 @@ function updatePreviewSize (viewerScreenSize) {
       const previewCenterY = viewerCenterY * scaleY
 
       previewPhysicsEngine.setPosition(previewCenterX, previewCenterY)
-      debugLog(`📏 Размер превью обновлен, мяч центрирован: (${viewerCenterX}, ${viewerCenterY}) → (${previewCenterX.toFixed(1)}, ${previewCenterY.toFixed(1)})`)
     }
   }
 
@@ -918,7 +878,6 @@ function setDir (mode) {
     dirY: dy,
     resume: true // Если мяч движется, сразу меняем направление
   })
-  debugLog(`✅ Направление изменено через WS: dx=${dx}, dy=${dy}`)
 }
 
 // Функция для обновления активного состояния кнопок направлений
@@ -953,7 +912,6 @@ function setDirection (mode) {
     dirX: dx,
     dirY: dy
   })
-  debugLog('✅ Направление и движение установлены через WS:', mode, { dx, dy })
 }
 
 function setDirFromDirection (direction) {
@@ -983,7 +941,6 @@ function updateDirectionDisplay (dx, dy) {
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ МЯЧОМ =====
 
 function resetCenter () {
-  debugLog('🎯 Центрирование мяча...')
   // Отправляем команду на сервер
   safeSend(WS_MSG.controllerUpdate, { reset: true })
 
@@ -1003,41 +960,33 @@ function resetCenter () {
     // Устанавливаем позицию и target координаты для корректной интерполяции
     previewPhysicsEngine.setPosition(previewCenterX, previewCenterY)
 
-    debugLog(`✅ Мяч центрирован относительно вьювера: (${viewerCenterX}, ${viewerCenterY}) → (${previewCenterX.toFixed(1)}, ${previewCenterY.toFixed(1)})`)
   } else if (previewPhysicsEngine && previewCanvas) {
     // Fallback: центрируем относительно превью, если размеры вьювера неизвестны
     const centerX = previewCanvas.width / 2
     const centerY = previewCanvas.height / 2
     previewPhysicsEngine.setPosition(centerX, centerY)
-    debugLog('✅ Мяч центрирован относительно превью (размеры вьювера неизвестны)')
   }
-  debugLog('✅ Команда центрирования отправлена, превью обновлено локально')
 }
 
 function resetSession () {
-  if (confirm('Вы уверены, что хотите сбросить сессию?')) {
-    // Закрываем текущий WebSocket
-    if (wsClient) wsClient.disconnect()
+  // Закрываем текущий WebSocket
+  if (wsClient) wsClient.disconnect()
 
-    fetch('/api/session', { method: 'POST' }).then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-      return response.json()
-    }).then(data => {
-      const newSessionId = data.sessionId
+  fetch('/api/session', { method: 'POST' }).then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    return response.json()
+  }).then(data => {
+    const newSessionId = data.sessionId
 
-      debugLog(`🔄 Сессия сброшена. Новая сессия: ${newSessionId}`)
-
-      // Обновляем URL и перезагружаем страницу
-      const newUrl = new URL(window.location)
-      newUrl.searchParams.set('sessionId', newSessionId)
-      window.location.href = newUrl.toString()
-    }).catch(error => {
-      debugError('Error resetting session:', error)
-      alert('Ошибка при сбросе сессии', error.message)
-    })
-  }
+    // Обновляем URL и перезагружаем страницу
+    const newUrl = new URL(window.location)
+    newUrl.searchParams.set('sessionId', newSessionId)
+    window.location.href = newUrl.toString()
+  }).catch(error => {
+    // Ошибка при сбросе сессии
+  })
 }
 
 function setBallColor (color) {
@@ -1216,15 +1165,11 @@ function copy (id) {
       }
     })
     .catch(err => {
-      debugError('Failed to copy: ', err)
-      alert('Ошибка копирования', err.message)
     })
 }
 
 function goBack () {
-  if (confirm('Вы уверены, что хотите вернуться на главную страницу? Текущая сессия будет сохранена.')) {
-    window.location.href = '/'
-  }
+  window.location.href = '/'
 }
 
 function updateViewerStatusUI () {

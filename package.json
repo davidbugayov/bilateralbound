@@ -26,6 +26,7 @@
     "test:manual": "echo '🧪 Откройте http://localhost:3000/test/test-sync.html для тестирования'",
     "test:performance": "jest test/performance.test.js",
     "test:coverage": "jest --coverage",
+    "test:e2e": "jest test/e2e-tests.js --testTimeout=30000",
     "health-test": "sleep 2 && curl -s http://localhost:3000/health | jq .status 2>/dev/null || echo '❌ Health check failed'",
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "status": "curl -s http://localhost:3000/health || echo '❌ Server not running'",
@@ -78,7 +79,7 @@
     "jsdom": "^26.1.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.2.5",
-    "puppeteer": "^23.6.0",
+    "puppeteer": "^23.11.1",
     "style-loader": "^4.0.0",
     "webpack": "^5.101.3",
     "webpack-cli": "^6.0.1"

@@ -110,21 +110,18 @@ class BallRenderer {
   renderLoop (currentTime) {
     // Усиленная проверка на валидность всех компонентов
     if (!this.canvas || !this.ctx || !this.physics) {
-      console.warn('BallRenderer: Missing required components, stopping render loop')
       this.stop()
       return
     }
 
     // Проверяем что canvas все еще существует и имеет правильный контекст
     if (!this.canvas.parentNode || this.ctx.canvas !== this.canvas) {
-      console.warn('BallRenderer: Canvas context corrupted, stopping render loop')
       this.stop()
       return
     }
 
     // Используем метод валидации canvas
     if (!this.validateCanvas()) {
-      console.warn('BallRenderer: Canvas validation failed, stopping render loop')
       this.stop()
       return
     }
@@ -175,7 +172,6 @@ class BallRenderer {
 
       this.lastTime = currentTime
     } catch (error) {
-      console.error('BallRenderer: Error during render loop:', error)
       this.stop()
       return
     }
@@ -189,7 +185,6 @@ class BallRenderer {
   render () {
     // Финальная проверка перед рендерингом
     if (!this.canvas || !this.ctx || !this.physics) {
-      console.warn('BallRenderer: Cannot render - missing required components')
       return
     }
 
@@ -220,7 +215,6 @@ class BallRenderer {
         this._prevBall = { x: curr.x, y: curr.y, radius: curr.radius }
       }
     } catch (error) {
-      console.error('BallRenderer: Error during rendering:', error)
       // Не останавливаем рендер луп, просто пропускаем кадр
     }
   }
@@ -233,13 +227,11 @@ class BallRenderer {
 
     // Проверяем валидность данных шарика
     if (!ball || typeof ball.x !== 'number' || typeof ball.y !== 'number') {
-      console.warn('BallRenderer: Invalid ball data, skipping render')
       return
     }
 
     // Проверяем разумные значения
     if (ball.radius <= 0 || ball.radius > 1000) {
-      console.warn('BallRenderer: Invalid ball radius:', ball.radius)
       return
     }
 
@@ -287,7 +279,6 @@ class BallRenderer {
       this.ctx.shadowOffsetX = 0
       this.ctx.shadowOffsetY = 0
     } catch (error) {
-      console.error('BallRenderer: Error rendering ball:', error)
     }
   }
 
@@ -307,7 +298,6 @@ class BallRenderer {
      */
   resize (width, height) {
     if (!this.canvas) {
-      console.warn('BallRenderer: Cannot resize - canvas is not available')
       return
     }
 
@@ -320,7 +310,6 @@ class BallRenderer {
         this.physics.setWorldSize(width, height)
       }
     } catch (error) {
-      console.error('BallRenderer: Error resizing canvas:', error)
     }
   }
 
@@ -329,17 +318,14 @@ class BallRenderer {
    */
   validateCanvas () {
     if (!this.canvas) {
-      console.error('BallRenderer: Canvas is null or undefined')
       return false
     }
 
     if (!this.canvas.parentNode) {
-      console.warn('BallRenderer: Canvas is not in DOM')
       return false
     }
 
     if (!this.ctx) {
-      console.warn('BallRenderer: Canvas context is lost, attempting to restore')
       try {
         this.ctx = this.canvas.getContext('2d')
         if (this.ctx) {
@@ -352,7 +338,6 @@ class BallRenderer {
           return true
         }
       } catch (error) {
-        console.error('BallRenderer: Failed to restore canvas context:', error)
       }
       return false
     }
@@ -374,12 +359,10 @@ class BallRenderer {
      */
   setPhysicsEngine (physicsEngine) {
     if (!physicsEngine) {
-      console.error('BallRenderer: Invalid physics engine provided')
       return
     }
 
     if (!physicsEngine.ball || !physicsEngine.colors) {
-      console.error('BallRenderer: Physics engine missing required properties (ball, colors)')
       return
     }
 
@@ -429,7 +412,6 @@ class BallRenderer {
       // Рисуем шарик
       this.renderBall(state)
     } catch (error) {
-      console.error('BallRenderer: Error during drawFrame:', error)
     }
   }
 }

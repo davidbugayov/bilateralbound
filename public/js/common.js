@@ -5,9 +5,9 @@
 
 // Условное логирование только в режиме разработки
 const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-const debugLog = DEBUG ? (...args) => console.log(...args) : () => {}
-const debugError = DEBUG ? (...args) => console.error(...args) : () => {}
-const debugWarn = DEBUG ? (...args) => console.warn(...args) : () => {}
+const debugLog = () => {}
+const debugError = () => {}
+const debugWarn = () => {}
 
 // Используем общие утилиты, если доступны, иначе fallback
 const getSessionIdFromUrl = window.CommonUtils
@@ -27,7 +27,7 @@ const toggleFullscreen = window.CommonUtils
   : function (element = document.documentElement) {
     if (!document.fullscreenElement) {
       element.requestFullscreen().catch(err => {
-        alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`)
+        // Error attempting to enable full-screen mode
       })
     } else {
       if (document.exitFullscreen) {

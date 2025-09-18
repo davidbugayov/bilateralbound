@@ -18,5 +18,11 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/test/setup.js'],
   moduleNameMapping: {
     '^@/(.*)$': '<rootDir>/public/js/$1'
-  }
+  },
+  collectCoverageFrom: [
+    'public/js/**/*.js',
+    '!public/js/**/*.test.js',
+    '!public/js/**/*.spec.js',
+    '!public/js/utils/LazyLoader.js'
+  ]
 }
