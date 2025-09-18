@@ -1,5 +1,54 @@
 /* ===== SHARED COMPONENTS STYLES ===== */
 
+/* ===== BUTTONS (GLOBAL) ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn.primary {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.btn.primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+/* Состояние «идёт воспроизведение» для кнопки Старт/Стоп */
+.btn.primary.playing {
+  background: #f59e0b;
+  color: #111827;
+}
+
+.btn.outline {
+  background: transparent;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+}
+
+.btn.outline:hover {
+  background: #111827;
+}
+
+.btn.danger {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.btn.danger:hover {
+  filter: brightness(1.05);
+}
+
 /* ===== DIRECTION CONTROLS ===== */
 .direction-controls {
   display: flex;

@@ -382,7 +382,7 @@
                 wsClient = new WebSocketClient(sessionId, 'viewer');
                 window.wsClient = wsClient;
                 
-                wsClient.on('initial_state', (state) => {
+                wsClient.on(WS_MSG.initialState, (state) => {
                     debugLog('✅ Получено начальное состояние', state);
                     physicsEngine.applyCommand(state); // Применяем полное состояние
                     if (state && state.paused === false) {
@@ -391,7 +391,7 @@
                     updateStatus(state); // Обновляем статус на основе полного состояния
                 });
 
-                wsClient.on('state_update', (command) => {
+                wsClient.on(WS_MSG.stateUpdate, (command) => {
                     // Применяем команду от сервера
                     physicsEngine.applyCommand(command);
                     if (command && command.paused === false) {

@@ -331,7 +331,7 @@ function setupWebSocketEventHandlers (wsClient, logger) {
     }
   })
 
-  wsClient.on('viewer_status', (data) => {
+  wsClient.on(WS_MSG.viewerStatus, (data) => {
     logger.info('Получен статус viewer', data)
     window.__current.viewerConnected = data.connected
     if (data.screenSize) {
@@ -402,7 +402,7 @@ function setupWebSocketEventHandlers (wsClient, logger) {
   })
 
   // Адаптация сглаживания по сетевым метрикам
-  wsClient.on('net_metrics', ({ rttMs, jitterMs }) => {
+  wsClient.on(WS_MSG.netMetrics, ({ rttMs, jitterMs }) => {
     if (!previewPhysicsEngine) return
     // Чем больше джиттер — тем выше демпфирование и шире окно предикции
     const base = (window.BBConfig && window.BBConfig.smoothing) || {}
@@ -728,7 +728,7 @@ async function updateSpeed (speed) {
       return
     }
 
-    await wsClient.send(WS_MSG.controllerUpdate, { speed })
+    safeSend(WS_MSG.controllerUpdate, { speed })
     debugLog('✅ Скорость обновлена через WebSocket:', speed)
   } catch (error) {
     debugError('Ошибка при обновлении скорости:', error)
@@ -1084,10 +1084,10 @@ function updatePlayPauseButton () {
 
   if (isPlaying) {
     button.textContent = '⏸ Стоп'
-    button.style.background = '#f59e0b'
+    button.classList.add('playing')
   } else {
     button.textContent = '▶️ Старт'
-    button.style.background = '#10b981'
+    button.classList.remove('playing')
   }
 }
 
@@ -1121,7 +1121,7 @@ function togglePlayPause () {
       speed: components.speed ? components.speed.getSpeed() : 40
     })
 
-    safeSend('controller_update', payload)
+    safeSend(WS_MSG.controllerUpdate, payload)
     isPlaying = true
     updatePlayPauseButton() // мгновенный отклик UI
     // Запускаем таймер
