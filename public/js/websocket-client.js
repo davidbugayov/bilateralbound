@@ -20,6 +20,9 @@ class WebSocketClient {
       reconnectInterval: globalConfig.reconnectDelay || 3000,
       heartbeatInterval: globalConfig.heartbeatInterval || 25000,
       messageTimeout: globalConfig.messageTimeout || 5000,
+      // Коалесцирование/троттлинг исходящих сообщений
+      coalesceTypes: (globalConfig.coalesceTypes || ['controller_update']),
+      coalesceDelayMs: (globalConfig.coalesceDelayMs || 16), // ~60fps
       ...options
     }
 
@@ -39,6 +42,10 @@ class WebSocketClient {
     this.reconnectTimer = null
     this.heartbeatTimer = null
     this.messageTimeouts = new Map()
+
+    // Коалесцирование исходящих сообщений
+    this._coalesceBuffers = new Map() // type -> latest payload
+    this._coalesceTimers = new Map() // type -> timer id
 
     // Генерация URL
     this.url = this._generateWebSocketUrl()
@@ -118,13 +125,30 @@ class WebSocketClient {
       throw new Error('WebSocket is not connected')
     }
 
-    const messageId = ++this.messageIdCounter
-    const message = {
-      id: messageId,
-      type,
-      payload,
-      timestamp: Date.now()
+    // Коалесцирование для «шумных» типов
+    if (this.config.coalesceTypes.includes(type) && !options.expectResponse) {
+      this._coalesceBuffers.set(type, payload)
+      if (!this._coalesceTimers.has(type)) {
+        const timerId = setTimeout(() => {
+          const latest = this._coalesceBuffers.get(type)
+          this._coalesceBuffers.delete(type)
+          this._coalesceTimers.delete(type)
+          // Отправляем один последний пакет
+          const coalescedMessage = {
+            id: ++this.messageIdCounter,
+            type,
+            payload: latest,
+            timestamp: Date.now()
+          }
+          try { this._sendMessage(coalescedMessage) } catch (e) { this.log(`Coalesced send failed: ${e.message}`, 'warning') }
+        }, this.config.coalesceDelayMs)
+        this._coalesceTimers.set(type, timerId)
+      }
+      return Promise.resolve()
     }
+
+    const messageId = ++this.messageIdCounter
+    const message = { id: messageId, type, payload, timestamp: Date.now() }
 
     if (options.expectResponse) {
       return new Promise((resolve, reject) => {
@@ -322,6 +346,10 @@ class WebSocketClient {
     }
     this.messageTimeouts.forEach(timeout => clearTimeout(timeout))
     this.messageTimeouts.clear()
+    // Чистим коалесцирование
+    this._coalesceTimers.forEach(timerId => clearTimeout(timerId))
+    this._coalesceTimers.clear()
+    this._coalesceBuffers.clear()
   }
 
   log (message, type = 'info') {

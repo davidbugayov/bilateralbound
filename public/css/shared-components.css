@@ -49,6 +49,30 @@
   filter: brightness(1.05);
 }
 
+/* CTA variations for landing */
+.btn.block {
+  width: 100%;
+  display: inline-flex;
+}
+
+.btn.lg {
+  padding: 16px 20px;
+  font-size: 18px;
+}
+
+.btn.gradient-primary {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+}
+
+.btn.gradient-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
 /* ===== DIRECTION CONTROLS ===== */
 .direction-controls {
   display: flex;

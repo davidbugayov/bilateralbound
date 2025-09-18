@@ -564,14 +564,14 @@ async function handleInitializationError (error, logger) {
 
   if (error instanceof AppError) {
     switch (error.code) {
-    case 'SESSION_ID_MISSING':
-      userMessage = 'Ссылка недействительна. Попробуйте создать новую сессию.'
-      break
-    case 'DOM_ELEMENTS_MISSING':
-      userMessage = 'Ошибка интерфейса приложения. Попробуйте перезагрузить страницу.'
-      break
-    default:
-      userMessage = error.message
+      case 'SESSION_ID_MISSING':
+        userMessage = 'Ссылка недействительна. Попробуйте создать новую сессию.'
+        break
+      case 'DOM_ELEMENTS_MISSING':
+        userMessage = 'Ошибка интерфейса приложения. Попробуйте перезагрузить страницу.'
+        break
+      default:
+        userMessage = error.message
     }
   } else if (error.message) {
     userMessage = error.message
@@ -903,10 +903,10 @@ function updatePreviewSize (viewerScreenSize) {
 function setDir (mode) {
   let dx = 0; let dy = 0
   switch (mode) {
-  case 'horizontal': dx = 1; dy = 0; break
-  case 'vertical': dx = 0; dy = 1; break
-  case 'diagRL': dx = 0.707; dy = 0.707; break
-  case 'diagRLL': dx = 0.707; dy = -0.707; break
+    case 'horizontal': dx = 1; dy = 0; break
+    case 'vertical': dx = 0; dy = 1; break
+    case 'diagRL': dx = 0.707; dy = 0.707; break
+    case 'diagRLL': dx = 0.707; dy = -0.707; break
   }
 
   directionState = { dx, dy }
@@ -938,10 +938,10 @@ function setDirection (mode) {
 
   let dx = 0; let dy = 0
   switch (mode) {
-  case 'horizontal': dx = 1; dy = 0; break
-  case 'vertical': dx = 0; dy = 1; break
-  case 'diagRL': dx = 0.707; dy = 0.707; break
-  case 'diagRLL': dx = 0.707; dy = -0.707; break
+    case 'horizontal': dx = 1; dy = 0; break
+    case 'vertical': dx = 0; dy = 1; break
+    case 'diagRL': dx = 0.707; dy = 0.707; break
+    case 'diagRLL': dx = 0.707; dy = -0.707; break
   }
 
   directionState = { dx, dy }

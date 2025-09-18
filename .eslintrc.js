@@ -1,46 +1,23 @@
 module.exports = {
   env: {
     browser: true,
-    node: true,
-    es2021: true
+    es2021: true,
+    node: true
   },
-  extends: [
-    'standard'
-  ],
-  parserOptions: {
-    ecmaVersion: 12,
-    sourceType: 'module'
-  },
-  rules: {
-    'no-console': 'off', // Allow console in server-side code
-    'no-unused-vars': 'warn',
-    'no-var': 'error',
-    'prefer-const': 'error',
-    'semi': ['error', 'never'],
-    'quotes': ['error', 'single'],
-    'indent': ['error', 2],
-    'comma-dangle': ['error', 'never']
-  },
+  extends: ['standard'],
   globals: {
-    window: 'readonly',
-    document: 'readonly',
-    console: 'readonly',
-    setTimeout: 'readonly',
-    clearTimeout: 'readonly',
-    setInterval: 'readonly',
-    clearInterval: 'readonly',
-    fetch: 'readonly',
-    URLSearchParams: 'readonly',
+    WS_MSG: 'readonly',
+    WebSocketClient: 'readonly',
     PhysicsEngine: 'readonly',
     BallRenderer: 'readonly',
-    SessionSync: 'readonly',
-    createOptimizedCanvas: 'readonly',
-    ObjectPool: 'readonly',
-    isElementVisible: 'readonly',
-    moduleFactory: 'readonly',
-    ball: 'readonly',
+    sharedComponents: 'readonly',
     debugLog: 'readonly',
     debugError: 'readonly',
-    debugWarn: 'readonly'
+    throttle: 'readonly',
+    getSessionIdFromUrl: 'readonly'
+  },
+  rules: {
+    'no-unused-vars': 'warn',
+    'no-undef': 'error'
   }
 }

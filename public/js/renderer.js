@@ -36,6 +36,7 @@ class BallRenderer {
     this.onFrameCallback = null
     this.options = {
       localPhysics: false, // Флаг для локальной физики (для вьювера)
+      dirtyRegions: false, // Частичная перерисовка по регионам
       ...options
     }
 
@@ -193,12 +194,31 @@ class BallRenderer {
     }
 
     try {
-      // Очищаем canvas
-      this.ctx.fillStyle = this.colors.bg
-      this.fillRect(0, 0, this.canvas.width, this.canvas.height)
-
-      // Рисуем шарик
-      this.renderBall()
+      if (!this.options.dirtyRegions) {
+        // Полная перерисовка
+        this.ctx.fillStyle = this.colors.bg
+        this.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        this.renderBall()
+      } else {
+        // Простейшая dirty-стратегия: очищаем только окрестность предыдущего и текущего положения
+        const padding = 4
+        const prev = this._prevBall || { x: -1, y: -1, radius: 0 }
+        const curr = this.physics.ball
+        // Очистка предыдущего региона
+        if (prev.x >= 0) {
+          const w = prev.radius * 2 + padding * 2
+          const h = prev.radius * 2 + padding * 2
+          this.ctx.fillStyle = this.colors.bg
+          this.fillRect(prev.x - prev.radius - padding, prev.y - prev.radius - padding, w, h)
+        }
+        // Очистка текущего региона и отрисовка мяча
+        const w2 = curr.radius * 2 + padding * 2
+        const h2 = curr.radius * 2 + padding * 2
+        this.ctx.fillStyle = this.colors.bg
+        this.fillRect(curr.x - curr.radius - padding, curr.y - curr.radius - padding, w2, h2)
+        this.renderBall(curr)
+        this._prevBall = { x: curr.x, y: curr.y, radius: curr.radius }
+      }
     } catch (error) {
       console.error('BallRenderer: Error during rendering:', error)
       // Не останавливаем рендер луп, просто пропускаем кадр
