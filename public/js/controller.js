@@ -36,6 +36,9 @@ if (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.renderin
 
 // --- Elements ---
 const previewCanvas = document.getElementById('preview')
+let previewFsCanvas = null
+let previewFsRenderer = null
+let isPreviewFullscreen = false
 
 // ====== СЧЁТЧИКИ: таймер/пасы/сеты ======
 const bbCounters = {
@@ -207,6 +210,19 @@ async function initializeController () {
 
     // Инициализируем превью сразу, чтобы пользователь видел мяч
     initializePreview()
+
+    // Навешиваем обработчики полноэкранного превью
+    const openFsBtn = document.getElementById('openPreviewFullscreenBtn')
+    const exitFsBtn = document.getElementById('exitPreviewFullscreenBtn')
+    const overlay = document.getElementById('previewOverlay')
+    previewFsCanvas = document.getElementById('previewFullscreenCanvas')
+    if (openFsBtn && exitFsBtn && overlay && previewFsCanvas) {
+      openFsBtn.addEventListener('click', openPreviewFullscreen)
+      exitFsBtn.addEventListener('click', closePreviewFullscreen)
+      window.addEventListener('resize', () => {
+        if (isPreviewFullscreen) resizePreviewFullscreen()
+      })
+    }
 
     // 3. Инициализация WebSocket с современным API
     await initializeWebSocketClient(sessionId)
@@ -1201,5 +1217,43 @@ function updateViewerStatusUI () {
       viewerStatusEl.style.color = '#ef4444' // красный
       showWaitingForViewer()
     }
+  }
+}
+
+function openPreviewFullscreen () {
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay || !previewFsCanvas) return
+  overlay.style.display = 'block'
+  isPreviewFullscreen = true
+
+  try {
+    if (!previewPhysicsEngine) {
+      previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
+      previewPhysicsEngine.isViewer = true
+    }
+    if (!previewFsRenderer) {
+      previewFsRenderer = new BallRenderer(previewFsCanvas, previewPhysicsEngine, { localPhysics: false })
+      previewFsRenderer.start()
+    } else {
+      previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
+    }
+  } catch {}
+
+  resizePreviewFullscreen()
+}
+
+function closePreviewFullscreen () {
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay) return
+  overlay.style.display = 'none'
+  isPreviewFullscreen = false
+}
+
+function resizePreviewFullscreen () {
+  if (!previewFsCanvas) return
+  previewFsCanvas.width = window.innerWidth
+  previewFsCanvas.height = window.innerHeight
+  if (previewPhysicsEngine) {
+    previewPhysicsEngine.setWorldSize(window.innerWidth, window.innerHeight)
   }
 }
