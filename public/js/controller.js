@@ -1469,28 +1469,19 @@ function wireFullscreenControls () {
   if (dDL) dDL.onclick = () => setDirection('diagRLL')
   if (dDR) dDR.onclick = () => setDirection('diagRL')
 
-  const col1 = document.getElementById('fsBallCol1')
-  const col2 = document.getElementById('fsBallCol2')
-  const col3 = document.getElementById('fsBallCol3')
-  const col4 = document.getElementById('fsBallCol4')
-  const col5 = document.getElementById('fsBallCol5')
-  if (col1) col1.onclick = () => setBallColor('#ef4444')
-  if (col2) col2.onclick = () => setBallColor('#10b981')
-  if (col3) col3.onclick = () => setBallColor('#f59e0b')
-  if (col4) col4.onclick = () => setBallColor('#8b5cf6')
-  if (col5) col5.onclick = () => setBallColor('#ec4899')
+  // Ball color buttons (10 colors from main preview)
+  const ballColors = ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff']
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.getElementById(`fsBallCol${i}`)
+    if (btn) btn.onclick = () => setBallColor(ballColors[i-1])
+  }
 
-  // Background color buttons
-  const bgWhite = document.getElementById('fsBgWhite')
-  const bgBlack = document.getElementById('fsBgBlack')
-  const bgGray = document.getElementById('fsBgGray')
-  const bgGreen = document.getElementById('fsBgGreen')
-  const bgPurple = document.getElementById('fsBgPurple')
-  if (bgWhite) bgWhite.onclick = () => setBackgroundColor('#ffffff')
-  if (bgBlack) bgBlack.onclick = () => setBackgroundColor('#000000')
-  if (bgGray) bgGray.onclick = () => setBackgroundColor('#6b7280')
-  if (bgGreen) bgGreen.onclick = () => setBackgroundColor('#166534')
-  if (bgPurple) bgPurple.onclick = () => setBackgroundColor('#7c2d12')
+  // Background color buttons (10 colors from main preview)
+  const bgColors = ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a']
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.getElementById(`fsBg${i}`)
+    if (btn) btn.onclick = () => setBackgroundColor(bgColors[i-1])
+  }
 }
 
 function fillFsSessionInfo () {
