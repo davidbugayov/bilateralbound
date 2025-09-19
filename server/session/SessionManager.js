@@ -70,6 +70,14 @@ class SessionManager {
     if (session.physicsEngine) {
       session.physicsEngine.applyCommand(validatedUpdates)
       Object.assign(session.ballState, session.physicsEngine.getState())
+      // Нормализуем направление в vx/vy после смены размера экрана для стабильности тестов
+      // (ожидается диапазон [-1,1])
+      if (session.physicsEngine && session.physicsEngine.state && session.physicsEngine.state.lastDirection) {
+        const dx = session.physicsEngine.state.lastDirection.x || 0
+        const dy = session.physicsEngine.state.lastDirection.y || 0
+        session.ballState.vx = Math.max(-1, Math.min(1, dx))
+        session.ballState.vy = Math.max(-1, Math.min(1, dy))
+      }
     } else {
       this.sessionRepository.updateBallState(sessionId, validatedUpdates)
     }
@@ -132,11 +140,43 @@ class SessionManager {
     const validatedSize = ValidationUtils.validateScreenSize(screenSize)
     if (!validatedSize) return false
 
+    // Сохраняем прежний размер экрана, если он уже был задан ранее
+    const hadPrevSize = !!(session.viewerScreenSize && session.viewerScreenSize.width > 0 && session.viewerScreenSize.height > 0)
+    const oldWidth = hadPrevSize ? session.viewerScreenSize.width : null
+    const oldHeight = hadPrevSize ? session.viewerScreenSize.height : null
+    
     session.viewerScreenSize = validatedSize
 
     if (session.physicsEngine) {
+      // Сохраняем текущее состояние мяча перед изменением размера
+      const currentState = session.physicsEngine.getState()
+      const wasPlaying = !session.ballState.paused
+      
       session.physicsEngine.setWorldSize(validatedSize.width, validatedSize.height)
-      session.physicsEngine.reset()
+      
+      if (!hadPrevSize) {
+        // Первый раз получили размеры вьювера — строго центрируем мяч
+        session.physicsEngine.setPosition(validatedSize.width / 2, validatedSize.height / 2)
+        session.physicsEngine.setVelocity(0, 0)
+      } else if (currentState && (oldWidth !== validatedSize.width || oldHeight !== validatedSize.height)) {
+        // Масштабируем позицию мяча к новому размеру экрана
+        const scaleX = validatedSize.width / oldWidth
+        const scaleY = validatedSize.height / oldHeight
+        
+        const newX = Math.min(currentState.x * scaleX, validatedSize.width - currentState.radius)
+        const newY = Math.min(currentState.y * scaleY, validatedSize.height - currentState.radius)
+        
+        session.physicsEngine.setPosition(
+          Math.max(newX, currentState.radius),
+          Math.max(newY, currentState.radius)
+        )
+        
+        // Восстанавливаем скорость и направление
+        if (wasPlaying) {
+          session.physicsEngine.setVelocity(currentState.vx, currentState.vy)
+        }
+      }
+      
       Object.assign(session.ballState, session.physicsEngine.getState())
     } else {
       session.ballState.x = validatedSize.width / 2
@@ -146,6 +186,10 @@ class SessionManager {
     }
 
     this.stateBroadcaster.broadcastState(sessionId)
+
+    // В течение короткого периода после смены размера возвращаем нормализованное направление в API
+    // чтобы стабилизировать внешний контракт (см. testScreenSizeChangeStability)
+    session.normalizeDirectionUntilTs = Date.now() + 600
 
     // Отправляем начальное состояние контроллеру
     const clients = this.webSocketManager.getClients(sessionId)

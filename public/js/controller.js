@@ -354,15 +354,33 @@ function setupWebSocketEventHandlers (wsClient, logger) {
     // и только потом применяем состояние. Это решает проблему гонки состояний.
     if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
       window.__current.viewerScreenSize = state.viewerScreenSize
-      updatePreviewSize()
+      updatePreviewSize(state.viewerScreenSize)
     }
 
     // Мгновенно выравниваем позицию в превью по центру из initial_state (без интерполяции),
     // используем СЫРЫЕ координаты вьювера (скейл будет на отрисовке)
     try {
-      if (previewPhysicsEngine && state.x !== undefined && state.y !== undefined) {
-        previewPhysicsEngine.setPosition(state.x, state.y)
-        previewPhysicsEngine.setVelocity(0, 0)
+      if (previewPhysicsEngine) {
+        const hasValidX = typeof state.x === 'number' && !Number.isNaN(state.x)
+        const hasValidY = typeof state.y === 'number' && !Number.isNaN(state.y)
+
+        if (hasValidX && hasValidY) {
+          previewPhysicsEngine.setPosition(state.x, state.y)
+          previewPhysicsEngine.setVelocity(0, 0)
+        } else if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
+          // Фолбэк: если координаты не пришли, центрируем относительно размеров вьювера
+          const canvas = window.__previewCanvas || document.getElementById('preview')
+          if (canvas) {
+            const viewerCenterX = window.__current.viewerScreenSize.width / 2
+            const viewerCenterY = window.__current.viewerScreenSize.height / 2
+            const scaleX = canvas.width / window.__current.viewerScreenSize.width
+            const scaleY = canvas.height / window.__current.viewerScreenSize.height
+            const previewCenterX = viewerCenterX * scaleX
+            const previewCenterY = viewerCenterY * scaleY
+            previewPhysicsEngine.setPosition(previewCenterX, previewCenterY)
+            previewPhysicsEngine.setVelocity(0, 0)
+          }
+        }
       }
     } catch (e) {
       // Тихо игнорируем, если в момент старта ещё нет канваса
@@ -392,10 +410,8 @@ function setupWebSocketEventHandlers (wsClient, logger) {
       if (sizeChanged) {
         updatePreviewSize(nextSize)
         updateViewerStatusUI()
-        // Только при реальном изменении размеров — переводим UI в паузу и ждём ручного старта
-        isPlaying = false
-        forcePauseUntilUserAction = true
-        updatePlayPauseButton()
+        // При изменении размеров обновляем превью, но не останавливаем игру
+        // Игра должна продолжать работать
       }
     }
     applyServerStateToPreview(state)
@@ -608,10 +624,8 @@ function syncUIWithState (ballState) {
         updatePlayPauseButton()
         return
       }
-      // Если стоит принудительная пауза (после ресайза), игнорируем paused=false,
-      // пока пользователь явно не нажмёт «Старт»
-      const effectivePaused = forcePauseUntilUserAction ? true : ballState.paused
-      isPlaying = !effectivePaused
+      // Обновляем состояние игры на основе серверного состояния
+      isPlaying = !ballState.paused
       updatePlayPauseButton()
     }
 

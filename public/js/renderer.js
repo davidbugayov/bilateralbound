@@ -126,6 +126,18 @@ class BallRenderer {
       return
     }
 
+    // Если браузер уже изменил CSS‑размеры canvas (clientWidth/Height),
+    // мгновенно синхронизируем внутренние размеры и пропускаем кадр,
+    // чтобы избежать неравномерного масштабирования (сплющивания).
+    const clientW = this.canvas.clientWidth
+    const clientH = this.canvas.clientHeight
+    if ((clientW && clientW !== this.canvas.width) || (clientH && clientH !== this.canvas.height)) {
+      this.resize(clientW || this.canvas.width, clientH || this.canvas.height)
+      this.lastTime = currentTime
+      this.animationFrameId = requestAnimationFrame(this.renderLoop)
+      return
+    }
+
     const deltaTime = currentTime - this.lastTime
 
     // Адаптивная регулировка FPS
@@ -241,9 +253,11 @@ class BallRenderer {
       if (this._cached.radius !== ball.radius || this._cached.color !== col) {
         this._cached.radius = ball.radius
         this._cached.color = col
+        // Градиент не должен зависеть от абсолютной позиции шара,
+        // чтобы исключить визуальные артефакты при ресайзе.
         const g = this.ctx.createRadialGradient(
-          ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, 0,
-          ball.x, ball.y, ball.radius
+          -ball.radius * 0.3, -ball.radius * 0.3, 0,
+          0, 0, ball.radius
         )
         g.addColorStop(0, col)
         g.addColorStop(1, this.adjustBrightness(col, -20))
@@ -304,11 +318,21 @@ class BallRenderer {
     try {
       this.canvas.width = width
       this.canvas.height = height
+      // Синхронизируем CSS размеры с реальными, чтобы избежать растягивания пикселей
+      this.canvas.style.width = width + 'px'
+      this.canvas.style.height = height + 'px'
 
       // Обновляем размеры мира физики
       if (this.physics) {
         this.physics.setWorldSize(width, height)
       }
+
+      // Инвалидируем кэш градиента/пути при смене размеров,
+      // чтобы форма и шейдинг корректно пересчитались под новый масштаб
+      this._cached.radius = null
+      this._cached.color = null
+      this._cached.gradient = null
+      this._cached.path = null
     } catch (error) {
     }
   }
