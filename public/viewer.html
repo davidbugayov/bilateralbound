@@ -289,6 +289,10 @@
     
     <!-- ===== MAIN SCRIPT ===== -->
     <script>
+        // Локальные no-op логгеры на случай, если common.js с defer еще не инициализировал глобальные
+        const debugLog = (window && window.debugLog) ? window.debugLog : function() {};
+        const debugError = (window && window.debugError) ? window.debugError : function() {};
+        const debugWarn = (window && window.debugWarn) ? window.debugWarn : function() {};
         // Глобальные переменные для вьювера
         let wsClient;
         let physicsEngine;
