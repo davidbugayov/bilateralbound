@@ -1010,6 +1010,45 @@ function resetCenter () {
   }
 }
 
+function resetAll () {
+  // Сбрасываем все настройки к значениям по умолчанию
+  try {
+    // Останавливаем игру
+    if (window.__current.isPlaying) {
+      togglePlayPause()
+    }
+    
+    // Центрируем мяч
+    resetCenter()
+    
+    // Сбрасываем скорость к среднему значению
+    updateSpeed(40)
+    const speedSlider = document.getElementById('fsSpeed')
+    if (speedSlider) speedSlider.value = 40
+    
+    // Сбрасываем размер к базовому
+    setBallSize(20)
+    
+    // Сбрасываем направление к горизонтальному
+    setDirection('horizontal')
+    
+    // Сбрасываем цвет мяча к красному
+    setBallColor('#ef4444')
+    
+    // Сбрасываем фон к чёрному
+    setBackgroundColor('#000000')
+    
+    // Сбрасываем счётчики
+    if (window.counters) {
+      window.counters.resetAll()
+    }
+    
+    console.log('Все настройки сброшены к значениям по умолчанию')
+  } catch (error) {
+    console.error('Ошибка при сбросе настроек:', error)
+  }
+}
+
 function resetSession () {
   // Закрываем текущий WebSocket
   if (wsClient) wsClient.disconnect()
@@ -1428,17 +1467,25 @@ function wireFullscreenControls () {
   const col1 = document.getElementById('fsBallCol1')
   const col2 = document.getElementById('fsBallCol2')
   const col3 = document.getElementById('fsBallCol3')
-  if (col1) col1.onclick = () => setBallColor('#60a5fa')
-  if (col2) col2.onclick = () => setBallColor('#ef4444')
-  if (col3) col3.onclick = () => setBallColor('#10b981')
+  const col4 = document.getElementById('fsBallCol4')
+  const col5 = document.getElementById('fsBallCol5')
+  if (col1) col1.onclick = () => setBallColor('#ef4444')
+  if (col2) col2.onclick = () => setBallColor('#10b981')
+  if (col3) col3.onclick = () => setBallColor('#f59e0b')
+  if (col4) col4.onclick = () => setBallColor('#8b5cf6')
+  if (col5) col5.onclick = () => setBallColor('#ec4899')
 
   // Background color buttons
   const bgWhite = document.getElementById('fsBgWhite')
   const bgBlack = document.getElementById('fsBgBlack')
   const bgGray = document.getElementById('fsBgGray')
+  const bgGreen = document.getElementById('fsBgGreen')
+  const bgPurple = document.getElementById('fsBgPurple')
   if (bgWhite) bgWhite.onclick = () => setBackgroundColor('#ffffff')
   if (bgBlack) bgBlack.onclick = () => setBackgroundColor('#000000')
   if (bgGray) bgGray.onclick = () => setBackgroundColor('#6b7280')
+  if (bgGreen) bgGreen.onclick = () => setBackgroundColor('#166534')
+  if (bgPurple) bgPurple.onclick = () => setBackgroundColor('#7c2d12')
 }
 
 function fillFsSessionInfo () {

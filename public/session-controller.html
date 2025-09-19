@@ -292,44 +292,68 @@
     <div id="previewOverlay" style="display:none; position:fixed; inset:0; background:#0b1220; z-index:2000;">
       <canvas id="previewFullscreenCanvas" style="display:block; width:100vw; height:100vh; background:#020617;"></canvas>
       <!-- Плавающая панель управления поверх -->
-      <div id="previewFsPanel" style="position:absolute; top:16px; left:50%; transform:translateX(-50%); display:flex; gap:10px; align-items:center; background: rgba(0,0,0,0.55); border:1px solid #1f2937; padding:10px 12px; border-radius:12px; backdrop-filter: blur(8px); transition: opacity .25s ease; opacity:1;">
-        <span id="fsCurSid" style="color:#cbd5e1; font-weight:600; font-size:12px; white-space:nowrap;">SID: ...</span>
-        <div style="display:flex; align-items:center; gap:6px; max-width:280px;">
-          <input id="fsViewLink" readonly style="width:220px; padding:6px 8px; background:#0b1220; color:#e2e8f0; border:1px solid #1f2937; border-radius:6px; font-size:12px;" />
-          <button class="copy-btn" style="padding:6px 8px;" onclick="copy('fsViewLink')">📋</button>
+      <div id="previewFsPanel" style="position:absolute; top:20px; right:20px; width:320px; height:320px; background: rgba(0,0,0,0.75); border:1px solid #1f2937; padding:16px; border-radius:16px; backdrop-filter: blur(12px); transition: opacity .25s ease; opacity:1; display:grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto auto auto; gap:8px; align-items:center;">
+        <!-- SID и ссылка -->
+        <div style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
+          <span id="fsCurSid" style="color:#cbd5e1; font-weight:600; font-size:12px; text-align:center;">SID: ...</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <input id="fsViewLink" readonly style="flex:1; padding:6px 8px; background:#0b1220; color:#e2e8f0; border:1px solid #1f2937; border-radius:6px; font-size:11px;" />
+            <button class="copy-btn" style="padding:6px 8px; font-size:12px;" onclick="copy('fsViewLink')">📋</button>
+          </div>
         </div>
-        <button class="btn" onclick="togglePlayPause()" id="fsPlayPauseBtn">▶️ Старт</button>
-        <button class="btn outline" onclick="resetCenter()">🎯 Центр</button>
-        <div class="segmented" style="margin:0 6px;">
-          <button class="seg-btn" id="fsDirH">↔️</button>
-          <button class="seg-btn" id="fsDirV">↕️</button>
-          <button class="seg-btn" id="fsDirDL">↙️↘️</button>
-          <button class="seg-btn" id="fsDirDR">↖️↗️</button>
+        
+        <!-- Основные кнопки -->
+        <button class="btn" onclick="togglePlayPause()" id="fsPlayPauseBtn" style="grid-column: 1; font-size:12px; padding:8px;">▶️ Старт</button>
+        <button class="btn outline" onclick="resetCenter()" style="grid-column: 2; font-size:12px; padding:8px;">🎯 Центр</button>
+        
+        <!-- Кнопка сброса -->
+        <button class="btn outline" onclick="resetAll()" style="grid-column: 1 / -1; font-size:12px; padding:8px; margin-top:4px;">🔄 Сброс</button>
+        
+        <!-- Направления -->
+        <div style="grid-column: 1 / -1; display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
+          <button class="seg-btn" id="fsDirH" style="font-size:11px; padding:6px;">↔️ Гориз</button>
+          <button class="seg-btn" id="fsDirV" style="font-size:11px; padding:6px;">↕️ Вертик</button>
+          <button class="seg-btn" id="fsDirDL" style="font-size:11px; padding:6px;">↙️↘️ Диаг1</button>
+          <button class="seg-btn" id="fsDirDR" style="font-size:11px; padding:6px;">↖️↗️ Диаг2</button>
         </div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <label style="color:#cbd5e1; font-size:12px;">Скорость</label>
-          <input type="range" id="fsSpeed" min="0" max="100" value="40" style="width:120px;" />
+        
+        <!-- Скорость -->
+        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:8px;">
+          <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Скорость</label>
+          <input type="range" id="fsSpeed" min="0" max="100" value="40" style="flex:1;" />
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-          <label style="color:#cbd5e1; font-size:12px;">Размер</label>
-          <button class="size-btn" id="fsSize1">×1</button>
-          <button class="size-btn" id="fsSize2">×2</button>
-          <button class="size-btn" id="fsSize3">×3</button>
-          <button class="size-btn" id="fsSize4">×4</button>
+        
+        <!-- Размеры -->
+        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:4px;">
+          <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Размер</label>
+          <button class="size-btn" id="fsSize1" style="font-size:10px; padding:4px 6px;">×1</button>
+          <button class="size-btn" id="fsSize2" style="font-size:10px; padding:4px 6px;">×2</button>
+          <button class="size-btn" id="fsSize3" style="font-size:10px; padding:4px 6px;">×3</button>
+          <button class="size-btn" id="fsSize4" style="font-size:10px; padding:4px 6px;">×4</button>
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-          <label style="color:#cbd5e1; font-size:12px;">Цвет</label>
-          <button class="color-btn" id="fsBallCol1" style="background:#60a5fa; width:22px; height:22px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol2" style="background:#ef4444; width:22px; height:22px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol3" style="background:#10b981; width:22px; height:22px; padding:0; border-radius:50%;"></button>
+        
+        <!-- Цвета мяча -->
+        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:4px; margin-bottom:4px;">
+          <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Мяч</label>
+          <button class="color-btn" id="fsBallCol1" style="background:#ef4444; width:18px; height:18px; padding:0; border-radius:50%;"></button>
+          <button class="color-btn" id="fsBallCol2" style="background:#10b981; width:18px; height:18px; padding:0; border-radius:50%;"></button>
+          <button class="color-btn" id="fsBallCol3" style="background:#f59e0b; width:18px; height:18px; padding:0; border-radius:50%;"></button>
+          <button class="color-btn" id="fsBallCol4" style="background:#8b5cf6; width:18px; height:18px; padding:0; border-radius:50%;"></button>
+          <button class="color-btn" id="fsBallCol5" style="background:#ec4899; width:18px; height:18px; padding:0; border-radius:50%;"></button>
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-          <label style="color:#cbd5e1; font-size:12px;">Фон</label>
-          <button class="color-btn" id="fsBgWhite" style="background:#ffffff; width:22px; height:22px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBgBlack" style="background:#000000; width:22px; height:22px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBgGray" style="background:#6b7280; width:22px; height:22px; padding:0; border-radius:50%;"></button>
+        
+        <!-- Цвета фона -->
+        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:4px;">
+          <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Фон</label>
+          <button class="color-btn" id="fsBgWhite" style="background:#ffffff; width:18px; height:18px; padding:0; border-radius:50%;"></button>
+          <button class="color-btn" id="fsBgBlack" style="background:#000000; width:18px; height:18px; padding:0; border-radius:50%;"></button>
+          <button class="color-btn" id="fsBgGray" style="background:#6b7280; width:18px; height:18px; padding:0; border-radius:50%;"></button>
+          <button class="color-btn" id="fsBgGreen" style="background:#166534; width:18px; height:18px; padding:0; border-radius:50%;"></button>
+          <button class="color-btn" id="fsBgPurple" style="background:#7c2d12; width:18px; height:18px; padding:0; border-radius:50%;"></button>
         </div>
-        <button class="btn outline" id="exitPreviewFullscreenBtn">⤫ Закрыть</button>
+        
+        <!-- Кнопка закрытия -->
+        <button class="btn outline" id="exitPreviewFullscreenBtn" style="grid-column: 1 / -1; font-size:12px; padding:8px; margin-top:4px;">⤫ Закрыть</button>
       </div>
     </div>
 
