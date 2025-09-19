@@ -39,6 +39,8 @@ const previewCanvas = document.getElementById('preview')
 let previewFsCanvas = null
 let previewFsRenderer = null
 let isPreviewFullscreen = false
+let fsPanelHideTimer = null
+let fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
 
 // ====== СЧЁТЧИКИ: таймер/пасы/сеты ======
 const bbCounters = {
@@ -221,6 +223,16 @@ async function initializeController () {
       exitFsBtn.addEventListener('click', closePreviewFullscreen)
       window.addEventListener('resize', () => {
         if (isPreviewFullscreen) resizePreviewFullscreen()
+      })
+      // Горячие клавиши: F – toggle, Esc – закрыть
+      document.addEventListener('keydown', (e) => {
+        const key = e.key?.toLowerCase()
+        if (key === 'f') {
+          if (!isPreviewFullscreen) openPreviewFullscreen()
+          else closePreviewFullscreen()
+        } else if (key === 'escape') {
+          if (isPreviewFullscreen) closePreviewFullscreen()
+        }
       })
     }
 
@@ -1046,6 +1058,24 @@ function setBallSize (size) {
   safeSend(WS_MSG.controllerUpdate, { radius: size })
 }
 
+function setBallSizeMultiplier (multiplier) {
+  // Базовый размер 20, умножаем на множитель
+  const baseSize = 20
+  const newSize = baseSize * multiplier
+  setBallSize(newSize)
+}
+
+function setBackgroundColor (color) {
+  // Обновляем фон в превью
+  if (window.previewRenderer) {
+    window.previewRenderer.setBackgroundColor(color)
+  }
+  // Обновляем фон в полноэкранном превью
+  if (window.fullscreenPreviewRenderer) {
+    window.fullscreenPreviewRenderer.setBackgroundColor(color)
+  }
+}
+
 // ===== ФУНКЦИИ ВОСПРОИЗВЕДЕНИЯ =====
 
 // Глобальная переменная для отслеживания состояния игры
@@ -1124,6 +1154,7 @@ function togglePlayPause () {
 
   // Финальное подтверждение состояния на кнопке
   updatePlayPauseButton()
+  syncFsPlayPauseButton()
 }
 
 // Устаревшие функции (оставлены для совместимости)
@@ -1240,6 +1271,12 @@ function openPreviewFullscreen () {
   } catch {}
 
   resizePreviewFullscreen()
+  setupFsPanelAutoHide()
+  setupFsPanelDrag()
+  setupFullscreenGestures()
+  syncFsPlayPauseButton()
+  wireFullscreenControls()
+  fillFsSessionInfo()
 }
 
 function closePreviewFullscreen () {
@@ -1256,4 +1293,160 @@ function resizePreviewFullscreen () {
   if (previewPhysicsEngine) {
     previewPhysicsEngine.setWorldSize(window.innerWidth, window.innerHeight)
   }
+}
+
+function setupFsPanelAutoHide () {
+  const panel = document.getElementById('previewFsPanel')
+  const overlay = document.getElementById('previewOverlay')
+  if (!panel || !overlay) return
+  const show = () => { panel.style.opacity = '1' }
+  const hide = () => { panel.style.opacity = '0' }
+  const scheduleHide = () => {
+    clearTimeout(fsPanelHideTimer)
+    fsPanelHideTimer = setTimeout(hide, 2000)
+  }
+  // Показ при движении мыши и нажатиях
+  overlay.addEventListener('mousemove', () => { show(); scheduleHide() })
+  overlay.addEventListener('click', () => { show(); scheduleHide() })
+  show(); scheduleHide()
+}
+
+function setupFsPanelDrag () {
+  const panel = document.getElementById('previewFsPanel')
+  const overlay = document.getElementById('previewOverlay')
+  if (!panel || !overlay) return
+
+  const onDown = (x, y) => {
+    const rect = panel.getBoundingClientRect()
+    fsPanelDrag.active = true
+    fsPanelDrag.offsetX = x - rect.left
+    fsPanelDrag.offsetY = y - rect.top
+  }
+  const onMove = (x, y) => {
+    if (!fsPanelDrag.active) return
+    panel.style.left = (x - fsPanelDrag.offsetX) + 'px'
+    panel.style.top = (y - fsPanelDrag.offsetY) + 'px'
+    panel.style.transform = 'translateX(0)'
+  }
+  const onUp = () => { fsPanelDrag.active = false }
+
+  panel.addEventListener('mousedown', (e) => { onDown(e.clientX, e.clientY) })
+  overlay.addEventListener('mousemove', (e) => { onMove(e.clientX, e.clientY) })
+  window.addEventListener('mouseup', onUp)
+
+  panel.addEventListener('touchstart', (e) => {
+    const t = e.touches[0]
+    onDown(t.clientX, t.clientY)
+  }, { passive: true })
+  overlay.addEventListener('touchmove', (e) => {
+    const t = e.touches[0]
+    onMove(t.clientX, t.clientY)
+  }, { passive: true })
+  window.addEventListener('touchend', onUp, { passive: true })
+}
+
+function setupFullscreenGestures () {
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay) return
+
+  let startX = 0; let startY = 0; let swiping = false
+  const threshold = 40
+
+  overlay.addEventListener('touchstart', (e) => {
+    const t = e.touches[0]
+    startX = t.clientX
+    startY = t.clientY
+    swiping = true
+  }, { passive: true })
+
+  overlay.addEventListener('touchmove', (e) => {
+    // жесты без блокировки скролла/зумов
+  }, { passive: true })
+
+  overlay.addEventListener('touchend', (e) => {
+    if (!swiping) return
+    swiping = false
+    const t = e.changedTouches[0]
+    const dx = t.clientX - startX
+    const dy = t.clientY - startY
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
+      // горизонтальные свайпы — смена направления
+      if (dx > 0) {
+        setDirection('horizontal')
+      } else {
+        // горизонтально влево — диагональ как альтернатива
+        setDirection('vertical')
+      }
+    } else if (Math.abs(dy) > threshold) {
+      // вертикальные свайпы — старт/стоп
+      if (dy < 0) {
+        // свайп вверх — старт
+        if (!isPlaying) togglePlayPause()
+      } else {
+        // свайп вниз — стоп
+        if (isPlaying) togglePlayPause()
+      }
+    }
+  }, { passive: true })
+}
+
+function syncFsPlayPauseButton () {
+  const btn = document.getElementById('fsPlayPauseBtn')
+  if (!btn) return
+  if (isPlaying) {
+    btn.textContent = '⏸ Стоп'
+  } else {
+    btn.textContent = '▶️ Старт'
+  }
+}
+
+function wireFullscreenControls () {
+  const speed = document.getElementById('fsSpeed')
+  if (speed) {
+    speed.value = components?.speed ? components.speed.getSpeed() : 40
+    speed.oninput = (e) => updateSpeed(Number(e.target.value))
+  }
+
+  const size1 = document.getElementById('fsSize1')
+  const size2 = document.getElementById('fsSize2')
+  const size3 = document.getElementById('fsSize3')
+  const size4 = document.getElementById('fsSize4')
+  if (size1) size1.onclick = () => setBallSizeMultiplier(1)
+  if (size2) size2.onclick = () => setBallSizeMultiplier(2)
+  if (size3) size3.onclick = () => setBallSizeMultiplier(3)
+  if (size4) size4.onclick = () => setBallSizeMultiplier(4)
+
+  const dH = document.getElementById('fsDirH')
+  const dV = document.getElementById('fsDirV')
+  const dDL = document.getElementById('fsDirDL')
+  const dDR = document.getElementById('fsDirDR')
+  if (dH) dH.onclick = () => setDirection('horizontal')
+  if (dV) dV.onclick = () => setDirection('vertical')
+  if (dDL) dDL.onclick = () => setDirection('diagRLL')
+  if (dDR) dDR.onclick = () => setDirection('diagRL')
+
+  const col1 = document.getElementById('fsBallCol1')
+  const col2 = document.getElementById('fsBallCol2')
+  const col3 = document.getElementById('fsBallCol3')
+  if (col1) col1.onclick = () => setBallColor('#60a5fa')
+  if (col2) col2.onclick = () => setBallColor('#ef4444')
+  if (col3) col3.onclick = () => setBallColor('#10b981')
+
+  // Background color buttons
+  const bgWhite = document.getElementById('fsBgWhite')
+  const bgBlack = document.getElementById('fsBgBlack')
+  const bgGray = document.getElementById('fsBgGray')
+  if (bgWhite) bgWhite.onclick = () => setBackgroundColor('#ffffff')
+  if (bgBlack) bgBlack.onclick = () => setBackgroundColor('#000000')
+  if (bgGray) bgGray.onclick = () => setBackgroundColor('#6b7280')
+}
+
+function fillFsSessionInfo () {
+  try {
+    const sid = window.__current?.sessionId || '...'
+    const fsSid = document.getElementById('fsCurSid')
+    if (fsSid) fsSid.textContent = `SID: ${sid}`
+    const fsLink = document.getElementById('fsViewLink')
+    if (fsLink) fsLink.value = `${window.location.origin}/s/${sid}`
+  } catch {}
 }

@@ -5,9 +5,10 @@
 
 // Условное логирование только в режиме разработки
 const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-const debugLog = () => {}
-const debugError = () => {}
-const debugWarn = () => {}
+// Не переопределяем, если уже определены (из других скриптов)
+const debugLog = (typeof window !== 'undefined' && window.debugLog) ? window.debugLog : () => {}
+const debugError = (typeof window !== 'undefined' && window.debugError) ? window.debugError : () => {}
+const debugWarn = (typeof window !== 'undefined' && window.debugWarn) ? window.debugWarn : () => {}
 
 // Используем общие утилиты, если доступны, иначе fallback
 const getSessionIdFromUrl = window.CommonUtils

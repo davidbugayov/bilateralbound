@@ -438,6 +438,18 @@ class BallRenderer {
     } catch (error) {
     }
   }
+
+  /**
+   * Устанавливает цвет фона
+   */
+  setBackgroundColor (color) {
+    if (this.colors) {
+      this.colors.bg = color
+    }
+    // Принудительно перерисовываем следующий кадр
+    this._cached.radius = null
+    this._cached.color = null
+  }
 }
 
 // Экспортируем для использования
