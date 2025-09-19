@@ -1,5 +1,5 @@
 /**
- * Controller - Логика управления сессией BilateralBound
+ * Controller - Логика управления сессией BilateralBound v2.1
  * Современная модульная архитектура с улучшенной обработкой ошибок
  */
 /* global WebSocketClient, PhysicsEngine, BallRenderer, sharedComponents, throttle, getSessionIdFromUrl */
@@ -1105,6 +1105,11 @@ function setBallSizeMultiplier (multiplier) {
 }
 
 function setBackgroundColor (color) {
+  // Отправляем изменение на сервер
+  if (window.__current.viewerConnected) {
+    safeSend(WS_MSG.controllerUpdate, { colorBg: color })
+  }
+  
   // Обновляем фон в превью
   if (window.previewRenderer) {
     window.previewRenderer.setBackgroundColor(color)
