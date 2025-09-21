@@ -236,6 +236,19 @@ async function initializeController () {
       })
     }
 
+    // Обработчик навигации назад в браузере
+    window.addEventListener('popstate', (event) => {
+      console.log('🔙 Popstate event:', event.state, 'Hash:', window.location.hash, 'Fullscreen:', isPreviewFullscreen)
+      
+      if (isPreviewFullscreen) {
+        // Если мы в полноэкранном режиме и произошла навигация назад
+        closePreviewFullscreen()
+      } else if (window.location.hash === '#fullscreen-preview' && !isPreviewFullscreen) {
+        // Если пользователь попал на хэш полноэкранного режима, но режим не активен
+        openPreviewFullscreen()
+      }
+    })
+
     // 3. Инициализация WebSocket с современным API
     await initializeWebSocketClient(sessionId)
 
@@ -1298,6 +1311,14 @@ function updateViewerStatusUI () {
 function openPreviewFullscreen () {
   const overlay = document.getElementById('previewOverlay')
   if (!overlay || !previewFsCanvas) return
+  
+  console.log('🚀 Opening fullscreen preview')
+  
+  // Добавляем запись в историю браузера для корректного возврата
+  const currentUrl = window.location.href
+  const fullscreenUrl = currentUrl + '#fullscreen-preview'
+  history.pushState({ fullscreen: true, returnUrl: currentUrl }, '', fullscreenUrl)
+  
   overlay.style.display = 'block'
   isPreviewFullscreen = true
 
@@ -1326,6 +1347,14 @@ function openPreviewFullscreen () {
 function closePreviewFullscreen () {
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
+  
+  console.log('🚪 Closing fullscreen preview')
+  
+  // Убираем хэш из URL без изменения истории
+  const currentUrl = window.location.href
+  const baseUrl = currentUrl.split('#')[0]
+  history.replaceState(null, '', baseUrl)
+  
   overlay.style.display = 'none'
   isPreviewFullscreen = false
 }

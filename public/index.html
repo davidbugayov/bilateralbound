@@ -330,6 +330,13 @@
     // Создаем сессию с загрузкой необходимых скриптов
     async function createSession() {
       const btn = document.getElementById('createSessionBtn');
+      
+      // Предотвращаем повторный запуск, если кнопка уже в состоянии загрузки
+      if (btn.disabled) {
+        console.log('⚠️ Создание сессии уже в процессе...');
+        return;
+      }
+      
       const originalText = btn.innerHTML;
       
       try {
@@ -396,6 +403,43 @@
 
     // На главной больше не показываем ожидание зрителя
     function startStatusMonitoring(sessionId) {}
+
+    // Функция для сброса состояния кнопки создания сессии
+    function resetCreateSessionButton() {
+      const btn = document.getElementById('createSessionBtn');
+      if (btn) {
+        btn.innerHTML = '🚀 Начать EMDR сессию';
+        btn.disabled = false;
+      }
+    }
+
+    // Обработчик для сброса состояния кнопки при возврате на страницу
+    function handlePageVisibilityChange() {
+      if (!document.hidden) {
+        // Страница стала видимой - сбрасываем состояние кнопки
+        resetCreateSessionButton();
+      }
+    }
+
+    // Обработчик для сброса состояния кнопки при фокусе на страницу
+    function handlePageFocus() {
+      resetCreateSessionButton();
+    }
+
+    // Добавляем обработчики событий
+    document.addEventListener('visibilitychange', handlePageVisibilityChange);
+    window.addEventListener('focus', handlePageFocus);
+    window.addEventListener('pageshow', function(event) {
+      // Сбрасываем состояние кнопки при загрузке страницы (включая возврат из кэша)
+      if (event.persisted) {
+        resetCreateSessionButton();
+      }
+    });
+
+    // Сбрасываем состояние кнопки при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+      resetCreateSessionButton();
+    });
   </script>
 </body>
 </html>
