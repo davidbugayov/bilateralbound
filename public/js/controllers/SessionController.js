@@ -2,7 +2,7 @@
 export class SessionController {
   constructor (deps = {}) {
     this.wsClient = deps.wsClient || null
-    this.getSpeed = deps.getSpeed || (() => 40)
+    this.getSpeed = deps.getSpeed || (() => 30)
     this.bbCounters = deps.bbCounters || null
   }
 

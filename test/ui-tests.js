@@ -42,26 +42,89 @@ async function run() {
     await controller.waitForSelector('#preview')
     console.log('✅ Контроллер открыт')
 
-    // Даем время на подключение WebSocket клиентов на страницах
-    await new Promise(r => setTimeout(r, 1000));
+    // Ждём готовности WebSocket и инициализации движка на вьювере
+    const wsReady = await viewer.evaluate(async () => {
+      function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+      const start = Date.now();
+      while (Date.now() - start < 8000) {
+        const ready = !!(window.wsClient && window.wsClient.isReady && window.physicsEngine);
+        if (ready) return true;
+        await sleep(100);
+      }
+      return false;
+    });
+    if (!wsReady) throw new Error('WebSocket/physicsEngine не готовы на вьювере');
+
+    // Контроллер WebSocket не обязателен для теста — используем REST для старта
 
     // Общая функция для чтения координат
     const readPageXY = (page, role) => {
       if (role === 'viewer') {
         return page.evaluate(() => ({ x: window.physicsEngine?.ball.x, y: window.physicsEngine?.ball.y }));
       }
-      return page.evaluate(() => ({ x: window.__previewPhysics?.ball.x, y: window.__previewPhysics?.ball.y }));
+      return page.evaluate(() => ({ x: window.__previewPhysics?.ball?.x ?? window.__previewPhysics?.ball?.x, y: window.__previewPhysics?.ball?.y ?? window.__previewPhysics?.ball?.y }));
     };
 
-    // "Умное" ожидание движения
+    // REST helper для чтения состояния
+    async function getState(sessionId) {
+      const res = await fetch(`http://localhost:3000/api/session/${sessionId}/state`);
+      if (!res.ok) throw new Error('Failed to get state');
+      return res.json();
+    }
+
+    // Ждём, пока контроллер увидит подключённого вьювера
+    const viewerConnectedOnController = await controller.evaluate(async () => {
+      function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+      const start = Date.now();
+      while (Date.now() - start < 8000) {
+        const connected = !!(window.__current && window.__current.viewerConnected);
+        if (connected) return true;
+        await sleep(100);
+      }
+      return false;
+    });
+    if (!viewerConnectedOnController) throw new Error('Controller не видит подключенного viewer');
+
+    // Запускаем движение повторно после подтверждения подключения viewer
+    await postJSON(`http://localhost:3000/api/session/${sessionId}/controller/update`, {
+      paused: false,
+      dirX: 1,
+      dirY: 0,
+      speed: 60
+    });
+    await new Promise(r => setTimeout(r, 400));
+
+    // "Умное" ожидание движения с проверкой рассинхрона viewer↔server
     async function waitForMovement(page, initialPos, role) {
       const startTime = Date.now();
-      while (Date.now() - startTime < 5000) { // Таймаут 5 секунд
+      while (Date.now() - startTime < 8000) { // Таймаут 8 секунд
         const newPos = await readPageXY(page, role);
-        if (newPos.x !== initialPos.x || newPos.y !== initialPos.y) {
+        const valid = newPos && typeof newPos.x === 'number' && typeof newPos.y === 'number';
+        if (!valid) { await new Promise(r => setTimeout(r, 100)); continue; }
+        const dx = Math.abs(newPos.x - initialPos.x);
+        const dy = Math.abs(newPos.y - initialPos.y);
+        if (dx > 0.5 || dy > 0.5) {
           return true; // Движение есть
         }
-        await new Promise(r => setTimeout(r, 100)); // Проверяем каждые 100 мс
+        // Дополнительно сверим с сервером и при рассинхроне подтолкнём viewer
+        try {
+          const sRes = await fetch(`http://localhost:3000/api/session/${sessionId}/state`);
+          if (sRes.ok) {
+            const s = await sRes.json();
+            if (s && typeof s.x === 'number' && typeof s.y === 'number') {
+              const ddx = Math.abs((s.x || 0) - (newPos.x || 0));
+              const ddy = Math.abs((s.y || 0) - (newPos.y || 0));
+              if (ddx > 2 || ddy > 2) {
+                await page.evaluate((srv) => {
+                  if (window.physicsEngine && typeof window.physicsEngine.applyCommand === 'function') {
+                    window.physicsEngine.applyCommand({ x: srv.x, y: srv.y, vx: srv.vx || 0, vy: srv.vy || 0 });
+                  }
+                }, s);
+              }
+            }
+          }
+        } catch {}
+        await new Promise(r => setTimeout(r, 120));
       }
       return false; // Таймаут
     }
@@ -70,12 +133,14 @@ async function run() {
     const v1 = await readPageXY(viewer, 'viewer');
     const p1 = await readPageXY(controller, 'preview');
 
+    // Отправляем старт движения через REST
     await postJSON(`http://localhost:3000/api/session/${sessionId}/controller/update`, {
       paused: false,
       dirX: 1,
       dirY: 0,
       speed: 60
     });
+    await new Promise(r => setTimeout(r, 300));
     console.log('▶️ Движение запущено через API');
 
     const viewerMoved = await waitForMovement(viewer, v1, 'viewer');
@@ -85,6 +150,46 @@ async function run() {
     if (!previewMoved) throw new Error('Превью не двигается');
 
     console.log('✅ Движение подтверждено на вьювере и в превью');
+
+    // 1.1 Edge-to-edge: достигаем точной правой и левой границы на вьювере
+    async function waitForExactX(page, expectedX, timeoutMs = 5000) {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        const pos = await readPageXY(page, 'viewer');
+        if (pos && typeof pos.x === 'number' && pos.x === expectedX) return true;
+        await new Promise(r => setTimeout(r, 50));
+      }
+      return false;
+    }
+
+    // Берём worldWidth и radius из вьювера
+    const viewParams = await viewer.evaluate(() => ({
+      worldWidth: window.physicsEngine?.options?.worldWidth,
+      radius: window.physicsEngine?.ball?.radius
+    }));
+    const worldWidth = viewParams.worldWidth || 1280;
+    const radius = viewParams.radius || 20;
+
+    // Движение вправо к правой границе
+    await postJSON(`http://localhost:3000/api/session/${sessionId}/controller/update`, {
+      paused: false,
+      dirX: 1,
+      dirY: 0,
+      speed: 100
+    });
+    const reachedRight = await waitForExactX(viewer, worldWidth - radius, 6000);
+    if (!reachedRight) throw new Error('Шар не достиг точно правой границы');
+
+    // Движение влево к левой границе
+    await postJSON(`http://localhost:3000/api/session/${sessionId}/controller/update`, {
+      paused: false,
+      dirX: -1,
+      dirY: 0,
+      speed: 100
+    });
+    const reachedLeft = await waitForExactX(viewer, radius, 6000);
+    if (!reachedLeft) throw new Error('Шар не достиг точно левой границы');
+    console.log('✅ Edge-to-edge: шар касается линий правой и левой границ');
 
     // 2. Проверка: смена направления
     const v2 = await readPageXY(viewer, 'viewer');

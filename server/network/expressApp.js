@@ -119,7 +119,7 @@ function setupExpressApp (sessionManager, apiCache) {
     if (!session) return res.status(404).json({ error: 'Session not found', requestId: req.id })
 
     const responseData = { ...session.ballState, viewerConnected: session.viewerConnected, controllerConnected: session.controllerConnected, viewerScreenSize: session.viewerScreenSize }
-    // Нормализуем направление vx/vy, если недавно менялся размер экрана (стабильность API)
+    // Нормализуем направление vx/vy кратковременно после смены размера/первого коннекта для стабильности API
     if (session.normalizeDirectionUntilTs && Date.now() < session.normalizeDirectionUntilTs) {
       const clamp01 = (v) => Math.max(-1, Math.min(1, typeof v === 'number' ? v : 0))
       responseData.vx = clamp01(responseData.vx)
