@@ -796,6 +796,8 @@ async function initializePreview () {
   try {
     // Создаем движок физики для превью
     previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
+    // Экспортируем для UI‑тестов
+    try { window.__previewPhysics = previewPhysicsEngine } catch (_) {}
     // Включаем режим зрителя для корректной интерполяции
     previewPhysicsEngine.isViewer = true
     // Считаем пасы по локальным событиям отскока

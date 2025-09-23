@@ -12,7 +12,7 @@ class SessionRepository {
     const session = {
       id: uuidv4().substring(0, 6),
       ballState: {
-        speed: 40,
+        speed: 30,
         radius: 20,
         colorBall: '#60a5fa',
         colorBg: '#020617',

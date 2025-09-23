@@ -995,6 +995,120 @@ class Tester {
     return allTestsPassed;
   }
 
+  async testEdgeToEdgeReach() {
+    this.log('Тест: Достижение точной границы (edge-to-edge)');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+      new Promise(resolve => controllerSocket.on('open', resolve)),
+      new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    // Устанавливаем размер мира
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 800, height: 600 } });
+
+    const radius = 20; // дефолтный радиус
+    const worldWidth = 800;
+
+    // Функция ожидания точного значения x с таймаутом
+    const waitForExactX = async (expectedX, timeoutMs = 3000, cmp = 'eq') => {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        const st = await this.req(`/api/session/${sessionId}/state`);
+        if (st.status === 200 && typeof st.data.x === 'number') {
+          const x = st.data.x;
+          if (cmp === 'ge') {
+            if (x >= expectedX - 0.5) return true;
+          } else if (cmp === 'le') {
+            if (x <= expectedX + 0.5) return true;
+          } else {
+            if (x === expectedX || Math.abs(x - expectedX) < 0.5) return true;
+          }
+        }
+        await new Promise(r => setTimeout(r, 15));
+      }
+      return false;
+    };
+
+    // Движение вправо до правой границы
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 1, dirY: 0, speed: 100 });
+    const reachedRight = await waitForExactX(worldWidth - radius, 4000, 'ge');
+    this.log(reachedRight ? '✅ Достигнута правая граница точно по линии' : '❌ Не достигнута правая граница точно', reachedRight ? 'success' : 'error');
+
+    // Движение влево до левой границы
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: -1, dirY: 0, speed: 100 });
+    const reachedLeft = await waitForExactX(radius, 4000, 'le');
+    this.log(reachedLeft ? '✅ Достигнута левая граница точно по линии' : '❌ Не достигнута левая граница точно', reachedLeft ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return reachedRight && reachedLeft;
+  }
+
+  async testEdgeToEdgeAfterDirectionChange() {
+    this.log('Тест: Edge-to-edge при смене направления');
+    const sessionId = await this.createSession();
+    if (!sessionId) {
+      this.log('Не удалось создать сессию', 'error');
+      return false;
+    }
+
+    const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
+    const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
+
+    await Promise.all([
+      new Promise(resolve => controllerSocket.on('open', resolve)),
+      new Promise(resolve => viewerSocket.on('open', resolve))
+    ]);
+
+    await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 800, height: 600 } });
+
+    const radius = 20;
+    const worldWidth = 800;
+    const worldHeight = 600;
+
+    const waitForExact = async (pred, timeoutMs = 4000) => {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        const st = await this.req(`/api/session/${sessionId}/state`);
+        if (st.status === 200 && pred(st.data)) return true;
+        await new Promise(r => setTimeout(r, 50));
+      }
+      return false;
+    };
+
+    // Горизонталь: вправо до правой границы, затем смена налево до левой
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 1, dirY: 0, speed: 100 });
+    const rightReached = await waitForExact(d => d && d.x === worldWidth - radius);
+    this.log(rightReached ? '✅ Достигнута правая граница' : '❌ Не достигнута правая граница', rightReached ? 'success' : 'error');
+
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: -1, dirY: 0, speed: 100 });
+    const leftReached = await waitForExact(d => d && d.x === radius);
+    this.log(leftReached ? '✅ Достигнута левая граница после смены направления' : '❌ Не достигнута левая граница после смены направления', leftReached ? 'success' : 'error');
+
+    // Вертикаль: вниз до нижней границы, затем смена наверх до верхней
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 0, dirY: 1, speed: 100 });
+    const bottomReached = await waitForExact(d => d && d.y === worldHeight - radius);
+    this.log(bottomReached ? '✅ Достигнута нижняя граница' : '❌ Не достигнута нижняя граница', bottomReached ? 'success' : 'error');
+
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 0, dirY: -1, speed: 100 });
+    const topReached = await waitForExact(d => d && d.y === radius);
+    this.log(topReached ? '✅ Достигнута верхняя граница после смены направления' : '❌ Не достигнута верхняя граница после смены направления', topReached ? 'success' : 'error');
+
+    controllerSocket.close();
+    viewerSocket.close();
+
+    return rightReached && leftReached && bottomReached && topReached;
+  }
+
   async testArchitecturePerformance() {
     this.log('Тест: Архитектура и производительность системы');
     const sessionId = await this.createSession();
@@ -1202,6 +1316,8 @@ class Tester {
       { name: 'testMovementStateUpdates', fn: this.testMovementStateUpdates.bind(this) },
       { name: 'testAllControllers', fn: this.testAllControllers.bind(this) },
       { name: 'testBounceBorders', fn: this.testBounceBorders.bind(this) },
+      { name: 'testEdgeToEdgeAfterDirectionChange', fn: this.testEdgeToEdgeAfterDirectionChange.bind(this) },
+      { name: 'testEdgeToEdgeReach', fn: this.testEdgeToEdgeReach.bind(this) },
       { name: 'testArchitecturePerformance', fn: this.testArchitecturePerformance.bind(this) }
     ];
 

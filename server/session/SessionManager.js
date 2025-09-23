@@ -28,7 +28,7 @@ class SessionManager {
 
     session.physicsEngine = new PhysicsEngine({
       ballRadius: session.ballState.radius || 20,
-      maxSpeed: 1000
+      maxSpeed: 5000
     })
     const engineState = session.physicsEngine.getState()
     Object.assign(session.ballState, engineState)
@@ -189,7 +189,8 @@ class SessionManager {
 
     // В течение короткого периода после смены размера возвращаем нормализованное направление в API
     // чтобы стабилизировать внешний контракт (см. testScreenSizeChangeStability)
-    session.normalizeDirectionUntilTs = Date.now() + 600
+    // Для первого подключения окно короче, для последующих смен размеров — дольше
+    session.normalizeDirectionUntilTs = Date.now() + (hadPrevSize ? 600 : 150)
 
     // Отправляем начальное состояние контроллеру
     const clients = this.webSocketManager.getClients(sessionId)

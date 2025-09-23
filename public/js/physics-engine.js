@@ -12,7 +12,7 @@ class PhysicsEngine {
       worldHeight: 600,
       ballRadius: 20,
       minSpeed: 50,
-      maxSpeed: 1280,
+      maxSpeed: 5000,
       lerpFactor: 0.12, // Оптимизировано для плавности
       positionLerpFactor: 0.06, // Оптимизировано для лучшей плавности
       minLerpFactor: 0.03, // Уменьшено для более плавного движения
@@ -61,7 +61,7 @@ class PhysicsEngine {
       y: this.centerY,
       vx: 0,
       vy: 0,
-      speed: 40,
+      speed: 30,
       radius: this.options.ballRadius
     }
 
@@ -426,7 +426,13 @@ class PhysicsEngine {
      * Обрабатывает отскок от границы
      */
   handleBounce () {
-    // Обеспечиваем минимальную скорость после отскока
+    // Мгновенно переназначаем скорость по новому направлению, сохраняя величину
+    const speedPercent = this.ball.speed / 100
+    const pixelsPerSecond = speedPercent * this.options.maxSpeed
+    this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
+    this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
+
+    // Обеспечиваем минимальную скорость после отскока (на случай близких к нулю значений)
     this.ensureMinimumSpeed()
 
     // Вызываем callback если установлен
@@ -536,22 +542,13 @@ class PhysicsEngine {
     if (this.isViewer) {
       // Плавное обновление целевой позиции для уменьшения резких скачков
       if (command.x !== undefined) {
-        // Если мяч далеко от цели, используем более агрессивную интерполяцию
-        const distance = Math.abs(command.x - this.state.targetX)
-        if (distance > 50) {
-          this.state.targetX = command.x
-        } else {
-          // Плавное приближение к цели
-          this.state.targetX = this.state.targetX + (command.x - this.state.targetX) * 0.3
-        }
+        // Визуальная точность: цель и текущая позиция равны координате сервера
+        this.state.targetX = command.x
+        this.ball.x = command.x
       }
       if (command.y !== undefined) {
-        const distance = Math.abs(command.y - this.state.targetY)
-        if (distance > 50) {
-          this.state.targetY = command.y
-        } else {
-          this.state.targetY = this.state.targetY + (command.y - this.state.targetY) * 0.3
-        }
+        this.state.targetY = command.y
+        this.ball.y = command.y
       }
 
       // Сохраняем скорость и время обновления для предикции
@@ -654,7 +651,7 @@ class PhysicsEngine {
     this.ball.y = this.centerY
     this.ball.vx = 0
     this.ball.vy = 0
-    this.ball.speed = 40
+    this.ball.speed = 30
     this.ball.radius = this.options.ballRadius
     // Не устанавливаем паузу при сбросе - игра должна быть активной
     // this.state.paused = true
