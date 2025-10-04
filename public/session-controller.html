@@ -32,6 +32,7 @@
 
   <link rel="stylesheet" href="/css/common.css">
   <link rel="stylesheet" href="/css/shared-components.css?v=202501031200">
+  <link rel="stylesheet" href="/css/light-theme.css?v=20250103120">
   <style>
     /* Специфичные стили для session-controller.html */
 
@@ -397,6 +398,40 @@
       </div>
     </div>
 
+    <!-- Новые функции v1.2.0 -->
+    <div class="control-section">
+      <h3>🆕 Новые функции (v1.2.0)</h3>
+      <div class="appearance-grid">
+        <div class="controls-card">
+          <p class="controls-title">🎯 Быстрые пресеты</p>
+          <div id="presetControls">
+            <!-- Пресеты будут добавлены через JavaScript -->
+          </div>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">💾 Сессии</p>
+          <div id="sessionControls">
+            <!-- Кнопки экспорта/импорта будут добавлены через JavaScript -->
+          </div>
+          <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-gradient" onclick="createCustomPreset()">⭐ Создать пресет</button>
+            <button class="btn outline" onclick="goBack()">🏠 На главную</button>
+            <button class="btn outline" id="themeToggle">🎨 Тема</button>
+          </div>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">📋 Горячие клавиши</p>
+          <div style="font-size: 12px; color: #9ca3af; line-height: 1.5;">
+            <div><span class="kbd">Пробел</span> — Старт/Стоп</div>
+            <div><span class="kbd">Ctrl+Z</span> — Отмена действия</div>
+            <div><span class="kbd">Ctrl+S</span> — Сохранить пресет</div>
+            <div><span class="kbd">F</span> — Полноэкранное превью</div>
+            <div><span class="kbd">Стр↕←→</span> — Управление направлением</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="control-section">
       <h3>🎨 Оформление</h3>
       <div class="appearance-grid">
@@ -423,6 +458,7 @@
   <script src="/js/shared-components.js" defer></script>
   <script src="/js/websocket-client.js" defer></script>
   <script src="/js/config.js" defer></script>
+  <script src="/js/new-features.js" defer></script>
   <script src="/js/controller.js" defer></script>
 
   <script>

@@ -33,6 +33,11 @@ class BallRenderer {
     this.adaptiveFrameRate = true // Адаптивная частота кадров
     this.maxFrameTime = 50 // Максимальное время кадра в ms
 
+    // Фиксированный таймстеп для стабильной физики и плавности на малых скоростях
+    this.fixedStepMs = 1000 / 60
+    this.accumulatorMs = 0
+    this.maxSubsteps = 3
+
     this.onFrameCallback = null
     this.options = {
       localPhysics: false, // Флаг для локальной физики (для вьювера)
@@ -140,44 +145,35 @@ class BallRenderer {
 
     const deltaTime = currentTime - this.lastTime
 
-    // Адаптивная регулировка FPS
+    // Адаптивная статистика FPS (без регулировки пропуском кадров)
     if (this.adaptiveFrameRate) {
       this.frameTimeHistory.push(deltaTime)
-      if (this.frameTimeHistory.length > 20) {
-        this.frameTimeHistory.shift()
-      }
+      if (this.frameTimeHistory.length > 20) this.frameTimeHistory.shift()
       const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
-      this.actualFps = 1000 / avgFrameTime
-
-      // Если производительность падает, снижаем целевой FPS
-      if (avgFrameTime > this.targetFrameTime * 1.2 && this.targetFrameTime < 1000 / 30) {
-        this.targetFrameTime *= 1.05 // Плавно снижаем до ~30 FPS
-      } else if (avgFrameTime < this.targetFrameTime * 0.8) {
-        this.targetFrameTime /= 1.05 // Плавно повышаем до 60 FPS
-      }
-      this.targetFrameTime = Math.max(1000 / 65, Math.min(1000 / 25, this.targetFrameTime))
-    }
-
-    if (deltaTime < this.targetFrameTime) {
-      this.animationFrameId = requestAnimationFrame(this.renderLoop)
-      return
+      this.actualFps = 1000 / Math.max(1, avgFrameTime)
     }
 
     // Ограничиваем deltaTime для предотвращения огромных прыжков
     const clampedDeltaTime = Math.min(deltaTime, this.maxFrameTime)
+    this.accumulatorMs += clampedDeltaTime
 
     // Обновляем счетчик кадров для FPS
     this.frameCount++
 
     // Всегда обновляем физику с плавным deltaTime
     try {
-      // Вызываем callback перед обновлением физики
+      // Вызываем callback перед обновлением физики (передаём реальный dt кадра)
       if (this.onFrameCallback) {
         this.onFrameCallback(clampedDeltaTime)
       }
 
-      // Обновляем физику всегда, движок сам решит, что делать
-      this.physics.update(clampedDeltaTime / 1000)
+      // Фиксированные подшаги физики для стабильности
+      let substeps = 0
+      while (this.accumulatorMs >= this.fixedStepMs && substeps < this.maxSubsteps) {
+        this.physics.update(this.fixedStepMs / 1000)
+        this.accumulatorMs -= this.fixedStepMs
+        substeps++
+      }
 
       // Рендерим сцену
       this.render()
@@ -408,7 +404,9 @@ class BallRenderer {
      * Устанавливает FPS для рендеринга
      */
   setFPS (fps) {
-    this.targetFrameTime = 1000 / fps
+    const safeFps = Math.max(15, Math.min(240, fps || 60))
+    this.targetFrameTime = 1000 / safeFps
+    this.fixedStepMs = 1000 / safeFps
   }
 
   /**
