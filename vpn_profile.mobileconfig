@@ -4,75 +4,9 @@
 <dict>
 	<key>PayloadContent</key>
 	<array>
-		<!-- CA Certificate Payload -->
-		<dict>
-			<key>PayloadCertificateFileName</key>
-			<string>vpn_ca_cert.pem</string>
-			<key>PayloadContent</key>
-			<data>
-			LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUU4RENDQXR
-			pZ0F3SUJBZ0lJUy9tMDhXSUkzVHd3RFFZSktvWklodmNOQVFFTUJR
-			QXdGakVVTUJJR0ExVUUKQXhNTFZsQk9JSEp2YjNRZ1EwRXdIaGNOT
-			WpVeE1EQTFNVGsxTXpVeldoY05NelV4TURBek1UazFNelV6V2pBVwpN
-			UlF3RWdZRFZRUURFd3RXVUU0Z2NtOXZkQ0JEUVRDQ0FpSXdEUVlKS
-			29aSWh2Y05BUUVCQlFBRGdnSVBBRENDCkFnb0NnZ0lCQUxoTXdBUV
-			VBRlZkaXVGcFJPRDdGL0xtalZLMEU1N3Z0OTNEdDlweVV1dURqS3Y
-			3YU44WkY5SDQKd2ZYQmJFd0pESUllNmU2R2I1bWtXNUxMNFgwRmFu
-			Z0ZaV01NUDU1VGU4KzBkbHVSeXlqWTYvZFFOaVFUK2lvcgozdWt2e
-			lM5RzNxN0pLUjhiTEhhN1FMZHRTK2E0RW5TeHpvd1dHd3pBdjRpT2
-			ZtbkZZOS9CNUNQQ0pidmhETlEzCmdxckZpM1NqamFLSTBaRmFZYlR
-			DUkFBeDFlc3kxUzc2bFZlZ1NNcVVtTzZCTEVDdVZwRk5sMGFkYlJl
-			NmpLN2YKY3F4OVU5TVdrVXdyT2ZCaE1VZGdvWmxBdi8yR2hQMXlac
-			kpnYUFBQzQxcmxtcW1QTDhSMU1may9LYldPTnpxUwpQSnJ4N3dXb0
-			xWTjFwa0pGQkE2Z0lNR3h5Rm5KS2dsY3VIK1pSREo4YXdzOGlQRkJ
-			rVk9ZZHpvOTVHS3BmTUtOClVJWm1lWEsvbFZLRjdyOGhSMENHelE5
-			T2NQcWU5blpDOHJ4K21CS0dkMDRDT0tZaVQ2UHQ4S2xrK2Q5Ri85N
-			WwKUStvS09lQjBVR1Y0UU9kSHNBd2ZkcXNHd2FBcmdkN0djQ0F4SE
-			l3aEoxTDYzSHJYS0sveHE3K1QrVkEyNW53QwpXWExlUlB0ZFUzZVh
-			nZTVNWnZuVU9ydkJnajkvU1dVNWdDWVJOc1VEMEFBQ05PY1J1WnNw
-			bHNzZVlYMUkrNW5TCnd1eUI0cEc4L04veUJqOUk3WTBaUlJiWVdIZ
-			XBKdnA3MGFvUmp0NkZPbTRxTi9wL2s1TFlWNGo1cDBLUkpJU0oKQ0
-			UzRTFpZEs2MTRrSER1OGN1bVBjamxabWdHOUFCaWxzZlZNUm0xa1V
-			jeW1IV0pGeHFrdkFnTUJBQUdqUWpCQQpNQThHQTFVZEV3RUIvd1FG
-			TUFNQKFMN3dEZ1lEVlIwUEFRSC9CQVFEQWdFR01CMEdBMVVkRGdRV
-			0JCU2MwRm5SCkRPQUY3cXRVb3dMTGYveGxuSVIzVlRBTkJna3Foa2
-			lHOXcwQkFRd0ZBQU9DQWdFQUhJU3Ficm5QUmVBZjVSV0kKbkpTY1Z
-			aaEZKUVZaa0s0UFRGMERqazRiN3FYckxEakZteXcyTEQ0bzlySGdD
-			TDVFRHBWNy9VYjJaTGQ1cGZIQwpWUCtoVTNnVzIwYVpNTE9DeVk3d
-			lV6b21BMUE2QVBTdUVmQ3V4RmxOS0tDQTU5dXFxUWg2UGF3MHZ6WE
-			plTlUwClFQRlo2K1QxaG1BMW9hdk5sMzZuVXlvb2JSb2h0ci83cXo
-			3c3pVVDZoODRsQWUyaEJsSmpjYkEyNXkxR3dhTUUKSzFweTloR1g4
-			ZmthR2kyVXlkbHRYUWtXVGcrRkpsMUs1VmR4bDJrNnNYSTNJaUlQa
-			UovU2h4L01BcThZYXZNSgpCZTlqeDhmRDNrOWNQZHU1TG9LaE42UG
-			56Y1Z2ZkRxUytLYW1BcDhTSzZPOXgrVnFJZHlVQ1R5VWVKaXQ3WEVX
-			CitoU213clI4L3hjbExEOXNFRmxZYU5qWW5aSDhNQWdoeEJyZGVZL
-			3RSV25ISm0xSk5teGlRaktmb3d4T2w3dTQKWUdSaENWUEpNQU1RdzFN
-			dzVGUndRRlR2ejh4QnJBZkZ4Kzh0NndxbzdyMWlHeWNXUDRwaERuU
-			XJmZk4wWDBvWgpBSmROUDlCNXZzMzZtNytGNzBybWhwNHFNMC8yK3
-			BRUWJhZW9oVmU3NDFEYlI0eVJielBuZzhFaW5RUnVJS2RGClo
-			CSXA4TFdBd05nSGdTSEtvRE9KYjNtamFBaElFd0dGdS8vaVBWUDU1b
-			klOMXNqWEtQMTRIa3c1TGF3OVFleXUKeFBTdDM3R1JiR3lmYVFTUkl
-			aQlo0NXVJUFJsRVY0bmFQVXVhTytGRVNWYlIreko2U1JCRGpsTUgzO
-			EFSc3hQOQpTQlFtWHR4d0J4bFc4bGZhRElRRldWcnJxS289Ci0tLS
-			0tRU5EIENFUlRJRklDQVRFLS0tLS0K
-			</data>
-			<key>PayloadDescription</key>
-			<string>VPN root CA certificate</string>
-			<key>PayloadDisplayName</key>
-			<string>VPN root CA</string>
-			<key>PayloadIdentifier</key>
-			<string>com.emdrbilateral.vpn.ca-cert</string>
-			<key>PayloadType</key>
-			<string>com.apple.security.root</string>
-			<key>PayloadUUID</key>
-			<string>A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D</string>
-			<key>PayloadVersion</key>
-			<integer>1</integer>
-		</dict>
-		<!-- VPN Configuration Payload -->
 		<dict>
 			<key>PayloadDescription</key>
-			<string>EMDR Bilateral VPN Configuration</string>
+			<string>Configures VPN settings</string>
 			<key>PayloadDisplayName</key>
 			<string>EMDR VPN</string>
 			<key>PayloadIdentifier</key>
@@ -139,7 +73,7 @@
 		</dict>
 	</array>
 	<key>PayloadDescription</key>
-	<string>EMDR Bilateral VPN Profile with CA Certificate</string>
+	<string>EMDR Bilateral VPN Profile. Install CA certificate (vpn_ca_certificate.pem) separately before using this profile.</string>
 	<key>PayloadDisplayName</key>
 	<string>EMDR VPN</string>
 	<key>PayloadIdentifier</key>
