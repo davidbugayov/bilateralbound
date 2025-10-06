@@ -38,19 +38,54 @@ npm run test:quick
 
 ---
 
-## 🚀 Быстрый запуск (Локально)
+## 🚀 Быстрый запуск (Локально и Production)
 
-Интерактивный инструмент двусторонней стимуляции (EMDR) с управлением движущимся объектом (шаром) в реальном времени через веб‑сокеты. Проект состоит из:
+Интерактивный инструмент двусторонней стимуляции (EMDR) с управлением движущимся объектом (шаром) в реальном времени через веб‑сокеты.
 
-- фронтенда на GitHub Pages: [страница создания сессии](https://davidbugayov.github.io/bilateralbound/)  
-- бэкенда на Render: `https://bilateralbound.onrender.com`
+### 🌐 Production серверы (Полностью настроены)
 
-На странице можно создать сессию (генерируется `sid`), открыть ссылку зрителя и управлять направлением и скоростью движения.
+**🔧 Разработка (main ветка):**
+- **URL:** `https://dev.emdrbilateral.online`
+- **Webhook:** `https://dev.emdrbilateral.online/webhook`
+- **Автообновление:** При push в main ветку
+
+**🏠 Production серверы (stable ветка):**
+- **Основной:** `https://emdrbilateral.online`
+- **Русский:** `https://emdrbilateral.ru`
+- **Webhook основной:** `https://emdrbilateral.online/webhook`
+- **Webhook русский:** `https://emdrbilateral.ru/webhook`
+- **Автообновление:** При push в stable ветку
+
+### 📦 Локальная разработка
+
+Требуется Node.js 18+.
 
 ### Быстрые ссылки
 - Создать/управлять: [davidbugayov.github.io/bilateralbound](https://davidbugayov.github.io/bilateralbound/)
 - **🎯 Тестирование:** `http://localhost:3000/test/test-system.html` (запустите `npm start`)
 - Пример короткой ссылки зрителя на бэкенде: `https://bilateralbound.onrender.com/s/<sid>`
+
+### 🌐 Production серверы
+
+**Полностью настроенная инфраструктура с автоматическим развертыванием:**
+
+| Домен | Ветка | Статус | Описание |
+|-------|-------|--------|----------|
+| `https://dev.emdrbilateral.online` | main | 🔧 Разработка | Автообновление при push в main |
+| `https://emdrbilateral.online` | stable | 🏠 Production | Автообновление при push в stable |
+| `https://emdrbilateral.ru` | stable | 🏠 Production RU | Автообновление при push в stable |
+
+**Webhook URL для GitHub:**
+- DEV: `https://dev.emdrbilateral.online/webhook`
+- PROD: `https://emdrbilateral.online/webhook`
+- RU: `https://emdrbilateral.ru/webhook`
+
+**Особенности production серверов:**
+- ✅ **HTTPS** с Let's Encrypt сертификатами
+- ✅ **Автоматическое обновление** при push в GitHub
+- ✅ **Git репозиторий** подключен через SSH
+- ✅ **Мониторинг** и автоперезапуск сервисов
+- ✅ **Firewall** и безопасность настроены
 
 ---
 
@@ -367,5 +402,3 @@ git pull
 ### Лицензия
 
 MIT
-
-
