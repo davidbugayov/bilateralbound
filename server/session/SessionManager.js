@@ -12,7 +12,7 @@ class SessionManager {
     this.sessionRepository = new SessionRepository()
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
     this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
-    this.physicsInterval = 1000 / 60 // ~60 FPS
+    this.physicsInterval = 1000 / 120 // ~120 FPS для более плавного движения
     this.apiCache = apiCache // Получаем ссылку на кэш API
     this.logger = {
       ...logger,

@@ -13,21 +13,21 @@ class PhysicsEngine {
       ballRadius: 20,
       minSpeed: 50,
       maxSpeed: 5000,
-      lerpFactor: 0.12, // Оптимизировано для плавности
-      positionLerpFactor: 0.06, // Оптимизировано для лучшей плавности
-      minLerpFactor: 0.03, // Уменьшено для более плавного движения
-      maxLerpFactor: 0.25, // Уменьшено для предотвращения рывков
+      lerpFactor: 0.08, // Оптимизировано для более плавной интерполяции
+      positionLerpFactor: 0.04, // Более мягкое позиционирование
+      minLerpFactor: 0.02, // Минимальный фактор для очень плавного движения
+      maxLerpFactor: 0.15, // Ограничено для предотвращения рывков
       adaptiveLerp: true, // Включаем адаптивную интерполяцию
       frameRateCompensation: true, // Компенсация задержек кадров
-      smoothing: { // Оптимизированные параметры пружинного сглаживания
-        stiffness: 25, // k - Уменьшено для более плавного движения
-        damping: 12, // c - Оптимизировано для критического демпфирования
-        maxPredictSec: 0.6, // максимум предикции - Увеличено для лучшего сглаживания
-        snapDistance: 2, // авто-снап к цели в пикселях - Уменьшено для точности
+      smoothing: { // Оптимизированные параметры пружинного сглаживания для максимальной плавности
+        stiffness: 20, // k - Уменьшено для более плавного движения
+        damping: 10, // c - Оптимизировано для критического демпфирования
+        maxPredictSec: 0.8, // максимум предикции - Увеличено для лучшего сглаживания
+        snapDistance: 1, // авто-снап к цели в пикселях - Уменьшено для точности
         adaptiveStiffness: true, // Адаптивная жесткость в зависимости от скорости
-        minStiffness: 15, // Минимальная жесткость для медленного движения
-        maxStiffness: 40, // Максимальная жестность для быстрого движения
-        velocityThreshold: 200 // Порог скорости для переключения параметров
+        minStiffness: 12, // Минимальная жесткость для медленного движения
+        maxStiffness: 30, // Максимальная жестность для быстрого движения
+        velocityThreshold: 150 // Порог скорости для переключения параметров
       },
       bounceCallback: null,
       friction: 1.0, // Убираем трение для постоянного движения
@@ -89,11 +89,76 @@ class PhysicsEngine {
     this.min = Math.min
     this.max = Math.max
     this.abs = Math.abs
+
+    // Применяем пресет для плавности движения
+    this.applySmoothnessPreset(options.preset || 'default')
   }
 
   setSmoothingOptions (opts = {}) {
     if (!opts || typeof opts !== 'object') return
     this.options.smoothing = { ...this.options.smoothing, ...opts }
+  }
+
+  /**
+   * Применяет пресет для плавности движения
+   */
+  applySmoothnessPreset (presetName) {
+    const presets = {
+      therapy: {    // Для терапевтических сессий - максимальная плавность
+        lerpFactor: 0.06,
+        positionLerpFactor: 0.03,
+        smoothing: {
+          stiffness: 15,
+          damping: 8,
+          maxPredictSec: 1.0,
+          snapDistance: 0.8,
+          minStiffness: 10,
+          maxStiffness: 25,
+          velocityThreshold: 120
+        }
+      },
+      gaming: {     // Для динамичных сессий - более отзывчивое управление
+        lerpFactor: 0.12,
+        positionLerpFactor: 0.06,
+        smoothing: {
+          stiffness: 30,
+          damping: 15,
+          maxPredictSec: 0.5,
+          snapDistance: 1.5,
+          minStiffness: 20,
+          maxStiffness: 45,
+          velocityThreshold: 200
+        }
+      },
+      default: {    // Баланс между плавностью и отзывчивостью
+        lerpFactor: 0.08,
+        positionLerpFactor: 0.04,
+        smoothing: {
+          stiffness: 20,
+          damping: 10,
+          maxPredictSec: 0.8,
+          snapDistance: 1,
+          minStiffness: 12,
+          maxStiffness: 30,
+          velocityThreshold: 150
+        }
+      }
+    }
+
+    const preset = presets[presetName] || presets.default
+
+    // Применяем настройки интерполяции
+    if (preset.lerpFactor !== undefined) {
+      this.options.lerpFactor = preset.lerpFactor
+    }
+    if (preset.positionLerpFactor !== undefined) {
+      this.options.positionLerpFactor = preset.positionLerpFactor
+    }
+
+    // Применяем настройки сглаживания
+    if (preset.smoothing) {
+      this.options.smoothing = { ...this.options.smoothing, ...preset.smoothing }
+    }
   }
 
   // === ОСНОВНЫЕ МЕТОДЫ ===
@@ -267,17 +332,18 @@ class PhysicsEngine {
       damping = this.options.smoothing.damping
     }
 
-    // Если прошло больше 100ms с момента последнего обновления сервера,
+    // Если прошло больше 150ms с момента последнего обновления сервера,
     // используем предиктивную экстраполяцию
-    if (timeSinceLastUpdate > 100 && this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
+    if (timeSinceLastUpdate > 150 && this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
       // Предиктивная экстраполяция: продолжаем движение по последней известной траектории
-      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.6)
+      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.8)
 
+      // Более точная предикция с учетом ускорения для плавности
       const predictedX = this.state.targetX + this.state.lastVx * predictTime
       const predictedY = this.state.targetY + this.state.lastVy * predictTime
 
       // Используем адаптивную пружину для плавного движения к предсказанной точке
-      this._springTo(predictedX, predictedY, compensatedDeltaTime, stiffness * 0.8, damping * 0.8) // Более мягкие параметры для предикции
+      this._springTo(predictedX, predictedY, compensatedDeltaTime, stiffness * 0.7, damping * 0.7) // Более мягкие параметры для предикции
     } else {
       // Стандартная интерполяция к последней известной позиции сервера
       this._springTo(this.state.targetX, this.state.targetY, compensatedDeltaTime, stiffness, damping)
