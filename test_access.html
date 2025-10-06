@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестирование доступности EMDR сайтов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .site-card {
+            border: 1px solid #ddd;
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background: #f0f8f0; }
+        .error { border-color: #f44336; background: #fef0f0; }
+        .warning { border-color: #ff9800; background: #fff8f0; }
+        iframe {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Тестирование доступности EMDR сайтов</h1>
+
+        <div class="instructions">
+            <h3>📋 Инструкция по созданию SSH туннелей:</h3>
+            <p>Если сайты не загружаются, выполните команды в терминале:</p>
+            <div style="background: #f5f5f5; padding: 10px; margin: 10px 0; font-family: monospace;">
+                ssh -R 8080:localhost:3000 root@213.139.229.44 -p 22<br>
+                ssh -R 8443:localhost:3000 root@213.139.229.44 -p 22<br>
+                ssh -R 8081:localhost:8081 root@213.139.229.44 -p 22<br>
+                ssh -R 8444:localhost:8081 root@213.139.229.44 -p 22
+            </div>
+            <p><strong>Пароль:</strong> Nv4TQQnnF%gk</p>
+        </div>
+
+        <div class="site-card">
+            <div class="status" style="background: #4CAF50; color: white;">EMDR ПРИЛОЖЕНИЕ</div>
+            <h3>📱 Основное приложение</h3>
+            <p><strong>Адрес:</strong> <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></p>
+            <p><strong>Статус:</strong> <span id="status1">Проверка...</span></p>
+            <iframe src="http://localhost:8080" onload="checkStatus('status1', 'success')" onerror="checkStatus('status1', 'error')"></iframe>
+        </div>
+
+        <div class="site-card">
+            <div class="status" style="background: #2196F3; color: white;">VPN ИНСТРУКЦИИ</div>
+            <h3>📖 Инструкции по подключению</h3>
+            <p><strong>Адрес:</strong> <a href="http://localhost:8081" target="_blank">http://localhost:8081</a></p>
+            <p><strong>Статус:</strong> <span id="status2">Проверка...</span></p>
+            <iframe src="http://localhost:8081" onload="checkStatus('status2', 'success')" onerror="checkStatus('status2', 'error')"></iframe>
+        </div>
+
+        <div class="site-card">
+            <div class="status" style="background: #4CAF50; color: white;">EMDR ПРИЛОЖЕНИЕ (HTTPS)</div>
+            <h3>🔒 Защищенное соединение</h3>
+            <p><strong>Адрес:</strong> <a href="https://localhost:8443" target="_blank">https://localhost:8443</a></p>
+            <p><strong>Статус:</strong> <span id="status3">Проверка...</span></p>
+            <iframe src="https://localhost:8443" onload="checkStatus('status3', 'success')" onerror="checkStatus('status3', 'error')"></iframe>
+        </div>
+
+        <div class="site-card">
+            <div class="status" style="background: #2196F3; color: white;">VPN ИНСТРУКЦИИ (HTTPS)</div>
+            <h3>🔐 Защищенные инструкции</h3>
+            <p><strong>Адрес:</strong> <a href="https://localhost:8444" target="_blank">https://localhost:8444</a></p>
+            <p><strong>Статус:</strong> <span id="status4">Проверка...</span></p>
+            <iframe src="https://localhost:8444" onload="checkStatus('status4', 'success')" onerror="checkStatus('status4', 'error')"></iframe>
+        </div>
+
+        <div class="instructions">
+            <h3>🔧 Альтернативные решения:</h3>
+            <p><strong>1. Обратитесь в поддержку Beget</strong> для разблокировки портов 80 и 443</p>
+            <p><strong>2. Используйте Cloudflare</strong> как прокси для перенаправления трафика</p>
+            <p><strong>3. Настройте VPN</strong> для прямого доступа к серверу</p>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus(elementId, status) {
+            const element = document.getElementById(elementId);
+            if (status === 'success') {
+                element.textContent = 'ДОСТУПЕН';
+                element.style.background = '#4CAF50';
+                element.style.color = 'white';
+            } else {
+                element.textContent = 'НЕДОСТУПЕН';
+                element.style.background = '#f44336';
+                element.style.color = 'white';
+            }
+        }
+    </script>
+</body>
+</html>
