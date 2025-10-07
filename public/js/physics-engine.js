@@ -13,25 +13,13 @@ class PhysicsEngine {
       ballRadius: 20,
       minSpeed: 50,
       maxSpeed: 5000,
-      lerpFactor: 0.06, // Более консервативная интерполяция для стабильности
-      positionLerpFactor: 0.03, // Более мягкое позиционирование
-      minLerpFactor: 0.02, // Минимальный фактор для очень плавного движения
-      maxLerpFactor: 0.08, // Ограничено для предотвращения рывков
-      adaptiveLerp: false, // ВЫКЛЮЧАЕМ адаптивную интерполяцию для стабильности
-      frameRateCompensation: false, // ВЫКЛЮЧАЕМ компенсацию задержек кадров
       smoothing: { // Оптимизированные параметры для плавного движения без рывков
         stiffness: 12, // k - Увеличено для более быстрого отклика
         damping: 10, // c - Оптимизировано для критического демпфирования без колебаний
         maxPredictSec: 0.2, // максимум предикции - Минимум для стабильности
-        snapDistance: 0.5, // авто-снап к цели в пикселях для устранения микроколебаний
-        adaptiveStiffness: false, // ВЫКЛЮЧАЕМ адаптивную жесткость для стабильности
-        minStiffness: 12, // Фиксированная жесткость
-        maxStiffness: 12, // Фиксированная жесткость
-        velocityThreshold: 150 // Порог скорости для переключения параметров
+        snapDistance: 0.5 // авто-снап к цели в пикселях для устранения микроколебаний
       },
       bounceCallback: null,
-      friction: 1.0, // Убираем трение для постоянного движения
-      bounceDamping: 1.0, // Убираем затухание для идеальных отскоков
       ...options
     }
 
@@ -39,12 +27,6 @@ class PhysicsEngine {
     if (typeof window !== 'undefined' && window.BBConfig) {
       if (window.BBConfig.smoothing) {
         this.options.smoothing = { ...this.options.smoothing, ...window.BBConfig.smoothing }
-      }
-      if (window.BBConfig.performance) {
-        // Применяем настройки производительности
-        if (window.BBConfig.performance.deadReckonEps) {
-          this.options.deadReckonEps = window.BBConfig.performance.deadReckonEps
-        }
       }
     }
 
@@ -104,56 +86,33 @@ class PhysicsEngine {
    */
   applySmoothnessPreset (presetName) {
     const presets = {
-      therapy: {    // Для терапевтических сессий - максимальная плавность
-        lerpFactor: 0.06,
-        positionLerpFactor: 0.03,
+      therapy: { // Для терапевтических сессий - максимальная плавность
         smoothing: {
           stiffness: 15,
           damping: 8,
           maxPredictSec: 1.0,
-          snapDistance: 0.8,
-          minStiffness: 10,
-          maxStiffness: 25,
-          velocityThreshold: 120
+          snapDistance: 0.8
         }
       },
-      gaming: {     // Для динамичных сессий - более отзывчивое управление
-        lerpFactor: 0.12,
-        positionLerpFactor: 0.06,
+      gaming: { // Для динамичных сессий - более отзывчивое управление
         smoothing: {
           stiffness: 30,
           damping: 15,
           maxPredictSec: 0.5,
-          snapDistance: 1.5,
-          minStiffness: 20,
-          maxStiffness: 45,
-          velocityThreshold: 200
+          snapDistance: 1.5
         }
       },
-      default: {    // Баланс между плавностью и отзывчивостью
-        lerpFactor: 0.08,
-        positionLerpFactor: 0.04,
+      default: { // Баланс между плавностью и отзывчивостью
         smoothing: {
           stiffness: 20,
           damping: 10,
           maxPredictSec: 0.8,
-          snapDistance: 1,
-          minStiffness: 12,
-          maxStiffness: 30,
-          velocityThreshold: 150
+          snapDistance: 1
         }
       }
     }
 
     const preset = presets[presetName] || presets.default
-
-    // Применяем настройки интерполяции
-    if (preset.lerpFactor !== undefined) {
-      this.options.lerpFactor = preset.lerpFactor
-    }
-    if (preset.positionLerpFactor !== undefined) {
-      this.options.positionLerpFactor = preset.positionLerpFactor
-    }
 
     // Применяем настройки сглаживания
     if (preset.smoothing) {
@@ -398,39 +357,6 @@ class PhysicsEngine {
     }
   }
 
-  // Критически демпфированная пружина для мягкого следования к цели
-  _springTo (targetX, targetY, deltaTime, customStiffness, customDamping) {
-    const k = customStiffness || (this.options.smoothing && this.options.smoothing.stiffness) || 25
-    const c = customDamping || (this.options.smoothing && this.options.smoothing.damping) || 12
-
-    // Ускорение по «пружине»: a = k*(target - x) - c*v
-    const ax = k * (targetX - this.ball.x) - c * this.state.smoothVx
-    const ay = k * (targetY - this.ball.y) - c * this.state.smoothVy
-
-    // Интегрируем скорость и позицию
-    this.state.smoothVx += ax * deltaTime
-    this.state.smoothVy += ay * deltaTime
-
-    // Ограничение максимального шага во избежание скачков
-    const maxStep = (Math.hypot(this.state.lastVx || 0, this.state.lastVy || 0) || 600) * deltaTime * 1.2
-    let dx = this.state.smoothVx * deltaTime
-    let dy = this.state.smoothVy * deltaTime
-    const stepLen = Math.hypot(dx, dy)
-    if (stepLen > maxStep && stepLen > 0) {
-      const s = maxStep / stepLen
-      dx *= s
-      dy *= s
-    }
-
-    this.ball.x += dx
-    this.ball.y += dy
-
-    // Авто-снап близко к цели, чтобы исключить «залипание» недолетом
-    const snap = (this.options.smoothing && this.options.smoothing.snapDistance) || 2
-    if (Math.abs(this.ball.x - targetX) < snap) this.ball.x = targetX
-    if (Math.abs(this.ball.y - targetY) < snap) this.ball.y = targetY
-  }
-
   /**
    * Обновляет физику за указанное время
    */
@@ -471,31 +397,6 @@ class PhysicsEngine {
     this.handleBoundaryCollisions()
   }
 
-  /**
-   * Обновляет локальную физику для превью
-   */
-  updateLocalPhysics (deltaTime) {
-    if (this.state.paused) return
-
-    // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
-    // Не обновляем физику, пока размеры мира не будут явно установлены
-    if (!this._worldSizeSet) {
-      return
-    }
-
-    // Пересчитываем скорость напрямую из направления и процента скорости
-    const speedPercent = this.ball.speed / 100
-    const pixelsPerSecond = speedPercent * this.options.maxSpeed
-    this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
-    this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
-
-    // Обновляем позицию
-    this.ball.x += this.ball.vx * deltaTime
-    this.ball.y += this.ball.vy * deltaTime
-
-    // Обрабатываем коллизии с границами
-    this.handleBoundaryCollisions()
-  }
 
   /**
      * Обрабатывает коллизии с границами мира
@@ -588,15 +489,6 @@ class PhysicsEngine {
     }
   }
 
-  /**
-     * Вычисляет масштаб для превью (кэшированная версия)
-     */
-  calculateScale (viewerScreenSize) {
-    if (!viewerScreenSize) return 1
-    const scaleX = this.options.worldWidth / viewerScreenSize.width
-    const scaleY = this.options.worldHeight / viewerScreenSize.height
-    return this.min(scaleX, scaleY)
-  }
 
   /**
      * Применяет команду от сервера
@@ -720,40 +612,8 @@ class PhysicsEngine {
     }
   }
 
-  // Новый метод для принудительной установки состояния (для синхронизации с сервером)
-  setState (newState) {
-    if (!newState) return
-    // Применяем только те поля, которые пришли от сервера, чтобы не затереть локальные вычисления
-    Object.keys(this.ball).forEach(key => {
-      if (newState[key] !== undefined) {
-        this.ball[key] = newState[key]
-      }
-    })
-  }
-
-  getCurrentSpeed () {
-    return this.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy)
-  }
-
-  isMoving () {
-    return !this.state.paused && (this.ball.vx !== 0 || this.ball.vy !== 0)
-  }
-
-  getDirection () {
-    return { x: this.state.lastDirection.x, y: this.state.lastDirection.y }
-  }
 
   // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ПЕРЕИСПОЛЬЗОВАНИЯ ===
-
-  /**
-     * Клонирует состояние для создания нового экземпляра
-     */
-  clone () {
-    return new PhysicsEngine({
-      ...this.options,
-      bounceCallback: this.bounceCallback
-    })
-  }
 
   /**
      * Сбрасывает состояние к начальному
