@@ -13,20 +13,20 @@ class PhysicsEngine {
       ballRadius: 20,
       minSpeed: 50,
       maxSpeed: 5000,
-      lerpFactor: 0.08, // Оптимизировано для более плавной интерполяции
-      positionLerpFactor: 0.04, // Более мягкое позиционирование
+      lerpFactor: 0.06, // Более консервативная интерполяция для стабильности
+      positionLerpFactor: 0.03, // Более мягкое позиционирование
       minLerpFactor: 0.02, // Минимальный фактор для очень плавного движения
-      maxLerpFactor: 0.15, // Ограничено для предотвращения рывков
-      adaptiveLerp: true, // Включаем адаптивную интерполяцию
-      frameRateCompensation: true, // Компенсация задержек кадров
-      smoothing: { // Оптимизированные параметры пружинного сглаживания для максимальной плавности
-        stiffness: 20, // k - Уменьшено для более плавного движения
-        damping: 10, // c - Оптимизировано для критического демпфирования
-        maxPredictSec: 0.8, // максимум предикции - Увеличено для лучшего сглаживания
-        snapDistance: 1, // авто-снап к цели в пикселях - Уменьшено для точности
-        adaptiveStiffness: true, // Адаптивная жесткость в зависимости от скорости
-        minStiffness: 12, // Минимальная жесткость для медленного движения
-        maxStiffness: 30, // Максимальная жестность для быстрого движения
+      maxLerpFactor: 0.08, // Ограничено для предотвращения рывков
+      adaptiveLerp: false, // ВЫКЛЮЧАЕМ адаптивную интерполяцию для стабильности
+      frameRateCompensation: false, // ВЫКЛЮЧАЕМ компенсацию задержек кадров
+      smoothing: { // УЛЬТРА-ПЛАВНЫЕ параметры по аналогии с bilateralstimulation.io
+        stiffness: 6, // k - Еще ниже для максимальной плавности как в reference
+        damping: 6, // c - Оптимизировано для критического демпфирования
+        maxPredictSec: 0.3, // максимум предикции - Минимум для стабильности
+        snapDistance: 0.3, // авто-снап к цели в пикселях - Максимальная точность
+        adaptiveStiffness: false, // ВЫКЛЮЧАЕМ адаптивную жесткость
+        minStiffness: 6, // Фиксированная жесткость
+        maxStiffness: 6, // Фиксированная жесткость
         velocityThreshold: 150 // Порог скорости для переключения параметров
       },
       bounceCallback: null,
@@ -298,7 +298,8 @@ class PhysicsEngine {
   }
 
   /**
-     * Продвинутая адаптивная интерполяция для режима вьювера с предикцией движения
+     * УЛЬТРА-ПЛАВНАЯ интерполяция по аналогии с bilateralstimulation.io
+     * Используется чистая LERP интерполяция для максимальной плавности
      */
   updateViewerInterpolation (deltaTime) {
     // При паузе ничего не интерполируем, оставляем текущую позицию
@@ -307,46 +308,17 @@ class PhysicsEngine {
       return
     }
 
-    const currentTime = performance.now()
-    const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
+    // Чистая LERP интерполяция - самый простой и плавный метод
+    const lerpFactor = this.options.smoothing.stiffness * 0.1 // Преобраз stiffness в коэффициент LERP
+    
+    // Линейная интерполяция позиции к цели
+    this.ball.x += (this.state.targetX - this.ball.x) * lerpFactor
+    this.ball.y += (this.state.targetY - this.ball.y) * lerpFactor
 
-    // Компенсация задержек кадров для более плавного движения
-    let compensatedDeltaTime = deltaTime
-    if (this.options.frameRateCompensation && deltaTime > 0.033) { // Если FPS < 30
-      compensatedDeltaTime = Math.min(deltaTime, 0.016) // Ограничиваем максимальный шаг
-    }
-
-    // Вычисляем текущую скорость движения для адаптивных параметров
-    const currentVelocity = Math.hypot(this.state.smoothVx, this.state.smoothVy)
-    const targetVelocity = Math.hypot(this.state.lastVx || 0, this.state.lastVy || 0)
-
-    // Адаптивные параметры пружины в зависимости от скорости
-    let stiffness, damping
-    if (this.options.smoothing.adaptiveStiffness && targetVelocity > 0) {
-      const velocityRatio = Math.min(currentVelocity / (this.options.smoothing.velocityThreshold || 200), 1)
-      stiffness = this.options.smoothing.minStiffness +
-                 (this.options.smoothing.maxStiffness - this.options.smoothing.minStiffness) * velocityRatio
-      damping = stiffness * 0.48 // Критическое демпфирование для плавности
-    } else {
-      stiffness = this.options.smoothing.stiffness
-      damping = this.options.smoothing.damping
-    }
-
-    // Если прошло больше 150ms с момента последнего обновления сервера,
-    // используем предиктивную экстраполяцию
-    if (timeSinceLastUpdate > 150 && this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
-      // Предиктивная экстраполяция: продолжаем движение по последней известной траектории
-      const predictTime = Math.min(timeSinceLastUpdate / 1000, this.options.smoothing.maxPredictSec || 0.8)
-
-      // Более точная предикция с учетом ускорения для плавности
-      const predictedX = this.state.targetX + this.state.lastVx * predictTime
-      const predictedY = this.state.targetY + this.state.lastVy * predictTime
-
-      // Используем адаптивную пружину для плавного движения к предсказанной точке
-      this._springTo(predictedX, predictedY, compensatedDeltaTime, stiffness * 0.7, damping * 0.7) // Более мягкие параметры для предикции
-    } else {
-      // Стандартная интерполяция к последней известной позиции сервера
-      this._springTo(this.state.targetX, this.state.targetY, compensatedDeltaTime, stiffness, damping)
+    // Дополнительное сглаживание для сверхплавного движения
+    if (this.state.smoothVx !== undefined) {
+      this.state.smoothVx *= 0.95 // Плавное затухание скорости
+      this.state.smoothVy *= 0.95
     }
   }
 
