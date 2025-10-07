@@ -1,7 +1,7 @@
 /**
  * PhysicsEngine - оптимизированный движок физики для BilateralBound
  * Управляет движением, отскоками и масштабированием шарика
- * Оптимизирован для производительности и переиспользуемости
+ * Оптимизирован для производительности и переиспользования
  */
 
 class PhysicsEngine {
@@ -298,8 +298,8 @@ class PhysicsEngine {
   }
 
   /**
-     * УЛЬТРА-ПЛАВНАЯ интерполяция по аналогии с bilateralstimulation.io
-     * Используется чистая LERP интерполяция для максимальной плавности
+     * ПРОДВИНУТАЯ интерполяция с предикцией движения для максимальной плавности
+     * Используется комбинация LERP + предиктивной экстраполяции
      */
   updateViewerInterpolation (deltaTime) {
     // При паузе ничего не интерполируем, оставляем текущую позицию
@@ -308,17 +308,33 @@ class PhysicsEngine {
       return
     }
 
-    // Чистая LERP интерполяция - самый простой и плавный метод
-    const lerpFactor = this.options.smoothing.stiffness * 0.1 // Преобраз stiffness в коэффициент LERP
-    
-    // Линейная интерполяция позиции к цели
-    this.ball.x += (this.state.targetX - this.ball.x) * lerpFactor
-    this.ball.y += (this.state.targetY - this.ball.y) * lerpFactor
+    const currentTime = performance.now()
+    const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
 
-    // Дополнительное сглаживание для сверхплавного движения
-    if (this.state.smoothVx !== undefined) {
-      this.state.smoothVx *= 0.95 // Плавное затухание скорости
-      this.state.smoothVy *= 0.95
+    // Если прошло мало времени с момента последнего обновления сервера - используем чистую LERP
+    if (timeSinceLastUpdate < 50) {
+      const lerpFactor = this.options.smoothing.stiffness * 0.15 // Увеличенный коэффициент для более быстрой реакции
+      this.ball.x += (this.state.targetX - this.ball.x) * lerpFactor
+      this.ball.y += (this.state.targetY - this.ball.y) * lerpFactor
+    } else {
+      // Если прошло много времени - используем предиктивную экстраполяцию
+      const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.2) // Максимум 200ms предикции
+
+      // Предсказанная позиция на основе последней известной скорости
+      const predictedX = this.state.targetX + (this.state.lastVx || 0) * predictTime
+      const predictedY = this.state.targetY + (this.state.lastVy || 0) * predictTime
+
+      // Плавная интерполяция к предсказанной позиции
+      const lerpFactor = this.options.smoothing.stiffness * 0.12
+      this.ball.x += (predictedX - this.ball.x) * lerpFactor
+      this.ball.y += (predictedY - this.ball.y) * lerpFactor
+    }
+
+    // Сохраняем скорость для следующей итерации предикции
+    if (this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
+      // Постепенное затухание скорости для плавности
+      this.state.smoothVx = this.state.smoothVx * 0.98 + (this.state.lastVx || 0) * 0.02
+      this.state.smoothVy = this.state.smoothVy * 0.98 + (this.state.lastVy || 0) * 0.02
     }
   }
 
@@ -576,17 +592,25 @@ class PhysicsEngine {
     command = validatedCommand
     // ====================================
 
-    // Вьювер и превью контроллера напрямую устанавливают позицию для интерполяции
+    // Вьювер и превью контроллера используют предиктивную синхронизацию
     if (this.isViewer) {
-      // Плавное обновление целевой позиции для уменьшения резких скачков
-      if (command.x !== undefined) {
-        // Визуальная точность: цель и текущая позиция равны координате сервера
-        this.state.targetX = command.x
-        this.ball.x = command.x
-      }
-      if (command.y !== undefined) {
-        this.state.targetY = command.y
-        this.ball.y = command.y
+      // Плавное обновление целевой позиции БЕЗ резких скачков
+      if (command.x !== undefined && command.y !== undefined) {
+        // Используем предиктивную экстраполяцию для плавного движения
+        const currentTime = performance.now()
+        const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
+
+        // Если прошло мало времени - плавно обновляем цель
+        if (timeSinceLastUpdate < 100) {
+          // Плавное приближение к серверной позиции
+          this.state.targetX = command.x
+          this.state.targetY = command.y
+        } else {
+          // Если прошло много времени - используем предикцию
+          const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.15)
+          this.state.targetX = command.x + (command.vx || 0) * predictTime
+          this.state.targetY = command.y + (command.vy || 0) * predictTime
+        }
       }
 
       // Сохраняем скорость и время обновления для предикции
