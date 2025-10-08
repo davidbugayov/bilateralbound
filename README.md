@@ -87,6 +87,41 @@ npm run test:quick
 - ✅ **Мониторинг** и автоперезапуск сервисов
 - ✅ **Firewall** и безопасность настроены
 
+### 🚀 Автоматический деплой через Webhooks
+
+**Быстрый старт:** [WEBHOOK_QUICK_START.md](./WEBHOOK_QUICK_START.md)
+
+Полная система автоматического деплоя настроена для всех окружений:
+- Push в `stable` → автодеплой на production (emdrbilateral.online, emdrbilateral.ru)
+- Push в `main` → автодеплой на dev (dev.emdrbilateral.online)
+
+**Установка на новый сервер:**
+```bash
+./setup-webhooks.sh
+```
+
+**Ручной деплой (если webhook не сработал):**
+```bash
+./manual-deploy.sh
+```
+
+**Полная документация:** [WEBHOOK_DEPLOY.md](./WEBHOOK_DEPLOY.md)
+
+**Компоненты системы:**
+- `webhook-server.js` - Node.js сервер для обработки GitHub webhooks
+- `setup-webhooks.sh` - автоматическая установка на VPS
+- `manual-deploy.sh` - интерактивный скрипт ручного деплоя
+- `webhook-server.service` - systemd сервис для webhook-сервера
+
+**Проверка статуса:**
+```bash
+# Просмотр логов деплоя
+ssh root@213.139.229.44 "tail -f /var/log/webhook-deploy.log"
+
+# Статус webhook-сервера
+ssh root@213.139.229.44 "systemctl status webhook-server"
+```
+
 ---
 
 ### Локальный запуск
