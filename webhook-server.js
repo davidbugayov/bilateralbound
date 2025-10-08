@@ -13,7 +13,7 @@ const path = require('path');
 
 // Конфигурация
 const CONFIG = {
-  port: 9000,
+  port: 8080,
   secret: process.env.WEBHOOK_SECRET || 'your-webhook-secret-here',
   logFile: '/var/log/webhook-deploy.log',
   
