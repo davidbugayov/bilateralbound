@@ -76,7 +76,7 @@ class CountersController {
     }
   }
 
-  onBounce(shouldResetToCenter = false) {
+  onBounce() {
     if (!this.running) return;
 
     const now = performance.now();
@@ -89,12 +89,7 @@ class CountersController {
     if (this.passes % 10 === 0) {
       this.sets++;
     }
-    
-    // Возвращаем шарик в центр после каждого паса
-    if (shouldResetToCenter && typeof window.resetCenter === 'function') {
-      window.resetCenter();
-    }
-    
+
     this.updateDisplay();
   }
 
