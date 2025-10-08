@@ -62,19 +62,35 @@ class VersionManager {
     determineVersionBump(commitMessage) {
         const message = commitMessage.toLowerCase();
 
-        // Критерии для major версии
-        if (message.includes('breaking') || message.includes('major') || message.includes('breaking change')) {
+        // Критерии для major версии (breaking changes)
+        if (message.includes('breaking') || message.includes('major') ||
+            message.includes('breaking change') || message.includes('break') ||
+            message.includes('!:')) {
             return 'major';
         }
 
-        // Критерии для minor версии
-        if (message.includes('feat') || message.includes('feature') || message.includes('add') ||
-            message.includes('new') || message.includes('minor') || message.includes('optimization')) {
+        // Критерии для minor версии (новые функции)
+        if (message.includes('feat') || message.includes('feature') ||
+            message.includes('add') || message.includes('new') ||
+            message.includes('minor') || message.includes('optimization') ||
+            message.includes('perf') || message.includes('improve') ||
+            message.includes('enhance') || message.includes('deploy') ||
+            message.includes('fix: скрыть') || message.includes('feat:') ||
+            message.includes('feature:')) {
             return 'minor';
         }
 
-        // По умолчанию patch версия
-        return 'patch';
+        // Критерии для patch версии (исправления)
+        if (message.includes('fix') || message.includes('bug') ||
+            message.includes('patch') || message.includes('hotfix') ||
+            message.includes('correct') || message.includes('update') ||
+            message.includes('refactor') || message.includes('style') ||
+            message.includes('docs') || message.includes('test')) {
+            return 'patch';
+        }
+
+        // По умолчанию minor версия для значимых изменений
+        return 'minor';
     }
 
     /**
