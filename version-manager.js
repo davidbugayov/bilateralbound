@@ -182,6 +182,33 @@ class VersionManager {
     }
 
     /**
+     * Обновить версию в футере главной страницы
+     */
+    updateFooterVersion(newVersion) {
+        try {
+            const indexPath = path.join(__dirname, 'public', 'index.html');
+            let content = fs.readFileSync(indexPath, 'utf8');
+
+            // Ищем строку с версией в футере
+            const versionRegex = /⚡ BilateralBound v\d+\.\d+\.\d+/g;
+            const newVersionText = `⚡ BilateralBound v${newVersion}`;
+
+            if (versionRegex.test(content)) {
+                content = content.replace(versionRegex, newVersionText);
+                fs.writeFileSync(indexPath, content);
+                console.log(`✅ Обновлена версия в футере главной страницы: v${newVersion}`);
+                return true;
+            } else {
+                console.log('⚠️ Версия в футере не найдена');
+                return false;
+            }
+        } catch (error) {
+            console.error('❌ Ошибка обновления версии в футере:', error.message);
+            return false;
+        }
+    }
+
+    /**
      * Основной процесс обновления версии
      */
     async updateVersion() {
@@ -208,6 +235,7 @@ class VersionManager {
         // Обновляем файлы
         this.updatePackageVersion(newVersion);
         this.updateVersionFile(newVersion, commitInfo);
+        this.updateFooterVersion(newVersion);
 
         console.log(`🎉 Версия успешно обновлена до v${newVersion}`);
         return true;
