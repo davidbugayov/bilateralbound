@@ -19,14 +19,14 @@ class PhysicsEngine {
       maxLerpFactor: 0.08, // Ограничено для предотвращения рывков
       adaptiveLerp: false, // ВЫКЛЮЧАЕМ адаптивную интерполяцию для стабильности
       frameRateCompensation: false, // ВЫКЛЮЧАЕМ компенсацию задержек кадров
-      smoothing: { // УЛЬТРА-ПЛАВНЫЕ параметры по аналогии с bilateralstimulation.io
-        stiffness: 6, // k - Еще ниже для максимальной плавности как в reference
-        damping: 6, // c - Оптимизировано для критического демпфирования
-        maxPredictSec: 0.3, // максимум предикции - Минимум для стабильности
-        snapDistance: 0.3, // авто-снап к цели в пикселях - Максимальная точность
-        adaptiveStiffness: false, // ВЫКЛЮЧАЕМ адаптивную жесткость
-        minStiffness: 6, // Фиксированная жесткость
-        maxStiffness: 6, // Фиксированная жесткость
+      smoothing: { // Оптимизированные параметры для плавного движения без рывков
+        stiffness: 12, // k - Увеличено для более быстрого отклика
+        damping: 10, // c - Оптимизировано для критического демпфирования без колебаний
+        maxPredictSec: 0.2, // максимум предикции - Минимум для стабильности
+        snapDistance: 0.5, // авто-снап к цели в пикселях для устранения микроколебаний
+        adaptiveStiffness: false, // ВЫКЛЮЧАЕМ адаптивную жесткость для стабильности
+        minStiffness: 12, // Фиксированная жесткость
+        maxStiffness: 12, // Фиксированная жесткость
         velocityThreshold: 150 // Порог скорости для переключения параметров
       },
       bounceCallback: null,
@@ -298,8 +298,8 @@ class PhysicsEngine {
   }
 
   /**
-     * ПРОДВИНУТАЯ интерполяция с предикцией движения для максимальной плавности
-     * Используется комбинация LERP + предиктивной экстраполяции
+     * УЛУЧШЕННАЯ интерполяция с пружинной физикой для максимальной плавности
+     * Использует критически демпфированную пружину для устранения рывков
      */
   updateViewerInterpolation (deltaTime) {
     // При паузе ничего не интерполируем, оставляем текущую позицию
@@ -311,30 +311,90 @@ class PhysicsEngine {
     const currentTime = performance.now()
     const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
 
-    // Если прошло мало времени с момента последнего обновления сервера - используем чистую LERP
-    if (timeSinceLastUpdate < 50) {
-      const lerpFactor = this.options.smoothing.stiffness * 0.15 // Увеличенный коэффициент для более быстрой реакции
-      this.ball.x += (this.state.targetX - this.ball.x) * lerpFactor
-      this.ball.y += (this.state.targetY - this.ball.y) * lerpFactor
-    } else {
-      // Если прошло много времени - используем предиктивную экстраполяцию
-      const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.2) // Максимум 200ms предикции
-
-      // Предсказанная позиция на основе последней известной скорости
-      const predictedX = this.state.targetX + (this.state.lastVx || 0) * predictTime
-      const predictedY = this.state.targetY + (this.state.lastVy || 0) * predictTime
-
-      // Плавная интерполяция к предсказанной позиции
-      const lerpFactor = this.options.smoothing.stiffness * 0.12
-      this.ball.x += (predictedX - this.ball.x) * lerpFactor
-      this.ball.y += (predictedY - this.ball.y) * lerpFactor
+    // Инициализация буфера позиций для сглаживания джиттера сети
+    if (!this.positionBuffer) {
+      this.positionBuffer = []
     }
 
-    // Сохраняем скорость для следующей итерации предикции
-    if (this.state.lastVx !== undefined && this.state.lastVy !== undefined) {
-      // Постепенное затухание скорости для плавности
-      this.state.smoothVx = this.state.smoothVx * 0.98 + (this.state.lastVx || 0) * 0.02
-      this.state.smoothVy = this.state.smoothVy * 0.98 + (this.state.lastVy || 0) * 0.02
+    // Вычисляем предсказанную целевую позицию с учетом задержки
+    let targetX = this.state.targetX
+    let targetY = this.state.targetY
+
+    // Добавляем предикцию только если есть значимая задержка (> 100ms)
+    if (timeSinceLastUpdate > 100) {
+      const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.15) // Макс 150ms
+      const vx = this.state.lastVx || 0
+      const vy = this.state.lastVy || 0
+      
+      // Плавное предсказание с учетом затухания
+      const decay = Math.exp(-predictTime * 2) // Экспоненциальное затухание
+      targetX += vx * predictTime * decay
+      targetY += vy * predictTime * decay
+    }
+
+    // Добавляем текущую цель в буфер
+    this.positionBuffer.push({ x: targetX, y: targetY, time: currentTime })
+    
+    // Ограничиваем размер буфера (последние 5 позиций)
+    if (this.positionBuffer.length > 5) {
+      this.positionBuffer.shift()
+    }
+
+    // Вычисляем усредненную цель для сглаживания джиттера
+    const avgTarget = this.positionBuffer.reduce((acc, pos) => {
+      acc.x += pos.x
+      acc.y += pos.y
+      return acc
+    }, { x: 0, y: 0 })
+    
+    avgTarget.x /= this.positionBuffer.length
+    avgTarget.y /= this.positionBuffer.length
+
+    // Используем критически демпфированную пружину для плавного движения
+    const stiffness = this.options.smoothing.stiffness || 8
+    const damping = this.options.smoothing.damping || 8
+
+    // Инициализируем скорость пружины при первом вызове
+    if (this.state.smoothVx === undefined) this.state.smoothVx = 0
+    if (this.state.smoothVy === undefined) this.state.smoothVy = 0
+
+    // Вычисляем ускорение пружины: a = k*(target - pos) - c*velocity
+    const dx = avgTarget.x - this.ball.x
+    const dy = avgTarget.y - this.ball.y
+    
+    const ax = stiffness * dx - damping * this.state.smoothVx
+    const ay = stiffness * dy - damping * this.state.smoothVy
+
+    // Интегрируем скорость
+    this.state.smoothVx += ax * deltaTime
+    this.state.smoothVy += ay * deltaTime
+
+    // Ограничиваем максимальную скорость интерполяции для предотвращения рывков
+    const maxInterpSpeed = 2000 // пикселей в секунду
+    const currentInterpSpeed = Math.sqrt(this.state.smoothVx ** 2 + this.state.smoothVy ** 2)
+    
+    if (currentInterpSpeed > maxInterpSpeed) {
+      const scale = maxInterpSpeed / currentInterpSpeed
+      this.state.smoothVx *= scale
+      this.state.smoothVy *= scale
+    }
+
+    // Интегрируем позицию
+    const stepX = this.state.smoothVx * deltaTime
+    const stepY = this.state.smoothVy * deltaTime
+
+    this.ball.x += stepX
+    this.ball.y += stepY
+
+    // Авто-снап к цели если очень близко (для устранения микроколебаний)
+    const snapDistance = this.options.smoothing.snapDistance || 0.5
+    if (Math.abs(dx) < snapDistance && Math.abs(this.state.smoothVx) < 10) {
+      this.ball.x = avgTarget.x
+      this.state.smoothVx = 0
+    }
+    if (Math.abs(dy) < snapDistance && Math.abs(this.state.smoothVy) < 10) {
+      this.ball.y = avgTarget.y
+      this.state.smoothVy = 0
     }
   }
 
