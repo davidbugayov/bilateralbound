@@ -1,0 +1,34 @@
+[Unit]
+Description=BilateralBound EMDR Therapy Application
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/var/www/bilateralbound
+ExecStart=/usr/bin/node server/index.js
+Restart=always
+RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
+
+# Безопасность
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/bilateralbound /tmp
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bilateralbound
+
+# Переменные окружения
+Environment=NODE_ENV=production
+Environment=PORT=3000
+
+[Install]
+WantedBy=multi-user.target
