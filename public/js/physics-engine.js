@@ -175,8 +175,8 @@ class PhysicsEngine {
   }
 
   /**
-     * Устанавливает позицию шарика
-     */
+   * Устанавливает позицию шарика
+   */
   setPosition (x, y) {
     this.ball.x = x
     this.ball.y = y
@@ -656,21 +656,11 @@ class PhysicsEngine {
     if (this.isViewer) {
       // Плавное обновление целевой позиции БЕЗ резких скачков
       if (command.x !== undefined && command.y !== undefined) {
-        // Используем предиктивную экстраполяцию для плавного движения
-        const currentTime = performance.now()
-        const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
-
-        // Если прошло мало времени - плавно обновляем цель
-        if (timeSinceLastUpdate < 100) {
-          // Плавное приближение к серверной позиции
-          this.state.targetX = command.x
-          this.state.targetY = command.y
-        } else {
-          // Если прошло много времени - используем предикцию
-          const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.15)
-          this.state.targetX = command.x + (command.vx || 0) * predictTime
-          this.state.targetY = command.y + (command.vy || 0) * predictTime
-        }
+        // Визуальная точность: цель и текущая позиция равны координате сервера
+        this.state.targetX = command.x
+        this.ball.x = command.x
+        this.state.targetY = command.y
+        this.ball.y = command.y
       }
 
       // Сохраняем скорость и время обновления для предикции
