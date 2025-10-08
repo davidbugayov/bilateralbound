@@ -509,22 +509,22 @@ class PhysicsEngine {
     let bounced = false
 
     // Проверяем левую и правую границы
-    if (ball.x - radius <= 0) {
+    if (ball.x - radius < 0) {
       ball.x = radius // Клампим позицию
       this.state.lastDirection.x = Math.abs(this.state.lastDirection.x || 1)
       bounced = true
-    } else if (ball.x + radius >= worldWidth) {
+    } else if (ball.x + radius > worldWidth) {
       ball.x = worldWidth - radius // Клампим позицию
       this.state.lastDirection.x = -Math.abs(this.state.lastDirection.x || 1)
       bounced = true
     }
 
     // Проверяем верхнюю и нижнюю границы
-    if (ball.y - radius <= 0) {
+    if (ball.y - radius < 0) {
       ball.y = radius // Клампим позицию
       this.state.lastDirection.y = Math.abs(this.state.lastDirection.y || 1)
       bounced = true
-    } else if (ball.y + radius >= worldHeight) {
+    } else if (ball.y + radius > worldHeight) {
       ball.y = worldHeight - radius // Клампим позицию
       this.state.lastDirection.y = -Math.abs(this.state.lastDirection.y || 1)
       bounced = true
