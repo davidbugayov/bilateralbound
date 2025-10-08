@@ -105,7 +105,7 @@ async function deploy(environment, ref) {
     if (!fs.existsSync(env.workDir)) {
       log(`Creating directory: ${env.workDir}`);
       await executeCommand(`mkdir -p ${env.workDir}`, '/tmp');
-      await executeCommand(`git clone -b ${env.branch} https://github.com/davidbugayov/bilateralbound.git ${env.workDir}`, '/tmp');
+      await executeCommand(`git clone -b ${env.branch} git@github.com:davidbugayov/bilateralbound.git ${env.workDir}`, '/tmp');
     }
     
     // 2. Останавливаем сервис
