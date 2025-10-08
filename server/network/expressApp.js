@@ -41,7 +41,9 @@ function setupExpressApp (sessionManager, apiCache) {
       max: 100,
       message: 'Too many requests from this IP, please try again later.',
       standardHeaders: true,
-      legacyHeaders: false
+      legacyHeaders: false,
+      trustProxy: true,
+      keyGenerator: (req) => req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown'
     })
     app.use('/api/', limiter)
   }

@@ -1,7 +1,0 @@
-
-📋 Выполнение: cat > /var/www/emdrbilateral/package.json << 'EOF'
-{
-  name: emdrbilateral,
-  version: 1.0.0,
-  description: EMDR
-✅ Выполнено

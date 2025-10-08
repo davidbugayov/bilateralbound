@@ -83,15 +83,12 @@ const bbCounters = {
     this.sets = 0
     this.render()
   },
-  onBounce (shouldResetToCenter = true) {
+  onBounce () {
     if (!this.running) return
     const now = performance.now()
     if (now - this._lastBounceTs < 120) return
     this._lastBounceTs = now
     this.passes += 1
-
-    // НЕ возвращаем шарик в центр автоматически после каждого паса
-    // Пользователь сам решает когда вернуть в центр
 
     this.render()
   },
