@@ -32,11 +32,17 @@ class CountersController {
 
   start() {
     this.running = true;
-    this.lastTickTs = Date.now();
+    this.lastTickTs = performance.now();
     this.updateDisplay();
   }
 
   stop() {
+    // Обновляем время до последнего момента перед остановкой
+    if (this.running) {
+      const now = performance.now();
+      const dt = now - this.lastTickTs;
+      this.timerMs += dt;
+    }
     this.running = false;
     this.updateDisplay();
   }
@@ -54,18 +60,26 @@ class CountersController {
   tick() {
     if (!this.running) return;
 
-    const now = Date.now();
+    const now = performance.now();
     const dt = now - this.lastTickTs;
     this.lastTickTs = now;
     
-    this.timerMs += dt;
-    this.updateDisplay();
+    // Добавляем только реальное прошедшее время
+    if (dt > 0 && dt < 1000) { // Защита от больших скачков
+      this.timerMs += dt;
+    }
+    
+    // Обновляем отображение не чаще 10 раз в секунду
+    if (!this._lastRenderTs || now - this._lastRenderTs > 100) {
+      this._lastRenderTs = now;
+      this.updateDisplay();
+    }
   }
 
-  onBounce() {
+  onBounce(shouldResetToCenter = false) {
     if (!this.running) return;
 
-    const now = Date.now();
+    const now = performance.now();
     if (now - this.lastBounceTs < this.bounceThreshold) return;
     
     this.lastBounceTs = now;
@@ -74,6 +88,11 @@ class CountersController {
     // Проверяем завершение сета (каждые 10 пасов)
     if (this.passes % 10 === 0) {
       this.sets++;
+    }
+    
+    // Возвращаем шарик в центр после каждого паса
+    if (shouldResetToCenter && typeof window.resetCenter === 'function') {
+      window.resetCenter();
     }
     
     this.updateDisplay();
