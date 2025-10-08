@@ -81,20 +81,18 @@ class CountersController {
 
     const now = performance.now();
     if (now - this.lastBounceTs < this.bounceThreshold) return;
-    
+
     this.lastBounceTs = now;
     this.passes++;
-    
+
     // Проверяем завершение сета (каждые 10 пасов)
     if (this.passes % 10 === 0) {
       this.sets++;
     }
-    
-    // Возвращаем шарик в центр после каждого паса
-    if (shouldResetToCenter && typeof window.resetCenter === 'function') {
-      window.resetCenter();
-    }
-    
+
+    // НЕ возвращаем шарик в центр автоматически после каждого паса
+    // Пользователь сам решает когда вернуть в центр
+
     this.updateDisplay();
   }
 

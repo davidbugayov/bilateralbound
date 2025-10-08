@@ -89,17 +89,10 @@ const bbCounters = {
     if (now - this._lastBounceTs < 120) return
     this._lastBounceTs = now
     this.passes += 1
-    
-    // Возвращаем шарик в центр после каждого паса
-    if (shouldResetToCenter) {
-      // Небольшая задержка чтобы визуально заметить отскок
-      setTimeout(() => {
-        if (typeof resetCenter === 'function') {
-          resetCenter()
-        }
-      }, 50)
-    }
-    
+
+    // НЕ возвращаем шарик в центр автоматически после каждого паса
+    // Пользователь сам решает когда вернуть в центр
+
     this.render()
   },
   tick (nowTs) {
