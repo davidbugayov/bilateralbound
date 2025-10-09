@@ -34,6 +34,11 @@ class PhysicsEngine {
     this.isViewer = false
     this._worldSizeSet = false // Флаг, что размеры мира установлены
 
+    // Если размеры мира заданы явно через опции — считаем их установленными
+    if (this.options.worldWidth > 0 && this.options.worldHeight > 0) {
+      this._worldSizeSet = true
+    }
+
     // Предварительно вычисляем центр мира
     this.centerX = this.options.worldWidth / 2
     this.centerY = this.options.worldHeight / 2
@@ -343,9 +348,14 @@ class PhysicsEngine {
     if (this.state.paused) return
 
     // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
-    // Не обновляем физику, пока размеры мира не будут явно установлены
+    // Не обновляем физику, пока размеры мира не будут явно установлены.
+    // Если размеры валидны, но флаг не выставлен (регрессия/прежнее состояние), выставляем его автоматически.
     if (!this._worldSizeSet) {
-      return
+      if (this.options.worldWidth > 0 && this.options.worldHeight > 0) {
+        this._worldSizeSet = true
+      } else {
+        return
+      }
     }
 
     // Пересчитываем скорость напрямую из направления и процента скорости
