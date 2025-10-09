@@ -31,13 +31,8 @@ class PhysicsEngine {
     }
 
     // Флаг для определения режима вьювера
-    this.isViewer = Boolean(options.isViewer)
+    this.isViewer = false
     this._worldSizeSet = false // Флаг, что размеры мира установлены
-
-    // Если размеры мира заданы явно через опции — считаем их установленными
-    if (this.options.worldWidth > 0 && this.options.worldHeight > 0) {
-      this._worldSizeSet = true
-    }
 
     // Предварительно вычисляем центр мира
     this.centerX = this.options.worldWidth / 2
@@ -259,12 +254,6 @@ class PhysicsEngine {
 
     this.state.targetVx = this.state.lastDirection.x * pixelsPerSecond
     this.state.targetVy = this.state.lastDirection.y * pixelsPerSecond
-
-    // For server-side physics, update the actual velocity
-    if (!this.isViewer) {
-      this.ball.vx = this.state.targetVx
-      this.ball.vy = this.state.targetVy
-    }
   }
 
   /**
@@ -354,17 +343,18 @@ class PhysicsEngine {
     if (this.state.paused) return
 
     // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
-    // Не обновляем физику, пока размеры мира не будут явно установлены.
-    // Если размеры валидны, но флаг не выставлен (регрессия/прежнее состояние), выставляем его автоматически.
+    // Не обновляем физику, пока размеры мира не будут явно установлены
     if (!this._worldSizeSet) {
-      if (this.options.worldWidth > 0 && this.options.worldHeight > 0) {
-        this._worldSizeSet = true
-      } else {
-        return
-      }
+      return
     }
 
-    // Обновляем позицию, используя сохраненную скорость
+    // Пересчитываем скорость напрямую из направления и процента скорости
+    const speedPercent = this.ball.speed / 100
+    const pixelsPerSecond = speedPercent * this.options.maxSpeed
+    this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
+    this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
+
+    // Обновляем позицию
     this.ball.x += this.ball.vx * deltaTime
     this.ball.y += this.ball.vy * deltaTime
 
@@ -386,22 +376,22 @@ class PhysicsEngine {
 
     // Проверяем левую и правую границы
     if (ball.x - radius < 0) {
-      ball.x = radius // Мяч касается левой границы
+      ball.x = radius // Клампим позицию
       this.state.lastDirection.x = Math.abs(this.state.lastDirection.x || 1)
       bounced = true
     } else if (ball.x + radius > worldWidth) {
-      ball.x = worldWidth - radius // Мяч касается правой границы
+      ball.x = worldWidth - radius // Клампим позицию
       this.state.lastDirection.x = -Math.abs(this.state.lastDirection.x || 1)
       bounced = true
     }
 
     // Проверяем верхнюю и нижнюю границы
     if (ball.y - radius < 0) {
-      ball.y = radius // Мяч касается верхней границы
+      ball.y = radius // Клампим позицию
       this.state.lastDirection.y = Math.abs(this.state.lastDirection.y || 1)
       bounced = true
     } else if (ball.y + radius > worldHeight) {
-      ball.y = worldHeight - radius // Мяч касается нижней границы
+      ball.y = worldHeight - radius // Клампим позицию
       this.state.lastDirection.y = -Math.abs(this.state.lastDirection.y || 1)
       bounced = true
     }
@@ -521,8 +511,9 @@ class PhysicsEngine {
 
     // Вьювер и превью контроллера используют предиктивную синхронизацию
     if (this.isViewer) {
-      // Обновляем целевую позицию для интерполяции (без телепортации текущей позиции)
+      // Плавное обновление целевой позиции БЕЗ резких скачков
       if (command.x !== undefined && command.y !== undefined) {
+        // Визуальная точность: цель и текущая позиция равны координате сервера
         this.state.targetX = command.x
         this.ball.x = command.x
         this.state.targetY = command.y
