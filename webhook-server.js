@@ -132,6 +132,8 @@ async function deploy(environment, ref) {
     await executeCommand(`git reset --hard origin/${env.branch}`, env.workDir);
     
     // 4. Устанавливаем зависимости
+    log('Cleaning up old dependencies...');
+    await executeCommand('rm -rf node_modules', env.workDir);
     log('Installing dependencies...');
     await executeCommand('npm install --production', env.workDir);
     

@@ -1,6 +1,6 @@
 {
   "name": "bilateralbound",
-  "version": "2.14.1",
+  "version": "2.15.0",
   "description": "A scalable real-time multiplayer game built with SOLID principles",
   "main": "server/index.js",
   "scripts": {
