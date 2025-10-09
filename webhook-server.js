@@ -121,6 +121,7 @@ async function deploy(environment, ref) {
     try {
       await executeCommand(`lsof -ti:${env.port} | xargs -r kill -9`, env.workDir);
       log(`Process on port ${env.port} was killed.`);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Пауза в 1 секунду для освобождения порта
     } catch (err) {
       log(`Port ${env.port} was likely already free.`, 'INFO');
     }
