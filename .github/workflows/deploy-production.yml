@@ -1,0 +1,69 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main, stable ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Deploy to server
+      env:
+        SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+      run: |
+        echo "🚀 Деплой на сервер $SERVER_HOST"
+
+        # Устанавливаем sshpass для аутентификации
+        sudo apt-get update
+        sudo apt-get install -y sshpass
+
+        # Создаем директорию на сервере
+        sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "mkdir -p /var/www/bilateralbound-auto"
+
+        # Копируем файлы проекта
+        sshpass -p "$VPS_PASSWORD" scp -o StrictHostKeyChecking=no -r ./* $SERVER_USER@$SERVER_HOST:/var/www/bilateralbound-auto/
+
+        # Устанавливаем зависимости на сервере
+        sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "cd /var/www/bilateralbound-auto && npm install --production"
+
+        # Создаем резервную копию текущего деплоя
+        sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "cp -r /var/www/bilateralbound-auto /var/www/bilateralbound-auto-backup"
+
+        # Атомарно переключаем директории
+        sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "mv /var/www/bilateralbound-auto /var/www/bilateralbound-auto-new && mv /var/www/bilateralbound-auto-current /var/www/bilateralbound-auto-old 2>/dev/null || true && mv /var/www/bilateralbound-auto-new /var/www/bilateralbound-auto-current"
+
+        # Перезапускаем сервис
+        sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "systemctl restart bilateralbound-auto.service || systemctl start bilateralbound-auto.service"
+
+        echo "✅ Деплой завершен успешно"
+
+    - name: Verify deployment
+      env:
+        SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+      run: |
+        echo "🔍 Проверка деплоя..."
+
+        # Проверяем статус сервиса
+        sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "systemctl status bilateralbound-auto.service --no-pager"
+
+        echo "✅ Проверка завершена"
