@@ -1,19 +1,17 @@
 # BilateralBound - Система Версионирования
 
-## Текущая Версия: v2.41.1
+## Текущая Версия: v2.42.0
 **Статус:** Активна
-**Дата релиза:** 9 октября 2025 г. в 16:18
-**Коммит:** 045e058
+**Дата релиза:** 9 октября 2025 г. в 22:35
+**Коммит:** 967fd7d
 
-### Основные Изменения v2.41.1:
-- ✨ refactor(physics): remove unused startMovement and stopMovement methods
-
-Removed the startMovement and stopMovement methods from the PhysicsEngine class as they are no longer used anywhere in the codebase. This cleanup simplifies the API and removes dead code.
+### Основные Изменения v2.42.0:
+- ✨ chore: minor updates
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 
 ### Предыдущие Версии:
-- **v2.41.0** - Предыдущая версия
+- **v2.41.1** - Предыдущая версия
 
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
@@ -26,4 +24,4 @@ Removed the startMovement and stopMovement methods from the PhysicsEngine class 
 - Мобильная версия скрывает индикатор версии
 
 ---
-*Автоматически сгенерировано: 2025-10-09T13:18:35.637Z*
+*Автоматически сгенерировано: 2025-10-09T19:35:52.894Z*

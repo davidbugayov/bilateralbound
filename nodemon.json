@@ -1,0 +1,12 @@
+{
+  "watch": ["server/", "public/"],
+  "ext": "js,json,html,css,svg",
+  "ignore": [
+    "node_modules/",
+    "package-lock.json",
+    ".git/",
+    "test/"
+  ],
+  "verbose": true,
+  "delay": 500
+}

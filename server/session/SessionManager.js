@@ -79,9 +79,12 @@ class SessionManager {
     if (session.physicsEngine) {
       session.physicsEngine.applyCommand(validatedUpdates)
       Object.assign(session.ballState, session.physicsEngine.getState())
-      // Нормализуем направление в vx/vy после смены размера экрана для стабильности тестов
-      // (ожидается диапазон [-1,1])
-      if (session.physicsEngine && session.physicsEngine.state && session.physicsEngine.state.lastDirection) {
+      // Нормализация vx/vy ДОПУСКАЕТСЯ только кратковременно после смены размера экрана
+      // чтобы стабилизировать внешний контракт (см. normalizeDirectionUntilTs)
+      if (
+        session.normalizeDirectionUntilTs && Date.now() < session.normalizeDirectionUntilTs &&
+        session.physicsEngine && session.physicsEngine.state && session.physicsEngine.state.lastDirection
+      ) {
         const dx = session.physicsEngine.state.lastDirection.x || 0
         const dy = session.physicsEngine.state.lastDirection.y || 0
         session.ballState.vx = Math.max(-1, Math.min(1, dx))

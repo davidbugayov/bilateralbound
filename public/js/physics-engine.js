@@ -31,7 +31,7 @@ class PhysicsEngine {
     }
 
     // Флаг для определения режима вьювера
-    this.isViewer = false
+    this.isViewer = Boolean(options.isViewer)
     this._worldSizeSet = false // Флаг, что размеры мира установлены
 
     // Если размеры мира заданы явно через опции — считаем их установленными
