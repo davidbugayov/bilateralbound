@@ -133,7 +133,7 @@ async function deploy(environment, ref) {
     
     // 4. Устанавливаем зависимости
     log('Installing dependencies...');
-    await executeCommand('npm ci --production', env.workDir);
+    await executeCommand('npm install --production', env.workDir);
     
     // 5. Копируем конфигурацию systemd (если нужно)
     const serviceFile = `/etc/systemd/system/${env.serviceName}.service`;
