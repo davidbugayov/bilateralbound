@@ -189,9 +189,9 @@ Group=root
 WorkingDirectory=${env.workDir}
 ExecStart=/usr/bin/node server/index.js
 Restart=on-failure
-RestartSec=10
-StartLimitInterval=60s
-StartLimitBurst=3
+RestartSec=15
+StartLimitInterval=90s
+StartLimitBurst=5
 
 NoNewPrivileges=true
 PrivateTmp=true
