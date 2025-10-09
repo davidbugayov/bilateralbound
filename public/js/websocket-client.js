@@ -15,7 +15,7 @@ class WebSocketClient {
     // Конфигурация с умолчаниями - используем глобальную конфигурацию
     const globalConfig = (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.network) || {}
     this.config = {
-      isSecure: false,
+      isSecure: window.location.protocol === 'https:',
       maxReconnectAttempts: globalConfig.maxReconnectAttempts || 5,
       reconnectInterval: globalConfig.reconnectDelay || 3000,
       heartbeatInterval: globalConfig.heartbeatInterval || 25000,
