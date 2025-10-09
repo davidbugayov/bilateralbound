@@ -23,12 +23,12 @@ public/
 ## 🌐 Доступ к страницам
 
 ### Основные страницы
-- **Главная страница**: `http://localhost:3000/`
-- **Вьювер сессии**: `http://localhost:3000/viewer.html`
-- **Тестовый поллер**: `http://localhost:3000/test-session-poller.html`
+- **Главная страница**: `http://localhost:3002/`
+- **Вьювер сессии**: `http://localhost:3002/viewer.html`
+- **Тестовый поллер**: `http://localhost:3002/test-session-poller.html`
 
 ### Специализированные версии
-- **EMDR терапия**: `http://localhost:3000/emdr-therapy/`
+- **EMDR терапия**: `http://localhost:3002/emdr-therapy/`
 
 ## 🎯 Назначение страниц
 
@@ -61,7 +61,7 @@ npm install
 # Запуск сервера
 npm run dev
 
-# Сервер будет доступен на http://localhost:3000
+# Сервер будет доступен на http://localhost:3002
 ```
 
 ## 🔧 API Эндпоинты

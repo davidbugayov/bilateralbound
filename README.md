@@ -62,7 +62,7 @@ npm run test:quick
 
 ### Быстрые ссылки
 - Создать/управлять: [davidbugayov.github.io/bilateralbound](https://davidbugayov.github.io/bilateralbound/)
-- **🎯 Тестирование:** `http://localhost:3000/test/test-system.html` (запустите `npm start`)
+- **🎯 Тестирование:** `http://localhost:3002/test/test-system.html` (запустите `npm start`)
 - Пример короткой ссылки зрителя на бэкенде: `https://bilateralbound.onrender.com/s/<sid>`
 
 ### 🌐 Production серверы
@@ -135,7 +135,7 @@ npm install
 npm start
 ```
 
-Сервер поднимется на `http://localhost:3000` и будет раздавать статику из `public/`.
+Сервер поднимется на `http://localhost:3002` и будет раздавать статику из `public/`.
 
 При локальной разработке фронтенд использует относительные пути для запросов к бэкенду.
 
@@ -241,7 +241,7 @@ README.md             # Документация проекта
 npm start
 
 # Открыть системный тест в браузере
-# http://localhost:3000/test/test-system.html
+# http://localhost:3002/test/test-system.html
 ```
 
 #### Доступные тесты
@@ -437,7 +437,3 @@ git pull
 ### Лицензия
 
 MIT
-
-
-
-
