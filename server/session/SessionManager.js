@@ -30,6 +30,15 @@ class SessionManager {
       ballRadius: session.ballState.radius || 20,
       maxSpeed: 5000
     })
+
+    // Немедленная рассылка состояния при отскоке, чтобы вьювер видел касание границ
+    session.physicsEngine.bounceCallback = () => {
+      try {
+        Object.assign(session.ballState, session.physicsEngine.getState())
+        this.stateBroadcaster.broadcastState(session.id)
+      } catch (_) {}
+    }
+
     const engineState = session.physicsEngine.getState()
     Object.assign(session.ballState, engineState)
     session.ballState.paused = true
