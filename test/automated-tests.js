@@ -8,8 +8,8 @@ const WebSocket = require('ws');
 
 class Tester {
   constructor() {
-    this.baseUrl = 'http://localhost:3000';
-    this.wsUrl = 'ws://localhost:3000';
+    this.baseUrl = 'http://localhost:3002';
+    this.wsUrl = 'ws://localhost:3002';
     this.serverProcess = null;
   }
 
@@ -1363,5 +1363,3 @@ if (require.main === module) {
 }
 
 module.exports = Tester;
-
-
