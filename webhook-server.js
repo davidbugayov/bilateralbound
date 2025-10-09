@@ -138,14 +138,15 @@ async function deploy(environment, ref) {
     log('Installing dependencies...');
     await executeCommand('npm install --production', env.workDir);
     
-    // 5. Копируем конфигурацию systemd (если нужно)
+    // 5. Принудительно обновляем конфигурацию systemd
     const serviceFile = `/etc/systemd/system/${env.serviceName}.service`;
-    if (!fs.existsSync(serviceFile)) {
-      log(`Creating systemd service: ${serviceFile}`);
-      const serviceContent = generateServiceFile(env);
-      fs.writeFileSync(serviceFile, serviceContent);
-      await executeCommand('systemctl daemon-reload', '/tmp');
-    }
+    log(`Updating systemd service file: ${serviceFile}`);
+    const serviceContent = generateServiceFile(env);
+    // Используем временный файл для атомарной записи
+    const tempFile = path.join('/tmp', `${env.serviceName}.service`);
+    fs.writeFileSync(tempFile, serviceContent);
+    await executeCommand(`mv ${tempFile} ${serviceFile}`, '/tmp');
+    await executeCommand('systemctl daemon-reload', '/tmp');
     
     // 6. Запускаем сервис
     log(`Starting service: ${env.serviceName}`);
