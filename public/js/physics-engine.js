@@ -259,6 +259,12 @@ class PhysicsEngine {
 
     this.state.targetVx = this.state.lastDirection.x * pixelsPerSecond
     this.state.targetVy = this.state.lastDirection.y * pixelsPerSecond
+
+    // For server-side physics, update the actual velocity
+    if (!this.isViewer) {
+      this.ball.vx = this.state.targetVx
+      this.ball.vy = this.state.targetVy
+    }
   }
 
   /**
@@ -358,13 +364,7 @@ class PhysicsEngine {
       }
     }
 
-    // Пересчитываем скорость напрямую из направления и процента скорости
-    const speedPercent = this.ball.speed / 100
-    const pixelsPerSecond = speedPercent * this.options.maxSpeed
-    this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
-    this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
-
-    // Обновляем позицию
+    // Обновляем позицию, используя сохраненную скорость
     this.ball.x += this.ball.vx * deltaTime
     this.ball.y += this.ball.vy * deltaTime
 
@@ -386,22 +386,22 @@ class PhysicsEngine {
 
     // Проверяем левую и правую границы
     if (ball.x - radius < 0) {
-      ball.x = radius // Клампим позицию
+      ball.x = radius // Мяч касается левой границы
       this.state.lastDirection.x = Math.abs(this.state.lastDirection.x || 1)
       bounced = true
     } else if (ball.x + radius > worldWidth) {
-      ball.x = worldWidth - radius // Клампим позицию
+      ball.x = worldWidth - radius // Мяч касается правой границы
       this.state.lastDirection.x = -Math.abs(this.state.lastDirection.x || 1)
       bounced = true
     }
 
     // Проверяем верхнюю и нижнюю границы
     if (ball.y - radius < 0) {
-      ball.y = radius // Клампим позицию
+      ball.y = radius // Мяч касается верхней границы
       this.state.lastDirection.y = Math.abs(this.state.lastDirection.y || 1)
       bounced = true
     } else if (ball.y + radius > worldHeight) {
-      ball.y = worldHeight - radius // Клампим позицию
+      ball.y = worldHeight - radius // Мяч касается нижней границы
       this.state.lastDirection.y = -Math.abs(this.state.lastDirection.y || 1)
       bounced = true
     }
@@ -524,7 +524,9 @@ class PhysicsEngine {
       // Обновляем целевую позицию для интерполяции (без телепортации текущей позиции)
       if (command.x !== undefined && command.y !== undefined) {
         this.state.targetX = command.x
+        this.ball.x = command.x
         this.state.targetY = command.y
+        this.ball.y = command.y
       }
 
       // Сохраняем скорость и время обновления для предикции
