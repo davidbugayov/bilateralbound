@@ -437,3 +437,35 @@ git pull
 ### Лицензия
 
 MIT
+
+
+
+## 🛠️ Быстрый неинтерактивный ручной деплой
+
+Если вебхуки временно недоступны, можно выполнить деплой одной командой, без меню:
+
+```bash
+# DEV (ветка main → https://dev.emdrbilateral.online)
+./manual-deploy.sh --env=dev
+
+# PROD (ветка stable → https://emdrbilateral.online, каталог /var/www/bilateralbound-prod)
+./manual-deploy.sh --env=prod
+
+# PROD RU (ветка stable → https://emdrbilateral.ru)
+./manual-deploy.sh --env=prod-ru
+```
+
+Сервер/доступ сконфигурированы в manual-deploy.sh (SERVER, USER, PASSWORD).
+Сервисы systemd:
+- bilateralbound-dev (порт 3002)
+- bilateralbound-prod (порт 3000)
+- bilateralbound-prod-ru (порт 3001)
+
+Проверка статуса и логов (также доступны из меню):
+```bash
+# Статусы всех сервисов
+ssh root@213.139.229.44 "systemctl status bilateralbound-dev bilateralbound-prod bilateralbound-prod-ru --no-pager | head -20"
+
+# Логи
+ssh root@213.139.229.44 "journalctl -u bilateralbound-dev -n 50 --no-pager"
+```

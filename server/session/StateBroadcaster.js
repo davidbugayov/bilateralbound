@@ -14,6 +14,7 @@ class StateBroadcaster {
 
     const message = JSON.stringify({
       type: stateType,
+      timestamp: Date.now(),
       payload: payload || { ...session.ballState, viewerScreenSize: session.viewerScreenSize }
     })
 
@@ -75,6 +76,7 @@ class StateBroadcaster {
 
     const initialState = {
       type: 'initial_state',
+      timestamp: Date.now(),
       payload: {
         ...ballState,
         viewerConnected: session.viewerConnected,

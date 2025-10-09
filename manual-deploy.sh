@@ -90,13 +90,11 @@ deploy_environment() {
         ssh_exec "cd ${WORK_DIR} && npm ci --production"
     fi
     
-    # Создаем systemd service файл если его нет
+    # Принудительно пересоздаем systemd service файл для обновления порта
     local SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
-    log "Checking systemd service..."
+    log "Force recreating systemd service file to apply new port..."
     
-    if ! ssh_exec "[ -f ${SERVICE_FILE} ]"; then
-        log "Creating systemd service file..."
-        ssh_exec "cat > ${SERVICE_FILE} << 'EOF'
+    ssh_exec "cat > ${SERVICE_FILE} << 'EOF'
 [Unit]
 Description=BilateralBound EMDR - ${SERVICE_NAME}
 After=network.target
@@ -129,8 +127,7 @@ Environment=PORT=${PORT}
 [Install]
 WantedBy=multi-user.target
 EOF"
-        ssh_exec "systemctl daemon-reload"
-    fi
+    ssh_exec "systemctl daemon-reload"
     
     # Запускаем сервис
     log "Starting service ${SERVICE_NAME}..."
@@ -282,6 +279,54 @@ main() {
     
     # Проверяем зависимости
     check_dependencies
+
+    # Непрерывный режим: поддержка неинтерактивного запуска
+    # Примеры:
+    #   ./manual-deploy.sh --env=dev
+    #   ./manual-deploy.sh --env=prod
+    #   ./manual-deploy.sh --env=prod-ru
+    if [ $# -gt 0 ]; then
+        ENV_ARG=""
+        for arg in "$@"; do
+            case "$arg" in
+                --env=dev|--dev)
+                    ENV_ARG="dev"
+                    ;;
+                --env=prod|--prod)
+                    ENV_ARG="prod"
+                    ;;
+                --env=prod-ru|--prod-ru)
+                    ENV_ARG="prod-ru"
+                    ;;
+            esac
+        done
+
+        if [ -n "$ENV_ARG" ]; then
+            if [ "$ENV_ARG" = "dev" ]; then
+                deploy_environment \
+                    "Dev (dev.emdrbilateral.online)" \
+                    "main" \
+                    "/var/www/bilateralbound-dev" \
+                    "bilateralbound-dev" \
+                    "3002"
+            elif [ "$ENV_ARG" = "prod" ]; then
+                deploy_environment \
+                    "Production (emdrbilateral.online)" \
+                    "stable" \
+                    "/var/www/bilateralbound-prod" \
+                    "bilateralbound-prod" \
+                    "3000"
+            elif [ "$ENV_ARG" = "prod-ru" ]; then
+                deploy_environment \
+                    "Production RU (emdrbilateral.ru)" \
+                    "stable" \
+                    "/var/www/bilateralbound-prod-ru" \
+                    "bilateralbound-prod-ru" \
+                    "3001"
+            fi
+            exit $?
+        fi
+    fi
     
     while true; do
         show_menu
@@ -344,4 +389,4 @@ main() {
 }
 
 # Запуск
-main
+main "$@"
