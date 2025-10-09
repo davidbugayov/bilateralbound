@@ -257,103 +257,68 @@ class PhysicsEngine {
   }
 
   /**
-     * УЛУЧШЕННАЯ интерполяция с пружинной физикой для максимальной плавности
-     * Использует критически демпфированную пружину для устранения рывков
+     * УЛУЧШЕННАЯ интерполяция v2.0 с адаптивной пружиной и ограничением шага
+     * Максимально устойчива к сетевому джиттеру и лагам
      */
   updateViewerInterpolation (deltaTime) {
-    // При паузе ничего не интерполируем, оставляем текущую позицию
-    if (this.state.paused) return
-    if (this.state.targetX === undefined || this.state.targetY === undefined) {
-      return
-    }
+    if (this.state.paused || this.state.targetX === undefined) return;
 
-    const currentTime = performance.now()
-    const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
+    const currentTime = performance.now();
+    const timeSinceLastUpdate = (currentTime - (this.lastServerUpdate || currentTime)) / 1000;
 
-    // Инициализация буфера позиций для сглаживания джиттера сети
-    if (!this.positionBuffer) {
-      this.positionBuffer = []
-    }
+    // --- 1. Предсказание целевой позиции ---
+    const predictTime = Math.min(timeSinceLastUpdate, this.options.smoothing.maxPredictSec || 0.2);
+    const vx = this.state.lastVx || 0;
+    const vy = this.state.lastVy || 0;
+    const predictedTargetX = this.state.targetX + vx * predictTime;
+    const predictedTargetY = this.state.targetY + vy * predictTime;
 
-    // Вычисляем предсказанную целевую позицию с учетом задержки
-    let targetX = this.state.targetX
-    let targetY = this.state.targetY
+    // --- 2. Адаптивная пружина ---
+    const dx = predictedTargetX - this.ball.x;
+    const dy = predictedTargetY - this.ball.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // Добавляем предикцию только если есть значимая задержка (> 100ms)
-    if (timeSinceLastUpdate > 100) {
-      const predictTime = Math.min(timeSinceLastUpdate / 1000, 0.15) // Макс 150ms
-      const vx = this.state.lastVx || 0
-      const vy = this.state.lastVy || 0
-      
-      // Плавное предсказание с учетом затухания
-      const decay = Math.exp(-predictTime * 2) // Экспоненциальное затухание
-      targetX += vx * predictTime * decay
-      targetY += vy * predictTime * decay
-    }
+    // Адаптивная жесткость: выше на больших расстояниях, ниже при приближении
+    const baseStiffness = this.options.smoothing.stiffness || 12;
+    const stiffness = baseStiffness + (distance / 100); // Увеличиваем жесткость пропорционально расстоянию
+    const damping = this.options.smoothing.damping || 10;
 
-    // Добавляем текущую цель в буфер
-    this.positionBuffer.push({ x: targetX, y: targetY, time: currentTime })
-    
-    // Ограничиваем размер буфера (последние 5 позиций)
-    if (this.positionBuffer.length > 5) {
-      this.positionBuffer.shift()
-    }
-
-    // Вычисляем усредненную цель для сглаживания джиттера
-    const avgTarget = this.positionBuffer.reduce((acc, pos) => {
-      acc.x += pos.x
-      acc.y += pos.y
-      return acc
-    }, { x: 0, y: 0 })
-    
-    avgTarget.x /= this.positionBuffer.length
-    avgTarget.y /= this.positionBuffer.length
-
-    // Используем критически демпфированную пружину для плавного движения
-    const stiffness = this.options.smoothing.stiffness || 8
-    const damping = this.options.smoothing.damping || 8
-
-    // Инициализируем скорость пружины при первом вызове
-    if (this.state.smoothVx === undefined) this.state.smoothVx = 0
-    if (this.state.smoothVy === undefined) this.state.smoothVy = 0
-
-    // Вычисляем ускорение пружины: a = k*(target - pos) - c*velocity
-    const dx = avgTarget.x - this.ball.x
-    const dy = avgTarget.y - this.ball.y
-    
-    const ax = stiffness * dx - damping * this.state.smoothVx
-    const ay = stiffness * dy - damping * this.state.smoothVy
+    // Ускорение пружины: a = k * (target - pos) - c * velocity
+    const ax = stiffness * dx - damping * this.state.smoothVx;
+    const ay = stiffness * dy - damping * this.state.smoothVy;
 
     // Интегрируем скорость
-    this.state.smoothVx += ax * deltaTime
-    this.state.smoothVy += ay * deltaTime
+    this.state.smoothVx += ax * deltaTime;
+    this.state.smoothVy += ay * deltaTime;
 
-    // Ограничиваем максимальную скорость интерполяции для предотвращения рывков
-    const maxInterpSpeed = 2000 // пикселей в секунду
-    const currentInterpSpeed = Math.sqrt(this.state.smoothVx ** 2 + this.state.smoothVy ** 2)
+    // --- 3. Ограничение шага (Step Capping) для предотвращения телепортации ---
+    let stepX = this.state.smoothVx * deltaTime;
+    let stepY = this.state.smoothVy * deltaTime;
+    const stepMagnitude = Math.sqrt(stepX * stepX + stepY * stepY);
     
-    if (currentInterpSpeed > maxInterpSpeed) {
-      const scale = maxInterpSpeed / currentInterpSpeed
-      this.state.smoothVx *= scale
-      this.state.smoothVy *= scale
+    // Максимальный шаг = расстояние до цели * 1.5 (чтобы догонять, но не перелетать)
+    const maxStep = distance * 1.5; 
+
+    if (stepMagnitude > maxStep && maxStep > 0) {
+      const scale = maxStep / stepMagnitude;
+      stepX *= scale;
+      stepY *= scale;
+      // Корректируем и скорость, чтобы избежать накопления энергии
+      this.state.smoothVx *= scale;
+      this.state.smoothVy *= scale;
     }
 
     // Интегрируем позицию
-    const stepX = this.state.smoothVx * deltaTime
-    const stepY = this.state.smoothVy * deltaTime
+    this.ball.x += stepX;
+    this.ball.y += stepY;
 
-    this.ball.x += stepX
-    this.ball.y += stepY
-
-    // Авто-снап к цели если очень близко (для устранения микроколебаний)
-    const snapDistance = this.options.smoothing.snapDistance || 0.5
-    if (Math.abs(dx) < snapDistance && Math.abs(this.state.smoothVx) < 10) {
-      this.ball.x = avgTarget.x
-      this.state.smoothVx = 0
-    }
-    if (Math.abs(dy) < snapDistance && Math.abs(this.state.smoothVy) < 10) {
-      this.ball.y = avgTarget.y
-      this.state.smoothVy = 0
+    // --- 4. Авто-снап к цели для устранения микроколебаний ---
+    const snapDistance = this.options.smoothing.snapDistance || 0.5;
+    if (distance < snapDistance && Math.abs(this.state.smoothVx) < 10 && Math.abs(this.state.smoothVy) < 10) {
+      this.ball.x = predictedTargetX;
+      this.ball.y = predictedTargetY;
+      this.state.smoothVx = 0;
+      this.state.smoothVy = 0;
     }
   }
 

@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -166,43 +166,6 @@
       box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
     }
 
-    .status-indicator {
-      position: fixed;
-      top: 12px;
-      right: 24px;
-      background: rgba(2, 6, 23, 0.8);
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #1f2937;
-      font-size: 12px;
-      z-index: 1000;
-    }
-    .status-indicator.connected { border-color: #10b981; }
-    .status-indicator.disconnected { border-color: #ef4444; }
-
-    /* Header */
-    .site-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 12px;
-      background: rgba(2, 6, 23, 0.8);
-      border: 1px solid #1f2937;
-      border-radius: 10px;
-      width: fit-content;
-    }
-    .site-header img {
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      object-fit: cover;
-      display: block;
-    }
-    .site-header span {
-      color: #e2e8f0;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-    }
     /* Адаптивные стили */
     @media (max-width: 768px) {
       .wrap {
@@ -212,11 +175,6 @@
 
       .card {
         padding: 20px;
-      }
-
-      /* Скрываем версию в мобильной версии */
-      .version-badge {
-        display: none !important;
       }
     }
   </style>
@@ -300,7 +258,7 @@
 
   <!-- Footer с информацией о версии -->
   <div style="position: fixed; bottom: 8px; right: 8px; background: rgba(2, 6, 23, 0.9); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 10px; color: #94a3b8; z-index: 1000;">
-    ⚡ BilateralBound v2.7.0
+    ⚡ BilateralBound v2.8.0
   </div>
 
   <script>
@@ -366,7 +324,8 @@
         if (!response.ok) {
           const errorText = await response.text();
           console.error('❌ Ошибка ответа:', errorText);
-          throw new Error(`HTTP ${response.status}: ${errorText || 'Не удалось создать сессию'}`);
+          alert(`HTTP ${response.status}: ${errorText || 'Не удалось создать сессию'}`);
+          return;
         }
 
         const data = await response.json();
@@ -374,7 +333,9 @@
         
         const sessionId = data.sessionId;
         if (!sessionId) {
-          throw new Error('Сессия создана, но ID не получен');
+          console.error('Сессия создана, но ID не получен');
+          alert('Сессия создана, но ID не получен');
+          return;
         }
 
         console.log('🔗 Подключение контроллера к сессии:', sessionId);
@@ -388,7 +349,9 @@
         
         if (!connectResponse.ok) {
           const connectError = await connectResponse.text();
-          throw new Error(`Ошибка подключения контроллера: ${connectError}`);
+          console.error(`Ошибка подключения контроллера: ${connectError}`);
+          alert(`Ошибка подключения контроллера: ${connectError}`);
+          return;
         }
         
         console.log('✅ Контроллер подключен к сессии');

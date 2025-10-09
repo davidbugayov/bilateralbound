@@ -63,16 +63,18 @@ class CountersController {
     const now = performance.now();
     const dt = now - this.lastTickTs;
     this.lastTickTs = now;
-    
-    // Добавляем только реальное прошедшее время
-    if (dt > 0 && dt < 1000) { // Защита от больших скачков
+
+    if (dt > 0 && dt < 1000) {
       this.timerMs += dt;
     }
-    
-    // Обновляем отображение не чаще 10 раз в секунду
-    if (!this._lastRenderTs || now - this._lastRenderTs > 100) {
+
+    // Обновляем отображение не чаще раза в секунду для таймера
+    // и при изменении других значений
+    if (!this._lastRenderTs || now - this._lastRenderTs > 1000) {
       this._lastRenderTs = now;
-      this.updateDisplay();
+      this.updateDisplay(true); // Принудительное обновление таймера
+    } else {
+      this.updateDisplay(false); // Обновление только пасов и сетов
     }
   }
 
@@ -85,25 +87,33 @@ class CountersController {
     this.lastBounceTs = now;
     this.passes++;
 
-    // Проверяем завершение сета (каждые 10 пасов)
     if (this.passes % 10 === 0) {
       this.sets++;
     }
-
-    this.updateDisplay();
+    // НЕ вызываем updateDisplay здесь, tick() сделает это
   }
 
-  updateDisplay() {
-    if (this.$timer) {
-      this.$timer.textContent = this.formatTime(this.timerMs);
+  updateDisplay(forceTimerUpdate = false) {
+    // Обновляем DOM только если значение изменилось
+    if (this.$timer && forceTimerUpdate) {
+      const newTime = this.formatTime(this.timerMs);
+      if (this.$timer.textContent !== newTime) {
+        this.$timer.textContent = newTime;
+      }
     }
     
     if (this.$passes) {
-      this.$passes.textContent = this.passes.toString();
+      const newPasses = this.passes.toString();
+      if (this.$passes.textContent !== newPasses) {
+        this.$passes.textContent = newPasses;
+      }
     }
     
     if (this.$sets) {
-      this.$sets.textContent = this.sets.toString();
+      const newSets = this.sets.toString();
+      if (this.$sets.textContent !== newSets) {
+        this.$sets.textContent = newSets;
+      }
     }
   }
 

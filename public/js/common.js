@@ -23,34 +23,8 @@ const getSessionIdFromUrl = window.CommonUtils
     return urlParams.get('sessionId')
   }
 
-const toggleFullscreen = window.CommonUtils
-  ? window.CommonUtils.toggleFullscreen
-  : function (element = document.documentElement) {
-    if (!document.fullscreenElement) {
-      element.requestFullscreen().catch(err => {
-        // Error attempting to enable full-screen mode
-      })
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen()
-      }
-    }
-  }
-
-const throttle = window.CommonUtils
-  ? window.CommonUtils.throttle
-  : function (func, limit) {
-    let inThrottle
-    return function () {
-      const args = arguments
-      const context = this
-      if (!inThrottle) {
-        func.apply(context, args)
-        inThrottle = true
-        setTimeout(() => { inThrottle = false }, limit)
-      }
-    }
-  }
+const toggleFullscreen = window.CommonUtils ? window.CommonUtils.toggleFullscreen : () => {}
+const throttle = window.CommonUtils ? window.CommonUtils.throttle : () => {}
 
 // Экспортируем для использования
 if (typeof window !== 'undefined') {
@@ -58,8 +32,6 @@ if (typeof window !== 'undefined') {
   window.debugError = debugError
   window.debugWarn = debugWarn
   window.getSessionIdFromUrl = getSessionIdFromUrl
-  window.toggleFullscreen = toggleFullscreen
-  window.throttle = throttle
   // Единые типы WS-сообщений (без изменения логики)
   window.WS_MSG = Object.freeze({
     controllerUpdate: 'controller_update',
