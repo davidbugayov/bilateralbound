@@ -115,6 +115,15 @@ async function deploy(environment, ref) {
     } catch (err) {
       log(`Service was not running: ${err.message}`, 'WARN');
     }
+
+    // 2.5. Гарантированно освобождаем порт
+    log(`Ensuring port ${env.port} is free...`);
+    try {
+      await executeCommand(`lsof -ti:${env.port} | xargs -r kill -9`, env.workDir);
+      log(`Process on port ${env.port} was killed.`);
+    } catch (err) {
+      log(`Port ${env.port} was likely already free.`, 'INFO');
+    }
     
     // 3. Обновляем код
     log('Pulling latest changes...');
