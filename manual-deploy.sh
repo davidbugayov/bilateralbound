@@ -86,7 +86,7 @@ deploy_environment() {
     else
         log "Directory doesn't exist, cloning repository..."
         ssh_exec "mkdir -p ${WORK_DIR}"
-        ssh_exec "git clone -b ${BRANCH} git@github.com:davidbugayov/bilateralbound.git ${WORK_DIR}"
+        ssh_exec "git clone -b ${BRANCH} https://github.com/davidbugayov/bilateralbound.git ${WORK_DIR}"
         ssh_exec "cd ${WORK_DIR} && npm ci --production"
     fi
     
