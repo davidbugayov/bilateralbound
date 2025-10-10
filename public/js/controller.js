@@ -53,6 +53,7 @@ const bbCounters = {
   $passes: null,
   $sets: null,
   _lastBounceTs: 0,
+  bounceHits: 0, // количество отдельных стуков (2 стука = 1 пасс)
   initDom () {
     this.$timer = document.getElementById('bbTimer')
     this.$passes = document.getElementById('bbPasses')
@@ -72,6 +73,10 @@ const bbCounters = {
     this.running = false
     if (incrementSet) {
       this.sets += 1
+      // После каждого сета обнуляем пасы и счетчик стуков
+      this.passes = 0
+      this.bounceHits = 0
+      this._lastBounceTs = 0
     }
     // По требованию: после Стоп таймер обнулять
     this.timerMs = 0
@@ -81,6 +86,8 @@ const bbCounters = {
     this.timerMs = 0
     this.passes = 0
     this.sets = 0
+    this.bounceHits = 0
+    this._lastBounceTs = 0
     this.render()
   },
   onBounce () {
@@ -88,7 +95,11 @@ const bbCounters = {
     const now = performance.now()
     if (now - this._lastBounceTs < 120) return
     this._lastBounceTs = now
-    this.passes += 1
+    // Учитываем, что 1 пасс = 2 стука (туда-обратно)
+    this.bounceHits += 1
+    if (this.bounceHits % 2 === 0) {
+      this.passes += 1
+    }
 
     this.render()
   },
