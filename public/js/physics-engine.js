@@ -513,10 +513,11 @@ class PhysicsEngine {
     if (this.isViewer) {
       // Плавное обновление целевой позиции БЕЗ резких скачков
       if (command.x !== undefined && command.y !== undefined) {
-        // Обновляем ТОЛЬКО цель. Интерполятор сам догонит ее.
-        // Прямое присваивание this.ball.x/y вызывало рывки.
+        // Визуальная точность: цель и текущая позиция равны координате сервера
         this.state.targetX = command.x
+        this.ball.x = command.x
         this.state.targetY = command.y
+        this.ball.y = command.y
       }
 
       // Сохраняем скорость и время обновления для предикции
