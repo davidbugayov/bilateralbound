@@ -154,10 +154,8 @@
     .actions-grid .btn.primary { font-weight: 600; }
 
     /* Сегментированный контрол направлений */
-    .segmented { display: flex; gap: 0; border: 1px solid #1f2937; border-radius: 10px; overflow: hidden; background: #0d1526; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .segmented::-webkit-scrollbar { height: 6px; }
-    .segmented::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
-    .segmented .seg-btn { flex: 0 0 auto; padding: 10px 12px; font-size: 13px; color: #9ca3af; background: transparent; border: 0; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; min-width: 120px; }
+    .segmented { display: flex; gap: 0; border: 1px solid #1f2937; border-radius: 10px; overflow: hidden; background: #0d1526; flex-wrap: wrap; }
+    .segmented .seg-btn { flex: 1 1 25%; padding: 10px 12px; font-size: 13px; color: #9ca3af; background: transparent; border: 0; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; min-width: 0; }
     .segmented .seg-btn + .seg-btn { border-left: 1px solid #1f2937; }
     .segmented .seg-btn:hover { background: #152139; color: #e5e7eb; }
     .segmented .seg-btn.active { background: #1d4ed8; color: #ffffff; }
@@ -166,9 +164,9 @@
     @media (max-width: 768px) {
       .controls-grid { grid-template-columns: 1fr; }
       .actions_grid { grid-template-columns: 1fr; }
-      /* Keep direction buttons horizontal on mobile */
-      .segmented { flex-wrap: nowrap; overflow-x: auto; }
-      .segmented .seg-btn { min-width: 100px; padding: 10px 10px; font-size: 12px; }
+      /* На мобильных кнопки направления всегда помещаются без горизонтального скролла */
+      .segmented { flex-wrap: wrap; overflow-x: hidden; }
+      .segmented .seg-btn { flex: 1 1 25%; min-width: 0; padding: 10px 8px; font-size: 12px; }
     }
 
     /* Внешний вид: общая сетка */
