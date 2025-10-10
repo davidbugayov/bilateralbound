@@ -108,7 +108,7 @@ class SessionManager {
 
     if (updates.colorBall !== undefined || updates.colorBg !== undefined) return 200
     if (updates.speed !== undefined) return 100
-    if (updates.dirX !== undefined || updates.dirY !== undefined) return 30
+    if (updates.dirX !== undefined || updates.dirY !== undefined) return 8 // Уменьшено для более отзывчивого управления
     if (updates.paused !== undefined || updates.resume === true) return 0
 
     return 50

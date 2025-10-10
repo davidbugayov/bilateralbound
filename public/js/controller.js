@@ -17,6 +17,10 @@ window.__previewScale = 1 // Коэффициент масштабировани
 
 // 3. Глобальные переменные для логики контроллера
 const components = {}
+// Экспортируем ссылку на компоненты для использования в новых функциях
+if (typeof window !== 'undefined') {
+  window.components = components
+}
 let lastServerState = null // Кэшируем последнее состояние от сервера
 let directionState = { dx: 1, dy: 0 }
 let isPlaying = false
@@ -337,7 +341,8 @@ async function initializeWebSocketClient (sessionId) {
   wsClient = new WebSocketClient(sessionId, 'controller', {
     maxReconnectAttempts: 10,
     reconnectInterval: 2000,
-    heartbeatInterval: 25000
+    heartbeatInterval: 25000,
+    coalesceDelayMs: 8 // Уменьшаем задержку для большей плавности
   })
 
   // Настраиваем обработчики событий

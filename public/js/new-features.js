@@ -10,6 +10,8 @@ class FeatureManager {
   constructor() {
     this.presets = this.loadPresets()
     this.sessionHistory = []
+    this.sessions = this.loadSessions()
+    this.currentSessionId = this.loadCurrentSessionId()
     this.initFeatures()
   }
 
@@ -18,10 +20,12 @@ class FeatureManager {
    */
   initFeatures() {
     this.addPresetControls()
+    this.addSessionManagerUI()
     this.addSessionExportImport()
     this.addHistoryControls()
     this.addKeyboardShortcuts()
     this.addThemeToggle()
+    this.updateHeaderSessionName()
     console.log('✅ Новые функции инициализированы')
   }
 
@@ -58,6 +62,17 @@ class FeatureManager {
         colorBg: '#2b1b0e',
         size: 35
       }
+    }
+    try {
+      const raw = localStorage.getItem('bb_presets')
+      if (raw) {
+        const saved = JSON.parse(raw)
+        if (saved && typeof saved === 'object') {
+          return { ...defaultPresets, ...saved }
+        }
+      }
+    } catch (e) {
+      console.warn('Не удалось загрузить сохранённые пресеты')
     }
     return defaultPresets
   }
@@ -431,6 +446,348 @@ class FeatureManager {
   }
 
   /**
+   * Менеджер локальных сессий (с именем)
+   */
+  loadSessions() {
+    try {
+      const raw = localStorage.getItem('bb_sessions')
+      if (!raw) return []
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed
+      // миграция из старого формата объекта
+      if (parsed && typeof parsed === 'object' && parsed.sessions && Array.isArray(parsed.sessions)) {
+        return parsed.sessions
+      }
+    } catch (e) {
+      console.warn('Не удалось загрузить сохранённые сессии')
+    }
+    return []
+  }
+
+  saveSessions() {
+    try {
+      localStorage.setItem('bb_sessions', JSON.stringify(this.sessions))
+    } catch (e) {
+      console.warn('Не удалось сохранить сессии')
+    }
+  }
+
+  loadCurrentSessionId() {
+    try {
+      return localStorage.getItem('bb_current_session') || null
+    } catch (e) {
+      return null
+    }
+  }
+
+  persistCurrentSessionId(id) {
+    try {
+      if (id) {
+        localStorage.setItem('bb_current_session', id)
+      } else {
+        localStorage.removeItem('bb_current_session')
+      }
+    } catch (e) {
+      // ignore
+    }
+    this.currentSessionId = id || null
+  }
+
+  addSessionManagerUI() {
+    const container = document.getElementById('sessionControls')
+    if (!container) return
+
+    // Очищаем и строим UI
+    container.innerHTML = ''
+
+    const nameRow = document.createElement('div')
+    nameRow.style.display = 'flex'
+    nameRow.style.gap = '8px'
+    nameRow.style.marginBottom = '8px'
+
+    const nameInput = document.createElement('input')
+    nameInput.type = 'text'
+    nameInput.id = 'bbSessionNameInput'
+    nameInput.placeholder = 'Название сессии'
+    nameInput.style.flex = '1'
+    nameInput.style.padding = '8px 10px'
+    nameInput.style.background = '#1f2937'
+    nameInput.style.border = '1px solid #374151'
+    nameInput.style.color = '#e2e8f0'
+    nameInput.style.borderRadius = '6px'
+
+    // если уже есть текущая — подставим имя
+    const current = this.sessions.find(s => s.id === this.currentSessionId)
+    if (current) nameInput.value = current.name
+
+    const saveBtn = document.createElement('button')
+    saveBtn.className = 'btn'
+    saveBtn.textContent = '💾 Сохранить'
+    saveBtn.onclick = () => this.saveNamedSession(nameInput.value)
+
+    const updateBtn = document.createElement('button')
+    updateBtn.className = 'btn outline'
+    updateBtn.textContent = '⟳ Обновить'
+    updateBtn.disabled = !this.currentSessionId
+    updateBtn.onclick = () => this.updateCurrentSession(nameInput.value)
+
+    const deleteBtn = document.createElement('button')
+    deleteBtn.className = 'btn outline'
+    deleteBtn.textContent = '🗑 Удалить'
+    deleteBtn.disabled = !this.currentSessionId
+    deleteBtn.onclick = () => this.deleteSessionById(this.currentSessionId)
+
+    nameRow.appendChild(nameInput)
+    nameRow.appendChild(saveBtn)
+    nameRow.appendChild(updateBtn)
+    nameRow.appendChild(deleteBtn)
+
+    const listWrap = document.createElement('div')
+    listWrap.id = 'bbSessionsList'
+    listWrap.style.marginTop = '8px'
+
+    container.appendChild(nameRow)
+    container.appendChild(listWrap)
+
+    this.renderSessionsList()
+  }
+
+  renderSessionsList() {
+    const listWrap = document.getElementById('bbSessionsList')
+    if (!listWrap) return
+    listWrap.innerHTML = ''
+
+    if (!this.sessions.length) {
+      const empty = document.createElement('div')
+      empty.style.color = '#9ca3af'
+      empty.style.fontSize = '12px'
+      empty.textContent = 'Нет сохранённых сессий'
+      listWrap.appendChild(empty)
+      return
+    }
+
+    const ul = document.createElement('div')
+    ul.style.display = 'flex'
+    ul.style.flexDirection = 'column'
+    ul.style.gap = '6px'
+
+    this.sessions
+      .slice()
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      .forEach((s) => {
+        const item = document.createElement('div')
+        item.style.display = 'flex'
+        item.style.alignItems = 'center'
+        item.style.justifyContent = 'space-between'
+        item.style.background = '#0b1220'
+        item.style.border = '1px solid #1f2937'
+        item.style.borderRadius = '8px'
+        item.style.padding = '8px 10px'
+
+        const info = document.createElement('div')
+        info.style.display = 'flex'
+        info.style.flexDirection = 'column'
+        const title = document.createElement('div')
+        title.style.color = '#e5e7eb'
+        title.style.fontWeight = '600'
+        title.textContent = s.name || 'Без названия'
+        const meta = document.createElement('div')
+        meta.style.color = '#9ca3af'
+        meta.style.fontSize = '11px'
+        meta.textContent = `Обновлено: ${new Date(s.updatedAt).toLocaleString()}`
+        info.appendChild(title)
+        info.appendChild(meta)
+
+        const actions = document.createElement('div')
+        actions.style.display = 'flex'
+        actions.style.gap = '6px'
+
+        const loadBtn = document.createElement('button')
+        loadBtn.className = 'btn'
+        loadBtn.textContent = 'Загрузить'
+        loadBtn.onclick = () => this.loadSessionById(s.id)
+
+        const renameBtn = document.createElement('button')
+        renameBtn.className = 'btn outline'
+        renameBtn.textContent = '✎ Имя'
+        renameBtn.onclick = () => this.renameSessionById(s.id)
+
+        const delBtn = document.createElement('button')
+        delBtn.className = 'btn outline'
+        delBtn.textContent = '🗑'
+        delBtn.onclick = () => this.deleteSessionById(s.id)
+
+        actions.appendChild(loadBtn)
+        actions.appendChild(renameBtn)
+        actions.appendChild(delBtn)
+
+        item.appendChild(info)
+        item.appendChild(actions)
+        ul.appendChild(item)
+      })
+
+    listWrap.appendChild(ul)
+  }
+
+  buildCurrentSessionData() {
+    // Похоже на exportSession, но не создаёт файл
+    return {
+      timestamp: new Date().toISOString(),
+      sessionId: window.__current?.sessionId || null,
+      settings: {
+        speed: window.components?.speed?.getSpeed() || 40,
+        direction: window.currentDirectionMode || 'horizontal',
+        ballColor: document.querySelector('.color-btn.active')?.style.backgroundColor || '#60a5fa',
+        bgColor: document.body.style.backgroundColor || '#020617',
+        ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20,
+        isPlaying: window.isPlaying || false
+      },
+      viewerConnected: window.__current?.viewerConnected || false,
+      viewerScreenSize: window.__current?.viewerScreenSize || null,
+      counters: {
+        timer: window.bbCounters?.timerMs || 0,
+        passes: window.bbCounters?.passes || 0,
+        sets: window.bbCounters?.sets || 0
+      }
+    }
+  }
+
+  async applySessionData(sessionData) {
+    try {
+      const settings = sessionData?.settings || {}
+      if (settings.speed && window.components?.speed) {
+        window.components.speed.setSpeed(settings.speed)
+        await this.sendUpdate({ speed: settings.speed })
+      }
+      if (settings.direction) setDirection(settings.direction)
+      if (settings.ballColor) setBallColor(settings.ballColor)
+      if (settings.bgColor) setBackgroundColor(settings.bgColor)
+      if (settings.ballSize) setBallSize(settings.ballSize)
+
+      // isPlaying
+      if (typeof settings.isPlaying === 'boolean') {
+        if (settings.isPlaying && !window.isPlaying) togglePlayPause()
+        if (!settings.isPlaying && window.isPlaying) togglePlayPause()
+      }
+
+      // counters
+      if (sessionData.counters && window.bbCounters) {
+        window.bbCounters.timerMs = sessionData.counters.timer || 0
+        window.bbCounters.passes = sessionData.counters.passes || 0
+        window.bbCounters.sets = sessionData.counters.sets || 0
+        window.bbCounters.render?.()
+      }
+    } catch (e) {
+      console.error('applySessionData error', e)
+      this.showNotification('Ошибка применения сессии', 'error')
+    }
+  }
+
+  saveNamedSession(nameRaw) {
+    const name = (nameRaw || '').trim() || 'Сессия'
+    const now = new Date().toISOString()
+
+    // если существует с таким именем — обновим его
+    let session = this.sessions.find(s => s.name === name)
+    if (session) {
+      session.data = this.buildCurrentSessionData()
+      session.updatedAt = now
+      this.persistCurrentSessionId(session.id)
+    } else {
+      // создаём новую
+      const id = crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2,8)}`
+      session = {
+        id,
+        name,
+        createdAt: now,
+        updatedAt: now,
+        data: this.buildCurrentSessionData()
+      }
+      this.sessions.push(session)
+      this.persistCurrentSessionId(id)
+    }
+
+    this.saveSessions()
+    this.renderSessionsList()
+    this.updateHeaderSessionName()
+    this.showNotification(`Сессия "${name}" сохранена`, 'success')
+  }
+
+  updateCurrentSession(nameRaw) {
+    if (!this.currentSessionId) {
+      this.showNotification('Нет выбранной сессии для обновления', 'warning')
+      return
+    }
+    const session = this.sessions.find(s => s.id === this.currentSessionId)
+    if (!session) {
+      this.showNotification('Текущая сессия не найдена', 'error')
+      return
+    }
+    const name = (nameRaw || session.name || 'Сессия').trim()
+    session.name = name
+    session.data = this.buildCurrentSessionData()
+    session.updatedAt = new Date().toISOString()
+    this.saveSessions()
+    this.renderSessionsList()
+    this.updateHeaderSessionName()
+    this.showNotification('Сессия обновлена', 'success')
+  }
+
+  async loadSessionById(id) {
+    const session = this.sessions.find(s => s.id === id)
+    if (!session) return
+    await this.applySessionData(session.data)
+    this.persistCurrentSessionId(id)
+    const input = document.getElementById('bbSessionNameInput')
+    if (input) input.value = session.name
+    this.updateHeaderSessionName()
+    this.renderSessionsList()
+    this.showNotification(`Загружена сессия "${session.name}"`, 'success')
+  }
+
+  renameSessionById(id) {
+    const session = this.sessions.find(s => s.id === id)
+    if (!session) return
+    const newName = prompt('Новое название сессии:', session.name)
+    if (!newName) return
+    session.name = newName.trim() || session.name
+    session.updatedAt = new Date().toISOString()
+    this.saveSessions()
+    if (this.currentSessionId === id) this.updateHeaderSessionName()
+    const input = document.getElementById('bbSessionNameInput')
+    if (this.currentSessionId === id && input) input.value = session.name
+    this.renderSessionsList()
+  }
+
+  deleteSessionById(id) {
+    const idx = this.sessions.findIndex(s => s.id === id)
+    if (idx === -1) return
+    const [removed] = this.sessions.splice(idx, 1)
+    if (this.currentSessionId === id) {
+      this.persistCurrentSessionId(null)
+      const input = document.getElementById('bbSessionNameInput')
+      if (input) input.value = ''
+    }
+    this.saveSessions()
+    this.renderSessionsList()
+    this.updateHeaderSessionName()
+    this.showNotification(`Сессия "${removed?.name || ''}" удалена`, 'success')
+  }
+
+  updateHeaderSessionName() {
+    try {
+      const el = document.getElementById('sessionInfo')
+      if (!el) return
+      const current = this.sessions.find(s => s.id === this.currentSessionId)
+      const nameTxt = current?.name ? `Название: ${current.name}` : 'Название: —'
+      const createdTxt = current?.createdAt ? ` • Создана: ${new Date(current.createdAt).toLocaleString()}` : ''
+      el.textContent = `${nameTxt}${createdTxt}`
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  /**
    * Утилиты
    */
   async sendUpdate(data) {
@@ -457,7 +814,7 @@ class FeatureManager {
 window.applyPreset = (preset) => window.featureManager?.applyPreset(preset)
 window.createCustomPreset = () => window.featureManager?.createCustomPreset()
 window.exportSession = () => window.featureManager?.exportSession()
-window.importSession = () => window.featureManager?.importSession(file)
+window.importSession = (file) => window.featureManager?.importSession(file)
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
