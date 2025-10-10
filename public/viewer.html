@@ -570,11 +570,48 @@
         }
         
         // ===== FULLSCREEN & MOBILE =====
+        // Android: keep the screen awake while in fullscreen (when supported)
+        let screenWakeLock = null;
+        async function requestScreenWakeLock() {
+            try {
+                if ('wakeLock' in navigator && document.visibilityState === 'visible') {
+                    screenWakeLock = await navigator.wakeLock.request('screen');
+                    screenWakeLock.addEventListener('release', () => {
+                        debugLog('🔓 Wake Lock released');
+                    });
+                    debugLog('🔒 Wake Lock acquired');
+                }
+            } catch (e) {
+                // Ignore if not supported or user denied
+                debugWarn('Wake Lock not available:', e?.message || e);
+            }
+        }
+        async function releaseScreenWakeLock() {
+            try {
+                if (screenWakeLock) {
+                    await screenWakeLock.release();
+                    screenWakeLock = null;
+                }
+            } catch (_) {}
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && isFullscreen) {
+                // Re-acquire after tab visibility changes
+                requestScreenWakeLock();
+            }
+        });
+
         document.addEventListener('fullscreenchange', () => {
-            isFullscreen = !!document.fullscreenElement;
+            isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || document.mozFullScreenElement);
             const btn = document.querySelector('.fullscreen-btn');
             if (btn) {
                 btn.textContent = isFullscreen ? '⛶ Выйти' : '⛶ Полноэкранный';
+            }
+            if (isFullscreen) {
+                requestScreenWakeLock();
+            } else {
+                releaseScreenWakeLock();
             }
         });
 

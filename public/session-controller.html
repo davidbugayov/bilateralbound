@@ -36,6 +36,10 @@
   <style>
     /* Специфичные стили для session-controller.html */
 
+    /* Mobile full-bleed layout adjustments */
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    *, *::before, *::after { box-sizing: border-box; }
+
     .control-section {
       background: #111827;
       border: 1px solid #1f2937;
@@ -176,9 +180,9 @@
 
     /* Мобильные стили */
     @media (max-width: 768px) {
-      body { padding: 16px; }
+      body { padding: 0; }
 
-      .wrap { gap: 16px; }
+      .wrap { gap: 16px; padding: 12px; }
 
       .control-section { padding: 16px; }
 
