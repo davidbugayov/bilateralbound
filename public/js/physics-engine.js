@@ -31,7 +31,7 @@ class PhysicsEngine {
     }
 
     // Флаг для определения режима вьювера
-    this.isViewer = false
+    this.isViewer = Boolean(options.isViewer ?? false)
     this._worldSizeSet = false // Флаг, что размеры мира установлены
 
     // Предварительно вычисляем центр мира
@@ -131,6 +131,8 @@ class PhysicsEngine {
     this.centerX = width / 2
     this.centerY = height / 2
     this._worldSizeSet = true // Устанавливаем флаг
+    // После изменения размеров мира гарантируем, что мяч и цель в пределах экрана
+    this.clampBallWithinBounds()
   }
 
   /**
@@ -139,11 +141,13 @@ class PhysicsEngine {
   setPosition (x, y) {
     this.ball.x = x
     this.ball.y = y
-    // Для режима "зрителя" (вьювер/превью) также обновляем цель интерполяции,
-    // чтобы мяч не "уезжал" к старой цели после установки новой позиции.
+    // Гарантируем, что позиция не выходит за границы экрана
+    this.clampBallWithinBounds()
+    // Для режима "зрителя" (вьювер/превью) также обновляем цель интерполяции
+    // и используем уже откорректированные координаты, чтобы избежать рывков
     if (this.isViewer) {
-      this.state.targetX = x
-      this.state.targetY = y
+      this.state.targetX = this.ball.x
+      this.state.targetY = this.ball.y
     }
   }
 
@@ -242,6 +246,8 @@ class PhysicsEngine {
   setBallSize (radius) {
     if (typeof radius === 'number' && radius > 0 && radius <= 500) {
       this.ball.radius = radius
+      // При изменении размера мяча гарантируем, что он остаётся в пределах экрана
+      this.clampBallWithinBounds()
     }
   }
 
@@ -272,10 +278,15 @@ class PhysicsEngine {
     const vy = this.state.lastVy || 0;
     const predictedTargetX = this.state.targetX + vx * predictTime;
     const predictedTargetY = this.state.targetY + vy * predictTime;
+    const radius = this.ball.radius;
+    const w = this.options.worldWidth;
+    const h = this.options.worldHeight;
+    const clampedTargetX = Math.min(w - radius, Math.max(radius, predictedTargetX));
+    const clampedTargetY = Math.min(h - radius, Math.max(radius, predictedTargetY));
 
     // --- 2. Адаптивная пружина ---
-    const dx = predictedTargetX - this.ball.x;
-    const dy = predictedTargetY - this.ball.y;
+    const dx = clampedTargetX - this.ball.x;
+    const dy = clampedTargetY - this.ball.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     // Адаптивная жесткость: выше на больших расстояниях, ниже при приближении
@@ -311,12 +322,14 @@ class PhysicsEngine {
     // Интегрируем позицию
     this.ball.x += stepX;
     this.ball.y += stepY;
+    // Гарантируем, что визуальная позиция не выходит за экран
+    this.clampBallWithinBounds();
 
     // --- 4. Авто-снап к цели для устранения микроколебаний ---
     const snapDistance = this.options.smoothing.snapDistance || 0.5;
     if (distance < snapDistance && Math.abs(this.state.smoothVx) < 10 && Math.abs(this.state.smoothVy) < 10) {
-      this.ball.x = predictedTargetX;
-      this.ball.y = predictedTargetY;
+      this.ball.x = clampedTargetX;
+      this.ball.y = clampedTargetY;
       this.state.smoothVx = 0;
       this.state.smoothVy = 0;
     }
@@ -454,6 +467,33 @@ class PhysicsEngine {
     }
   }
 
+  // Гарантирует, что мяч и целевые координаты находятся в пределах экрана
+  clampBallWithinBounds () {
+    const radius = this.ball.radius
+    const w = this.options.worldWidth
+    const h = this.options.worldHeight
+    if (!(w > 0 && h > 0 && radius >= 0)) return
+
+    const clampedX = this.max(radius, this.min(w - radius, this.ball.x))
+    const clampedY = this.max(radius, this.min(h - radius, this.ball.y))
+
+    if (clampedX !== this.ball.x) {
+      this.ball.x = clampedX
+      if (this.isViewer) this.state.smoothVx = 0
+    }
+    if (clampedY !== this.ball.y) {
+      this.ball.y = clampedY
+      if (this.isViewer) this.state.smoothVy = 0
+    }
+
+    if (this.state && typeof this.state.targetX === 'number') {
+      this.state.targetX = this.max(radius, this.min(w - radius, this.state.targetX))
+    }
+    if (this.state && typeof this.state.targetY === 'number') {
+      this.state.targetY = this.max(radius, this.min(h - radius, this.state.targetY))
+    }
+  }
+
 
   /**
      * Применяет команду от сервера
@@ -513,11 +553,16 @@ class PhysicsEngine {
     if (this.isViewer) {
       // Плавное обновление целевой позиции БЕЗ резких скачков
       if (command.x !== undefined && command.y !== undefined) {
-        // Визуальная точность: цель и текущая позиция равны координате сервера
-        this.state.targetX = command.x
-        this.ball.x = command.x
-        this.state.targetY = command.y
-        this.ball.y = command.y
+        // Визуальная точность с безопасным клампингом в пределах экрана
+        const r = this.ball.radius
+        const w = this.options.worldWidth
+        const h = this.options.worldHeight
+        const cx = Math.min(w - r, Math.max(r, command.x))
+        const cy = Math.min(h - r, Math.max(r, command.y))
+        this.state.targetX = cx
+        this.state.targetY = cy
+        this.ball.x = cx
+        this.ball.y = cy
       }
 
       // Сохраняем скорость и время обновления для предикции

@@ -483,11 +483,11 @@ function setupWebSocketEventHandlers (wsClient, logger) {
 function applyServerStateToPreview (state) {
   if (!previewPhysicsEngine || !state) return
 
-  // НЕ меняем размер мира движка под viewerScreenSize,
-  // движок хранит сырые viewer-координаты, масштабирование делает отрисовка
-  // if (state.viewerScreenSize) {
-  //   previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height);
-  // }
+  // Синхронизируем размер мира движка с размерами экрана вьювера,
+  // чтобы клампинг в PhysicsEngine соответствовал реальным границам
+  if (state.viewerScreenSize && typeof state.viewerScreenSize.width === 'number' && typeof state.viewerScreenSize.height === 'number') {
+    previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height)
+  }
   // Применяем состояние от сервера, чтобы обновить целевые координаты для интерполяции (в viewer-координатах)
   previewPhysicsEngine.applyCommand(state)
 
@@ -882,7 +882,11 @@ function updatePreviewSize (viewerScreenSize) {
   canvas.style.width = canvas.width + 'px'
   canvas.style.height = canvas.height + 'px'
 
-  // Тихо устанавливаем размер превью
+  // Синхронизируем размер мира движка с размерами экрана вьювера,
+  // чтобы предикция и клампинг соответствовали реальным границам вьювера
+  if (previewPhysicsEngine && viewerScreenSize && typeof viewerScreenSize.width === 'number' && typeof viewerScreenSize.height === 'number') {
+    previewPhysicsEngine.setWorldSize(viewerScreenSize.width, viewerScreenSize.height)
+  }
 
   // ВАЖНО: Не масштабируем радиус в движке, масштаб произойдёт в отрисовке
 
@@ -1367,7 +1371,13 @@ function resizePreviewFullscreen () {
   previewFsCanvas.width = window.innerWidth
   previewFsCanvas.height = window.innerHeight
   if (previewPhysicsEngine) {
-    previewPhysicsEngine.setWorldSize(window.innerWidth, window.innerHeight)
+    const vs = (window.__current && window.__current.viewerScreenSize) || null
+    if (vs && typeof vs.width === 'number' && typeof vs.height === 'number' && vs.width > 0 && vs.height > 0) {
+      previewPhysicsEngine.setWorldSize(vs.width, vs.height)
+    } else {
+      // Фолбэк на размеры окна, если размеры вьювера ещё неизвестны
+      previewPhysicsEngine.setWorldSize(window.innerWidth, window.innerHeight)
+    }
   }
 }
 
