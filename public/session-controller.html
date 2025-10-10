@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="public, max-age=3600" />
   <meta http-equiv="Pragma" content="cache" />
   <meta http-equiv="Expires" content="3600" />
@@ -35,6 +35,10 @@
   <link rel="stylesheet" href="/css/light-theme.css?v=20250103120">
   <style>
     /* Специфичные стили для session-controller.html */
+
+    /* Mobile full-bleed layout adjustments */
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    *, *::before, *::after { box-sizing: border-box; }
 
     .control-section {
       background: #111827;
@@ -166,9 +170,9 @@
     @media (max-width: 768px) {
       .controls-grid { grid-template-columns: 1fr; }
       .actions_grid { grid-template-columns: 1fr; }
-      /* Keep direction buttons horizontal on mobile */
-      .segmented { flex-wrap: nowrap; overflow-x: auto; }
-      .segmented .seg-btn { min-width: 100px; padding: 10px 10px; font-size: 12px; }
+      /* Mobile: keep buttons in one row without inner scrollbars */
+      .segmented { flex-wrap: nowrap; overflow-x: hidden; }
+      .segmented .seg-btn { flex: 1 1 25%; min-width: 0; padding: 10px 8px; font-size: 12px; }
     }
 
     /* Внешний вид: общая сетка */
@@ -178,9 +182,9 @@
 
     /* Мобильные стили */
     @media (max-width: 768px) {
-      body { padding: 16px; }
+      body { padding: 0; }
 
-      .wrap { gap: 16px; }
+      .wrap { gap: 16px; padding: 12px; }
 
       .control-section { padding: 16px; }
 
