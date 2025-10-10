@@ -756,12 +756,8 @@ function safeSend (type, payload) {
 
 async function updateSpeed (speed) {
   try {
-    // Оптимизация: меньше обновлений когда нет вьювера
-    if (!window.__current.viewerConnected) {
-      // Тихо пропускаем обновление скорости
-      return
-    }
-
+    // Отправляем изменение скорости всегда, даже если вьювер ещё не подключен
+    // (сервер сохранит значение и применит при старте)
     safeSend(WS_MSG.controllerUpdate, { speed })
   } catch (error) {
     // Ошибка при обновлении скорости

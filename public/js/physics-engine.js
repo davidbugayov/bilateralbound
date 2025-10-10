@@ -61,7 +61,9 @@ class PhysicsEngine {
       targetY: this.centerY,
       // Сглаживание (пружина) в viewer-режиме
       smoothVx: 0,
-      smoothVy: 0
+      smoothVy: 0,
+      // Разрешить интерполяцию даже на паузе (для плавного возвращения в центр)
+      allowInterpWhenPaused: false
     }
 
     this.bounceCallback = this.options.bounceCallback
@@ -212,16 +214,37 @@ class PhysicsEngine {
      */
   setPaused (paused) {
     this.state.paused = Boolean(paused)
-    // Для клиентского режима: при паузе фиксируем цель и сбрасываем предсказание,
-    // чтобы избежать рывка/дотягивания в момент остановки
-    if (this.isViewer && this.state.paused) {
-      this.state.targetX = this.ball.x
-      this.state.targetY = this.ball.y
-      this.state.lastVx = 0
-      this.state.lastVy = 0
-      this.state.smoothVx = 0
-      this.state.smoothVy = 0
-      this.lastServerUpdate = performance.now()
+
+    if (this.state.paused) {
+      // Плавное возвращение в центр при паузе
+      if (this.isViewer) {
+        // В клиентском режиме не телепортируем мяч, а плавно тянем к центру
+        // Цель — центр, текущую позицию оставляем как есть
+        this.state.targetX = this.centerX
+        this.state.targetY = this.centerY
+        // Разрешаем интерполяцию даже на паузе
+        this.state.allowInterpWhenPaused = true
+        // Сбрасываем предсказание и сглаживание, чтобы старт анимации был мягким
+        this.state.lastVx = 0
+        this.state.lastVy = 0
+        this.state.smoothVx = 0
+        this.state.smoothVy = 0
+        this.lastServerUpdate = performance.now()
+        // Убедимся что мяч в допустимых границах
+        this.clampBallWithinBounds()
+      } else {
+        // На сервере мгновенно ставим в центр (авторитетное состояние)
+        this.ball.x = this.centerX
+        this.ball.y = this.centerY
+        this.ball.vx = 0
+        this.ball.vy = 0
+        this.state.targetX = this.centerX
+        this.state.targetY = this.centerY
+        this.clampBallWithinBounds()
+      }
+    } else {
+      // При снятии с паузы возвращаем обычное поведение
+      this.state.allowInterpWhenPaused = false
     }
   }
 
@@ -267,7 +290,7 @@ class PhysicsEngine {
      * Максимально устойчива к сетевому джиттеру и лагам
      */
   updateViewerInterpolation (deltaTime) {
-    if (this.state.paused || this.state.targetX === undefined) return;
+    if ((this.state.paused && !this.state.allowInterpWhenPaused) || this.state.targetX === undefined) return;
 
     const currentTime = performance.now();
     const timeSinceLastUpdate = (currentTime - (this.lastServerUpdate || currentTime)) / 1000;
@@ -332,6 +355,8 @@ class PhysicsEngine {
       this.ball.y = clampedTargetY;
       this.state.smoothVx = 0;
       this.state.smoothVy = 0;
+      // Если мы были на паузе и дошли до цели — больше не требуется интерполяция на паузе
+      if (this.state.paused) this.state.allowInterpWhenPaused = false;
     }
   }
 
@@ -561,8 +586,18 @@ class PhysicsEngine {
         const cy = Math.min(h - r, Math.max(r, command.y))
         this.state.targetX = cx
         this.state.targetY = cy
-        this.ball.x = cx
-        this.ball.y = cy
+        const isPause = command.paused === true
+        if (!isPause) {
+          this.ball.x = cx
+          this.ball.y = cy
+        } else {
+          // Разрешаем интерполяцию на паузе для плавного движения к цели
+          this.state.allowInterpWhenPaused = true
+          this.state.smoothVx = 0
+          this.state.smoothVy = 0
+          this.state.lastVx = 0
+          this.state.lastVy = 0
+        }
       }
 
       // Сохраняем скорость и время обновления для предикции
@@ -580,7 +615,22 @@ class PhysicsEngine {
         this.setSpeed(command.speed)
       }
       if (!this.state.paused) {
-        this.calculateTargetVelocity()
+        // Немедленно применяем изменение скорости/направления к текущей скорости,
+        // чтобы мяч реагировал без необходимости Стоп/Старт
+        const speedPercent = this.ball.speed / 100
+        const pixelsPerSecond = speedPercent * this.options.maxSpeed
+        // Берём направление из lastDirection; если оно обнулилось, восстанавливаем из текущей скорости
+        let dirX = this.state.lastDirection.x || 0
+        let dirY = this.state.lastDirection.y || 0
+        if (dirX === 0 && dirY === 0) {
+          const sp = Math.hypot(this.ball.vx || 0, this.ball.vy || 0)
+          if (sp > 0) {
+            dirX = (this.ball.vx || 0) / sp
+            dirY = (this.ball.vy || 0) / sp
+            this.setDirection(dirX, dirY)
+          }
+        }
+        this.setVelocity(dirX * pixelsPerSecond, dirY * pixelsPerSecond)
       }
     }
 

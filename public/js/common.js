@@ -23,8 +23,37 @@ const getSessionIdFromUrl = window.CommonUtils
     return urlParams.get('sessionId')
   }
 
-const toggleFullscreen = window.CommonUtils ? window.CommonUtils.toggleFullscreen : () => {}
-const throttle = window.CommonUtils ? window.CommonUtils.throttle : () => {}
+const toggleFullscreen = (window.CommonUtils && typeof window.CommonUtils.toggleFullscreen === 'function')
+  ? window.CommonUtils.toggleFullscreen
+  : () => {}
+const throttle = (window.CommonUtils && typeof window.CommonUtils.throttle === 'function')
+  ? window.CommonUtils.throttle
+  : function (fn, wait = 100) {
+      if (typeof fn !== 'function') return () => {}
+      let last = 0
+      let timeoutId = null
+      let trailingArgs = null
+      return function (...args) {
+        const now = Date.now()
+        const remaining = wait - (now - last)
+        trailingArgs = args
+        if (remaining <= 0 || remaining > wait) {
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
+          last = now
+          fn.apply(this, args)
+        } else if (!timeoutId) {
+          timeoutId = setTimeout(() => {
+            last = Date.now()
+            timeoutId = null
+            fn.apply(this, trailingArgs)
+            trailingArgs = null
+          }, remaining)
+        }
+      }
+    }
 
 // Экспортируем для использования
 if (typeof window !== 'undefined') {
