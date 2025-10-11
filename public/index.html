@@ -24,14 +24,14 @@
   <meta name="category" content="Health & Wellness, Mental Health" />
   <meta name="therapy-type" content="EMDR, Bilateral Stimulation" />
   <meta name="target-audience" content="Couples, Individuals, Therapists" />
-  <link rel="canonical" href="https://bilateralbound.onrender.com" />
+  <link rel="canonical" href="https://emdrbilateral.ru/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="BilateralBound - EMDR терапия для пациентов" />
   <meta property="og:description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
-  <meta property="og:image" content="https://bilateralbound.onrender.com/emdr-eye.png?v=202501031200" />
-  <meta property="og:url" content="https://bilateralbound.onrender.com" />
+  <meta property="og:image" content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200" />
+  <meta property="og:url" content="https://emdrbilateral.ru/" />
   <meta property="og:site_name" content="BilateralBound" />
   <meta property="og:locale" content="ru_RU" />
   <meta property="og:image:width" content="1200" />
@@ -52,7 +52,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="BilateralBound - EMDR терапия для пациентов" />
   <meta name="twitter:description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
-  <meta name="twitter:image" content="https://bilateralbound.onrender.com/emdr-eye.png?v=202501031200" />
+  <meta name="twitter:image" content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200" />
   <meta name="twitter:site" content="@bilateralbound" />
   <meta name="twitter:creator" content="@bilateralbound" />
 
@@ -72,7 +72,7 @@
     "@type": ["WebApplication", "MedicalTherapy", "VideoGame"],
     "name": "BilateralBound - EMDR терапия для пациентов",
     "description": "Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний",
-    "url": "https://bilateralbound.onrender.com",
+    "url": "https://emdrbilateral.ru/",
     "applicationCategory": ["HealthcareApplication", "GameApplication"],
     "operatingSystem": "Web Browser",
     "medicalSpecialty": "Psychiatry",
@@ -107,74 +107,304 @@
 
   <link rel="stylesheet" href="/css/shared-components.css">
   <style>
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
       margin: 0;
-      padding: 20px;
-      background: #0f172a;
+      padding: 0;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      background-attachment: fixed;
       color: #e2e8f0;
       overflow-x: hidden;
       min-height: 100vh;
+      position: relative;
+      padding-bottom: 80px; /* Добавляем отступ для футера */
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
     }
 
     .wrap {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
+      padding: 20px;
       display: grid;
       grid-template-columns: 1fr;
-      gap: 24px;
+      gap: 32px;
+      position: relative;
+      z-index: 1;
     }
 
     .card {
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 16px;
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid rgba(31, 41, 55, 0.8);
+      border-radius: 24px;
+      padding: 48px;
+      box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+    }
+
+    .card h1 {
+      background: linear-gradient(135deg, #60a5fa, #a855f7, #34d399);
+      background-size: 200% 200%;
+      animation: gradientShift 3s ease-in-out infinite;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 24px 0;
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: -0.025em;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .card .subtitle {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      margin-bottom: 32px;
+      text-align: center;
+      font-weight: 300;
+      letter-spacing: 0.025em;
+    }
+
+    .info-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15));
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      border-radius: 20px;
       padding: 32px;
-      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.2), 0 4px 16px -2px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
+      margin: 24px 0;
+      position: relative;
+      overflow: hidden;
     }
 
-    button { 
-      background: #2563eb; 
-      color: white; 
-      border: 0; 
-      padding: 10px 14px; 
-      border-radius: 8px;
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    }
+
+    .info-card h3 {
+      margin-top: 0;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .info-card img {
+      width: 32px;
+      height: 32px;
+      filter: brightness(1.3) drop-shadow(0 0 8px rgba(96, 165, 250, 0.5));
+    }
+
+    .main-button {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white;
+      border: 0;
+      padding: 18px 36px;
+      border-radius: 16px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
     }
 
-    button:hover { 
-      background: linear-gradient(135deg, #1d4ed8, #7c3aed); 
-      transform: translateY(-2px); 
-      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3); 
-    }
-
-    input { 
+    .main-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
       width: 100%;
-      padding: 8px 10px; 
-      border-radius: 8px;
-      border: 1px solid #374151;
-      background: #0b1220;
-      color: #e2e8f0;
-      transition: border-color 0.2s ease; 
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
     }
 
-    input:focus { 
-      outline: none;
-      border-color: #60a5fa;
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    .main-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(37, 99, 235, 0.4);
+    }
+
+    .main-button:hover::before {
+      left: 100%;
+    }
+
+    .steps-container {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 32px;
+      margin: 24px 0;
+    }
+
+    .steps-container h3 {
+      margin-top: 0;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.4rem;
+    }
+
+    .step {
+      counter-increment: step-counter;
+      margin: 20px 0;
+      padding-left: 48px;
+      position: relative;
+      line-height: 1.6;
+    }
+
+    .step::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .indications-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.1));
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 20px;
+      padding: 32px;
+      margin: 24px 0;
+    }
+
+    .indications-card h3 {
+      margin-top: 0;
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.4rem;
+    }
+
+    .indications-card ul {
+      margin: 16px 0;
+      padding-left: 24px;
+      line-height: 1.8;
+    }
+
+    .indications-card li {
+      margin: 8px 0;
+      position: relative;
+    }
+
+    .warning-card {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 146, 60, 0.1));
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 20px;
+      padding: 32px;
+      margin: 24px 0;
+    }
+
+    .warning-card h3 {
+      margin-top: 0;
+      color: #f59e0b;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.4rem;
+    }
+
+    .footer {
+      background: rgba(2, 6, 23, 0.95);
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 12px;
+      color: #94a3b8;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      display: inline-block;
     }
 
     /* Адаптивные стили */
     @media (max-width: 768px) {
       .wrap {
         padding: 16px;
-        gap: 16px;
+        gap: 20px;
       }
 
       .card {
+        padding: 24px;
+      }
+
+      .card h1 {
+        font-size: 2rem;
+      }
+
+      .card .subtitle {
+        font-size: 1.1rem;
+      }
+
+      .info-card, .steps-container, .indications-card, .warning-card {
         padding: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card h1 {
+        font-size: 1.75rem;
+      }
+
+      .main-button {
+        padding: 16px 24px;
+        font-size: 1rem;
       }
     }
   </style>
@@ -185,14 +415,13 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <h1 style="margin: 0 0 16px 0;">🧠 BilateralBound - EMDR Терапия</h1>
-      <p style="font-size: 18px; color: #94a3b8; margin-bottom: 24px;">
+      <h1>🧠 BilateralBound - EMDR Терапия</h1>
+      <p class="subtitle">
         Инновационная платформа для EMDR терапии с биодинамической стимуляцией
       </p>
-      
-      <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1)); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #60a5fa; display: flex; align-items: center; gap: 8px;">
-          <img src="/emdr-eye.svg" alt="EMDR Eye" style="width: 24px; height: 24px; filter: brightness(1.2);" />
+
+      <div class="info-card">
+        <h3>
           🎯 Что такое EMDR терапия?
         </h3>
         <p style="margin: 12px 0; line-height: 1.6;">
@@ -206,12 +435,12 @@
       </div>
 
       <div id="createSection">
-        <button id="createSessionBtn" class="btn gradient-primary block lg" onclick="createSession()" style="margin: 20px 0;">
+        <button id="createSessionBtn" class="main-button" onclick="createSession()">
           🚀 Начать EMDR сессию
         </button>
 
-        <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin: 20px 0;">
-          <h3 style="margin-top: 0; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
+        <div class="steps-container">
+          <h3>
             📋 Как начать терапию:
           </h3>
           <div style="counter-reset: step-counter;">
@@ -230,11 +459,11 @@
           </div>
         </div>
 
-        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
-          <h3 style="margin-top: 0; color: #10b981; display: flex; align-items: center; gap: 8px;">
+        <div class="indications-card">
+          <h3>
             ✅ Показания к применению:
           </h3>
-          <ul style="margin: 12px 0; padding-left: 20px; line-height: 1.8;">
+          <ul>
             <li>Посттравматическое стрессовое расстройство (ПТСР)</li>
             <li>Тревожные расстройства и панические атаки</li>
             <li>Депрессия и эмоциональные травмы</li>
@@ -243,23 +472,23 @@
           </ul>
         </div>
 
-        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
-          <h3 style="margin-top: 0; color: #f59e0b; display: flex; align-items: center; gap: 8px;">
+        <div class="warning-card">
+          <h3>
             ⚠️ Важно помнить:
           </h3>
-          <p style="margin: 12px 0; line-height: 1.6;">
+          <p>
             EMDR терапия должна проводиться только квалифицированными специалистами.
             Данная платформа предназначена для использования в профессиональной психотерапевтической практике.
           </p>
         </div>
+        <div style="text-align: right; margin-top: 24px;">
+          <div class="footer">
+            ⚡ BilateralBound v2.58.0
+          </div>
+        </div>
       </div>
     </div>
 
-  </div>
-
-  <!-- Footer с информацией о версии -->
-  <div style="position: fixed; bottom: 8px; right: 8px; background: rgba(2, 6, 23, 0.9); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 10px; color: #94a3b8; z-index: 1000;">
-    ⚡ BilateralBound v2.57.0
   </div>
 
   <script>
