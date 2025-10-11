@@ -290,73 +290,73 @@ class PhysicsEngine {
      * Максимально устойчива к сетевому джиттеру и лагам
      */
   updateViewerInterpolation (deltaTime) {
-    if ((this.state.paused && !this.state.allowInterpWhenPaused) || this.state.targetX === undefined) return;
+    if ((this.state.paused && !this.state.allowInterpWhenPaused) || this.state.targetX === undefined) return
 
-    const currentTime = performance.now();
-    const timeSinceLastUpdate = (currentTime - (this.lastServerUpdate || currentTime)) / 1000;
+    const currentTime = performance.now()
+    const timeSinceLastUpdate = (currentTime - (this.lastServerUpdate || currentTime)) / 1000
 
     // --- 1. Предсказание целевой позиции ---
-    const predictTime = Math.min(timeSinceLastUpdate, this.options.smoothing.maxPredictSec || 0.2);
-    const vx = this.state.lastVx || 0;
-    const vy = this.state.lastVy || 0;
-    const predictedTargetX = this.state.targetX + vx * predictTime;
-    const predictedTargetY = this.state.targetY + vy * predictTime;
-    const radius = this.ball.radius;
-    const w = this.options.worldWidth;
-    const h = this.options.worldHeight;
-    const clampedTargetX = Math.min(w - radius, Math.max(radius, predictedTargetX));
-    const clampedTargetY = Math.min(h - radius, Math.max(radius, predictedTargetY));
+    const predictTime = Math.min(timeSinceLastUpdate, this.options.smoothing.maxPredictSec || 0.2)
+    const vx = this.state.lastVx || 0
+    const vy = this.state.lastVy || 0
+    const predictedTargetX = this.state.targetX + vx * predictTime
+    const predictedTargetY = this.state.targetY + vy * predictTime
+    const radius = this.ball.radius
+    const w = this.options.worldWidth
+    const h = this.options.worldHeight
+    const clampedTargetX = Math.min(w - radius, Math.max(radius, predictedTargetX))
+    const clampedTargetY = Math.min(h - radius, Math.max(radius, predictedTargetY))
 
     // --- 2. Адаптивная пружина ---
-    const dx = clampedTargetX - this.ball.x;
-    const dy = clampedTargetY - this.ball.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    const dx = clampedTargetX - this.ball.x
+    const dy = clampedTargetY - this.ball.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
 
     // Адаптивная жесткость: выше на больших расстояниях, ниже при приближении
-    const baseStiffness = this.options.smoothing.stiffness || 12;
-    const stiffness = baseStiffness + (distance / 100); // Увеличиваем жесткость пропорционально расстоянию
-    const damping = this.options.smoothing.damping || 10;
+    const baseStiffness = this.options.smoothing.stiffness || 12
+    const stiffness = baseStiffness + (distance / 100) // Увеличиваем жесткость пропорционально расстоянию
+    const damping = this.options.smoothing.damping || 10
 
     // Ускорение пружины: a = k * (target - pos) - c * velocity
-    const ax = stiffness * dx - damping * this.state.smoothVx;
-    const ay = stiffness * dy - damping * this.state.smoothVy;
+    const ax = stiffness * dx - damping * this.state.smoothVx
+    const ay = stiffness * dy - damping * this.state.smoothVy
 
     // Интегрируем скорость
-    this.state.smoothVx += ax * deltaTime;
-    this.state.smoothVy += ay * deltaTime;
+    this.state.smoothVx += ax * deltaTime
+    this.state.smoothVy += ay * deltaTime
 
     // --- 3. Ограничение шага (Step Capping) для предотвращения телепортации ---
-    let stepX = this.state.smoothVx * deltaTime;
-    let stepY = this.state.smoothVy * deltaTime;
-    const stepMagnitude = Math.sqrt(stepX * stepX + stepY * stepY);
-    
+    let stepX = this.state.smoothVx * deltaTime
+    let stepY = this.state.smoothVy * deltaTime
+    const stepMagnitude = Math.sqrt(stepX * stepX + stepY * stepY)
+
     // Максимальный шаг = расстояние до цели * 1.5 (чтобы догонять, но не перелетать)
-    const maxStep = distance * 1.5; 
+    const maxStep = distance * 1.5
 
     if (stepMagnitude > maxStep && maxStep > 0) {
-      const scale = maxStep / stepMagnitude;
-      stepX *= scale;
-      stepY *= scale;
+      const scale = maxStep / stepMagnitude
+      stepX *= scale
+      stepY *= scale
       // Корректируем и скорость, чтобы избежать накопления энергии
-      this.state.smoothVx *= scale;
-      this.state.smoothVy *= scale;
+      this.state.smoothVx *= scale
+      this.state.smoothVy *= scale
     }
 
     // Интегрируем позицию
-    this.ball.x += stepX;
-    this.ball.y += stepY;
+    this.ball.x += stepX
+    this.ball.y += stepY
     // Гарантируем, что визуальная позиция не выходит за экран
-    this.clampBallWithinBounds();
+    this.clampBallWithinBounds()
 
     // --- 4. Авто-снап к цели для устранения микроколебаний ---
-    const snapDistance = this.options.smoothing.snapDistance || 0.5;
+    const snapDistance = this.options.smoothing.snapDistance || 0.5
     if (distance < snapDistance && Math.abs(this.state.smoothVx) < 10 && Math.abs(this.state.smoothVy) < 10) {
-      this.ball.x = clampedTargetX;
-      this.ball.y = clampedTargetY;
-      this.state.smoothVx = 0;
-      this.state.smoothVy = 0;
+      this.ball.x = clampedTargetX
+      this.ball.y = clampedTargetY
+      this.state.smoothVx = 0
+      this.state.smoothVy = 0
       // Если мы были на паузе и дошли до цели — больше не требуется интерполяция на паузе
-      if (this.state.paused) this.state.allowInterpWhenPaused = false;
+      if (this.state.paused) this.state.allowInterpWhenPaused = false
     }
   }
 
@@ -399,7 +399,6 @@ class PhysicsEngine {
     // Обрабатываем коллизии с границами
     this.handleBoundaryCollisions()
   }
-
 
   /**
      * Обрабатывает коллизии с границами мира
@@ -518,7 +517,6 @@ class PhysicsEngine {
       this.state.targetY = this.max(radius, this.min(h - radius, this.state.targetY))
     }
   }
-
 
   /**
      * Применяет команду от сервера
@@ -671,7 +669,6 @@ class PhysicsEngine {
       paused: this.state.paused
     }
   }
-
 
   // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ПЕРЕИСПОЛЬЗОВАНИЯ ===
 

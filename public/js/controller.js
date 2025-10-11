@@ -44,7 +44,7 @@ let previewFsCanvas = null
 let previewFsRenderer = null
 let isPreviewFullscreen = false
 let fsPanelHideTimer = null
-let fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
+const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
 
 // ====== СЧЁТЧИКИ: таймер/пасы/сеты ======
 const bbCounters = {
@@ -255,7 +255,7 @@ async function initializeController () {
     // Обработчик навигации назад в браузере
     window.addEventListener('popstate', (event) => {
       console.log('🔙 Popstate event:', event.state, 'Hash:', window.location.hash, 'Fullscreen:', isPreviewFullscreen)
-      
+
       if (isPreviewFullscreen) {
         // Если мы в полноэкранном режиме и произошла навигация назад
         closePreviewFullscreen()
@@ -699,7 +699,6 @@ function syncUIWithState (ballState) {
       updateDirectionButtons()
       updateDirectionDisplay(ballState.dirX, ballState.dirY)
     }
-
   } catch (error) {
     // Ошибка при синхронизации UI
   }
@@ -783,7 +782,6 @@ async function updateSpeed (speed) {
 // ===== ПРЕВЬЮ =====
 
 async function initializePreview () {
-
   // Показываем текст ожидания подключения вьювера
   showWaitingForViewer()
 
@@ -844,7 +842,6 @@ async function initializePreview () {
       previewPhysicsEngine.setPosition(canvas.width / 2, canvas.height / 2)
       previewPhysicsEngine.setVelocity(0, 0)
     }
-
   } catch (error) {
   }
 }
@@ -1033,7 +1030,6 @@ function resetCenter () {
 
     // Устанавливаем позицию и target координаты для корректной интерполяции
     previewPhysicsEngine.setPosition(previewCenterX, previewCenterY)
-
   } else if (previewPhysicsEngine && previewCanvas) {
     // Fallback: центрируем относительно превью, если размеры вьювера неизвестны
     const centerX = previewCanvas.width / 2
@@ -1049,32 +1045,32 @@ function resetAll () {
     if (window.__current.isPlaying) {
       togglePlayPause()
     }
-    
+
     // Центрируем мяч
     resetCenter()
-    
+
     // Сбрасываем скорость к среднему значению
     updateSpeed(40)
     const speedSlider = document.getElementById('fsSpeed')
     if (speedSlider) speedSlider.value = 40
-    
+
     // Сбрасываем размер к базовому
     setBallSize(20)
-    
+
     // Сбрасываем направление к горизонтальному
     setDirection('horizontal')
-    
+
     // Сбрасываем цвет мяча к красному
     setBallColor('#ef4444')
-    
+
     // Сбрасываем фон к чёрному
     setBackgroundColor('#000000')
-    
+
     // Сбрасываем счётчики
     if (window.counters) {
       window.counters.resetAll()
     }
-    
+
     console.log('Все настройки сброшены к значениям по умолчанию')
   } catch (error) {
     console.error('Ошибка при сбросе настроек:', error)
@@ -1141,7 +1137,7 @@ function setBackgroundColor (color) {
   if (window.__current.viewerConnected) {
     safeSend(WS_MSG.controllerUpdate, { colorBg: color })
   }
-  
+
   // Обновляем фон в превью
   if (window.previewRenderer) {
     window.previewRenderer.setBackgroundColor(color)
@@ -1330,14 +1326,14 @@ function updateViewerStatusUI () {
 function openPreviewFullscreen () {
   const overlay = document.getElementById('previewOverlay')
   if (!overlay || !previewFsCanvas) return
-  
+
   console.log('🚀 Opening fullscreen preview')
-  
+
   // Добавляем запись в историю браузера для корректного возврата
   const currentUrl = window.location.href
   const fullscreenUrl = currentUrl + '#fullscreen-preview'
   history.pushState({ fullscreen: true, returnUrl: currentUrl }, '', fullscreenUrl)
-  
+
   overlay.style.display = 'block'
   isPreviewFullscreen = true
 
@@ -1366,14 +1362,14 @@ function openPreviewFullscreen () {
 function closePreviewFullscreen () {
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
-  
+
   console.log('🚪 Closing fullscreen preview')
-  
+
   // Убираем хэш из URL без изменения истории
   const currentUrl = window.location.href
   const baseUrl = currentUrl.split('#')[0]
   history.replaceState(null, '', baseUrl)
-  
+
   overlay.style.display = 'none'
   isPreviewFullscreen = false
 }
@@ -1527,14 +1523,14 @@ function wireFullscreenControls () {
   const ballColors = ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff']
   for (let i = 1; i <= 10; i++) {
     const btn = document.getElementById(`fsBallCol${i}`)
-    if (btn) btn.onclick = () => setBallColor(ballColors[i-1])
+    if (btn) btn.onclick = () => setBallColor(ballColors[i - 1])
   }
 
   // Background color buttons (10 colors from main preview)
   const bgColors = ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a']
   for (let i = 1; i <= 10; i++) {
     const btn = document.getElementById(`fsBg${i}`)
-    if (btn) btn.onclick = () => setBackgroundColor(bgColors[i-1])
+    if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1])
   }
 }
 
