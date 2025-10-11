@@ -27,7 +27,7 @@ let isPlaying = false
 let currentDirectionMode = 'horizontal'
 let wsClient
 let isInitialized = false // Флаг для предотвращения повторной инициализации
-let forcePauseUntilUserAction = false // После ресайза вьювера игнорировать paused=false до нажатия Старт
+
 let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
 
 // --- State ---
@@ -599,11 +599,25 @@ function showErrorNotification (message) {
  * Создание логгера для модуля
  */
 function createLogger (moduleName) {
+  const startTime = performance.now()
+
   return {
-    info: (message, data) => {},
-    success: (message, data) => {},
-    warning: (message, data) => {},
-    error: (message, data) => {}
+    info: (message, data) => {
+      const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
+      console.log(`[${timestamp}s] ${moduleName}: ${message}`, data || '')
+    },
+    success: (message, data) => {
+      const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
+      console.log(`[${timestamp}s] ✅ ${moduleName}: ${message}`, data || '')
+    },
+    warning: (message, data) => {
+      const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
+      console.warn(`[${timestamp}s] ⚠️ ${moduleName}: ${message}`, data || '')
+    },
+    error: (message, data) => {
+      const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
+      console.error(`[${timestamp}s] ❌ ${moduleName}: ${message}`, data || '')
+    }
   }
 }
 

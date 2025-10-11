@@ -47,26 +47,6 @@ class StateBroadcaster {
     })
   }
 
-  broadcastLog (sessionId, logMessage) {
-    const session = this.sessionRepository.findById(sessionId)
-    if (!session) return false
-
-    const message = JSON.stringify({
-      type: 'server_log',
-      payload: logMessage
-    })
-
-    for (const { client } of this.webSocketManager.getClients(sessionId)) {
-      if (this._isClientReady(client)) {
-        try {
-          client.send(message)
-        } catch (error) {
-          // Не логируем ошибку отправки лога, чтобы избежать бесконечного цикла
-        }
-      }
-    }
-  }
-
   broadcastInitialState (sessionId, client, currentState) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
