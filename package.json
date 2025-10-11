@@ -1,6 +1,6 @@
 {
   "name": "bilateralbound",
-  "version": "2.58.2",
+  "version": "2.58.3",
   "description": "Real-time EMDR therapy tool with scalable architecture",
   "main": "server/index.js",
   "scripts": {
@@ -16,7 +16,10 @@
     "format": "prettier --write \"server/**/*.js\" \"public/js/*.js\" \"public/*.html\"",
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "version": "node version-manager.js",
-    "postversion": "git add package.json VERSION.md && git commit -m \"🔖 Release v$(node -e \"console.log(require('./package.json').version)\")\" && git tag v$(node -e \"console.log(require('./package.json').version)\")"
+    "postversion": "git add package.json VERSION.md && git commit -m \"🔖 Release v$(node -e \"console.log(require('./package.json').version)\")\" && git tag v$(node -e \"console.log(require('./package.json').version)\")",
+    "deploy:prod": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"cd /var/www/bilateralbound-prod && git pull && systemctl restart bilateralbound-prod && systemctl status bilateralbound-prod --no-pager\"",
+    "deploy:dev": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"cd /var/www/bilateralbound-dev && git pull && systemctl restart bilateralbound-dev && systemctl status bilateralbound-dev --no-pager\"",
+    "deploy:quick": "./deploy-quick.sh"
   },
   "keywords": [
     "emdr",

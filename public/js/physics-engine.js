@@ -1,4 +1,4 @@
-/**
+ /**
  * PhysicsEngine - оптимизированный движок физики для BilateralBound
  * Управляет движением, отскоками и масштабированием шарика
  * Оптимизирован для производительности и переиспользования
@@ -46,6 +46,12 @@ class PhysicsEngine {
       speed: 30,
       radius: this.options.ballRadius
     }
+
+    // Буферы для интерполяции рендера (предыдущая и текущая позиции)
+    this._prevPos = { x: this.ball.x, y: this.ball.y }
+    this._currPos = { x: this.ball.x, y: this.ball.y }
+    // Кэшируемый объект для выдачи интерполированного состояния без аллокаций
+    this._interpBall = { x: this.ball.x, y: this.ball.y, radius: this.ball.radius, colorBall: null }
 
     this.colors = {
       ball: '#60a5fa',
@@ -286,77 +292,188 @@ class PhysicsEngine {
   }
 
   /**
-     * УЛУЧШЕННАЯ интерполяция v2.0 с адаптивной пружиной и ограничением шага
-     * Максимально устойчива к сетевому джиттеру и лагам
-     */
+   * ПРОДВИНУТАЯ интерполяция v4.0 с буферизацией состояний и экспоненциальным сглаживанием
+   * Решение проблемы дергания на основе лучших практик игровой индустрии
+   */
   updateViewerInterpolation (deltaTime) {
     if ((this.state.paused && !this.state.allowInterpWhenPaused) || this.state.targetX === undefined) return
 
     const currentTime = performance.now()
     const timeSinceLastUpdate = (currentTime - (this.lastServerUpdate || currentTime)) / 1000
 
-    // --- 1. Предсказание целевой позиции ---
-    const predictTime = Math.min(timeSinceLastUpdate, this.options.smoothing.maxPredictSec || 0.2)
+    // === БУФЕРИЗАЦИЯ СОСТОЯНИЙ ДЛЯ СГЛАЖИВАНИЯ ===
+    // Сохраняем историю состояний для интерполяции между обновлениями
+    if (!this._stateBuffer) {
+      this._stateBuffer = []
+      this._bufferSize = this.options.smoothing.bufferSize || 15 // Размер буфера из конфига
+    }
+
+    // Добавляем текущее состояние в буфер
+    this._stateBuffer.push({
+      x: this.ball.x,
+      y: this.ball.y,
+      vx: this.state.lastVx || 0,
+      vy: this.state.lastVy || 0,
+      timestamp: currentTime
+    })
+
+    // Ограничиваем размер буфера
+    if (this._stateBuffer.length > this._bufferSize) {
+      this._stateBuffer.shift()
+    }
+
+    // === ЭКСПОНЕНЦИАЛЬНОЕ СГЛАЖИВАНИЕ ВСЕХ ПАРАМЕТРОВ ===
+    const predictTime = Math.min(timeSinceLastUpdate, this.options.smoothing.maxPredictSec || 0.03)
+    const alpha = this.options.smoothing.velocitySmoothingAlpha || 0.08 // Еще более агрессивное сглаживание
     const vx = this.state.lastVx || 0
     const vy = this.state.lastVy || 0
-    const predictedTargetX = this.state.targetX + vx * predictTime
-    const predictedTargetY = this.state.targetY + vy * predictTime
+
+    // Агрессивное экспоненциальное сглаживание скорости для максимальной стабильности
+    if (!this._smoothedVelocity) {
+      this._smoothedVelocity = { x: vx, y: vy }
+    } else {
+      this._smoothedVelocity.x = this._smoothedVelocity.x * (1 - alpha) + vx * alpha
+      this._smoothedVelocity.y = this._smoothedVelocity.y * (1 - alpha) + vy * alpha
+    }
+
+    // Предикция позиции с использованием сглаженной скорости
+    const predictedTargetX = this.state.targetX + this._smoothedVelocity.x * predictTime
+    const predictedTargetY = this.state.targetY + this._smoothedVelocity.y * predictTime
+
+    // === АДАПТИВНЫЙ КЛАМПИНГ С ПРЕДИКЦИЕЙ ОТСКОКОВ ===
     const radius = this.ball.radius
     const w = this.options.worldWidth
     const h = this.options.worldHeight
-    const clampedTargetX = Math.min(w - radius, Math.max(radius, predictedTargetX))
-    const clampedTargetY = Math.min(h - radius, Math.max(radius, predictedTargetY))
 
-    // --- 2. Адаптивная пружина ---
+    // Граничные условия с предикцией отскоков (улучшенная версия)
+    let clampedTargetX = predictedTargetX
+    let clampedTargetY = predictedTargetY
+
+    // Предсказываем будущие отскоки для более точной интерполяции
+    if (Math.abs(this._smoothedVelocity.x) > 0) {
+      const timeToBounceX = this._calculateTimeToBounce(
+        this.ball.x, this._smoothedVelocity.x, radius, w
+      )
+      if (timeToBounceX < predictTime) {
+        clampedTargetX = predictedTargetX < w / 2 ? radius : w - radius
+      } else {
+        clampedTargetX = Math.min(w - radius, Math.max(radius, predictedTargetX))
+      }
+    }
+
+    if (Math.abs(this._smoothedVelocity.y) > 0) {
+      const timeToBounceY = this._calculateTimeToBounce(
+        this.ball.y, this._smoothedVelocity.y, radius, h
+      )
+      if (timeToBounceY < predictTime) {
+        clampedTargetY = predictedTargetY < h / 2 ? radius : h - radius
+      } else {
+        clampedTargetY = Math.min(h - radius, Math.max(radius, predictedTargetY))
+      }
+    }
+
+    // === ПРОДВИНУТАЯ ПРУЖИНА С ЭКСПОНЕНЦИАЛЬНЫМ СГЛАЖИВАНИЕМ ===
     const dx = clampedTargetX - this.ball.x
     const dy = clampedTargetY - this.ball.y
     const distance = Math.sqrt(dx * dx + dy * dy)
 
-    // Адаптивная жесткость: выше на больших расстояниях, ниже при приближении
-    const baseStiffness = this.options.smoothing.stiffness || 12
-    const stiffness = baseStiffness + (distance / 100) // Увеличиваем жесткость пропорционально расстоянию
-    const damping = this.options.smoothing.damping || 10
+    // Адаптивная жесткость на основе расстояния и скорости
+    const baseStiffness = this.options.smoothing.stiffness || 25
+    const adaptiveStiffness = baseStiffness * (1 + Math.min(distance / 150, 3))
 
-    // Ускорение пружины: a = k * (target - pos) - c * velocity
-    const ax = stiffness * dx - damping * this.state.smoothVx
-    const ay = stiffness * dy - damping * this.state.smoothVy
+    // Адаптивное демпфирование на основе скорости
+    const speed = Math.sqrt(this._smoothedVelocity.x ** 2 + this._smoothedVelocity.y ** 2)
+    const baseDamping = this.options.smoothing.damping || 15
+    const adaptiveDamping = baseDamping * (1 + Math.min(speed / 800, 2))
 
-    // Интегрируем скорость
-    this.state.smoothVx += ax * deltaTime
-    this.state.smoothVy += ay * deltaTime
+    // Ускорение пружины с улучшенной формулой
+    const ax = adaptiveStiffness * dx - adaptiveDamping * this.state.smoothVx
+    const ay = adaptiveStiffness * dy - adaptiveDamping * this.state.smoothVy
 
-    // --- 3. Ограничение шага (Step Capping) для предотвращения телепортации ---
+    // Интегрируем скорость с ограничением максимального ускорения
+    const maxAcceleration = 8000 // Увеличено для лучшей отзывчивости
+    const clampedAx = Math.max(-maxAcceleration, Math.min(maxAcceleration, ax))
+    const clampedAy = Math.max(-maxAcceleration, Math.min(maxAcceleration, ay))
+
+    this.state.smoothVx += clampedAx * deltaTime
+    this.state.smoothVy += clampedAy * deltaTime
+
+    // === УМНОЕ ОГРАНИЧЕНИЕ ШАГА С АДАПТИВНЫМ МАКСИМУМОМ ===
     let stepX = this.state.smoothVx * deltaTime
     let stepY = this.state.smoothVy * deltaTime
     const stepMagnitude = Math.sqrt(stepX * stepX + stepY * stepY)
 
-    // Максимальный шаг = расстояние до цели * 1.5 (чтобы догонять, но не перелетать)
-    const maxStep = distance * 1.5
+    // Адаптивное ограничение шага на основе расстояния и скорости
+    const adaptiveMaxStep = Math.min(
+      distance * 2.5, // Увеличено для лучшей отзывчивости
+      Math.abs(this._smoothedVelocity.x) * deltaTime * 4,
+      Math.abs(this._smoothedVelocity.y) * deltaTime * 4,
+      150 // Увеличен максимум
+    )
 
-    if (stepMagnitude > maxStep && maxStep > 0) {
-      const scale = maxStep / stepMagnitude
+    if (stepMagnitude > adaptiveMaxStep && adaptiveMaxStep > 0) {
+      const scale = adaptiveMaxStep / stepMagnitude
       stepX *= scale
       stepY *= scale
-      // Корректируем и скорость, чтобы избежать накопления энергии
       this.state.smoothVx *= scale
       this.state.smoothVy *= scale
     }
 
-    // Интегрируем позицию
-    this.ball.x += stepX
-    this.ball.y += stepY
-    // Гарантируем, что визуальная позиция не выходит за экран
-    this.clampBallWithinBounds()
+    // === МАКСИМАЛЬНО ПЛАВНАЯ ИНТЕРПОЛЯЦИЯ ПОЗИЦИИ ===
+    const smoothingFactor = this.options.smoothing.smoothingFactor || 0.25
 
-    // --- 4. Авто-снап к цели для устранения микроколебаний ---
-    const snapDistance = this.options.smoothing.snapDistance || 0.5
-    if (distance < snapDistance && Math.abs(this.state.smoothVx) < 10 && Math.abs(this.state.smoothVy) < 10) {
+    // Сохраняем предыдущую позицию для интерполяции
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+
+    // Новая позиция с экспоненциальным сглаживанием
+    const newX = this.ball.x + stepX
+    const newY = this.ball.y + stepY
+
+    // Агрессивное экспоненциальное сглаживание позиции для максимальной плавности
+    this.ball.x = this.ball.x * (1 - smoothingFactor) + newX * smoothingFactor
+    this.ball.y = this.ball.y * (1 - smoothingFactor) + newY * smoothingFactor
+
+    // Улучшенный клампинг визуальной позиции
+    this.ball.x = Math.min(w - radius, Math.max(radius, this.ball.x))
+    this.ball.y = Math.min(h - radius, Math.max(radius, this.ball.y))
+
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
+
+    // === УМНЫЙ АВТО-СНАП С ГИСТЕРЕЗИСОМ ===
+    const snapDistance = this.options.smoothing.snapDistance || 0.2
+    const lowSpeedThreshold = 3 // Уменьшено для более раннего снапа
+
+    if (distance < snapDistance &&
+        Math.abs(this.state.smoothVx) < lowSpeedThreshold &&
+        Math.abs(this.state.smoothVy) < lowSpeedThreshold) {
       this.ball.x = clampedTargetX
       this.ball.y = clampedTargetY
+      this._currPos.x = this.ball.x
+      this._currPos.y = this.ball.y
       this.state.smoothVx = 0
       this.state.smoothVy = 0
-      // Если мы были на паузе и дошли до цели — больше не требуется интерполяция на паузе
-      if (this.state.paused) this.state.allowInterpWhenPaused = false
+
+      if (this.state.paused) {
+        this.state.allowInterpWhenPaused = false
+      }
+    }
+  }
+
+  /**
+   * Вычисляет время до отскока от границы
+   */
+  _calculateTimeToBounce (position, velocity, radius, worldSize) {
+    if (Math.abs(velocity) < 0.1) return Infinity
+
+    const distanceToLeft = position - radius
+    const distanceToRight = worldSize - radius - position
+
+    if (velocity > 0) {
+      return distanceToRight / velocity
+    } else {
+      return distanceToLeft / Math.abs(velocity)
     }
   }
 
@@ -392,12 +509,20 @@ class PhysicsEngine {
     this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
     this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
 
+    // Сохраняем предыдущую позицию для интерполяции
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+
     // Обновляем позицию
     this.ball.x += this.ball.vx * deltaTime
     this.ball.y += this.ball.vy * deltaTime
 
     // Обрабатываем коллизии с границами
     this.handleBoundaryCollisions()
+
+    // Запоминаем текущую позицию как «текущую» для интерполяции
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
   }
 
   /**
@@ -516,6 +641,20 @@ class PhysicsEngine {
     if (this.state && typeof this.state.targetY === 'number') {
       this.state.targetY = this.max(radius, this.min(h - radius, this.state.targetY))
     }
+  }
+
+  // Возвращает интерполированное состояние мяча для рендера
+  getInterpolatedBall (alpha) {
+    const a = Math.max(0, Math.min(1, typeof alpha === 'number' ? alpha : 1))
+    const px = this._prevPos.x
+    const py = this._prevPos.y
+    const cx = this._currPos.x
+    const cy = this._currPos.y
+    this._interpBall.x = px + (cx - px) * a
+    this._interpBall.y = py + (cy - py) * a
+    this._interpBall.radius = this.ball.radius
+    this._interpBall.colorBall = this.ball.colorBall || null
+    return this._interpBall
   }
 
   /**

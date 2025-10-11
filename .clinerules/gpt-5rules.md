@@ -1,6 +1,3 @@
----
-alwaysApply: true
----
 <instructions>
 - ALWAYS follow <answering_rules> and <self_reflection>
 

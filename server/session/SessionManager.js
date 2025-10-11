@@ -238,6 +238,13 @@ class SessionManager {
     const isBallMoving = session.ballState && !session.ballState.paused
 
     if (hasActiveClients && isBallMoving) {
+      // Initialize fixed-timestep accumulator to keep real-time speed under event loop jitter
+      session._lastTickMs = Date.now()
+      session._accumMs = session._accumMs || 0
+      const fixedStepMs = this.physicsInterval
+      const maxSubsteps = 5
+      const maxAccumMs = fixedStepMs * maxSubsteps
+
       session.mainLoop = setInterval(() => {
         const currentSession = this.sessionRepository.findById(sessionId)
         if (!currentSession || !currentSession.physicsEngine || currentSession.ballState.paused || !(currentSession.controllerConnected || currentSession.viewerConnected)) {
@@ -249,8 +256,22 @@ class SessionManager {
           return
         }
 
-        const deltaTime = this.physicsInterval / 1000
-        currentSession.physicsEngine.update(deltaTime)
+        // Fixed-timestep integration with catch-up under jitter
+        const nowMs = Date.now()
+        let deltaMs = nowMs - (session._lastTickMs || nowMs)
+        session._lastTickMs = nowMs
+        if (deltaMs < 0) deltaMs = 0
+        if (deltaMs > 250) deltaMs = 250
+
+        session._accumMs = Math.min((session._accumMs || 0) + deltaMs, maxAccumMs)
+
+        let substeps = 0
+        while (session._accumMs >= fixedStepMs && substeps < maxSubsteps) {
+          currentSession.physicsEngine.update(fixedStepMs / 1000)
+          session._accumMs -= fixedStepMs
+          substeps++
+        }
+
         Object.assign(currentSession.ballState, currentSession.physicsEngine.getState())
 
         const prevSent = currentSession._lastBroadcast || { x: NaN, y: NaN }

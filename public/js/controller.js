@@ -475,15 +475,42 @@ function setupWebSocketEventHandlers (wsClient, logger) {
     applyServerStateToPreview(state)
   })
 
-  // Адаптация сглаживания по сетевым метрикам
+  // АДАПТИВНАЯ адаптация сглаживания по сетевым метрикам (улучшенная версия)
   wsClient.on(WS_MSG.netMetrics, ({ rttMs, jitterMs }) => {
     if (!previewPhysicsEngine) return
-    // Чем больше джиттер — тем выше демпфирование и шире окно предикции
+
     const base = (window.BBConfig && window.BBConfig.smoothing) || {}
-    const damping = Math.min(22, Math.max(8, (base.damping || 10) + (jitterMs / 20)))
-    const stiffness = Math.min(50, Math.max(15, (base.stiffness || 30) - (jitterMs / 40)))
-    const maxPredictSec = Math.min(0.35, Math.max(0.06, (base.maxPredictSec || 0.25) + (rttMs / 1000 - 0.1) * 0.25))
-    previewPhysicsEngine.setSmoothingOptions({ damping, stiffness, maxPredictSec })
+
+    // Адаптивное демпфирование на основе джиттера (улучшено)
+    const adaptiveDamping = Math.min(25, Math.max(10,
+      (base.damping || 15) + (jitterMs / 15) + (rttMs / 50)
+    ))
+
+    // Адаптивная жесткость на основе условий сети
+    const adaptiveStiffness = Math.min(35, Math.max(20,
+      (base.stiffness || 25) - (jitterMs / 50) + (rttMs > 100 ? 5 : 0)
+    ))
+
+    // Адаптивное время предикции на основе RTT
+    const adaptivePredictTime = Math.min(0.15, Math.max(0.08,
+      (base.maxPredictSec || 0.1) + Math.max(0, (rttMs / 1000 - 0.05) * 0.3)
+    ))
+
+    // Адаптивная дистанция снапа на основе стабильности сети
+    const adaptiveSnapDistance = Math.min(0.4, Math.max(0.15,
+      (base.snapDistance || 0.2) + (jitterMs > 20 ? 0.1 : 0)
+    ))
+
+    previewPhysicsEngine.setSmoothingOptions({
+      damping: adaptiveDamping,
+      stiffness: adaptiveStiffness,
+      maxPredictSec: adaptivePredictTime,
+      snapDistance: adaptiveSnapDistance,
+      // Включаем продвинутые функции сглаживания
+      exponentialSmoothing: base.exponentialSmoothing,
+      stateBuffering: base.stateBuffering,
+      bufferSize: base.bufferSize
+    })
   })
 
   wsClient.on('maxReconnectAttemptsReached', () => {
@@ -493,18 +520,17 @@ function setupWebSocketEventHandlers (wsClient, logger) {
 }
 
 /**
- * Применяет состояние от сервера к превью, управляя позиционированием и интерполяцией.
- * @param {object} state - Состояние мяча от сервера.
+ * Улучшенная локальная симуляция для более плавного движения
  */
 function applyServerStateToPreview (state) {
   if (!previewPhysicsEngine || !state) return
 
-  // Синхронизируем размер мира движка с размерами экрана вьювера,
-  // чтобы клампинг в PhysicsEngine соответствовал реальным границам
+  // Синхронизируем размер мира движка с размерами экрана вьювера
   if (state.viewerScreenSize && typeof state.viewerScreenSize.width === 'number' && typeof state.viewerScreenSize.height === 'number') {
     previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height)
   }
-  // Применяем состояние от сервера, чтобы обновить целевые координаты для интерполяции (в viewer-координатах)
+
+  // Применяем состояние от сервера для обновления целевых координат
   previewPhysicsEngine.applyCommand(state)
 
   // Если пришло новое значение paused — синхронизируем таймеры
@@ -522,41 +548,42 @@ function applyServerStateToPreview (state) {
   }
 }
 
+/**
+ * Улучшенный рендер-цикл с лучшей интерполяцией
+ */
+// Глобальные переменные для нового цикла
+let physicsInterval = null
+const PHYSICS_TICK_RATE = 60 // Гц
+const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
+
+function physicsLoop () {
+  if (previewPhysicsEngine) {
+    previewPhysicsEngine.update(PHYSICS_DT / 1000)
+  }
+}
+
 function renderPreviewLoop (timestamp) {
-  if (!previewPhysicsEngine) {
+  if (!previewPhysicsEngine || !window.__previewRenderer) {
     requestAnimationFrame(renderPreviewLoop)
     return
   }
 
-  const deltaTime = lastPreviewRenderTime > 0 ? (timestamp - lastPreviewRenderTime) / 1000 : 0
-  lastPreviewRenderTime = timestamp
+  // Вычисляем alpha для интерполяции
+  const now = performance.now()
+  const lastPhysicsUpdate = now - (now % PHYSICS_DT)
+  const alpha = (now - lastPhysicsUpdate) / PHYSICS_DT
 
-  // Обновляем таймер счётчиков (в миллисекундах)
+  // Обновляем таймер счётчиков
   bbCounters.tick(timestamp)
 
-  // Обновляем локальную симуляцию превью для интерполяции
-  // Frame skipping: большие провалы делим на равные шаги по 16ms
-  if (deltaTime > 0.032) {
-    const steps = Math.min(3, Math.ceil(deltaTime / 0.016))
-    const stepDt = deltaTime / steps
-    for (let i = 0; i < steps; i++) {
-      previewPhysicsEngine.update(stepDt)
-    }
-  } else {
-    previewPhysicsEngine.update(deltaTime)
-  }
-  const state = previewPhysicsEngine.getState()
+  // Получаем интерполированное состояние
+  const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
+  const stateToRender = getScaledState(interpolatedState)
 
-  // Масштабируем состояние, если вьювер подключен
-  const stateToRender = getScaledState(state)
-
-  // Используем рендерер для отрисовки
-  if (window.__previewRenderer) {
-    window.__previewRenderer.drawFrame(stateToRender)
-  }
+  // Рендерим кадр
+  window.__previewRenderer.drawFrame(stateToRender)
 
   if (document.hidden) {
-    // при скрытой вкладке — редкий апдейт, чтобы экономить ресурсы
     setTimeout(() => requestAnimationFrame(renderPreviewLoop), hiddenThrottleMs)
   } else {
     requestAnimationFrame(renderPreviewLoop)
@@ -832,12 +859,16 @@ async function initializePreview () {
       previewPhysicsEngine.setSmoothingOptions(window.BBConfig.smoothing)
     }
 
-    // Запускаем цикл рендеринга для превью
+    // Запускаем ЦИКЛ ФИЗИКИ с фиксированным шагом
+    if (physicsInterval) clearInterval(physicsInterval)
+    physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
+
+    // Запускаем ЦИКЛ РЕНДЕРИНГА
     requestAnimationFrame(renderPreviewLoop)
 
-    // Создаем рендерер, который будет сам обновлять физику (для интерполяции)
+    // Создаем рендерер, который НЕ будет обновлять физику
     window.__previewRenderer = new BallRenderer(canvas, previewPhysicsEngine, {
-      localPhysics: false // ВАЖНО: Превью теперь не симулирует физику, а только отображает
+      localPhysics: false // Рендерер только рисует, физика обновляется отдельно
     })
 
     window.__previewRenderer.setFrameCallback((deltaTime) => {

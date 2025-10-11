@@ -118,14 +118,45 @@ class WebSocketClient {
   }
 
   /**
-   * Отправка сообщения с подтверждением доставки
+   * Улучшенная отправка с приоритетами и буферизацией
    */
   async send (type, payload, options = {}) {
     if (!this.isConnected) {
       throw new Error('WebSocket is not connected')
     }
 
-    // Коалесцирование для «шумных» типов
+    // Приоритизация критически важных сообщений
+    const priorityTypes = ['controller_update', 'heartbeat']
+    const isPriority = priorityTypes.includes(type)
+
+    // Для приоритетных сообщений отключаем коалесцирование
+    if (isPriority) {
+      const messageId = ++this.messageIdCounter
+      const message = {
+        id: messageId,
+        type,
+        payload,
+        timestamp: Date.now(),
+        priority: true
+      }
+
+      if (options.expectResponse) {
+        return new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            this.pendingMessages.delete(messageId)
+            reject(new Error(`Message timeout: ${type}`))
+          }, this.config.messageTimeout)
+
+          this.pendingMessages.set(messageId, { resolve, reject, timeout })
+          this._sendMessage(message)
+        })
+      } else {
+        this._sendMessage(message)
+        return Promise.resolve()
+      }
+    }
+
+    // Коалесцирование для обычных сообщений
     if (this.config.coalesceTypes.includes(type) && !options.expectResponse) {
       this._coalesceBuffers.set(type, payload)
       if (!this._coalesceTimers.has(type)) {
@@ -133,20 +164,26 @@ class WebSocketClient {
           const latest = this._coalesceBuffers.get(type)
           this._coalesceBuffers.delete(type)
           this._coalesceTimers.delete(type)
-          // Отправляем один последний пакет
+
           const coalescedMessage = {
             id: ++this.messageIdCounter,
             type,
             payload: latest,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            batched: true
           }
-          try { this._sendMessage(coalescedMessage) } catch (e) { this.log(`Coalesced send failed: ${e.message}`, 'warning') }
+          try {
+            this._sendMessage(coalescedMessage)
+          } catch (e) {
+            this.log(`Coalesced send failed: ${e.message}`, 'warning')
+          }
         }, this.config.coalesceDelayMs)
         this._coalesceTimers.set(type, timerId)
       }
       return Promise.resolve()
     }
 
+    // Обычная отправка для остальных сообщений
     const messageId = ++this.messageIdCounter
     const message = { id: messageId, type, payload, timestamp: Date.now() }
 
