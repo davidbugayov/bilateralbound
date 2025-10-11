@@ -179,7 +179,18 @@ class BallRenderer {
       }
 
       // Рендерим сцену с интерполяцией между шагами физики
-      const alpha = this.fixedStepMs > 0 ? Math.max(0, Math.min(1, this.accumulatorMs / this.fixedStepMs)) : 1
+      let alpha = 1
+      if (this.fixedStepMs > 0) {
+        if (this.options.localPhysics) {
+          // Локальная физика: используем накопитель субшагов
+          alpha = Math.max(0, Math.min(1, this.accumulatorMs / this.fixedStepMs))
+        } else {
+          // Внешний цикл физики: синхронизируемся с реальным последним тиком физики
+          const now = currentTime
+          const lastTs = (this.physics && this.physics.__lastPhysicsUpdateTs) ? this.physics.__lastPhysicsUpdateTs : now
+          alpha = Math.max(0, Math.min(1, (now - lastTs) / this.fixedStepMs))
+        }
+      }
       this.render(alpha)
 
       this.lastTime = currentTime

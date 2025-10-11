@@ -141,6 +141,7 @@ class PhysicsEngine {
     this._worldSizeSet = true // Устанавливаем флаг
     // После изменения размеров мира гарантируем, что мяч и цель в пределах экрана
     this.clampBallWithinBounds()
+
   }
 
   /**
@@ -484,11 +485,15 @@ class PhysicsEngine {
     // В режиме вьювера (клиент) всегда используется интерполяция
     if (this.isViewer) {
       this.updateViewerInterpolation(deltaTime)
+      // Отмечаем момент последнего обновления физики/интерполяции для синхронизации рендера
+      this.__lastPhysicsUpdateTs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()
       return
     }
 
     // Для сервера используем полную физику с отскоками
     this.updateServerPhysics(deltaTime)
+    // Отмечаем момент последнего обновления физики
+    this.__lastPhysicsUpdateTs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()
   }
 
   /**

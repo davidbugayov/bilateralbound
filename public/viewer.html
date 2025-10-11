@@ -426,10 +426,12 @@
                 const PHYSICS_TICK_RATE = 60; // Гц
                 const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE;
                 let physicsInterval = null;
+                let __lastPhysicsUpdateTs = performance.now();
 
                 function physicsLoop() {
                     if (physicsEngine) {
                         physicsEngine.update(PHYSICS_DT / 1000);
+                        __lastPhysicsUpdateTs = performance.now();
                     }
                 }
 
@@ -440,8 +442,7 @@
                     }
 
                     const now = performance.now();
-                    const lastPhysicsUpdate = now - (now % PHYSICS_DT);
-                    const alpha = (now - lastPhysicsUpdate) / PHYSICS_DT;
+                    const alpha = Math.max(0, Math.min(1, (now - __lastPhysicsUpdateTs) / PHYSICS_DT));
 
                     const interpolatedState = physicsEngine.getInterpolatedBall(alpha);
                     
