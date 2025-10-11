@@ -469,3 +469,34 @@ ssh root@213.139.229.44 "systemctl status bilateralbound-dev bilateralbound-prod
 # Логи
 ssh root@213.139.229.44 "journalctl -u bilateralbound-dev -n 50 --no-pager"
 ```
+
+
+
+## ⚡ Быстрый деплой (SSH one-liners)
+
+Для мгновенного деплоя на сервер, используйте готовые команды (sshpass должен быть установлен локально):
+
+- Production:
+  npm run deploy:prod
+
+- Development:
+  npm run deploy:dev
+
+Также доступен скрипт:
+
+- Запуск обоих окружений:
+  ./deploy-quick.sh all
+
+- Только PROD:
+  ./deploy-quick.sh prod
+
+- Только DEV:
+  ./deploy-quick.sh dev
+
+Скрипты выполняют те же команды, что и вручную:
+sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 "cd /var/www/bilateralbound-prod && git pull && systemctl restart bilateralbound-prod && systemctl status bilateralbound-prod --no-pager"
+sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 "cd /var/www/bilateralbound-dev && git pull && systemctl restart bilateralbound-dev && systemctl status bilateralbound-dev --no-pager"
+
+Примечания:
+- Требуется утилита sshpass (macOS: brew install hudochenkov/sshpass/sshpass; Ubuntu/Debian: sudo apt-get install sshpass)
+- Пароль и адрес заданы внутри скриптов согласно запросу; для продакшена рекомендуется перейти на деплой по ключам SSH и/или использовать WEBHOOK_DEPLOY.md

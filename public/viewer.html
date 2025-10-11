@@ -422,8 +422,40 @@
                 
                 wsClient.connect();
 
-                // Запускаем рендеринг
-                ballRenderer.start();
+                // --- НОВАЯ ЛОГИКА ЦИКЛОВ ---
+                const PHYSICS_TICK_RATE = 60; // Гц
+                const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE;
+                let physicsInterval = null;
+
+                function physicsLoop() {
+                    if (physicsEngine) {
+                        physicsEngine.update(PHYSICS_DT / 1000);
+                    }
+                }
+
+                function renderLoop(timestamp) {
+                    if (!physicsEngine || !ballRenderer) {
+                        requestAnimationFrame(renderLoop);
+                        return;
+                    }
+
+                    const now = performance.now();
+                    const lastPhysicsUpdate = now - (now % PHYSICS_DT);
+                    const alpha = (now - lastPhysicsUpdate) / PHYSICS_DT;
+
+                    const interpolatedState = physicsEngine.getInterpolatedBall(alpha);
+                    
+                    // ВАЖНО: Не нужно масштабировать, так как вьювер работает в своих координатах
+                    ballRenderer.drawFrame(interpolatedState);
+
+                    requestAnimationFrame(renderLoop);
+                }
+
+                // Запускаем циклы
+                if (physicsInterval) clearInterval(physicsInterval);
+                physicsInterval = setInterval(physicsLoop, PHYSICS_DT);
+                requestAnimationFrame(renderLoop);
+                // -------------------------
 
                 // Настраиваем event listeners
                 setupEventListeners();

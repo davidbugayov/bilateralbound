@@ -167,16 +167,20 @@ class BallRenderer {
         this.onFrameCallback(clampedDeltaTime)
       }
 
-      // Фиксированные подшаги физики для стабильности
-      let substeps = 0
-      while (this.accumulatorMs >= this.fixedStepMs && substeps < this.maxSubsteps) {
-        this.physics.update(this.fixedStepMs / 1000)
-        this.accumulatorMs -= this.fixedStepMs
-        substeps++
+      // Физика теперь обновляется ВНЕШНИМ циклом (например, в controller.js)
+      // Рендерер только получает alpha для интерполяции
+      if (this.options.localPhysics) {
+        let substeps = 0
+        while (this.accumulatorMs >= this.fixedStepMs && substeps < this.maxSubsteps) {
+          this.physics.update(this.fixedStepMs / 1000)
+          this.accumulatorMs -= this.fixedStepMs
+          substeps++
+        }
       }
 
-      // Рендерим сцену
-      this.render()
+      // Рендерим сцену с интерполяцией между шагами физики
+      const alpha = this.fixedStepMs > 0 ? Math.max(0, Math.min(1, this.accumulatorMs / this.fixedStepMs)) : 1
+      this.render(alpha)
 
       this.lastTime = currentTime
     } catch (error) {
@@ -190,7 +194,7 @@ class BallRenderer {
   /**
      * Рендерит сцену (оптимизированная версия)
      */
-  render () {
+  render (alpha = 1) {
     // Финальная проверка перед рендерингом
     if (!this.canvas || !this.ctx || !this.physics) {
       return
@@ -201,12 +205,13 @@ class BallRenderer {
         // Полная перерисовка
         this.ctx.fillStyle = this.colors.bg
         this.fillRect(0, 0, this.canvas.width, this.canvas.height)
-        this.renderBall()
+        const ballState = (this.physics.getInterpolatedBall) ? this.physics.getInterpolatedBall(alpha) : this.physics.ball
+        this.renderBall(ballState)
       } else {
         // Простейшая dirty-стратегия: очищаем только окрестность предыдущего и текущего положения
         const padding = 4
         const prev = this._prevBall || { x: -1, y: -1, radius: 0 }
-        const curr = this.physics.ball
+        const curr = (this.physics.getInterpolatedBall) ? this.physics.getInterpolatedBall(alpha) : this.physics.ball
         // Очистка предыдущего региона
         if (prev.x >= 0) {
           const w = prev.radius * 2 + padding * 2
@@ -397,7 +402,7 @@ class BallRenderer {
      * Рендерит сцену без обновления физики (для статичного рендеринга)
      */
   renderStatic () {
-    this.render()
+    this.render(1)
   }
 
   /**
