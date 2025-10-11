@@ -185,7 +185,7 @@ class BallRenderer {
     }
 
     this.animationFrameId = requestAnimationFrame(this.renderLoop)
-  };
+  }
 
   /**
      * Рендерит сцену (оптимизированная версия)

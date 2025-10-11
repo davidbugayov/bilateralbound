@@ -53,20 +53,42 @@ module.exports = [
         document: 'readonly',
         navigator: 'readonly',
         location: 'readonly',
+        history: 'readonly',
         fetch: 'readonly',
         WebSocket: 'readonly',
         localStorage: 'readonly',
         sessionStorage: 'readonly',
-        crypto: 'readonly'
+        crypto: 'readonly',
+        // Browser APIs
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+        Blob: 'readonly',
+        performance: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        CustomEvent: 'readonly',
+        Path2D: 'readonly',
+        prompt: 'readonly'
       }
     },
     rules: {
-      'no-unused-vars': 'warn',
+      // Строгие правила для ошибок
       'no-undef': 'error',
+      'no-redeclare': 'error',
+      'no-const-assign': 'error',
       'no-var': 'error',
-      'prefer-const': 'error',
+
+      // Мягкие правила для предупреждений
+      'no-unused-vars': 'warn',
+      'prefer-const': 'warn',
+      'no-empty': 'warn',
       'no-multiple-empty-lines': 'warn',
-      'no-trailing-spaces': 'warn'
+      'no-trailing-spaces': 'warn',
+      'no-extra-semi': 'warn',
+
+      // Отключенные правила для более мягкого подхода
+      'no-console': 'off',
+      'no-debugger': 'off'
     }
   }
 ]

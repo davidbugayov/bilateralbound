@@ -3,7 +3,7 @@
  * Добавлены в v1.2.0
  */
 
-/* global WebSocketClient, PhysicsEngine, setDirection, setBallColor, setBackgroundColor, setBallSize, togglePlayPause */
+/* exported applyPreset, createCustomPreset, exportSession, importSession */
 /* exported applyPreset, createCustomPreset, exportSession, importSession */
 
 class FeatureManager {

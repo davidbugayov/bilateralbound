@@ -2,7 +2,7 @@
  * Controller - Логика управления сессией BilateralBound v2.1
  * Современная модульная архитектура с улучшенной обработкой ошибок
  */
-/* global WebSocketClient, PhysicsEngine, BallRenderer, sharedComponents, throttle, getSessionIdFromUrl */
+
 /* exported setDir, setDirection, setDirFromDirection, resetCenter, resetSession, resumePlay, pausePlay, copy, goBack */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 window.__current = {
