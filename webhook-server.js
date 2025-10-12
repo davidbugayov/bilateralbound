@@ -59,14 +59,22 @@ function verifySignature(payload, signature) {
   if (!signature) {
     return false;
   }
-  
+
   const hmac = crypto.createHmac('sha256', CONFIG.secret);
   const digest = 'sha256=' + hmac.update(payload).digest('hex');
-  
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(digest)
-  );
+
+  // Исправляем проблему с длиной буферов
+  const sigBuffer = Buffer.from(signature.replace('sha256=', ''), 'hex');
+  const digestBuffer = Buffer.from(digest.replace('sha256=', ''), 'hex');
+
+  if (sigBuffer.length !== digestBuffer.length) {
+    log(`Signature length mismatch: ${sigBuffer.length} vs ${digestBuffer.length}`, 'ERROR');
+    log(`Signature: ${signature}`, 'ERROR');
+    log(`Expected: ${digest}`, 'ERROR');
+    return false;
+  }
+
+  return crypto.timingSafeEqual(sigBuffer, digestBuffer);
 }
 
 // Выполнение команды
