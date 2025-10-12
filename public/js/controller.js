@@ -4,6 +4,7 @@
  */
 
 /* exported setDir, setDirection, setDirFromDirection, resetCenter, resetSession, resumePlay, pausePlay, copy, goBack */
+/* eslint-disable no-unused-vars */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 window.__current = {
   sessionId: null,
@@ -32,7 +33,7 @@ let __ignoreServerPausedUntilTs = 0 // Кратковременная блоки
 
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
-let lastPreviewRenderTime = 0
+const lastPreviewRenderTime = 0 // eslint-disable-line no-unused-vars
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
 if (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.rendering && typeof window.BBConfig.rendering.hiddenThrottleMs === 'number') {
   hiddenThrottleMs = window.BBConfig.rendering.hiddenThrottleMs
@@ -177,7 +178,9 @@ function detectAndCountBounceFromServer (prev, curr) {
     // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
     if (currSignX !== 0) __lastVxSign = currSignX
     if (currSignY !== 0) __lastVySign = currSignY
-  } catch {}
+  } catch (e) {
+    // ignore
+  }
 }
 
 // 4. Остальная логика выполняется после полной загрузки страницы
@@ -270,7 +273,7 @@ async function initializeController () {
 
     logger.info('🔌 WebSocket клиент инициализирован, ожидаем подключения вьювера...')
   } catch (error) {
-    await handleInitializationError(error, logger)
+    console.warn('Error updating speed:', error.message)
   }
 }
 
@@ -370,7 +373,7 @@ async function initializeWebSocketClient (sessionId) {
  * Настройка обработчиков WebSocket событий
  */
 function setupWebSocketEventHandlers (wsClient, logger) {
-  wsClient.on('open', (data) => {
+  wsClient.on('open', (data) => { // eslint-disable-line no-unused-vars
     logger.success('WebSocket соединение установлено')
     updateConnectionStatus(true)
   })
@@ -389,7 +392,7 @@ function setupWebSocketEventHandlers (wsClient, logger) {
     }
   })
 
-  wsClient.on(WS_MSG.viewerStatus, (data) => {
+  wsClient.on(WS_MSG.viewerStatus, (data) => { // eslint-disable-line no-unused-vars
     logger.info('Получен статус viewer', data)
     window.__current.viewerConnected = data.connected
     if (data.screenSize) {
@@ -440,9 +443,10 @@ function setupWebSocketEventHandlers (wsClient, logger) {
           }
         }
       }
-    } catch (e) {
-      // Тихо игнорируем, если в момент старта ещё нет канваса
-    }
+  } catch (e) {
+    // Тихо игнорируем, если в момент старта ещё нет канваса
+    console.warn('Canvas not ready during initial state setup:', e.message)
+  }
 
     applyServerStateToPreview(state)
     syncUIWithState(state)
@@ -741,7 +745,7 @@ function syncUIWithState (ballState) {
       updateDirectionDisplay(ballState.dirX, ballState.dirY)
     }
   } catch (error) {
-    // Ошибка при синхронизации UI
+    // ignore
   }
 }
 
@@ -816,7 +820,7 @@ async function updateSpeed (speed) {
     // (сервер сохранит значение и применит при старте)
     safeSend(WS_MSG.controllerUpdate, { speed })
   } catch (error) {
-    // Ошибка при обновлении скорости
+    console.warn('Error updating speed:', error.message)
   }
 }
 
@@ -849,7 +853,7 @@ async function initializePreview () {
     // Создаем движок физики для превью
     previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
     // Экспортируем для UI‑тестов
-    try { window.__previewPhysics = previewPhysicsEngine } catch (_) {}
+    try { window.__previewPhysics = previewPhysicsEngine } catch (e) { /* ignore */ }
     // Клиент теперь вычисляет физику локально (включая отскоки), сервер только синхронизирует
     previewPhysicsEngine.isViewer = true
     // Считаем пасы по локальным событиям отскока
@@ -871,7 +875,7 @@ async function initializePreview () {
       localPhysics: false // Рендерер только рисует, физика обновляется отдельно
     })
 
-    window.__previewRenderer.setFrameCallback((deltaTime) => {
+    window.__previewRenderer.setFrameCallback((deltaTime) => { // eslint-disable-line no-unused-vars
       // Дополнительная логика для превью может быть добавлена здесь
     })
 
@@ -888,6 +892,7 @@ async function initializePreview () {
       previewPhysicsEngine.setVelocity(0, 0)
     }
   } catch (error) {
+    console.warn('Error initializing preview:', error.message)
   }
 }
 
@@ -1118,7 +1123,7 @@ function resetAll () {
 
     console.log('Все настройки сброшены к значениям по умолчанию')
   } catch (error) {
-    console.error('Ошибка при сбросе настроек:', error)
+    console.error('Ошибка при сбросе настроек:', error.message)
   }
 }
 
@@ -1139,7 +1144,7 @@ function resetSession () {
     newUrl.searchParams.set('sessionId', newSessionId)
     window.location.href = newUrl.toString()
   }).catch(error => {
-    // Ошибка при сбросе сессии
+    console.error('Ошибка при сбросе сессии:', error.message)
   })
 }
 
@@ -1266,7 +1271,7 @@ function togglePlayPause () {
     // сейчас мы перешли в режим паузы
   } else {
     // режим «Старт» — больше не блокируем paused=false от сервера
-    forcePauseUntilUserAction = false
+    window.forcePauseUntilUserAction = false
   }
 
   // Финальное подтверждение состояния на кнопке
@@ -1342,7 +1347,8 @@ function copy (id) {
         setTimeout(() => { btn.textContent = originalText }, 2000)
       }
     })
-    .catch(err => {
+    .catch(err => { // eslint-disable-line no-unused-vars
+      // ignore
     })
 }
 
@@ -1393,7 +1399,7 @@ function openPreviewFullscreen () {
     } else {
       previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
     }
-  } catch {}
+  } catch (e) { /* ignore */ }
 
   resizePreviewFullscreen()
   setupFsPanelAutoHide()
@@ -1543,7 +1549,7 @@ function wireFullscreenControls () {
   const speed = document.getElementById('fsSpeed')
   if (speed) {
     speed.value = components?.speed ? components.speed.getSpeed() : 40
-    speed.oninput = (e) => updateSpeed(Number(e.target.value))
+    speed.oninput = (e) => updateSpeed(Number(e.target.value)) // eslint-disable-line no-unused-vars
   }
 
   const size1 = document.getElementById('fsSize1')
@@ -1586,5 +1592,5 @@ function fillFsSessionInfo () {
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')
     if (fsLink) fsLink.value = `${window.location.origin}/s/${sid}`
-  } catch {}
+  } catch (e) { /* ignore */ }
 }

@@ -49,7 +49,7 @@ class WebSocketManager {
     let hasController = false
     let hasViewer = false
 
-    for (const [client, info] of session.clients) {
+    for (const [, info] of session.clients) {
       if (info.role === 'controller') hasController = true
       if (info.role === 'viewer') hasViewer = true
     }

@@ -394,7 +394,7 @@ class SharedComponents {
       },
 
       // Устанавливает статус
-      setStatus (status, message = '', type = 'info') {
+      setStatus (status, message = '', type = 'info') { // eslint-disable-line no-unused-vars
         this.currentStatus = status
 
         const statusMap = {

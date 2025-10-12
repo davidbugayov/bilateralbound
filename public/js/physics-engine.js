@@ -78,7 +78,6 @@ class PhysicsEngine {
     this.sqrt = Math.sqrt
     this.min = Math.min
     this.max = Math.max
-    this.abs = Math.abs
 
     // Применяем пресет для плавности движения
     this.applySmoothnessPreset(options.preset || 'default')
@@ -175,29 +174,7 @@ class PhysicsEngine {
     this.state.lastDirection.y = dirY
   }
 
-  /**
-     * Запускает движение в указанном направлении
-     */
-  startMovement (dirX, dirY, speedPercent = null) {
-    if (speedPercent !== null) {
-      this.setSpeed(speedPercent)
-    }
 
-    this.setDirection(dirX, dirY)
-    this.state.paused = false
-    this.calculateTargetVelocity()
-  }
-
-  /**
-     * Останавливает движение
-     */
-  stopMovement () {
-    this.state.paused = true
-    this.ball.vx = 0
-    this.ball.vy = 0
-    this.state.targetVx = 0
-    this.state.targetVy = 0
-  }
 
   /**
      * Устанавливает скорость движения (vx, vy)
@@ -281,16 +258,6 @@ class PhysicsEngine {
     }
   }
 
-  /**
-     * Рассчитывает целевую скорость на основе направления и процента
-     */
-  calculateTargetVelocity () {
-    const speedPercent = this.ball.speed / 100
-    const pixelsPerSecond = speedPercent * this.options.maxSpeed
-
-    this.state.targetVx = this.state.lastDirection.x * pixelsPerSecond
-    this.state.targetVy = this.state.lastDirection.y * pixelsPerSecond
-  }
 
   /**
    * ПРОДВИНУТАЯ интерполяция v4.0 с буферизацией состояний и экспоненциальным сглаживанием
@@ -462,21 +429,6 @@ class PhysicsEngine {
     }
   }
 
-  /**
-   * Вычисляет время до отскока от границы
-   */
-  _calculateTimeToBounce (position, velocity, radius, worldSize) {
-    if (Math.abs(velocity) < 0.1) return Infinity
-
-    const distanceToLeft = position - radius
-    const distanceToRight = worldSize - radius - position
-
-    if (velocity > 0) {
-      return distanceToRight / velocity
-    } else {
-      return distanceToLeft / Math.abs(velocity)
-    }
-  }
 
   /**
    * Обновляет физику за указанное время
@@ -677,7 +629,9 @@ class PhysicsEngine {
         const ev = new CustomEvent('bb_bounce', { detail: { x: this.ball.x, y: this.ball.y } })
         window.dispatchEvent(ev)
       }
-    } catch (_) {}
+    } catch (_) {
+      // ignore
+    }
   }
 
   /**

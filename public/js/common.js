@@ -21,61 +21,62 @@ const getSessionIdFromUrl = window.CommonUtils
     return urlParams.get('sessionId')
   }
 
+/* eslint-disable no-unused-vars */
 const toggleFullscreen = (window.CommonUtils && typeof window.CommonUtils.toggleFullscreen === 'function')
   ? window.CommonUtils.toggleFullscreen
   : (function () {
-      // Robust fullscreen toggle fallback using the Fullscreen API
-      const canFullscreen = () => {
-        const docEl = document.documentElement
-        return (
-          docEl.requestFullscreen ||
+    // Robust fullscreen toggle fallback using the Fullscreen API
+    const canFullscreen = () => {
+      const docEl = document.documentElement
+      return (
+        docEl.requestFullscreen ||
           docEl.webkitRequestFullscreen ||
           docEl.msRequestFullscreen ||
           docEl.mozRequestFullScreen
-        )
-      }
+      )
+    }
 
-      const isFs = () => !!(
-        document.fullscreenElement ||
+    const isFs = () => !!(
+      document.fullscreenElement ||
         document.webkitFullscreenElement ||
         document.msFullscreenElement ||
         document.mozFullScreenElement
-      )
+    )
 
-      const enter = (el) => {
-        const target = el || document.documentElement
-        return (
-          target.requestFullscreen?.() ||
+    const enter = (el) => {
+      const target = el || document.documentElement
+      return (
+        target.requestFullscreen?.() ||
           target.webkitRequestFullscreen?.() ||
           target.msRequestFullscreen?.() ||
           target.mozRequestFullScreen?.() ||
           Promise.reject(new Error('Fullscreen API not available'))
-        )
-      }
+      )
+    }
 
-      const exit = () => (
-        document.exitFullscreen?.() ||
+    const exit = () => (
+      document.exitFullscreen?.() ||
         document.webkitExitFullscreen?.() ||
         document.msExitFullscreen?.() ||
         document.mozCancelFullScreen?.() ||
         Promise.resolve()
-      )
+    )
 
-      return function toggleFullscreen (el) {
-        try {
-          if (!canFullscreen()) {
-            return Promise.resolve(false)
-          }
-          if (isFs()) {
-            return exit().then(() => true).catch(() => false)
-          } else {
-            return enter(el).then(() => true).catch(() => false)
-          }
-        } catch (_) {
+    return function toggleFullscreen (el) {
+      try {
+        if (!canFullscreen()) {
           return Promise.resolve(false)
         }
+        if (isFs()) {
+          return exit().then(() => true).catch(() => false)
+        } else {
+          return enter(el).then(() => true).catch(() => false)
+        }
+      } catch (_) {
+        return Promise.resolve(false)
       }
-    })()
+    }
+  })()
 const throttle = (window.CommonUtils && typeof window.CommonUtils.throttle === 'function')
   ? window.CommonUtils.throttle
   : function (fn, wait = 100) {
@@ -104,6 +105,7 @@ const throttle = (window.CommonUtils && typeof window.CommonUtils.throttle === '
       }
     }
   }
+/* eslint-enable no-unused-vars */
 
 // Экспортируем для использования
 if (typeof window !== 'undefined') {

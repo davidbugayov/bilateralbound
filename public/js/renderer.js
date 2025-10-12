@@ -194,7 +194,7 @@ class BallRenderer {
       this.render(alpha)
 
       this.lastTime = currentTime
-    } catch (error) {
+    } catch (error) { // eslint-disable-line no-unused-vars
       this.stop()
       return
     }
@@ -238,7 +238,7 @@ class BallRenderer {
         this.renderBall(curr)
         this._prevBall = { x: curr.x, y: curr.y, radius: curr.radius }
       }
-    } catch (error) {
+    } catch (error) { // eslint-disable-line no-unused-vars
       // Не останавливаем рендер луп, просто пропускаем кадр
     }
   }
@@ -304,7 +304,7 @@ class BallRenderer {
       this.ctx.shadowBlur = 0
       this.ctx.shadowOffsetX = 0
       this.ctx.shadowOffsetY = 0
-    } catch (error) {
+    } catch (error) { // eslint-disable-line no-unused-vars
     }
   }
 
@@ -345,7 +345,7 @@ class BallRenderer {
       this._cached.color = null
       this._cached.gradient = null
       this._cached.path = null
-    } catch (error) {
+    } catch (error) { // eslint-disable-line no-unused-vars
     }
   }
 
@@ -373,7 +373,7 @@ class BallRenderer {
           // Тихо восстанавливаем контекст канваса
           return true
         }
-      } catch (error) {
+      } catch (error) { // eslint-disable-line no-unused-vars
       }
       return false
     }
@@ -449,7 +449,7 @@ class BallRenderer {
 
       // Рисуем шарик
       this.renderBall(state)
-    } catch (error) {
+    } catch (error) { // eslint-disable-line no-unused-vars
     }
   }
 

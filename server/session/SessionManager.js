@@ -4,8 +4,6 @@ const WebSocketManager = require('./WebSocketManager.js')
 const StateBroadcaster = require('./StateBroadcaster.js')
 const ValidationUtils = require('../utils/validation.js')
 const { logger, DEBUG_MODE } = require('../logger.js')
-const config = require('../config.js')
-
 // Основной оркестратор сессий
 class SessionManager {
   constructor (apiCache) {
@@ -36,7 +34,9 @@ class SessionManager {
       try {
         Object.assign(session.ballState, session.physicsEngine.getState())
         this.stateBroadcaster.broadcastState(session.id)
-      } catch (_) {}
+      } catch (_) {
+        // ignore
+      }
     }
 
     const engineState = session.physicsEngine.getState()
@@ -128,7 +128,7 @@ class SessionManager {
       if (role === 'viewer') {
         this.stateBroadcaster.broadcastInitialState(sessionId, ws, session.ballState)
       } else {
-        try { ws.initialStateSent = false } catch (e) {}
+        try { ws.initialStateSent = false } catch (e) { /* ignore */ }
         this.logger.logSession(sessionId, 'Controller connected, deferring initial_state until viewer screen size is set.')
       }
     }

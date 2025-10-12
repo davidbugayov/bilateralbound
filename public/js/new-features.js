@@ -115,20 +115,20 @@ class FeatureManager {
 
       // Применяем направление
       if (preset.direction) {
-        setDirection(preset.direction)
+        window.setDirection(preset.direction)
       }
 
       // Применяем цвета
       if (preset.colorBall) {
-        setBallColor(preset.colorBall)
+        window.setBallColor(preset.colorBall)
       }
       if (preset.colorBg) {
-        setBackgroundColor(preset.colorBg)
+        window.setBackgroundColor(preset.colorBg)
       }
 
       // Применяем размер
       if (preset.size) {
-        setBallSize(preset.size)
+        window.setBallSize(preset.size)
       }
 
       // Показываем уведомление
@@ -256,27 +256,27 @@ class FeatureManager {
 
         // Применяем направление
         if (settings.direction) {
-          setDirection(settings.direction)
+          window.setDirection(settings.direction)
         }
 
         // Применяем цвета
         if (settings.ballColor) {
-          setBallColor(settings.ballColor)
+          window.setBallColor(settings.ballColor)
         }
         if (settings.bgColor) {
-          setBackgroundColor(settings.bgColor)
+          window.setBackgroundColor(settings.bgColor)
         }
 
         // Применяем размер
         if (settings.ballSize) {
-          setBallSize(settings.ballSize)
+          window.setBallSize(settings.ballSize)
         }
 
         // Применяем состояние игры
         if (settings.isPlaying && !window.isPlaying) {
-          togglePlayPause()
+          window.togglePlayPause()
         } else if (!settings.isPlaying && window.isPlaying) {
-          togglePlayPause()
+          window.togglePlayPause()
         }
       }
 
@@ -379,7 +379,7 @@ class FeatureManager {
       return
     }
 
-    const lastState = this.sessionHistory.pop()
+    this.sessionHistory.pop()
     const previousState = this.sessionHistory[this.sessionHistory.length - 1]
 
     this.applyState(previousState)
@@ -396,19 +396,19 @@ class FeatureManager {
     }
 
     if (state.direction) {
-      setDirection(state.direction)
+      window.setDirection(state.direction)
     }
 
     if (state.ballColor) {
-      setBallColor(state.ballColor)
+      window.setBallColor(state.ballColor)
     }
 
     if (state.bgColor) {
-      setBackgroundColor(state.bgColor)
+      window.setBackgroundColor(state.bgColor)
     }
 
     if (state.ballSize) {
-      setBallSize(state.ballSize)
+      window.setBallSize(state.ballSize)
     }
   }
 
@@ -487,7 +487,7 @@ class FeatureManager {
       } else {
         localStorage.removeItem('bb_current_session')
       }
-    } catch (e) {
+    } catch (e) { // eslint-disable-line no-unused-vars
       // ignore
     }
     this.currentSessionId = id || null
@@ -659,15 +659,15 @@ class FeatureManager {
         window.components.speed.setSpeed(settings.speed)
         await this.sendUpdate({ speed: settings.speed })
       }
-      if (settings.direction) setDirection(settings.direction)
-      if (settings.ballColor) setBallColor(settings.ballColor)
-      if (settings.bgColor) setBackgroundColor(settings.bgColor)
-      if (settings.ballSize) setBallSize(settings.ballSize)
+      if (settings.direction) window.setDirection(settings.direction)
+      if (settings.ballColor) window.setBallColor(settings.ballColor)
+      if (settings.bgColor) window.setBackgroundColor(settings.bgColor)
+      if (settings.ballSize) window.setBallSize(settings.ballSize)
 
       // isPlaying
       if (typeof settings.isPlaying === 'boolean') {
-        if (settings.isPlaying && !window.isPlaying) togglePlayPause()
-        if (!settings.isPlaying && window.isPlaying) togglePlayPause()
+        if (settings.isPlaying && !window.isPlaying) window.togglePlayPause()
+        if (!settings.isPlaying && window.isPlaying) window.togglePlayPause()
       }
 
       // counters
@@ -782,7 +782,7 @@ class FeatureManager {
       const nameTxt = current?.name ? `Название: ${current.name}` : 'Название: —'
       const createdTxt = current?.createdAt ? ` • Создана: ${new Date(current.createdAt).toLocaleString()}` : ''
       el.textContent = `${nameTxt}${createdTxt}`
-    } catch (e) {
+    } catch (e) { // eslint-disable-line no-unused-vars
       // ignore
     }
   }
