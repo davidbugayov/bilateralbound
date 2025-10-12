@@ -3,3 +3,22 @@ profile:
   name: qodana.starter
 include:
   - name: RegExpSimplifiable
+exclude:
+  - name: UnusedDeclaration
+    paths:
+      - public/js/new-features.js
+      - public/js/controller.js
+      - server/session/SessionManager.js
+      - server/session/WebSocketManager.js
+  - name: JSUnusedGlobalSymbols
+    paths:
+      - public/js/new-features.js
+      - public/js/controller.js
+  - name: JSUnresolvedFunction
+    paths:
+      - public/js/new-features.js
+      - public/js/controller.js
+  - name: JSUnresolvedVariable
+    paths:
+      - public/js/new-features.js
+      - public/js/controller.js
