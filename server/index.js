@@ -22,7 +22,8 @@ const { heartbeatInterval } = setupWebSocketServer(server, sessionManager)
 // 4. Запуск сервера
 const PORT = config.getServerConfig().PORT
 server.listen(PORT, () => {
-  logger.info(`Server listening on http://localhost:${PORT}`)
+  // Unconditional stdout so test harness detects readiness
+  console.log(`Server listening on http://localhost:${PORT}`)
   logger.info('Modular server architecture is ready.')
 })
 

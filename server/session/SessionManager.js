@@ -229,65 +229,15 @@ class SessionManager {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
 
+    // Always stop any existing server-side physics loop — movement is client-driven now
     if (session.mainLoop) {
       clearInterval(session.mainLoop)
       session.mainLoop = null
     }
 
-    const hasActiveClients = session.controllerConnected || session.viewerConnected
-    const isBallMoving = session.ballState && !session.ballState.paused
-
-    if (hasActiveClients && isBallMoving) {
-      // Initialize fixed-timestep accumulator to keep real-time speed under event loop jitter
-      session._lastTickMs = Date.now()
-      session._accumMs = session._accumMs || 0
-      const fixedStepMs = this.physicsInterval
-      const maxSubsteps = 5
-      const maxAccumMs = fixedStepMs * maxSubsteps
-
-      session.mainLoop = setInterval(() => {
-        const currentSession = this.sessionRepository.findById(sessionId)
-        if (!currentSession || !currentSession.physicsEngine || currentSession.ballState.paused || !(currentSession.controllerConnected || currentSession.viewerConnected)) {
-          if (session.mainLoop) {
-            clearInterval(session.mainLoop)
-            session.mainLoop = null
-            this.logger.logSession(sessionId, 'Main loop self-terminated due to state change.')
-          }
-          return
-        }
-
-        // Fixed-timestep integration with catch-up under jitter
-        const nowMs = Date.now()
-        let deltaMs = nowMs - (session._lastTickMs || nowMs)
-        session._lastTickMs = nowMs
-        if (deltaMs < 0) deltaMs = 0
-        if (deltaMs > 250) deltaMs = 250
-
-        session._accumMs = Math.min((session._accumMs || 0) + deltaMs, maxAccumMs)
-
-        let substeps = 0
-        while (session._accumMs >= fixedStepMs && substeps < maxSubsteps) {
-          currentSession.physicsEngine.update(fixedStepMs / 1000)
-          session._accumMs -= fixedStepMs
-          substeps++
-        }
-
-        Object.assign(currentSession.ballState, currentSession.physicsEngine.getState())
-
-        const prevSent = currentSession._lastBroadcast || { x: NaN, y: NaN }
-        const dx = Math.abs((currentSession.ballState.x || 0) - (prevSent.x || 0))
-        const dy = Math.abs((currentSession.ballState.y || 0) - (prevSent.y || 0))
-        const moved = dx > config.getRuntimeTuning().DEAD_RECKON_EPS || dy > config.getRuntimeTuning().DEAD_RECKON_EPS
-        if (moved) {
-          this.stateBroadcaster.broadcastState(sessionId)
-          currentSession._lastBroadcast = { x: currentSession.ballState.x, y: currentSession.ballState.y }
-        }
-      }, this.physicsInterval)
-
-      this.logger.logSession(sessionId, `Main loop started at ${Math.round(1000 / this.physicsInterval)} FPS.`)
-    } else {
-      this.logger.logSession(sessionId, `Main loop not started (isBallMoving: ${isBallMoving}, hasActiveClients: ${hasActiveClients}).`)
-    }
+    // Server no longer steps physics; it only synchronizes state on explicit updates.
+    // We still may broadcast a lightweight sync when commands arrive elsewhere.
+    this.logger.logSession(sessionId, 'Server-side physics loop disabled (client-authoritative movement).', 'debug')
   }
 
   stopPhysics (sessionId) {

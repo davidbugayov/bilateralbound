@@ -850,7 +850,7 @@ async function initializePreview () {
     previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
     // Экспортируем для UI‑тестов
     try { window.__previewPhysics = previewPhysicsEngine } catch (_) {}
-    // Включаем режим зрителя для корректной интерполяции
+    // Клиент теперь вычисляет физику локально (включая отскоки), сервер только синхронизирует
     previewPhysicsEngine.isViewer = true
     // Считаем пасы по локальным событиям отскока
     window.addEventListener('bb_bounce', () => bbCounters.onBounce())

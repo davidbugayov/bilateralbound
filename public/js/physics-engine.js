@@ -482,9 +482,17 @@ class PhysicsEngine {
    * Обновляет физику за указанное время
    */
   update (deltaTime) {
-    // В режиме вьювера (клиент) всегда используется интерполяция
+    // В режиме вьювера теперь используется полноценная клиентская физика
     if (this.isViewer) {
-      this.updateViewerInterpolation(deltaTime)
+      if (this.state.paused && !this.state.allowInterpWhenPaused) {
+        // На паузе без анимации делать нечего
+      } else if (this.state.paused && this.state.allowInterpWhenPaused) {
+        // Плавный возврат к цели (центр) на паузе
+        this.updateViewerInterpolation(deltaTime)
+      } else {
+        // Активное движение — интегрируем позицию непрерывно
+        this.updateClientPhysics(deltaTime)
+      }
       // Отмечаем момент последнего обновления физики/интерполяции для синхронизации рендера
       this.__lastPhysicsUpdateTs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()
       return
@@ -531,6 +539,68 @@ class PhysicsEngine {
   }
 
   /**
+   * Непрерывная клиентская физика для режима вьювера (client-authoritative)
+   */
+  updateClientPhysics (deltaTime) {
+    if (this.state.paused) return
+    if (!this._worldSizeSet && this.options.worldWidth > 0 && this.options.worldHeight > 0) {
+      // Авто-активация флага, если размеры заданы напрямую в конструкторе
+      this._worldSizeSet = true
+    }
+    if (!this._worldSizeSet) return
+
+    // Выбираем источники скоростей
+    let vx = (typeof this.state.lastVx === 'number') ? this.state.lastVx : 0
+    let vy = (typeof this.state.lastVy === 'number') ? this.state.lastVy : 0
+
+    const speedPercent = this.ball.speed / 100
+    const pps = speedPercent * this.options.maxSpeed
+
+    if (vx === 0 && vy === 0) {
+      // Восстанавливаем из направления и текущей скорости
+      vx = (this.state.lastDirection.x || 0) * pps
+      vy = (this.state.lastDirection.y || 0) * pps
+    }
+
+    // Жёсткий AXIS-LOCK: если направление строго вертикальное/горизонтальное — исключаем дрейф
+    const dirX = this.state.lastDirection.x || 0
+    const dirY = this.state.lastDirection.y || 0
+    const isVertical = Math.abs(dirX) < 1e-6 && Math.abs(dirY) > 0
+    const isHorizontal = Math.abs(dirY) < 1e-6 && Math.abs(dirX) > 0
+
+    if (isVertical) {
+      vx = 0
+      vy = Math.sign(dirY || 1) * pps
+      // Дополнительно гасим накопленные сглаженные по X
+      this.state.smoothVx = 0
+    } else if (isHorizontal) {
+      vy = 0
+      vx = Math.sign(dirX || 1) * pps
+      // Дополнительно гасим накопленные сглаженные по Y
+      this.state.smoothVy = 0
+    }
+
+    // Применяем к шару
+    this.ball.vx = vx
+    this.ball.vy = vy
+
+    // Сохраняем предыдущую позицию для интерполяции
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+
+    // Интеграция позиции
+    this.ball.x += vx * deltaTime
+    this.ball.y += vy * deltaTime
+
+    // Обрабатываем коллизии и корректируем скорости через существующую логику
+    this.handleBoundaryCollisions()
+
+    // Текущая позиция
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
+  }
+
+  /**
      * Обрабатывает коллизии с границами мира
      */
   handleBoundaryCollisions () {
@@ -544,22 +614,27 @@ class PhysicsEngine {
     // Проверяем левую и правую границы
     if (ball.x - radius < 0) {
       ball.x = radius // Клампим позицию
-      this.state.lastDirection.x = Math.abs(this.state.lastDirection.x || 1)
+      // Сохраняем осевой замок: не вводим горизонталь, если она была 0
+      const dx = this.state.lastDirection.x || 0
+      this.state.lastDirection.x = (Math.abs(dx) < 1e-6) ? 0 : Math.abs(dx)
       bounced = true
     } else if (ball.x + radius > worldWidth) {
       ball.x = worldWidth - radius // Клампим позицию
-      this.state.lastDirection.x = -Math.abs(this.state.lastDirection.x || 1)
+      const dx = this.state.lastDirection.x || 0
+      this.state.lastDirection.x = (Math.abs(dx) < 1e-6) ? 0 : -Math.abs(dx)
       bounced = true
     }
 
     // Проверяем верхнюю и нижнюю границы
     if (ball.y - radius < 0) {
       ball.y = radius // Клампим позицию
-      this.state.lastDirection.y = Math.abs(this.state.lastDirection.y || 1)
+      const dy = this.state.lastDirection.y || 0
+      this.state.lastDirection.y = (Math.abs(dy) < 1e-6) ? 0 : Math.abs(dy)
       bounced = true
     } else if (ball.y + radius > worldHeight) {
       ball.y = worldHeight - radius // Клампим позицию
-      this.state.lastDirection.y = -Math.abs(this.state.lastDirection.y || 1)
+      const dy = this.state.lastDirection.y || 0
+      this.state.lastDirection.y = (Math.abs(dy) < 1e-6) ? 0 : -Math.abs(dy)
       bounced = true
     }
 
@@ -581,6 +656,10 @@ class PhysicsEngine {
 
     // Обеспечиваем минимальную скорость после отскока (на случай близких к нулю значений)
     this.ensureMinimumSpeed()
+
+    // ВАЖНО: Обновляем lastVx/lastVy, чтобы клиентская физика не залипала на границе
+    this.state.lastVx = this.ball.vx
+    this.state.lastVy = this.ball.vy
 
     // Вызываем callback если установлен
     if (this.bounceCallback) {
@@ -718,35 +797,58 @@ class PhysicsEngine {
 
     // Вьювер и превью контроллера используют предиктивную синхронизацию
     if (this.isViewer) {
-      // Плавное обновление целевой позиции БЕЗ резких скачков
-      if (command.x !== undefined && command.y !== undefined) {
-        // Визуальная точность с безопасным клампингом в пределах экрана
-        const r = this.ball.radius
-        const w = this.options.worldWidth
-        const h = this.options.worldHeight
-        const cx = Math.min(w - r, Math.max(r, command.x))
-        const cy = Math.min(h - r, Math.max(r, command.y))
-        this.state.targetX = cx
-        this.state.targetY = cy
-        const isPause = command.paused === true
-        if (!isPause) {
-          this.ball.x = cx
-          this.ball.y = cy
-        } else {
-          // Разрешаем интерполяцию на паузе для плавного движения к цели
-          this.state.allowInterpWhenPaused = true
-          this.state.smoothVx = 0
-          this.state.smoothVy = 0
-          this.state.lastVx = 0
-          this.state.lastVy = 0
-        }
-      }
+    // Плавное обновление целевой позиции БЕЗ резких скачков
+    if (command.x !== undefined && command.y !== undefined) {
+      // Визуальная точность с безопасным клампингом в пределах экрана
+      const r = this.ball.radius
+      const w = this.options.worldWidth
+      const h = this.options.worldHeight
+      const cx = Math.min(w - r, Math.max(r, command.x))
+      const cy = Math.min(h - r, Math.max(r, command.y))
 
-      // Сохраняем скорость и время обновления для предикции
-      if (command.vx !== undefined) this.state.lastVx = command.vx
-      if (command.vy !== undefined) this.state.lastVy = command.vy
-      this.lastServerUpdate = performance.now()
-    } else {
+      // Всегда обновляем только целевую позицию (dead-reckoning anchor)
+      this.state.targetX = cx
+      this.state.targetY = cy
+
+      const isPause = command.paused === true
+      if (isPause) {
+        // На паузе позволяем мягко прийти к цели
+        this.state.allowInterpWhenPaused = true
+        this.state.smoothVx = 0
+        this.state.smoothVy = 0
+        this.state.lastVx = 0
+        this.state.lastVy = 0
+
+        // И только на паузе действительно выставляем текущую позицию из сервера
+        this.ball.x = cx
+        this.ball.y = cy
+        this._prevPos.x = this.ball.x
+        this._prevPos.y = this.ball.y
+        this._currPos.x = this.ball.x
+        this._currPos.y = this.ball.y
+      } else {
+        // В активном движении ИГНОРИРУЕМ принудительную установку позиции,
+        // иначе любые серверные x/y (которые теперь не обновляются постоянно)
+        // будут вызывать рывки и ломать client-authoritative движение.
+        // Коррекция позиции происходит только через сглаживание и снап при малых расхождениях.
+      }
+    }
+
+    // Сохраняем скорость и время обновления для предикции
+    if (command.vx !== undefined) this.state.lastVx = command.vx
+    if (command.vy !== undefined) this.state.lastVy = command.vy
+
+    // Обновляем направление из пришедшей скорости, чтобы поддержать AXIS-LOCK
+    const lvx = (typeof this.state.lastVx === 'number') ? this.state.lastVx : 0
+    const lvy = (typeof this.state.lastVy === 'number') ? this.state.lastVy : 0
+    const sp = Math.hypot(lvx, lvy)
+    if (sp > 0) {
+      this.state.lastDirection.x = lvx / sp
+      this.state.lastDirection.y = lvy / sp
+    }
+
+    this.lastServerUpdate = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()
+  } else {
       // Этот блок теперь выполняется только на сервере
       if (command.dirX !== undefined || command.dirY !== undefined) {
         const newDx = (command.dirX !== undefined) ? command.dirX : this.state.lastDirection.x
@@ -756,7 +858,9 @@ class PhysicsEngine {
       if (command.speed !== undefined) {
         this.setSpeed(command.speed)
       }
-      if (!this.state.paused) {
+      // Если команда снимает с паузы, применяем скорость немедленно
+      const willBeUnpaused = (command.paused === false) || !this.state.paused
+      if (willBeUnpaused) {
         // Немедленно применяем изменение скорости/направления к текущей скорости,
         // чтобы мяч реагировал без необходимости Стоп/Старт
         const speedPercent = this.ball.speed / 100

@@ -21,7 +21,7 @@ class Tester {
 
   async startServer() {
     return new Promise((resolve, reject) => {
-      this.serverProcess = spawn('node', ['server.js'], {
+      this.serverProcess = spawn('node', ['server/index.js'], {
         cwd: __dirname + '/..',
         stdio: ['pipe', 'pipe', 'pipe']
       });
@@ -363,38 +363,17 @@ class Tester {
     await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
     await new Promise(r => setTimeout(r, 100));
 
-    // 3. Запускаем движение, чтобы мяч ушел из центра
-    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 1, speed: 40 } }));
-    await new Promise(r => setTimeout(r, 500));
-
-    // 4. Получаем текущее положение мяча
-    const getCurrentPosition = () => {
-      return new Promise((resolve) => {
-        viewerSocket.on('message', (message) => {
-          const data = JSON.parse(message);
-          if (data.type === 'state_update') {
-            resolve(data.payload);
-          }
-        });
-      });
-    };
-
-    const currentPosition = await getCurrentPosition();
-    const wasNotCentered = Math.abs(currentPosition.x - 960) > 10 || Math.abs(currentPosition.y - 540) > 10;
-    this.log(wasNotCentered ? '✅ Мяч ушел из центра' : '❌ Мяч остался в центре', wasNotCentered ? 'success' : 'error');
-
-    // 5. Отправляем команду reset
-    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { reset: true } }));
-
-    // 6. Ждем обновления состояния
-    const resetPosition = await getCurrentPosition();
-    const isCentered = Math.abs(resetPosition.x - 960) < 5 && Math.abs(resetPosition.y - 540) < 5;
-    this.log(isCentered ? '✅ Мяч вернулся в центр' : `❌ Мяч не в центре: (${resetPosition.x}, ${resetPosition.y})`, isCentered ? 'success' : 'error');
+    // 3. Для клиентской физики проверяем только, что reset синхронизирует центр через сервер
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { reset: true });
+    await new Promise(r => setTimeout(r, 150));
+    const state = await this.req(`/api/session/${sessionId}/state`);
+    const isCentered = state.status === 200 && Math.abs(state.data.x - 960) < 5 && Math.abs(state.data.y - 540) < 5;
+    this.log(isCentered ? '✅ Мяч вернулся в центр' : '❌ Reset не центрирует мяч', isCentered ? 'success' : 'error');
 
     controllerSocket.close();
     viewerSocket.close();
 
-    return wasNotCentered && isCentered;
+    return isCentered;
   }
 
   async testDirectionChange() {
@@ -416,42 +395,36 @@ class Tester {
 
     // 2. Подключаем вьювер через HTTP
     await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
-    await new Promise(r => setTimeout(r, 100));
 
-    // 3. Запускаем движение вправо
-    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 0, speed: 40 } }));
-    await new Promise(r => setTimeout(r, 300));
+    // 3. Проверяем смену направления через REST-синхронизацию
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 1, dirY: 0, speed: 40 });
+    await new Promise(r => setTimeout(r, 150));
+    let st = await this.req(`/api/session/${sessionId}/state`);
+    const right = st.status === 200 && st.data.paused === false && st.data.vx > 0;
+    this.log(right ? '✅ Вправо: vx > 0' : '❌ Вправо: флаг не применён', right ? 'success' : 'error');
 
-    // 4. Получаем позицию после движения вправо
-    const getPosition = () => {
-      return new Promise((resolve) => {
-        viewerSocket.on('message', (message) => {
-          const data = JSON.parse(message);
-          if (data.type === 'state_update') {
-            resolve(data.payload);
-          }
-        });
-      });
-    };
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: -1, dirY: 0, speed: 40 });
+    await new Promise(r => setTimeout(r, 150));
+    st = await this.req(`/api/session/${sessionId}/state`);
+    const left = st.status === 200 && st.data.paused === false && st.data.vx < 0;
+    this.log(left ? '✅ Влево: vx < 0' : '❌ Влево: флаг не применён', left ? 'success' : 'error');
 
-    const positionAfterRight = await getPosition();
-    const movedRight = positionAfterRight.x > 960;
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 0, dirY: 1, speed: 40 });
+    await new Promise(r => setTimeout(r, 150));
+    st = await this.req(`/api/session/${sessionId}/state`);
+    const down = st.status === 200 && st.data.paused === false && st.data.vy > 0;
+    this.log(down ? '✅ Вниз: vy > 0' : '❌ Вниз: флаг не применён', down ? 'success' : 'error');
 
-    // 5. Меняем направление на лево
-    controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: -1, dirY: 0, speed: 40 } }));
-    await new Promise(r => setTimeout(r, 300));
-
-    // 6. Получаем позицию после движения влево
-    const positionAfterLeft = await getPosition();
-    const movedLeft = positionAfterLeft.x < positionAfterRight.x;
-
-    this.log(movedRight ? '✅ Мяч двигался вправо' : '❌ Мяч не двигался вправо', movedRight ? 'success' : 'error');
-    this.log(movedLeft ? '✅ Направление изменилось на лево' : '❌ Направление не изменилось', movedLeft ? 'success' : 'error');
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 0, dirY: -1, speed: 40 });
+    await new Promise(r => setTimeout(r, 150));
+    st = await this.req(`/api/session/${sessionId}/state`);
+    const up = st.status === 200 && st.data.paused === false && st.data.vy < 0;
+    this.log(up ? '✅ Вверх: vy < 0' : '❌ Вверх: флаг не применён', up ? 'success' : 'error');
 
     controllerSocket.close();
     viewerSocket.close();
 
-    return movedRight && movedLeft;
+    return right && left && down && up;
   }
 
   async testNegativeInput() {
@@ -697,7 +670,7 @@ class Tester {
   }
 
   async testMovementStateUpdates() {
-    this.log('Тест: Состояние движения содержит корректные обновления');
+    this.log('Тест: Состояние движения содержит корректные обновления (клиентская физика)');
     const sessionId = await this.createSession();
     if (!sessionId) {
       this.log('Не удалось создать сессию', 'error');
@@ -708,51 +681,38 @@ class Tester {
     const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
     const viewerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=viewer`);
 
-    // Ждем, пока ОБА сокета откроются, чтобы избежать гонки состояний
     await Promise.all([
-        new Promise(resolve => controllerSocket.on('open', resolve)),
-        new Promise(resolve => viewerSocket.on('open', resolve))
+      new Promise(resolve => controllerSocket.on('open', resolve)),
+      new Promise(resolve => viewerSocket.on('open', resolve))
     ]);
-    this.log('Sockets connected');
 
-    // 2. ЗАРАНЕЕ начинаем слушать обновления от вьювера
-    const updatesPromise = new Promise((resolve) => {
-        const receivedUpdates = [];
-        viewerSocket.on('message', (message) => {
-            const data = JSON.parse(message);
-            if (data.type === 'state_update') {
-                receivedUpdates.push(data.payload);
-                // Как только набрали достаточно обновлений, завершаем promise
-                if (receivedUpdates.length >= 3) {
-                    resolve(receivedUpdates);
-                }
-            }
-        });
-    });
-
-    // 3. Подключаем вьювер через HTTP, чтобы задать размер мира
+    // 2. Подключаем вьювер через HTTP, чтобы задать размер мира
     await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1920, height: 1080 } });
 
-    // Небольшая пауза, чтобы сервер гарантированно обработал HTTP запрос перед WebSocket командой
-    await new Promise(r => setTimeout(r, 100));
+    // 3. Ждем первое состояние по WebSocket после команды 
+    const firstUpdatePromise = new Promise((resolve) => {
+      const timeout = setTimeout(() => resolve(null), 3000);
+      viewerSocket.on('message', (message) => {
+        const data = JSON.parse(message);
+        if (data.type === 'state_update') {
+          clearTimeout(timeout);
+          resolve(data.payload);
+        }
+      });
+    });
 
-    // 4. Отправляем команду на запуск движения
+    // 4. Отправляем команду на запуск движения (сервер теперь только синхронизирует)
     controllerSocket.send(JSON.stringify({ type: 'controller_update', payload: { paused: false, dirX: 1, dirY: 0, speed: 40 } }));
 
-    // 5. Ждем, пока промис с обновлениями зарезолвится (или пока не сработает глобальный таймаут)
-    const updates = await updatesPromise;
-
-    // 6. Проверяем результат
-    const hasMovement = updates.length > 1 && updates[updates.length - 1].x !== updates[0].x;
-    const sizePresent = updates.every(u => u.viewerScreenSize && u.viewerScreenSize.width > 0);
-
-    this.log(hasMovement ? '✅ Имеются изменения координат (движение есть)' : '❌ Координаты не меняются', hasMovement ? 'success' : 'error');
-    this.log(sizePresent ? '✅ viewerScreenSize присутствует в апдейтах' : '❌ viewerScreenSize отсутствует', sizePresent ? 'success' : 'error');
+    // 5. Проверяем, что пришел хотя бы один апдейт и содержит viewerScreenSize
+    const firstUpdate = await firstUpdatePromise;
+    const ok = !!(firstUpdate && firstUpdate.viewerScreenSize && firstUpdate.viewerScreenSize.width > 0);
+    this.log(ok ? '✅ Получен state_update с viewerScreenSize' : '❌ state_update не получен или без viewerScreenSize', ok ? 'success' : 'error');
 
     controllerSocket.close();
     viewerSocket.close();
 
-    return hasMovement && sizePresent;
+    return ok;
   }
 
   async testAllControllers() {
@@ -888,7 +848,7 @@ class Tester {
   }
 
   async testBounceBorders() {
-    this.log('Тест: Отскоки от границ экрана');
+    this.log('Тест: Отскоки от границ экрана (сервер только синхронизация)');
     const sessionId = await this.createSession();
     if (!sessionId) {
       this.log('Не удалось создать сессию', 'error');
@@ -905,28 +865,7 @@ class Tester {
 
     await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 800, height: 600 } });
 
-    let allTestsPassed = true;
-
-    // Функция для ожидания изменения направления
-    const waitForDirectionChange = async (expectedVx, expectedVy, timeout = 5000) => {
-      const startTime = Date.now();
-      while (Date.now() - startTime < timeout) {
-        const state = await this.req(`/api/session/${sessionId}/state`);
-        const vx = state.data.vx;
-        const vy = state.data.vy;
-        
-        if (expectedVx !== null && vx * expectedVx > 0) return true; // Направление изменилось
-        if (expectedVy !== null && vy * expectedVy > 0) return true; // Направление изменилось
-        
-        await new Promise(r => setTimeout(r, 100));
-      }
-      return false;
-    };
-
-    // 1. Тест отскока от правой границы
-    this.log('🔴 Тестируем отскок от правой границы...');
-    
-    // Устанавливаем мяч близко к правой границе и направляем вправо
+    // Сервер не выполняет отскоки. Проверим, что команды применяются и синхронизируются
     await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
       paused: false, 
       dirX: 1, 
@@ -934,69 +873,30 @@ class Tester {
       speed: 100 
     });
 
-    const rightBounceOk = await waitForDirectionChange(-1, null, 3000);
-    this.log(rightBounceOk ? '✅ Отскок от правой границы работает' : '❌ Отскок от правой границы не работает', rightBounceOk ? 'success' : 'error');
-    allTestsPassed = allTestsPassed && rightBounceOk;
+    await new Promise(r => setTimeout(r, 150));
+    const state1 = await this.req(`/api/session/${sessionId}/state`);
+    const ok1 = state1.status === 200 && state1.data.paused === false && state1.data.speed === 100 && state1.data.vx > 0;
+    this.log(ok1 ? '✅ Команды применены: движение запущено вправо' : '❌ Команды не применены корректно', ok1 ? 'success' : 'error');
 
-    // 2. Тест отскока от левой границы
-    this.log('🔵 Тестируем отскок от левой границы...');
-    
-    const leftBounceOk = await waitForDirectionChange(1, null, 3000);
-    this.log(leftBounceOk ? '✅ Отскок от левой границы работает' : '❌ Отскок от левой границы не работает', leftBounceOk ? 'success' : 'error');
-    allTestsPassed = allTestsPassed && leftBounceOk;
-
-    // 3. Тест отскока от нижней границы
-    this.log('🟡 Тестируем отскок от нижней границы...');
-    
-    // Направляем мяч вниз
+    // Меняем направление
     await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { 
       paused: false, 
       dirX: 0, 
       dirY: 1, 
-      speed: 100 
+      speed: 80 
     });
-
-    const bottomBounceOk = await waitForDirectionChange(null, -1, 3000);
-    this.log(bottomBounceOk ? '✅ Отскок от нижней границы работает' : '❌ Отскок от нижней границы не работает', bottomBounceOk ? 'success' : 'error');
-    allTestsPassed = allTestsPassed && bottomBounceOk;
-
-    // 4. Тест отскока от верхней границы
-    this.log('🟢 Тестируем отскок от верхней границы...');
-    
-    const topBounceOk = await waitForDirectionChange(null, 1, 3000);
-    this.log(topBounceOk ? '✅ Отскок от верхней границы работает' : '❌ Отскок от верхней границы не работает', topBounceOk ? 'success' : 'error');
-    allTestsPassed = allTestsPassed && topBounceOk;
-
-    // 5. Тест сохранения скорости после отскока
-    this.log('⚡ Тестируем сохранение скорости после отскока...');
-    
-    const stateAfterSpeedTest = await this.req(`/api/session/${sessionId}/state`);
-    const speedAfterBounce = Math.sqrt(stateAfterSpeedTest.data.vx * stateAfterSpeedTest.data.vx + stateAfterSpeedTest.data.vy * stateAfterSpeedTest.data.vy);
-    const speedOk = speedAfterBounce >= 50; // Скорость должна быть не меньше минимальной (50)
-    this.log(speedOk ? '✅ Скорость сохраняется после отскока' : '❌ Скорость не сохраняется после отскока', speedOk ? 'success' : 'error');
-    allTestsPassed = allTestsPassed && speedOk;
-
-    // 6. Тест позиционирования мяча после отскока
-    this.log('📍 Тестируем позиционирование мяча после отскока...');
-    
-    const finalState = await this.req(`/api/session/${sessionId}/state`);
-    const radius = 20; // Радиус мяча
-    const positionOk = finalState.data.x >= radius && 
-                      finalState.data.x <= 800 - radius && 
-                      finalState.data.y >= radius && 
-                      finalState.data.y <= 600 - radius;
-    this.log(positionOk ? '✅ Мяч остается в пределах границ' : '❌ Мяч выходит за границы', positionOk ? 'success' : 'error');
-    allTestsPassed = allTestsPassed && positionOk;
+    await new Promise(r => setTimeout(r, 150));
+    const state2 = await this.req(`/api/session/${sessionId}/state`);
+    const ok2 = state2.status === 200 && state2.data.paused === false && state2.data.speed === 80 && state2.data.vy > 0;
+    this.log(ok2 ? '✅ Команды применены: направление вниз' : '❌ Команды не применены корректно (вниз)', ok2 ? 'success' : 'error');
 
     controllerSocket.close();
     viewerSocket.close();
-
-    this.log(allTestsPassed ? '✅ Все отскоки работают корректно' : '❌ Некоторые отскоки не работают', allTestsPassed ? 'success' : 'error');
-    return allTestsPassed;
+    return ok1 && ok2;
   }
 
   async testEdgeToEdgeReach() {
-    this.log('Тест: Достижение точной границы (edge-to-edge)');
+    this.log('Тест: Достижение точной границы (edge-to-edge) — не применяется при клиентской физике');
     const sessionId = await this.createSession();
     if (!sessionId) {
       this.log('Не удалось создать сессию', 'error');
@@ -1011,50 +911,22 @@ class Tester {
       new Promise(resolve => viewerSocket.on('open', resolve))
     ]);
 
-    // Устанавливаем размер мира
     await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 800, height: 600 } });
 
-    const radius = 20; // дефолтный радиус
-    const worldWidth = 800;
-
-    // Функция ожидания точного значения x с таймаутом
-    const waitForExactX = async (expectedX, timeoutMs = 3000, cmp = 'eq') => {
-      const start = Date.now();
-      while (Date.now() - start < timeoutMs) {
-        const st = await this.req(`/api/session/${sessionId}/state`);
-        if (st.status === 200 && typeof st.data.x === 'number') {
-          const x = st.data.x;
-          if (cmp === 'ge') {
-            if (x >= expectedX - 0.5) return true;
-          } else if (cmp === 'le') {
-            if (x <= expectedX + 0.5) return true;
-          } else {
-            if (x === expectedX || Math.abs(x - expectedX) < 0.5) return true;
-          }
-        }
-        await new Promise(r => setTimeout(r, 15));
-      }
-      return false;
-    };
-
-    // Движение вправо до правой границы
-    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 1, dirY: 0, speed: 100 });
-    const reachedRight = await waitForExactX(worldWidth - radius, 4000, 'ge');
-    this.log(reachedRight ? '✅ Достигнута правая граница точно по линии' : '❌ Не достигнута правая граница точно', reachedRight ? 'success' : 'error');
-
-    // Движение влево до левой границы
-    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: -1, dirY: 0, speed: 100 });
-    const reachedLeft = await waitForExactX(radius, 4000, 'le');
-    this.log(reachedLeft ? '✅ Достигнута левая граница точно по линии' : '❌ Не достигнута левая граница точно', reachedLeft ? 'success' : 'error');
+    // Проверяем, что reset центрирует мяч (серверная синхронизация состояния)
+    await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { reset: true });
+    await new Promise(r => setTimeout(r, 150));
+    const st = await this.req(`/api/session/${sessionId}/state`);
+    const centered = Math.abs(st.data.x - 400) < 5 && Math.abs(st.data.y - 300) < 5;
+    this.log(centered ? '✅ Reset центрирует мяч' : '❌ Reset не центрирует', centered ? 'success' : 'error');
 
     controllerSocket.close();
     viewerSocket.close();
-
-    return reachedRight && reachedLeft;
+    return centered;
   }
 
   async testEdgeToEdgeAfterDirectionChange() {
-    this.log('Тест: Edge-to-edge при смене направления');
+    this.log('Тест: Edge-to-edge при смене направления — не применяется при клиентской физике');
     const sessionId = await this.createSession();
     if (!sessionId) {
       this.log('Не удалось создать сессию', 'error');
@@ -1071,42 +943,31 @@ class Tester {
 
     await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 800, height: 600 } });
 
-    const radius = 20;
-    const worldWidth = 800;
-    const worldHeight = 600;
-
-    const waitForExact = async (pred, timeoutMs = 4000) => {
-      const start = Date.now();
-      while (Date.now() - start < timeoutMs) {
-        const st = await this.req(`/api/session/${sessionId}/state`);
-        if (st.status === 200 && pred(st.data)) return true;
-        await new Promise(r => setTimeout(r, 50));
-      }
-      return false;
-    };
-
-    // Горизонталь: вправо до правой границы, затем смена налево до левой
+    // Проверяем смену направления и синхронизацию флагов
     await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 1, dirY: 0, speed: 100 });
-    const rightReached = await waitForExact(d => d && d.x === worldWidth - radius);
-    this.log(rightReached ? '✅ Достигнута правая граница' : '❌ Не достигнута правая граница', rightReached ? 'success' : 'error');
+    await new Promise(r => setTimeout(r, 120));
+    let st = await this.req(`/api/session/${sessionId}/state`);
+    const right = st.status === 200 && st.data.paused === false && st.data.vx > 0;
 
     await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: -1, dirY: 0, speed: 100 });
-    const leftReached = await waitForExact(d => d && d.x === radius);
-    this.log(leftReached ? '✅ Достигнута левая граница после смены направления' : '❌ Не достигнута левая граница после смены направления', leftReached ? 'success' : 'error');
+    await new Promise(r => setTimeout(r, 120));
+    st = await this.req(`/api/session/${sessionId}/state`);
+    const left = st.status === 200 && st.data.paused === false && st.data.vx < 0;
 
-    // Вертикаль: вниз до нижней границы, затем смена наверх до верхней
     await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 0, dirY: 1, speed: 100 });
-    const bottomReached = await waitForExact(d => d && d.y === worldHeight - radius);
-    this.log(bottomReached ? '✅ Достигнута нижняя граница' : '❌ Не достигнута нижняя граница', bottomReached ? 'success' : 'error');
+    await new Promise(r => setTimeout(r, 120));
+    st = await this.req(`/api/session/${sessionId}/state`);
+    const down = st.status === 200 && st.data.paused === false && st.data.vy > 0;
 
     await this.req(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 0, dirY: -1, speed: 100 });
-    const topReached = await waitForExact(d => d && d.y === radius);
-    this.log(topReached ? '✅ Достигнута верхняя граница после смены направления' : '❌ Не достигнута верхняя граница после смены направления', topReached ? 'success' : 'error');
+    await new Promise(r => setTimeout(r, 120));
+    st = await this.req(`/api/session/${sessionId}/state`);
+    const up = st.status === 200 && st.data.paused === false && st.data.vy < 0;
 
     controllerSocket.close();
     viewerSocket.close();
 
-    return rightReached && leftReached && bottomReached && topReached;
+    return right && left && down && up;
   }
 
   async testArchitecturePerformance() {
