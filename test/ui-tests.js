@@ -121,6 +121,51 @@ async function main() {
 
     log('✅ Мяч движется вправо и достаточно плавно в реальном браузере')
 
+    // Проверяем, что изменение скорости действительно влияет на скорость движения на клиенте
+    // Сначала центрируем мяч и явно задаём движение вправо со скоростью 30, затем замеряем средний шаг по X
+    await api(`/api/session/${sessionId}/controller/update`, 'POST', { reset: true })
+    await new Promise(r => setTimeout(r, 120))
+    await api(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 1, dirY: 0, speed: 30 })
+    await new Promise(r => setTimeout(r, 150))
+
+    const baseline = await page.evaluate(async () => {
+      const positions = []
+      const get = () => ({ x: window.physicsEngine.ball.x, y: window.physicsEngine.ball.y })
+      positions.push(get())
+      for (let i = 0; i < 6; i++) { // ~100мс, не дойдем до границы
+        window.physicsEngine.update(1/60)
+        await new Promise(r => setTimeout(r, 1))
+        positions.push(get())
+      }
+      let sum = 0
+      for (let i = 1; i < positions.length; i++) sum += (positions[i].x - positions[i-1].x)
+      return Math.abs(sum / Math.max(1, (positions.length - 1)))
+    })
+
+    // Увеличиваем скорость до 80 и снова замеряем средний шаг по X
+    await api(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 1, dirY: 0, speed: 80 })
+    await new Promise(r => setTimeout(r, 120))
+
+    const after = await page.evaluate(async () => {
+      const positions = []
+      const get = () => ({ x: window.physicsEngine.ball.x, y: window.physicsEngine.ball.y })
+      positions.push(get())
+      for (let i = 0; i < 6; i++) { // ~100мс, не дойдем до границы
+        window.physicsEngine.update(1/60)
+        await new Promise(r => setTimeout(r, 1))
+        positions.push(get())
+      }
+      let sum = 0
+      for (let i = 1; i < positions.length; i++) sum += (positions[i].x - positions[i-1].x)
+      return Math.abs(sum / Math.max(1, (positions.length - 1)))
+    })
+
+    const ratio = after / Math.max(1e-6, baseline)
+    if (!(ratio > 1.5)) {
+      throw new Error(`Speed change ineffective on client: avgDxBefore=${baseline.toFixed(2)}, avgDxAfter=${after.toFixed(2)}, ratio=${ratio.toFixed(2)}`)
+    }
+    log('✅ Изменение скорости влияет на скорость движения на клиенте')
+
     // Меняем направление вниз и убеждаемся, что Y растёт
     await api(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 0, dirY: 1, speed: 30 })
     await new Promise(r => setTimeout(r, 120))

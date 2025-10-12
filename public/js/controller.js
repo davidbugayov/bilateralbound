@@ -568,10 +568,10 @@ function renderPreviewLoop (timestamp) {
     return
   }
 
-  // Вычисляем alpha для интерполяции
+  // Вычисляем alpha для интерполяции на основе реального времени последнего обновления физики
   const now = performance.now()
-  const lastPhysicsUpdate = now - (now % PHYSICS_DT)
-  const alpha = (now - lastPhysicsUpdate) / PHYSICS_DT
+  const lastPhysicsUpdate = (previewPhysicsEngine && previewPhysicsEngine.__lastPhysicsUpdateTs) || now
+  const alpha = Math.max(0, Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT))
 
   // Обновляем таймер счётчиков
   bbCounters.tick(timestamp)

@@ -756,6 +756,10 @@ class PhysicsEngine {
       if (typeof command.y === 'number' && !isNaN(command.y)) validatedCommand.y = command.y
       if (typeof command.vx === 'number' && !isNaN(command.vx)) validatedCommand.vx = command.vx
       if (typeof command.vy === 'number' && !isNaN(command.vy)) validatedCommand.vy = command.vy
+      // При клиентской физике тоже принимаем изменение скорости, чтобы локальная модель не оставалась со старой величиной
+      if (typeof command.speed === 'number' && command.speed >= 0 && command.speed <= 100 && !isNaN(command.speed)) {
+        validatedCommand.speed = command.speed
+      }
     } else {
       // Валидация для серверного режима
       if (typeof command.dirX === 'number' && Math.abs(command.dirX) <= 1 && !isNaN(command.dirX)) {
@@ -845,6 +849,21 @@ class PhysicsEngine {
     if (sp > 0) {
       this.state.lastDirection.x = lvx / sp
       this.state.lastDirection.y = lvy / sp
+    }
+
+    // Применяем изменение скорости на клиенте, чтобы величина движения соответствовала серверной настройке
+    if (command.speed !== undefined) {
+      this.setSpeed(command.speed)
+      // Немедленно актуализируем базу для предикции/интеграции, если не на паузе
+      if (!this.state.paused) {
+        const pps = (this.ball.speed / 100) * this.options.maxSpeed
+        const dx = this.state.lastDirection.x || 0
+        const dy = this.state.lastDirection.y || 0
+        if (dx !== 0 || dy !== 0) {
+          this.state.lastVx = dx * pps
+          this.state.lastVy = dy * pps
+        }
+      }
     }
 
     this.lastServerUpdate = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()
