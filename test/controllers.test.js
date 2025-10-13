@@ -60,6 +60,34 @@ describe('UIController', () => {
   test('should initialize with app state', () => {
     expect(uiController.appState).toBe(mockAppState);
   });
+
+  test('should update play/pause button correctly', () => {
+    uiController.updatePlayPauseButton(true);
+
+    const button = document.getElementById('playPauseBtn');
+    expect(button.textContent).toBe('⏸ Стоп');
+    expect(button.classList.contains('playing')).toBe(true);
+  });
+
+  test('should update direction segments', () => {
+    const currentDirection = { dx: 1, dy: 0 };
+    uiController.updateDirectionSegments(currentDirection);
+
+    const rightSegment = document.querySelector('[data-direction="right"]');
+    const leftSegment = document.querySelector('[data-direction="left"]');
+
+    expect(rightSegment.classList.contains('active')).toBe(true);
+    expect(leftSegment.classList.contains('active')).toBe(false);
+  });
+
+  test('should update viewer status', () => {
+    const screenSize = { width: 1920, height: 1080 };
+    uiController.updateViewerStatus(true, screenSize);
+
+    const statusEl = document.getElementById('viewerStatus');
+    expect(statusEl.textContent).toBe('Подключен (1920×1080)');
+    expect(statusEl.classList.contains('connected')).toBe(true);
+  });
 });
 
 describe('WebSocketController', () => {
@@ -72,6 +100,25 @@ describe('WebSocketController', () => {
   test('should initialize with dependencies', () => {
     expect(wsController.wsClient).toBe(mockWsClient);
     expect(wsController.appState).toBe(mockAppState);
+  });
+
+  test('should send controller update', async () => {
+    const data = { paused: true };
+    await wsController.sendControllerUpdate(data);
+
+    expect(mockWsClient.send).toHaveBeenCalledWith('controller_update', data);
+  });
+
+  test('should send direction change', async () => {
+    await wsController.sendDirectionChange(1, 0);
+
+    expect(mockWsClient.send).toHaveBeenCalledWith('controller_update', { dirX: 1, dirY: 0 });
+  });
+
+  test('should send play/pause toggle', async () => {
+    await wsController.sendPlayPauseToggle(true);
+
+    expect(mockWsClient.send).toHaveBeenCalledWith('controller_update', { paused: false });
   });
 });
 

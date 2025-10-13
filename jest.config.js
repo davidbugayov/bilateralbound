@@ -1,3 +1,7 @@
+/**
+ * Jest Configuration - настройки для тестирования BilateralBound
+ * Настроен для работы с ES модулями, покрытием кода и моками
+ */
 module.exports = {
   testEnvironment: 'jsdom',
   collectCoverage: true,
