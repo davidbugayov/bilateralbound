@@ -634,7 +634,7 @@
         </div>
         <div style="text-align: right; margin-top: 24px;">
           <div class="footer">
-            ⚡ BilateralBound v2.68.1
+            ⚡ BilateralBound v2.69.0
           </div>
         </div>
       </div>
@@ -756,7 +756,10 @@
     }
 
     // На главной больше не показываем ожидание зрителя
-    function startStatusMonitoring(sessionId) {}
+    function startStatusMonitoring() {
+        // Функция больше не используется, но оставлена для совместимости
+        console.log('Status monitoring not needed on main page');
+    }
 
     // Функция для сброса состояния кнопки создания сессии
     function resetCreateSessionButton() {

@@ -791,7 +791,7 @@ class FeatureManager {
    */
   async sendUpdate (data) {
     if (window.wsClient && window.wsClient.send) {
-      window.wsClient.send('WS_MSG.controllerUpdate', data)
+      await window.wsClient.send('WS_MSG.controllerUpdate', data)
     }
   }
 

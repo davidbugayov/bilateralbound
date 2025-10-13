@@ -50,9 +50,10 @@ jest.mock('../public/js/renderer.js', () => {
     this.physics = physicsEngine;
     this.options = options;
 
-    this.drawFrame = (state) => {
-      // Mock drawFrame method
-    };
+     this.drawFrame = (state) => {
+       // Mock drawFrame method - state parameter kept for interface compatibility
+       console.log('Mock drawFrame called with state:', state);
+     };
 
     return this;
   };

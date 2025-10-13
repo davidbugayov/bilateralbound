@@ -268,7 +268,7 @@ if (require.main === module) {
             process.exit(0);
         }
     }).catch(error => {
-        console.error('❌ Ошибка обновления версии');
+        console.error('❌ Ошибка обновления версии:', error.message);
         process.exit(1);
     });
 }

@@ -1120,7 +1120,7 @@ class Tester {
     // Отправляем много команд и проверяем троттлинг
     const wsTestStartTime = Date.now();
     for (let i = 0; i < 20; i++) {
-      controllerSocket.send(JSON.stringify({ 
+      controllerSocket.send(JSON.stringify({
         type: 'controller_update', 
         payload: { 
           paused: false, 
@@ -1134,8 +1134,7 @@ class Tester {
     }
     
     await new Promise(r => setTimeout(r, 1000));
-    const wsTestEndTime = Date.now();
-    
+
     // Проверяем, что сервер стабильно обрабатывает команды
     const wsOptimizationOk = wsMessagesReceived > 0 && wsCommandsSent === 20; // Все команды должны быть отправлены
     this.log(wsOptimizationOk ? `✅ WebSocket стабилен (${wsMessagesReceived} обновлений, ${wsCommandsSent} команд)` : `❌ WebSocket нестабилен (${wsMessagesReceived} обновлений, ${wsCommandsSent} команд)`, wsOptimizationOk ? 'success' : 'error');

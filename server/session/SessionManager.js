@@ -10,7 +10,7 @@ class SessionManager {
     this.sessionRepository = new SessionRepository()
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
     this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
-    this.physicsInterval = 1000 / 120 // ~120 FPS для более плавного движения
+    this.physicsInterval = 1000 / 60 // ~60 FPS для более плавного движения
     this.apiCache = apiCache // Получаем ссылку на кэш API
     this.logger = {
       ...logger,
@@ -34,7 +34,7 @@ class SessionManager {
       try {
         Object.assign(session.ballState, session.physicsEngine.getState())
         this.stateBroadcaster.broadcastState(session.id)
-      } catch (ignored) {
+      } catch {
         // ignore
       }
     }
@@ -127,7 +127,7 @@ class SessionManager {
       if (role === 'viewer') {
         this.stateBroadcaster.broadcastInitialState(sessionId, ws, session.ballState)
       } else {
-        try { ws.initialStateSent = false } catch (ignored) { /* ignore */ }
+        try { ws.initialStateSent = false } catch { /* ignore */ }
         this.logger.logSession(sessionId, 'Controller connected, deferring initial_state until viewer screen size is set.')
       }
     }

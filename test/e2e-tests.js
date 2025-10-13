@@ -179,10 +179,10 @@ describe('BilateralBound E2E Tests', () => {
         return;
       }
       
-      // Get initial speed
-      const initialSpeed = await page.evaluate(el => el.value, speedSlider);
-      
-      // Change speed
+       // Get initial speed and use it for comparison
+       const initialSpeed = await page.evaluate(el => el.value, speedSlider);
+
+       // Change speed and verify it changed from initial value
       await page.evaluate(el => {
         el.value = '80';
         el.dispatchEvent(new Event('input', { bubbles: true }));

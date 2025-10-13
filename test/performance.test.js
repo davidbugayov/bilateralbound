@@ -202,10 +202,10 @@ describe('Performance Tests', () => {
       const startTime = performance.now();
 
       const promises = [
-        LazyLoader.loadComponent('physics'),
-        LazyLoader.loadComponent('renderer'),
-        LazyLoader.loadComponent('physics'),
-        LazyLoader.loadComponent('renderer')
+        await LazyLoader.loadComponent('physics'),
+        await LazyLoader.loadComponent('renderer'),
+        await LazyLoader.loadComponent('physics'),
+        await LazyLoader.loadComponent('renderer')
       ];
 
       const results = await Promise.all(promises);

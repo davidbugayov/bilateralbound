@@ -173,7 +173,6 @@ async function deploy(environment, ref) {
   if (!env) {
     throw new Error(`Unknown environment: ${environment}`);
   }
-  
   log(`Starting deployment for ${environment} (${ref})`);
 
   try {
@@ -296,7 +295,6 @@ const server = http.createServer(async (req, res) => {
   }
 
   let body = '';
-  
   req.on('data', chunk => {
     body += chunk.toString();
   });

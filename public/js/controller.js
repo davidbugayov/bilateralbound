@@ -890,9 +890,11 @@ async function initializePreview () {
       localPhysics: false // Рендерер только рисует, физика обновляется отдельно
     })
 
-    window.__previewRenderer.setFrameCallback((deltaTime) => { // eslint-disable-line no-unused-vars
-      // Дополнительная логика для превью может быть добавлена здесь
-    })
+     window.__previewRenderer.setFrameCallback((deltaTime) => {
+       // Дополнительная логика для превью может быть добавлена здесь
+       // deltaTime параметр сохранен для совместимости с интерфейсом
+       console.log('Preview frame callback called with deltaTime:', deltaTime);
+     })
 
     globalThis.__previewCanvas = canvas
 
@@ -992,10 +994,6 @@ function updatePreviewSize (viewerScreenSize) {
   // Тихо завершаем обновление размера превью
 }
 
-
-
-
-
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ МЯЧОМ =====
 
 /**
@@ -1055,32 +1053,7 @@ function setDirection (directionMode) {
   }
 }
 
-function resetCenter () {
-  // Отправляем команду на сервер
-  safeSend(WS_MSG.controllerUpdate, { reset: true })
-
-  // И немедленно центрируем мяч в локальном превью для мгновенной обратной связи
-  if (previewPhysicsEngine && previewCanvas && globalThis.__current.viewerScreenSize) {
-    // Центрируем относительно размеров вьювера, а не превью
-    const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
-    const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
-
-    // Масштабируем центр вьювера к размерам превью
-    const scaleX = previewCanvas.width / globalThis.__current.viewerScreenSize.width
-    const scaleY = previewCanvas.height / globalThis.__current.viewerScreenSize.height
-
-    const previewCenterX = viewerCenterX * scaleX
-    const previewCenterY = viewerCenterY * scaleY
-
-    // Устанавливаем позицию и target координаты для корректной интерполяции
-    previewPhysicsEngine.setPosition(previewCenterX, previewCenterY)
-  } else if (previewPhysicsEngine && previewCanvas) {
-    // Fallback: центрируем относительно превью, если размеры вьювера неизвестны
-    const centerX = previewCanvas.width / 2
-    const centerY = previewCanvas.height / 2
-    previewPhysicsEngine.setPosition(centerX, centerY)
-  }
-}
+>>>>>>> Stashed changes
 
 function setBallColor (color) {
   // Оптимизация: меньше обновлений когда нет вьювера
@@ -1090,8 +1063,6 @@ function setBallColor (color) {
   }
   safeSend(WS_MSG.controllerUpdate, { colorBall: color })
 }
-
-
 
 function setBallSize (size) {
   // Оптимизация: меньше обновлений когда нет вьювера
@@ -1125,16 +1096,6 @@ function setBackgroundColor (color) {
   }
 }
 
-// ===== ФУНКЦИИ ВОСПРОИЗВЕДЕНИЯ =====
-
-// Глобальная переменная для отслеживания состояния игры
-// let isPlaying = false; // Перенесено наверх
-
-// Удаляем hasViewer, так как теперь используем window.__current.viewerConnected
-// let hasViewer = false;
-
-// Глобальная переменная для отслеживания текущего направления
-// let currentDirectionMode = 'horizontal'; // Перенесено наверх
 
 /**
  * Обновляет состояние кнопок направления
@@ -1170,10 +1131,9 @@ function updateDirectionDisplay (dirX, dirY) {
   try {
     // Ищем элемент для отображения направления
     const directionDisplay = document.getElementById('currentDirection')
+    let directionText = 'Неизвестно'
+    let directionIcon = '❓'
     if (directionDisplay) {
-      let directionText = 'Неизвестно'
-      let directionIcon = '❓'
-
       if (Math.abs(dirX) > 0.9 && Math.abs(dirY) < 0.1) {
         directionText = 'Горизонтальное'
         directionIcon = '↔️'
@@ -1358,7 +1318,7 @@ function openPreviewFullscreen () {
     } else {
       previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
     }
-  } catch (e) { /* ignore */ }
+  } catch { /* ignore */ }
 
   resizePreviewFullscreen()
   setupFsPanelAutoHide()
@@ -1465,6 +1425,7 @@ function setupFullscreenGestures () {
 
   overlay.addEventListener('touchmove', (e) => {
     // жесты без блокировки скролла/зумов
+    e.preventDefault(); // Предотвращаем прокрутку страницы при жестах
   }, { passive: true })
 
   overlay.addEventListener('touchend', (e) => {

@@ -420,7 +420,7 @@
                     showError('Ошибка соединения.');
                 });
                 
-                wsClient.connect();
+                await wsClient.connect();
 
                 // --- НОВАЯ ЛОГИКА ЦИКЛОВ ---
                 const PHYSICS_TICK_RATE = 60; // Гц
@@ -669,7 +669,7 @@
                     resizeTimeout = setTimeout(() => {
                         resizeCanvas();
                         // Обновляем размер экрана на сервере только после завершения resize
-                        updateScreenSize().catch(error => {
+                        updateScreenSize().catch(() => {
                             // Тихо игнорируем ошибки сети при resize, чтобы не мешать работе
                             debugLog('Размер экрана не обновлен (сеть недоступна)');
                         });
