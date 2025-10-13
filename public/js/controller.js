@@ -211,6 +211,9 @@ async function initializeController () {
       throw new AppError('SESSION_ID_MISSING', 'ID сессии не найден в URL')
     }
 
+    // Сохраняем sessionId в глобальном состоянии
+    globalThis.__current.sessionId = sessionId
+
     logger.info(`📋 Работаем с сессией: ${sessionId}`)
 
     // 2. Инициализация DOM элементов - делаем это сразу
@@ -317,17 +320,34 @@ async function initializeDOMElements (sessionId) {
   }
 
   if (missingElements.length > 0) {
-    throw new AppError('DOM_ELEMENTS_MISSING',
-      `Не найдены HTML элементы: ${missingElements.join(', ')}`)
+    console.warn(`Не найдены HTML элементы: ${missingElements.join(', ')}`)
+    // Не выбрасываем ошибку, если элементы не найдены - они могут быть необязательными
   }
 
-  // Настройка элементов
-  initializedElements.curSid.textContent = sessionId
+  // Настройка элементов (проверяем существование перед использованием)
+  if (initializedElements.curSid) {
+    initializedElements.curSid.textContent = sessionId
+  }
 
-  initializedElements.sessionInfo.textContent = `Создана: ${new Date().toLocaleString()}`
-  initializedElements.viewerStatus.textContent = 'Ожидание...'
+  if (initializedElements.sessionInfo) {
+    initializedElements.sessionInfo.textContent = `Создана: ${new Date().toLocaleString()}`
+  }
+
+  if (initializedElements.viewerStatus) {
+    initializedElements.viewerStatus.textContent = 'Ожидание...'
+  }
+
+  // Обновляем ссылку для зрителя сразу после инициализации
+  updateViewerLink(sessionId)
 
   return initializedElements
+}
+
+function updateViewerLink (sessionId) {
+  const viewLinkInput = document.getElementById('view')
+  if (viewLinkInput) {
+    viewLinkInput.value = `${window.location.origin}/s/${sessionId}`
+  }
 }
 
 /**
