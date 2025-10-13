@@ -194,7 +194,7 @@ class BallRenderer {
       this.render(alpha)
 
       this.lastTime = currentTime
-    } catch (ignored) {
+    } catch {
       this.stop()
       return
     }
@@ -238,7 +238,7 @@ class BallRenderer {
         this.renderBall(curr)
         this._prevBall = { x: curr.x, y: curr.y, radius: curr.radius }
       }
-    } catch (ignored) {
+    } catch {
       // Не останавливаем рендер луп, просто пропускаем кадр
     }
   }
@@ -304,7 +304,8 @@ class BallRenderer {
       this.ctx.shadowBlur = 0
       this.ctx.shadowOffsetX = 0
       this.ctx.shadowOffsetY = 0
-    } catch (ignored) {
+    } catch {
+      // ignore
     }
   }
 
@@ -313,9 +314,9 @@ class BallRenderer {
    */
   adjustBrightness (color, amount) {
     const hex = color.replace('#', '')
-    const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount))
-    const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount))
-    const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount))
+    const r = Math.max(0, Math.min(255, parseInt(hex.slice(0, 2), 16) + amount))
+    const g = Math.max(0, Math.min(255, parseInt(hex.slice(2, 4), 16) + amount))
+    const b = Math.max(0, Math.min(255, parseInt(hex.slice(4, 6), 16) + amount))
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
   }
 
@@ -346,6 +347,7 @@ class BallRenderer {
       this._cached.gradient = null
       this._cached.path = null
     } catch {
+      // ignore
     }
   }
 
@@ -374,6 +376,7 @@ class BallRenderer {
           return true
         }
     } catch {
+      // ignore
     }
       return false
     }
@@ -450,6 +453,7 @@ class BallRenderer {
       // Рисуем шарик
       this.renderBall(state)
     } catch {
+      // ignore
     }
   }
 

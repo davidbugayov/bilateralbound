@@ -892,6 +892,22 @@ class PhysicsEngine {
   // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ПЕРЕИСПОЛЬЗОВАНИЯ ===
 
   /**
+   * Вычисляет время до отскока от границы
+   */
+  _calculateTimeToBounce (position, velocity, radius, worldSize) {
+    if (Math.abs(velocity) < 1e-6) return Infinity
+
+    const distanceToLeft = position - radius
+    const distanceToRight = worldSize - radius - position
+
+    if (velocity > 0) {
+      return distanceToRight / velocity
+    } else {
+      return distanceToLeft / Math.abs(velocity)
+    }
+  }
+
+  /**
      * Сбрасывает состояние к начальному
      */
   reset () {

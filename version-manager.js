@@ -23,7 +23,7 @@ class VersionManager {
         try {
             const packageData = JSON.parse(fs.readFileSync(this.packageFile, 'utf8'));
             return packageData.version || '1.0.0';
-        } catch (error) {
+        } catch {
             console.log('⚠️ Не удалось прочитать package.json, используем версию по умолчанию');
             return '1.0.0';
         }
@@ -45,7 +45,7 @@ class VersionManager {
                 message: commitMessage,
                 date: commitDate
             };
-        } catch (error) {
+        } catch {
             console.log('⚠️ Не удалось получить информацию о коммите');
             return {
                 hash: 'unknown',
@@ -119,8 +119,8 @@ class VersionManager {
             packageData.version = newVersion;
             fs.writeFileSync(this.packageFile, JSON.stringify(packageData, null, 2));
             console.log(`✅ Обновлена версия в package.json: ${newVersion}`);
-        } catch (error) {
-            console.error('❌ Ошибка обновления package.json:', error.message);
+        } catch {
+            console.error('❌ Ошибка обновления package.json');
         }
     }
 
@@ -176,8 +176,8 @@ class VersionManager {
         try {
             fs.writeFileSync(this.versionFile, content);
             console.log(`✅ Обновлен файл VERSION.md: v${newVersion}`);
-        } catch (error) {
-            console.error('❌ Ошибка обновления VERSION.md:', error.message);
+        } catch {
+            console.error('❌ Ошибка обновления VERSION.md');
         }
     }
 
@@ -202,8 +202,8 @@ class VersionManager {
                 console.log('⚠️ Версия в футере не найдена');
                 return false;
             }
-        } catch (error) {
-            console.error('❌ Ошибка обновления версии в футере:', error.message);
+        } catch {
+            console.error('❌ Ошибка обновления версии в футере');
             return false;
         }
     }
@@ -268,7 +268,7 @@ if (require.main === module) {
             process.exit(0);
         }
     }).catch(error => {
-        console.error('❌ Ошибка обновления версии:', error.message);
+        console.error('❌ Ошибка обновления версии');
         process.exit(1);
     });
 }

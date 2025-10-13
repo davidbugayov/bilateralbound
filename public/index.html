@@ -411,6 +411,151 @@
   <!-- Load scripts for main page -->
   <script src="./js/common.js" defer></script>
   <script src="./js/new-features.js" defer></script>
+  
+  <!-- Логика смены темы вынесена сюда из new-features.js -->
+  <script>
+  /**
+   * Переключатель темы для BilateralBound
+   * Вынесено из new-features.js для лучшей производительности
+   */
+  class ThemeManager {
+    constructor() {
+      this.themeKey = 'bb_theme'
+      this.init()
+    }
+
+    /**
+     * Инициализация темы
+     */
+    init() {
+      this.loadTheme()
+      this.setupThemeToggle()
+    }
+
+    /**
+     * Загружает сохраненную тему
+     */
+    loadTheme() {
+      const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-theme')
+      }
+    }
+
+    /**
+     * Переключает между темной и светлой темой
+     */
+    toggleTheme() {
+      const body = document.body
+      const isDark = body.classList.contains('light-theme')
+
+      if (isDark) {
+        body.classList.remove('light-theme')
+        localStorage.setItem(this.themeKey, 'dark')
+        this.showNotification('Тёмная тема активирована', 'success')
+      } else {
+        body.classList.add('light-theme')
+        localStorage.setItem(this.themeKey, 'light')
+        this.showNotification('Светлая тема активирована', 'success')
+      }
+    }
+
+    /**
+     * Настройка кнопки переключения темы
+     */
+    setupThemeToggle() {
+      const toggleBtn = document.getElementById('themeToggleBtn')
+      if (!toggleBtn) return
+
+      toggleBtn.addEventListener('click', () => this.toggleTheme())
+    }
+
+    /**
+     * Показывает уведомление о смене темы
+     */
+    showNotification(message, type = 'info') {
+      // Используем существующую систему уведомлений
+      if (window.showErrorNotification) {
+        const colors = {
+          success: '#10b981',
+          error: '#ef4444',
+          warning: '#f59e0b',
+          info: '#3b82f6'
+        }
+        window.showErrorNotification(message, colors[type])
+      } else {
+        // Резервный вариант с простым уведомлением
+        const notification = document.createElement('div')
+        notification.className = 'theme-notification'
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: ${type === 'success' ? '#10b981' : '#3b82f6'};
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          font-size: 14px;
+          z-index: 10000;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          animation: slideIn 0.3s ease-out;
+        `
+        notification.textContent = message
+        document.body.appendChild(notification)
+
+        setTimeout(() => {
+          notification.style.animation = 'slideOut 0.3s ease-in forwards'
+          setTimeout(() => notification.remove(), 300)
+        }, 3000)
+      }
+    }
+  }
+
+  // Добавляем стили для анимации уведомлений
+  const style = document.createElement('style')
+  style.textContent = `
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    .light-theme {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+      color: #1e293b;
+    }
+    .light-theme .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(148, 163, 184, 0.3);
+      color: #1e293b;
+    }
+    .light-theme .card h1 {
+      background: linear-gradient(135deg, #1e40af, #7c3aed, #059669);
+      background-size: 200% 200%;
+      animation: gradientShift 3s ease-in-out infinite;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .light-theme .info-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+    .light-theme .info-card h3 {
+      color: #1e40af;
+    }
+    .light-theme .main-button {
+      background: linear-gradient(135deg, #1e40af, #7c3aed);
+      color: white;
+    }
+  `
+  document.head.appendChild(style)
+
+  // Инициализируем менеджер темы
+  window.themeManager = new ThemeManager()
+  </script>
 </head>
 <body>
   <div class="wrap">
@@ -438,6 +583,12 @@
         <button id="createSessionBtn" class="main-button" onclick="createSession()">
           🚀 Начать EMDR сессию
         </button>
+
+        <div style="text-align: right; margin-bottom: 16px;">
+          <button id="themeToggleBtn" class="main-button" style="padding: 8px 16px; font-size: 0.9rem; min-width: 120px;">
+            🌓 Сменить тему
+          </button>
+        </div>
 
         <div class="steps-container">
           <h3>
@@ -483,7 +634,7 @@
         </div>
         <div style="text-align: right; margin-top: 24px;">
           <div class="footer">
-            ⚡ BilateralBound v2.68.0
+            ⚡ BilateralBound v2.68.1
           </div>
         </div>
       </div>

@@ -3,7 +3,8 @@
  * Современная модульная архитектура с улучшенной обработкой ошибок
  */
 
-/* exported setDir, setDirection, setDirFromDirection, resetCenter, resetSession, resumePlay, pausePlay, copy, goBack */
+// Экспортируем функции для использования в тестах
+/* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 globalThis.__current = {
   sessionId: null,
@@ -184,7 +185,7 @@ function detectAndCountBounceFromServer (prev, curr) {
 // 4. Остальная логика выполняется после полной загрузки страницы
 document.addEventListener('DOMContentLoaded', () => {
   // Тихая инициализация
-  initializeController()
+  initializeController().catch(console.error)
   // Инициализируем DOM для счётчиков
   bbCounters.initDom()
 
@@ -229,7 +230,7 @@ async function initializeController () {
     initializeComponents()
 
     // Инициализируем превью сразу, чтобы пользователь видел мяч
-    initializePreview()
+    await initializePreview()
 
     // Навешиваем обработчики полноэкранного превью
     const openFsBtn = document.getElementById('openPreviewFullscreenBtn')
@@ -417,7 +418,7 @@ function setupWebSocketEventHandlers (wsClient, logger) {
 
     // Если вьювер подключился, завершаем инициализацию
     if (data.connected) {
-      completeInitialization()
+      completeInitialization().catch(console.error)
     }
 
     updateViewerStatusUI()
@@ -796,7 +797,7 @@ function initializeComponents () {
       defaultValue: '#020617', // Дефолтный цвет фона
       title: '🎨 Цвет фона',
       onColorChange: (color) => {
-        setBgColor(color)
+        setBackgroundColor(color)
         // Не меняем радиус превью при смене фона
       }
     }
@@ -867,7 +868,7 @@ async function initializePreview () {
     // Создаем движок физики для превью
     previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
     // Экспортируем для UI‑тестов
-    try { window.__previewPhysics = previewPhysicsEngine } catch (e) { /* ignore */ }
+    try { window.__previewPhysics = previewPhysicsEngine } catch { /* ignore */ }
     // Клиент теперь вычисляет физику локально (включая отскоки), сервер только синхронизирует
     previewPhysicsEngine.isViewer = true
     // Считаем пасы по локальным событиям отскока
@@ -991,87 +992,68 @@ function updatePreviewSize (viewerScreenSize) {
   // Тихо завершаем обновление размера превью
 }
 
-// ===== ФУНКЦИИ УПРАВЛЕНИЯ НАПРАВЛЕНИЕМ =====
 
-function setDir (mode) {
-  let dx = 0; let dy = 0
-  switch (mode) {
-    case 'horizontal': dx = 1; dy = 0; break
-    case 'vertical': dx = 0; dy = 1; break
-    case 'diagRL': dx = 0.707; dy = 0.707; break
-    case 'diagRLL': dx = 0.707; dy = -0.707; break
-  }
 
-  directionState = { dx, dy }
-  updateDirectionDisplay(dx, dy)
 
-  // Отправляем команду изменения направления через WebSocket
-  safeSend(WS_MSG.controllerUpdate, {
-    dirX: dx,
-    dirY: dy,
-    resume: true // Если мяч движется, сразу меняем направление
-  })
-}
-
-// Функция для обновления активного состояния кнопок направлений
-function updateDirectionButtons () {
-  // Снимаем активное состояние со всех кнопок
-  document.querySelectorAll('.direction-btn').forEach(btn => { btn.classList.remove('active') })
-  document.querySelectorAll('.segmented .seg-btn').forEach(btn => { btn.classList.remove('active') })
-
-  // Добавляем активное состояние к текущей кнопке
-  const activeSeg = document.querySelector(`.segmented .seg-btn[data-mode="${currentDirectionMode}"]`)
-  if (activeSeg) { activeSeg.classList.add('active') }
-}
-
-// Функция установки направления (как в тесте)
-function setDirection (mode) {
-  currentDirectionMode = mode
-
-  let dx = 0; let dy = 0
-  switch (mode) {
-    case 'horizontal': dx = 1; dy = 0; break
-    case 'vertical': dx = 0; dy = 1; break
-    case 'diagRL': dx = 0.707; dy = 0.707; break
-    case 'diagRLL': dx = 0.707; dy = -0.707; break
-  }
-
-  directionState = { dx, dy }
-  updateDirectionDisplay(dx, dy)
-  updateDirectionButtons() // Обновляем выделение кнопок
-
-  // Отправляем команду на сервер (только установка направления, без запуска движения)
-  safeSend(WS_MSG.controllerUpdate, {
-    dirX: dx,
-    dirY: dy
-  })
-}
-
-function setDirFromDirection (direction) {
-  const dx = direction.x
-  const dy = direction.y
-
-  directionState = { dx, dy }
-  updateDirectionDisplay(dx, dy)
-
-  safeSend(WS_MSG.controllerUpdate, { dirX: dx, dirY: dy })
-}
-
-function updateDirectionDisplay (dx, dy) {
-  const currentDirection = document.getElementById('currentDirection')
-  if (!currentDirection) return
-
-  let directionText = '↔️ Горизонтально'
-  if (dx === 0 && dy === 1) directionText = '↕️ Вертикально'
-  else if (dx > 0 && dy > 0) directionText = '↗️ Диагональ L→R'
-  else if (dx > 0 && dy < 0) directionText = '↙️ Диагональ R→L'
-  else if (dx < 0 && dy > 0) directionText = '↖️ Диагональ R→L'
-  else if (dx < 0 && dy < 0) directionText = '↙️ Диагональ L→R'
-
-  currentDirection.textContent = directionText
-}
 
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ МЯЧОМ =====
+
+/**
+ * Устанавливает направление движения шарика
+ */
+function setDirection (directionMode) {
+  if (!directionMode) return
+
+  try {
+    // Преобразуем текстовый режим в вектор направления
+    let dirX = 0
+    let dirY = 0
+
+    switch (directionMode) {
+      case 'horizontal':
+        dirX = 1
+        dirY = 0
+        break
+      case 'vertical':
+        dirX = 0
+        dirY = 1
+        break
+      case 'diagRL': // Диагональ вправо-вниз
+        dirX = 0.707
+        dirY = 0.707
+        break
+      case 'diagRLL': // Диагональ вправо-вверх
+        dirX = 0.707
+        dirY = -0.707
+        break
+      default:
+        console.warn('Неизвестный режим направления:', directionMode)
+        return
+    }
+
+    // Обновляем глобальное состояние направления
+    directionState = { dx: dirX, dy: dirY }
+    currentDirectionMode = directionMode
+
+    // Если игра активна, отправляем новое направление на сервер
+    if (isPlaying && globalThis.__current.viewerConnected) {
+      safeSend(WS_MSG.controllerUpdate, {
+        dirX: dirX,
+        dirY: dirY,
+        // НЕ центрируем мяч при смене направления во время игры
+        keepPosition: true
+      })
+    }
+
+    // Обновляем UI для обратной связи
+    updateDirectionButtons()
+    updateDirectionDisplay(dirX, dirY)
+
+    console.log(`🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)})`)
+  } catch (error) {
+    console.error('Ошибка установки направления:', error)
+  }
+}
 
 function resetCenter () {
   // Отправляем команду на сервер
@@ -1100,66 +1082,6 @@ function resetCenter () {
   }
 }
 
-function resetAll () {
-  // Сбрасываем все настройки к значениям по умолчанию
-  try {
-    // Останавливаем игру
-    if (globalThis.__current.isPlaying) {
-      togglePlayPause()
-    }
-
-    // Центрируем мяч
-    resetCenter()
-
-    // Сбрасываем скорость к среднему значению
-    updateSpeed(40)
-    const speedSlider = document.getElementById('fsSpeed')
-    if (speedSlider) speedSlider.value = 40
-
-    // Сбрасываем размер к базовому
-    setBallSize(20)
-
-    // Сбрасываем направление к горизонтальному
-    setDirection('horizontal')
-
-    // Сбрасываем цвет мяча к красному
-    setBallColor('#ef4444')
-
-    // Сбрасываем фон к чёрному
-    setBackgroundColor('#000000')
-
-    // Сбрасываем счётчики
-    if (window.counters) {
-      window.counters.resetAll()
-    }
-
-    console.log('Все настройки сброшены к значениям по умолчанию')
-  } catch {
-    console.error('Ошибка при сбросе настроек')
-  }
-}
-
-function resetSession () {
-  // Закрываем текущий WebSocket
-  if (wsClient) wsClient.disconnect()
-
-  fetch('/api/session', { method: 'POST' }).then(response => {
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-    }
-    return response.json()
-  }).then(data => {
-    const newSessionId = data.sessionId
-
-    // Обновляем URL и перезагружаем страницу
-    const newUrl = new URL(window.location)
-    newUrl.searchParams.set('sessionId', newSessionId)
-    window.location.href = newUrl.toString()
-  }).catch(error => {
-    console.error('Ошибка при сбросе сессии')
-  })
-}
-
 function setBallColor (color) {
   // Оптимизация: меньше обновлений когда нет вьювера
   if (!window.__current.viewerConnected) {
@@ -1169,14 +1091,7 @@ function setBallColor (color) {
   safeSend(WS_MSG.controllerUpdate, { colorBall: color })
 }
 
-function setBgColor (color) {
-  // Оптимизация: меньше обновлений когда нет вьювера
-  if (!window.__current.viewerConnected) {
-    // Тихо пропускаем обновление цвета фона
-    return
-  }
-  safeSend(WS_MSG.controllerUpdate, { colorBg: color })
-}
+
 
 function setBallSize (size) {
   // Оптимизация: меньше обновлений когда нет вьювера
@@ -1220,6 +1135,73 @@ function setBackgroundColor (color) {
 
 // Глобальная переменная для отслеживания текущего направления
 // let currentDirectionMode = 'horizontal'; // Перенесено наверх
+
+/**
+ * Обновляет состояние кнопок направления
+ */
+function updateDirectionButtons () {
+  // Обновляем активное состояние кнопок направления в основном интерфейсе
+  const directionButtons = document.querySelectorAll('[data-direction]')
+  directionButtons.forEach(button => {
+    const buttonDirection = button.getAttribute('data-direction')
+    if (buttonDirection === currentDirectionMode) {
+      button.classList.add('active')
+    } else {
+      button.classList.remove('active')
+    }
+  })
+
+  // Обновляем кнопки направления в полноэкранном режиме
+  const fsDirectionButtons = document.querySelectorAll('[data-fs-direction]')
+  fsDirectionButtons.forEach(button => {
+    const buttonDirection = button.getAttribute('data-fs-direction')
+    if (buttonDirection === currentDirectionMode) {
+      button.classList.add('active')
+    } else {
+      button.classList.remove('active')
+    }
+  })
+}
+
+/**
+ * Обновляет индикатор направления и отображает информацию о текущем направлении
+ */
+function updateDirectionDisplay (dirX, dirY) {
+  try {
+    // Ищем элемент для отображения направления
+    const directionDisplay = document.getElementById('currentDirection')
+    if (directionDisplay) {
+      let directionText = 'Неизвестно'
+      let directionIcon = '❓'
+
+      if (Math.abs(dirX) > 0.9 && Math.abs(dirY) < 0.1) {
+        directionText = 'Горизонтальное'
+        directionIcon = '↔️'
+      } else if (Math.abs(dirY) > 0.9 && Math.abs(dirX) < 0.1) {
+        directionText = 'Вертикальное'
+        directionIcon = '↕️'
+      } else if (dirX > 0 && dirY > 0) {
+        directionText = 'Диагональ (право-вниз)'
+        directionIcon = '↘️'
+      } else if (dirX > 0 && dirY < 0) {
+        directionText = 'Диагональ (право-верх)'
+        directionIcon = '↗️'
+      }
+
+      directionDisplay.innerHTML = `${directionIcon} <span>${directionText}</span>`
+    }
+
+    // Обновляем иконку направления в полноэкранном режиме
+    const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
+    if (fsDirectionDisplay) {
+      fsDirectionDisplay.innerHTML = directionDisplay ? directionDisplay.innerHTML : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
+    }
+
+    console.log(`🎯 Отображение направления обновлено: ${directionText} (${dirX.toFixed(2)}, ${dirY.toFixed(2)})`)
+  } catch (error) {
+    console.error('Ошибка обновления отображения направления:', error)
+  }
+}
 
 function updatePlayPauseButton () {
   const button = document.getElementById('playPauseBtn')
@@ -1291,19 +1273,6 @@ function togglePlayPause () {
   syncFsPlayPauseButton()
 }
 
-// Устаревшие функции (оставлены для совместимости)
-function resumePlay () {
-  if (!isPlaying) {
-    togglePlayPause()
-  }
-}
-
-function pausePlay () {
-  if (isPlaying) {
-    togglePlayPause()
-  }
-}
-
 // ===== УТИЛИТЫ =====
 
 /**
@@ -1344,28 +1313,6 @@ function getScaledState (state) {
   else if (typeof state.radius === 'number') scaledState.radius = state.radius * scaleRadius
 
   return scaledState
-}
-
-function copy (id) {
-  const element = document.getElementById(id)
-  if (!element) return
-  element.select()
-  navigator.clipboard.writeText(element.value)
-    .then(() => {
-      const btn = (globalThis.event && globalThis.event.target) || null
-      if (btn) {
-        const originalText = btn.textContent
-        btn.textContent = '✅ Скопировано!'
-        setTimeout(() => { btn.textContent = originalText }, 2000)
-      }
-    })
-    .catch(err => {
-      console.warn('Failed to copy to clipboard')
-    })
-}
-
-function goBack () {
-  globalThis.location.href = '/'
 }
 
 function updateViewerStatusUI () {

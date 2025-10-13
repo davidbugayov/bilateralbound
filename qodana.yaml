@@ -1,10 +1,5 @@
-version: "1.0"
-# Для аутентификации в Qodana Cloud получите токен на https://qodana.cloud
-# и установите переменную окружения QODANA_TOKEN
-bootstrap: "https://qodana.cloud"
-project:
-  name: "xPEo1"
-organization:
-  name: "eo1V5"
+version: '1.0'
+profile:
+  name: qodana.starter
 include:
   - name: RegExpSimplifiable

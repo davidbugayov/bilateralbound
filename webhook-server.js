@@ -49,8 +49,8 @@ function log(message, level = 'INFO') {
 
   try {
     fs.appendFileSync(CONFIG.logFile, logMessage);
-  } catch (ignored) {
-    console.error('Failed to write to log file:', ignored);
+  } catch {
+    console.error('Failed to write to log file');
   }
 }
 
@@ -188,8 +188,8 @@ async function deploy(environment, ref) {
     log(`Stopping service: ${env.serviceName}`);
     try {
       await executeCommand(`systemctl stop ${env.serviceName}`, env.workDir);
-    } catch (ignored) {
-      log(`Service was not running: ${ignored.message}`, 'WARN');
+    } catch {
+      log(`Service was not running`, 'WARN');
     }
 
     // 2.5. Гарантированно освобождаем порт
@@ -198,7 +198,7 @@ async function deploy(environment, ref) {
       await executeCommand(`lsof -ti:${env.port} | xargs -r kill -9`, env.workDir);
       log(`Process on port ${env.port} was killed.`);
       await new Promise(resolve => setTimeout(resolve, 1000)); // Пауза в 1 секунду для освобождения порта
-    } catch (ignored) {
+    } catch {
       log(`Port ${env.port} was likely already free.`, 'INFO');
     }
 
@@ -243,8 +243,8 @@ async function deploy(environment, ref) {
     // Пытаемся запустить сервис обратно
     try {
       await executeCommand(`systemctl start ${env.serviceName}`, env.workDir);
-    } catch (ignored) {
-      log(`Failed to restart service: ${ignored.message}`, 'ERROR');
+    } catch {
+      log(`Failed to restart service`, 'ERROR');
     }
 
     throw error;
