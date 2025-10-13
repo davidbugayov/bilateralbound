@@ -2,7 +2,7 @@ module.exports = {
   testEnvironment: 'jsdom',
   collectCoverage: true,
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
   coverageThreshold: {
     global: {
       branches: 80,
@@ -16,7 +16,7 @@ module.exports = {
     '**/test/**/*.spec.js'
   ],
   setupFilesAfterEnv: ['<rootDir>/test/setup.js'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/public/js/$1'
   },
   collectCoverageFrom: [

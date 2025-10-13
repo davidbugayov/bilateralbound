@@ -1,13 +1,13 @@
 {
   "name": "bilateralbound",
-  "version": "2.65.0",
+  "version": "2.65.1",
   "description": "Real-time EMDR therapy tool with scalable architecture",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
     "build": "webpack --mode=production",
-    "test": "npm run test:server && npm run test:automated && npm run test:ui",
+    "test": "jest --coverage",
     "test:server": "node -c server/index.js && echo '✅ Server syntax OK'",
     "test:automated": "node test/automated-tests.js",
     "test:quick": "node test/automated-tests.js",
