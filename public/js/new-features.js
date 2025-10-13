@@ -70,7 +70,7 @@ class FeatureManager {
           return { ...defaultPresets, ...saved }
         }
       }
-    } catch (ignored) {
+    } catch {
       console.warn('Не удалось загрузить сохранённые пресеты')
     }
     return defaultPresets
@@ -132,7 +132,7 @@ class FeatureManager {
 
       // Показываем уведомление
       this.showNotification(`Пресет "${Object.keys(this.presets).find(key => this.presets[key] === preset)}" применён`, 'success')
-    } catch (error) {
+    } catch {
       this.showNotification('Ошибка применения пресета', 'error')
     }
   }
@@ -161,7 +161,7 @@ class FeatureManager {
   savePresets () {
     try {
       localStorage.setItem('bb_presets', JSON.stringify(this.presets))
-    } catch (ignored) {
+    } catch {
       console.warn('Не удалось сохранить пресеты')
     }
   }
@@ -466,7 +466,7 @@ class FeatureManager {
   saveSessions () {
     try {
       localStorage.setItem('bb_sessions', JSON.stringify(this.sessions))
-    } catch (ignored) {
+    } catch {
       console.warn('Не удалось сохранить сессии')
     }
   }
@@ -474,7 +474,7 @@ class FeatureManager {
   loadCurrentSessionId () {
     try {
       return localStorage.getItem('bb_current_session') || null
-    } catch (ignored) {
+    } catch {
       return null
     }
   }

@@ -345,7 +345,7 @@ class BallRenderer {
       this._cached.color = null
       this._cached.gradient = null
       this._cached.path = null
-    } catch (ignored) {
+    } catch {
     }
   }
 
@@ -373,8 +373,8 @@ class BallRenderer {
           // Тихо восстанавливаем контекст канваса
           return true
         }
-      } catch (ignored) {
-      }
+    } catch {
+    }
       return false
     }
 
@@ -449,7 +449,7 @@ class BallRenderer {
 
       // Рисуем шарик
       this.renderBall(state)
-    } catch (ignored) {
+    } catch {
     }
   }
 

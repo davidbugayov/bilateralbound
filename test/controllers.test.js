@@ -4,7 +4,7 @@
 import { SessionController } from '../public/js/controllers/SessionController.js';
 import { UIController } from '../public/js/controllers/UIController.js';
 import { WebSocketController } from '../public/js/controllers/WebSocketController.js';
-import PreviewController from '../public/js/controllers/PreviewController.js';
+// import PreviewController from '../public/js/controllers/PreviewController.js';
 import CountersController from '../public/js/controllers/CountersController.js';
 
 // Mock dependencies
