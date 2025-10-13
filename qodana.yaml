@@ -1,24 +1,10 @@
 version: "1.0"
-profile:
-  name: qodana.starter
+# Для аутентификации в Qodana Cloud получите токен на https://qodana.cloud
+# и установите переменную окружения QODANA_TOKEN
+bootstrap: "https://qodana.cloud"
+project:
+  name: "xPEo1"
+organization:
+  name: "eo1V5"
 include:
   - name: RegExpSimplifiable
-exclude:
-  - name: UnusedDeclaration
-    paths:
-      - public/js/new-features.js
-      - public/js/controller.js
-      - server/session/SessionManager.js
-      - server/session/WebSocketManager.js
-  - name: JSUnusedGlobalSymbols
-    paths:
-      - public/js/new-features.js
-      - public/js/controller.js
-  - name: JSUnresolvedFunction
-    paths:
-      - public/js/new-features.js
-      - public/js/controller.js
-  - name: JSUnresolvedVariable
-    paths:
-      - public/js/new-features.js
-      - public/js/controller.js

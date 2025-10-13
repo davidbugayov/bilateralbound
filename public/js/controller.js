@@ -176,8 +176,8 @@ function detectAndCountBounceFromServer (prev, curr) {
     // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
     if (currSignX !== 0) __lastVxSign = currSignX
     if (currSignY !== 0) __lastVySign = currSignY
-  } catch (e) {
-    console.warn('Error in detectAndCountBounceFromServer:', e.message)
+  } catch {
+    console.warn('Error in detectAndCountBounceFromServer')
   }
 }
 
@@ -271,8 +271,8 @@ async function initializeController () {
     await initializeWebSocketClient(sessionId)
 
     logger.info('🔌 WebSocket клиент инициализирован, ожидаем подключения вьювера...')
-  } catch (error) {
-    console.warn('Error initializing controller:', error.message)
+  } catch {
+    console.warn('Error initializing controller')
   }
 }
 
@@ -389,7 +389,7 @@ async function initializeWebSocketClient (sessionId) {
  * Настройка обработчиков WebSocket событий
  */
 function setupWebSocketEventHandlers (wsClient, logger) {
-  wsClient.on('open', (data) => { // eslint-disable-line no-unused-vars
+  wsClient.on('open', () => {
     logger.success('WebSocket соединение установлено')
     updateConnectionStatus(true)
   })
@@ -459,9 +459,9 @@ function setupWebSocketEventHandlers (wsClient, logger) {
           }
         }
       }
-  } catch (e) {
+  } catch {
     // Тихо игнорируем, если в момент старта ещё нет канваса
-    console.warn('Canvas not ready during initial state setup:', e.message)
+    console.warn('Canvas not ready during initial state setup')
   }
 
     applyServerStateToPreview(state)
@@ -687,25 +687,21 @@ class AppError extends Error {
 async function handleInitializationError (error, logger) {
   logger.error('Критическая ошибка инициализации:', error)
 
-  let userMessage = 'Произошла неизвестная ошибка при инициализации'
-
   if (error instanceof AppError) {
     switch (error.code) {
       case 'SESSION_ID_MISSING':
-        userMessage = 'Ссылка недействительна. Попробуйте создать новую сессию.'
+        // Показываем ошибку пользователю
         break
       case 'DOM_ELEMENTS_MISSING':
-        userMessage = 'Ошибка интерфейса приложения. Попробуйте перезагрузить страницу.'
+        // Показываем ошибку пользователю
         break
       default:
-        userMessage = error.message
+        // Показываем ошибку пользователю
     }
-  } else if (error.message) {
-    userMessage = error.message
   }
 
-  // Показываем ошибку пользователю
-  // Логируем для отладки
+    // Показываем ошибку пользователю
+    // Логируем для отладки
 }
 
 // ===== СИНХРОНИЗАЦИЯ UI =====
@@ -760,8 +756,8 @@ function syncUIWithState (ballState) {
       updateDirectionButtons()
       updateDirectionDisplay(ballState.dirX, ballState.dirY)
     }
-  } catch (error) {
-    console.warn('Error in syncUIWithState:', error.message)
+  } catch {
+    console.warn('Error in syncUIWithState')
   }
 }
 
@@ -827,8 +823,8 @@ function safeSend (type, payload) {
     if (wsClient && typeof wsClient.send === 'function') {
       wsClient.send(type, payload)
     }
-  } catch (e) {
-    console.warn(`Failed to send WebSocket message: ${e.message}`)
+  } catch {
+    console.warn('Failed to send WebSocket message')
   }
 }
 
@@ -837,8 +833,8 @@ async function updateSpeed (speed) {
     // Отправляем изменение скорости всегда, даже если вьювер ещё не подключен
     // (сервер сохранит значение и применит при старте)
     safeSend(WS_MSG.controllerUpdate, { speed })
-  } catch (error) {
-    console.warn('Error updating speed:', error.message)
+  } catch {
+    console.warn('Error updating speed')
   }
 }
 
@@ -907,8 +903,8 @@ async function initializePreview () {
       previewPhysicsEngine.setPosition(canvas.width / 2, canvas.height / 2)
       previewPhysicsEngine.setVelocity(0, 0)
     }
-  } catch (error) {
-    console.warn('Error initializing preview:', error.message)
+  } catch {
+    console.warn('Error initializing preview')
   }
 }
 
@@ -1138,8 +1134,8 @@ function resetAll () {
     }
 
     console.log('Все настройки сброшены к значениям по умолчанию')
-  } catch (error) {
-    console.error('Ошибка при сбросе настроек:', error.message)
+  } catch {
+    console.error('Ошибка при сбросе настроек')
   }
 }
 
@@ -1160,7 +1156,7 @@ function resetSession () {
     newUrl.searchParams.set('sessionId', newSessionId)
     window.location.href = newUrl.toString()
   }).catch(error => {
-    console.error('Ошибка при сбросе сессии:', error.message)
+    console.error('Ошибка при сбросе сессии')
   })
 }
 
@@ -1364,7 +1360,7 @@ function copy (id) {
       }
     })
     .catch(err => {
-      console.warn(`Failed to copy to clipboard: ${err.message}`)
+      console.warn('Failed to copy to clipboard')
     })
 }
 
@@ -1608,7 +1604,7 @@ function fillFsSessionInfo () {
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')
     if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`
-  } catch (e) {
-    console.warn(`Error in fillFsSessionInfo: ${e.message}`)
+  } catch {
+    console.warn('Error in fillFsSessionInfo')
   }
 }

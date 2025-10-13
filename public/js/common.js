@@ -71,7 +71,7 @@ const toggleFullscreen = (globalThis.CommonUtils && typeof globalThis.CommonUtil
         } else {
           return enter(el).then(() => true).catch(() => false)
         }
-  } catch (_ignored) {
+  } catch {
     return Promise.resolve(false)
   }
     }
