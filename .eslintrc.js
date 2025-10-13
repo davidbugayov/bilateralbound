@@ -5,6 +5,9 @@ module.exports = {
     node: true
   },
   extends: ['standard'],
+  parserOptions: {
+    sourceType: 'module'
+  },
   globals: {
     WS_MSG: 'readonly',
     WebSocketClient: 'readonly',
@@ -17,7 +20,7 @@ module.exports = {
     getSessionIdFromUrl: 'readonly'
   },
   rules: {
-    'no-unused-vars': 'warn',
+    'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
     'no-undef': 'error'
   }
 }

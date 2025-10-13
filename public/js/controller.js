@@ -272,7 +272,7 @@ async function initializeController () {
 
     logger.info('🔌 WebSocket клиент инициализирован, ожидаем подключения вьювера...')
   } catch (error) {
-    console.warn('Error updating speed:', error.message)
+    console.warn('Error initializing controller:', error.message)
   }
 }
 
@@ -408,7 +408,7 @@ function setupWebSocketEventHandlers (wsClient, logger) {
     }
   })
 
-  wsClient.on(WS_MSG.viewerStatus, (data) => { // eslint-disable-line no-unused-vars
+  wsClient.on(WS_MSG.viewerStatus, (data) => {
     logger.info('Получен статус viewer', data)
     window.__current.viewerConnected = data.connected
     if (data.screenSize) {
@@ -1565,7 +1565,7 @@ function wireFullscreenControls () {
   const speed = document.getElementById('fsSpeed')
   if (speed) {
     speed.value = components?.speed ? components.speed.getSpeed() : 40
-    speed.oninput = (e) => updateSpeed(Number(e.target.value)) // eslint-disable-line no-unused-vars
+    speed.oninput = (e) => updateSpeed(Number(e.target.value))
   }
 
   const size1 = document.getElementById('fsSize1')

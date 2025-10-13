@@ -71,9 +71,9 @@ const toggleFullscreen = (globalThis.CommonUtils && typeof globalThis.CommonUtil
         } else {
           return enter(el).then(() => true).catch(() => false)
         }
-      } catch (ignored) {
-        return Promise.resolve(false)
-      }
+  } catch (_ignored) {
+    return Promise.resolve(false)
+  }
     }
   })()
 const throttle = (globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function')
