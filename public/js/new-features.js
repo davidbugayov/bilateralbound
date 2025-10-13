@@ -14,7 +14,6 @@ class FeatureManager {
     this.currentSessionId = this.loadCurrentSessionId()
     this.initFeatures()
   }
-
   /**
    * Инициализация новых функций
    */
@@ -71,7 +70,7 @@ class FeatureManager {
           return { ...defaultPresets, ...saved }
         }
       }
-    } catch (e) {
+    } catch (ignored) {
       console.warn('Не удалось загрузить сохранённые пресеты')
     }
     return defaultPresets
@@ -162,7 +161,7 @@ class FeatureManager {
   savePresets () {
     try {
       localStorage.setItem('bb_presets', JSON.stringify(this.presets))
-    } catch (error) {
+    } catch (ignored) {
       console.warn('Не удалось сохранить пресеты')
     }
   }
@@ -458,7 +457,7 @@ class FeatureManager {
       if (parsed && typeof parsed === 'object' && parsed.sessions && Array.isArray(parsed.sessions)) {
         return parsed.sessions
       }
-    } catch (e) {
+    } catch (ignored) {
       console.warn('Не удалось загрузить сохранённые сессии')
     }
     return []
@@ -467,7 +466,7 @@ class FeatureManager {
   saveSessions () {
     try {
       localStorage.setItem('bb_sessions', JSON.stringify(this.sessions))
-    } catch (e) {
+    } catch (ignored) {
       console.warn('Не удалось сохранить сессии')
     }
   }
@@ -475,7 +474,7 @@ class FeatureManager {
   loadCurrentSessionId () {
     try {
       return localStorage.getItem('bb_current_session') || null
-    } catch (e) {
+    } catch (ignored) {
       return null
     }
   }
@@ -487,7 +486,7 @@ class FeatureManager {
       } else {
         localStorage.removeItem('bb_current_session')
       }
-    } catch (e) { // eslint-disable-line no-unused-vars
+    } catch (ignored) {
       // ignore
     }
     this.currentSessionId = id || null
@@ -782,7 +781,7 @@ class FeatureManager {
       const nameTxt = current?.name ? `Название: ${current.name}` : 'Название: —'
       const createdTxt = current?.createdAt ? ` • Создана: ${new Date(current.createdAt).toLocaleString()}` : ''
       el.textContent = `${nameTxt}${createdTxt}`
-    } catch (e) { // eslint-disable-line no-unused-vars
+    } catch (ignored) {
       // ignore
     }
   }

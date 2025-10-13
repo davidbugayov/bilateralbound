@@ -183,7 +183,33 @@ function setupExpressApp (sessionManager, apiCache) {
 
   app.get('/test/:file', (req, res) => {
     const file = req.params.file
-    res.sendFile(path.join(__dirname, '..', '..', 'test', file))
+    // Валидация имени файла для предотвращения path traversal атак
+    if (!file || typeof file !== 'string') {
+      return res.status(400).json({ error: 'Invalid file parameter', requestId: req.id })
+    }
+
+    // Проверяем на опасные символы и паттерны
+    if (file.includes('..') || file.includes('/') || file.includes('\\') || file.includes('\0')) {
+      return res.status(400).json({ error: 'Invalid file name', requestId: req.id })
+    }
+
+    // Разрешаем только безопасные расширения файлов
+    const allowedExtensions = ['.html', '.css', '.js', '.json', '.txt', '.md']
+    const fileExt = path.extname(file).toLowerCase()
+    if (!allowedExtensions.includes(fileExt)) {
+      return res.status(400).json({ error: 'File type not allowed', requestId: req.id })
+    }
+
+    // Строим безопасный путь
+    const safePath = path.resolve(__dirname, '..', '..', 'test', file)
+
+    // Проверяем, что файл действительно находится в директории test
+    const testDir = path.resolve(__dirname, '..', '..', 'test')
+    if (!safePath.startsWith(testDir)) {
+      return res.status(403).json({ error: 'Access denied', requestId: req.id })
+    }
+
+    res.sendFile(safePath)
   })
 
   // 404 handler
@@ -192,8 +218,7 @@ function setupExpressApp (sessionManager, apiCache) {
   })
 
   // Centralized error handler
-  // eslint-disable-next-line no-unused-vars
-  app.use((err, req, res, next) => {
+  app.use((err, req, res) => {
     const status = err.status || 500
     const message = err.message || 'Internal Server Error'
     if (DEBUG_MODE) logger.error(`[${req.id}] ${status} ${message}`)

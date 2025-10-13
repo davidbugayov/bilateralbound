@@ -4,17 +4,16 @@
  */
 
 /* exported setDir, setDirection, setDirFromDirection, resetCenter, resetSession, resumePlay, pausePlay, copy, goBack */
-/* eslint-disable no-unused-vars */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
-window.__current = {
+globalThis.__current = {
   sessionId: null,
   viewerConnected: false,
   viewerScreenSize: { width: 0, height: 0 }
 }
 
 // 2. Рендерер для превью
-window.__previewRenderer = null
-window.__previewScale = 1 // Коэффициент масштабирования
+globalThis.__previewRenderer = null
+globalThis.__previewScale = 1 // Коэффициент масштабирования
 
 // 3. Глобальные переменные для логики контроллера
 const components = {}
@@ -33,7 +32,6 @@ let __ignoreServerPausedUntilTs = 0 // Кратковременная блоки
 
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
-const lastPreviewRenderTime = 0 // eslint-disable-line no-unused-vars
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
 if (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.rendering && typeof window.BBConfig.rendering.hiddenThrottleMs === 'number') {
   hiddenThrottleMs = window.BBConfig.rendering.hiddenThrottleMs
@@ -179,7 +177,7 @@ function detectAndCountBounceFromServer (prev, curr) {
     if (currSignX !== 0) __lastVxSign = currSignX
     if (currSignY !== 0) __lastVySign = currSignY
   } catch (e) {
-    // ignore
+    console.warn('Error in detectAndCountBounceFromServer:', e.message)
   }
 }
 
@@ -192,14 +190,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // При изменении размера окна контроллера — пересчитать превью по текущим размерам вьювера
   window.addEventListener('resize', () => {
-    const size = window.__current && window.__current.viewerScreenSize
-    if (size && size.width > 0 && size.height > 0) {
+    const size = window.__current?.viewerScreenSize
+    if (size?.width > 0 && size?.height > 0) {
       updatePreviewSize(size)
     }
   })
 })
-
-/**
+  /**
  * Современная инициализация контроллера с улучшенной обработкой ошибок
  */
 async function initializeController () {
@@ -214,7 +211,6 @@ async function initializeController () {
       throw new AppError('SESSION_ID_MISSING', 'ID сессии не найден в URL')
     }
 
-    window.__current.sessionId = sessionId
     logger.info(`📋 Работаем с сессией: ${sessionId}`)
 
     // 2. Инициализация DOM элементов - делаем это сразу
@@ -327,7 +323,7 @@ async function initializeDOMElements (sessionId) {
 
   // Настройка элементов
   initializedElements.curSid.textContent = sessionId
-  initializedElements.view.value = `${window.location.origin}/s/${sessionId}`
+
   initializedElements.sessionInfo.textContent = `Создана: ${new Date().toLocaleString()}`
   initializedElements.viewerStatus.textContent = 'Ожидание...'
 
@@ -567,7 +563,7 @@ function physicsLoop () {
 }
 
 function renderPreviewLoop (timestamp) {
-  if (!previewPhysicsEngine || !window.__previewRenderer) {
+  if (!previewPhysicsEngine || !globalThis.__previewRenderer) {
     requestAnimationFrame(renderPreviewLoop)
     return
   }
@@ -585,7 +581,7 @@ function renderPreviewLoop (timestamp) {
   const stateToRender = getScaledState(interpolatedState)
 
   // Рендерим кадр
-  window.__previewRenderer.drawFrame(stateToRender)
+  globalThis.__previewRenderer.drawFrame(stateToRender)
 
   if (document.hidden) {
     setTimeout(() => requestAnimationFrame(renderPreviewLoop), hiddenThrottleMs)
@@ -745,7 +741,7 @@ function syncUIWithState (ballState) {
       updateDirectionDisplay(ballState.dirX, ballState.dirY)
     }
   } catch (error) {
-    // ignore
+    console.warn('Error in syncUIWithState:', error.message)
   }
 }
 
@@ -811,7 +807,9 @@ function safeSend (type, payload) {
     if (wsClient && typeof wsClient.send === 'function') {
       wsClient.send(type, payload)
     }
-  } catch (_) {}
+  } catch (e) {
+    console.warn(`Failed to send WebSocket message: ${e.message}`)
+  }
 }
 
 async function updateSpeed (speed) {
@@ -879,9 +877,7 @@ async function initializePreview () {
       // Дополнительная логика для превью может быть добавлена здесь
     })
 
-    window.__previewCanvas = canvas
-
-    // window.__previewRenderer.start() // Отключаем внутренний цикл рендерера
+    globalThis.__previewCanvas = canvas
 
     // Если вьювер ещё не подключен, показываем мяч по центру превью
     if (!window.__current.viewerScreenSize || !window.__current.viewerScreenSize.width) {
@@ -905,7 +901,7 @@ function showWaitingForViewer () {
 }
 
 function updatePreviewSize (viewerScreenSize) {
-  if (!viewerScreenSize || !window.__previewRenderer || !previewPhysicsEngine) {
+  if (!viewerScreenSize || !globalThis.__previewRenderer || !previewPhysicsEngine) {
     showWaitingForViewer()
     return
   }
@@ -956,12 +952,12 @@ function updatePreviewSize (viewerScreenSize) {
     previewPhysicsEngine.applyCommand(lastServerState)
   } else {
     // Если нет состояния сервера, но есть размеры вьювера, центрируем мяч относительно них
-    if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
-      const viewerCenterX = window.__current.viewerScreenSize.width / 2
-      const viewerCenterY = window.__current.viewerScreenSize.height / 2
+    if (globalThis.__current.viewerScreenSize && globalThis.__current.viewerScreenSize.width > 0) {
+      const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
+      const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
 
-      const scaleX = canvas.width / window.__current.viewerScreenSize.width
-      const scaleY = canvas.height / window.__current.viewerScreenSize.height
+      const scaleX = canvas.width / globalThis.__current.viewerScreenSize.width
+      const scaleY = canvas.height / globalThis.__current.viewerScreenSize.height
 
       const previewCenterX = viewerCenterX * scaleX
       const previewCenterY = viewerCenterY * scaleY
@@ -1066,14 +1062,14 @@ function resetCenter () {
   safeSend(WS_MSG.controllerUpdate, { reset: true })
 
   // И немедленно центрируем мяч в локальном превью для мгновенной обратной связи
-  if (previewPhysicsEngine && previewCanvas && window.__current.viewerScreenSize) {
+  if (previewPhysicsEngine && previewCanvas && globalThis.__current.viewerScreenSize) {
     // Центрируем относительно размеров вьювера, а не превью
-    const viewerCenterX = window.__current.viewerScreenSize.width / 2
-    const viewerCenterY = window.__current.viewerScreenSize.height / 2
+    const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
+    const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
 
     // Масштабируем центр вьювера к размерам превью
-    const scaleX = previewCanvas.width / window.__current.viewerScreenSize.width
-    const scaleY = previewCanvas.height / window.__current.viewerScreenSize.height
+    const scaleX = previewCanvas.width / globalThis.__current.viewerScreenSize.width
+    const scaleY = previewCanvas.height / globalThis.__current.viewerScreenSize.height
 
     const previewCenterX = viewerCenterX * scaleX
     const previewCenterY = viewerCenterY * scaleY
@@ -1092,7 +1088,7 @@ function resetAll () {
   // Сбрасываем все настройки к значениям по умолчанию
   try {
     // Останавливаем игру
-    if (window.__current.isPlaying) {
+    if (globalThis.__current.isPlaying) {
       togglePlayPause()
     }
 
@@ -1184,17 +1180,17 @@ function setBallSizeMultiplier (multiplier) {
 
 function setBackgroundColor (color) {
   // Отправляем изменение на сервер
-  if (window.__current.viewerConnected) {
+  if (globalThis.__current.viewerConnected) {
     safeSend(WS_MSG.controllerUpdate, { colorBg: color })
   }
 
   // Обновляем фон в превью
-  if (window.previewRenderer) {
-    window.previewRenderer.setBackgroundColor(color)
+  if (globalThis.previewRenderer) {
+    globalThis.previewRenderer.setBackgroundColor(color)
   }
   // Обновляем фон в полноэкранном превью
-  if (window.fullscreenPreviewRenderer) {
-    window.fullscreenPreviewRenderer.setBackgroundColor(color)
+  if (globalThis.fullscreenPreviewRenderer) {
+    globalThis.fullscreenPreviewRenderer.setBackgroundColor(color)
   }
 }
 
@@ -1298,12 +1294,12 @@ function pausePlay () {
  * Масштабирует состояние вьювера к размерам превью
  */
 function getScaledState (state) {
-  if (!window.__current.viewerScreenSize || !window.__previewCanvas || !state) {
+  if (!globalThis.__current.viewerScreenSize || !globalThis.__previewCanvas || !state) {
     return state // Возвращаем как есть, если нет данных для масштабирования
   }
 
-  const viewerSize = window.__current.viewerScreenSize
-  const previewSize = { width: window.__previewCanvas.width, height: window.__previewCanvas.height }
+  const viewerSize = globalThis.__current.viewerScreenSize
+  const previewSize = { width: globalThis.__previewCanvas.width, height: globalThis.__previewCanvas.height }
 
   if (viewerSize.width <= 0 || viewerSize.height <= 0) {
     return state
@@ -1340,20 +1336,20 @@ function copy (id) {
   element.select()
   navigator.clipboard.writeText(element.value)
     .then(() => {
-      const btn = (window.event && window.event.target) || null
+      const btn = (globalThis.event && globalThis.event.target) || null
       if (btn) {
         const originalText = btn.textContent
         btn.textContent = '✅ Скопировано!'
         setTimeout(() => { btn.textContent = originalText }, 2000)
       }
     })
-    .catch(err => { // eslint-disable-line no-unused-vars
-      // ignore
+    .catch(err => {
+      console.warn(`Failed to copy to clipboard: ${err.message}`)
     })
 }
 
 function goBack () {
-  window.location.href = '/'
+  globalThis.location.href = '/'
 }
 
 function updateViewerStatusUI () {
@@ -1587,10 +1583,12 @@ function wireFullscreenControls () {
 
 function fillFsSessionInfo () {
   try {
-    const sid = window.__current?.sessionId || '...'
+    const sid = globalThis.__current?.sessionId || '...'
     const fsSid = document.getElementById('fsCurSid')
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')
-    if (fsLink) fsLink.value = `${window.location.origin}/s/${sid}`
-  } catch (e) { /* ignore */ }
+    if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`
+  } catch (e) {
+    console.warn(`Error in fillFsSessionInfo: ${e.message}`)
+  }
 }

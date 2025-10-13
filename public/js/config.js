@@ -1,6 +1,6 @@
 (function () {
-  if (typeof window === 'undefined') return
-  window.BBConfig = window.BBConfig || {
+  if (typeof globalThis === 'undefined') return
+  globalThis.BBConfig = globalThis.BBConfig || {
     // Оптимизированные настройки рендеринга для плавного движения
     rendering: {
       hiddenThrottleMs: 100, // при скрытой вкладке ~10 FPS

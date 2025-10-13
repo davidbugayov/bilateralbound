@@ -1,4 +1,4 @@
- /**
+/**
  * PhysicsEngine - оптимизированный движок физики для BilateralBound
  * Управляет движением, отскоками и масштабированием шарика
  * Оптимизирован для производительности и переиспользования
@@ -87,7 +87,6 @@ class PhysicsEngine {
     if (!opts || typeof opts !== 'object') return
     this.options.smoothing = { ...this.options.smoothing, ...opts }
   }
-
   /**
    * Применяет пресет для плавности движения
    */
@@ -629,7 +628,7 @@ class PhysicsEngine {
         const ev = new CustomEvent('bb_bounce', { detail: { x: this.ball.x, y: this.ball.y } })
         window.dispatchEvent(ev)
       }
-    } catch (_) {
+    } catch (ignored) {
       // ignore
     }
   }

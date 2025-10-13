@@ -4,26 +4,25 @@
  */
 
 // Условное логирование только в режиме разработки
-const debugLog = (typeof window !== 'undefined' && window.debugLog) ? window.debugLog : () => {}
-const debugError = (typeof window !== 'undefined' && window.debugError) ? window.debugError : () => {}
-const debugWarn = (typeof window !== 'undefined' && window.debugWarn) ? window.debugWarn : () => {}
+const debugLog = (typeof globalThis !== 'undefined' && globalThis.debugLog) ? globalThis.debugLog : () => {}
+const debugError = (typeof globalThis !== 'undefined' && globalThis.debugError) ? globalThis.debugError : () => {}
+const debugWarn = (typeof globalThis !== 'undefined' && globalThis.debugWarn) ? globalThis.debugWarn : () => {}
 
 // Используем общие утилиты, если доступны, иначе fallback
-const getSessionIdFromUrl = window.CommonUtils
-  ? window.CommonUtils.getSessionIdFromUrl
+const getSessionIdFromUrl = globalThis.CommonUtils
+  ? globalThis.CommonUtils.getSessionIdFromUrl
   : function () {
-    const path = window.location.pathname
+    const path = globalThis.location.pathname
     const parts = path.split('/')
     if ((parts[1] === 'c' || parts[1] === 's') && parts[2]) {
       return parts[2]
     }
-    const urlParams = new URLSearchParams(window.location.search)
+    const urlParams = new URLSearchParams(globalThis.location.search)
     return urlParams.get('sessionId')
   }
 
-/* eslint-disable no-unused-vars */
-const toggleFullscreen = (window.CommonUtils && typeof window.CommonUtils.toggleFullscreen === 'function')
-  ? window.CommonUtils.toggleFullscreen
+const toggleFullscreen = (globalThis.CommonUtils && typeof globalThis.CommonUtils.toggleFullscreen === 'function')
+  ? globalThis.CommonUtils.toggleFullscreen
   : (function () {
     // Robust fullscreen toggle fallback using the Fullscreen API
     const canFullscreen = () => {
@@ -72,13 +71,13 @@ const toggleFullscreen = (window.CommonUtils && typeof window.CommonUtils.toggle
         } else {
           return enter(el).then(() => true).catch(() => false)
         }
-      } catch (_) {
+      } catch (ignored) {
         return Promise.resolve(false)
       }
     }
   })()
-const throttle = (window.CommonUtils && typeof window.CommonUtils.throttle === 'function')
-  ? window.CommonUtils.throttle
+const throttle = (globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function')
+  ? globalThis.CommonUtils.throttle
   : function (fn, wait = 100) {
     if (typeof fn !== 'function') return () => {}
     let last = 0
@@ -105,16 +104,17 @@ const throttle = (window.CommonUtils && typeof window.CommonUtils.throttle === '
       }
     }
   }
-/* eslint-enable no-unused-vars */
 
 // Экспортируем для использования
-if (typeof window !== 'undefined') {
-  window.debugLog = debugLog
-  window.debugError = debugError
-  window.debugWarn = debugWarn
-  window.getSessionIdFromUrl = getSessionIdFromUrl
+if (typeof globalThis !== 'undefined') {
+  globalThis.debugLog = debugLog
+  globalThis.debugError = debugError
+  globalThis.debugWarn = debugWarn
+  globalThis.getSessionIdFromUrl = getSessionIdFromUrl
+  globalThis.toggleFullscreen = toggleFullscreen
+  globalThis.throttle = throttle
   // Единые типы WS-сообщений (без изменения логики)
-  window.WS_MSG = Object.freeze({
+  globalThis.WS_MSG = Object.freeze({
     controllerUpdate: 'controller_update',
     heartbeat: 'heartbeat',
     initialState: 'initial_state',
