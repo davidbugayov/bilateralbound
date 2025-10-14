@@ -3,11 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=0.98, maximum-scale=0.98, user-scalable=no, viewport-fit=cover" />
-  <meta http-equiv="Cache-Control" content="public, max-age=3600" />
-  <meta http-equiv="Pragma" content="cache" />
-  <meta http-equiv="Expires" content="3600" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
-  <!-- SEO Meta Tags -->
   <title>BilateralBound - EMDR терапия контроллер</title>
   <meta name="description" content="EMDR терапия контроллер для управления биодинамической стимуляцией. Инструмент для EMDR терапевта при проведении парной терапии" />
   <meta name="keywords" content="EMDR терапия, EMDR контроллер, биодинамическая стимуляция, парная терапия, психолог для пар, управление сессией" />
@@ -15,16 +14,13 @@
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#2563eb" />
 
-  <!-- EMDR Specific Meta Tags -->
   <meta name="therapy-type" content="EMDR Controller" />
   <meta name="target-audience" content="EMDR Therapists, Couples Therapists" />
 
-  <!-- Preload critical resources -->
   <link rel="preload" href="/js/common.js" as="script" />
   <link rel="preload" href="/css/common.css" as="style" />
   <link rel="preload" href="/css/shared-components.css?v=202501031200" as="style" />
 
-  <!-- Favicon for Controller -->
   <link rel="icon" type="image/svg+xml" href="/favicon-controller.svg?v=202509031200" />
   <link rel="icon" type="image/x-icon" href="/favicon-controller.ico?v=202509031200" />
   <link rel="apple-touch-icon" href="/favicon-controller.svg?v=202509031200" />
@@ -33,10 +29,8 @@
   <link rel="stylesheet" href="/css/common.css">
   <link rel="stylesheet" href="/css/shared-components.css?v=202501031200">
   <link rel="stylesheet" href="/css/light-theme.css?v=20250103120">
+  
   <style>
-    /* Специфичные стили для session-controller.html */
-
-    /* Mobile full-bleed layout adjustments */
     html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
     *, *::before, *::after { box-sizing: border-box; }
 
@@ -66,22 +60,67 @@
       user-select: none;
     }
 
-    button { background: #2563eb; color: white; border: 0; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+    button { 
+      background: #2563eb; 
+      color: white; 
+      border: 0; 
+      padding: 10px 14px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.2s ease; 
+    }
 
-    button:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+    button:hover { 
+      background: #1d4ed8; 
+      transform: translateY(-1px); 
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    }
 
-    .btn { padding: 8px 16px; font-size: 14px; font-weight: 500; }
-    .btn.outline { background: transparent; border: 1px solid #374151; color: #9ca3af; }
-    .btn.outline:hover { background: #374151; color: white; }
+    .btn { 
+      padding: 8px 16px; 
+      font-size: 14px; 
+      font-weight: 500; 
+    }
+    .btn.outline { 
+      background: transparent; 
+      border: 1px solid #374151; 
+      color: #9ca3af; 
+    }
+    .btn.outline:hover { 
+      background: #374151; 
+      color: white; 
+    }
 
-    .color-btn { padding: 8px 16px; font-size: 14px; border-radius: 6px; transition: all 0.2s ease; }
-    .color-btn:hover { transform: scale(1.05); }
+    .color-btn { 
+      padding: 8px 16px; 
+      font-size: 14px; 
+      border-radius: 6px; 
+      transition: all 0.2s ease; 
+    }
+    .color-btn:hover { 
+      transform: scale(1.05); 
+    }
 
-    .size-btn { padding: 8px 16px; font-size: 14px; background: #374151; color: #9ca3af; border-radius: 6px; transition: all 0.2s ease; }
-    .size-btn:hover { background: #4b5563; color: white; }
-    .size-btn.active { background: #2563eb; color: white; }
+    .size-btn { 
+      padding: 8px 16px; 
+      font-size: 14px; 
+      background: #374151; 
+      color: #9ca3af; 
+      border-radius: 6px; 
+      transition: all 0.2s ease; 
+    }
+    .size-btn:hover { 
+      background: #4b5563; 
+      color: white; 
+    }
+    .size-btn.active { 
+      background: #2563eb; 
+      color: white; 
+    }
 
-    .viewer-link-container { margin: 12px 0; }
+    .viewer-link-container { 
+      margin: 12px 0; 
+    }
 
     .link-input-group {
       display: flex;
@@ -105,8 +144,20 @@
       box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
     }
 
-    .copy-btn { padding: 8px 12px; font-size: 12px; background: #374151; color: #9ca3af; border: 1px solid #4b5563; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; }
-    .copy-btn:hover { background: #4b5563; color: white; }
+    .copy-btn { 
+      padding: 8px 12px; 
+      font-size: 12px; 
+      background: #374151; 
+      color: #9ca3af; 
+      border: 1px solid #4b5563; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      transition: all 0.2s ease; 
+    }
+    .copy-btn:hover { 
+      background: #4b5563; 
+      color: white; 
+    }
 
     .speed-container {
       display: flex;
@@ -146,47 +197,129 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    /* Улучшенная компоновка внутри блока управления */
-    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-items: start; }
-    .controls-card { background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 12px; }
-    .controls-title { margin: 0 0 8px 0; font-size: 14px; color: #9ca3af; font-weight: 500; }
-    .direction-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-
-    /* Действия: улучшенная раскладка */
-    .actions-grid { display: grid; grid-template-columns: 1.2fr .9fr .9fr; gap: 8px; align-items: stretch; }
-    .actions-grid .btn { width: 100%; }
-    .actions-grid .btn.primary { font-weight: 600; }
-
-    /* Сегментированный контрол направлений */
-    .segmented { display: flex; gap: 0; border: 1px solid #1f2937; border-radius: 10px; overflow: hidden; background: #0d1526; flex-wrap: wrap; }
-    .segmented .seg-btn { flex: 1 1 25%; padding: 10px 12px; font-size: 13px; color: #9ca3af; background: transparent; border: 0; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; min-width: 0; }
-    .segmented .seg-btn + .seg-btn { border-left: 1px solid #1f2937; }
-    .segmented .seg-btn:hover { background: #152139; color: #e5e7eb; }
-    .segmented .seg-btn.active { background: #1d4ed8; color: #ffffff; }
-    .segmented .seg-btn strong { font-weight: 600; }
-
-    @media (max-width: 768px) {
-      .controls-grid { grid-template-columns: 1fr; }
-      .actions_grid { grid-template-columns: 1fr; }
-      /* На мобильных кнопки направления всегда помещаются без горизонтального скролла */
-      .segmented { flex-wrap: wrap; overflow-x: hidden; }
-      .segmented .seg-btn { flex: 1 1 25%; min-width: 0; padding: 10px 8px; font-size: 12px; }
+    .controls-grid { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 0; 
+      align-items: start; 
+    }
+    .controls-card { 
+      background: #0b1220; 
+      border: 1px solid #1f2937; 
+      border-radius: 10px; 
+      padding: 12px; 
+    }
+    .controls-title { 
+      margin: 0 0 8px 0; 
+      font-size: 14px; 
+      color: #9ca3af; 
+      font-weight: 500; 
+    }
+    .direction-row { 
+      display: flex; 
+      gap: 8px; 
+      flex-wrap: wrap; 
+      justify-content: center; 
     }
 
-    /* Внешний вид: общая сетка */
-    .appearance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; align-items: start; }
-    @media (max-width: 1024px) { .appearance-grid { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 768px) { .appearance-grid { grid-template-columns: 1fr; } }
+    .actions-grid { 
+      display: grid; 
+      grid-template-columns: 1.2fr .9fr .9fr; 
+      gap: 8px; 
+      align-items: stretch; 
+    }
+    .actions-grid .btn { 
+      width: 100%; 
+    }
+    .actions-grid .btn.primary { 
+      font-weight: 600; 
+    }
 
-    /* Мобильные стили */
+    .segmented { 
+      display: flex; 
+      gap: 0; 
+      border: 1px solid #1f2937; 
+      border-radius: 10px; 
+      overflow: hidden; 
+      background: #0d1526; 
+      flex-wrap: wrap; 
+    }
+    .segmented .seg-btn { 
+      flex: 1 1 25%; 
+      padding: 10px 12px; 
+      font-size: 13px; 
+      color: #9ca3af; 
+      background: transparent; 
+      border: 0; 
+      cursor: pointer; 
+      transition: background 0.15s ease, color 0.15s ease; 
+      min-width: 0; 
+    }
+    .segmented .seg-btn + .seg-btn { 
+      border-left: 1px solid #1f2937; 
+    }
+    .segmented .seg-btn:hover { 
+      background: #152139; 
+      color: #e5e7eb; 
+    }
+    .segmented .seg-btn.active { 
+      background: #1d4ed8; 
+      color: #ffffff; 
+    }
+    .segmented .seg-btn strong { 
+      font-weight: 600; 
+    }
+
     @media (max-width: 768px) {
-      body { padding: 0; }
+      .controls-grid { 
+        grid-template-columns: 1fr; 
+      }
+      .actions_grid { 
+        grid-template-columns: 1fr; 
+      }
+      .segmented { 
+        flex-wrap: wrap; 
+        overflow-x: hidden; 
+      }
+      .segmented .seg-btn { 
+        flex: 1 1 25%; 
+        min-width: 0; 
+        padding: 10px 8px; 
+        font-size: 12px; 
+      }
+    }
 
-      .wrap { gap: 16px; padding: 12px; }
+    .appearance-grid { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr 1fr; 
+      gap: 0; 
+      align-items: start; 
+    }
+    @media (max-width: 1024px) { 
+      .appearance-grid { 
+        grid-template-columns: 1fr 1fr; 
+      } 
+    }
+    @media (max-width: 768px) { 
+      .appearance-grid { 
+        grid-template-columns: 1fr; 
+      } 
+    }
 
-      .control-section { padding: 16px; }
-
-      .speed-container input[type="range"] { max-width: 250px; }
+    @media (max-width: 768px) {
+      body { 
+        padding: 0; 
+      }
+      .wrap { 
+        gap: 16px; 
+        padding: 12px; 
+      }
+      .control-section { 
+        padding: 16px; 
+      }
+      .speed-container input[type="range"] { 
+        max-width: 250px; 
+      }
     }
 
     .back-btn {
@@ -208,7 +341,14 @@
       color: white;
     }
 
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #1f2937; border: 1px solid #374151; border-bottom-width: 3px; border-radius: 6px; padding: 2px 6px; }
+    .kbd { 
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; 
+      background: #1f2937; 
+      border: 1px solid #374151; 
+      border-bottom-width: 3px; 
+      border-radius: 6px; 
+      padding: 2px 6px; 
+    }
   </style>
 </head>
 <body>
@@ -254,15 +394,15 @@
         <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
           Вьювер и размер экрана
         </div>
+        <button id="previewThemeToggle" class="btn outline" style="position: absolute; top: 8px; right: 8px; padding: 6px 10px; font-size: 12px; min-width: auto;">
+          🌓 Тема
+        </button>
       </div>
     </div>
 
-    <!-- Полноэкранный режим превью -->
     <div id="previewOverlay" style="display:none; position:fixed; inset:0; background:#0b1220; z-index:2000;">
       <canvas id="previewFullscreenCanvas" style="display:block; width:100vw; height:100vh; background:#020617;"></canvas>
-      <!-- Плавающая панель управления поверх -->
       <div id="previewFsPanel" style="position:absolute; top:20px; right:20px; width:320px; height:380px; background: rgba(0,0,0,0.75); border:1px solid #1f2937; padding:16px; border-radius:16px; backdrop-filter: blur(12px); transition: opacity .25s ease; opacity:1; display:grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto auto auto; gap:8px; align-items:center;">
-        <!-- SID и ссылка -->
         <div style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
           <span id="fsCurSid" style="color:#cbd5e1; font-weight:600; font-size:12px; text-align:center;">SID: ...</span>
           <div style="display:flex; align-items:center; gap:6px;">
@@ -271,13 +411,10 @@
           </div>
         </div>
         
-        <!-- Основные кнопки -->
         <button class="btn" onclick="togglePlayPause()" id="fsPlayPauseBtn" style="grid-column: 1; font-size:12px; padding:8px;">▶️ Старт</button>
         
-        <!-- Кнопка сброса -->
         <button class="btn outline" onclick="resetAll()" style="grid-column: 1 / -1; font-size:12px; padding:8px; margin-top:4px;">🔄 Сброс</button>
         
-        <!-- Направления -->
         <div style="grid-column: 1 / -1; display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
           <button class="seg-btn" id="fsDirH" style="font-size:11px; padding:6px;">↔️ Гориз</button>
           <button class="seg-btn" id="fsDirV" style="font-size:11px; padding:6px;">↕️ Вертик</button>
@@ -285,13 +422,11 @@
           <button class="seg-btn" id="fsDirDR" style="font-size:11px; padding:6px;">↖️↗️ Диаг2</button>
         </div>
         
-        <!-- Скорость -->
         <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:8px;">
           <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Скорость</label>
           <input type="range" id="fsSpeed" min="0" max="100" value="40" style="flex:1;" />
         </div>
         
-        <!-- Размеры -->
         <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:4px;">
           <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Размер</label>
           <button class="size-btn" id="fsSize1" style="font-size:10px; padding:4px 6px;">×1</button>
@@ -300,7 +435,6 @@
           <button class="size-btn" id="fsSize4" style="font-size:10px; padding:4px 6px;">×4</button>
         </div>
         
-        <!-- Цвета мяча (10 в ряд) -->
         <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:3px; margin-bottom:4px;">
           <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Мяч</label>
           <button class="color-btn" id="fsBallCol1" style="background:#60a5fa; width:14px; height:14px; padding:0; border-radius:50%;"></button>
@@ -315,7 +449,6 @@
           <button class="color-btn" id="fsBallCol10" style="background:#ffffff; width:14px; height:14px; padding:0; border-radius:50%;"></button>
         </div>
         
-        <!-- Цвета фона (10 в ряд) -->
         <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:3px;">
           <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Фон</label>
           <button class="color-btn" id="fsBg1" style="background:#020617; width:14px; height:14px; padding:0; border-radius:50%;"></button>
@@ -330,7 +463,6 @@
           <button class="color-btn" id="fsBg10" style="background:#0f172a; width:14px; height:14px; padding:0; border-radius:50%;"></button>
         </div>
         
-        <!-- Кнопка закрытия -->
         <button class="btn outline" id="exitPreviewFullscreenBtn" style="grid-column: 1 / -1; font-size:12px; padding:8px; margin-top:4px;">⤫ Закрыть</button>
       </div>
     </div>
@@ -369,19 +501,14 @@
       <div class="appearance-grid">
         <div class="controls-card">
           <p class="controls-title">🎯 Быстрые пресеты</p>
-          <div id="presetControls">
-
-          </div>
+          <div id="presetControls"></div>
         </div>
         <div class="controls-card">
           <p class="controls-title">💾 Сессии</p>
-          <div id="sessionControls">
-
-          </div>
+          <div id="sessionControls"></div>
           <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
             <button class="btn btn-gradient" onclick="createCustomPreset()">⭐ Создать пресет</button>
             <button class="btn outline" onclick="goBack()">🏠 На главную</button>
-            <button class="btn outline" id="themeToggle">🎨 Тема</button>
           </div>
         </div>
         <div class="controls-card">
@@ -416,17 +543,14 @@
     </div>
   </div>
 
-  <!-- SCRIPTS -->
   <script src="/js/common.js" defer></script>
   <script src="/js/physics-engine.js" defer></script>
   <script src="/js/renderer.js" defer></script>
   <script src="/js/shared-components.js" defer></script>
   <script src="/js/websocket-client.js" defer></script>
   <script src="/js/config.js" defer></script>
+  <script src="/js/notification-system.js" defer></script>
   <script src="/js/new-features.js" defer></script>
   <script src="/js/controller.js" defer></script>
-
-  <script>
-  </script>
 </body>
 </html>

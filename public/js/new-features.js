@@ -415,10 +415,19 @@ class FeatureManager {
    * Переключатель темы
    */
   addThemeToggle () {
+    // Основная кнопка темы
     const toggleBtn = document.getElementById('themeToggle')
-    if (!toggleBtn) return
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => this.toggleTheme())
+    }
 
-    toggleBtn.addEventListener('click', () => this.toggleTheme())
+    // Кнопка темы в превью (если существует)
+    const previewToggleBtn = document.getElementById('previewThemeToggle')
+    if (previewToggleBtn) {
+      previewToggleBtn.addEventListener('click', () => this.toggleTheme())
+    }
+
+    // Загружаем сохраненную тему
     this.loadTheme()
   }
 
@@ -796,8 +805,21 @@ class FeatureManager {
   }
 
   showNotification (message, type = 'info') {
-    // Используем существующую систему уведомлений
-    if (window.showErrorNotification) {
+    // Используем новую улучшенную систему уведомлений
+    if (window.notificationSystem) {
+      const titles = {
+        success: 'Успешно',
+        error: 'Ошибка',
+        warning: 'Внимание',
+        info: 'Информация'
+      }
+      window.notificationSystem.show({
+        type: type,
+        title: titles[type] || 'Сообщение',
+        message: message
+      })
+    } else if (window.showErrorNotification) {
+      // Fallback для старой системы
       const colors = {
         success: '#10b981',
         error: '#ef4444',

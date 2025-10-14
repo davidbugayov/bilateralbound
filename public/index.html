@@ -7,7 +7,6 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <!-- SEO Meta Tags -->
   <title>BilateralBound - EMDR терапия для пациентов</title>
   <meta name="description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
   <meta name="keywords" content="EMDR терапия, EMDR терапевт, психолог для супружеских пар, парная терапия, ПТСР лечение, биодинамическая стимуляция, bilateralbound, игра, multiplayer, шарик, физика, realtime" />
@@ -16,17 +15,11 @@
   <meta name="language" content="Russian" />
   <meta name="theme-color" content="#2563eb" />
 
-  <!-- Alternative Title for Game Sessions -->
-  <meta name="alt-title" content="BilateralBound - Создать игровую сессию" />
-  <meta name="alt-description" content="Создайте новую сессию для игры BilateralBound - интерактивной игры с управлением движением шарика в реальном времени" />
-
-  <!-- EMDR Specific Meta Tags -->
   <meta name="category" content="Health & Wellness, Mental Health" />
   <meta name="therapy-type" content="EMDR, Bilateral Stimulation" />
   <meta name="target-audience" content="Couples, Individuals, Therapists" />
   <link rel="canonical" href="https://emdrbilateral.ru/" />
 
-  <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="BilateralBound - EMDR терапия для пациентов" />
   <meta property="og:description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
@@ -44,11 +37,6 @@
   <meta property="article:tag" content="психолог для пар" />
   <meta property="article:tag" content="биодинамическая стимуляция" />
 
-  <!-- Alternative Open Graph for Game Sessions -->
-  <meta property="og:alt-title" content="BilateralBound - Создать игровую сессию" />
-  <meta property="og:alt-description" content="Создайте новую сессию для игры BilateralBound - интерактивной игры с управлением движением шарика в реальном времени" />
-
-  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="BilateralBound - EMDR терапия для пациентов" />
   <meta name="twitter:description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
@@ -56,16 +44,10 @@
   <meta name="twitter:site" content="@bilateralbound" />
   <meta name="twitter:creator" content="@bilateralbound" />
 
-  <!-- Alternative Twitter for Game Sessions -->
-  <meta name="twitter:alt-title" content="BilateralBound - Создать игровую сессию" />
-  <meta name="twitter:alt-description" content="Создайте новую сессию для игры BilateralBound - интерактивной игры с управлением движением шарика в реальном времени" />
-
-  <!-- Preload and connection hints -->
   <link rel="preload" href="./js/common.js" as="script" />
   <link rel="dns-prefetch" href="//fonts.googleapis.com" />
   <link rel="preconnect" href="https://bilateralbound.onrender.com" crossorigin>
 
-  <!-- Structured Data for SEO -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -99,13 +81,13 @@
   }
   </script>
 
-  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202501031200" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico?v=202501031200" />
   <link rel="apple-touch-icon" href="/favicon.svg?v=202501031200" />
   <link rel="shortcut icon" href="/favicon.ico?v=202501031200" />
 
   <link rel="stylesheet" href="/css/shared-components.css">
+  
   <style>
     * {
       box-sizing: border-box;
@@ -121,7 +103,7 @@
       overflow-x: hidden;
       min-height: 100vh;
       position: relative;
-      padding-bottom: 80px; /* Добавляем отступ для футера */
+      padding-bottom: 80px;
     }
 
     body::before {
@@ -232,12 +214,6 @@
       font-weight: 600;
     }
 
-    .info-card img {
-      width: 32px;
-      height: 32px;
-      filter: brightness(1.3) drop-shadow(0 0 8px rgba(96, 165, 250, 0.5));
-    }
-
     .main-button {
       background: linear-gradient(135deg, #2563eb, #7c3aed);
       color: white;
@@ -341,7 +317,6 @@
 
     .indications-card li {
       margin: 8px 0;
-      position: relative;
     }
 
     .warning-card {
@@ -373,7 +348,6 @@
       display: inline-block;
     }
 
-    /* Адаптивные стили */
     @media (max-width: 768px) {
       .wrap {
         padding: 16px;
@@ -407,130 +381,20 @@
         font-size: 1rem;
       }
     }
-  </style>
-  <!-- Load scripts for main page -->
-  <script src="./js/common.js" defer></script>
-  <script src="./js/new-features.js" defer></script>
-  
-  <!-- Логика смены темы вынесена сюда из new-features.js -->
-  <script>
-  /**
-   * Переключатель темы для BilateralBound
-   * Вынесено из new-features.js для лучшей производительности
-   */
-  class ThemeManager {
-    constructor() {
-      this.themeKey = 'bb_theme'
-      this.init()
-    }
 
-    /**
-     * Инициализация темы
-     */
-    init() {
-      this.loadTheme()
-      this.setupThemeToggle()
-    }
-
-    /**
-     * Загружает сохраненную тему
-     */
-    loadTheme() {
-      const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
-      if (savedTheme === 'light') {
-        document.body.classList.add('light-theme')
-      }
-    }
-
-    /**
-     * Переключает между темной и светлой темой
-     */
-    toggleTheme() {
-      const body = document.body
-      const isDark = body.classList.contains('light-theme')
-
-      if (isDark) {
-        body.classList.remove('light-theme')
-        localStorage.setItem(this.themeKey, 'dark')
-        this.showNotification('Тёмная тема активирована', 'success')
-      } else {
-        body.classList.add('light-theme')
-        localStorage.setItem(this.themeKey, 'light')
-        this.showNotification('Светлая тема активирована', 'success')
-      }
-    }
-
-    /**
-     * Настройка кнопки переключения темы
-     */
-    setupThemeToggle() {
-      const toggleBtn = document.getElementById('themeToggleBtn')
-      if (!toggleBtn) return
-
-      toggleBtn.addEventListener('click', () => this.toggleTheme())
-    }
-
-    /**
-     * Показывает уведомление о смене темы
-     */
-    showNotification(message, type = 'info') {
-      // Используем существующую систему уведомлений
-      if (window.showErrorNotification) {
-        const colors = {
-          success: '#10b981',
-          error: '#ef4444',
-          warning: '#f59e0b',
-          info: '#3b82f6'
-        }
-        window.showErrorNotification(message, colors[type])
-      } else {
-        // Резервный вариант с простым уведомлением
-        const notification = document.createElement('div')
-        notification.className = 'theme-notification'
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: ${type === 'success' ? '#10b981' : '#3b82f6'};
-          color: white;
-          padding: 12px 20px;
-          border-radius: 8px;
-          font-size: 14px;
-          z-index: 10000;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-          animation: slideIn 0.3s ease-out;
-        `
-        notification.textContent = message
-        document.body.appendChild(notification)
-
-        setTimeout(() => {
-          notification.style.animation = 'slideOut 0.3s ease-in forwards'
-          setTimeout(() => notification.remove(), 300)
-        }, 3000)
-      }
-    }
-  }
-
-  // Добавляем стили для анимации уведомлений
-  const style = document.createElement('style')
-  style.textContent = `
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
     .light-theme {
       background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
       color: #1e293b;
+      min-height: 100vh;
     }
+
     .light-theme .card {
       background: rgba(255, 255, 255, 0.95);
       border-color: rgba(148, 163, 184, 0.3);
       color: #1e293b;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.05);
     }
+
     .light-theme .card h1 {
       background: linear-gradient(135deg, #1e40af, #7c3aed, #059669);
       background-size: 200% 200%;
@@ -539,23 +403,96 @@
       background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+
     .light-theme .info-card {
       background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
-      border-color: rgba(59, 130, 246, 0.3);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
     }
+
     .light-theme .info-card h3 {
       color: #1e40af;
     }
+
     .light-theme .main-button {
       background: linear-gradient(135deg, #1e40af, #7c3aed);
       color: white;
+      box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
     }
-  `
-  document.head.appendChild(style)
 
-  // Инициализируем менеджер темы
-  window.themeManager = new ThemeManager()
-  </script>
+    .light-theme .main-button:hover {
+      background: linear-gradient(135deg, #1e3a8a, #6d28d9);
+      box-shadow: 0 12px 35px rgba(30, 64, 175, 0.4);
+    }
+
+    .light-theme .steps-container {
+      background: rgba(255, 255, 255, 0.8);
+      border-color: #e2e8f0;
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    .light-theme .steps-container h3 {
+      color: #92400e;
+    }
+
+    .light-theme .indications-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05));
+      border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    .light-theme .indications-card h3 {
+      color: #047857;
+    }
+
+    .light-theme .warning-card {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 146, 60, 0.05));
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    .light-theme .warning-card h3 {
+      color: #d97706;
+    }
+
+    .light-theme .card .subtitle {
+      color: #64748b;
+    }
+
+    .light-theme .footer {
+      background: rgba(248, 250, 252, 0.95);
+      border-color: rgba(148, 163, 184, 0.3);
+      color: #64748b;
+    }
+
+    .theme-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #3b82f6;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+  </style>
+  
+  <script src="./js/common.js" defer></script>
+  <script src="./js/new-features.js" defer></script>
+  
 </head>
 <body>
   <div class="wrap">
@@ -595,16 +532,13 @@
             📋 Как начать терапию:
           </h3>
           <div style="counter-reset: step-counter;">
-            <div style="counter-increment: step-counter; margin: 16px 0; padding-left: 32px; position: relative;">
-              <span style="content: counter(step-counter); position: absolute; left: 0; top: 0; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">1</span>
+            <div class="step">
               <strong>Создайте сессию</strong> — нажмите "Начать EMDR сессию"
             </div>
-            <div style="counter-increment: step-counter; margin: 16px 0; padding-left: 32px; position: relative;">
-              <span style="content: counter(step-counter); position: absolute; left: 0; top: 0; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">2</span>
+            <div class="step">
               <strong>Пригласите пациента</strong> — отправьте ссылку для просмотра
             </div>
-            <div style="counter-increment: step-counter; margin: 16px 0; padding-left: 32px; position: relative;">
-              <span style="content: counter(step-counter); position: absolute; left: 0; top: 0; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">3</span>
+            <div class="step">
               <strong>Проведите терапию</strong> — управляйте движением шарика для биодинамической стимуляции
             </div>
           </div>
@@ -634,16 +568,14 @@
         </div>
         <div style="text-align: right; margin-top: 24px;">
           <div class="footer">
-            ⚡ BilateralBound v2.69.1
+            ⚡ BilateralBound v2.69.2
           </div>
         </div>
       </div>
     </div>
-
   </div>
 
   <script>
-    // Загружаем необходимые скрипты только при создании сессии
     async function loadSessionScripts() {
       return new Promise((resolve, reject) => {
         const scripts = [
@@ -676,11 +608,9 @@
       });
     }
 
-    // Создаем сессию с загрузкой необходимых скриптов
     async function createSession() {
       const btn = document.getElementById('createSessionBtn');
       
-      // Предотвращаем повторный запуск, если кнопка уже в состоянии загрузки
       if (btn.disabled) {
         console.log('⚠️ Создание сессии уже в процессе...');
         return;
@@ -689,7 +619,6 @@
       const originalText = btn.innerHTML;
       
       try {
-        // Показываем индикатор загрузки
         btn.innerHTML = '⏳ Загрузка...';
         btn.disabled = true;
         
@@ -721,7 +650,6 @@
 
         console.log('🔗 Подключение контроллера к сессии:', sessionId);
         
-        // Подключаем контроллер к сессии
         const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -736,32 +664,22 @@
         }
         
         console.log('✅ Контроллер подключен к сессии');
-
-        // Запускаем мониторинг статуса
         startStatusMonitoring(sessionId);
-
-        // Перенаправляем на страницу контроллера
-        console.log('🚀 Перенаправление на контроллер...');
         window.location.href = `/c/${sessionId}`;
 
       } catch (error) {
         console.error('❌ Полная ошибка:', error);
         alert('Ошибка при создании сессии: ' + error.message);
-        debugError('Error creating session:', error);
         
-        // Восстанавливаем кнопку
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
     }
 
-    // На главной больше не показываем ожидание зрителя
     function startStatusMonitoring() {
-        // Функция больше не используется, но оставлена для совместимости
         console.log('Status monitoring not needed on main page');
     }
 
-    // Функция для сброса состояния кнопки создания сессии
     function resetCreateSessionButton() {
       const btn = document.getElementById('createSessionBtn');
       if (btn) {
@@ -770,34 +688,17 @@
       }
     }
 
-    // Обработчик для сброса состояния кнопки при возврате на страницу
-    function handlePageVisibilityChange() {
+    document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
-        // Страница стала видимой - сбрасываем состояние кнопки
-        resetCreateSessionButton();
-      }
-    }
-
-    // Обработчик для сброса состояния кнопки при фокусе на страницу
-    function handlePageFocus() {
-      resetCreateSessionButton();
-    }
-
-    // Добавляем обработчики событий
-    document.addEventListener('visibilitychange', handlePageVisibilityChange);
-    window.addEventListener('focus', handlePageFocus);
-    window.addEventListener('pageshow', function(event) {
-      // Сбрасываем состояние кнопки при загрузке страницы (включая возврат из кэша)
-      if (event.persisted) {
         resetCreateSessionButton();
       }
     });
 
-    // Сбрасываем состояние кнопки при загрузке страницы
+    window.addEventListener('focus', resetCreateSessionButton);
+
     document.addEventListener('DOMContentLoaded', function() {
       resetCreateSessionButton();
 
-      // Подключаем обработчики для новых функций
       setTimeout(() => {
         const createPresetBtn = document.getElementById('createPresetBtn');
         const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -806,10 +707,10 @@
           createPresetBtn.addEventListener('click', window.createCustomPreset);
         }
 
-        if (themeToggleBtn && window.featureManager && window.featureManager.toggleTheme) {
-          themeToggleBtn.addEventListener('click', () => window.featureManager.toggleTheme());
+        if (themeToggleBtn && window.themeManager) {
+          themeToggleBtn.addEventListener('click', () => window.themeManager.toggleTheme());
         }
-      }, 1000); // Ждем загрузки скриптов
+      }, 1000);
     });
   </script>
 </body>

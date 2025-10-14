@@ -123,3 +123,71 @@ if (typeof globalThis !== 'undefined') {
     netMetrics: 'net_metrics'
   })
 }
+
+class ThemeManager {
+  constructor () {
+    this.themeKey = 'bb_theme'
+    this.init()
+  }
+
+  init () {
+    this.loadTheme()
+    this.setupThemeToggle()
+  }
+
+  loadTheme () {
+    const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-theme')
+    }
+  }
+
+  toggleTheme () {
+    const body = document.body
+    const isDark = body.classList.contains('light-theme')
+
+    if (isDark) {
+      body.classList.remove('light-theme')
+      localStorage.setItem(this.themeKey, 'dark')
+      this.showNotification('Тёмная тема активирована', 'success')
+    } else {
+      body.classList.add('light-theme')
+      localStorage.setItem(this.themeKey, 'light')
+      this.showNotification('Светлая тема активирована', 'success')
+    }
+  }
+
+  setupThemeToggle () {
+    const toggleBtn = document.getElementById('themeToggleBtn')
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => this.toggleTheme())
+    }
+  }
+
+  showNotification (message, type = 'info') {
+    if (window.showErrorNotification) {
+      const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6'
+      }
+      window.showErrorNotification(message, colors[type])
+    } else {
+      const notification = document.createElement('div')
+      notification.className = 'theme-notification'
+      notification.style.background = type === 'success' ? '#10b981' : '#3b82f6'
+      notification.textContent = message
+      document.body.appendChild(notification)
+
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in forwards'
+        setTimeout(() => notification.remove(), 300)
+      }, 3000)
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.themeManager = new ThemeManager()
+})

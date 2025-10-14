@@ -627,21 +627,26 @@ function updateConnectionStatus (isConnected) {
  * Показ уведомления об ошибке
  */
 function showErrorNotification (message) {
-  const wrapper = document.createElement('div')
-  wrapper.className = 'bb-toast'
-  wrapper.innerHTML = `
-    <div class="bb-toast__content">
-      <strong>Ошибка:</strong> <span>${message}</span>
-      <button class="bb-toast__close" aria-label="Close" onclick="this.closest('.bb-toast').remove()">×</button>
-    </div>
-  `
-  document.body.appendChild(wrapper)
+  if (window.notificationSystem) {
+    window.notificationSystem.error('Ошибка', message);
+  } else {
+    // Fallback для старой системы
+    const wrapper = document.createElement('div')
+    wrapper.className = 'bb-toast'
+    wrapper.innerHTML = `
+      <div class="bb-toast__content">
+        <strong>Ошибка:</strong> <span>${message}</span>
+        <button class="bb-toast__close" aria-label="Close" onclick="this.closest('.bb-toast').remove()">×</button>
+      </div>
+    `
+    document.body.appendChild(wrapper)
 
-  setTimeout(() => {
-    if (wrapper.parentElement) {
-      wrapper.remove()
-    }
-  }, 5000)
+    setTimeout(() => {
+      if (wrapper.parentElement) {
+        wrapper.remove()
+      }
+    }, 5000)
+  }
 }
 
 /**
@@ -1200,7 +1205,7 @@ function togglePlayPause () {
       paused: false,
       dirX: currentDirection.dx,
       dirY: currentDirection.dy,
-      speed: components.speed ? components.speed.getSpeed() : 40
+      speed: (components.speed && typeof components.speed.getSpeed === 'function') ? components.speed.getSpeed() : 40
     })
 
     safeSend(WS_MSG.controllerUpdate, payload)
@@ -1465,7 +1470,7 @@ function syncFsPlayPauseButton () {
 function wireFullscreenControls () {
   const speed = document.getElementById('fsSpeed')
   if (speed) {
-    speed.value = components?.speed ? components.speed.getSpeed() : 40
+    speed.value = (components.speed && typeof components.speed.getSpeed === 'function') ? components.speed.getSpeed() : 40
     speed.oninput = (e) => updateSpeed(Number(e.target.value))
   }
 

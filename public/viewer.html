@@ -34,10 +34,11 @@
     <link rel="preload" href="/js/common.js" as="script" />
     <link rel="preload" href="/css/shared-components.css" as="style" />
     
-    <!-- ===== STYLES ===== -->
+    <!-- Styles -->
     <link rel="stylesheet" href="/css/shared-components.css">
+    <link rel="stylesheet" href="/css/light-theme.css">
     <style>
-        /* ===== RESET & BASE ===== */
+        /* Reset & Base */
         * {
             box-sizing: border-box;
         }
@@ -52,8 +53,65 @@
             height: 100vh;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
+        
+        /* Light theme for viewer */
+        body.light-theme {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+        }
+        
+        body.light-theme .viewer-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(148, 163, 184, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        body.light-theme .viewer-header span {
+            color: #1e293b;
+        }
+        
+        body.light-theme .viewer-canvas {
+            background: #ffffff;
+        }
+        
+        body.light-theme .status-overlay {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(148, 163, 184, 0.3);
+            color: #1e293b;
+            backdrop-filter: blur(10px);
+        }
+        
+        body.light-theme .status-online {
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+        
+        body.light-theme .status-offline {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        
+        body.light-theme .fullscreen-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(148, 163, 184, 0.3);
+            color: #1e293b;
+            backdrop-filter: blur(10px);
+        }
+        
+        body.light-theme .fullscreen-btn:hover {
+            background: rgba(241, 245, 249, 0.9);
+            border-color: rgba(148, 163, 184, 0.5);
+        }
+        
+        body.light-theme .loading {
+            color: #1e293b;
+        }
+        
+        body.light-theme .loading::after {
+            border-color: #3b82f6;
+            border-top-color: transparent;
+        }
 
-        /* ===== LAYOUT ===== */
+        /* Layout */
         .viewer-container {
             flex: 1;
             position: relative;
@@ -75,6 +133,7 @@
             z-index: 1000;
             backdrop-filter: blur(8px);
         }
+        
         .viewer-header img {
             width: 28px;
             height: 28px;
@@ -82,6 +141,7 @@
             object-fit: cover;
             display: block;
         }
+        
         .viewer-header span {
             color: #e2e8f0;
             font-weight: 600;
@@ -96,7 +156,7 @@
             display: block; 
         }
 
-        /* ===== OVERLAYS ===== */
+        /* Overlays */
         .status-overlay {
             position: absolute;
             top: 20px;
@@ -122,8 +182,7 @@
             color: #ef4444;
         }
 
-
-        /* ===== CONTROLS ===== */
+        /* Controls */
         .fullscreen-btn {
             position: absolute;
             top: 20px;
@@ -145,7 +204,7 @@
             transform: scale(1.05);
         }
 
-        /* ===== LOADING ===== */
+        /* Loading */
         .loading {
             position: absolute;
             top: 50%;
@@ -170,12 +229,10 @@
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
 
-        /* ===== RESPONSIVE ===== */
+        /* Responsive */
         @media (max-width: 768px) {
             .status-overlay {
                 top: 12px;
@@ -185,7 +242,6 @@
                 border-radius: 12px;
                 max-width: calc(100vw - 120px);
             }
-
 
             .fullscreen-btn {
                 top: 12px;
@@ -213,7 +269,6 @@
                 border-radius: 10px;
             }
 
-
             .fullscreen-btn {
                 top: 8px;
                 right: 8px;
@@ -228,20 +283,14 @@
             }
         }
 
-        /* ===== ANIMATIONS ===== */
+        /* Animations */
         .fade-in {
             animation: fadeIn 0.5s ease-in;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .pulse {
@@ -249,88 +298,71 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.7;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
     </style>
 </head>
 <body>
-    <!-- ===== MAIN CONTAINER ===== -->
     <div class="viewer-container">
-        
-        <!-- ===== CANVAS ===== -->
         <canvas id="viewerCanvas" class="viewer-canvas"></canvas>
-        
-        <!-- ===== STATUS OVERLAY ===== -->
         <div id="statusContainer"></div>
         
-        
-        <!-- ===== FULLSCREEN BUTTON ===== -->
         <button class="fullscreen-btn" onclick="toggleFullscreen()">
             ⛶ Полноэкранный
         </button>
         
-        <!-- ===== LOADING ===== -->
+        <button class="fullscreen-btn" id="viewerThemeToggle" onclick="toggleViewerTheme()" style="top: 70px;">
+            🌓 Тема
+        </button>
+        
         <div id="loading" class="loading">
             Загрузка...
         </div>
     </div>
 
-    <!-- ===== SCRIPTS ===== -->
-      <script src="/js/common.js" defer></script>
-  <script src="/js/physics-engine.js" defer></script>
-  <script src="/js/renderer.js" defer></script>
-  <script src="/js/websocket-client.js" defer></script>
-  <script src="/js/shared-components.js" defer></script>
+    <script src="/js/common.js" defer></script>
+    <script src="/js/physics-engine.js" defer></script>
+    <script src="/js/renderer.js" defer></script>
+    <script src="/js/websocket-client.js" defer></script>
+    <script src="/js/shared-components.js" defer></script>
     
-    <!-- ===== MAIN SCRIPT ===== -->
     <script>
-        // Локальные no-op логгеры без перекрытия глобальных имён (не объявляем const/let)
-        window.debugLog = window.debugLog || function() {};
-        window.debugError = window.debugError || function() {};
-        window.debugWarn = window.debugWarn || function() {};
-        // Глобальные переменные для вьювера
+        // Global variables
         let wsClient;
         let physicsEngine;
         let ballRenderer;
         let isFullscreen = false;
-        let components = {}; // <--- ВОТ ИСПРАВЛЕНИЕ
+        let components = {};
         let resizeTimeout = null;
         let lastScreenSizeUpdate = 0;
 
-        // Обработчик загрузки DOM
+        // Debug loggers
+        window.debugLog = window.debugLog || function() {};
+        window.debugError = window.debugError || function() {};
+        window.debugWarn = window.debugWarn || function() {};
+
+        // Initialize on DOM load
         document.addEventListener('DOMContentLoaded', async function() {
-            debugLog('🚀 BilateralBound Viewer - Инициализация...');
-            
             try {
-                // Получаем sessionId из URL
-                const sessionId = getSessionIdFromUrl(); // Используем let или const
+                const sessionId = getSessionIdFromUrl();
                 if (!sessionId) {
                     showError('Session ID не найден в URL');
                     return;
                 }
                 
                 debugLog('📱 Session ID получен:', sessionId);
-                
-                // Инициализируем компоненты
                 initializeComponents();
-                
-                // Инициализируем viewer
-                await initializeViewer(sessionId); // Передаем sessionId в функцию
+                await initializeViewer(sessionId);
+                loadSavedTheme();
                 
             } catch (error) {
                 debugError('❌ Критическая ошибка инициализации:', error);
                 showError('Ошибка инициализации: ' + error.message);
             }
         });
-        
-        // ===== COMPONENT INITIALIZATION =====
+
         function initializeComponents() {
-            // Создаем компонент статуса
             components.status = sharedComponents.createStatusIndicator(
                 document.getElementById('statusContainer'),
                 {
@@ -340,69 +372,57 @@
                 }
             );
         }
-        
-        // ===== CORE FUNCTIONS =====
-        async function initializeViewer(sessionId) { // Принимаем sessionId
+
+        async function initializeViewer(sessionId) {
             try {
                 debugLog('📱 Инициализация viewer для сессии:', sessionId);
-
-                // Скрываем загрузку
                 hideLoading();
 
-                // Устанавливаем sessionId в глобальную переменную для совместимости
                 if (!window.__current) {
                     window.__current = {};
                 }
                 window.__current.sessionId = sessionId;
 
-                // Получаем canvas
                 const canvas = document.getElementById('viewerCanvas');
                 if (!canvas) {
                     console.error('Canvas не найден');
                     return;
                 }
 
-                // Устанавливаем размер canvas
                 resizeCanvas();
 
-                // Создаем движок физики с размером экрана вьювера
                 physicsEngine = new PhysicsEngine({
                     worldWidth: window.innerWidth,
                     worldHeight: window.innerHeight,
-                    isViewer: true, // Включаем режим интерполяции
+                    isViewer: true,
                     bounceCallback: null
                 });
-                window.physicsEngine = physicsEngine; // <--- FIX: Expose for test harness
+                window.physicsEngine = physicsEngine;
 
-                // Создаем рендерер с локальной физикой для плавности
                 ballRenderer = new BallRenderer(canvas, physicsEngine, {
-                    localPhysics: false, // Вьювер интерполирует состояние сервера
+                    localPhysics: false,
                     bounceCallback: null
                 });
 
-                // Подключаемся к сессии через HTTP для регистрации
-                await connectToSession(sessionId); // Передаем sessionId
+                await connectToSession(sessionId);
 
-                // Инициализируем WebSocket-клиент
                 wsClient = new WebSocketClient(sessionId, 'viewer');
                 window.wsClient = wsClient;
                 
                 wsClient.on(WS_MSG.initialState, (state) => {
                     debugLog('✅ Получено начальное состояние', state);
-                    physicsEngine.applyCommand(state); // Применяем полное состояние
+                    physicsEngine.applyCommand(state);
                     if (state && state.paused === false) {
                         physicsEngine.setPaused(false);
                     }
-                    updateStatus(state); // Обновляем статус на основе полного состояния
+                    updateStatus(state);
                 });
 
                 wsClient.on(WS_MSG.stateUpdate, (command) => {
-                    // Применяем команду от сервера
                     physicsEngine.applyCommand(command);
                     if (command && command.paused === false) {
                         physicsEngine.setPaused(false);
                     }
-                    // Обновляем статус
                     updateStatus(command);
                 });
 
@@ -423,8 +443,8 @@
                 
                 await wsClient.connect();
 
-                // --- НОВАЯ ЛОГИКА ЦИКЛОВ ---
-                const PHYSICS_TICK_RATE = 60; // Гц
+                // Physics and render loops
+                const PHYSICS_TICK_RATE = 60;
                 const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE;
                 let __lastPhysicsUpdateTs = performance.now();
 
@@ -445,19 +465,12 @@
                     const alpha = Math.max(0, Math.min(1, (now - __lastPhysicsUpdateTs) / PHYSICS_DT));
 
                     const interpolatedState = physicsEngine.getInterpolatedBall(alpha);
-                    
-                    // ВАЖНО: Не нужно масштабировать, так как вьювер работает в своих координатах
                     ballRenderer.drawFrame(interpolatedState);
-
                     requestAnimationFrame(renderLoop);
                 }
 
-                // Запускаем циклы
                 setInterval(physicsLoop, PHYSICS_DT);
                 requestAnimationFrame(renderLoop);
-                // -------------------------
-
-                // Настраиваем event listeners
                 setupEventListeners();
 
                 debugLog('✅ Viewer успешно инициализирован');
@@ -467,12 +480,9 @@
                 showError('Ошибка инициализации: ' + error.message);
             }
         }
-        
-        // ===== SESSION MANAGEMENT =====
-        
-        async function connectToSession(sessionId) { // Принимаем sessionId
+
+        async function connectToSession(sessionId) {
             try {
-                // Получаем размеры canvas
                 const canvasElement = document.getElementById('viewerCanvas');
                 if (!canvasElement) {
                     console.error('Canvas не найден');
@@ -503,8 +513,7 @@
                 throw error;
             }
         }
-        
-        // ===== UTILITY FUNCTIONS =====
+
         function resizeCanvas() {
             const canvas = document.getElementById('viewerCanvas');
             if (!canvas) return;
@@ -512,17 +521,13 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            // Обновляем размеры мира физики при изменении размера экрана
             if (physicsEngine) {
                 physicsEngine.setWorldSize(canvas.width, canvas.height);
             }
 
-            // Обновляем рендерер
             if (ballRenderer) {
                 ballRenderer.resize(canvas.width, canvas.height);
             }
-
-            // НЕ вызываем updateScreenSize здесь - он будет вызван через debounce
         }
 
         async function updateScreenSize() {
@@ -530,10 +535,9 @@
             if (!sessionId) return;
 
             try {
-                // Проверяем, прошло ли достаточно времени с последнего обновления (минимум 2 секунды)
                 const now = Date.now();
                 if (now - lastScreenSizeUpdate < 2000) {
-                    return; // Пропускаем обновление, чтобы не спамить сервер
+                    return;
                 }
 
                 const response = await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
@@ -543,7 +547,6 @@
                         width: window.innerWidth,
                         height: window.innerHeight
                     }),
-                    // Добавляем timeout для предотвращения зависания
                     signal: AbortSignal.timeout(5000)
                 });
 
@@ -560,7 +563,6 @@
                 if (error.name === 'AbortError') {
                     debugLog('⏰ Таймаут при обновлении размера экрана');
                 } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    // Тихо игнорируем сетевые ошибки, чтобы не мешать работе движка
                     debugLog('🌐 Сеть недоступна при обновлении размера экрана');
                 } else {
                     debugError('Ошибка при обновлении размера экрана:', error);
@@ -570,18 +572,11 @@
         
         function updateStatus(sessionData) {
             if (components.status) {
-                // Обновляем статус, только если это поле явно присутствует в данных
                 if (sessionData.controllerConnected === true) {
                     components.status.setStatus('success', 'Контроллер подключен');
                 } else if (sessionData.controllerConnected === false) {
                     components.status.setStatus('error', 'Контроллер отключен');
                 }
-            }
-        }
-        
-        function handleSessionExpired() {
-            if (components.status) {
-                components.status.setStatus('error', 'Сессия истекла или была удалена');
             }
         }
         
@@ -593,7 +588,6 @@
 
         function showWarning(message) {
             debugWarn('⚠️ Предупреждение viewer:', message);
-            // Можно добавить визуальное предупреждение, если нужно
         }
         
         function hideLoading() {
@@ -603,9 +597,9 @@
             }
         }
         
-        // ===== FULLSCREEN & MOBILE =====
-        // Android: keep the screen awake while in fullscreen (when supported)
+        // Fullscreen & Mobile
         let screenWakeLock = null;
+        
         async function requestScreenWakeLock() {
             try {
                 if ('wakeLock' in navigator && document.visibilityState === 'visible') {
@@ -616,10 +610,10 @@
                     debugLog('🔒 Wake Lock acquired');
                 }
             } catch (e) {
-                // Ignore if not supported or user denied
                 debugWarn('Wake Lock not available:', e?.message || e);
             }
         }
+        
         async function releaseScreenWakeLock() {
             try {
                 if (screenWakeLock) {
@@ -631,7 +625,6 @@
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && isFullscreen) {
-                // Re-acquire after tab visibility changes
                 requestScreenWakeLock();
             }
         });
@@ -649,7 +642,7 @@
             }
         });
 
-        // Двойной тап для полноэкранного режима
+        // Double tap for fullscreen
         let lastTap = 0;
         document.getElementById('viewerCanvas').addEventListener('touchend', function(event) {
             const currentTime = new Date().getTime();
@@ -660,42 +653,89 @@
             lastTap = currentTime;
         });
 
-        // ===== EVENT LISTENERS =====
-        // Добавляем event listeners только после инициализации
         function setupEventListeners() {
             if (window) {
-                // Добавляем throttling для resize события (максимум 1 раз в 1500ms)
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimeout);
                     resizeTimeout = setTimeout(() => {
                         resizeCanvas();
-                        // Обновляем размер экрана на сервере только после завершения resize
                         updateScreenSize().catch(() => {
-                            // Тихо игнорируем ошибки сети при resize, чтобы не мешать работе
                             debugLog('Размер экрана не обновлен (сеть недоступна)');
                         });
-                    }, 1500); // Увеличенная задержка для стабильности
+                    }, 1500);
                 });
             }
 
             if (document) {
-                // Предотвращаем зум на мобильных устройствах
-                document.addEventListener('gesturestart', function(event) {
-                    event.preventDefault();
-                });
-
-                document.addEventListener('gesturechange', function(event) {
-                    event.preventDefault();
-                });
-
-                document.addEventListener('gestureend', function(event) {
-                    event.preventDefault();
-                });
+                document.addEventListener('gesturestart', (event) => event.preventDefault());
+                document.addEventListener('gesturechange', (event) => event.preventDefault());
+                document.addEventListener('gestureend', (event) => event.preventDefault());
             }
         }
         
-        debugLog('🎯 BilateralBound Viewer - Готов к работе');
+        // Theme functions
+        function toggleViewerTheme() {
+            const body = document.body;
+            const isDark = !body.classList.contains('light-theme');
 
+            if (isDark) {
+                body.classList.add('light-theme');
+                localStorage.setItem('bb_theme', 'light');
+                showNotification('Светлая тема активирована', 'success');
+            } else {
+                body.classList.remove('light-theme');
+                localStorage.setItem('bb_theme', 'dark');
+                showNotification('Тёмная тема активирована', 'success');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            if (window.notificationSystem) {
+                const titles = {
+                    success: 'Успешно',
+                    error: 'Ошибка',
+                    warning: 'Внимание',
+                    info: 'Информация'
+                }
+                window.notificationSystem.show({
+                    type: type,
+                    title: titles[type] || 'Сообщение',
+                    message: message
+                })
+            } else if (window.showErrorNotification) {
+                const colors = {
+                    success: '#10b981',
+                    error: '#ef4444',
+                    warning: '#f59e0b',
+                    info: '#3b82f6'
+                }
+                window.showErrorNotification(message, colors[type])
+            } else {
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                    color: white;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                    z-index: 10000;
+                    font-size: 14px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                `;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+        }
+
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('bb_theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+            }
+        }
     </script>
 </body>
 </html>
