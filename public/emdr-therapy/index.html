@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -24,7 +24,7 @@
     <meta name="twitter:image" content="/emdr-eye.png" />
 
 
-    <meta name="author" content="EMDR Терапевт для Супружеских Пар">
+    <meta name="author" content="Bugaev David">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="googlebot" content="index, follow">
     <meta name="bingbot" content="index, follow">
@@ -769,7 +769,7 @@
 
         function updateSpeedDescription(speed) {
             const descriptionEl = document.getElementById('speedDescription');
-            let description = '';
+            let description;
 
             if (speed <= 25) {
                 description = 'Мягкая стимуляция для начального этапа терапии';
@@ -777,7 +777,7 @@
                 description = 'Оптимальная скорость для комфортной работы с травмой';
             } else if (speed <= 75) {
                 description = 'Интенсивная стимуляция для глубокого воздействия';
-      } else {
+            } else {
                 description = 'Максимальная интенсивность для сильных травм';
             }
 

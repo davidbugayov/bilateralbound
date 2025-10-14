@@ -1118,16 +1118,15 @@ class Tester {
     });
 
     // Отправляем много команд и проверяем троттлинг
-    const wsTestStartTime = Date.now();
     for (let i = 0; i < 20; i++) {
       controllerSocket.send(JSON.stringify({
-        type: 'controller_update', 
-        payload: { 
-          paused: false, 
-          dirX: Math.random(), 
-          dirY: Math.random(), 
-          speed: 50 
-        } 
+        type: 'controller_update',
+        payload: {
+          paused: false,
+          dirX: Math.random(),
+          dirY: Math.random(),
+          speed: 50
+        }
       }));
       wsCommandsSent++;
       await new Promise(r => setTimeout(r, 20)); // Задержка между командами

@@ -333,7 +333,7 @@ class FeatureManager {
       // Ctrl+Z - отменить последнее изменение
       if (e.ctrlKey && e.key === 'z') {
         e.preventDefault()
-        this.undoLastChange()
+        this.undoLastChange().catch(console.error)
       }
 
       // Ctrl+S - сохранить пресет
@@ -372,7 +372,7 @@ class FeatureManager {
   /**
    * Отмена последнего изменения
    */
-  undoLastChange () {
+  async undoLastChange () {
     if (this.sessionHistory.length < 2) {
       this.showNotification('Нет изменений для отмены', 'warning')
       return
@@ -381,7 +381,7 @@ class FeatureManager {
     this.sessionHistory.pop()
     const previousState = this.sessionHistory[this.sessionHistory.length - 1]
 
-    this.applyState(previousState)
+    await this.applyState(previousState)
     this.showNotification('Изменение отменено', 'success')
   }
 
@@ -457,7 +457,7 @@ class FeatureManager {
       if (parsed && typeof parsed === 'object' && parsed.sessions && Array.isArray(parsed.sessions)) {
         return parsed.sessions
       }
-    } catch (ignored) {
+    } catch {
       console.warn('Не удалось загрузить сохранённые сессии')
     }
     return []
@@ -486,7 +486,7 @@ class FeatureManager {
       } else {
         localStorage.removeItem('bb_current_session')
       }
-    } catch (ignored) {
+    } catch {
       // ignore
     }
     this.currentSessionId = id || null
@@ -781,7 +781,7 @@ class FeatureManager {
       const nameTxt = current?.name ? `Название: ${current.name}` : 'Название: —'
       const createdTxt = current?.createdAt ? ` • Создана: ${new Date(current.createdAt).toLocaleString()}` : ''
       el.textContent = `${nameTxt}${createdTxt}`
-    } catch (ignored) {
+    } catch {
       // ignore
     }
   }

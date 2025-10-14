@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="EMDR терапия вьювер - наблюдение за биодинамической стимуляцией. Инструмент для пациентов при проведении EMDR терапии онлайн" />
     <meta name="keywords" content="EMDR терапия, EMDR вьювер, биодинамическая стимуляция, парная терапия, психолог для пар, просмотр сессии" />
-    <meta name="author" content="BilateralBound Team" />
+    <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#020617" />
     <title>BilateralBound - EMDR терапия вьювер</title>
@@ -358,7 +358,8 @@
                 // Получаем canvas
                 const canvas = document.getElementById('viewerCanvas');
                 if (!canvas) {
-                    throw new Error('Canvas не найден');
+                    console.error('Canvas не найден');
+                    return;
                 }
 
                 // Устанавливаем размер canvas
@@ -425,7 +426,6 @@
                 // --- НОВАЯ ЛОГИКА ЦИКЛОВ ---
                 const PHYSICS_TICK_RATE = 60; // Гц
                 const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE;
-                let physicsInterval = null;
                 let __lastPhysicsUpdateTs = performance.now();
 
                 function physicsLoop() {
@@ -435,7 +435,7 @@
                     }
                 }
 
-                function renderLoop(timestamp) {
+                function renderLoop() {
                     if (!physicsEngine || !ballRenderer) {
                         requestAnimationFrame(renderLoop);
                         return;
@@ -453,8 +453,7 @@
                 }
 
                 // Запускаем циклы
-                if (physicsInterval) clearInterval(physicsInterval);
-                physicsInterval = setInterval(physicsLoop, PHYSICS_DT);
+                setInterval(physicsLoop, PHYSICS_DT);
                 requestAnimationFrame(renderLoop);
                 // -------------------------
 
@@ -476,7 +475,8 @@
                 // Получаем размеры canvas
                 const canvasElement = document.getElementById('viewerCanvas');
                 if (!canvasElement) {
-                    throw new Error('Canvas не найден');
+                    console.error('Canvas не найден');
+                    return;
                 }
 
                 const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
@@ -492,7 +492,8 @@
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    throw new Error(`HTTP ${response.status}: ${errorText || 'Не удалось подключиться к сессии'}`);
+                    console.error(`HTTP ${response.status}: ${errorText || 'Не удалось подключиться к сессии'}`);
+                    return;
                 }
                 
                 debugLog('✅ Подключение к сессии успешно');
@@ -625,7 +626,7 @@
                     await screenWakeLock.release();
                     screenWakeLock = null;
                 }
-            } catch (_) {}
+            } catch (error) {}
         }
 
         document.addEventListener('visibilitychange', () => {

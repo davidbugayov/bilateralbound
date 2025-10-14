@@ -1,4 +1,4 @@
-/**
+ /**
  * UI tests using Puppeteer (headless Chrome)
  * Verifies viewer initializes, connects, and ball moves smoothly under client physics.
  */
@@ -58,7 +58,10 @@ async function main() {
   try {
     log('🔧 Создание сессии через API')
     const sessionRes = await api('/api/session', 'POST', {})
-    if (sessionRes.status !== 200 || !sessionRes.data?.sessionId) throw new Error('Cannot create session')
+    if (sessionRes.status !== 200 || !sessionRes.data?.sessionId) {
+      console.error('Cannot create session')
+      return
+    }
     const sessionId = sessionRes.data.sessionId
 
     // Подключаем вьювер через API, чтобы выдать размеры, как это делает реальный клиент
@@ -79,7 +82,10 @@ async function main() {
 
     // Проверяем, что изначально пауза
     const initialPaused = await page.evaluate(() => window.physicsEngine && window.physicsEngine.state && window.physicsEngine.state.paused)
-    if (initialPaused !== true && initialPaused !== false) throw new Error('physicsEngine not ready')
+    if (initialPaused !== true && initialPaused !== false) {
+      console.error('physicsEngine not ready')
+      return
+    }
 
     // Отправляем команду запуска движения через API (сервер синхронизирует флаги)
     await api(`/api/session/${sessionId}/controller/update`, 'POST', { paused: false, dirX: 1, dirY: 0, speed: 30 })
@@ -113,10 +119,14 @@ async function main() {
     const smoothEnough = jitterRatio1 < 2.0 && jitterRatio2 < 2.0 // немного расслабим порог, чтобы избежать флейков на CI
 
     if (!movedRight) {
-      throw new Error(`Ball did not move right consistently: deltas = ${dx1.toFixed(2)}, ${dx2.toFixed(2)}, ${dx3.toFixed(2)}`)
+      console.error(`Ball did not move right consistently: deltas = ${dx1.toFixed(2)}, ${dx2.toFixed(2)}, ${dx3.toFixed(2)}`)
+      process.exitCode = 1
+      return
     }
     if (!smoothEnough) {
-      throw new Error(`Movement jitter too high: ratios = ${jitterRatio1.toFixed(2)}, ${jitterRatio2.toFixed(2)}`)
+      console.error(`Movement jitter too high: ratios = ${jitterRatio1.toFixed(2)}, ${jitterRatio2.toFixed(2)}`)
+      process.exitCode = 1
+      return
     }
 
     log('✅ Мяч движется вправо и достаточно плавно в реальном браузере')
@@ -162,7 +172,9 @@ async function main() {
 
     const ratio = after / Math.max(1e-6, baseline)
     if (!(ratio > 1.5)) {
-      throw new Error(`Speed change ineffective on client: avgDxBefore=${baseline.toFixed(2)}, avgDxAfter=${after.toFixed(2)}, ratio=${ratio.toFixed(2)}`)
+      console.error(`Speed change ineffective on client: avgDxBefore=${baseline.toFixed(2)}, avgDxAfter=${after.toFixed(2)}, ratio=${ratio.toFixed(2)}`)
+      process.exitCode = 1
+      return
     }
     log('✅ Изменение скорости влияет на скорость движения на клиенте')
 
@@ -182,12 +194,20 @@ async function main() {
     })
     const dyA = samplesDown[1].y - samplesDown[0].y
     const dyB = samplesDown[2].y - samplesDown[1].y
-    if (!(dyA > 0 && dyB > 0)) throw new Error('Ball did not move down after direction change')
+    if (!(dyA > 0 && dyB > 0)) {
+      console.error('Ball did not move down after direction change')
+      process.exitCode = 1
+      return
+    }
 
     // Проверяем, что при вертикальном движении нет заметного дрейфа по X
     const xsDown = samplesDown.map(p => p.x)
     const xRange = Math.max(...xsDown) - Math.min(...xsDown)
-    if (xRange > 2.0) throw new Error(`Horizontal drift during vertical motion: Δx=${xRange.toFixed(2)}px`)
+    if (xRange > 2.0) {
+      console.error(`Horizontal drift during vertical motion: Δx=${xRange.toFixed(2)}px`)
+      process.exitCode = 1
+      return
+    }
 
     log('✅ Направление вниз применяется корректно и без горизонтального дрейфа')
 
@@ -215,7 +235,11 @@ async function main() {
       const afterDelta = xs[Math.min(xs.length - 1, minIdx + 5)] - xs[minIdx]
       return hasLeftMove && hasRightMoveAfter && beforeDelta < 0 && afterDelta > 0
     })
-    if (!bounceOK) throw new Error('No bounce at left edge: ball may be stuck')
+    if (!bounceOK) {
+      console.error('No bounce at left edge: ball may be stuck')
+      process.exitCode = 1
+      return
+    }
 
     log('✅ Отскок от левой границы работает, мяч движется туда-обратно')
 
@@ -228,7 +252,11 @@ async function main() {
       const x2 = window.physicsEngine.ball.x
       return Math.abs(x2 - x1) < 1 // не двигается заметно
     })
-    if (!pausedStill) throw new Error('Ball still moving on pause')
+    if (!pausedStill) {
+      console.error('Ball still moving on pause')
+      process.exitCode = 1
+      return
+    }
 
     log('✅ Пауза останавливает движение')
 
@@ -243,5 +271,5 @@ async function main() {
 }
 
 if (require.main === module) {
-  main()
+  main().catch(console.error)
 }

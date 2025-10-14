@@ -37,9 +37,9 @@ let hiddenThrottleMs = 100 // при скрытой вкладке обновл�
 if (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.rendering && typeof window.BBConfig.rendering.hiddenThrottleMs === 'number') {
   hiddenThrottleMs = window.BBConfig.rendering.hiddenThrottleMs
 }
+let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
 
 // --- Elements ---
-const previewCanvas = document.getElementById('preview')
 let previewFsCanvas = null
 let previewFsRenderer = null
 let isPreviewFullscreen = false
@@ -209,7 +209,9 @@ async function initializeController () {
     // 1. Валидация и получение сессии
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
-      throw new AppError('SESSION_ID_MISSING', 'ID сессии не найден в URL')
+      console.error('ID сессии не найден в URL')
+      showErrorNotification('ID сессии не найден в URL')
+      return
     }
 
     // Сохраняем sessionId в глобальном состоянии
@@ -573,7 +575,6 @@ function applyServerStateToPreview (state) {
  * Улучшенный рендер-цикл с лучшей интерполяцией
  */
 // Глобальные переменные для нового цикла
-let physicsInterval = null
 const PHYSICS_TICK_RATE = 60 // Гц
 const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
 
@@ -770,7 +771,7 @@ function initializeComponents () {
     document.getElementById('speedControl'),
     {
       onSpeedChange: throttle((speed) => {
-        updateSpeed(speed)
+        updateSpeed(speed).catch(console.error)
       }, 100) // Ограничиваем отправку: не чаще чем раз в 100 мс
     }
   )
@@ -833,13 +834,11 @@ async function updateSpeed (speed) {
   try {
     // Отправляем изменение скорости всегда, даже если вьювер ещё не подключен
     // (сервер сохранит значение и применит при старте)
-    safeSend(WS_MSG.controllerUpdate, { speed })
+    await safeSend(WS_MSG.controllerUpdate, { speed })
   } catch {
     console.warn('Error updating speed')
   }
 }
-
-// ===== ПРЕВЬЮ =====
 
 async function initializePreview () {
   // Показываем текст ожидания подключения вьювера
@@ -1052,8 +1051,6 @@ function setDirection (directionMode) {
     console.error('Ошибка установки направления:', error)
   }
 }
-
->>>>>>> Stashed changes
 
 function setBallColor (color) {
   // Оптимизация: меньше обновлений когда нет вьювера

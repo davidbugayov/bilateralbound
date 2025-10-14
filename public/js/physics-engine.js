@@ -627,7 +627,7 @@ class PhysicsEngine {
         const ev = new CustomEvent('bb_bounce', { detail: { x: this.ball.x, y: this.ball.y } })
         window.dispatchEvent(ev)
       }
-    } catch (ignored) {
+    } catch {
       // ignore
     }
   }
