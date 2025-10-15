@@ -223,14 +223,16 @@ class NotificationSystem {
 
       /* Светлая тема */
       .light-theme .bb-notification {
-        background: rgba(255, 255, 255, 0.95);
-        border-color: rgba(0, 0, 0, 0.1);
+        background: #ffffff;
+        border-color: #e2e8f0;
         color: #1e293b;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       }
 
       .light-theme .bb-notification.success {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
-        color: #065f46;
+        background: #f0fdf4;
+        border-left: 4px solid #22c55e;
+        color: #166534;
       }
 
       .light-theme .bb-notification.error {
@@ -249,12 +251,13 @@ class NotificationSystem {
       }
 
       .light-theme .bb-notification-close {
-        color: rgba(0, 0, 0, 0.6);
+        color: #94a3b8;
+        background: transparent;
       }
 
       .light-theme .bb-notification-close:hover {
-        background: rgba(0, 0, 0, 0.1);
-        color: #1e293b;
+        background: #f1f5f9;
+        color: #475569;
       }
     `;
     document.head.appendChild(styles);
@@ -277,11 +280,21 @@ class NotificationSystem {
 
     const config = { ...defaults, ...options };
 
-    // Проверяем дубликаты
-    const duplicate = this.notifications.find(n => 
-      n.title === config.title && n.message === config.message
-    );
-    if (duplicate) return;
+    // Проверяем дубликаты: объединяем по сообщению
+    // Если уже есть уведомление с тем же текстом, но, возможно, другим типом/заголовком,
+    // заменяем его новым (прячем старое и показываем актуальное), чтобы исключить "смешанные" цвета.
+    const duplicate = this.notifications.find(n => n.config && n.config.message === config.message);
+    if (duplicate) {
+      // Если полностью совпадает (тип и заголовок), просто игнорируем повтор
+      if (
+        duplicate.config.type === config.type &&
+        (duplicate.config.title || '') === (config.title || '')
+      ) {
+        return;
+      }
+      // Иначе убираем предыдущее уведомление с тем же сообщением
+      this.hide(duplicate);
+    }
 
     const notification = this.createNotification(config);
     this.notifications.push(notification);
@@ -342,13 +355,20 @@ class NotificationSystem {
     const close = document.createElement('button');
     close.className = 'bb-notification-close';
     close.innerHTML = '&times;';
-    close.onclick = () => {
-      this.hide(notification);
-    };
-
     // Прогресс-бар
     const progress = document.createElement('div');
     progress.className = 'bb-notification-progress';
+
+    const notification = {
+      element,
+      config,
+      progress,
+      hideTimeout: null
+    };
+
+    close.onclick = () => {
+      this.hide(notification);
+    };
 
     element.appendChild(iconElement);
     element.appendChild(content);
@@ -357,12 +377,7 @@ class NotificationSystem {
     }
     element.appendChild(progress);
 
-    return {
-      element,
-      config,
-      progress,
-      hideTimeout: null
-    };
+    return notification;
   }
 
   /**
@@ -492,11 +507,8 @@ class NotificationSystem {
 // Создаем глобальный экземпляр
 if (typeof window !== 'undefined') {
   window.notificationSystem = new NotificationSystem();
-  window.showNotification = (options) => window.notificationSystem.show(options);
   window.showSuccessNotification = (title, message) => window.notificationSystem.success(title, message);
   window.showErrorNotification = (title, message) => window.notificationSystem.error(title, message);
   window.showWarningNotification = (title, message) => window.notificationSystem.warning(title, message);
   window.showInfoNotification = (title, message) => window.notificationSystem.info(title, message);
 }
-
-export default NotificationSystem;

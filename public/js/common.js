@@ -104,7 +104,6 @@ const throttle = (globalThis.CommonUtils && typeof globalThis.CommonUtils.thrott
       }
     }
   }
-
 // Экспортируем для использования
 if (typeof globalThis !== 'undefined') {
   globalThis.debugLog = debugLog
@@ -149,11 +148,11 @@ class ThemeManager {
     if (isDark) {
       body.classList.remove('light-theme')
       localStorage.setItem(this.themeKey, 'dark')
-      this.showNotification('Тёмная тема активирована', 'success')
+      if (window.showSuccessNotification) window.showSuccessNotification('Тёмная тема активирована')
     } else {
       body.classList.add('light-theme')
       localStorage.setItem(this.themeKey, 'light')
-      this.showNotification('Светлая тема активирована', 'success')
+      if (window.showSuccessNotification) window.showSuccessNotification('Светлая тема активирована')
     }
   }
 
@@ -164,30 +163,12 @@ class ThemeManager {
     }
   }
 
-  showNotification (message, type = 'info') {
-    if (window.showErrorNotification) {
-      const colors = {
-        success: '#10b981',
-        error: '#ef4444',
-        warning: '#f59e0b',
-        info: '#3b82f6'
-      }
-      window.showErrorNotification(message, colors[type])
-    } else {
-      const notification = document.createElement('div')
-      notification.className = 'theme-notification'
-      notification.style.background = type === 'success' ? '#10b981' : '#3b82f6'
-      notification.textContent = message
-      document.body.appendChild(notification)
-
-      setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease-in forwards'
-        setTimeout(() => notification.remove(), 300)
-      }, 3000)
-    }
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   window.themeManager = new ThemeManager()
 })
+
+function goBack() {
+  window.location.href = '/';
+}

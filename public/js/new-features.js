@@ -4,7 +4,6 @@
  */
 
 /* exported applyPreset, createCustomPreset, exportSession, importSession */
-/* exported applyPreset, createCustomPreset, exportSession, importSession */
 
 class FeatureManager {
   constructor () {
@@ -805,28 +804,26 @@ class FeatureManager {
   }
 
   showNotification (message, type = 'info') {
-    // Используем новую улучшенную систему уведомлений
-    if (window.notificationSystem) {
-      const titles = {
-        success: 'Успешно',
-        error: 'Ошибка',
-        warning: 'Внимание',
-        info: 'Информация'
-      }
-      window.notificationSystem.show({
-        type: type,
-        title: titles[type] || 'Сообщение',
-        message: message
-      })
-    } else if (window.showErrorNotification) {
-      // Fallback для старой системы
-      const colors = {
-        success: '#10b981',
-        error: '#ef4444',
-        warning: '#f59e0b',
-        info: '#3b82f6'
-      }
-      window.showErrorNotification(message, colors[type])
+    if (type === 'success' && window.showSuccessNotification) {
+      window.showSuccessNotification(message)
+    } else if (type === 'error' && window.showErrorNotification) {
+      window.showErrorNotification('Ошибка', message)
+    } else if (type === 'warning' && window.showWarningNotification) {
+      window.showWarningNotification('Внимание', message)
+    } else if (window.showInfoNotification) {
+      window.showInfoNotification('Информация', message)
+    } else {
+      // Fallback for old notification system
+      const notification = document.createElement('div')
+      notification.className = 'theme-notification'
+      notification.style.background = type === 'success' ? '#10b981' : '#3b82f6'
+      notification.textContent = message
+      document.body.appendChild(notification)
+
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in forwards'
+        setTimeout(() => notification.remove(), 300)
+      }, 3000)
     }
   }
 }

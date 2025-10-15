@@ -312,9 +312,6 @@
             ⛶ Полноэкранный
         </button>
         
-        <button class="fullscreen-btn" id="viewerThemeToggle" onclick="toggleViewerTheme()" style="top: 70px;">
-            🌓 Тема
-        </button>
         
         <div id="loading" class="loading">
             Загрузка...
@@ -326,7 +323,7 @@
     <script src="/js/renderer.js" defer></script>
     <script src="/js/websocket-client.js" defer></script>
     <script src="/js/shared-components.js" defer></script>
-    
+
     <script>
         // Global variables
         let wsClient;
@@ -354,7 +351,6 @@
                 debugLog('📱 Session ID получен:', sessionId);
                 initializeComponents();
                 await initializeViewer(sessionId);
-                loadSavedTheme();
                 
             } catch (error) {
                 debugError('❌ Критическая ошибка инициализации:', error);
@@ -670,70 +666,6 @@
                 document.addEventListener('gesturestart', (event) => event.preventDefault());
                 document.addEventListener('gesturechange', (event) => event.preventDefault());
                 document.addEventListener('gestureend', (event) => event.preventDefault());
-            }
-        }
-        
-        // Theme functions
-        function toggleViewerTheme() {
-            const body = document.body;
-            const isDark = !body.classList.contains('light-theme');
-
-            if (isDark) {
-                body.classList.add('light-theme');
-                localStorage.setItem('bb_theme', 'light');
-                showNotification('Светлая тема активирована', 'success');
-            } else {
-                body.classList.remove('light-theme');
-                localStorage.setItem('bb_theme', 'dark');
-                showNotification('Тёмная тема активирована', 'success');
-            }
-        }
-
-        function showNotification(message, type = 'info') {
-            if (window.notificationSystem) {
-                const titles = {
-                    success: 'Успешно',
-                    error: 'Ошибка',
-                    warning: 'Внимание',
-                    info: 'Информация'
-                }
-                window.notificationSystem.show({
-                    type: type,
-                    title: titles[type] || 'Сообщение',
-                    message: message
-                })
-            } else if (window.showErrorNotification) {
-                const colors = {
-                    success: '#10b981',
-                    error: '#ef4444',
-                    warning: '#f59e0b',
-                    info: '#3b82f6'
-                }
-                window.showErrorNotification(message, colors[type])
-            } else {
-                const toast = document.createElement('div');
-                toast.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-                    color: white;
-                    padding: 12px 16px;
-                    border-radius: 8px;
-                    z-index: 10000;
-                    font-size: 14px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                `;
-                toast.textContent = message;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 3000);
-            }
-        }
-
-        function loadSavedTheme() {
-            const savedTheme = localStorage.getItem('bb_theme') || 'dark';
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
             }
         }
     </script>

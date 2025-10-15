@@ -210,7 +210,7 @@ async function initializeController () {
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
       console.error('ID сессии не найден в URL')
-      showErrorNotification('ID сессии не найден в URL')
+      showNotification('ID сессии не найден в URL', 'error')
       return
     }
 
@@ -407,7 +407,7 @@ function setupWebSocketEventHandlers (wsClient, logger) {
   wsClient.on('error', (error) => {
     logger.error(`WebSocket ошибка: ${error.type}`, error)
     if (error.type === 'connection') {
-      showErrorNotification('Потеряно соединение с сервером')
+      showNotification('Потеряно соединение с сервером', 'error')
     }
   })
 
@@ -538,7 +538,7 @@ function setupWebSocketEventHandlers (wsClient, logger) {
 
   wsClient.on('maxReconnectAttemptsReached', () => {
     logger.error('Исчерпаны попытки переподключения')
-    showErrorNotification('Не удается подключиться к серверу. Проверьте интернет-соединение.')
+    showNotification('Не удается подключиться к серверу. Проверьте интернет-соединение.', 'error')
   })
 }
 
@@ -624,29 +624,39 @@ function updateConnectionStatus (isConnected) {
 }
 
 /**
- * Показ уведомления об ошибке
+ * Показ уведомления
  */
-function showErrorNotification (message) {
-  if (window.notificationSystem) {
-    window.notificationSystem.error('Ошибка', message);
-  } else {
-    // Fallback для старой системы
-    const wrapper = document.createElement('div')
-    wrapper.className = 'bb-toast'
-    wrapper.innerHTML = `
-      <div class="bb-toast__content">
-        <strong>Ошибка:</strong> <span>${message}</span>
-        <button class="bb-toast__close" aria-label="Close" onclick="this.closest('.bb-toast').remove()">×</button>
-      </div>
-    `
-    document.body.appendChild(wrapper)
-
-    setTimeout(() => {
-      if (wrapper.parentElement) {
-        wrapper.remove()
+function showNotification (message, type = 'info') {
+  // Обертка для ожидания инициализации notificationSystem
+  const tryShowNotification = (attempt = 0) => {
+    if (window.notificationSystem) {
+      const titles = {
+        success: '',
+        error: 'Ошибка',
+        warning: 'Внимание',
+        info: ''
       }
-    }, 5000)
+      const title = titles[type] || ''
+      window.notificationSystem.show({
+        type: type,
+        title: title,
+        message: message
+      })
+    } else if (attempt < 5) {
+      // Если система еще не готова, пробуем еще раз через 100 мс
+      setTimeout(() => tryShowNotification(attempt + 1), 100)
+    } else {
+      // Fallback, если notificationSystem так и не появилась
+      console.warn('Notification system not found, using fallback.')
+      const fallbackToast = document.createElement('div')
+      fallbackToast.className = 'theme-notification'
+      fallbackToast.style.background = type === 'success' ? '#10b981' : '#ef4444'
+      fallbackToast.textContent = message
+      document.body.appendChild(fallbackToast)
+      setTimeout(() => fallbackToast.remove(), 3000)
+    }
   }
+  tryShowNotification()
 }
 
 /**

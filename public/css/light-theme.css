@@ -236,36 +236,48 @@ body.light-theme .kbd {
 }
 
 /* Счетчики */
-body.light-theme #bbCounters div {
+body.light-theme #bbCounters > div {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+body.light-theme #bbCounters .font-semibold { /* Targeting the title */
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 body.light-theme #bbTimer {
-  background: #2563eb;
-  color: white;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+  background: #f1f5f9;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 36px;
+  padding: 2px 10px;
 }
 
 body.light-theme #bbPasses,
 body.light-theme #bbSets {
   color: #1e293b;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-
-body.light-theme #bbResetBtn {
-  background: #f8fafc;
-  color: #475569;
-  border-color: #cbd5e1;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: transparent;
+  border: none;
+  font-size: 36px;
+  font-weight: 700;
 }
 
 body.light-theme #bbResetBtn:hover {
-  background: #e2e8f0;
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
   color: #334155;
   border-color: #94a3b8;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
 }
 
 /* Информационные карточки */
