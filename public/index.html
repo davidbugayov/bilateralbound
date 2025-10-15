@@ -526,13 +526,14 @@
   </style>
   
   <script src="./js/common.js" defer></script>
+  <script src="./js/notification-system.js" defer></script>
   <script src="./js/new-features.js" defer></script>
   
 </head>
 <body>
   <div class="theme-toggle-container">
     <button id="themeToggleBtn" class="theme-toggle-btn">
-      🌓 Сменить тему
+      🌓 Тема
     </button>
   </div>
 
@@ -605,7 +606,7 @@
         </div>
         <div style="text-align: right; margin-top: 24px;">
           <div class="footer">
-            ⚡ BilateralBound v2.72.0
+            ⚡ BilateralBound v2.73.0
           </div>
         </div>
       </div>
@@ -736,18 +737,30 @@
     document.addEventListener('DOMContentLoaded', function() {
       resetCreateSessionButton();
 
-      setTimeout(() => {
-        const createPresetBtn = document.getElementById('createPresetBtn');
+      // Инициализация кнопки темы - только один раз
+      let themeInitialized = false;
+
+      const initThemeToggle = () => {
+        if (themeInitialized) return; // Уже инициализировано
+
         const themeToggleBtn = document.getElementById('themeToggleBtn');
-
-        if (createPresetBtn && window.createCustomPreset) {
-          createPresetBtn.addEventListener('click', window.createCustomPreset);
-        }
-
         if (themeToggleBtn && window.themeManager) {
-          themeToggleBtn.addEventListener('click', () => window.themeManager.toggleTheme());
+          // Удаляем все существующие обработчики клика
+          const newBtn = themeToggleBtn.cloneNode(true);
+          themeToggleBtn.parentNode.replaceChild(newBtn, themeToggleBtn);
+
+          // Добавляем обработчик только один раз
+          newBtn.addEventListener('click', () => window.themeManager.toggleTheme());
+          themeInitialized = true;
+          console.log('✅ Кнопка темы инициализирована');
+        } else if (!window.themeManager) {
+          // Если themeManager еще не загружен, ждем его
+          setTimeout(initThemeToggle, 100);
         }
-      }, 1000);
+      };
+
+      // Запускаем инициализацию
+      initThemeToggle();
     });
   </script>
 </body>

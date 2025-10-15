@@ -143,13 +143,15 @@ class ThemeManager {
 
   toggleTheme () {
     const body = document.body
-    const isDark = body.classList.contains('light-theme')
+    const isLight = body.classList.contains('light-theme')
 
-    if (isDark) {
+    if (isLight) {
+      // Сейчас светлая тема - переключаем на темную
       body.classList.remove('light-theme')
       localStorage.setItem(this.themeKey, 'dark')
       if (window.showSuccessNotification) window.showSuccessNotification('Тёмная тема активирована')
     } else {
+      // Сейчас темная тема - переключаем на светлую
       body.classList.add('light-theme')
       localStorage.setItem(this.themeKey, 'light')
       if (window.showSuccessNotification) window.showSuccessNotification('Светлая тема активирована')
