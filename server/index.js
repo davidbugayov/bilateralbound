@@ -8,6 +8,7 @@ const setupWebSocketServer = require('./network/webSocketServer.js')
 
 console.log('\n\n--- SERVER STARTING (Modular Architecture) ---\n\n')
 
+
 // 1. Инициализация кэша и менеджера сессий
 const apiCache = new Map()
 const sessionManager = new SessionManager(apiCache)

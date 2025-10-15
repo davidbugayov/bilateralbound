@@ -76,6 +76,20 @@ class SessionManager {
     session.lastStateUpdate = now
     session.lastActivity = now
 
+    // Обработка возврата в центр при смене направления или остановке
+    if (validatedUpdates.returnToCenter && session.physicsEngine) {
+      console.log(`[SERVER] Обработка returnToCenter для сессии ${sessionId}`)
+      // Используем специальный метод для плавного возврата в центр
+      session.physicsEngine.returnToCenter()
+      
+      // Если это возврат при остановке, устанавливаем паузу
+      if (validatedUpdates.paused) {
+        session.physicsEngine.setPaused(true)
+      }
+      
+      this.logger.logSession(sessionId, '[RETURN_TO_CENTER] Initiating smooth return to center', 'debug')
+    }
+
     if (session.physicsEngine) {
       session.physicsEngine.applyCommand(validatedUpdates)
       Object.assign(session.ballState, session.physicsEngine.getState())

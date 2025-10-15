@@ -420,6 +420,7 @@
           <button class="seg-btn" id="fsDirV" style="font-size:11px; padding:6px;">↕️ Вертик</button>
           <button class="seg-btn" id="fsDirDL" style="font-size:11px; padding:6px;">↙️↘️ Диаг1</button>
           <button class="seg-btn" id="fsDirDR" style="font-size:11px; padding:6px;">↖️↗️ Диаг2</button>
+          <button class="seg-btn" id="fsDirRandom" style="font-size:11px; padding:6px;">🎲 Случайное</button>
         </div>
         
         <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:8px;">
@@ -483,11 +484,9 @@
               <button class="seg-btn" data-mode="vertical" onclick="setDirection('vertical')" aria-label="Вертикально" title="Вертикальное движение"><strong>↕️</strong> Вертик.</button>
               <button class="seg-btn" data-mode="diagRL" onclick="setDirection('diagRL')" aria-label="Диагональ слева направо" title="Диагональ L→R"><strong>↖️↗️</strong> L→R</button>
               <button class="seg-btn" data-mode="diagRLL" onclick="setDirection('diagRLL')" aria-label="Диагональ справа налево" title="Диагональ R→L"><strong>↙️↘️</strong> R→L</button>
+              <button class="seg-btn" data-mode="random" onclick="setDirection('random')" aria-label="Случайное направление" title="Случайное направление"><strong>🎲</strong> Случайное</button>
             </div>
           </div>
-          <p style="text-align: center; margin: 8px 0; font-size: 13px; color: #6b7280;">
-            <span id="currentDirection">↔️ Горизонтально</span>
-          </p>
         </div>
         <div class="controls-card">
           <p class="controls-title">Скорость</p>

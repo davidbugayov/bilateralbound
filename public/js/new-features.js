@@ -80,7 +80,7 @@ class FeatureManager {
     if (!container) return
 
     // Очищаем контейнер
-    container.innerHTML = '<h3 style="color: #fbbf24; margin-bottom: 12px;">🎯 Быстрые пресеты</h3>'
+    container.innerHTML = ''
 
     const presetGrid = document.createElement('div')
     presetGrid.style.display = 'grid'
@@ -512,31 +512,10 @@ class FeatureManager {
     nameRow.style.gap = '8px'
     nameRow.style.marginBottom = '8px'
 
-    const nameInput = document.createElement('input')
-    nameInput.type = 'text'
-    nameInput.id = 'bbSessionNameInput'
-    nameInput.placeholder = 'Название сессии'
-    nameInput.style.flex = '1'
-    nameInput.style.padding = '8px 10px'
-    nameInput.style.background = '#1f2937'
-    nameInput.style.border = '1px solid #374151'
-    nameInput.style.color = '#e2e8f0'
-    nameInput.style.borderRadius = '6px'
-
-    // если уже есть текущая — подставим имя
-    const current = this.sessions.find(s => s.id === this.currentSessionId)
-    if (current) nameInput.value = current.name
-
     const saveBtn = document.createElement('button')
     saveBtn.className = 'btn'
     saveBtn.textContent = '💾 Сохранить'
-    saveBtn.onclick = () => this.saveNamedSession(nameInput.value)
-
-    const updateBtn = document.createElement('button')
-    updateBtn.className = 'btn outline'
-    updateBtn.textContent = '⟳ Обновить'
-    updateBtn.disabled = !this.currentSessionId
-    updateBtn.onclick = () => this.updateCurrentSession(nameInput.value)
+    saveBtn.onclick = () => this.saveNamedSession('Сессия')
 
     const deleteBtn = document.createElement('button')
     deleteBtn.className = 'btn outline'
@@ -544,9 +523,7 @@ class FeatureManager {
     deleteBtn.disabled = !this.currentSessionId
     deleteBtn.onclick = () => this.deleteSessionById(this.currentSessionId)
 
-    nameRow.appendChild(nameInput)
     nameRow.appendChild(saveBtn)
-    nameRow.appendChild(updateBtn)
     nameRow.appendChild(deleteBtn)
 
     const listWrap = document.createElement('div')

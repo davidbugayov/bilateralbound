@@ -192,8 +192,8 @@ class PhysicsEngine {
   }
 
   /**
-     * Устанавливает состояние паузы
-     */
+   * Устанавливает состояние паузы
+   */
   setPaused (paused) {
     this.state.paused = Boolean(paused)
 
@@ -227,6 +227,37 @@ class PhysicsEngine {
     } else {
       // При снятии с паузы возвращаем обычное поведение
       this.state.allowInterpWhenPaused = false
+    }
+  }
+
+  /**
+   * Инициирует плавный возврат мяча в центр
+   */
+  returnToCenter () {
+    console.log(`[PHYSICS] returnToCenter called, isViewer: ${this.isViewer}, center: (${this.centerX}, ${this.centerY})`)
+    if (this.isViewer) {
+      // Для режима вьювера устанавливаем целевую позицию в центр
+      this.state.targetX = this.centerX
+      this.state.targetY = this.centerY
+      // Разрешаем интерполяцию для плавного движения
+      this.state.allowInterpWhenPaused = true
+      // Сбрасываем скорость для плавного возврата
+      this.state.smoothVx = 0
+      this.state.smoothVy = 0
+      this.state.lastVx = 0
+      this.state.lastVy = 0
+      console.log(`[PHYSICS] Viewer mode: target set to (${this.state.targetX}, ${this.state.targetY})`)
+      this.logger.logSession?.(this.options.sessionId || 'unknown', '[RETURN_TO_CENTER] Initiating smooth return to center')
+    } else {
+      // Для серверного режима просто устанавливаем позицию в центр
+      this.ball.x = this.centerX
+      this.ball.y = this.centerY
+      this.ball.vx = 0
+      this.ball.vy = 0
+      this.state.targetX = this.centerX
+      this.state.targetY = this.centerY
+      this.clampBallWithinBounds()
+      console.log(`[PHYSICS] Server mode: ball set to (${this.ball.x}, ${this.ball.y})`)
     }
   }
 

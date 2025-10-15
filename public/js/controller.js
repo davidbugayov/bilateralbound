@@ -1020,24 +1020,37 @@ function setDirection (directionMode) {
     // Преобразуем текстовый режим в вектор направления
     let dirX = 0
     let dirY = 0
+    let displayText = 'Неизвестно'
 
     switch (directionMode) {
       case 'horizontal':
         dirX = 1
         dirY = 0
+        displayText = 'Горизонтальное'
         break
       case 'vertical':
         dirX = 0
         dirY = 1
+        displayText = 'Вертикальное'
         break
       case 'diagRL': // Диагональ вправо-вниз
         dirX = 0.707
         dirY = 0.707
+        displayText = 'Диагональ (право-вниз)'
         break
       case 'diagRLL': // Диагональ вправо-вверх
         dirX = 0.707
         dirY = -0.707
+        displayText = 'Диагональ (право-верх)'
         break
+      case 'random': { // Случайное направление
+        // Генерируем случайный угол в радианах
+        const angle = Math.random() * 2 * Math.PI
+        dirX = Math.cos(angle)
+        dirY = Math.sin(angle)
+        displayText = 'Случайное'
+        break
+      }
       default:
         console.warn('Неизвестный режим направления:', directionMode)
         return
@@ -1047,21 +1060,34 @@ function setDirection (directionMode) {
     directionState = { dx: dirX, dy: dirY }
     currentDirectionMode = directionMode
 
-    // Если игра активна, отправляем новое направление на сервер
-    if (isPlaying && globalThis.__current.viewerConnected) {
+    if (isPlaying) {
+      // Если игра идет, плавно меняем направление через центр
+      safeSend(WS_MSG.controllerUpdate, {
+        paused: true,
+        returnToCenter: true
+      })
+
+      setTimeout(() => {
+        safeSend(WS_MSG.controllerUpdate, {
+          paused: false,
+          dirX: dirX,
+          dirY: dirY
+        })
+      }, 200) // Уменьшаем задержку для более быстрого отклика
+    } else {
+      // Если игра на паузе, просто обновляем направление без запуска движения
       safeSend(WS_MSG.controllerUpdate, {
         dirX: dirX,
-        dirY: dirY,
-        // НЕ центрируем мяч при смене направления во время игры
-        keepPosition: true
+        dirY: dirY
+        // `paused` не отправляем, чтобы не менять текущее состояние паузы
       })
     }
 
     // Обновляем UI для обратной связи
     updateDirectionButtons()
-    updateDirectionDisplay(dirX, dirY)
+    updateDirectionDisplay(dirX, dirY, displayText)
 
-    console.log(`🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)})`)
+    console.log(`🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`)
   } catch (error) {
     console.error('Ошибка установки направления:', error)
   }
@@ -1114,9 +1140,9 @@ function setBackgroundColor (color) {
  */
 function updateDirectionButtons () {
   // Обновляем активное состояние кнопок направления в основном интерфейсе
-  const directionButtons = document.querySelectorAll('[data-direction]')
+  const directionButtons = document.querySelectorAll('[data-mode]')
   directionButtons.forEach(button => {
-    const buttonDirection = button.getAttribute('data-direction')
+    const buttonDirection = button.getAttribute('data-mode')
     if (buttonDirection === currentDirectionMode) {
       button.classList.add('active')
     } else {
@@ -1125,9 +1151,15 @@ function updateDirectionButtons () {
   })
 
   // Обновляем кнопки направления в полноэкранном режиме
-  const fsDirectionButtons = document.querySelectorAll('[data-fs-direction]')
+  const fsDirectionButtons = document.querySelectorAll('[id^="fsDir"]')
   fsDirectionButtons.forEach(button => {
-    const buttonDirection = button.getAttribute('data-fs-direction')
+    let buttonDirection = null
+    if (button.id === 'fsDirH') buttonDirection = 'horizontal'
+    else if (button.id === 'fsDirV') buttonDirection = 'vertical'
+    else if (button.id === 'fsDirDL') buttonDirection = 'diagRLL'
+    else if (button.id === 'fsDirDR') buttonDirection = 'diagRL'
+    else if (button.id === 'fsDirRandom') buttonDirection = 'random'
+    
     if (buttonDirection === currentDirectionMode) {
       button.classList.add('active')
     } else {
@@ -1139,28 +1171,42 @@ function updateDirectionButtons () {
 /**
  * Обновляет индикатор направления и отображает информацию о текущем направлении
  */
-function updateDirectionDisplay (dirX, dirY) {
+function updateDirectionDisplay (dirX, dirY, customText = null) {
   try {
     // Ищем элемент для отображения направления
     const directionDisplay = document.getElementById('currentDirection')
-    let directionText = 'Неизвестно'
+    let directionText = customText || 'Неизвестно'
     let directionIcon = '❓'
-    if (directionDisplay) {
-      if (Math.abs(dirX) > 0.9 && Math.abs(dirY) < 0.1) {
+
+    if (!customText) {
+      // ОПРЕДЕЛЯЕМ НАПРАВЛЕНИЕ ТОЛЬКО ПО currentDirectionMode - игнорируем dirX/dirY
+      console.log(`🎯 Определяем направление по режиму: ${currentDirectionMode}`)
+
+      if (currentDirectionMode === 'horizontal') {
         directionText = 'Горизонтальное'
         directionIcon = '↔️'
-      } else if (Math.abs(dirY) > 0.9 && Math.abs(dirX) < 0.1) {
+      } else if (currentDirectionMode === 'vertical') {
         directionText = 'Вертикальное'
         directionIcon = '↕️'
-      } else if (dirX > 0 && dirY > 0) {
+      } else if (currentDirectionMode === 'diagRL') {
         directionText = 'Диагональ (право-вниз)'
         directionIcon = '↘️'
-      } else if (dirX > 0 && dirY < 0) {
+      } else if (currentDirectionMode === 'diagRLL') {
         directionText = 'Диагональ (право-верх)'
         directionIcon = '↗️'
+      } else if (currentDirectionMode === 'random') {
+        directionText = 'Случайное'
+        directionIcon = '🎲'
+      } else {
+        // Если режим неизвестен, показываем вопрос
+        directionText = 'Неизвестное направление'
+        directionIcon = '❓'
+        console.warn(`🎯 Неизвестный режим направления: ${currentDirectionMode}`)
       }
+    }
 
-      directionDisplay.innerHTML = `${directionIcon} <span>${directionText}</span>`
+    if (directionDisplay) {
+      directionDisplay.innerHTML = `${directionIcon}`
     }
 
     // Обновляем иконку направления в полноэкранном режиме
@@ -1169,7 +1215,7 @@ function updateDirectionDisplay (dirX, dirY) {
       fsDirectionDisplay.innerHTML = directionDisplay ? directionDisplay.innerHTML : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
     }
 
-    console.log(`🎯 Отображение направления обновлено: ${directionText} (${dirX.toFixed(2)}, ${dirY.toFixed(2)})`)
+    console.log(`🎯 Отображение направления обновлено: ${directionText} (режим: ${currentDirectionMode}) - игнорируем dirX/dirY`)
   } catch (error) {
     console.error('Ошибка обновления отображения направления:', error)
   }
@@ -1192,9 +1238,10 @@ function togglePlayPause () {
   const payload = {}
 
   if (isPlaying) {
-    // Останавливаем игру
+    // Останавливаем игру с плавным возвратом в центр
     payload.paused = true
-    safeSend(WS_MSG.controllerUpdate, { paused: true })
+    payload.returnToCenter = true // Флаг для плавного возврата в центр
+    safeSend(WS_MSG.controllerUpdate, payload)
     isPlaying = false
     updatePlayPauseButton() // мгновенный отклик UI
     // При остановке увеличиваем сет
@@ -1497,10 +1544,12 @@ function wireFullscreenControls () {
   const dV = document.getElementById('fsDirV')
   const dDL = document.getElementById('fsDirDL')
   const dDR = document.getElementById('fsDirDR')
+  const dRandom = document.getElementById('fsDirRandom')
   if (dH) dH.onclick = () => setDirection('horizontal')
   if (dV) dV.onclick = () => setDirection('vertical')
   if (dDL) dDL.onclick = () => setDirection('diagRLL')
   if (dDR) dDR.onclick = () => setDirection('diagRL')
+  if (dRandom) dRandom.onclick = () => setDirection('random')
 
   // Ball color buttons (10 colors from main preview)
   const ballColors = ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff']
