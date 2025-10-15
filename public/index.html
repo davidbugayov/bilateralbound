@@ -606,7 +606,7 @@
         </div>
         <div style="text-align: right; margin-top: 24px;">
           <div class="footer">
-            ⚡ BilateralBound v2.73.0
+            ⚡ BilateralBound v2.74.0
           </div>
         </div>
       </div>
@@ -733,6 +733,23 @@
     });
 
     window.addEventListener('focus', resetCreateSessionButton);
+
+    // Функция копирования в буфер обмена
+    function copy(elementId) {
+      const element = document.getElementById(elementId);
+      if (element && element.value) {
+        navigator.clipboard.writeText(element.value).then(() => {
+          if (window.showSuccessNotification) {
+            window.showSuccessNotification('Ссылка скопирована в буфер обмена');
+          }
+        }).catch(err => {
+          console.error('Ошибка копирования: ', err);
+          // Fallback для старых браузеров
+          element.select();
+          document.execCommand('copy');
+        });
+      }
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
       resetCreateSessionButton();
