@@ -1,18 +1,19 @@
-/* Светлая тема для BilateralBound v1.3.0 - Улучшенная и более органичная версия */
+/* Светлая тема для BilateralBound v2.75.0 - Улучшенная и более органичная версия */
 
 body.light-theme {
-  background: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
   color: #1e293b;
   min-height: 100vh;
 }
 
 /* Основные элементы управления */
 body.light-theme .control-section {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  color: #334155;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  color: #374151;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
 }
 
 body.light-theme .floating-preview {
@@ -237,15 +238,16 @@ body.light-theme .kbd {
 
 /* Счетчики */
 body.light-theme #bbCounters > div {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border-radius: 16px;
-  padding: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  padding: 16px;
+  backdrop-filter: blur(10px);
 }
 
 body.light-theme #bbCounters .font-semibold { /* Targeting the title */
-  color: #94a3b8;
+  color: #6b7280;
   font-weight: 500;
   font-size: 14px;
   text-transform: none;
@@ -253,29 +255,37 @@ body.light-theme #bbCounters .font-semibold { /* Targeting the title */
 }
 
 body.light-theme #bbTimer {
-  background: #f1f5f9;
-  color: #1e293b;
-  border: 1px solid #e2e8f0;
-  box-shadow: none;
-  border-radius: 10px;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #111827;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   font-weight: 700;
   font-size: 36px;
-  padding: 2px 10px;
+  padding: 4px 12px;
 }
 
 body.light-theme #bbPasses,
 body.light-theme #bbSets {
-  color: #1e293b;
+  color: #111827;
   background: transparent;
   border: none;
   font-size: 36px;
   font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme #bbResetBtn {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  color: #4b5563;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 body.light-theme #bbResetBtn:hover {
   background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-  color: #334155;
-  border-color: #94a3b8;
+  color: #374151;
+  border-color: #9ca3af;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   transform: translateY(-1px);
 }
@@ -358,8 +368,136 @@ body.light-theme .footer {
 /* Canvas для превью */
 body.light-theme #preview,
 body.light-theme #previewFullscreenCanvas {
-  background: #ffffff !important;
-  border-color: #e2e8f0 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border-color: rgba(226, 232, 240, 0.8) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Полноэкранный режим */
+body.light-theme #previewOverlay {
+  background: rgba(248, 250, 252, 0.95) !important;
+  backdrop-filter: blur(20px);
+}
+
+body.light-theme #previewFsPanel {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%) !important;
+  border-color: rgba(226, 232, 240, 0.8) !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(20px);
+}
+
+body.light-theme #fsCurSid {
+  color: #374151 !important;
+  background: rgba(241, 245, 249, 0.8) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+body.light-theme #fsViewLink {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(203, 213, 225, 0.8) !important;
+  color: #374151 !important;
+}
+
+/* Дополнительные элементы интерфейса */
+body.light-theme .viewer-link-container {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+body.light-theme .actions-grid .btn {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  color: #374151 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-theme .actions-grid .btn:hover {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+  border-color: rgba(156, 163, 175, 0.8) !important;
+  color: #1f2937 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-1px) !important;
+}
+
+body.light-theme .actions-grid .btn.primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+body.light-theme .actions-grid .btn.danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Улучшенные цвета для текста */
+body.light-theme #curSid {
+  color: #111827 !important;
+  font-weight: 600 !important;
+}
+
+body.light-theme #sessionInfo {
+  color: #6b7280 !important;
+}
+
+body.light-theme #viewerStatus {
+  color: #059669 !important;
+  font-weight: 600 !important;
+}
+
+/* Прогресс-бары и визуальные элементы */
+body.light-theme .bb-notification.success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+}
+
+body.light-theme .bb-notification.error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+}
+
+body.light-theme .bb-notification.info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+}
+
+/* Улучшенные цвета для светлой темы уведомлений */
+body.light-theme .bb-notification {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(226, 232, 240, 0.8) !important;
+  color: #374151 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-theme .bb-notification.success {
+  background: linear-gradient(135deg, rgba(240, 253, 244, 0.95) 0%, rgba(236, 253, 245, 0.95) 100%) !important;
+  border-left: 4px solid #22c55e !important;
+  color: #166534 !important;
+}
+
+body.light-theme .bb-notification.error {
+  background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%) !important;
+  border-left: 4px solid #ef4444 !important;
+  color: #991b1b !important;
+}
+
+body.light-theme .bb-notification.warning {
+  background: linear-gradient(135deg, rgba(251, 236, 225, 0.95) 0%, rgba(245, 158, 11, 0.1) 100%) !important;
+  border-left: 4px solid #f59e0b !important;
+  color: #92400e !important;
+}
+
+body.light-theme .bb-notification.info {
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 100%) !important;
+  border-left: 4px solid #3b82f6 !important;
+  color: #1e3a8a !important;
 }
 
 /* Анимации градиента */
