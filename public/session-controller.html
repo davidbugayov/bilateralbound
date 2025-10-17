@@ -35,12 +35,18 @@
     *, *::before, *::after { box-sizing: border-box; }
 
     .control-section {
-      background: #111827;
-      border: 1px solid #1f2937;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 0;
-      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
+    }
+
+    .light-theme .control-section {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
     }
 
     .floating-preview {
@@ -55,9 +61,17 @@
       cursor: move;
       margin: 0 0 16px 0;
       padding: 8px 12px;
-      background: #1f2937;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
       border-radius: 8px;
       user-select: none;
+      color: #64748b;
+    }
+
+    .light-theme .drag-handle {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
     }
 
     button { 
@@ -81,14 +95,26 @@
       font-size: 14px; 
       font-weight: 500; 
     }
-    .btn.outline { 
-      background: transparent; 
-      border: 1px solid #374151; 
-      color: #9ca3af; 
+    .btn.outline {
+      background: transparent;
+      border: 1px solid #cbd5e1;
+      color: #64748b;
     }
-    .btn.outline:hover { 
-      background: #374151; 
-      color: white; 
+    .btn.outline:hover {
+      background: #f1f5f9;
+      color: #374151;
+      border-color: #94a3b8;
+    }
+
+    .light-theme .btn.outline {
+      border: 1px solid #cbd5e1;
+      color: #64748b;
+    }
+
+    .light-theme .btn.outline:hover {
+      background: #f1f5f9;
+      color: #374151;
+      border-color: #94a3b8;
     }
 
     .color-btn { 
@@ -101,21 +127,36 @@
       transform: scale(1.05); 
     }
 
-    .size-btn { 
-      padding: 8px 16px; 
-      font-size: 14px; 
-      background: #374151; 
-      color: #9ca3af; 
-      border-radius: 6px; 
-      transition: all 0.2s ease; 
+    .size-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      transition: all 0.2s ease;
     }
-    .size-btn:hover { 
-      background: #4b5563; 
-      color: white; 
+    .size-btn:hover {
+      background: #e2e8f0;
+      color: #374151;
+      border-color: #cbd5e1;
     }
-    .size-btn.active { 
-      background: #2563eb; 
-      color: white; 
+    .size-btn.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    .light-theme .size-btn {
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+
+    .light-theme .size-btn:hover {
+      background: #e2e8f0;
+      color: #374151;
+      border-color: #cbd5e1;
     }
 
     .viewer-link-container { 
@@ -131,32 +172,56 @@
     .link-input-group input {
       flex: 1;
       padding: 10px 12px;
-      border: 1px solid #374151;
+      border: 1px solid #cbd5e1;
       border-radius: 6px;
-      background: #1f2937;
-      color: #e2e8f0;
+      background: #ffffff;
+      color: #374151;
       font-size: 14px;
     }
 
     .link-input-group input:focus {
       outline: none;
-      border-color: #60a5fa;
-      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
     }
 
-    .copy-btn { 
-      padding: 8px 12px; 
-      font-size: 12px; 
-      background: #374151; 
-      color: #9ca3af; 
-      border: 1px solid #4b5563; 
-      border-radius: 6px; 
-      cursor: pointer; 
-      transition: all 0.2s ease; 
+    .copy-btn {
+      padding: 8px 12px;
+      font-size: 12px;
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
-    .copy-btn:hover { 
-      background: #4b5563; 
-      color: white; 
+    .copy-btn:hover {
+      background: #e2e8f0;
+      color: #374151;
+      border-color: #94a3b8;
+    }
+
+    .light-theme .link-input-group input {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #374151;
+    }
+
+    .light-theme .link-input-group input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    .light-theme .copy-btn {
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+    }
+
+    .light-theme .copy-btn:hover {
+      background: #e2e8f0;
+      color: #374151;
+      border-color: #94a3b8;
     }
 
     .speed-container {
@@ -170,7 +235,7 @@
       width: 100%;
       max-width: 300px;
       height: 6px;
-      background: #374151;
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
       border-radius: 3px;
       outline: none;
       -webkit-appearance: none;
@@ -181,20 +246,35 @@
       -webkit-appearance: none;
       width: 20px;
       height: 20px;
-      background: #60a5fa;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25);
+      border: 2px solid #ffffff;
     }
 
     .speed-container input[type="range"]::-moz-range-thumb {
       width: 20px;
       height: 20px;
-      background: #60a5fa;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       border-radius: 50%;
       cursor: pointer;
-      border: none;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25);
+    }
+
+    .light-theme .speed-container input[type="range"] {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    }
+
+    .light-theme .speed-container input[type="range"]::-webkit-slider-thumb {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border: 2px solid #ffffff;
+    }
+
+    .light-theme .speed-container input[type="range"]::-moz-range-thumb {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border: 2px solid #ffffff;
     }
 
     .controls-grid { 
@@ -203,17 +283,26 @@
       gap: 0; 
       align-items: start; 
     }
-    .controls-card { 
-      background: #0b1220; 
-      border: 1px solid #1f2937; 
-      border-radius: 10px; 
-      padding: 12px; 
+    .controls-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
     }
-    .controls-title { 
-      margin: 0 0 8px 0; 
-      font-size: 14px; 
-      color: #9ca3af; 
-      font-weight: 500; 
+    .controls-title {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .light-theme .controls-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .light-theme .controls-title {
+      color: #64748b;
     }
     .direction-row { 
       display: flex; 
@@ -235,36 +324,54 @@
       font-weight: 600; 
     }
 
-    .segmented { 
-      display: flex; 
-      gap: 0; 
-      border: 1px solid #1f2937; 
-      border-radius: 10px; 
-      overflow: hidden; 
-      background: #0d1526; 
-      flex-wrap: wrap; 
+    .segmented {
+      display: flex;
+      gap: 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f8fafc;
+      flex-wrap: wrap;
     }
-    .segmented .seg-btn { 
-      flex: 1 1 25%; 
-      padding: 10px 12px; 
-      font-size: 13px; 
-      color: #9ca3af; 
-      background: transparent; 
-      border: 0; 
-      cursor: pointer; 
-      transition: background 0.15s ease, color 0.15s ease; 
-      min-width: 0; 
+    .segmented .seg-btn {
+      flex: 1 1 25%;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #64748b;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+      min-width: 0;
     }
-    .segmented .seg-btn + .seg-btn { 
-      border-left: 1px solid #1f2937; 
+    .segmented .seg-btn + .seg-btn {
+      border-left: 1px solid #e2e8f0;
     }
-    .segmented .seg-btn:hover { 
-      background: #152139; 
-      color: #e5e7eb; 
+    .segmented .seg-btn:hover {
+      background: #e2e8f0;
+      color: #374151;
     }
-    .segmented .seg-btn.active { 
-      background: #1d4ed8; 
-      color: #ffffff; 
+    .segmented .seg-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .light-theme .segmented {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .light-theme .segmented .seg-btn {
+      color: #64748b;
+    }
+
+    .light-theme .segmented .seg-btn + .seg-btn {
+      border-left: 1px solid #e2e8f0;
+    }
+
+    .light-theme .segmented .seg-btn:hover {
+      background: #e2e8f0;
+      color: #374151;
     }
     .segmented .seg-btn strong { 
       font-weight: 600; 
@@ -326,9 +433,9 @@
       position: fixed;
       top: 20px;
       left: 20px;
-      background: #374151;
-      color: #9ca3af;
-      border: 1px solid #4b5563;
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
       padding: 8px 16px;
       border-radius: 8px;
       cursor: pointer;
@@ -337,8 +444,21 @@
     }
 
     .back-btn:hover {
-      background: #4b5563;
-      color: white;
+      background: #e2e8f0;
+      color: #374151;
+      border-color: #94a3b8;
+    }
+
+    .light-theme .back-btn {
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+    }
+
+    .light-theme .back-btn:hover {
+      background: #e2e8f0;
+      color: #374151;
+      border-color: #94a3b8;
     }
 
     .theme-toggle-container {
@@ -376,13 +496,21 @@
       background: rgba(30, 64, 175, 1);
     }
 
-    .kbd { 
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; 
-      background: #1f2937; 
-      border: 1px solid #374151; 
-      border-bottom-width: 3px; 
-      border-radius: 6px; 
-      padding: 2px 6px; 
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-bottom-width: 3px;
+      border-radius: 6px;
+      padding: 2px 6px;
+      color: #374151;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .light-theme .kbd {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #374151;
     }
   </style>
 </head>
@@ -398,8 +526,8 @@
   <div class="wrap">
     <div class="control-section">
       <h3>🎮 Сессия: <span id="curSid">...</span></h3>
-      <p id="sessionInfo" style="margin: 4px 0; font-size: 14px; color: #9ca3af;">Сессия: загрузка...</p>
-      <p style="margin: 8px 0;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
+      <p id="sessionInfo" style="margin: 4px 0; font-size: 14px; color: #64748b;">Сессия: загрузка...</p>
+      <p style="margin: 8px 0; color: #64748b;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
       <div class="viewer-link-container">
         <div class="link-input-group">
           <input id="view" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
@@ -407,18 +535,18 @@
         </div>
       </div>
       <div id="bbCounters" style="margin-top: 12px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
-        <div style="display: flex; gap: 18px; align-items: center; background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 10px 14px;">
+        <div style="display: flex; gap: 18px; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px;">
           <div style="min-width: 110px; text-align: center;">
-            <div style="font-size: 20px; color: #e5e7eb; font-weight: 600;">Таймер</div>
-            <div id="bbTimer" style="font-size: 36px; font-weight: 700; color: #111827; background: #e5e7eb; padding: 2px 10px; border-radius: 8px;">0:00</div>
+            <div style="font-size: 20px; color: #64748b; font-weight: 600;">Таймер</div>
+            <div id="bbTimer" style="font-size: 36px; font-weight: 700; color: #374151; background: #ffffff; padding: 2px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">0:00</div>
           </div>
           <div style="min-width: 90px; text-align: center;">
-            <div style="font-size: 20px; color: #e5e7eb; font-weight: 600;">Пасы</div>
-            <div id="bbPasses" style="font-size: 36px; font-weight: 700; color: #e5e7eb;">0</div>
+            <div style="font-size: 20px; color: #64748b; font-weight: 600;">Пасы</div>
+            <div id="bbPasses" style="font-size: 36px; font-weight: 700; color: #374151;">0</div>
           </div>
           <div style="min-width: 90px; text-align: center;">
-            <div style="font-size: 20px; color: #e5e7eb; font-weight: 600;">Сеты</div>
-            <div id="bbSets" style="font-size: 36px; font-weight: 700; color: #e5e7eb;">0</div>
+            <div style="font-size: 20px; color: #64748b; font-weight: 600;">Сеты</div>
+            <div id="bbSets" style="font-size: 36px; font-weight: 700; color: #374151;">0</div>
           </div>
         </div>
         <button id="bbResetBtn" class="btn outline" style="height: 44px; min-width: 90px;">Сброс</button>
@@ -432,7 +560,7 @@
       </div>
       <div style="text-align: center; position: relative; padding-bottom: 35px;">
         <canvas id="preview" style="border: 1px solid #374151; background: #020617;"></canvas>
-        <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(0, 0, 0, 0.7); padding: 4px 8px; border-radius: 4px;">
+        <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #64748b; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(255, 255, 255, 0.9); padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
           Вьювер и размер экрана
         </div>
 
@@ -551,7 +679,7 @@
         </div>
         <div class="controls-card">
           <p class="controls-title">📋 Горячие клавиши</p>
-          <div style="font-size: 12px; color: #9ca3af; line-height: 1.5;">
+          <div style="font-size: 12px; color: #64748b; line-height: 1.5;">
             <div><span class="kbd">Пробел</span> — Старт/Стоп</div>
             <div><span class="kbd">Ctrl+Z</span> — Отмена действия</div>
             <div><span class="kbd">Ctrl+S</span> — Сохранить пресет</div>
