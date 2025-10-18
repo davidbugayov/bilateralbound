@@ -172,10 +172,18 @@ class FeatureManager {
     const container = document.getElementById('sessionControls')
     if (!container) return
 
+    // Создаем контейнер для горизонтального расположения кнопок
+    const buttonContainer = document.createElement('div')
+    buttonContainer.style.display = 'grid'
+    buttonContainer.style.gridTemplateColumns = '1fr 1fr'
+    buttonContainer.style.gap = '10px'
+    buttonContainer.style.marginTop = '12px'
+
     // Кнопка экспорта
     const exportBtn = document.createElement('button')
     exportBtn.className = 'btn outline'
     exportBtn.innerHTML = '📤 Экспорт сессии'
+    exportBtn.style.width = '100%'
     exportBtn.onclick = () => this.exportSession()
 
     // Кнопка импорта
@@ -188,10 +196,13 @@ class FeatureManager {
     const importBtn = document.createElement('button')
     importBtn.className = 'btn outline'
     importBtn.innerHTML = '📥 Импорт сессии'
+    importBtn.style.width = '100%'
     importBtn.onclick = () => importInput.click()
 
-    container.appendChild(exportBtn)
-    container.appendChild(importBtn)
+    buttonContainer.appendChild(exportBtn)
+    buttonContainer.appendChild(importBtn)
+    
+    container.appendChild(buttonContainer)
     container.appendChild(importInput)
   }
 
