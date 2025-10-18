@@ -219,6 +219,22 @@ async function initializeController () {
 
     logger.info(`📋 Работаем с сессией: ${sessionId}`)
 
+    // Уведомляем сервер о подключении контроллера (для постоянных ссылок)
+    try {
+      const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      })
+      if (connectResponse.ok) {
+        logger.info('✅ Контроллер зарегистрирован на сервере')
+      } else {
+        logger.warn('⚠️ Не удалось зарегистрировать контроллер на сервере')
+      }
+    } catch (error) {
+      logger.warn('⚠️ Ошибка регистрации контроллера:', error)
+    }
+
     // 2. Инициализация DOM элементов - делаем это сразу
     await initializeDOMElements(sessionId)
 
@@ -797,7 +813,7 @@ function initializeComponents () {
     {
       colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff'],
       defaultValue: '#60a5fa', // Дефолтный цвет мяча
-      title: '🎨 Цвет шарика',
+      title: '', // Заголовок уже есть в HTML
       onColorChange: (color) => {
         setBallColor(color)
         // Не меняем радиус превью при смене цвета
@@ -809,9 +825,9 @@ function initializeComponents () {
   components.bgColor = sharedComponents.createColorControl(
     document.getElementById('bgColorControl'),
     {
-      colors: ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a'],
-      defaultValue: '#020617', // Дефолтный цвет фона
-      title: '🎨 Цвет фона',
+      colors: ['#ffffff', '#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b'],
+      defaultValue: '#f8fafc', // Дефолтный светлый цвет фона
+      title: '', // Заголовок уже есть в HTML
       onColorChange: (color) => {
         setBackgroundColor(color)
         // Не меняем радиус превью при смене фона
@@ -825,7 +841,7 @@ function initializeComponents () {
     {
       sizes: [20, 40, 80, 100],
       defaultValue: 20,
-      title: '📏 Размер шарика',
+      title: '', // Заголовок уже есть в HTML
       onSizeChange: (size) => {
         setBallSize(size)
       }
@@ -1555,7 +1571,7 @@ function wireFullscreenControls () {
   }
 
   // Background color buttons (10 colors from main preview)
-  const bgColors = ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a']
+  const bgColors = ['#ffffff', '#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b']
   for (let i = 1; i <= 10; i++) {
     const btn = document.getElementById(`fsBg${i}`)
     if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1])
