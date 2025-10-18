@@ -28,7 +28,39 @@ class SessionManager {
       ballRadius: session.ballState.radius || 20,
       maxSpeed: 5000
     })
+  
+    this._initPhysicsCallbacks(session)
 
+    const engineState = session.physicsEngine.getState()
+    Object.assign(session.ballState, engineState)
+    session.ballState.paused = true
+    session.physicsEngine.setPaused(true)
+
+    this.startPhysics(session.id)
+    return session
+  }
+
+  // Создание сессии с определенным ID (для постоянных ссылок)
+  findOrCreateSession (sessionId, ballState = {}) {
+    const session = this.sessionRepository.findOrCreateById(sessionId, { ballState })
+    if (!session) return null
+
+    if (!session.physicsEngine) {
+      session.physicsEngine = new PhysicsEngine({
+        ballRadius: session.ballState.radius || 20,
+        maxSpeed: 5000
+      })
+      this._initPhysicsCallbacks(session)
+      const engineState = session.physicsEngine.getState()
+      Object.assign(session.ballState, engineState)
+      session.ballState.paused = true
+      session.physicsEngine.setPaused(true)
+      this.startPhysics(session.id)
+    }
+    return session
+  }
+
+  _initPhysicsCallbacks (session) {
     // Немедленная рассылка состояния при отскоке, чтобы вьювер видел касание границ
     session.physicsEngine.bounceCallback = () => {
       try {
@@ -38,14 +70,6 @@ class SessionManager {
         // ignore
       }
     }
-
-    const engineState = session.physicsEngine.getState()
-    Object.assign(session.ballState, engineState)
-    session.ballState.paused = true
-    session.physicsEngine.setPaused(true)
-
-    this.startPhysics(session.id)
-    return session
   }
 
   getSession (sessionId) {

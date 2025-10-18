@@ -8,9 +8,36 @@ class SessionRepository {
     this.cacheExpiration = 30000 // 30 секунд
   }
 
+  // Валидация пользовательского ID сессии: латиница/цифры/подчеркивание/дефис, 3..32 символа
+  isValidCustomId (id) {
+    return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id)
+  }
+
   create (sessionData = {}) {
+    const session = this._createInternal(uuidv4().substring(0, 6), sessionData)
+    return session
+  }
+
+  createWithId (customId, sessionData = {}) {
+    const id = String(customId)
+    if (!this.isValidCustomId(id)) {
+      throw new Error('Invalid session id format')
+    }
+    if (this.sessions.has(id)) {
+      // Возвращаем существующую сессию, делая операцию идемпотентной
+      return this.sessions.get(id)
+    }
+    return this._createInternal(id, sessionData)
+  }
+
+  findOrCreateById (id, sessionData = {}) {
+    if (!this.isValidCustomId(id)) return null
+    return this.sessions.get(id) || this._createInternal(id, sessionData)
+  }
+
+  _createInternal (id, sessionData = {}) {
     const session = {
-      id: uuidv4().substring(0, 6),
+      id,
       ballState: {
         speed: 30,
         radius: 20,

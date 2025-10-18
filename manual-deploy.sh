@@ -70,9 +70,13 @@ deploy_environment() {
     if ssh_exec "[ -d ${WORK_DIR} ]"; then
         log "Directory exists, pulling latest changes..."
         
-        # Останавливаем сервис
-        log "Stopping service ${SERVICE_NAME}..."
+        # Останавливаем и деактивируем сервис, чтобы прервать цикл перезапуска
+        log "Disabling and stopping service ${SERVICE_NAME} to break restart loop..."
+        ssh_exec "systemctl disable ${SERVICE_NAME} || true"
         ssh_exec "systemctl stop ${SERVICE_NAME} || true"
+        log "Ensuring port ${PORT} is free..."
+        ssh_exec "lsof -t -i:${PORT} | xargs -r kill -9 || true"
+        sleep 2 # Даем время на освобождение порта
         
         # Обновляем код
         log "Updating code from branch ${BRANCH}..."
@@ -82,12 +86,12 @@ deploy_environment() {
         
         # Устанавливаем зависимости
         log "Installing dependencies..."
-        ssh_exec "cd ${WORK_DIR} && npm ci --production"
+        ssh_exec "cd ${WORK_DIR} && npm ci --production --legacy-peer-deps"
     else
         log "Directory doesn't exist, cloning repository..."
         ssh_exec "mkdir -p ${WORK_DIR}"
         ssh_exec "git clone -b ${BRANCH} https://github.com/davidbugayov/bilateralbound.git ${WORK_DIR}"
-        ssh_exec "cd ${WORK_DIR} && npm ci --production"
+        ssh_exec "cd ${WORK_DIR} && npm ci --production --legacy-peer-deps"
     fi
     
     # Принудительно пересоздаем systemd service файл для обновления порта

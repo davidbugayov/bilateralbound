@@ -1,6 +1,6 @@
 {
   "name": "bilateralbound",
-  "version": "2.77.1",
+  "version": "2.77.2",
   "description": "Real-time EMDR therapy tool with scalable architecture",
   "main": "server/index.js",
   "scripts": {
@@ -18,8 +18,10 @@
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "version": "node version-manager.js",
     "postversion": "git add package.json VERSION.md && git commit -m \"🔖 Release v$(node -e \"console.log(require('./package.json').version)\")\" && git tag v$(node -e \"console.log(require('./package.json').version)\")",
-    "deploy:prod": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"cd /var/www/bilateralbound-prod && git checkout stable && git pull && npm install --legacy-peer-deps && systemctl restart bilateralbound-prod && systemctl status bilateralbound-prod --no-pager\"",
-    "deploy:dev": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"cd /var/www/bilateralbound-dev && git checkout main && git pull && npm install --legacy-peer-deps && systemctl restart bilateralbound-dev && systemctl status bilateralbound-dev --no-pager\"",
+    "deploy:prod": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"cd /var/www/bilateralbound-prod && git fetch --all && git checkout stable && git reset --hard origin/stable && npm ci --production --legacy-peer-deps && systemctl restart bilateralbound-prod && systemctl status bilateralbound-prod --no-pager\"",
+    "deploy:prod-ru": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"cd /var/www/bilateralbound-prod-ru && git fetch --all && git checkout stable && git reset --hard origin/stable && npm ci --production --legacy-peer-deps && systemctl restart bilateralbound-prod-ru && systemctl status bilateralbound-prod-ru --no-pager\"",
+    "deploy:dev": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"cd /var/www/bilateralbound-dev && git fetch --all && git checkout main && git reset --hard origin/main && npm ci --production --legacy-peer-deps && systemctl restart bilateralbound-dev && systemctl status bilateralbound-dev --no-pager\"",
+    "deploy:all": "./deploy-quick.sh all",
     "deploy:quick": "./deploy-quick.sh"
   },
   "keywords": [

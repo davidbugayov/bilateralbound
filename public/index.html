@@ -501,6 +501,34 @@
       color: #64748b;
     }
 
+    /* Light theme для постоянных ссылок */
+    .light-theme #customClientId {
+      background: rgba(255, 255, 255, 0.9) !important;
+      border-color: rgba(59, 130, 246, 0.4) !important;
+      color: #1e293b !important;
+    }
+
+    .light-theme #customClientId:focus {
+      background: rgba(255, 255, 255, 1) !important;
+      border-color: rgba(37, 99, 235, 0.6) !important;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .light-theme #generatedViewerUrl,
+    .light-theme #generatedControllerUrl {
+      background: rgba(248, 250, 252, 0.9) !important;
+      color: #1e293b !important;
+    }
+
+    .light-theme #generatedViewerUrl {
+      border-color: rgba(59, 130, 246, 0.5) !important;
+    }
+
+    .light-theme #generatedControllerUrl {
+      border-color: rgba(168, 85, 247, 0.5) !important;
+    }
+
     .theme-notification {
       position: fixed;
       top: 20px;
@@ -564,7 +592,142 @@
           🚀 Начать EMDR сессию
         </button>
 
-
+        <div class="info-card" style="margin-top: 32px;">
+          <h3>
+            🔗 Постоянные ссылки для клиентов
+          </h3>
+          <p style="margin: 12px 0; line-height: 1.6;">
+            Создайте персональные ссылки для ваших клиентов. Вы сможете использовать их многократно — 
+            ссылки остаются постоянными и не требуют генерации каждый раз заново.
+          </p>
+          <div style="margin-top: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 500;">
+              ID клиента (3-32 символа: латиница, цифры, _ или -)
+            </label>
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <input 
+                type="text" 
+                id="customClientId" 
+                placeholder="anna_2025 или client-ivan"
+                style="
+                  flex: 1;
+                  padding: 14px 18px;
+                  border: 2px solid rgba(59, 130, 246, 0.3);
+                  border-radius: 12px;
+                  background: rgba(15, 23, 42, 0.6);
+                  color: #e2e8f0;
+                  font-size: 1rem;
+                  transition: all 0.3s ease;
+                "
+                maxlength="32"
+              />
+              <button 
+                id="generateLinksBtn" 
+                class="main-button"
+                onclick="generatePermanentLinks()"
+                style="padding: 14px 28px; white-space: nowrap;"
+              >
+                🔗 Создать ссылки
+              </button>
+            </div>
+            <p id="linkValidationMessage" style="margin: 8px 0 0 0; font-size: 0.9rem; color: #94a3b8; min-height: 20px;">
+              Примеры: anna_2025, client-ivan, session42
+            </p>
+          </div>
+          
+          <div id="generatedLinksContainer" style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(59, 130, 246, 0.3);">
+            <p style="color: #34d399; font-weight: 600; margin-bottom: 16px;">
+              ✅ Постоянные ссылки созданы!
+            </p>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; margin-bottom: 6px; color: #60a5fa; font-weight: 500; font-size: 0.95rem;">
+                👁️ Ссылка для клиента (Viewer):
+              </label>
+              <div style="display: flex; gap: 8px;">
+                <input 
+                  type="text" 
+                  id="generatedViewerUrl" 
+                  readonly
+                  style="
+                    flex: 1;
+                    padding: 10px 14px;
+                    border: 1px solid rgba(59, 130, 246, 0.4);
+                    border-radius: 8px;
+                    background: rgba(15, 23, 42, 0.8);
+                    color: #60a5fa;
+                    font-size: 0.9rem;
+                    font-family: 'Courier New', monospace;
+                  "
+                />
+                <button 
+                  onclick="copyToClipboard('generatedViewerUrl', 'Ссылка для клиента скопирована!')"
+                  style="
+                    padding: 10px 20px;
+                    background: #3b82f6;
+                    color: white;
+                    border: 0;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                  "
+                  onmouseover="this.style.background='#2563eb'"
+                  onmouseout="this.style.background='#3b82f6'"
+                >
+                  📋 Копировать
+                </button>
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; margin-bottom: 6px; color: #a855f7; font-weight: 500; font-size: 0.95rem;">
+                🎮 Ссылка для терапевта (Controller):
+              </label>
+              <div style="display: flex; gap: 8px;">
+                <input 
+                  type="text" 
+                  id="generatedControllerUrl" 
+                  readonly
+                  style="
+                    flex: 1;
+                    padding: 10px 14px;
+                    border: 1px solid rgba(168, 85, 247, 0.4);
+                    border-radius: 8px;
+                    background: rgba(15, 23, 42, 0.8);
+                    color: #a855f7;
+                    font-size: 0.9rem;
+                    font-family: 'Courier New', monospace;
+                  "
+                />
+                <button 
+                  onclick="copyToClipboard('generatedControllerUrl', 'Ссылка для терапевта скопирована!')"
+                  style="
+                    padding: 10px 20px;
+                    background: #8b5cf6;
+                    color: white;
+                    border: 0;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                  "
+                  onmouseover="this.style.background='#7c3aed'"
+                  onmouseout="this.style.background='#8b5cf6'"
+                >
+                  📋 Копировать
+                </button>
+              </div>
+            </div>
+            
+            <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 12px; padding: 16px; margin-top: 16px;">
+              <p style="margin: 0; color: #6ee7b7; font-size: 0.9rem; line-height: 1.5;">
+                💡 <strong>Сохраните эти ссылки!</strong> Они постоянные и будут работать всегда. 
+                Отправьте ссылку viewer клиенту, а ссылку controller откройте сами для управления сессией.
+              </p>
+            </div>
+          </div>
+        </div>
 
         <div class="steps-container">
           <h3>
@@ -607,7 +770,7 @@
         </div>
         <div style="text-align: right; margin-top: 24px;">
           <div class="footer">
-            ⚡ BilateralBound v2.77.1
+            ⚡ BilateralBound v2.77.2
           </div>
         </div>
       </div>
@@ -726,6 +889,162 @@
         btn.disabled = false;
       }
     }
+
+    // === Функции для постоянных ссылок ===
+    
+    /**
+     * Валидация ID клиента
+     */
+    function validateClientId(clientId) {
+      const pattern = /^[A-Za-z0-9_-]{3,32}$/;
+      return pattern.test(clientId);
+    }
+
+    /**
+     * Обновление сообщения валидации
+     */
+    function updateValidationMessage(message, isError = false) {
+      const msgElement = document.getElementById('linkValidationMessage');
+      if (msgElement) {
+        msgElement.textContent = message;
+        msgElement.style.color = isError ? '#ef4444' : '#94a3b8';
+      }
+    }
+
+    /**
+     * Копирование текста в буфер обмена
+     */
+    async function copyToClipboard(inputId, successMessage) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+
+      try {
+        await navigator.clipboard.writeText(input.value);
+        
+        // Показываем уведомление об успехе
+        if (window.showSuccessNotification) {
+          window.showSuccessNotification(successMessage);
+        } else {
+          alert(successMessage);
+        }
+      } catch (error) {
+        console.error('Ошибка копирования:', error);
+        
+        // Fallback для старых браузеров
+        input.select();
+        document.execCommand('copy');
+        
+        if (window.showSuccessNotification) {
+          window.showSuccessNotification(successMessage);
+        } else {
+          alert(successMessage);
+        }
+      }
+    }
+
+    /**
+     * Генерация постоянных ссылок для клиента
+     */
+    async function generatePermanentLinks() {
+      const input = document.getElementById('customClientId');
+      const btn = document.getElementById('generateLinksBtn');
+      const container = document.getElementById('generatedLinksContainer');
+      const viewerUrlInput = document.getElementById('generatedViewerUrl');
+      const controllerUrlInput = document.getElementById('generatedControllerUrl');
+
+      if (!input || !btn) return;
+
+      const clientId = input.value.trim();
+
+      // Валидация
+      if (!clientId) {
+        updateValidationMessage('❌ Пожалуйста, введите ID клиента', true);
+        input.focus();
+        return;
+      }
+
+      if (!validateClientId(clientId)) {
+        updateValidationMessage('❌ Неверный формат. Используйте только латиницу, цифры, _ или - (3-32 символа)', true);
+        input.focus();
+        return;
+      }
+
+      const originalBtnText = btn.innerHTML;
+      
+      try {
+        btn.innerHTML = '⏳ Создание...';
+        btn.disabled = true;
+        updateValidationMessage('Создание постоянных ссылок...', false);
+
+        // Отправляем запрос на резервирование сессии
+        const response = await fetch(`/api/session/${clientId}/reserve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }));
+          throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Постоянные ссылки созданы:', data);
+
+        // Отображаем сгенерированные ссылки
+        if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl;
+        if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl;
+        if (container) container.style.display = 'block';
+
+        updateValidationMessage('✅ Ссылки успешно созданы!', false);
+        
+        if (window.showSuccessNotification) {
+          window.showSuccessNotification('🎉 Постоянные ссылки созданы!');
+        }
+
+        // Прокручиваем к результатам
+        setTimeout(() => {
+          container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+
+      } catch (error) {
+        console.error('❌ Ошибка создания постоянных ссылок:', error);
+        updateValidationMessage(`❌ Ошибка: ${error.message}`, true);
+        
+        if (window.showErrorNotification) {
+          window.showErrorNotification('Ошибка создания ссылок: ' + error.message);
+        } else {
+          alert('Ошибка создания ссылок: ' + error.message);
+        }
+      } finally {
+        btn.innerHTML = originalBtnText;
+        btn.disabled = false;
+      }
+    }
+
+    // Добавляем валидацию в реальном времени при вводе
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('customClientId');
+      if (input) {
+        input.addEventListener('input', (e) => {
+          const value = e.target.value.trim();
+          if (!value) {
+            updateValidationMessage('Примеры: anna_2025, client-ivan, session42', false);
+          } else if (validateClientId(value)) {
+            updateValidationMessage('✅ ID клиента корректен', false);
+          } else {
+            updateValidationMessage('⚠️ Используйте латиницу, цифры, _ или - (3-32 символа)', true);
+          }
+        });
+
+        // Обработка Enter
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            generatePermanentLinks();
+          }
+        });
+      }
+    });
 
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {

@@ -94,6 +94,26 @@ function setupExpressApp (sessionManager, apiCache) {
     }
   })
 
+  // Резервирование/создание постоянной ссылки (идемпотентно)
+  app.post('/api/session/:sessionId/reserve', (req, res) => {
+    const { sessionId } = req.params
+    try {
+      const session = sessionManager.findOrCreateSession(sessionId)
+      if (!session) {
+        return res.status(400).json({ error: 'Invalid session id', requestId: req.id })
+      }
+      const baseUrl = `${req.protocol}://${req.get('host')}`
+      res.json({
+        sessionId: session.id,
+        viewerUrl: `${baseUrl}/s/${session.id}`,
+        controllerUrl: `${baseUrl}/c/${session.id}`
+      })
+    } catch (error) {
+      if (DEBUG_MODE) logger.error(`[${req.id}] Error reserving session: ${error.message}`)
+      res.status(500).json({ error: error.message, requestId: req.id })
+    }
+  })
+
   app.get('/api/session/:sessionId', (req, res) => {
     const { sessionId } = req.params
     const session = sessionManager.getSession(sessionId)

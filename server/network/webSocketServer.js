@@ -14,6 +14,13 @@ function setupWebSocketServer (server, sessionManager) {
       return
     }
 
+    // Гарантируем существование сессии для постоянных ссылок
+    const ensured = sessionManager.findOrCreateSession(sessionId)
+    if (!ensured) {
+      ws.close(1008, 'Invalid session id')
+      return
+    }
+
     ws.isAlive = true
     ws.on('pong', () => { ws.isAlive = true })
 
