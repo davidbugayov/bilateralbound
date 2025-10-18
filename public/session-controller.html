@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=0.98, maximum-scale=0.98, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -31,16 +31,22 @@
   <link rel="stylesheet" href="/css/light-theme.css?v=20250103120">
   
   <style>
-    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    html, body { 
+      width: 100%; 
+      max-width: 100%; 
+      overflow-x: hidden;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
     *, *::before, *::after { box-sizing: border-box; }
 
     .control-section {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: #1e293b;
+      border: 1px solid #334155;
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 0;
-      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.3);
     }
 
     .light-theme .control-section {
@@ -61,11 +67,11 @@
       cursor: move;
       margin: 0 0 16px 0;
       padding: 8px 12px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
+      background: #334155;
+      border: 1px solid #475569;
       border-radius: 8px;
       user-select: none;
-      color: #64748b;
+      color: #cbd5e1;
     }
 
     .light-theme .drag-handle {
@@ -130,16 +136,16 @@
     .size-btn {
       padding: 8px 16px;
       font-size: 14px;
-      background: #f8fafc;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
+      background: #475569;
+      color: #cbd5e1;
+      border: 1px solid #64748b;
       border-radius: 6px;
       transition: all 0.2s ease;
     }
     .size-btn:hover {
-      background: #e2e8f0;
-      color: #374151;
-      border-color: #cbd5e1;
+      background: #64748b;
+      color: #e2e8f0;
+      border-color: #94a3b8;
     }
     .size-btn.active {
       background: #2563eb;
@@ -172,32 +178,32 @@
     .link-input-group input {
       flex: 1;
       padding: 10px 12px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid #475569;
       border-radius: 6px;
-      background: #ffffff;
-      color: #374151;
+      background: #334155;
+      color: #e2e8f0;
       font-size: 14px;
     }
 
     .link-input-group input:focus {
       outline: none;
       border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
     }
 
     .copy-btn {
       padding: 8px 12px;
       font-size: 12px;
-      background: #f8fafc;
-      color: #64748b;
-      border: 1px solid #cbd5e1;
+      background: #475569;
+      color: #cbd5e1;
+      border: 1px solid #64748b;
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
     .copy-btn:hover {
-      background: #e2e8f0;
-      color: #374151;
+      background: #64748b;
+      color: #e2e8f0;
       border-color: #94a3b8;
     }
 
@@ -235,7 +241,7 @@
       width: 100%;
       max-width: 300px;
       height: 6px;
-      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      background: linear-gradient(135deg, #475569 0%, #64748b 100%);
       border-radius: 3px;
       outline: none;
       -webkit-appearance: none;
@@ -249,8 +255,8 @@
       background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25);
-      border: 2px solid #ffffff;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.4);
+      border: 2px solid #1e293b;
     }
 
     .speed-container input[type="range"]::-moz-range-thumb {
@@ -259,8 +265,8 @@
       background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       border-radius: 50%;
       cursor: pointer;
-      border: 2px solid #ffffff;
-      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25);
+      border: 2px solid #1e293b;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.4);
     }
 
     .light-theme .speed-container input[type="range"] {
@@ -284,15 +290,15 @@
       align-items: start; 
     }
     .controls-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: #334155;
+      border: 1px solid #475569;
       border-radius: 10px;
       padding: 12px;
     }
     .controls-title {
       margin: 0 0 8px 0;
       font-size: 14px;
-      color: #64748b;
+      color: #cbd5e1;
       font-weight: 500;
     }
 
@@ -327,17 +333,17 @@
     .segmented {
       display: flex;
       gap: 0;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #475569;
       border-radius: 10px;
       overflow: hidden;
-      background: #f8fafc;
+      background: #334155;
       flex-wrap: wrap;
     }
     .segmented .seg-btn {
       flex: 1 1 25%;
       padding: 10px 12px;
       font-size: 13px;
-      color: #64748b;
+      color: #cbd5e1;
       background: transparent;
       border: 0;
       cursor: pointer;
@@ -345,11 +351,11 @@
       min-width: 0;
     }
     .segmented .seg-btn + .seg-btn {
-      border-left: 1px solid #e2e8f0;
+      border-left: 1px solid #475569;
     }
     .segmented .seg-btn:hover {
-      background: #e2e8f0;
-      color: #374151;
+      background: #475569;
+      color: #e2e8f0;
     }
     .segmented .seg-btn.active {
       background: #2563eb;
@@ -433,9 +439,9 @@
       position: fixed;
       top: 20px;
       left: 20px;
-      background: #f8fafc;
-      color: #64748b;
-      border: 1px solid #cbd5e1;
+      background: #334155;
+      color: #cbd5e1;
+      border: 1px solid #475569;
       padding: 8px 16px;
       border-radius: 8px;
       cursor: pointer;
@@ -444,9 +450,9 @@
     }
 
     .back-btn:hover {
-      background: #e2e8f0;
-      color: #374151;
-      border-color: #94a3b8;
+      background: #475569;
+      color: #e2e8f0;
+      border-color: #64748b;
     }
 
     .light-theme .back-btn {
@@ -498,19 +504,166 @@
 
     .kbd {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
+      background: #334155;
+      border: 1px solid #475569;
       border-bottom-width: 3px;
       border-radius: 6px;
       padding: 2px 6px;
-      color: #374151;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      color: #cbd5e1;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .light-theme .kbd {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
       color: #374151;
+    }
+
+    /* Fullscreen overlay and panel theme support */
+    #previewOverlay {
+      background: #0f172a !important;
+    }
+
+    #previewFullscreenCanvas {
+      background: #020617 !important;
+    }
+
+    #previewFsPanel {
+      background: rgba(30, 41, 59, 0.95) !important;
+      border: 1px solid #475569 !important;
+      height: auto !important;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+    }
+
+    #previewFsPanel input {
+      background: #1e293b !important;
+      border: 1px solid #334155 !important;
+      color: #e2e8f0 !important;
+    }
+
+    .light-theme #previewOverlay {
+      background: rgba(248, 250, 252, 0.98) !important;
+    }
+
+    .light-theme #previewFullscreenCanvas {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+    }
+
+    .light-theme #previewFsPanel {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+
+    .light-theme #previewFsPanel input {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #374151 !important;
+    }
+
+    .light-theme #previewFsPanel label {
+      color: #64748b !important;
+    }
+
+    .light-theme #fsCurSid {
+      color: #374151 !important;
+    }
+
+    /* bbCounters dark theme support */
+    #bbCounters > div {
+      background: #334155 !important;
+      border: 1px solid #475569 !important;
+    }
+
+    #bbCounters > div > div > div:first-child {
+      color: #cbd5e1 !important;
+    }
+
+    #bbTimer {
+      background: #1e293b !important;
+      border: 1px solid #475569 !important;
+      color: #e2e8f0 !important;
+    }
+
+    #bbPasses, #bbSets {
+      color: #e2e8f0 !important;
+    }
+
+    .light-theme #bbCounters > div {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+
+    .light-theme #bbCounters > div > div > div:first-child {
+      color: #64748b !important;
+    }
+
+    .light-theme #bbTimer {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #374151 !important;
+    }
+
+    .light-theme #bbPasses, .light-theme #bbSets {
+      color: #374151 !important;
+    }
+
+    /* Preview canvas dark theme support */
+    #preview {
+      border: 1px solid #475569 !important;
+      background: #020617 !important;
+    }
+
+    .light-theme #preview {
+      border: 1px solid #e2e8f0 !important;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+    }
+
+    /* Viewer info dark theme support */
+    #viewerInfo {
+      background: rgba(30, 41, 59, 0.9) !important;
+      border: 1px solid #475569 !important;
+      color: #cbd5e1 !important;
+    }
+
+    .light-theme #viewerInfo {
+      background: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #64748b !important;
+    }
+
+    /* Text colors for session info */
+    #sessionInfo {
+      color: #94a3b8 !important;
+    }
+
+    .light-theme #sessionInfo {
+      color: #64748b !important;
+    }
+
+    #viewerStatus {
+      color: #ef4444 !important;
+    }
+
+    .light-theme #viewerStatus {
+      color: #ef4444 !important;
+    }
+
+    /* Control section headings */
+    .control-section h3 {
+      color: #e2e8f0;
+    }
+
+    .light-theme .control-section h3 {
+      color: #1e293b;
+    }
+
+    .control-section p {
+      color: #94a3b8;
+    }
+
+    .light-theme .control-section p {
+      color: #64748b;
     }
   </style>
 </head>
@@ -663,34 +816,6 @@
     </div>
 
     <div class="control-section">
-      <h3>🆕 Новые функции (v1.2.0)</h3>
-      <div class="appearance-grid">
-        <div class="controls-card">
-          <p class="controls-title">🎯 Быстрые пресеты</p>
-          <div id="presetControls"></div>
-        </div>
-        <div class="controls-card">
-          <p class="controls-title">💾 Сессии</p>
-          <div id="sessionControls"></div>
-          <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn btn-gradient" onclick="createCustomPreset()">⭐ Создать пресет</button>
-            <button class="btn outline" onclick="goBack()">🏠 На главную</button>
-          </div>
-        </div>
-        <div class="controls-card">
-          <p class="controls-title">📋 Горячие клавиши</p>
-          <div style="font-size: 12px; color: #64748b; line-height: 1.5;">
-            <div><span class="kbd">Пробел</span> — Старт/Стоп</div>
-            <div><span class="kbd">Ctrl+Z</span> — Отмена действия</div>
-            <div><span class="kbd">Ctrl+S</span> — Сохранить пресет</div>
-            <div><span class="kbd">F</span> — Полноэкранное превью</div>
-            <div><span class="kbd">Стр↕←→</span> — Управление направлением</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="control-section">
       <h3>🎨 Оформление</h3>
       <div class="appearance-grid">
         <div class="controls-card">
@@ -704,6 +829,34 @@
         <div class="controls-card">
           <p class="controls-title">Размер шарика</p>
           <div id="sizeControl"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-section">
+      <h3>🛠️ Инструменты и настройки</h3>
+      <div class="appearance-grid">
+        <div class="controls-card">
+          <p class="controls-title">💾 Управление сессией</p>
+          <div id="sessionControls"></div>
+          <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="btn btn-gradient" onclick="createCustomPreset()" style="width: 100%;">⭐ Создать пресет</button>
+            <button class="btn outline" onclick="goBack()" style="width: 100%;">🏠 На главную</button>
+          </div>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">🎯 Пресеты</p>
+          <div id="presetControls"></div>
+        </div>
+        <div class="controls-card">
+          <p class="controls-title">⌨️ Горячие клавиши</p>
+          <div style="font-size: 12px; line-height: 1.6;">
+            <div><span class="kbd">Пробел</span> — Старт/Стоп</div>
+            <div><span class="kbd">Ctrl+Z</span> — Отмена действия</div>
+            <div><span class="kbd">Ctrl+S</span> — Сохранить пресет</div>
+            <div><span class="kbd">F</span> — Полноэкранное превью</div>
+            <div><span class="kbd">↑↓←→</span> — Управление направлением</div>
+          </div>
         </div>
       </div>
     </div>

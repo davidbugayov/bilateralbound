@@ -985,17 +985,13 @@ function updatePreviewSize (viewerScreenSize) {
     previewPhysicsEngine.applyCommand(lastServerState)
   } else {
     // Если нет состояния сервера, но есть размеры вьювера, центрируем мяч относительно них
+    // Физика работает в координатах вьювера, поэтому используем их напрямую
     if (globalThis.__current.viewerScreenSize && globalThis.__current.viewerScreenSize.width > 0) {
       const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
       const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
 
-      const scaleX = canvas.width / globalThis.__current.viewerScreenSize.width
-      const scaleY = canvas.height / globalThis.__current.viewerScreenSize.height
-
-      const previewCenterX = viewerCenterX * scaleX
-      const previewCenterY = viewerCenterY * scaleY
-
-      previewPhysicsEngine.setPosition(previewCenterX, previewCenterY)
+      previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
+      previewPhysicsEngine.setVelocity(0, 0)
     }
   }
 
