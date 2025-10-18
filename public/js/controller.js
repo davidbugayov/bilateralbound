@@ -825,8 +825,8 @@ function initializeComponents () {
   components.bgColor = sharedComponents.createColorControl(
     document.getElementById('bgColorControl'),
     {
-      colors: ['#ffffff', '#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b'],
-      defaultValue: '#f8fafc', // Дефолтный светлый цвет фона
+      colors: ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a'],
+      defaultValue: '#020617', // Дефолтный цвет фона
       title: '', // Заголовок уже есть в HTML
       onColorChange: (color) => {
         setBackgroundColor(color)
@@ -1571,7 +1571,7 @@ function wireFullscreenControls () {
   }
 
   // Background color buttons (10 colors from main preview)
-  const bgColors = ['#ffffff', '#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b']
+  const bgColors = ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a']
   for (let i = 1; i <= 10; i++) {
     const btn = document.getElementById(`fsBg${i}`)
     if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1])
