@@ -425,10 +425,11 @@
                     if (command && command.paused === false) {
                         physicsEngine.setPaused(false);
                     }
-                    updateStatus(command);
+                    // НЕ обновляем статус контроллера при обновлениях состояния мяча
+                    // updateStatus(command);
                 });
 
-                // Добавляем обработчик для события подключения контроллера
+                // Обработчик для события подключения контроллера
                 wsClient.on('controller_connected', (data) => {
                     debugLog('🔌 Контроллер подключился:', data);
                     updateStatus(data);
@@ -468,26 +469,6 @@
                 wsClient.on('controller_status', (status) => {
                     debugLog('📊 Статус контроллера:', status);
                     updateStatus(status);
-                });
-
-                // Обработчик для события подключения контроллера
-                wsClient.on('controller_connected', (data) => {
-                    debugLog('🔌 Контроллер подключился:', data);
-                    updateStatus({
-                        controllerConnected: true,
-                        timestamp: data.timestamp,
-                        sessionId: data.sessionId
-                    });
-                });
-
-                // Обработчик для события отключения контроллера
-                wsClient.on('controller_disconnected', (data) => {
-                    debugLog('🔌 Контроллер отключился:', data);
-                    updateStatus({
-                        controllerConnected: false,
-                        timestamp: data.timestamp,
-                        sessionId: data.sessionId
-                    });
                 });
                 
                 await wsClient.connect();

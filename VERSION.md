@@ -1,29 +1,26 @@
 # BilateralBound - Система Версионирования
 
-## Текущая Версия: v2.90.0
+## Текущая Версия: v2.91.0
 **Статус:** Активна
-**Дата релиза:** 19 октября 2025 г. в 18:47
-**Коммит:** ce154d0
+**Дата релиза:** 19 октября 2025 г. в 18:53
+**Коммит:** 86fff8c
 
-### Основные Изменения v2.90.0:
-- ✨ fix: resolve controller status display and ball centering issues
+### Основные Изменения v2.91.0:
+- ✨ fix: add proper controller_connected event handling in WebSocket server
 
-- Fix controller status display in viewer - now correctly shows 'Контроллер подключен' when controller connects
-- Add proper event handling for controller_connected/disconnected events in viewer
-- Fix ball centering in controller preview - ball now properly centers when preview initializes
-- Improve preview initialization with better canvas sizing and ball positioning logic
-- Add viewer_connected event notification to server for better session tracking
+- Add controller_connected event handler to broadcast controller connection to all viewers
+- Add viewer_connected event handler for better session tracking
+- Fix duplicate message handler issue in WebSocket server
+- Ensure proper event broadcasting when controller connects/disconnects
 
-🔧 Issues resolved:
-- Вьювер теперь корректно отображает статус контроллера вместо 'ожидание контроллера'
-- Мяч на превью контроллера теперь центрируется правильно при инициализации
+🔧 This resolves the issue where viewer shows 'waiting for controller' even when controller is connected
 
 🤖 Generated with [Claude Code Assistant](https://claude.ai/code-assistant)
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 
 ### Предыдущие Версии:
-- **v2.89.0** - Предыдущая версия
+- **v2.90.0** - Предыдущая версия
 
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
@@ -36,4 +33,4 @@
 - Мобильная версия скрывает индикатор версии
 
 ---
-*Автоматически сгенерировано: 2025-10-19T15:47:50.772Z*
+*Автоматически сгенерировано: 2025-10-19T15:53:37.772Z*
