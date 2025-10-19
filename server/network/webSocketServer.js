@@ -52,6 +52,25 @@ function setupWebSocketServer (server, sessionManager) {
 
     ws.on('close', () => {
       sessionManager.handleWebSocketDisconnection(ws)
+      // Рассылаем событие об отключении контроллера всем оставшимся клиентам
+      const clientInfo = sessionManager.getClientInfo(ws)
+      if (clientInfo && clientInfo.role === 'controller') {
+        // Получаем всех клиентов сессии
+        const clients = sessionManager.webSocketManager.getClients(sessionId)
+        for (const { client } of clients) {
+          if (client !== ws && client.readyState === 1) {
+            try {
+              client.send(JSON.stringify({
+                type: 'controller_disconnected',
+                payload: { controllerConnected: false },
+                timestamp: Date.now()
+              }))
+            } catch (error) {
+              logger.error(`Error sending controller_disconnected: ${error.message}`)
+            }
+          }
+        }
+      }
     })
 
     ws.on('error', (error) => {

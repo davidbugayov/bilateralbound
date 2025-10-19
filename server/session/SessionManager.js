@@ -171,6 +171,11 @@ class SessionManager {
     }
 
     this.stateBroadcaster.broadcastViewerStatus(sessionId)
+    
+    // Рассылаем событие о подключении контроллера всем клиентам
+    if (role === 'controller') {
+      this.broadcastControllerConnection(sessionId, true)
+    }
   }
 
   handleWebSocketDisconnection (ws) {
@@ -178,6 +183,40 @@ class SessionManager {
     if (sessionId) {
       this._schedulePhysicsUpdate(sessionId)
       this.stateBroadcaster.broadcastViewerStatus(sessionId)
+    }
+    
+    // Рассылаем событие об отключении контроллера всем клиентам
+    const clientInfo = this.getClientInfo(ws)
+    if (clientInfo && clientInfo.role === 'controller') {
+      this.broadcastControllerConnection(sessionId, false)
+    }
+  }
+
+  /**
+   * Рассылает событие о подключении/отключении контроллера всем клиентам сессии
+   * @param {string} sessionId - ID сессии
+   * @param {boolean} isConnected - Статус подключения контроллера
+   */
+  broadcastControllerConnection (sessionId, isConnected) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return
+
+    const clients = this.webSocketManager.getClients(sessionId)
+    const message = JSON.stringify({
+      type: isConnected ? 'controller_connected' : 'controller_disconnected',
+      payload: { controllerConnected: isConnected },
+      timestamp: Date.now()
+    })
+
+    for (const { client } of clients) {
+      if (client.readyState === 1) { // WebSocket.OPEN
+        try {
+          client.send(message)
+          this.logger.logSession(sessionId, `Broadcasted controller ${isConnected ? 'connected' : 'disconnected'} to client`)
+        } catch (error) {
+          this.logger.error(`Error broadcasting controller connection status: ${error.message}`)
+        }
+      }
     }
   }
 

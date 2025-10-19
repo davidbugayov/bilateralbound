@@ -38,19 +38,10 @@
     <link rel="stylesheet" href="/css/shared-components.css">
     <link rel="stylesheet" href="/css/light-theme.css">
 
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript">
-        (function(m,e,t,r,i,k,a){
-            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-            m[i].l=1*new Date();
-            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=104698530', 'ym');
-
-        ym(104698530, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
-    </script>
+    <!-- Yandex.Metrika optimized counter -->
+    <script src="/js/metrika-optimized.js" defer></script>
     <noscript><div><img src="https://mc.yandex.ru/watch/104698530" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
+    <!-- /Yandex.Metrika optimized counter -->
 
     <style>
         /* Reset & Base */
@@ -437,9 +428,23 @@
                     updateStatus(command);
                 });
 
+                // Добавляем обработчик для события подключения контроллера
+                wsClient.on('controller_connected', (data) => {
+                    debugLog('🔌 Контроллер подключился:', data);
+                    updateStatus(data);
+                });
+
+                wsClient.on('controller_disconnected', (data) => {
+                    debugLog('🔌 Контроллер отключился:', data);
+                    updateStatus(data);
+                });
+
                 wsClient.on('open', () => {
                     debugLog('✅ WebSocket connection established.');
                     components.status.setStatus('success', 'Соединение установлено');
+                    // Запрашиваем текущее состояние подключения контроллера
+                    wsClient.send('get_controller_status', {})
+                        .catch(error => debugWarn('Не удалось запросить статус контроллера:', error));
                 });
 
                 wsClient.on('close', () => {
@@ -450,6 +455,12 @@
                 wsClient.on('error', (error) => {
                     debugError('❌ WebSocket error:', error);
                     showError('Ошибка соединения.');
+                });
+
+                // Добавляем обработчик для получения статуса контроллера
+                wsClient.on('controller_status', (status) => {
+                    debugLog('📊 Статус контроллера:', status);
+                    updateStatus(status);
                 });
                 
                 await wsClient.connect();
@@ -583,10 +594,24 @@
         
         function updateStatus(sessionData) {
             if (components.status) {
+                debugLog('📊 Обновление статуса:', sessionData);
+                
+                // Проверяем наличие данных о подключении контроллера
                 if (sessionData.controllerConnected === true) {
                     components.status.setStatus('success', 'Контроллер подключен');
+                    debugLog('✅ Статус обновлен: Контроллер подключен');
                 } else if (sessionData.controllerConnected === false) {
                     components.status.setStatus('error', 'Контроллер отключен');
+                    debugLog('❌ Статус обновлен: Контроллер отключен');
+                } else {
+                    // Если данных о контроллере нет, используем статус WebSocket соединения
+                    if (wsClient && wsClient.isConnected) {
+                        components.status.setStatus('success', 'Соединение установлено, ожидание контроллера...');
+                        debugLog('⏳ Статус обновлен: Ожидание контроллера');
+                    } else {
+                        components.status.setStatus('error', 'Контроллер отключен');
+                        debugLog('❌ Статус обновлен: Контроллер отключен (нет WebSocket)');
+                    }
                 }
             }
         }
