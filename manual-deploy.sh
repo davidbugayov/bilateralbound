@@ -87,11 +87,18 @@ deploy_environment() {
         # Устанавливаем зависимости
         log "Installing dependencies..."
         ssh_exec "cd ${WORK_DIR} && npm ci --production --legacy-peer-deps"
+        
+        # Обновляем версию
+        log "Updating version..."
+        ssh_exec "cd ${WORK_DIR} && node version-manager.js"
     else
         log "Directory doesn't exist, cloning repository..."
         ssh_exec "mkdir -p ${WORK_DIR}"
         ssh_exec "git clone -b ${BRANCH} https://github.com/davidbugayov/bilateralbound.git ${WORK_DIR}"
         ssh_exec "cd ${WORK_DIR} && npm ci --production --legacy-peer-deps"
+        # Обновляем версию
+        log "Updating version..."
+        ssh_exec "cd ${WORK_DIR} && node version-manager.js"
     fi
     
     # Принудительно пересоздаем systemd service файл для обновления порта

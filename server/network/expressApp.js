@@ -83,6 +83,11 @@ function setupExpressApp (sessionManager, apiCache) {
   app.use(express.static(publicPath))
   app.use('/test', express.static(path.join(__dirname, '..', '..')))
 
+  // Root route - serve index.html
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(publicPath, 'index.html'))
+  })
+
   app.post('/api/session', (req, res) => {
     try {
       const session = sessionManager.createSession()
