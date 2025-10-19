@@ -1377,7 +1377,7 @@ function updateViewerStatusUI () {
   if (viewerStatusEl) {
     if (window.__current.viewerConnected) {
       viewerStatusEl.textContent = 'Подключен'
-      viewerStatusEl.style.color = '#10b981' // зеленый
+      viewerStatusEl.style.color = '#22c55e' // ярко-зеленый цвет
       if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
         updatePreviewSize(window.__current.viewerScreenSize)
       }

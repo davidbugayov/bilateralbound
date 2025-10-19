@@ -1,26 +1,26 @@
 # BilateralBound - Система Версионирования
 
-## Текущая Версия: v2.91.1
+## Текущая Версия: v2.92.0
 **Статус:** Активна
-**Дата релиза:** 19 октября 2025 г. в 18:59
-**Коммит:** 51ac1cb
+**Дата релиза:** 19 октября 2025 г. в 19:00
+**Коммит:** 030aeac
 
-### Основные Изменения v2.91.1:
-- ✨ fix: remove duplicate event handlers in viewer and prevent status reset
+### Основные Изменения v2.92.0:
+- ✨ fix: add copy function to controller for clipboard functionality
 
-- Remove duplicate controller_connected/disconnected event handlers in viewer
-- Prevent stateUpdate from resetting controller status to 'waiting for controller'
-- Fix issue where ball movement resets controller status display
-- Ensure controller status persists during session activity
+- Add copy() function to controller.js for copying session links to clipboard
+- Implement modern clipboard API with fallback for older browsers
+- Add proper error handling and user notifications for copy operations
+- Fix missing copy functionality in controller interface
 
-🔧 This resolves the issue where viewer shows 'waiting for controller' when ball starts moving
+🔧 This resolves the issue where copy button in controller was not working
 
 🤖 Generated with [Claude Code Assistant](https://claude.ai/code-assistant)
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 
 ### Предыдущие Версии:
-- **v2.91.0** - Предыдущая версия
+- **v2.91.1** - Предыдущая версия
 
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
@@ -33,4 +33,4 @@
 - Мобильная версия скрывает индикатор версии
 
 ---
-*Автоматически сгенерировано: 2025-10-19T15:59:24.893Z*
+*Автоматически сгенерировано: 2025-10-19T16:00:27.143Z*
