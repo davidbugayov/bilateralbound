@@ -445,6 +445,13 @@
                     // Запрашиваем текущее состояние подключения контроллера
                     wsClient.send('get_controller_status', {})
                         .catch(error => debugWarn('Не удалось запросить статус контроллера:', error));
+                    
+                    // Уведомляем сервер о подключении вьювера
+                    wsClient.send('viewer_connected', { 
+                        timestamp: Date.now(),
+                        sessionId: sessionId,
+                        role: 'viewer'
+                    });
                 });
 
                 wsClient.on('close', () => {
@@ -457,10 +464,30 @@
                     showError('Ошибка соединения.');
                 });
 
-                // Добавляем обработчик для получения статуса контроллера
+                // Обработчик для получения статуса контроллера
                 wsClient.on('controller_status', (status) => {
                     debugLog('📊 Статус контроллера:', status);
                     updateStatus(status);
+                });
+
+                // Обработчик для события подключения контроллера
+                wsClient.on('controller_connected', (data) => {
+                    debugLog('🔌 Контроллер подключился:', data);
+                    updateStatus({
+                        controllerConnected: true,
+                        timestamp: data.timestamp,
+                        sessionId: data.sessionId
+                    });
+                });
+
+                // Обработчик для события отключения контроллера
+                wsClient.on('controller_disconnected', (data) => {
+                    debugLog('🔌 Контроллер отключился:', data);
+                    updateStatus({
+                        controllerConnected: false,
+                        timestamp: data.timestamp,
+                        sessionId: data.sessionId
+                    });
                 });
                 
                 await wsClient.connect();

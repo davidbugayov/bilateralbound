@@ -1,17 +1,26 @@
 # BilateralBound - Система Версионирования
 
-## Текущая Версия: v2.88.1
+## Текущая Версия: v2.89.0
 **Статус:** Активна
-**Дата релиза:** 19 октября 2025 г. в 18:18
-**Коммит:** ca8775c
+**Дата релиза:** 19 октября 2025 г. в 18:27
+**Коммит:** d3cca02
 
-### Основные Изменения v2.88.1:
-- ✨ Merge branch 'main' of github.com:davidbugayov/bilateralbound
+### Основные Изменения v2.89.0:
+- ✨ fix: optimize Yandex.Metrika counter for better detection
+
+- Add optimized metrika-optimized.js with early loading and retry logic
+- Replace standard counters on all HTML pages (index, viewer, controller)
+- Add comprehensive test page for metrika validation
+- Implement MetrikaManager API for better control and debugging
+- Add fallback mechanisms and detailed logging
+- Fix detection issues with standard implementation
+
+🤖 Generated with [Claude Code Assistant](https://claude.ai/code-assistant)
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 
 ### Предыдущие Версии:
-- **v2.88.0** - Предыдущая версия
+- **v2.88.1** - Предыдущая версия
 
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
@@ -24,4 +33,4 @@
 - Мобильная версия скрывает индикатор версии
 
 ---
-*Автоматически сгенерировано: 2025-10-19T15:18:26.521Z*
+*Автоматически сгенерировано: 2025-10-19T15:27:30.034Z*

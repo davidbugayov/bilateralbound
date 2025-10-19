@@ -411,6 +411,13 @@ function setupWebSocketEventHandlers (wsClient, logger) {
   wsClient.on('open', () => {
     logger.success('WebSocket соединение установлено')
     updateConnectionStatus(true)
+    
+    // Уведомляем сервер о подключении контроллера
+    safeSend('controller_connected', { 
+      timestamp: Date.now(),
+      sessionId: sessionId,
+      role: 'controller'
+    })
   })
 
   wsClient.on('close', (event) => {
@@ -885,11 +892,16 @@ async function initializePreview () {
     return
   }
 
-  // Проверяем размеры canvas
+  // Проверяем и устанавливаем размеры canvas
   if (canvas.width === 0 || canvas.height === 0) {
-    canvas.width = 400
-    canvas.height = 300
-    // Жестко задаем CSS размеры, чтобы исключить неравномерное масштабирование
+    // Используем размеры контейнера для начального размера
+    const container = canvas.parentElement
+    const containerRect = container.getBoundingClientRect()
+    const initialWidth = Math.min(containerRect.width - 40, 500)
+    const initialHeight = Math.min(400, initialWidth * 0.75)
+    
+    canvas.width = initialWidth
+    canvas.height = initialHeight
     canvas.style.width = canvas.width + 'px'
     canvas.style.height = canvas.height + 'px'
   }
@@ -928,16 +940,29 @@ async function initializePreview () {
 
     globalThis.__previewCanvas = canvas
 
-    // Если вьювер ещё не подключен, показываем мяч по центру превью
-    if (!window.__current.viewerScreenSize || !window.__current.viewerScreenSize.width) {
-      // Настраиваем мир превью под размеры canvas
-      previewPhysicsEngine.setWorldSize(canvas.width, canvas.height)
-      // Ставим мяч в центр превью и останавливаем
-      previewPhysicsEngine.setPosition(canvas.width / 2, canvas.height / 2)
+    // Центрируем мяч в превью при инициализации
+    const canvasWidth = canvas.width
+    const canvasHeight = canvas.height
+    
+    // Если есть размеры вьювера, используем их как основу для мира физики
+    if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
+      previewPhysicsEngine.setWorldSize(window.__current.viewerScreenSize.width, window.__current.viewerScreenSize.height)
+      // Центрируем мяч относительно размеров вьювера
+      const viewerCenterX = window.__current.viewerScreenSize.width / 2
+      const viewerCenterY = window.__current.viewerScreenSize.height / 2
+      previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
+      previewPhysicsEngine.setVelocity(0, 0)
+    } else {
+      // Если нет размеров вьювера, используем размеры canvas как мир
+      previewPhysicsEngine.setWorldSize(canvasWidth, canvasHeight)
+      // Центрируем мяч в центре canvas
+      previewPhysicsEngine.setPosition(canvasWidth / 2, canvasHeight / 2)
       previewPhysicsEngine.setVelocity(0, 0)
     }
-  } catch {
-    console.warn('Error initializing preview')
+
+    console.log('✅ Превью инициализировано, мяч центрирован')
+  } catch (error) {
+    console.warn('Error initializing preview:', error)
   }
 }
 
