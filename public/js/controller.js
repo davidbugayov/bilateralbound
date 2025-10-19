@@ -1614,3 +1614,42 @@ function fillFsSessionInfo () {
     console.warn('Error in fillFsSessionInfo')
   }
 }
+
+// Функция копирования в буфер обмена для контроллера
+function copy(elementId) {
+  const element = document.getElementById(elementId)
+  if (element && element.value) {
+    navigator.clipboard.writeText(element.value).then(() => {
+      if (window.showSuccessNotification) {
+        window.showSuccessNotification('Ссылка скопирована в буфер обмена')
+      }
+    }).catch(err => {
+      console.error('Ошибка копирования: ', err)
+      if (window.showErrorNotification) {
+        window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку в буфер обмена')
+      }
+      // Fallback для старых браузеров
+      try {
+        element.select()
+        if (document.execCommand('copy')) {
+          if (window.showSuccessNotification) {
+            window.showSuccessNotification('Ссылка скопирована в буфер обмена')
+          }
+        } else {
+          if (window.showErrorNotification) {
+            window.showErrorNotification('Ошибка копирования', 'Ваш браузер не поддерживает копирование')
+          }
+        }
+      } catch (fallbackErr) {
+        console.error('Ошибка fallback копирования: ', fallbackErr)
+        if (window.showErrorNotification) {
+          window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку')
+        }
+      }
+    })
+  } else {
+    if (window.showErrorNotification) {
+      window.showErrorNotification('Ошибка', 'Ссылка не найдена')
+    }
+  }
+}
