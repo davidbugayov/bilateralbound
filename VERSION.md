@@ -1,26 +1,29 @@
 # BilateralBound - Система Версионирования
 
-## Текущая Версия: v2.89.0
+## Текущая Версия: v2.90.0
 **Статус:** Активна
-**Дата релиза:** 19 октября 2025 г. в 18:27
-**Коммит:** d3cca02
+**Дата релиза:** 19 октября 2025 г. в 18:47
+**Коммит:** ce154d0
 
-### Основные Изменения v2.89.0:
-- ✨ fix: optimize Yandex.Metrika counter for better detection
+### Основные Изменения v2.90.0:
+- ✨ fix: resolve controller status display and ball centering issues
 
-- Add optimized metrika-optimized.js with early loading and retry logic
-- Replace standard counters on all HTML pages (index, viewer, controller)
-- Add comprehensive test page for metrika validation
-- Implement MetrikaManager API for better control and debugging
-- Add fallback mechanisms and detailed logging
-- Fix detection issues with standard implementation
+- Fix controller status display in viewer - now correctly shows 'Контроллер подключен' when controller connects
+- Add proper event handling for controller_connected/disconnected events in viewer
+- Fix ball centering in controller preview - ball now properly centers when preview initializes
+- Improve preview initialization with better canvas sizing and ball positioning logic
+- Add viewer_connected event notification to server for better session tracking
+
+🔧 Issues resolved:
+- Вьювер теперь корректно отображает статус контроллера вместо 'ожидание контроллера'
+- Мяч на превью контроллера теперь центрируется правильно при инициализации
 
 🤖 Generated with [Claude Code Assistant](https://claude.ai/code-assistant)
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 
 ### Предыдущие Версии:
-- **v2.88.1** - Предыдущая версия
+- **v2.89.0** - Предыдущая версия
 
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
@@ -33,4 +36,4 @@
 - Мобильная версия скрывает индикатор версии
 
 ---
-*Автоматически сгенерировано: 2025-10-19T15:27:30.034Z*
+*Автоматически сгенерировано: 2025-10-19T15:47:50.772Z*

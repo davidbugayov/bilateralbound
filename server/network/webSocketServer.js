@@ -40,6 +40,54 @@ function setupWebSocketServer (server, sessionManager) {
           logger.logSession(sessionId, `[MSG IN] ${role}:${data.type}`, 'debug')
         }
 
+        // Обрабатываем событие подключения контроллера
+        if (data.type === 'controller_connected' && role === 'controller') {
+          // Рассылаем событие о подключении контроллера всем клиентам сессии
+          const clients = sessionManager.webSocketManager.getClients(sessionId)
+          for (const { client } of clients) {
+            if (client !== ws && client.readyState === 1) {
+              try {
+                client.send(JSON.stringify({
+                  type: 'controller_connected',
+                  payload: {
+                    controllerConnected: true,
+                    timestamp: data.timestamp,
+                    sessionId: data.sessionId
+                  },
+                  timestamp: Date.now()
+                }))
+              } catch (error) {
+                logger.error(`Error sending controller_connected: ${error.message}`)
+              }
+            }
+          }
+          return
+        }
+
+        // Обрабатываем событие подключения вьювера
+        if (data.type === 'viewer_connected' && role === 'viewer') {
+          // Рассылаем событие о подключении вьювера всем клиентам сессии
+          const clients = sessionManager.webSocketManager.getClients(sessionId)
+          for (const { client } of clients) {
+            if (client !== ws && client.readyState === 1) {
+              try {
+                client.send(JSON.stringify({
+                  type: 'viewer_connected',
+                  payload: {
+                    viewerConnected: true,
+                    timestamp: data.timestamp,
+                    sessionId: data.sessionId
+                  },
+                  timestamp: Date.now()
+                }))
+              } catch (error) {
+                logger.error(`Error sending viewer_connected: ${error.message}`)
+              }
+            }
+          }
+          return
+        }
+
         if (role === 'controller' && data.type === 'controller_update') {
           sessionManager.updateBallState(sessionId, data.payload)
         }
