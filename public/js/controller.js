@@ -204,7 +204,7 @@ async function initializeController () {
   const logger = createLogger('Controller')
 
   try {
-    logger.info('🚀 Начинаем инициализацию контроллера')
+    logger.info('Начинаем инициализацию контроллера')
 
     // 1. Валидация и получение сессии
     const sessionId = getSessionIdFromUrl()
@@ -217,7 +217,7 @@ async function initializeController () {
     // Сохраняем sessionId в глобальном состоянии
     globalThis.__current.sessionId = sessionId
 
-    logger.info(`📋 Работаем с сессией: ${sessionId}`)
+    logger.info(`Работаем с сессией: ${sessionId}`)
 
     // Уведомляем сервер о подключении контроллера (для постоянных ссылок)
     try {
@@ -227,12 +227,12 @@ async function initializeController () {
         body: JSON.stringify({})
       })
       if (connectResponse.ok) {
-        logger.info('✅ Контроллер зарегистрирован на сервере')
+        logger.info('Контроллер зарегистрирован на сервере')
       } else {
-        logger.warn('⚠️ Не удалось зарегистрировать контроллер на сервере')
+        logger.warn('Не удалось зарегистрировать контроллер на сервере')
       }
     } catch (error) {
-      logger.warn('⚠️ Ошибка регистрации контроллера:', error)
+      logger.warn('Ошибка регистрации контроллера:', error)
     }
 
     // 2. Инициализация DOM элементов - делаем это сразу
@@ -1372,18 +1372,20 @@ function getScaledState (state) {
 }
 
 function updateViewerStatusUI () {
-  // Тихо обновляем статус вьювера
+  // Обновляем статус вьювера
   const viewerStatusEl = document.getElementById('viewerStatus')
   if (viewerStatusEl) {
     if (window.__current.viewerConnected) {
       viewerStatusEl.textContent = 'Подключен'
       viewerStatusEl.style.color = '#22c55e' // ярко-зеленый цвет
+      viewerStatusEl.style.fontWeight = '600' // делаем текст жирным для лучшей видимости
       if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
         updatePreviewSize(window.__current.viewerScreenSize)
       }
     } else {
       viewerStatusEl.textContent = 'Ожидание...'
       viewerStatusEl.style.color = '#ef4444' // красный
+      viewerStatusEl.style.fontWeight = '400'
       showWaitingForViewer()
     }
   }

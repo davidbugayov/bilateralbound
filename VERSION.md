@@ -1,26 +1,25 @@
 # BilateralBound - Система Версионирования
 
-## Текущая Версия: v2.92.0
+## Текущая Версия: v2.93.0
 **Статус:** Активна
-**Дата релиза:** 19 октября 2025 г. в 19:00
-**Коммит:** 030aeac
+**Дата релиза:** 19 октября 2025 г. в 19:26
+**Коммит:** 554f2e3
 
-### Основные Изменения v2.92.0:
-- ✨ fix: add copy function to controller for clipboard functionality
+### Основные Изменения v2.93.0:
+- ✨ fix: make viewer status bright green when connected
 
-- Add copy() function to controller.js for copying session links to clipboard
-- Implement modern clipboard API with fallback for older browsers
-- Add proper error handling and user notifications for copy operations
-- Fix missing copy functionality in controller interface
+- Change viewer status color from #10b981 to #22c55e for better visibility
+- Ensure 'Подключен' status is clearly visible with bright green color
+- Improve visual feedback for viewer connection status
 
-🔧 This resolves the issue where copy button in controller was not working
+🎨 UI improvement for better user experience
 
 🤖 Generated with [Claude Code Assistant](https://claude.ai/code-assistant)
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 
 ### Предыдущие Версии:
-- **v2.91.1** - Предыдущая версия
+- **v2.92.0** - Предыдущая версия
 
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
@@ -33,4 +32,4 @@
 - Мобильная версия скрывает индикатор версии
 
 ---
-*Автоматически сгенерировано: 2025-10-19T16:00:27.143Z*
+*Автоматически сгенерировано: 2025-10-19T16:26:46.307Z*
