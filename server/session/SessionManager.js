@@ -165,8 +165,18 @@ class SessionManager {
       if (role === 'viewer') {
         this.stateBroadcaster.broadcastInitialState(sessionId, ws, session.ballState)
       } else {
+        // Controller connected
         try { ws.initialStateSent = false } catch { /* ignore */ }
-        this.logger.logSession(sessionId, 'Controller connected, deferring initial_state until viewer screen size is set.')
+
+        // Send initial_state immediately if viewer screen size is already set
+        if (session.viewerScreenSize && session.viewerScreenSize.width > 0 && session.viewerScreenSize.height > 0) {
+          const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
+          this.stateBroadcaster.broadcastInitialState(sessionId, ws, finalState)
+          ws.initialStateSent = true
+          this.logger.logSession(sessionId, 'Sent initial_state to controller (viewer screen size already set)')
+        } else {
+          this.logger.logSession(sessionId, 'Controller connected, deferring initial_state until viewer screen size is set.')
+        }
       }
     }
 

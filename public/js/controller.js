@@ -461,34 +461,25 @@ function setupWebSocketEventHandlers (wsClient, logger) {
     }
 
     // Мгновенно выравниваем позицию в превью по центру из initial_state (без интерполяции),
-    // используем СЫРЫЕ координаты вьювера (скейл будет на отрисовке)
+    // всегда центрируем мяч в превью относительно центра вьювера (в координатах вьювера)
     try {
       if (previewPhysicsEngine) {
-        const hasValidX = typeof state.x === 'number' && !Number.isNaN(state.x)
-        const hasValidY = typeof state.y === 'number' && !Number.isNaN(state.y)
-
-        if (hasValidX && hasValidY) {
-          previewPhysicsEngine.setPosition(state.x, state.y)
+        // Всегда центрируем мяч в превью относительно центра вьювера (в координатах вьювера)
+        if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
+          const viewerCenterX = window.__current.viewerScreenSize.width / 2
+          const viewerCenterY = window.__current.viewerScreenSize.height / 2
+          previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
           previewPhysicsEngine.setVelocity(0, 0)
-        } else if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
-          // Фолбэк: если координаты не пришли, центрируем относительно размеров вьювера
-          const canvas = window.__previewCanvas || document.getElementById('preview')
-          if (canvas) {
-            const viewerCenterX = window.__current.viewerScreenSize.width / 2
-            const viewerCenterY = window.__current.viewerScreenSize.height / 2
-            const scaleX = canvas.width / window.__current.viewerScreenSize.width
-            const scaleY = canvas.height / window.__current.viewerScreenSize.height
-            const previewCenterX = viewerCenterX * scaleX
-            const previewCenterY = viewerCenterY * scaleY
-            previewPhysicsEngine.setPosition(previewCenterX, previewCenterY)
-            previewPhysicsEngine.setVelocity(0, 0)
+          // Принудительно устанавливаем центр в state, чтобы applyServerStateToPreview использовал его
+          if (typeof state.x === 'number' || typeof state.y === 'number') {
+            state.x = viewerCenterX
+            state.y = viewerCenterY
           }
         }
       }
-  } catch {
-    // Тихо игнорируем, если в момент старта ещё нет канваса
-    console.warn('Canvas not ready during initial state setup')
-  }
+    } catch (error) {
+      console.warn('Canvas not ready during initial state setup', error)
+    }
 
     applyServerStateToPreview(state)
     syncUIWithState(state)
@@ -1042,6 +1033,15 @@ function updatePreviewSize (viewerScreenSize) {
     viewerInfo.style.display = 'block'
   }
 
+  // Если нет состояния сервера (как при первом подключении вьювера), центрируем мяч
+  // Это решает проблему, когда контроллер подключается раньше вьювера
+  if (!lastServerState) {
+    const viewerCenterX = viewerScreenSize.width / 2
+    const viewerCenterY = viewerScreenSize.height / 2
+    previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
+    previewPhysicsEngine.setVelocity(0, 0)
+  }
+
   // Тихо завершаем обновление размера превью
 }
 
@@ -1217,7 +1217,6 @@ function updateDirectionDisplay (dirX, dirY, customText = null) {
 
     if (!customText) {
       // ОПРЕДЕЛЯЕМ НАПРАВЛЕНИЕ ТОЛЬКО ПО currentDirectionMode - игнорируем dirX/dirY
-      console.log(`🎯 Определяем направление по режиму: ${currentDirectionMode}`)
 
       if (currentDirectionMode === 'horizontal') {
         directionText = 'Горизонтальное'
@@ -1238,7 +1237,7 @@ function updateDirectionDisplay (dirX, dirY, customText = null) {
         // Если режим неизвестен, показываем вопрос
         directionText = 'Неизвестное направление'
         directionIcon = '❓'
-        console.warn(`🎯 Неизвестный режим направления: ${currentDirectionMode}`)
+        console.warn(`Неизвестный режим направления: ${currentDirectionMode}`)
       }
     }
 
@@ -1251,8 +1250,6 @@ function updateDirectionDisplay (dirX, dirY, customText = null) {
     if (fsDirectionDisplay) {
       fsDirectionDisplay.innerHTML = directionDisplay ? directionDisplay.innerHTML : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
     }
-
-    console.log(`🎯 Отображение направления обновлено: ${directionText} (режим: ${currentDirectionMode}) - игнорируем dirX/dirY`)
   } catch (error) {
     console.error('Ошибка обновления отображения направления:', error)
   }
