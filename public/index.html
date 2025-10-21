@@ -752,6 +752,132 @@
           </div>
         </div>
 
+        <div class="info-card" style="margin-top: 32px;">
+          <h3>
+            🔄 Восстановить сессию по ID
+          </h3>
+          <p style="margin: 12px 0; line-height: 1.6;">
+            Если у вас есть ID сохраненной сессии, введите его, чтобы загрузить все настройки и продолжить работу.
+          </p>
+          <div style="margin-top: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 500;">
+              ID существующей сессии
+            </label>
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <input 
+                type="text" 
+                id="existingSessionId" 
+                placeholder="Введите ID сессии..."
+                style="
+                  flex: 1;
+                  padding: 14px 18px;
+                  border: 2px solid rgba(59, 130, 246, 0.3);
+                  border-radius: 12px;
+                  background: rgba(15, 23, 42, 0.6);
+                  color: #e2e8f0;
+                  font-size: 1rem;
+                  transition: all 0.3s ease;
+                "
+              />
+              <button 
+                id="loadSessionBtn" 
+                class="main-button"
+                onclick="loadSession()"
+                style="padding: 14px 28px; white-space: nowrap;"
+              >
+                📥 Загрузить
+              </button>
+            </div>
+            <p id="loadSessionMessage" style="margin: 8px 0 0 0; font-size: 0.9rem; color: #94a3b8; min-height: 20px;"></p>
+          </div>
+
+          <div id="restoredLinksContainer" style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(59, 130, 246, 0.3);">
+            <p style="color: #34d399; font-weight: 600; margin-bottom: 16px;">
+              ✅ Сессия найдена!
+            </p>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; margin-bottom: 6px; color: #60a5fa; font-weight: 500; font-size: 0.95rem;">
+                👁️ Ссылка для клиента (Viewer):
+              </label>
+              <div style="display: flex; gap: 8px;">
+                <input 
+                  type="text" 
+                  id="restoredViewerUrl" 
+                  readonly
+                  style="
+                    flex: 1;
+                    padding: 10px 14px;
+                    border: 1px solid rgba(59, 130, 246, 0.4);
+                    border-radius: 8px;
+                    background: rgba(15, 23, 42, 0.8);
+                    color: #60a5fa;
+                    font-size: 0.9rem;
+                    font-family: 'Courier New', monospace;
+                  "
+                />
+                <button 
+                  onclick="copyToClipboard('restoredViewerUrl', 'Ссылка для клиента скопирована!')"
+                  style="
+                    padding: 10px 20px;
+                    background: #3b82f6;
+                    color: white;
+                    border: 0;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                  "
+                  onmouseover="this.style.background='#2563eb'"
+                  onmouseout="this.style.background='#3b82f6'"
+                >
+                  📋 Копировать
+                </button>
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; margin-bottom: 6px; color: #a855f7; font-weight: 500; font-size: 0.95rem;">
+                🎮 Ссылка для терапевта (Controller):
+              </label>
+              <div style="display: flex; gap: 8px;">
+                <input 
+                  type="text" 
+                  id="restoredControllerUrl" 
+                  readonly
+                  style="
+                    flex: 1;
+                    padding: 10px 14px;
+                    border: 1px solid rgba(168, 85, 247, 0.4);
+                    border-radius: 8px;
+                    background: rgba(15, 23, 42, 0.8);
+                    color: #a855f7;
+                    font-size: 0.9rem;
+                    font-family: 'Courier New', monospace;
+                  "
+                />
+                <button 
+                  onclick="copyToClipboard('restoredControllerUrl', 'Ссылка для терапевта скопирована!')"
+                  style="
+                    padding: 10px 20px;
+                    background: #8b5cf6;
+                    color: white;
+                    border: 0;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                  "
+                  onmouseover="this.style.background='#7c3aed'"
+                  onmouseout="this.style.background='#8b5cf6'"
+                >
+                  📋 Копировать
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="steps-container">
           <h3>
             📋 Как начать терапию:
@@ -793,7 +919,7 @@
         </div>
         <div style="text-align: right; margin-top: 24px;">
           <div class="footer">
-            ⚡ BilateralBound v2.96.1
+            ⚡ BilateralBound v2.97.0
           </div>
         </div>
       </div>
@@ -1076,6 +1202,75 @@
     });
 
     window.addEventListener('focus', resetCreateSessionButton);
+
+    async function loadSession() {
+      const input = document.getElementById('existingSessionId');
+      const btn = document.getElementById('loadSessionBtn');
+      const messageEl = document.getElementById('loadSessionMessage');
+      const container = document.getElementById('restoredLinksContainer');
+      const viewerUrlInput = document.getElementById('restoredViewerUrl');
+      const controllerUrlInput = document.getElementById('restoredControllerUrl');
+
+      if (!input || !btn || !messageEl || !container || !viewerUrlInput || !controllerUrlInput) {
+        console.error('Один из элементов для восстановления сессии не найден');
+        return;
+      }
+
+      const sessionId = input.value.trim();
+      
+      // Скрываем предыдущие результаты
+      container.style.display = 'none';
+
+      if (!sessionId) {
+        messageEl.textContent = '❌ Пожалуйста, введите ID сессии.';
+        messageEl.style.color = '#ef4444';
+        input.focus();
+        return;
+      }
+
+      const originalBtnText = btn.innerHTML;
+      try {
+        btn.innerHTML = '⏳ Загрузка...';
+        btn.disabled = true;
+        messageEl.textContent = 'Проверка сессии...';
+        messageEl.style.color = '#94a3b8';
+
+        const response = await fetch(`/api/session/${sessionId}/state`);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Сессия с таким ID не найдена.');
+          }
+          throw new Error(`Ошибка сервера: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Сессия найдена:', data);
+        messageEl.textContent = ''; // Очищаем сообщение при успехе
+
+        const baseUrl = `${window.location.protocol}//${window.location.host}`;
+        viewerUrlInput.value = `${baseUrl}/s/${sessionId}`;
+        controllerUrlInput.value = `${baseUrl}/c/${sessionId}`;
+        container.style.display = 'block';
+
+        if (window.showSuccessNotification) {
+          window.showSuccessNotification('🎉 Сессия найдена!');
+        }
+        
+        // Прокручиваем к результатам
+        setTimeout(() => {
+          container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+
+      } catch (error) {
+        console.error('❌ Ошибка загрузки сессии:', error);
+        messageEl.textContent = `❌ ${error.message}`;
+        messageEl.style.color = '#ef4444';
+      } finally {
+        btn.innerHTML = originalBtnText;
+        btn.disabled = false;
+      }
+    }
 
     // Функция копирования в буфер обмена
     function copy(elementId) {
