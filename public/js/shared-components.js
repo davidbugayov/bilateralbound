@@ -233,9 +233,7 @@ class SharedComponents {
           btn.classList.toggle('active', btn.dataset.color === color)
         }
         // Вызываем callback
-        if (this.options.onColorChange) {
-          this.options.onColorChange(color)
-        }
+        this.options.onColorChange?.(color)
       },
       // Получает текущий цвет
       getColor() {
@@ -307,9 +305,7 @@ class SharedComponents {
           btn.classList.toggle('active', Number.parseInt(btn.dataset.size, 10) === size)
         }
         // Вызываем callback
-        if (this.options.onSizeChange) {
-          this.options.onSizeChange(size)
-        }
+        this.options.onSizeChange?.(size)
       },
       // Получает текущий размер
       getSize() {

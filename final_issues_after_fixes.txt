@@ -1,0 +1,28 @@
+731:javascript:S3776|bilateral_bound:public/js/physics-engine.js|Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+640:javascript:S3776|bilateral_bound:public/js/new-features.js|Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+482:javascript:S6582|bilateral_bound:public/js/controller.js|Prefer using an optional chain expression instead, as it's more concise and easier to read.
+861:javascript:S6582|bilateral_bound:public/js/controller.js|Prefer using an optional chain expression instead, as it's more concise and easier to read.
+306:javascript:S6582|bilateral_bound:public/js/physics-engine.js|Prefer using an optional chain expression instead, as it's more concise and easier to read.
+1492:javascript:S3776|bilateral_bound:public/js/controller.js|Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+429:javascript:S6582|bilateral_bound:public/js/notification-system.js|Prefer using an optional chain expression instead, as it's more concise and easier to read.
+906:javascript:S7735|bilateral_bound:public/js/physics-engine.js|Unexpected negated condition.
+907:javascript:S7735|bilateral_bound:public/js/physics-engine.js|Unexpected negated condition.
+99:javascript:S3776|bilateral_bound:public/js/renderer.js|Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+181:javascript:S3776|bilateral_bound:server/session/SessionManager.js|Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+283:javascript:S3776|bilateral_bound:server/session/SessionManager.js|Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+10:javascript:S3776|bilateral_bound:server/utils/validation.js|Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+77:javascript:S3776|bilateral_bound:server/utils/validation.js|Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.
+31:javascript:S3776|bilateral_bound:server/network/webSocketServer.js|Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+436:javascript:S6582|bilateral_bound:public/js/notification-system.js|Prefer using an optional chain expression instead, as it's more concise and easier to read.
+677:javascript:S3923|bilateral_bound:public/js/controller.js|Remove this conditional structure or edit its code blocks so that they're not all the same.
+692:javascript:S3776|bilateral_bound:public/js/controller.js|Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+963:javascript:S6660|bilateral_bound:public/js/controller.js|'If' statement should not be the only statement in 'else' block
+335:javascript:S7735|bilateral_bound:public/js/physics-engine.js|Unexpected negated condition.
+59:javascript:S6544|bilateral_bound:public/js/common.js|Expected non-Promise value in a boolean conditional.
+263:javascript:S7735|bilateral_bound:public/js/controller.js|Unexpected negated condition.
+1514:javascript:S6660|bilateral_bound:public/js/controller.js|'If' statement should not be the only statement in 'else' block
+1332:javascript:S7735|bilateral_bound:public/js/controller.js|Unexpected negated condition.
+190:javascript:S7735|bilateral_bound:public/js/renderer.js|Unexpected negated condition.
+314:javascript:S7735|bilateral_bound:public/js/controller.js|Unexpected negated condition.
+113:javascript:S6582|bilateral_bound:public/js/shared-components.js|Prefer using an optional chain expression instead, as it's more concise and easier to read.
+125:javascript:S6582|bilateral_bound:public/js/shared-components.js|Prefer using an optional chain expression instead, as it's more concise and easier to read.

@@ -267,7 +267,7 @@ function handleFullscreenKeydown(e) {
   }
 }
 
-function handlePopState(event) {
+function handlePopState() {
   if (isPreviewFullscreen) {
     closePreviewFullscreen()
   } else if (globalThis.location.hash === '#fullscreen-preview' && isPreviewFullscreen === false) {
@@ -639,8 +639,8 @@ function createLogger(moduleName) {
   // Функция разбита для снижения когнитивной сложности
   const startTime = performance.now()
   return {
-    info: (_message, _data) => {
-      // Неиспользуемая переменная _timestamp удалена
+    info: () => {
+      // Параметры не используются
     },
     success: (message, data) => {
       // Неиспользуемая переменная timestamp удалена
@@ -674,16 +674,7 @@ async function handleInitializationError(error, logger) {
   // Функция разбита для снижения когнитивной сложности
   logger.error('Критическая ошибка инициализации:', error)
   if (error instanceof AppError) {
-    switch (error.code) {
-      case 'SESSION_ID_MISSING':
-        // Показываем ошибку пользователю
-        break
-      case 'DOM_ELEMENTS_MISSING':
-        // Показываем ошибку пользователю
-        break
-      default:
-      // Показываем ошибку пользователю
-    }
+    // Показываем ошибку пользователю
   }
   // Показываем ошибку пользователю
   // Логируем для отладки

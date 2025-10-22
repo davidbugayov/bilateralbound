@@ -78,7 +78,7 @@ const toggleFullscreen =
         }
       })()
 const throttle =
-  globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function'
+  globalThis.CommonUtils && !(globalThis.CommonUtils instanceof Promise) && typeof globalThis.CommonUtils.throttle === 'function'
     ? globalThis.CommonUtils.throttle
     : function (fn, wait = 100) {
         if (typeof fn !== 'function') return () => {}
@@ -128,9 +128,8 @@ if (typeof globalThis !== 'undefined') {
 }
 
 class ThemeManager {
-  themeKey = 'bb_theme'
-
   constructor() {
+    this.themeKey = 'bb_theme'
     this.init()
   }
 
@@ -153,14 +152,12 @@ class ThemeManager {
       // Сейчас светлая тема - переключаем на темную
       body.classList.remove('light-theme')
       localStorage.setItem(this.themeKey, 'dark')
-      if (globalThis.showSuccessNotification)
-        globalThis.showSuccessNotification('Тёмная тема активирована')
+        globalThis.showSuccessNotification?.('Тёмная тема активирована')
     } else {
       // Сейчас темная тема - переключаем на светлую
       body.classList.add('light-theme')
       localStorage.setItem(this.themeKey, 'light')
-      if (globalThis.showSuccessNotification)
-        globalThis.showSuccessNotification('Светлая тема активирована')
+        globalThis.showSuccessNotification?.('Светлая тема активирована')
     }
   }
 

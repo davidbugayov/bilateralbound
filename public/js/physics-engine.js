@@ -24,10 +24,8 @@ class PhysicsEngine {
       ...options
     }
     // Применяем глобальную конфигурацию при наличии
-    if (typeof globalThis !== 'undefined' && globalThis.BBConfig) {
-      if (globalThis.BBConfig.smoothing) {
-        this.options.smoothing = { ...this.options.smoothing, ...globalThis.BBConfig.smoothing }
-      }
+    if (typeof globalThis !== 'undefined' && globalThis.BBConfig?.smoothing) {
+      this.options.smoothing = { ...this.options.smoothing, ...globalThis.BBConfig.smoothing }
     }
     // Флаг для определения режима вьювера
     this.isViewer = Boolean(options.isViewer ?? false)
