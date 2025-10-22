@@ -4,11 +4,10 @@
  */
 
 class NotificationSystem {
-  container = null
-  notifications = []
-  autoHideTimeout = 5000
-
   constructor() {
+    this.container = null
+    this.notifications = []
+    this.autoHideTimeout = 5000
     this.init()
   }
 
@@ -288,8 +287,8 @@ class NotificationSystem {
     if (duplicate) {
       // Если полностью совпадает (тип и заголовок), просто игнорируем повтор
       if (
-        duplicate.config.type === config.type &&
-        (duplicate.config.title || '') === (config.title || '')
+        duplicate.config?.type === config.type &&
+        (duplicate.config?.title || '') === (config.title || '')
       ) {
         return
       }

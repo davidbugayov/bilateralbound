@@ -302,7 +302,7 @@ class PhysicsEngine {
 
   _canInterpolate() {
     return (
-      !(this.state.paused && !this.state.allowInterpWhenPaused) &&
+      (!this.state.paused || this.state.allowInterpWhenPaused) &&
       this.state &&
       this.state.targetX
     )
