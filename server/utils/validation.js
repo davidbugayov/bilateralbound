@@ -19,7 +19,7 @@ class ValidationUtils {
       typeof updates.speed === 'number' &&
       updates.speed >= 0 &&
       updates.speed <= 100 &&
-      !isNaN(updates.speed)
+      !Number.isNaN(updates.speed)
     ) {
       validated.speed = updates.speed
     }
@@ -29,7 +29,7 @@ class ValidationUtils {
       typeof updates.radius === 'number' &&
       updates.radius > 0 &&
       updates.radius <= 1000 &&
-      !isNaN(updates.radius)
+      !Number.isNaN(updates.radius)
     ) {
       validated.radius = updates.radius
     }
@@ -40,10 +40,18 @@ class ValidationUtils {
     }
 
     // Валидация направления
-    if (typeof updates.dirX === 'number' && Math.abs(updates.dirX) <= 1 && !isNaN(updates.dirX)) {
+    if (
+      typeof updates.dirX === 'number' &&
+      Math.abs(updates.dirX) <= 1 &&
+      !Number.isNaN(updates.dirX)
+    ) {
       validated.dirX = updates.dirX
     }
-    if (typeof updates.dirY === 'number' && Math.abs(updates.dirY) <= 1 && !isNaN(updates.dirY)) {
+    if (
+      typeof updates.dirY === 'number' &&
+      Math.abs(updates.dirY) <= 1 &&
+      !Number.isNaN(updates.dirY)
+    ) {
       validated.dirY = updates.dirY
     }
 
@@ -75,23 +83,31 @@ class ValidationUtils {
 
     // Валидация для вьювера (клиентского режима)
     if (command.role === 'viewer') {
-      if (typeof command.x === 'number' && !isNaN(command.x)) validated.x = command.x
-      if (typeof command.y === 'number' && !isNaN(command.y)) validated.y = command.y
-      if (typeof command.vx === 'number' && !isNaN(command.vx)) validated.vx = command.vx
-      if (typeof command.vy === 'number' && !isNaN(command.vy)) validated.vy = command.vy
+      if (typeof command.x === 'number' && !Number.isNaN(command.x)) validated.x = command.x
+      if (typeof command.y === 'number' && !Number.isNaN(command.y)) validated.y = command.y
+      if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) validated.vx = command.vx
+      if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) validated.vy = command.vy
     } else {
       // Валидация для серверного режима
-      if (typeof command.dirX === 'number' && Math.abs(command.dirX) <= 1 && !isNaN(command.dirX)) {
+      if (
+        typeof command.dirX === 'number' &&
+        Math.abs(command.dirX) <= 1 &&
+        !Number.isNaN(command.dirX)
+      ) {
         validated.dirX = command.dirX
       }
-      if (typeof command.dirY === 'number' && Math.abs(command.dirY) <= 1 && !isNaN(command.dirY)) {
+      if (
+        typeof command.dirY === 'number' &&
+        Math.abs(command.dirY) <= 1 &&
+        !Number.isNaN(command.dirY)
+      ) {
         validated.dirY = command.dirY
       }
       if (
         typeof command.speed === 'number' &&
         command.speed >= 0 &&
         command.speed <= 100 &&
-        !isNaN(command.speed)
+        !Number.isNaN(command.speed)
       ) {
         validated.speed = command.speed
       }
@@ -108,7 +124,7 @@ class ValidationUtils {
       typeof command.radius === 'number' &&
       command.radius > 0 &&
       command.radius <= 1000 &&
-      !isNaN(command.radius)
+      !Number.isNaN(command.radius)
     ) {
       validated.radius = command.radius
     }
@@ -130,10 +146,10 @@ class ValidationUtils {
       return null
     }
 
-    const width = parseInt(screenSize.width)
-    const height = parseInt(screenSize.height)
+    const width = Number.parseInt(screenSize.width)
+    const height = Number.parseInt(screenSize.height)
 
-    if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+    if (Number.isNaN(width) || Number.isNaN(height) || width <= 0 || height <= 0) {
       return null
     }
 

@@ -3,9 +3,9 @@ const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
-const os = require('os')
-const path = require('path')
-const net = require('net')
+const os = require('node:os')
+const path = require('node:path')
+const net = require('node:net')
 const { v4: uuidv4 } = require('uuid')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
@@ -14,10 +14,12 @@ const getNetworkInterfaces = () => {
   const interfaces = os.networkInterfaces()
   const result = {}
 
-  Object.keys(interfaces).forEach(key => {
+  for (const key of Object.keys(interfaces)) {
     const iface = interfaces[key].find(alias => alias.family === 'IPv4' && !alias.internal)
-    if (iface) result[key] = iface.address
-  })
+    if (iface) {
+      result[key] = iface.address
+    }
+  }
   return result
 }
 // Проверка доступности порта

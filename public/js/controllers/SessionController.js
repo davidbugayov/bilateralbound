@@ -9,7 +9,7 @@ export class SessionController {
    * @param {Object} appState - глобальное состояние приложения
    */
   constructor(wsClient, appState) {
-    this.wsClient = wsClient;
-    this.appState = appState;
+    this.wsClient = wsClient
+    this.appState = appState
   }
 }

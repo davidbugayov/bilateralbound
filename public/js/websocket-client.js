@@ -14,9 +14,7 @@ class WebSocketClient {
       throw new Error('Valid role ("controller" or "viewer") is required for WebSocket connection')
     }
     // Конфигурация с умолчаниями - используем глобальную конфигурацию
-    const globalConfig =
-      (typeof globalThis !== 'undefined' && globalThis.BBConfig && globalThis.BBConfig.network) ||
-      {}
+    const globalConfig = globalThis.BBConfig?.network || {}
 
     this.config = {
       isSecure: globalThis.location.protocol === 'https:',
@@ -142,7 +140,7 @@ class WebSocketClient {
         })
       } else {
         this._sendMessage(message)
-        return Promise.resolve()
+        return
       }
     }
     // Коалесцирование для обычных сообщений
@@ -170,7 +168,7 @@ class WebSocketClient {
         this._coalesceTimers.set(type, timerId)
       }
 
-      return Promise.resolve()
+      return
     }
     // Обычная отправка для остальных сообщений
     const messageId = ++this.messageIdCounter
@@ -187,7 +185,7 @@ class WebSocketClient {
       })
     } else {
       this._sendMessage(message)
-      return Promise.resolve()
+      return
     }
   }
   /**
@@ -371,12 +369,14 @@ class WebSocketClient {
     const timestamp = new Date().toLocaleTimeString()
     const prefix = `[WS:${this.role}]`
     const coloredMessage = `%c${prefix} ${message}`
-    const style =
-      type === 'error'
-        ? 'color: #ef4444; font-weight: bold;'
-        : type === 'warning'
-          ? 'color: #f59e0b; font-weight: bold;'
-          : 'color: #3b82f6; font-weight: bold;'
+    let style
+    if (type === 'error') {
+      style = 'color: #ef4444; font-weight: bold;'
+    } else if (type === 'warning') {
+      style = 'color: #f59e0b; font-weight: bold;'
+    } else {
+      style = 'color: #3b82f6; font-weight: bold;'
+    }
     console[type === 'error' ? 'error' : 'log'](coloredMessage, style, timestamp)
   }
   // ===== ГЕТТЕРЫ =====

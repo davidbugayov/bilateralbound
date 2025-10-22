@@ -366,7 +366,7 @@ class PhysicsEngine {
     const baseStiffness = this.options.smoothing.stiffness || 25
     const adaptiveStiffness = baseStiffness * (1 + Math.min(distance / 150, 3))
     // Адаптивное демпфирование на основе скорости
-    const speed = Math.sqrt(this._smoothedVelocity.x ** 2 + this._smoothedVelocity.y ** 2)
+    const speed = Math.hypot(this._smoothedVelocity.x, this._smoothedVelocity.y)
     const baseDamping = this.options.smoothing.damping || 15
     const adaptiveDamping = baseDamping * (1 + Math.min(speed / 800, 2))
     // Ускорение пружины с улучшенной формулой
@@ -381,7 +381,7 @@ class PhysicsEngine {
     // === УМНОЕ ОГРАНИЧЕНИЕ ШАГА С АДАПТИВНЫМ МАКСИМУМОМ ===
     let stepX = this.state.smoothVx * deltaTime
     let stepY = this.state.smoothVy * deltaTime
-    const stepMagnitude = Math.sqrt(stepX * stepX + stepY * stepY)
+    const stepMagnitude = Math.hypot(stepX, stepY)
     // Адаптивное ограничение шага на основе расстояния и скорости
     const adaptiveMaxStep = Math.min(
       distance * 2.5, // Увеличено для лучшей отзывчивости
@@ -447,15 +447,13 @@ class PhysicsEngine {
         this.updateClientPhysics(deltaTime)
       }
       // Отмечаем момент последнего обновления физики/интерполяции для синхронизации рендера
-      this.__lastPhysicsUpdateTs =
-        typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()
+      this.__lastPhysicsUpdateTs = performance?.now?.() ?? Date.now()
       return
     }
     // Для сервера используем полную физику с отскоками
     this.updateServerPhysics(deltaTime)
     // Отмечаем момент последнего обновления физики
-    this.__lastPhysicsUpdateTs =
-      typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()
+    this.__lastPhysicsUpdateTs = performance?.now?.() ?? Date.now()
   }
   /**
    * Обновляет серверную физику с полной обработкой отскоков
@@ -673,26 +671,34 @@ class PhysicsEngine {
     const validatedCommand = {}
     // Валидация для вьювера (клиентского режима)
     if (this.isViewer) {
-      if (typeof command.x === 'number' && !isNaN(command.x)) validatedCommand.x = command.x
-      if (typeof command.y === 'number' && !isNaN(command.y)) validatedCommand.y = command.y
-      if (typeof command.vx === 'number' && !isNaN(command.vx)) validatedCommand.vx = command.vx
-      if (typeof command.vy === 'number' && !isNaN(command.vy)) validatedCommand.vy = command.vy
+      if (typeof command.x === 'number' && !Number.isNaN(command.x)) validatedCommand.x = command.x
+      if (typeof command.y === 'number' && !Number.isNaN(command.y)) validatedCommand.y = command.y
+      if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) validatedCommand.vx = command.vx
+      if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) validatedCommand.vy = command.vy
       // При клиентской физике тоже принимаем изменение скорости, чтобы локальная модель не оставалась со старой величиной
       if (
         typeof command.speed === 'number' &&
         command.speed >= 0 &&
         command.speed <= 100 &&
-        !isNaN(command.speed)
+        !Number.isNaN(command.speed)
       ) {
         validatedCommand.speed = command.speed
       }
     } else {
       // Валидация для серверного режима
-      if (typeof command.dirX === 'number' && Math.abs(command.dirX) <= 1 && !isNaN(command.dirX)) {
+      if (
+        typeof command.dirX === 'number' &&
+        Math.abs(command.dirX) <= 1 &&
+        !Number.isNaN(command.dirX)
+      ) {
         validatedCommand.dirX = command.dirX
       }
 
-      if (typeof command.dirY === 'number' && Math.abs(command.dirY) <= 1 && !isNaN(command.dirY)) {
+      if (
+        typeof command.dirY === 'number' &&
+        Math.abs(command.dirY) <= 1 &&
+        !Number.isNaN(command.dirY)
+      ) {
         validatedCommand.dirY = command.dirY
       }
 
@@ -700,7 +706,7 @@ class PhysicsEngine {
         typeof command.speed === 'number' &&
         command.speed >= 0 &&
         command.speed <= 100 &&
-        !isNaN(command.speed)
+        !Number.isNaN(command.speed)
       ) {
         validatedCommand.speed = command.speed
       }
@@ -718,7 +724,7 @@ class PhysicsEngine {
       typeof command.radius === 'number' &&
       command.radius > 0 &&
       command.radius <= 1000 &&
-      !isNaN(command.radius)
+      !Number.isNaN(command.radius)
     ) {
       validatedCommand.radius = command.radius
     }
@@ -798,8 +804,7 @@ class PhysicsEngine {
         }
       }
 
-      this.lastServerUpdate =
-        typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()
+      this.lastServerUpdate = performance?.now?.() ?? Date.now()
     } else {
       // Этот блок теперь выполняется только на сервере
       if (command.dirX !== undefined || command.dirY !== undefined) {

@@ -84,7 +84,7 @@ class FeatureManager {
     presetGrid.style.display = 'grid'
     presetGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(120px, 1fr))'
     presetGrid.style.gap = '8px'
-    Object.entries(this.presets).forEach(([name, config]) => {
+    for (const [name, config] of Object.entries(this.presets)) {
       const btn = document.createElement('button')
       btn.className = 'btn outline'
       btn.style.padding = '8px'
@@ -92,7 +92,7 @@ class FeatureManager {
       btn.textContent = name
       btn.onclick = () => this.applyPreset(config)
       presetGrid.appendChild(btn)
-    })
+    }
     container.appendChild(presetGrid)
   }
   /**
@@ -235,47 +235,54 @@ class FeatureManager {
       const sessionData = JSON.parse(text)
       // Применяем импортированные настройки
       if (sessionData.settings) {
-        const settings = sessionData.settings
-        // Применяем скорость
-        if (settings.speed && globalThis.components?.speed) {
-          globalThis.components.speed.setSpeed(settings.speed)
-          await this.sendUpdate({ speed: settings.speed })
-        }
-        // Применяем направление
-        if (settings.direction) {
-          globalThis.setDirection(settings.direction)
-        }
-        // Применяем цвета
-        if (settings.ballColor) {
-          globalThis.setBallColor(settings.ballColor)
-        }
-
-        if (settings.bgColor) {
-          globalThis.setBackgroundColor(settings.bgColor)
-        }
-        // Применяем размер
-        if (settings.ballSize) {
-          globalThis.setBallSize(settings.ballSize)
-        }
-        // Применяем состояние игры
-        if (settings.isPlaying && !globalThis.isPlaying) {
-          globalThis.togglePlayPause()
-        } else if (!settings.isPlaying && globalThis.isPlaying) {
-          globalThis.togglePlayPause()
-        }
+        await this.applySettings(sessionData.settings)
       }
       // Восстанавливаем счётчики
-      if (sessionData.counters && globalThis.bbCounters) {
-        globalThis.bbCounters.timerMs = sessionData.counters.timer || 0
-        globalThis.bbCounters.passes = sessionData.counters.passes || 0
-        globalThis.bbCounters.sets = sessionData.counters.sets || 0
-        globalThis.bbCounters.render()
+      if (sessionData.counters) {
+        this.applyCounters(sessionData.counters)
       }
 
       this.showNotification('Сессия импортирована', 'success')
     } catch (error) {
       this.showNotification('Ошибка импорта сессии', 'error')
       console.error('Import error:', error)
+    }
+  }
+
+  async applySettings(settings) {
+    // Применяем скорость
+    if (settings.speed && globalThis.components?.speed) {
+      globalThis.components.speed.setSpeed(settings.speed)
+      await this.sendUpdate({ speed: settings.speed })
+    }
+    // Применяем направление
+    if (settings.direction) {
+      globalThis.setDirection(settings.direction)
+    }
+    // Применяем цвета
+    if (settings.ballColor) {
+      globalThis.setBallColor(settings.ballColor)
+    }
+
+    if (settings.bgColor) {
+      globalThis.setBackgroundColor(settings.bgColor)
+    }
+    // Применяем размер
+    if (settings.ballSize) {
+      globalThis.setBallSize(settings.ballSize)
+    }
+    // Применяем состояние игры
+    if (settings.isPlaying !== globalThis.isPlaying) {
+      globalThis.togglePlayPause()
+    }
+  }
+
+  applyCounters(counters) {
+    if (globalThis.bbCounters) {
+      globalThis.bbCounters.timerMs = counters.timer || 0
+      globalThis.bbCounters.passes = counters.passes || 0
+      globalThis.bbCounters.sets = counters.sets || 0
+      globalThis.bbCounters.render()
     }
   }
   /**
@@ -355,7 +362,7 @@ class FeatureManager {
     }
 
     this.sessionHistory.pop()
-    const previousState = this.sessionHistory[this.sessionHistory.length - 1]
+    const previousState = this.sessionHistory.at(-1)
 
     await this.applyState(previousState)
     this.showNotification('Изменение отменено', 'success')
@@ -524,10 +531,9 @@ class FeatureManager {
     ul.style.display = 'flex'
     ul.style.flexDirection = 'column'
     ul.style.gap = '6px'
-    this.sessions
+    for (const s of this.sessions
       .slice()
-      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-      .forEach(s => {
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))) {
         const item = document.createElement('div')
         item.style.display = 'flex'
         item.style.alignItems = 'center'
@@ -570,7 +576,7 @@ class FeatureManager {
         item.appendChild(info)
         item.appendChild(actions)
         ul.appendChild(item)
-      })
+    }
     listWrap.appendChild(ul)
   }
 
@@ -742,9 +748,7 @@ class FeatureManager {
    * Утилиты
    */
   async sendUpdate(data) {
-    if (globalThis.wsClient && globalThis.wsClient.send) {
-      await globalThis.wsClient.send('WS_MSG.controllerUpdate', data)
-    }
+    await globalThis.wsClient?.send('WS_MSG.controllerUpdate', data)
   }
 
   showNotification(message, type = 'info') {

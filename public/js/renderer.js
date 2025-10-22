@@ -43,15 +43,9 @@ class BallRenderer {
       ...options
     }
     // Применяем глобальную конфигурацию рендеринга
-    if (typeof globalThis !== 'undefined' && globalThis.BBConfig && globalThis.BBConfig.rendering) {
-      if (globalThis.BBConfig.rendering.adaptiveFrameRate !== undefined) {
-        this.adaptiveFrameRate = globalThis.BBConfig.rendering.adaptiveFrameRate
-      }
-
-      if (globalThis.BBConfig.rendering.maxFrameTime) {
-        this.maxFrameTime = globalThis.BBConfig.rendering.maxFrameTime
-      }
-    }
+    this.adaptiveFrameRate =
+      globalThis.BBConfig?.rendering?.adaptiveFrameRate ?? this.adaptiveFrameRate
+    this.maxFrameTime = globalThis.BBConfig?.rendering?.maxFrameTime ?? this.maxFrameTime
     // Устанавливаем режим движка в зависимости от опции
     this.physics.isViewer = !this.options.localPhysics
     // Кэшируем часто используемые значения
@@ -169,10 +163,7 @@ class BallRenderer {
         } else {
           // Внешний цикл физики: синхронизируемся с реальным последним тиком физики
           const now = currentTime
-          const lastTs =
-            this.physics && this.physics.__lastPhysicsUpdateTs
-              ? this.physics.__lastPhysicsUpdateTs
-              : now
+          const lastTs = this.physics?.__lastPhysicsUpdateTs ?? now
           alpha = Math.max(0, Math.min(1, (now - lastTs) / this.fixedStepMs))
         }
       }
@@ -298,9 +289,9 @@ class BallRenderer {
    */
   adjustBrightness(color, amount) {
     const hex = color.replace('#', '')
-    const r = Math.max(0, Math.min(255, parseInt(hex.slice(0, 2), 16) + amount))
-    const g = Math.max(0, Math.min(255, parseInt(hex.slice(2, 4), 16) + amount))
-    const b = Math.max(0, Math.min(255, parseInt(hex.slice(4, 6), 16) + amount))
+    const r = Math.max(0, Math.min(255, Number.parseInt(hex.slice(0, 2), 16) + amount))
+    const g = Math.max(0, Math.min(255, Number.parseInt(hex.slice(2, 4), 16) + amount))
+    const b = Math.max(0, Math.min(255, Number.parseInt(hex.slice(4, 6), 16) + amount))
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
   }
   /**

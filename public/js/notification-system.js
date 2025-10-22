@@ -4,10 +4,11 @@
  */
 
 class NotificationSystem {
+  container = null
+  notifications = []
+  autoHideTimeout = 5000
+
   constructor() {
-    this.container = null
-    this.notifications = []
-    this.autoHideTimeout = 5000
     this.init()
   }
 
@@ -491,9 +492,9 @@ class NotificationSystem {
    * Очищает все уведомления
    */
   clearAll() {
-    this.notifications.forEach(notification => {
+    for (const notification of this.notifications) {
       this.hide(notification)
-    })
+    }
   }
 
   /**

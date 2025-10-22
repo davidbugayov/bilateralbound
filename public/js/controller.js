@@ -32,14 +32,7 @@ let __ignoreServerPausedUntilTs = 0 // Кратковременная блоки
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
-if (
-  typeof globalThis !== 'undefined' &&
-  globalThis.BBConfig &&
-  globalThis.BBConfig.rendering &&
-  typeof globalThis.BBConfig.rendering.hiddenThrottleMs === 'number'
-) {
-  hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
-}
+hiddenThrottleMs = globalThis.BBConfig?.rendering?.hiddenThrottleMs ?? hiddenThrottleMs
 
 let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
 // --- Elements ---
@@ -273,7 +266,7 @@ async function initializeController() {
       if (isPreviewFullscreen) {
         // Если мы в полноэкранном режиме и произошла навигация назад
         closePreviewFullscreen()
-      } else if (globalThis.location.hash === '#fullscreen-preview' && !isPreviewFullscreen) {
+      } else if (globalThis.location.hash === '#fullscreen-preview' && isPreviewFullscreen === false) {
         // Если пользователь попал на хэш полноэкранного режима, но режим не активен
         openPreviewFullscreen()
       }
@@ -838,12 +831,12 @@ function safeSend(type, payload) {
   }
 }
 
-async function updateSpeed(speed) {
+function updateSpeed(speed) {
   // Функция разбита для снижения когнитивной сложности
   try {
     // Отправляем изменение скорости всегда, даже если вьювер ещё не подключен
     // (сервер сохранит значение и применит при старте)
-    await safeSend(WS_MSG.controllerUpdate, { speed })
+    safeSend(WS_MSG.controllerUpdate, { speed })
   } catch {
     console.warn('Error updating speed')
   }
@@ -1025,27 +1018,22 @@ function setDirection(directionMode) {
     // Преобразуем текстовый режим в вектор направления
     let dirX = 0
     let dirY = 0
-    let displayText = 'Неизвестно'
     switch (directionMode) {
       case 'horizontal':
         dirX = 1
         dirY = 0
-        displayText = 'Горизонтальное'
         break
       case 'vertical':
         dirX = 0
         dirY = 1
-        displayText = 'Вертикальное'
         break
       case 'diagRL': // Диагональ вправо-вниз
         dirX = 0.707
         dirY = 0.707
-        displayText = 'Диагональ (право-вниз)'
         break
       case 'diagRLL': // Диагональ вправо-вверх
         dirX = 0.707
         dirY = -0.707
-        displayText = 'Диагональ (право-верх)'
         break
       case 'random': {
         // Случайное направление
@@ -1053,7 +1041,6 @@ function setDirection(directionMode) {
         const angle = Math.random() * 2 * Math.PI
         dirX = Math.cos(angle)
         dirY = Math.sin(angle)
-        displayText = 'Случайное'
         break
       }
 
@@ -1088,7 +1075,7 @@ function setDirection(directionMode) {
     }
     // Обновляем UI для обратной связи
     updateDirectionButtons()
-    updateDirectionDisplay(dirX, dirY, displayText)
+    updateDirectionDisplay(dirX, dirY)
     console.log(
       `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
     )
@@ -1149,17 +1136,17 @@ function updateDirectionButtons() {
   // Функция разбита для снижения когнитивной сложности
   // Обновляем активное состояние кнопок направления в основном интерфейсе
   const directionButtons = document.querySelectorAll('[data-mode]')
-  directionButtons.forEach(button => {
-    const buttonDirection = button.getAttribute('data-mode')
+  for (const button of directionButtons) {
+    const buttonDirection = button.dataset.mode
     if (buttonDirection === currentDirectionMode) {
       button.classList.add('active')
     } else {
       button.classList.remove('active')
     }
-  })
+  }
   // Обновляем кнопки направления в полноэкранном режиме
   const fsDirectionButtons = document.querySelectorAll('[id^="fsDir"]')
-  fsDirectionButtons.forEach(button => {
+  for (const button of fsDirectionButtons) {
     let buttonDirection = null
     if (button.id === 'fsDirH') buttonDirection = 'horizontal'
     else if (button.id === 'fsDirV') buttonDirection = 'vertical'
@@ -1171,7 +1158,7 @@ function updateDirectionButtons() {
     } else {
       button.classList.remove('active')
     }
-  })
+  }
 }
 /**
  * Обновляет индикатор направления и отображает информацию о текущем направлении
@@ -1182,7 +1169,7 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     // Ищем элемент для отображения направления
     const directionDisplay = document.getElementById('currentDirection')
     let directionText = customText || 'Неизвестно'
-    let directionIcon = '❓'
+    let directionIcon
     if (!customText) {
       // ОПРЕДЕЛЯЕМ НАПРАВЛЕНИЕ ТОЛЬКО ПО currentDirectionMode - игнорируем dirX/dirY
       if (currentDirectionMode === 'horizontal') {
@@ -1238,9 +1225,9 @@ function updatePlayPauseButton() {
 
 function togglePlayPause() {
   // Функция разбита для снижения когнитивной сложности
-  const payload = {}
+const payload = {}
 
-  if (isPlaying) {
+if (isPlaying) {
     // Останавливаем игру с плавным возвратом в центр
     payload.paused = true
     payload.returnToCenter = true // Флаг для плавного возврата в центр
@@ -1266,10 +1253,7 @@ function togglePlayPause() {
       paused: false,
       dirX: currentDirection.dx,
       dirY: currentDirection.dy,
-      speed:
-        components.speed && typeof components.speed.getSpeed === 'function'
-          ? components.speed.getSpeed()
-          : 40
+      speed: components.speed?.getSpeed() ?? 40
     })
     safeSend(WS_MSG.controllerUpdate, payload)
     isPlaying = true
@@ -1413,14 +1397,8 @@ function resizePreviewFullscreen() {
   previewFsCanvas.width = globalThis.innerWidth
   previewFsCanvas.height = globalThis.innerHeight
   if (previewPhysicsEngine) {
-    const vs = (globalThis.__current && globalThis.__current.viewerScreenSize) || null
-    if (
-      vs &&
-      typeof vs.width === 'number' &&
-      typeof vs.height === 'number' &&
-      vs.width > 0 &&
-      vs.height > 0
-    ) {
+    const vs = globalThis.__current?.viewerScreenSize
+    if (vs?.width > 0 && vs?.height > 0) {
       previewPhysicsEngine.setWorldSize(vs.width, vs.height)
     } else {
       // Фолбэк на размеры окна, если размеры вьювера ещё неизвестны

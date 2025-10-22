@@ -1,6 +1,6 @@
 'use strict'
 require('dotenv').config()
-const http = require('http')
+const http = require('node:http')
 const config = require('./config.js')
 const { logger } = require('./logger.js')
 const SessionManager = require('./session/SessionManager.js')
@@ -36,17 +36,12 @@ server.listen(PORT, () => {
   logger.info('Modular server architecture is ready.')
 })
 // 5. Настройка фоновых задач (очистка)
-const cleanupIntervals = []
-
-cleanupIntervals.push(
+const cleanupIntervals = [
   setInterval(() => {
     sessionManager.cleanupExpiredSessions()
-  }, 60000)
-)
-cleanupIntervals.push(
-  setInterval(
-    () => {
-      const now = Date.now()
+  }, 60000),
+  setInterval(() => {
+    const now = Date.now()
       let removedCount = 0
       for (const [key, cached] of apiCache) {
         const adaptiveTTL = (cached.type === 'ball_state' ? 50 : 1000) * 3 // Simplified TTL logic
@@ -62,12 +57,14 @@ cleanupIntervals.push(
     },
     2 * 60 * 1000
   )
-)
+]
 // 6. Graceful shutdown
 function gracefulShutdown() {
   logger.info('Shutting down gracefully...')
   clearInterval(heartbeatInterval)
-  cleanupIntervals.forEach(interval => clearInterval(interval))
+  for (const interval of cleanupIntervals) {
+    clearInterval(interval)
+  }
   server.close(() => {
     logger.info('Server stopped.')
     process.exit(0)

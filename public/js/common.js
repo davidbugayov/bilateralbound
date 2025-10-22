@@ -136,8 +136,9 @@ if (typeof globalThis !== 'undefined') {
 }
 
 class ThemeManager {
+  themeKey = 'bb_theme'
+
   constructor() {
-    this.themeKey = 'bb_theme'
     this.init()
   }
 

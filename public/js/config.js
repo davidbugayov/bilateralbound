@@ -38,7 +38,7 @@
 
     // Настройки производительности
     performance: {
-      deadReckonEps: 1.0, // Уменьшен порог dead reckoning для точности
+      deadReckonEps: 1, // Уменьшен порог dead reckoning для точности
       throttleDelay: 16, // Задержка throttling для 60 FPS
       adaptiveThrottling: true, // Адаптивное throttling
       maxFrameSteps: 3, // Максимальное количество шагов физики за кадр

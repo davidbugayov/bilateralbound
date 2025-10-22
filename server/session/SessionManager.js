@@ -340,7 +340,9 @@ class SessionManager {
     const expiredIds = this.sessionRepository.cleanupExpired()
     if (expiredIds.length > 0) {
       this.logger.info(`Cleaned up ${expiredIds.length} expired sessions.`)
-      expiredIds.forEach(id => this.stopPhysics(id))
+      for (const id of expiredIds) {
+        this.stopPhysics(id)
+      }
     }
 
     return expiredIds.length

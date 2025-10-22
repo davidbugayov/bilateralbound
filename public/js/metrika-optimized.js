@@ -39,11 +39,11 @@
     }
     // Ищем существующий скрипт Метрики и удаляем дубликаты
     const existingScripts = document.querySelectorAll('script[src*="metrika"]')
-    existingScripts.forEach(existing => {
+    for (const existing of existingScripts) {
       if (existing.src.includes(METRIKA_URL)) {
         existing.remove()
       }
-    })
+    }
     // Вставляем новый скрипт в head
     const head = document.head || document.getElementsByTagName('head')[0]
 
@@ -102,7 +102,7 @@
   }
   // Функция проверки доступности Метрики
   function checkMetrikaAvailability() {
-    if (typeof globalThis.ym !== 'undefined' && globalThis.ym) {
+    if (globalThis.ym !== undefined && globalThis.ym) {
       if (!metrikaInitiated) {
         initMetrika()
       }
@@ -123,7 +123,7 @@
   }
   // Функция для отладки
   function debugMetrika() {
-    if (typeof globalThis.ym !== 'undefined') {
+    if (globalThis.ym !== undefined) {
       /* empty */
     }
   }
@@ -174,12 +174,10 @@
       if (method === 'init') {
         // Откладываем инициализацию
         setTimeout(() => {
-          if (globalThis.ym && globalThis.ym.q) {
-            globalThis.ym.q.push(args)
-          }
+          globalThis.ym?.q?.push(args)
         }, 100)
-      } else if (globalThis.ym && globalThis.ym.q) {
-        globalThis.ym.q.push(args)
+      } else {
+        globalThis.ym?.q?.push(args)
       }
     }
   // очередь для отложенных вызовов

@@ -35,9 +35,9 @@ export class UIController {
    */
   updateDirectionSegments(currentDirection) {
     // Снимаем активное состояние со всех сегментов
-    document.querySelectorAll('.direction-segment').forEach(segment => {
-    segment.classList.remove('active');
-    });
+    for (const segment of document.querySelectorAll('.direction-segment')) {
+      segment.classList.remove('active');
+    }
     // Определяем активный сегмент на основе направления
     const { dx, dy } = currentDirection;
     let activeSegment = null;
