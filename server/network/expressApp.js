@@ -136,7 +136,15 @@ function setupExpressApp (sessionManager, apiCache) {
 
   // Static files
   const publicPath = path.join(__dirname, '..', '..', 'public')
-  app.use(express.static(publicPath))
+  app.use(express.static(publicPath, {
+    etag: false,
+    lastModified: false,
+    setHeaders: (res, path, stat) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }))
   app.use('/test', express.static(path.join(__dirname, '..', '..')))
 
   // Root route - serve index.html
