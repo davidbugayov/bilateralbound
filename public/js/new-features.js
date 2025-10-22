@@ -201,7 +201,7 @@ class FeatureManager {
 
     buttonContainer.appendChild(exportBtn)
     buttonContainer.appendChild(importBtn)
-    
+
     container.appendChild(buttonContainer)
     container.appendChild(importInput)
   }

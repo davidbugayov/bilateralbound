@@ -139,7 +139,7 @@ function setupExpressApp (sessionManager, apiCache) {
   app.use(express.static(publicPath, {
     etag: false,
     lastModified: false,
-    setHeaders: (res, path, stat) => {
+    setHeaders: (res) => {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');

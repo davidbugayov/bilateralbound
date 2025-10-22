@@ -384,7 +384,7 @@ async function initializeWebSocketClient (sessionId) {
   })
 
   // Настраиваем обработчики событий
-  setupWebSocketEventHandlers(wsClient, logger)
+  setupWebSocketEventHandlers(wsClient, logger, sessionId)
 
   // Подключаемся с таймаутом
   await Promise.race([
@@ -407,13 +407,13 @@ async function initializeWebSocketClient (sessionId) {
 /**
  * Настройка обработчиков WebSocket событий
  */
-function setupWebSocketEventHandlers (wsClient, logger) {
+function setupWebSocketEventHandlers (wsClient, logger, sessionId) {
   wsClient.on('open', () => {
     logger.success('WebSocket соединение установлено')
     updateConnectionStatus(true)
-    
+
     // Уведомляем сервер о подключении контроллера
-    safeSend('controller_connected', { 
+    safeSend('controller_connected', {
       timestamp: Date.now(),
       sessionId: sessionId,
       role: 'controller'
@@ -890,7 +890,7 @@ async function initializePreview () {
     const containerRect = container.getBoundingClientRect()
     const initialWidth = Math.min(containerRect.width - 40, 500)
     const initialHeight = Math.min(400, initialWidth * 0.75)
-    
+
     canvas.width = initialWidth
     canvas.height = initialHeight
     canvas.style.width = canvas.width + 'px'
@@ -934,7 +934,6 @@ async function initializePreview () {
     // Центрируем мяч в превью при инициализации
     const canvasWidth = canvas.width
     const canvasHeight = canvas.height
-    
     // Если есть размеры вьювера, используем их как основу для мира физики
     if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
       previewPhysicsEngine.setWorldSize(window.__current.viewerScreenSize.width, window.__current.viewerScreenSize.height)
@@ -1196,7 +1195,7 @@ function updateDirectionButtons () {
     else if (button.id === 'fsDirDL') buttonDirection = 'diagRLL'
     else if (button.id === 'fsDirDR') buttonDirection = 'diagRL'
     else if (button.id === 'fsDirRandom') buttonDirection = 'random'
-    
+
     if (buttonDirection === currentDirectionMode) {
       button.classList.add('active')
     } else {
@@ -1611,44 +1610,5 @@ function fillFsSessionInfo () {
     if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`
   } catch {
     console.warn('Error in fillFsSessionInfo')
-  }
-}
-
-// Функция копирования в буфер обмена для контроллера
-function copy(elementId) {
-  const element = document.getElementById(elementId)
-  if (element && element.value) {
-    navigator.clipboard.writeText(element.value).then(() => {
-      if (window.showSuccessNotification) {
-        window.showSuccessNotification('Ссылка скопирована в буфер обмена')
-      }
-    }).catch(err => {
-      console.error('Ошибка копирования: ', err)
-      if (window.showErrorNotification) {
-        window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку в буфер обмена')
-      }
-      // Fallback для старых браузеров
-      try {
-        element.select()
-        if (document.execCommand('copy')) {
-          if (window.showSuccessNotification) {
-            window.showSuccessNotification('Ссылка скопирована в буфер обмена')
-          }
-        } else {
-          if (window.showErrorNotification) {
-            window.showErrorNotification('Ошибка копирования', 'Ваш браузер не поддерживает копирование')
-          }
-        }
-      } catch (fallbackErr) {
-        console.error('Ошибка fallback копирования: ', fallbackErr)
-        if (window.showErrorNotification) {
-          window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку')
-        }
-      }
-    })
-  } else {
-    if (window.showErrorNotification) {
-      window.showErrorNotification('Ошибка', 'Ссылка не найдена')
-    }
   }
 }

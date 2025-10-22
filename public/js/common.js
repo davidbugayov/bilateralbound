@@ -170,7 +170,3 @@ class ThemeManager {
 document.addEventListener('DOMContentLoaded', () => {
   window.themeManager = new ThemeManager()
 })
-
-function goBack() {
-  window.location.href = '/';
-}

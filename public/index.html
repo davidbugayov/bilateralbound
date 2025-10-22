@@ -919,7 +919,7 @@
         </div>
         <div style="text-align: right; margin-top: 24px;">
           <div class="footer">
-            ⚡ BilateralBound v2.99.0
+            ⚡ BilateralBound v2.100.0
           </div>
         </div>
       </div>
@@ -1078,15 +1078,10 @@
         }
       } catch (error) {
         console.error('Ошибка копирования:', error);
-        
-        // Fallback для старых браузеров
-        input.select();
-        document.execCommand('copy');
-        
-        if (window.showSuccessNotification) {
-          window.showSuccessNotification(successMessage);
+        if (window.showErrorNotification) {
+          window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку.');
         } else {
-          alert(successMessage);
+          alert('Не удалось скопировать ссылку.');
         }
       }
     }
@@ -1133,7 +1128,7 @@
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }));
-          throw new Error(errorData.error || `HTTP ${response.status}`);
+          return Promise.reject(new Error(errorData.error || `HTTP ${response.status}`));
         }
 
         const data = await response.json();
@@ -1239,9 +1234,9 @@
 
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error('Сессия с таким ID не найдена.');
+            return Promise.reject(new Error('Сессия с таким ID не найдена.'));
           }
-          throw new Error(`Ошибка сервера: ${response.status}`);
+          return Promise.reject(new Error(`Ошибка сервера: ${response.status}`));
         }
 
         const data = await response.json();
@@ -1284,24 +1279,6 @@
           console.error('Ошибка копирования: ', err);
           if (window.showErrorNotification) {
             window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку в буфер обмена');
-          }
-          // Fallback для старых браузеров
-          try {
-            element.select();
-            if (document.execCommand('copy')) {
-              if (window.showSuccessNotification) {
-                window.showSuccessNotification('Ссылка скопирована в буфер обмена');
-              }
-            } else {
-              if (window.showErrorNotification) {
-                window.showErrorNotification('Ошибка копирования', 'Ваш браузер не поддерживает копирование');
-              }
-            }
-          } catch (fallbackErr) {
-            console.error('Ошибка fallback копирования: ', fallbackErr);
-            if (window.showErrorNotification) {
-              window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку');
-            }
           }
         });
       } else {

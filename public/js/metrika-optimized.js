@@ -5,37 +5,36 @@
 
 (function() {
     'use strict';
-    
+
     // Конфигурация счетчика
     const METRIKA_ID = '104698530';
     const METRIKA_URL = 'https://mc.yandex.ru/metrika/tag.js';
-    
+
     // Глобальные переменные для отслеживания состояния
     let metrikaLoaded = false;
     let metrikaInitiated = false;
     let loadAttempts = 0;
     const MAX_ATTEMPTS = 3;
-    
+
     // Функция для создания и вставки счетчика
     function createMetrikaScript() {
         if (metrikaLoaded) return;
-        
+
         const script = document.createElement('script');
         script.type = 'text/javascript';
         script.async = true;
         script.src = METRIKA_URL;
-        script.charset = 'UTF-8';
-        
+
         script.onload = function() {
             metrikaLoaded = true;
             console.log('✅ Яндекс.Метрика загружена успешно');
             initMetrika();
         };
-        
+
         script.onerror = function() {
             loadAttempts++;
             console.warn(`⚠️ Ошибка загрузки Яндекс.Метрики (попытка ${loadAttempts}/${MAX_ATTEMPTS})`);
-            
+
             if (loadAttempts < MAX_ATTEMPTS) {
                 // Повторная попытка через 2 секунды
                 setTimeout(createMetrikaScript, 2000);
@@ -45,7 +44,7 @@
                 createNoscriptFallback();
             }
         };
-        
+
         // Ищем существующий скрипт Метрики и удаляем дубликаты
         const existingScripts = document.querySelectorAll('script[src*="metrika"]');
         existingScripts.forEach(existing => {
@@ -53,7 +52,7 @@
                 existing.remove();
             }
         });
-        
+
         // Вставляем новый скрипт в head
         const head = document.head || document.getElementsByTagName('head')[0];
         if (head) {
@@ -62,13 +61,13 @@
             document.documentElement.appendChild(script);
         }
     }
-    
+
     // Функция инициализации Метрики
     function initMetrika() {
         if (metrikaInitiated || !window.ym) {
             return;
         }
-        
+
         try {
             window.ym(METRIKA_ID, 'init', {
                 ssr: true,
@@ -81,18 +80,18 @@
                     windowTitle: document.title
                 }
             });
-            
+
             metrikaInitiated = true;
             console.log('✅ Яндекс.Метрика инициализирована');
-            
+
             // Отправляем событие о загрузке страницы
             trackPageView();
-            
+
         } catch (error) {
             console.error('❌ Ошибка инициализации Яндекс.Метрики:', error);
         }
     }
-    
+
     // Функция отслеживания просмотра страницы
     function trackPageView() {
         if (metrikaInitiated && window.ym) {
@@ -107,14 +106,14 @@
             }
         }
     }
-    
+
     // Функция создания fallback счетчика
     function createNoscriptFallback() {
         const noscript = document.createElement('noscript');
         noscript.innerHTML = '<div><img src="https://mc.yandex.ru/watch/' + METRIKA_ID + '" style="position:absolute; left:-9999px;" alt="" /></div>';
         document.body.insertBefore(noscript, document.body.firstChild);
     }
-    
+
     // Функция проверки доступности Метрики
     function checkMetrikaAvailability() {
         if (typeof window.ym !== 'undefined' && window.ym) {
@@ -125,7 +124,7 @@
         }
         return false;
     }
-    
+
     // Функция принудительной проверки состояния Метрики
     function forceCheckMetrika() {
         const startTime = Date.now();
@@ -135,7 +134,7 @@
             }
         }, 100);
     }
-    
+
     // Функция для отладки
     function debugMetrika() {
         console.log('🔍 Статус Яндекс.Метрики:');
@@ -145,12 +144,12 @@
         console.log('- Попыток загрузки:', loadAttempts);
         console.log('- ID счетчика:', METRIKA_ID);
         console.log('- URL счетчика:', METRIKA_URL);
-        
+
         if (typeof window.ym !== 'undefined') {
             console.log('- Функция ym:', window.ym);
         }
     }
-    
+
     // Экспортируем функции для использования в других скриптах
     window.MetrikaManager = {
         init: function() {
@@ -170,7 +169,7 @@
         debug: debugMetrika,
         forceCheck: forceCheckMetrika
     };
-    
+
     // Запуск загрузки счетчика
     if (document.readyState === 'loading') {
         // DOM еще не загружен
@@ -182,13 +181,12 @@
         // DOM уже загружен
         setTimeout(createMetrikaScript, 100);
     }
-    
+
     // Экспонируем функцию для обратной совместимости
     window.ym = window.ym || function() {
         const args = Array.prototype.slice.call(arguments);
-        const id = args[0];
         const method = args[1];
-        
+
         if (method === 'init') {
             // Откладываем инициализацию
             setTimeout(() => {
@@ -200,14 +198,14 @@
             window.ym.q.push(args);
         }
     };
-    
+
     // очередь для отложенных вызовов
     window.ym.q = window.ym.q || [];
-    
+
     // Добавляем проверку через 5 секунд для гарантии
     setTimeout(forceCheckMetrika, 5000);
-    
+
     // Экспонируем для отладки в консоли
     console.log('📊 Яндекс.Метрика инициализируется...');
-    
+
 })();

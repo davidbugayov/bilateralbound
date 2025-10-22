@@ -28,7 +28,7 @@ class SessionManager {
       ballRadius: session.ballState.radius || 20,
       maxSpeed: 5000
     })
-  
+
     this._initPhysicsCallbacks(session)
 
     const engineState = session.physicsEngine.getState()
@@ -105,12 +105,12 @@ class SessionManager {
       console.log(`[SERVER] Обработка returnToCenter для сессии ${sessionId}`)
       // Используем специальный метод для плавного возврата в центр
       session.physicsEngine.returnToCenter()
-      
+
       // Если это возврат при остановке, устанавливаем паузу
       if (validatedUpdates.paused) {
         session.physicsEngine.setPaused(true)
       }
-      
+
       this.logger.logSession(sessionId, '[RETURN_TO_CENTER] Initiating smooth return to center', 'debug')
     }
 
@@ -181,7 +181,7 @@ class SessionManager {
     }
 
     this.stateBroadcaster.broadcastViewerStatus(sessionId)
-    
+
     // Рассылаем событие о подключении контроллера всем клиентам
     if (role === 'controller') {
       this.broadcastControllerConnection(sessionId, true)
@@ -194,7 +194,7 @@ class SessionManager {
       this._schedulePhysicsUpdate(sessionId)
       this.stateBroadcaster.broadcastViewerStatus(sessionId)
     }
-    
+
     // Рассылаем событие об отключении контроллера всем клиентам
     const clientInfo = this.getClientInfo(ws)
     if (clientInfo && clientInfo.role === 'controller') {
