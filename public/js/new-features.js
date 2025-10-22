@@ -789,27 +789,47 @@ class FeatureManager {
     await globalThis.wsClient?.send('WS_MSG.controllerUpdate', data)
   }
 
+  /**
+   * @param {string} message - Сообщение для отображения.
+   * @param {'info' | 'success' | 'error' | 'warning'} [type='info'] - Тип уведомления.
+   */
   showNotification(message, type = 'info') {
-    if (type === 'success' && globalThis.showSuccessNotification) {
-      globalThis.showSuccessNotification(message)
-    } else if (type === 'error' && globalThis.showErrorNotification) {
-      globalThis.showErrorNotification('Ошибка', message)
-    } else if (type === 'warning' && globalThis.showWarningNotification) {
-      globalThis.showWarningNotification('Внимание', message)
-    } else if (globalThis.showInfoNotification) {
-      globalThis.showInfoNotification('Информация', message)
-    } else {
-      // Fallback for old notification system
-      const notification = document.createElement('div')
-      notification.className = 'theme-notification'
-      notification.style.background = type === 'success' ? '#10b981' : '#3b82f6'
-      notification.textContent = message
-      document.body.appendChild(notification)
-      setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease-in forwards'
-        setTimeout(() => notification.remove(), 300)
-      }, 3000)
+    const notificationHandlers = {
+      success: globalThis.showSuccessNotification,
+      error: globalThis.showErrorNotification,
+      warning: globalThis.showWarningNotification,
+      info: globalThis.showInfoNotification
     }
+
+    const handler = notificationHandlers[type]
+    const title = {
+      error: 'Ошибка',
+      warning: 'Внимание',
+      info: 'Информация'
+    }
+
+    if (handler) {
+      handler(title[type] || message, title[type] ? message : undefined)
+    } else {
+      this._fallbackNotification(message, type)
+    }
+  }
+
+  /**
+   * @param {string} message - Сообщение для отображения.
+   * @param {string} type - Тип уведомления.
+   * @private
+   */
+  _fallbackNotification(message, type) {
+    const notification = document.createElement('div')
+    notification.className = 'theme-notification'
+    notification.style.background = type === 'success' ? '#10b981' : '#3b82f6'
+    notification.textContent = message
+    document.body.appendChild(notification)
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease-in forwards'
+      setTimeout(() => notification.remove(), 300)
+    }, 3000)
   }
 }
 // Экспортируем функции для глобального использования

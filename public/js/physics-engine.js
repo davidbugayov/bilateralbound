@@ -724,81 +724,90 @@ class PhysicsEngine {
     return this._interpBall
   }
   /**
-   * Валидирует входящую команду от сервера
+   * @param {object} command - Команда для валидации.
+   * @returns {object} - Валидированная команда.
+   * @private
    */
-  _validateCommand(command) {
-    const validatedCommand = {}
-
-    // Валидация для вьювера (клиентского режима)
-    if (this.isViewer) {
-      if (typeof command.x === 'number' && !Number.isNaN(command.x)) validatedCommand.x = command.x
-      if (typeof command.y === 'number' && !Number.isNaN(command.y)) validatedCommand.y = command.y
-      if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) validatedCommand.vx = command.vx
-      if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) validatedCommand.vy = command.vy
-      // При клиентской физике тоже принимаем изменение скорости, чтобы локальная модель не оставалась со старой величиной
-      if (
-        typeof command.speed === 'number' &&
-        command.speed >= 0 &&
-        command.speed <= 100 &&
-        !Number.isNaN(command.speed)
-      ) {
-        validatedCommand.speed = command.speed
-      }
-    } else {
-      // Валидация для серверного режима
-      if (
-        typeof command.dirX === 'number' &&
-        Math.abs(command.dirX) <= 1 &&
-        !Number.isNaN(command.dirX)
-      ) {
-        validatedCommand.dirX = command.dirX
-      }
-
-      if (
-        typeof command.dirY === 'number' &&
-        Math.abs(command.dirY) <= 1 &&
-        !Number.isNaN(command.dirY)
-      ) {
-        validatedCommand.dirY = command.dirY
-      }
-
-      if (
-        typeof command.speed === 'number' &&
-        command.speed >= 0 &&
-        command.speed <= 100 &&
-        !Number.isNaN(command.speed)
-      ) {
-        validatedCommand.speed = command.speed
-      }
+  _validateViewerCommand(command) {
+    const validated = {}
+    if (typeof command.x === 'number' && !Number.isNaN(command.x)) validated.x = command.x
+    if (typeof command.y === 'number' && !Number.isNaN(command.y)) validated.y = command.y
+    if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) validated.vx = command.vx
+    if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) validated.vy = command.vy
+    if (
+      typeof command.speed === 'number' &&
+      command.speed >= 0 &&
+      command.speed <= 100 &&
+      !Number.isNaN(command.speed)
+    ) {
+      validated.speed = command.speed
     }
+    return validated
+  }
 
-    // Общие валидации для всех режимов
-    if (typeof command.paused === 'boolean') {
-      validatedCommand.paused = command.paused
+  /**
+   * @param {object} command - Команда для валидации.
+   * @returns {object} - Валидированная команда.
+   * @private
+   */
+  _validateServerCommand(command) {
+    const validated = {}
+    if (typeof command.dirX === 'number' && Math.abs(command.dirX) <= 1 && !Number.isNaN(command.dirX)) {
+      validated.dirX = command.dirX
     }
-
-    if (command.reset === true) {
-      validatedCommand.reset = true
+    if (typeof command.dirY === 'number' && Math.abs(command.dirY) <= 1 && !Number.isNaN(command.dirY)) {
+      validated.dirY = command.dirY
     }
+    if (
+      typeof command.speed === 'number' &&
+      command.speed >= 0 &&
+      command.speed <= 100 &&
+      !Number.isNaN(command.speed)
+    ) {
+      validated.speed = command.speed
+    }
+    return validated
+  }
 
+  /**
+   * @param {object} command - Команда для валидации.
+   * @returns {object} - Валидированная команда.
+   * @private
+   */
+  _validateCommonCommands(command) {
+    const validated = {}
+    if (typeof command.paused === 'boolean') validated.paused = command.paused
+    if (command.reset === true) validated.reset = true
     if (
       typeof command.radius === 'number' &&
       command.radius > 0 &&
       command.radius <= 1000 &&
       !Number.isNaN(command.radius)
     ) {
-      validatedCommand.radius = command.radius
+      validated.radius = command.radius
     }
-
     if (typeof command.colorBall === 'string' && /^#[0-9a-fA-F]{6}$/.test(command.colorBall)) {
-      validatedCommand.colorBall = command.colorBall
+      validated.colorBall = command.colorBall
     }
-
     if (typeof command.colorBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(command.colorBg)) {
-      validatedCommand.colorBg = command.colorBg
+      validated.colorBg = command.colorBg
     }
+    return validated
+  }
 
-    return validatedCommand
+  /**
+   * Валидирует входящую команду от сервера
+   * @param {object} command - Входящая команда.
+   * @returns {object} - Валидированная и очищенная команда.
+   */
+  _validateCommand(command) {
+    const modeSpecificValidated = this.isViewer
+      ? this._validateViewerCommand(command)
+      : this._validateServerCommand(command)
+
+    const commonValidated = this._validateCommonCommands(command)
+
+    return { ...modeSpecificValidated, ...commonValidated }
   }
 
   /**

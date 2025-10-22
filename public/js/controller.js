@@ -574,7 +574,7 @@ function renderPreviewLoop(timestamp) {
   const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
   const stateToRender = getScaledState(interpolatedState)
   // Рендерим кадр
-  globalThis.__previewRenderer.drawFrame(stateToRender)
+  globalThis.__previewRenderer?.drawFrame(stateToRender)
   if (document.hidden) {
     setTimeout(() => requestAnimationFrame(renderPreviewLoop), hiddenThrottleMs)
   } else {
