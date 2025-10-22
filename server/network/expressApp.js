@@ -10,6 +10,10 @@ const { v4: uuidv4 } = require('uuid')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
 // Определяем доступные сетевые интерфейсы
+/**
+ * Получает доступные сетевые интерфейсы
+ * @returns {Object} Объект с интерфейсами и их IP адресами
+ */
 const getNetworkInterfaces = () => {
   const interfaces = os.networkInterfaces()
   const result = {}
@@ -23,6 +27,11 @@ const getNetworkInterfaces = () => {
   return result
 }
 // Проверка доступности порта
+/**
+ * Проверяет доступность порта
+ * @param {number} port - Порт для проверки
+ * @returns {Promise<boolean>} Promise, разрешающийся в true если порт доступен
+ */
 const checkPortAvailability = port => {
   return new Promise((resolve, reject) => {
     const tester = net
@@ -41,6 +50,12 @@ const checkPortAvailability = port => {
   })
 }
 
+/**
+ * Настраивает Express приложение
+ * @param {Object} sessionManager - Менеджер сессий
+ * @param {Map} apiCache - Кэш API
+ * @returns {Object} Express приложение
+ */
 function setupExpressApp(sessionManager, apiCache) {
   const networkInterfaces = getNetworkInterfaces()
   const app = express()

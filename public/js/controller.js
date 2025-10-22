@@ -142,26 +142,26 @@ function detectAndCountBounceFromServer(prev, curr) {
   try {
     if (!prev || !curr || !bbCounters.running) return
     const now = performance.now()
-    if (now - __lastBounceTs < 120) return // защита от дабл‑триггера
+    if (now - __lastBounceTs >= 120) { // Изменено отрицательное условие
+      const minSpeed = 10 // пикс/с, фильтр дрожания
+      const currVx = curr?.vx || 0
+      const currVy = curr?.vy || 0
 
-    const minSpeed = 10 // пикс/с, фильтр дрожания
-    const currVx = curr?.vx || 0
-    const currVy = curr?.vy || 0
+      // Восстанавливаем последние ненулевые знаки, чтобы переживать кадры с vx/vy=0
+      if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
+      if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
 
-    // Восстанавливаем последние ненулевые знаки, чтобы переживать кадры с vx/vy=0
-    if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
-    if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
+      if (_hasBounced(currVx, __lastVxSign, minSpeed) || _hasBounced(currVy, __lastVySign, minSpeed)) {
+        __lastBounceTs = now
+        bbCounters.onBounce()
+      }
 
-    if (_hasBounced(currVx, __lastVxSign, minSpeed) || _hasBounced(currVy, __lastVySign, minSpeed)) {
-      __lastBounceTs = now
-      bbCounters.onBounce()
+      // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
+      const currSignX = Math.sign(currVx)
+      const currSignY = Math.sign(currVy)
+      if (currSignX !== 0) __lastVxSign = currSignX
+      if (currSignY !== 0) __lastVySign = currSignY
     }
-
-    // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
-    const currSignX = Math.sign(currVx)
-    const currSignY = Math.sign(currVy)
-    if (currSignX !== 0) __lastVxSign = currSignX
-    if (currSignY !== 0) __lastVySign = currSignY
   } catch {
     console.warn('Error in detectAndCountBounceFromServer')
   }
@@ -455,10 +455,6 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   })
   // Включаем обратно: превью теперь "глупый" рендерер состояния сервера
   wsClient.on(WS_MSG.stateUpdate, state => {
-    // Игнорируем обновления и логи, пока вьювер не подключится.
-    if (!globalThis.__current.viewerConnected) {
-      return
-    }
     // Тихая обработка обновлений состояния
     lastServerState = state // Кэшируем состояние
     // Если пришли новые размеры экрана вьювера — обновим превью
@@ -643,11 +639,11 @@ function createLogger(moduleName) {
   // Функция разбита для снижения когнитивной сложности
   const startTime = performance.now()
   return {
-    info: (message, data) => {
-      const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
+    info: (_message, _data) => {
+      // Неиспользуемая переменная _timestamp удалена
     },
     success: (message, data) => {
-      const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
+      // Неиспользуемая переменная timestamp удалена
     },
     warning: (message, data) => {
       const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
@@ -721,14 +717,18 @@ function syncUIWithState(ballState) {
     }
 
     if (ballState.paused !== undefined) {
-      // Если только что был локальный клик Старт/Стоп — не даём серверу мгновенно
-      // перетянуть состояние кнопки обратно (оптимистичный UI)
-      const now = performance.now()
-      if (now < __ignoreServerPausedUntilTs) {
-        // Но всё равно обновим предупреждающе фон кнопки, если рассинхрон
-        updatePlayPauseButton()
-        return
-      }
+  // Если только что был локальный клик Старт/Стоп — не даём серверу мгновенно
+  // перетянуть состояние кнопки обратно (оптимистичный UI)
+  const now = performance.now()
+  if (now >= __ignoreServerPausedUntilTs) {
+    // Обновляем состояние игры на основе серверного состояния
+    isPlaying = !ballState.paused
+    updatePlayPauseButton()
+  } else {
+    // Но всё равно обновим предупреждающе фон кнопки, если рассинхрон
+    updatePlayPauseButton()
+    return
+  }
       // Обновляем состояние игры на основе серверного состояния
       isPlaying = !ballState.paused
       updatePlayPauseButton()
@@ -1246,9 +1246,14 @@ function togglePlayPause() {
     _handlePlay()
   }
   __ignoreServerPausedUntilTs = performance.now() + 800
+
+  // Обновляем кнопку сразу
   updatePlayPauseButton()
-  setTimeout(updatePlayPauseButton, 0)
-  setTimeout(updatePlayPauseButton, 300)
+
+  // Планируем дополнительные обновления для анимации через разные интервалы
+  setTimeout(() => updatePlayPauseButton(), 150) // Одно обновление через 150мс
+  setTimeout(() => updatePlayPauseButton(), 300) // Второе обновление через 300мс
+
   syncFsPlayPauseButton()
 }
 // ===== УТИЛИТЫ =====

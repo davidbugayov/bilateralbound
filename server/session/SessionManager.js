@@ -7,6 +7,10 @@ const ValidationUtils = require('../utils/validation.js')
 const { logger, DEBUG_MODE } = require('../logger.js')
 // Основной оркестратор сессий
 class SessionManager {
+  /**
+   * Конструктор SessionManager
+   * @param {Map} apiCache - Кэш API
+   */
   constructor(apiCache) {
     this.sessionRepository = new SessionRepository()
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
@@ -22,6 +26,11 @@ class SessionManager {
     }
   }
 
+  /**
+   * Создает новую сессию с физическим движком
+   * @param {Object} ballState - Начальное состояние мяча
+   * @returns {Object} Созданная сессия
+   */
   createSession(ballState = {}) {
     const session = this.sessionRepository.create({ ballState })
     session.physicsEngine = new PhysicsEngine({
@@ -36,7 +45,12 @@ class SessionManager {
     this.startPhysics(session.id)
     return session
   }
-  // Создание сессии с определенным ID (для постоянных ссылок)
+  /**
+   * Создание сессии с определенным ID (для постоянных ссылок)
+   * @param {string} sessionId - ID сессии
+   * @param {Object} ballState - Начальное состояние мяча
+   * @returns {Object|null} Сессия или null если не найдена
+   */
   findOrCreateSession(sessionId, ballState = {}) {
     const session = this.sessionRepository.findOrCreateById(sessionId, { ballState })
     if (!session) return null
@@ -56,6 +70,10 @@ class SessionManager {
     return session
   }
 
+  /**
+   * Инициализирует колбэки физического движка
+   * @param {Object} session - Сессия
+   */
   _initPhysicsCallbacks(session) {
     // Немедленная рассылка состояния при отскоке, чтобы вьювер видел касание границ
     session.physicsEngine.bounceCallback = () => {
@@ -68,10 +86,21 @@ class SessionManager {
     }
   }
 
+  /**
+   * Получает сессию по ID
+   * @param {string} sessionId - ID сессии
+   * @returns {Object|null} Сессия или null если не найдена
+   */
   getSession(sessionId) {
     return this.sessionRepository.findById(sessionId)
   }
 
+  /**
+   * Обновляет состояние мяча в сессии
+   * @param {string} sessionId - ID сессии
+   * @param {Object} updates - Обновления состояния
+   * @returns {boolean} Успех обновления
+   */
   updateBallState(sessionId, updates) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
@@ -143,6 +172,12 @@ class SessionManager {
     return 50
   }
 
+  /**
+   * Обрабатывает подключение WebSocket клиента
+   * @param {WebSocket} ws - WebSocket соединение
+   * @param {string} sessionId - ID сессии
+   * @param {string} role - Роль клиента (viewer или controller)
+   */
   handleWebSocketConnection(ws, sessionId, role) {
     if (!this.webSocketManager.addClient(sessionId, ws, role)) {
       ws.close(1011, 'Session not found')
@@ -193,6 +228,10 @@ class SessionManager {
     }
   }
 
+  /**
+   * Обрабатывает отключение WebSocket клиента
+   * @param {WebSocket} ws - WebSocket соединение
+   */
   handleWebSocketDisconnection(ws) {
     const sessionId = this.webSocketManager.removeClient(ws)
     if (sessionId) {
@@ -235,6 +274,12 @@ class SessionManager {
     }
   }
 
+  /**
+   * Устанавливает размер экрана вьювера
+   * @param {string} sessionId - ID сессии
+   * @param {Object} screenSize - Размеры экрана
+   * @returns {boolean} Успех установки
+   */
   setViewerScreenSize(sessionId, screenSize) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
@@ -304,6 +349,10 @@ class SessionManager {
     return true
   }
 
+  /**
+   * Запускает физический движок для сессии
+   * @param {string} sessionId - ID сессии
+   */
   startPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
@@ -311,6 +360,10 @@ class SessionManager {
     this.logger.logSession(sessionId, 'Physics manager initialized', 'debug')
   }
 
+  /**
+   * Планирует обновление физики для сессии
+   * @param {string} sessionId - ID сессии
+   */
   _schedulePhysicsUpdate(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
@@ -328,6 +381,10 @@ class SessionManager {
     )
   }
 
+  /**
+   * Останавливает физический движок для сессии
+   * @param {string} sessionId - ID сессии
+   */
   stopPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (session?.mainLoop) {
@@ -336,6 +393,10 @@ class SessionManager {
     }
   }
 
+  /**
+   * Очищает истекшие сессии
+   * @returns {number} Количество очищенных сессий
+   */
   cleanupExpiredSessions() {
     const expiredIds = this.sessionRepository.cleanupExpired()
     if (expiredIds.length > 0) {
@@ -348,10 +409,19 @@ class SessionManager {
     return expiredIds.length
   }
 
+  /**
+   * Возвращает количество активных сессий
+   * @returns {number} Количество сессий
+   */
   getSessionCount() {
     return this.sessionRepository.getAll().length
   }
 
+  /**
+   * Получает информацию о клиенте по WebSocket соединению
+   * @param {WebSocket} ws - WebSocket соединение
+   * @returns {Object|null} Информация о клиенте или null
+   */
   getClientInfo(ws) {
     for (const session of this.sessionRepository.getAll()) {
       if (session.clients.has(ws)) {

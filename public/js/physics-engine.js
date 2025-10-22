@@ -282,6 +282,10 @@ class PhysicsEngine {
   updateViewerInterpolation(deltaTime) {
     if (!this._canInterpolate()) return
 
+    this._performInterpolationStep(deltaTime)
+  }
+
+  _performInterpolationStep(deltaTime) {
     const currentTime = performance.now()
     const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
 
@@ -297,17 +301,17 @@ class PhysicsEngine {
   }
 
   _canInterpolate() {
-    return !(
-      (this.state.paused && !this.state.allowInterpWhenPaused) ||
-      !this.state ||
-      !this.state.targetX
+    return (
+      !(this.state.paused && !this.state.allowInterpWhenPaused) &&
+      this.state &&
+      this.state.targetX
     )
   }
 
   _updateStateBuffer(currentTime) {
     if (!this._stateBuffer) {
       this._stateBuffer = []
-      this._bufferSize = this.options.smoothing.bufferSize || 15
+      this._bufferSize = this.options.smoothing?.bufferSize || 15
     }
 
     this._stateBuffer.push({
@@ -324,7 +328,7 @@ class PhysicsEngine {
   }
 
   _applyExponentialSmoothing(predictTime) {
-    const alpha = this.options.smoothing.velocitySmoothingAlpha || 0.08
+    const alpha = this.options.smoothing?.velocitySmoothingAlpha || 0.08
     const vx = this.state.lastVx || 0
     const vy = this.state.lastVy || 0
 
@@ -536,10 +540,14 @@ class PhysicsEngine {
   }
 
   _ensureWorldSizeSet() {
-    if (!this._worldSizeSet && this.options.worldWidth > 0 && this.options.worldHeight > 0) {
-      this._worldSizeSet = true
+    if (this._worldSizeSet) {
+      return true
     }
-    return this._worldSizeSet
+    if (this.options.worldWidth > 0 && this.options.worldHeight > 0) {
+      this._worldSizeSet = true
+      return true
+    }
+    return false
   }
 
   _calculateClientVelocity() {
@@ -725,16 +733,16 @@ class PhysicsEngine {
 
     // Валидация для вьювера (клиентского режима)
     if (this.isViewer) {
-      if (typeof command.x === 'number' && !isNaN(command.x)) validatedCommand.x = command.x
-      if (typeof command.y === 'number' && !isNaN(command.y)) validatedCommand.y = command.y
-      if (typeof command.vx === 'number' && !isNaN(command.vx)) validatedCommand.vx = command.vx
-      if (typeof command.vy === 'number' && !isNaN(command.vy)) validatedCommand.vy = command.vy
+      if (typeof command.x === 'number' && !Number.isNaN(command.x)) validatedCommand.x = command.x
+      if (typeof command.y === 'number' && !Number.isNaN(command.y)) validatedCommand.y = command.y
+      if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) validatedCommand.vx = command.vx
+      if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) validatedCommand.vy = command.vy
       // При клиентской физике тоже принимаем изменение скорости, чтобы локальная модель не оставалась со старой величиной
       if (
         typeof command.speed === 'number' &&
         command.speed >= 0 &&
         command.speed <= 100 &&
-        !isNaN(command.speed)
+        !Number.isNaN(command.speed)
       ) {
         validatedCommand.speed = command.speed
       }
@@ -743,7 +751,7 @@ class PhysicsEngine {
       if (
         typeof command.dirX === 'number' &&
         Math.abs(command.dirX) <= 1 &&
-        !isNaN(command.dirX)
+        !Number.isNaN(command.dirX)
       ) {
         validatedCommand.dirX = command.dirX
       }
@@ -751,7 +759,7 @@ class PhysicsEngine {
       if (
         typeof command.dirY === 'number' &&
         Math.abs(command.dirY) <= 1 &&
-        !isNaN(command.dirY)
+        !Number.isNaN(command.dirY)
       ) {
         validatedCommand.dirY = command.dirY
       }
@@ -760,7 +768,7 @@ class PhysicsEngine {
         typeof command.speed === 'number' &&
         command.speed >= 0 &&
         command.speed <= 100 &&
-        !isNaN(command.speed)
+        !Number.isNaN(command.speed)
       ) {
         validatedCommand.speed = command.speed
       }
@@ -779,7 +787,7 @@ class PhysicsEngine {
       typeof command.radius === 'number' &&
       command.radius > 0 &&
       command.radius <= 1000 &&
-      !isNaN(command.radius)
+      !Number.isNaN(command.radius)
     ) {
       validatedCommand.radius = command.radius
     }

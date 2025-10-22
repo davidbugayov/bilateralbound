@@ -106,14 +106,14 @@ class SharedComponents {
       setupEventListeners() {
         if (this.elements.range) {
           this.elements.range.addEventListener('input', e => {
-            this.setSpeed(parseInt(e.target.value))
+            this.setSpeed(Number.parseInt(e.target.value, 10))
           })
         }
         // Обработчики для пресетов скорости (в простом режиме отсутствуют)
         if (this.elements.presets && this.elements.presets.length) {
           this.elements.presets.forEach(preset => {
             preset.addEventListener('click', () => {
-              const speed = parseInt(preset.dataset.speed)
+              const speed = Number.parseInt(preset.dataset.speed, 10)
               this.setSpeed(speed)
               this.updateActivePreset(speed)
             })
@@ -293,7 +293,7 @@ class SharedComponents {
         const buttons = container.querySelectorAll('.size-btn')
         buttons.forEach(button => {
           button.addEventListener('click', () => {
-            const size = parseInt(button.dataset.size)
+            const size = Number.parseInt(button.dataset.size, 10)
             this.setSize(size)
           })
         })
@@ -304,7 +304,7 @@ class SharedComponents {
         // Обновляем активную кнопку
         const buttons = container.querySelectorAll('.size-btn')
         buttons.forEach(btn => {
-          btn.classList.toggle('active', parseInt(btn.dataset.size) === size)
+          btn.classList.toggle('active', Number.parseInt(btn.dataset.size, 10) === size)
         })
         // Вызываем callback
         if (this.options.onSizeChange) {

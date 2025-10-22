@@ -48,40 +48,32 @@ const toggleFullscreen =
             document.msFullscreenElement ||
             document.mozFullScreenElement
           )
-        const enter = el => {
-          const target = el || document.documentElement
-          return (
-            target.requestFullscreen?.() ||
-            target.webkitRequestFullscreen?.() ||
-            target.msRequestFullscreen?.() ||
-            target.mozRequestFullScreen?.() ||
-            Promise.reject(new Error('Fullscreen API not available'))
-          )
-        }
 
-        const exit = () =>
-          document.exitFullscreen?.() ||
-          document.webkitExitFullscreen?.() ||
-          document.msExitFullscreen?.() ||
-          document.mozCancelFullScreen?.() ||
-          Promise.resolve()
-        return function toggleFullscreen(el) {
+        return async function toggleFullscreen(el) {
           try {
             if (!canFullscreen()) {
-              return Promise.resolve(false)
+              return false
             }
 
             if (isFs()) {
-              return exit()
-                .then(() => true)
-                .catch(() => false)
+              document.exitFullscreen?.() ||
+              document.webkitExitFullscreen?.() ||
+              document.msExitFullscreen?.() ||
+              document.mozCancelFullScreen?.()
+              return true
             } else {
-              return enter(el)
-                .then(() => true)
-                .catch(() => false)
+              const target = el || document.documentElement
+              await (
+                target.requestFullscreen?.() ||
+                target.webkitRequestFullscreen?.() ||
+                target.msRequestFullscreen?.() ||
+                target.mozRequestFullScreen?.() ||
+                Promise.reject(new Error('Fullscreen API not available'))
+              )
+              return true
             }
           } catch {
-            return Promise.resolve(false)
+            return false
           }
         }
       })()

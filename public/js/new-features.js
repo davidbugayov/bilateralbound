@@ -5,10 +5,21 @@
  */
 /* exported applyPreset, createCustomPreset, exportSession, importSession */
 
+/**
+ * Генерирует уникальный идентификатор сессии
+ * @returns {string} Уникальный ID сессии
+ */
 function _generateId() {
   if (crypto?.randomUUID) {
     return crypto.randomUUID()
   }
+  // Используем криптографически стойкий метод генерации случайных чисел
+  if (crypto?.getRandomValues) {
+    const array = new Uint32Array(2)
+    crypto.getRandomValues(array)
+    return `${Date.now()}_${array[0].toString(36)}_${array[1].toString(36)}`
+  }
+  // Fallback для старых браузеров без crypto API
   return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 }
 
@@ -258,29 +269,44 @@ class FeatureManager {
   }
 
   async applySettings(settings) {
-    // Применяем скорость
-    if (settings.speed && globalThis.components?.speed) {
-      globalThis.components.speed.setSpeed(settings.speed)
-      await this.sendUpdate({ speed: settings.speed })
+    await this.applySpeedSetting(settings.speed)
+    this.applyDirectionSetting(settings.direction)
+    this.applyColorSettings(settings.ballColor, settings.bgColor)
+    this.applySizeSetting(settings.ballSize)
+    this.applyPlayStateSetting(settings.isPlaying)
+  }
+
+  async applySpeedSetting(speed) {
+    if (speed && globalThis.components?.speed) {
+      globalThis.components.speed.setSpeed(speed)
+      await this.sendUpdate({ speed: speed })
     }
-    // Применяем направление
-    if (settings.direction) {
-      globalThis.setDirection(settings.direction)
+  }
+
+  applyDirectionSetting(direction) {
+    if (direction) {
+      globalThis.setDirection(direction)
     }
-    // Применяем цвета
-    if (settings.ballColor) {
-      globalThis.setBallColor(settings.ballColor)
+  }
+
+  applyColorSettings(ballColor, bgColor) {
+    if (ballColor) {
+      globalThis.setBallColor(ballColor)
     }
 
-    if (settings.bgColor) {
-      globalThis.setBackgroundColor(settings.bgColor)
+    if (bgColor) {
+      globalThis.setBackgroundColor(bgColor)
     }
-    // Применяем размер
-    if (settings.ballSize) {
-      globalThis.setBallSize(settings.ballSize)
+  }
+
+  applySizeSetting(ballSize) {
+    if (ballSize) {
+      globalThis.setBallSize(ballSize)
     }
-    // Применяем состояние игры
-    if (settings.isPlaying !== globalThis.isPlaying) {
+  }
+
+  applyPlayStateSetting(isPlaying) {
+    if (isPlaying !== globalThis.isPlaying) {
       globalThis.togglePlayPause()
     }
   }

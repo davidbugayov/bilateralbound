@@ -73,7 +73,7 @@ class WebSocketClient {
   async connect() {
     if (this.isConnected || this.isConnecting) {
       this.log('Connection already in progress or established')
-      return Promise.resolve()
+      return
     }
 
     return new Promise((resolve, reject) => {
@@ -99,11 +99,11 @@ class WebSocketClient {
           clearTimeout(connectionTimeout)
           this.isConnecting = false
           this._handleConnectionError(error)
-          reject(error)
+          reject(new Error('WebSocket connection failed'))
         }
       } catch (error) {
         this.isConnecting = false
-        reject(error)
+        reject(new Error(`WebSocket connection failed: ${error.message}`))
       }
     })
   }
@@ -333,13 +333,13 @@ class WebSocketClient {
   _emit(eventType, data) {
     const handlers = this.eventHandlers.get(eventType)
     if (handlers) {
-      handlers.forEach(handler => {
+      for (const handler of handlers) {
         try {
           handler(data)
         } catch (error) {
           this.log(`Error in event handler for ${eventType}: ${error.message}`, 'error')
         }
-      })
+      }
     }
   }
 
@@ -354,10 +354,14 @@ class WebSocketClient {
       this.heartbeatTimer = null
     }
 
-    this.messageTimeouts.forEach(timeout => clearTimeout(timeout))
+    for (const timeout of this.messageTimeouts.values()) {
+      clearTimeout(timeout)
+    }
     this.messageTimeouts.clear()
     // Чистим коалесцирование
-    this._coalesceTimers.forEach(timerId => clearTimeout(timerId))
+    for (const timerId of this._coalesceTimers.values()) {
+      clearTimeout(timerId)
+    }
     this._coalesceTimers.clear()
     this._coalesceBuffers.clear()
   }

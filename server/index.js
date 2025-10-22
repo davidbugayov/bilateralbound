@@ -59,6 +59,9 @@ const cleanupIntervals = [
   )
 ]
 // 6. Graceful shutdown
+/**
+ * Graceful shutdown handler
+ */
 function gracefulShutdown() {
   logger.info('Shutting down gracefully...')
   clearInterval(heartbeatInterval)
