@@ -526,51 +526,66 @@ class PhysicsEngine {
    * Непрерывная клиентская физика для режима вьювера (client-authoritative)
    */
   updateClientPhysics(deltaTime) {
-    if (this.state.paused) return
+    if (this.state.paused || !this._ensureWorldSizeSet()) return
+
+    const velocity = this._calculateClientVelocity()
+    this._applyAxisLock(velocity)
+    this._updateBallPosition(velocity, deltaTime)
+    this.handleBoundaryCollisions()
+    this._updateCurrentPosition()
+  }
+
+  _ensureWorldSizeSet() {
     if (!this._worldSizeSet && this.options.worldWidth > 0 && this.options.worldHeight > 0) {
-      // Авто-активация флага, если размеры заданы напрямую в конструкторе
       this._worldSizeSet = true
     }
+    return this._worldSizeSet
+  }
 
-    if (!this._worldSizeSet) return
-    // Выбираем источники скоростей
+  _calculateClientVelocity() {
     let vx = typeof this.state.lastVx === 'number' ? this.state.lastVx : 0
     let vy = typeof this.state.lastVy === 'number' ? this.state.lastVy : 0
-    const speedPercent = this.ball.speed / 100
-    const pps = speedPercent * this.options.maxSpeed
+    const pps = (this.ball.speed / 100) * this.options.maxSpeed
+
     if (vx === 0 && vy === 0) {
-      // Восстанавливаем из направления и текущей скорости
       vx = (this.state.lastDirection.x || 0) * pps
       vy = (this.state.lastDirection.y || 0) * pps
     }
-    // Жёсткий AXIS-LOCK: если направление строго вертикальное/горизонтальное — исключаем дрейф
+
+    return { vx, vy }
+  }
+
+  _applyAxisLock(velocity) {
     const dirX = this.state.lastDirection.x || 0
     const dirY = this.state.lastDirection.y || 0
+    const pps = (this.ball.speed / 100) * this.options.maxSpeed
+
     const isVertical = Math.abs(dirX) < 1e-6 && Math.abs(dirY) > 0
     const isHorizontal = Math.abs(dirY) < 1e-6 && Math.abs(dirX) > 0
+
     if (isVertical) {
-      vx = 0
-      vy = Math.sign(dirY || 1) * pps
-      // Дополнительно гасим накопленные сглаженные по X
+      velocity.vx = 0
+      velocity.vy = Math.sign(dirY || 1) * pps
       this.state.smoothVx = 0
     } else if (isHorizontal) {
-      vy = 0
-      vx = Math.sign(dirX || 1) * pps
-      // Дополнительно гасим накопленные сглаженные по Y
+      velocity.vy = 0
+      velocity.vx = Math.sign(dirX || 1) * pps
       this.state.smoothVy = 0
     }
-    // Применяем к шару
-    this.ball.vx = vx
-    this.ball.vy = vy
-    // Сохраняем предыдущую позицию для интерполяции
+
+    return velocity
+  }
+
+  _updateBallPosition(velocity, deltaTime) {
+    this.ball.vx = velocity.vx
+    this.ball.vy = velocity.vy
     this._prevPos.x = this.ball.x
     this._prevPos.y = this.ball.y
-    // Интеграция позиции
-    this.ball.x += vx * deltaTime
-    this.ball.y += vy * deltaTime
-    // Обрабатываем коллизии и корректируем скорости через существующую логику
-    this.handleBoundaryCollisions()
-    // Текущая позиция
+    this.ball.x += velocity.vx * deltaTime
+    this.ball.y += velocity.vy * deltaTime
+  }
+
+  _updateCurrentPosition() {
     this._currPos.x = this.ball.x
     this._currPos.y = this.ball.y
   }
@@ -710,16 +725,16 @@ class PhysicsEngine {
 
     // Валидация для вьювера (клиентского режима)
     if (this.isViewer) {
-      if (typeof command.x === 'number' && !Number.isNaN(command.x)) validatedCommand.x = command.x
-      if (typeof command.y === 'number' && !Number.isNaN(command.y)) validatedCommand.y = command.y
-      if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) validatedCommand.vx = command.vx
-      if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) validatedCommand.vy = command.vy
+      if (typeof command.x === 'number' && !isNaN(command.x)) validatedCommand.x = command.x
+      if (typeof command.y === 'number' && !isNaN(command.y)) validatedCommand.y = command.y
+      if (typeof command.vx === 'number' && !isNaN(command.vx)) validatedCommand.vx = command.vx
+      if (typeof command.vy === 'number' && !isNaN(command.vy)) validatedCommand.vy = command.vy
       // При клиентской физике тоже принимаем изменение скорости, чтобы локальная модель не оставалась со старой величиной
       if (
         typeof command.speed === 'number' &&
         command.speed >= 0 &&
         command.speed <= 100 &&
-        !Number.isNaN(command.speed)
+        !isNaN(command.speed)
       ) {
         validatedCommand.speed = command.speed
       }
@@ -728,7 +743,7 @@ class PhysicsEngine {
       if (
         typeof command.dirX === 'number' &&
         Math.abs(command.dirX) <= 1 &&
-        !Number.isNaN(command.dirX)
+        !isNaN(command.dirX)
       ) {
         validatedCommand.dirX = command.dirX
       }
@@ -736,7 +751,7 @@ class PhysicsEngine {
       if (
         typeof command.dirY === 'number' &&
         Math.abs(command.dirY) <= 1 &&
-        !Number.isNaN(command.dirY)
+        !isNaN(command.dirY)
       ) {
         validatedCommand.dirY = command.dirY
       }
@@ -745,7 +760,7 @@ class PhysicsEngine {
         typeof command.speed === 'number' &&
         command.speed >= 0 &&
         command.speed <= 100 &&
-        !Number.isNaN(command.speed)
+        !isNaN(command.speed)
       ) {
         validatedCommand.speed = command.speed
       }
@@ -764,7 +779,7 @@ class PhysicsEngine {
       typeof command.radius === 'number' &&
       command.radius > 0 &&
       command.radius <= 1000 &&
-      !Number.isNaN(command.radius)
+      !isNaN(command.radius)
     ) {
       validatedCommand.radius = command.radius
     }
@@ -785,130 +800,145 @@ class PhysicsEngine {
    */
   applyCommand(command) {
     if (!command) return
-    // === ВАЛИДАЦИЯ ВХОДНЫХ ДАННЫХ ===
+
     const validatedCommand = this._validateCommand(command)
-    // Если нет валидных полей, выходим
-    if (Object.keys(validatedCommand).length === 0) {
-      return
-    }
-    // Используем только валидированные данные
+    if (Object.keys(validatedCommand).length === 0) return
+
     command = validatedCommand
-    // ====================================
-    // Вьювер и превью контроллера используют предиктивную синхронизацию
+
     if (this.isViewer) {
-      // Плавное обновление целевой позиции БЕЗ резких скачков
-      if (command.x !== undefined && command.y !== undefined) {
-        // Визуальная точность с безопасным клампингом в пределах экрана
-        const r = this.ball.radius
-        const w = this.options.worldWidth
-        const h = this.options.worldHeight
-        const cx = Math.min(w - r, Math.max(r, command.x))
-        const cy = Math.min(h - r, Math.max(r, command.y))
-        // Всегда обновляем только целевую позицию (dead-reckoning anchor)
-        this.state.targetX = cx
-        this.state.targetY = cy
-        const isPause = command.paused === true
-        if (isPause) {
-          // На паузе позволяем мягко прийти к цели
-          this.state.allowInterpWhenPaused = true
-          this.state.smoothVx = 0
-          this.state.smoothVy = 0
-          this.state.lastVx = 0
-          this.state.lastVy = 0
-          // И только на паузе действительно выставляем текущую позицию из сервера
-          this.ball.x = cx
-          this.ball.y = cy
-          this._prevPos.x = this.ball.x
-          this._prevPos.y = this.ball.y
-          this._currPos.x = this.ball.x
-          this._currPos.y = this.ball.y
-        } else {
-          // В активном движении ИГНОРИРУЕМ принудительную установку позиции,
-          // иначе любые серверные x/y (которые теперь не обновляются постоянно)
-          // будут вызывать рывки и ломать client-authoritative движение.
-          // Коррекция позиции происходит только через сглаживание и снап при малых расхождениях.
-        }
-      }
-      // Сохраняем скорость и время обновления для предикции
-      if (command.vx !== undefined) this.state.lastVx = command.vx
-      if (command.vy !== undefined) this.state.lastVy = command.vy
-      // Обновляем направление из пришедшей скорости, чтобы поддержать AXIS-LOCK
-      const lvx = typeof this.state.lastVx === 'number' ? this.state.lastVx : 0
-      const lvy = typeof this.state.lastVy === 'number' ? this.state.lastVy : 0
-      const sp = Math.hypot(lvx, lvy)
-      if (sp > 0) {
-        this.state.lastDirection.x = lvx / sp
-        this.state.lastDirection.y = lvy / sp
-      }
-      // Применяем изменение скорости на клиенте, чтобы величина движения соответствовала серверной настройке
-      if (command.speed !== undefined) {
-        this.setSpeed(command.speed)
-        // Немедленно актуализируем базу для предикции/интеграции, если не на паузе
-        if (!this.state.paused) {
-          const pps = (this.ball.speed / 100) * this.options.maxSpeed
-          const dx = this.state.lastDirection.x || 0
-          const dy = this.state.lastDirection.y || 0
-          if (dx !== 0 || dy !== 0) {
-            this.state.lastVx = dx * pps
-            this.state.lastVy = dy * pps
-          }
-        }
-      }
-
-      this.lastServerUpdate = performance?.now?.() ?? Date.now()
+      this._handleViewerCommand(command)
     } else {
-      // Этот блок теперь выполняется только на сервере
-      if (command.dirX !== undefined || command.dirY !== undefined) {
-        const newDx = command.dirX !== undefined ? command.dirX : this.state.lastDirection.x
-        const newDy = command.dirY !== undefined ? command.dirY : this.state.lastDirection.y
-        this.setDirection(newDx, newDy)
-      }
+      this._handleServerCommand(command)
+    }
 
-      if (command.speed !== undefined) {
-        this.setSpeed(command.speed)
-      }
-      // Если команда снимает с паузы, применяем скорость немедленно
-      const willBeUnpaused = command.paused === false || !this.state.paused
-      if (willBeUnpaused) {
-        // Немедленно применяем изменение скорости/направления к текущей скорости,
-        // чтобы мяч реагировал без необходимости Стоп/Старт
-        const speedPercent = this.ball.speed / 100
-        const pixelsPerSecond = speedPercent * this.options.maxSpeed
-        // Берём направление из lastDirection; если оно обнулилось, восстанавливаем из текущей скорости
-        let dirX = this.state.lastDirection.x || 0
-        let dirY = this.state.lastDirection.y || 0
-        if (dirX === 0 && dirY === 0) {
-          const sp = Math.hypot(this.ball.vx || 0, this.ball.vy || 0)
-          if (sp > 0) {
-            dirX = (this.ball.vx || 0) / sp
-            dirY = (this.ball.vy || 0) / sp
-            this.setDirection(dirX, dirY)
-          }
-        }
+    this._handleCommonCommands(command)
+  }
 
-        this.setVelocity(dirX * pixelsPerSecond, dirY * pixelsPerSecond)
+  _handleViewerCommand(command) {
+    this._handleViewerPositionUpdate(command)
+    this._handleViewerVelocityUpdate(command)
+    this._handleViewerSpeedUpdate(command)
+    this.lastServerUpdate = performance?.now?.() ?? Date.now()
+  }
+
+  _handleViewerPositionUpdate(command) {
+    if (command.x !== undefined && command.y !== undefined) {
+      const cx = Math.min(this.options.worldWidth - this.ball.radius,
+        Math.max(this.ball.radius, command.x))
+      const cy = Math.min(this.options.worldHeight - this.ball.radius,
+        Math.max(this.ball.radius, command.y))
+
+      this.state.targetX = cx
+      this.state.targetY = cy
+
+      if (command.paused === true) {
+        this._handleViewerPositionPause(cx, cy)
       }
     }
-    // Общие команды для клиента и сервера
-    if (command.paused !== undefined) {
-      this.setPaused(command.paused)
+  }
+
+  _handleViewerPositionPause(cx, cy) {
+    this.state.allowInterpWhenPaused = true
+    this.state.smoothVx = 0
+    this.state.smoothVy = 0
+    this.state.lastVx = 0
+    this.state.lastVy = 0
+
+    this.ball.x = cx
+    this.ball.y = cy
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
+  }
+
+  _handleViewerVelocityUpdate(command) {
+    if (command.vx !== undefined) this.state.lastVx = command.vx
+    if (command.vy !== undefined) this.state.lastVy = command.vy
+
+    const lvx = typeof this.state.lastVx === 'number' ? this.state.lastVx : 0
+    const lvy = typeof this.state.lastVy === 'number' ? this.state.lastVy : 0
+    const sp = Math.hypot(lvx, lvy)
+
+    if (sp > 0) {
+      this.state.lastDirection.x = lvx / sp
+      this.state.lastDirection.y = lvy / sp
+    }
+  }
+
+  _handleViewerSpeedUpdate(command) {
+    if (command.speed !== undefined) {
+      this.setSpeed(command.speed)
+      if (!this.state.paused) {
+        this._updatePredictionBase()
+      }
+    }
+  }
+
+  _updatePredictionBase() {
+    const pps = (this.ball.speed / 100) * this.options.maxSpeed
+    const dx = this.state.lastDirection.x || 0
+    const dy = this.state.lastDirection.y || 0
+
+    if (dx !== 0 || dy !== 0) {
+      this.state.lastVx = dx * pps
+      this.state.lastVy = dy * pps
+    }
+  }
+
+  _handleServerCommand(command) {
+    this._handleServerDirection(command)
+    this._handleServerSpeed(command)
+    this._handleServerUnpause(command)
+  }
+
+  _handleServerDirection(command) {
+    if (command.dirX !== undefined || command.dirY !== undefined) {
+      const newDx = command.dirX !== undefined ? command.dirX : this.state.lastDirection.x
+      const newDy = command.dirY !== undefined ? command.dirY : this.state.lastDirection.y
+      this.setDirection(newDx, newDy)
+    }
+  }
+
+  _handleServerSpeed(command) {
+    if (command.speed !== undefined) {
+      this.setSpeed(command.speed)
+    }
+  }
+
+  _handleServerUnpause(command) {
+    const willBeUnpaused = command.paused === false || !this.state.paused
+    if (willBeUnpaused) {
+      this._restoreServerVelocity()
+    }
+  }
+
+  _restoreServerVelocity() {
+    const speedPercent = this.ball.speed / 100
+    const pixelsPerSecond = speedPercent * this.options.maxSpeed
+
+    let dirX = this.state.lastDirection.x || 0
+    let dirY = this.state.lastDirection.y || 0
+
+    if (dirX === 0 && dirY === 0) {
+      const sp = Math.hypot(this.ball.vx || 0, this.ball.vy || 0)
+      if (sp > 0) {
+        dirX = (this.ball.vx || 0) / sp
+        dirY = (this.ball.vy || 0) / sp
+        this.setDirection(dirX, dirY)
+      }
     }
 
-    if (command.reset) {
-      this.reset()
-    }
+    this.setVelocity(dirX * pixelsPerSecond, dirY * pixelsPerSecond)
+  }
 
-    if (command.radius !== undefined) {
-      this.setBallSize(command.radius)
-    }
-
-    if (command.colorBall !== undefined) {
-      this.setBallColor(command.colorBall)
-    }
-
-    if (command.colorBg !== undefined) {
-      this.setBgColor(command.colorBg)
-    }
+  _handleCommonCommands(command) {
+    if (command.paused !== undefined) this.setPaused(command.paused)
+    if (command.reset) this.reset()
+    if (command.radius !== undefined) this.setBallSize(command.radius)
+    if (command.colorBall !== undefined) this.setBallColor(command.colorBall)
+    if (command.colorBg !== undefined) this.setBgColor(command.colorBg)
   }
   // === ГЕТТЕРЫ ===
   getState() {

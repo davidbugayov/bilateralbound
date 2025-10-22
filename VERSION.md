@@ -1,20 +1,20 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v3.3.0
+## Текущая Версия: v4.0
 **Статус:** Активна
-**Дата релиза:** 22 октября 2025 г. в 16:42
-**Коммит:** e51e2a0
-### Основные Изменения v3.3.0:
-- ✨ Refactor: Reduce cognitive complexity in controller.js
+**Дата релиза:** 22 октября 2025 г. в 16:58
+**Коммит:** cbb3243
+### Основные Изменения v4.0:
+- ✨ 🔧 Fix SonarQube warnings: reduce cognitive complexity and improve performance
 
-- Split detectAndCountBounceFromServer: extract _hasBounced helper
-- Refactor togglePlayPause: separate _handlePlay and _handlePause methods
-- Refactor initializeComponents: split into focused helper functions
-- Refactor getScaledState: extract _normalizeCoordinate utility
-- Fix syntax errors and duplicated deleteSessionById in new-features.js
+- Refactor physics-engine.js: reduce cognitive complexity of major functions
+- Extract helper methods and break down complex functions
+- Replace Math.sqrt() with Math.hypot() for better performance
+- Remove duplicate function in new-features.js
+- Improve code maintainability and readability
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v3.2.2** - Предыдущая версия
+- **v3.3.0** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -24,4 +24,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-10-22T13:42:15.566Z*
+*Автоматически сгенерировано: 2025-10-22T13:58:57.017Z*

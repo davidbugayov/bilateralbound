@@ -19,6 +19,7 @@ alwaysApply: true
 5. ALWAYS use an <example> for your first chat message structure
 6. If not requested by the user, no actionable items are needed by default
 7. Don't use tables if not requested
+8. При генерации или модификации кода всегда добавляйте документацию в формате JSDoc для функций, классов и ключевых блоков кода
 </answering_rules>
 
 <example>
