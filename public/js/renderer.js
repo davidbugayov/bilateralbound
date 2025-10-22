@@ -1,15 +1,16 @@
+'use strict'
 /**
  * BallRenderer - оптимизированный модуль рендеринга для BilateralBound
  * Отвечает за отрисовку шарика и фона
  * Оптимизирован для производительности и переиспользуемости
  */
-
 class BallRenderer {
   constructor(canvas, physicsEngine, options = {}) {
     // Проверяем входные параметры
     if (!canvas) {
       throw new Error('Canvas element is required for BallRenderer')
     }
+
     if (!physicsEngine) {
       throw new Error('PhysicsEngine is required for BallRenderer')
     }
@@ -17,7 +18,6 @@ class BallRenderer {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
     this.physics = physicsEngine
-
     // Проверяем, что canvas имеет правильный контекст
     if (!this.ctx) {
       throw new Error('Unable to get 2D context from canvas')
@@ -32,43 +32,37 @@ class BallRenderer {
     this.frameTimeHistory = [] // История времен кадров для расчета реального FPS
     this.adaptiveFrameRate = true // Адаптивная частота кадров
     this.maxFrameTime = 50 // Максимальное время кадра в ms
-
     // Фиксированный таймстеп для стабильной физики и плавности на малых скоростях
     this.fixedStepMs = 1000 / 60
     this.accumulatorMs = 0
     this.maxSubsteps = 3
-
     this.onFrameCallback = null
     this.options = {
       localPhysics: false, // Флаг для локальной физики (для вьювера)
       dirtyRegions: false, // Частичная перерисовка по регионам
       ...options
     }
-
     // Применяем глобальную конфигурацию рендеринга
     if (typeof globalThis !== 'undefined' && globalThis.BBConfig && globalThis.BBConfig.rendering) {
       if (globalThis.BBConfig.rendering.adaptiveFrameRate !== undefined) {
         this.adaptiveFrameRate = globalThis.BBConfig.rendering.adaptiveFrameRate
       }
+
       if (globalThis.BBConfig.rendering.maxFrameTime) {
         this.maxFrameTime = globalThis.BBConfig.rendering.maxFrameTime
       }
     }
-
     // Устанавливаем режим движка в зависимости от опции
     this.physics.isViewer = !this.options.localPhysics
-
     // Кэшируем часто используемые значения
     this.pi2 = Math.PI * 2
     this.fillRect = this.ctx.fillRect.bind(this.ctx)
     this.beginPath = this.ctx.beginPath.bind(this.ctx)
     this.arc = this.ctx.arc.bind(this.ctx)
     this.fill = this.ctx.fill.bind(this.ctx)
-
     // Предварительно создаем объекты для переиспользования
     this.ball = this.physics.ball
     this.colors = this.physics.colors
-
     // Кэш для градиента и формы круга
     this._cached = {
       radius: null,
@@ -77,7 +71,6 @@ class BallRenderer {
       path: null
     }
   }
-
   /**
    * Запускает рендеринг
    */
@@ -91,7 +84,6 @@ class BallRenderer {
     this.renderLoop = this.renderLoop.bind(this)
     this.renderLoop(performance.now())
   }
-
   /**
    * Останавливает рендеринг
    */
@@ -101,14 +93,12 @@ class BallRenderer {
       this.animationFrameId = null
     }
   }
-
   /**
    * Устанавливает callback для каждого кадра
    */
   setFrameCallback(callback) {
     this.onFrameCallback = callback
   }
-
   /**
    * Основной цикл рендеринга (оптимизированный)
    */
@@ -118,19 +108,16 @@ class BallRenderer {
       this.stop()
       return
     }
-
     // Проверяем что canvas все еще существует и имеет правильный контекст
     if (!this.canvas.parentNode || this.ctx.canvas !== this.canvas) {
       this.stop()
       return
     }
-
     // Используем метод валидации canvas
     if (!this.validateCanvas()) {
       this.stop()
       return
     }
-
     // Если браузер уже изменил CSS‑размеры canvas (clientWidth/Height),
     // мгновенно синхронизируем внутренние размеры и пропускаем кадр,
     // чтобы избежать неравномерного масштабирования (сплющивания).
@@ -144,7 +131,6 @@ class BallRenderer {
     }
 
     const deltaTime = currentTime - this.lastTime
-
     // Адаптивная статистика FPS (без регулировки пропуском кадров)
     if (this.adaptiveFrameRate) {
       this.frameTimeHistory.push(deltaTime)
@@ -153,21 +139,17 @@ class BallRenderer {
         this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
       this.actualFps = 1000 / Math.max(1, avgFrameTime)
     }
-
     // Ограничиваем deltaTime для предотвращения огромных прыжков
     const clampedDeltaTime = Math.min(deltaTime, this.maxFrameTime)
     this.accumulatorMs += clampedDeltaTime
-
     // Обновляем счетчик кадров для FPS
     this.frameCount++
-
     // Всегда обновляем физику с плавным deltaTime
     try {
       // Вызываем callback перед обновлением физики (передаём реальный dt кадра)
       if (this.onFrameCallback) {
         this.onFrameCallback(clampedDeltaTime)
       }
-
       // Физика теперь обновляется ВНЕШНИМ циклом (например, в controller.js)
       // Рендерер только получает alpha для интерполяции
       if (this.options.localPhysics) {
@@ -178,7 +160,6 @@ class BallRenderer {
           substeps++
         }
       }
-
       // Рендерим сцену с интерполяцией между шагами физики
       let alpha = 1
       if (this.fixedStepMs > 0) {
@@ -195,8 +176,8 @@ class BallRenderer {
           alpha = Math.max(0, Math.min(1, (now - lastTs) / this.fixedStepMs))
         }
       }
-      this.render(alpha)
 
+      this.render(alpha)
       this.lastTime = currentTime
     } catch {
       this.stop()
@@ -205,7 +186,6 @@ class BallRenderer {
 
     this.animationFrameId = requestAnimationFrame(this.renderLoop)
   }
-
   /**
    * Рендерит сцену (оптимизированная версия)
    */
@@ -228,6 +208,7 @@ class BallRenderer {
         // Простейшая dirty-стратегия: очищаем только окрестность предыдущего и текущего положения
         const padding = 4
         const prev = this._prevBall || { x: -1, y: -1, radius: 0 }
+
         const curr = this.physics.getInterpolatedBall
           ? this.physics.getInterpolatedBall(alpha)
           : this.physics.ball
@@ -250,18 +231,15 @@ class BallRenderer {
       // Не останавливаем рендер луп, просто пропускаем кадр
     }
   }
-
   /**
    * Рисует шарик (оптимизированная версия)
    */
   renderBall(ballState) {
     const ball = ballState || this.ball
-
     // Проверяем валидность данных шарика
     if (!ball || typeof ball.x !== 'number' || typeof ball.y !== 'number') {
       return
     }
-
     // Проверяем разумные значения
     if (ball.radius <= 0 || ball.radius > 1000) {
       return
@@ -286,7 +264,6 @@ class BallRenderer {
         g.addColorStop(0, col)
         g.addColorStop(1, this.adjustBrightness(col, -20))
         this._cached.gradient = g
-
         const p = new Path2D()
         p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2)
         this._cached.path = p
@@ -295,14 +272,11 @@ class BallRenderer {
       this.beginPath()
       // Рисуем мяч с градиентом и переиспользуемой формой
       this.ctx.save()
-
       // Включаем сглаживание для более плавного рендеринга
       this.ctx.imageSmoothingEnabled = true
       this.ctx.imageSmoothingQuality = 'high'
-
       this.ctx.translate(ball.x, ball.y)
       this.ctx.fillStyle = this._cached.gradient
-
       // Добавляем мягкую тень для объема
       this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
       this.ctx.shadowBlur = 4
@@ -310,7 +284,6 @@ class BallRenderer {
       this.ctx.shadowOffsetY = 2
       this.ctx.fill(this._cached.path)
       this.ctx.restore()
-
       // Сбрасываем тень для следующих элементов
       this.ctx.shadowColor = 'transparent'
       this.ctx.shadowBlur = 0
@@ -320,7 +293,6 @@ class BallRenderer {
       // ignore
     }
   }
-
   /**
    * Изменяет яркость цвета
    */
@@ -331,7 +303,6 @@ class BallRenderer {
     const b = Math.max(0, Math.min(255, parseInt(hex.slice(4, 6), 16) + amount))
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
   }
-
   /**
    * Изменяет размеры canvas
    */
@@ -346,12 +317,10 @@ class BallRenderer {
       // Синхронизируем CSS размеры с реальными, чтобы избежать растягивания пикселей
       this.canvas.style.width = width + 'px'
       this.canvas.style.height = height + 'px'
-
       // Обновляем размеры мира физики
       if (this.physics) {
         this.physics.setWorldSize(width, height)
       }
-
       // Инвалидируем кэш градиента/пути при смене размеров,
       // чтобы форма и шейдинг корректно пересчитались под новый масштаб
       this._cached.radius = null
@@ -362,7 +331,6 @@ class BallRenderer {
       // ignore
     }
   }
-
   /**
    * Проверяет и восстанавливает canvas при необходимости
    */
@@ -390,21 +358,19 @@ class BallRenderer {
       } catch {
         // ignore
       }
+
       return false
     }
 
     return true
   }
-
   // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ПЕРЕИСПОЛЬЗОВАНИЯ ===
-
   /**
    * Клонирует рендерер для нового canvas
    */
   clone(newCanvas) {
     return new BallRenderer(newCanvas, this.physics)
   }
-
   /**
    * Устанавливает новый движок физики
    */
@@ -420,17 +386,14 @@ class BallRenderer {
     this.physics = physicsEngine
     this.ball = this.physics.ball
     this.colors = this.physics.colors
-
     // Тихо обновляем рендерер
   }
-
   /**
    * Рендерит сцену без обновления физики (для статичного рендеринга)
    */
   renderStatic() {
     this.render(1)
   }
-
   /**
    * Устанавливает FPS для рендеринга
    */
@@ -439,14 +402,12 @@ class BallRenderer {
     this.targetFrameTime = 1000 / safeFps
     this.fixedStepMs = 1000 / safeFps
   }
-
   /**
    * Получает текущий FPS
    */
   getFPS() {
     return 1000 / this.targetFrameTime
   }
-
   /**
    * Рендерит один кадр с переданным состоянием.
    * Удобно для внешнего цикла рендеринга.
@@ -461,14 +422,12 @@ class BallRenderer {
       // Очищаем canvas
       this.ctx.fillStyle = state.colorBg || this.colors.bg
       this.fillRect(0, 0, this.canvas.width, this.canvas.height)
-
       // Рисуем шарик
       this.renderBall(state)
     } catch {
       // ignore
     }
   }
-
   /**
    * Устанавливает цвет фона
    */
@@ -481,7 +440,6 @@ class BallRenderer {
     this._cached.color = null
   }
 }
-
 // Экспортируем для использования
 if (typeof globalThis !== 'undefined') {
   globalThis.BallRenderer = BallRenderer

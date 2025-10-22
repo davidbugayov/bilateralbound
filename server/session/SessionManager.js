@@ -1,3 +1,4 @@
+'use strict'
 const PhysicsEngine = require('../../public/js/physics-engine.js')
 const SessionRepository = require('./SessionRepository.js')
 const WebSocketManager = require('./WebSocketManager.js')
@@ -23,28 +24,22 @@ class SessionManager {
 
   createSession(ballState = {}) {
     const session = this.sessionRepository.create({ ballState })
-
     session.physicsEngine = new PhysicsEngine({
       ballRadius: session.ballState.radius || 20,
       maxSpeed: 5000
     })
-
     this._initPhysicsCallbacks(session)
-
     const engineState = session.physicsEngine.getState()
     Object.assign(session.ballState, engineState)
     session.ballState.paused = true
     session.physicsEngine.setPaused(true)
-
     this.startPhysics(session.id)
     return session
   }
-
   // Создание сессии с определенным ID (для постоянных ссылок)
   findOrCreateSession(sessionId, ballState = {}) {
     const session = this.sessionRepository.findOrCreateById(sessionId, { ballState })
     if (!session) return null
-
     if (!session.physicsEngine) {
       session.physicsEngine = new PhysicsEngine({
         ballRadius: session.ballState.radius || 20,
@@ -57,6 +52,7 @@ class SessionManager {
       session.physicsEngine.setPaused(true)
       this.startPhysics(session.id)
     }
+
     return session
   }
 
@@ -79,19 +75,15 @@ class SessionManager {
   updateBallState(sessionId, updates) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
-
     const now = Date.now()
     const lastUpdate = session.lastStateUpdate || 0
-
     // Упрощенное throttling
     const throttleDelay = this._getThrottleDelay(updates)
     if (now - lastUpdate < throttleDelay && !updates?.reset) {
       return false
     }
-
     // Используем централизованную валидацию
     const validatedUpdates = ValidationUtils.validateBallStateUpdates(updates)
-
     if (Object.keys(validatedUpdates).length === 0) {
       this.logger.logSession(sessionId, '[VALIDATION] No valid fields in update, ignoring')
       return false
@@ -99,12 +91,10 @@ class SessionManager {
 
     session.lastStateUpdate = now
     session.lastActivity = now
-
     // Обработка возврата в центр при смене направления или остановке
     if (validatedUpdates.returnToCenter && session.physicsEngine) {
       // Используем специальный метод для плавного возврата в центр
       session.physicsEngine.returnToCenter()
-
       // Если это возврат при остановке, устанавливаем паузу
       if (validatedUpdates.paused) {
         session.physicsEngine.setPaused(true)
@@ -125,9 +115,7 @@ class SessionManager {
       if (
         session.normalizeDirectionUntilTs &&
         Date.now() < session.normalizeDirectionUntilTs &&
-        session.physicsEngine &&
-        session.physicsEngine.state &&
-        session.physicsEngine.state.lastDirection
+        session?.physicsEngine?.physicsEngine?.state
       ) {
         const dx = session.physicsEngine.state.lastDirection.x || 0
         const dy = session.physicsEngine.state.lastDirection.y || 0
@@ -148,12 +136,10 @@ class SessionManager {
    */
   _getThrottleDelay(updates) {
     if (!updates) return 50
-
     if (updates.colorBall !== undefined || updates.colorBg !== undefined) return 200
     if (updates.speed !== undefined) return 100
     if (updates.dirX !== undefined || updates.dirY !== undefined) return 8 // Уменьшено для более отзывчивого управления
     if (updates.paused !== undefined || updates.resume === true) return 0
-
     return 50
   }
 
@@ -167,7 +153,6 @@ class SessionManager {
     if (session) {
       session.lastActivity = Date.now()
       this._schedulePhysicsUpdate(sessionId)
-
       if (role === 'viewer') {
         this.stateBroadcaster.broadcastInitialState(sessionId, ws, session.ballState)
       } else {
@@ -177,7 +162,6 @@ class SessionManager {
         } catch {
           /* ignore */
         }
-
         // Send initial_state immediately if viewer screen size is already set
         if (
           session.viewerScreenSize &&
@@ -203,7 +187,6 @@ class SessionManager {
     }
 
     this.stateBroadcaster.broadcastViewerStatus(sessionId)
-
     // Рассылаем событие о подключении контроллера всем клиентам
     if (role === 'controller') {
       this.broadcastControllerConnection(sessionId, true)
@@ -216,14 +199,12 @@ class SessionManager {
       this._schedulePhysicsUpdate(sessionId)
       this.stateBroadcaster.broadcastViewerStatus(sessionId)
     }
-
     // Рассылаем событие об отключении контроллера всем клиентам
     const clientInfo = this.getClientInfo(ws)
     if (clientInfo?.role === 'controller') {
       this.broadcastControllerConnection(sessionId, false)
     }
   }
-
   /**
    * Рассылает событие о подключении/отключении контроллера всем клиентам сессии
    * @param {string} sessionId - ID сессии
@@ -232,14 +213,12 @@ class SessionManager {
   broadcastControllerConnection(sessionId, isConnected) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
-
     const clients = this.webSocketManager.getClients(sessionId)
     const message = JSON.stringify({
       type: isConnected ? 'controller_connected' : 'controller_disconnected',
       payload: { controllerConnected: isConnected },
       timestamp: Date.now()
     })
-
     for (const { client } of clients) {
       if (client.readyState === 1) {
         // WebSocket.OPEN
@@ -259,11 +238,9 @@ class SessionManager {
   setViewerScreenSize(sessionId, screenSize) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
-
     // Валидируем размеры экрана
     const validatedSize = ValidationUtils.validateScreenSize(screenSize)
     if (!validatedSize) return false
-
     // Сохраняем прежний размер экрана, если он уже был задан ранее
     const hadPrevSize = !!(
       session.viewerScreenSize &&
@@ -272,16 +249,12 @@ class SessionManager {
     )
     const oldWidth = hadPrevSize ? session.viewerScreenSize.width : null
     const oldHeight = hadPrevSize ? session.viewerScreenSize.height : null
-
     session.viewerScreenSize = validatedSize
-
     if (session.physicsEngine) {
       // Сохраняем текущее состояние мяча перед изменением размера
       const currentState = session.physicsEngine.getState()
       const wasPlaying = !session.ballState.paused
-
       session.physicsEngine.setWorldSize(validatedSize.width, validatedSize.height)
-
       if (!hadPrevSize) {
         // Первый раз получили размеры вьювера — строго центрируем мяч
         session.physicsEngine.setPosition(validatedSize.width / 2, validatedSize.height / 2)
@@ -293,15 +266,12 @@ class SessionManager {
         // Масштабируем позицию мяча к новому размеру экрана
         const scaleX = validatedSize.width / oldWidth
         const scaleY = validatedSize.height / oldHeight
-
         const newX = Math.min(currentState.x * scaleX, validatedSize.width - currentState.radius)
         const newY = Math.min(currentState.y * scaleY, validatedSize.height - currentState.radius)
-
         session.physicsEngine.setPosition(
           Math.max(newX, currentState.radius),
           Math.max(newY, currentState.radius)
         )
-
         // Восстанавливаем скорость и направление
         if (wasPlaying) {
           session.physicsEngine.setVelocity(currentState.vx, currentState.vy)
@@ -317,12 +287,10 @@ class SessionManager {
     }
 
     this.stateBroadcaster.broadcastState(sessionId)
-
     // В течение короткого периода после смены размера возвращаем нормализованное направление в API
     // чтобы стабилизировать внешний контракт (см. testScreenSizeChangeStability)
     // Для первого подключения окно короче, для последующих смен размеров — дольше
     session.normalizeDirectionUntilTs = Date.now() + (hadPrevSize ? 600 : 150)
-
     // Отправляем начальное состояние контроллеру
     const clients = this.webSocketManager.getClients(sessionId)
     const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
@@ -339,7 +307,6 @@ class SessionManager {
   startPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
-
     this._schedulePhysicsUpdate(sessionId)
     this.logger.logSession(sessionId, 'Physics manager initialized', 'debug')
   }
@@ -347,13 +314,11 @@ class SessionManager {
   _schedulePhysicsUpdate(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
-
     // Always stop any existing server-side physics loop — movement is client-driven now
     if (session.mainLoop) {
       clearInterval(session.mainLoop)
       session.mainLoop = null
     }
-
     // Server no longer steps physics; it only synchronizes state on explicit updates.
     // We still may broadcast a lightweight sync when commands arrive elsewhere.
     this.logger.logSession(
@@ -377,6 +342,7 @@ class SessionManager {
       this.logger.info(`Cleaned up ${expiredIds.length} expired sessions.`)
       expiredIds.forEach(id => this.stopPhysics(id))
     }
+
     return expiredIds.length
   }
 
@@ -391,6 +357,7 @@ class SessionManager {
         return { sessionId: clientInfo.sessionId, role: clientInfo.role }
       }
     }
+
     return null
   }
 }

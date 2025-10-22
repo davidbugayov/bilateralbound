@@ -1,16 +1,17 @@
+'use strict'
 /**
  * Common utilities and functions for BilateralBound
  * Упрощенная версия с использованием общих утилит
  */
-
 // Условное логирование только в режиме разработки
 const debugLog =
   typeof globalThis !== 'undefined' && globalThis.debugLog ? globalThis.debugLog : () => {}
+
 const debugError =
   typeof globalThis !== 'undefined' && globalThis.debugError ? globalThis.debugError : () => {}
+
 const debugWarn =
   typeof globalThis !== 'undefined' && globalThis.debugWarn ? globalThis.debugWarn : () => {}
-
 // Используем общие утилиты, если доступны, иначе fallback
 const getSessionIdFromUrl = globalThis.CommonUtils
   ? globalThis.CommonUtils.getSessionIdFromUrl
@@ -20,6 +21,7 @@ const getSessionIdFromUrl = globalThis.CommonUtils
       if ((parts[1] === 'c' || parts[1] === 's') && parts[2]) {
         return parts[2]
       }
+
       const urlParams = new URLSearchParams(globalThis.location.search)
       return urlParams.get('sessionId')
     }
@@ -46,7 +48,6 @@ const toggleFullscreen =
             document.msFullscreenElement ||
             document.mozFullScreenElement
           )
-
         const enter = el => {
           const target = el || document.documentElement
           return (
@@ -64,12 +65,12 @@ const toggleFullscreen =
           document.msExitFullscreen?.() ||
           document.mozCancelFullScreen?.() ||
           Promise.resolve()
-
         return function toggleFullscreen(el) {
           try {
             if (!canFullscreen()) {
               return Promise.resolve(false)
             }
+
             if (isFs()) {
               return exit()
                 .then(() => true)
@@ -89,6 +90,7 @@ const throttle =
     ? globalThis.CommonUtils.throttle
     : function (fn, wait = 100) {
         if (typeof fn !== 'function') return () => {}
+
         let last = 0
         let timeoutId = null
         let trailingArgs = null
@@ -101,6 +103,7 @@ const throttle =
               clearTimeout(timeoutId)
               timeoutId = null
             }
+
             last = now
             fn.apply(this, args)
           } else if (!timeoutId) {
@@ -153,7 +156,6 @@ class ThemeManager {
   toggleTheme() {
     const body = document.body
     const isLight = body.classList.contains('light-theme')
-
     if (isLight) {
       // Сейчас светлая тема - переключаем на темную
       body.classList.remove('light-theme')

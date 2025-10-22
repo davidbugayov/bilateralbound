@@ -1,3 +1,4 @@
+'use strict'
 /**
  * WebSocketClient - Модернизированный клиент для WebSocket соединений
  * Использует современные возможности JavaScript для лучшей надежности
@@ -8,14 +9,15 @@ class WebSocketClient {
     if (!sessionId || typeof sessionId !== 'string') {
       throw new Error('Valid sessionId (string) is required for WebSocket connection')
     }
+
     if (!role || !['controller', 'viewer'].includes(role)) {
       throw new Error('Valid role ("controller" or "viewer") is required for WebSocket connection')
     }
-
     // Конфигурация с умолчаниями - используем глобальную конфигурацию
     const globalConfig =
       (typeof globalThis !== 'undefined' && globalThis.BBConfig && globalThis.BBConfig.network) ||
       {}
+
     this.config = {
       isSecure: globalThis.location.protocol === 'https:',
       maxReconnectAttempts: globalConfig.maxReconnectAttempts || 5,
@@ -27,31 +29,25 @@ class WebSocketClient {
       coalesceDelayMs: globalConfig.coalesceDelayMs || 16, // ~60fps
       ...options
     }
-
     // Состояние клиента
     this.sessionId = sessionId
     this.role = role
     this.ws = null
     this.isConnected = false
     this.isConnecting = false
-
     // Обработчики событий
     this.eventHandlers = new Map()
     this.pendingMessages = new Map()
     this.messageIdCounter = 0
-
     // Таймеры
     this.reconnectTimer = null
     this.heartbeatTimer = null
     this.messageTimeouts = new Map()
-
     // Коалесцирование исходящих сообщений
     this._coalesceBuffers = new Map() // type -> latest payload
     this._coalesceTimers = new Map() // type -> timer id
-
     // Генерация URL
     this.url = this._generateWebSocketUrl()
-
     // Статистика
     this._stats = {
       messagesSent: 0,
@@ -72,9 +68,7 @@ class WebSocketClient {
     url.searchParams.set('role', this.role)
     return url.toString()
   }
-
   // ===== ОСНОВНЫЕ МЕТОДЫ =====
-
   /**
    * Подключение к WebSocket серверу
    */
@@ -87,11 +81,9 @@ class WebSocketClient {
     return new Promise((resolve, reject) => {
       this.isConnecting = true
       this.log(`Connecting to ${this.url}`)
-
       try {
         this.ws = new WebSocket(this.url)
         this._setupEventHandlers()
-
         const connectionTimeout = setTimeout(() => {
           if (this.isConnecting) {
             this.isConnecting = false
@@ -99,7 +91,6 @@ class WebSocketClient {
             reject(new Error('Connection timeout'))
           }
         }, 10000)
-
         this.ws.onopen = () => {
           clearTimeout(connectionTimeout)
           this._handleConnectionSuccess()
@@ -118,7 +109,6 @@ class WebSocketClient {
       }
     })
   }
-
   /**
    * Улучшенная отправка с приоритетами и буферизацией
    */
@@ -126,11 +116,10 @@ class WebSocketClient {
     if (!this.isConnected) {
       throw new Error('WebSocket is not connected')
     }
-
     // Приоритизация критически важных сообщений
     const priorityTypes = ['controller_update', 'heartbeat']
-    const isPriority = priorityTypes.includes(type)
 
+    const isPriority = priorityTypes.includes(type)
     // Для приоритетных сообщений отключаем коалесцирование
     if (isPriority) {
       const messageId = ++this.messageIdCounter
@@ -148,7 +137,6 @@ class WebSocketClient {
             this.pendingMessages.delete(messageId)
             reject(new Error(`Message timeout: ${type}`))
           }, this.config.messageTimeout)
-
           this.pendingMessages.set(messageId, { resolve, reject, timeout })
           this._sendMessage(message)
         })
@@ -157,7 +145,6 @@ class WebSocketClient {
         return Promise.resolve()
       }
     }
-
     // Коалесцирование для обычных сообщений
     if (this.config.coalesceTypes.includes(type) && !options.expectResponse) {
       this._coalesceBuffers.set(type, payload)
@@ -166,7 +153,6 @@ class WebSocketClient {
           const latest = this._coalesceBuffers.get(type)
           this._coalesceBuffers.delete(type)
           this._coalesceTimers.delete(type)
-
           const coalescedMessage = {
             id: ++this.messageIdCounter,
             type,
@@ -174,6 +160,7 @@ class WebSocketClient {
             timestamp: Date.now(),
             batched: true
           }
+
           try {
             this._sendMessage(coalescedMessage)
           } catch (e) {
@@ -182,9 +169,9 @@ class WebSocketClient {
         }, this.config.coalesceDelayMs)
         this._coalesceTimers.set(type, timerId)
       }
+
       return Promise.resolve()
     }
-
     // Обычная отправка для остальных сообщений
     const messageId = ++this.messageIdCounter
     const message = { id: messageId, type, payload, timestamp: Date.now() }
@@ -195,7 +182,6 @@ class WebSocketClient {
           this.pendingMessages.delete(messageId)
           reject(new Error(`Message timeout: ${type}`))
         }, this.config.messageTimeout)
-
         this.pendingMessages.set(messageId, { resolve, reject, timeout })
         this._sendMessage(message)
       })
@@ -204,7 +190,6 @@ class WebSocketClient {
       return Promise.resolve()
     }
   }
-
   /**
    * Регистрация обработчика события
    */
@@ -212,15 +197,14 @@ class WebSocketClient {
     if (!this.eventHandlers.has(eventType)) {
       this.eventHandlers.set(eventType, [])
     }
+
     this.eventHandlers.get(eventType).push(handler)
   }
-
   /**
    * Отписка от события
    */
   off(eventType, handler = null) {
     if (!this.eventHandlers.has(eventType)) return
-
     if (handler) {
       const handlers = this.eventHandlers.get(eventType)
       const index = handlers.indexOf(handler)
@@ -231,7 +215,6 @@ class WebSocketClient {
       this.eventHandlers.delete(eventType)
     }
   }
-
   /**
    * Отключение от сервера
    */
@@ -239,15 +222,12 @@ class WebSocketClient {
     this._clearTimers()
     this.isConnected = false
     this.isConnecting = false
-
     if (this.ws) {
       this.ws.close(code, reason)
       this.ws = null
     }
   }
-
   // ===== ВНУТРЕННИЕ МЕТОДЫ =====
-
   _setupEventHandlers() {
     this.ws.onmessage = this._handleMessage.bind(this)
     this.ws.onclose = this._handleClose.bind(this)
@@ -259,7 +239,6 @@ class WebSocketClient {
     this.isConnecting = false
     this._stats.reconnectCount = 0
     this._stats.lastActivity = Date.now()
-
     this._startHeartbeat()
     this._emit('open', { sessionId: this.sessionId, role: this.role })
     this.log('Connected successfully')
@@ -275,7 +254,6 @@ class WebSocketClient {
       const message = JSON.parse(event.data)
       this._stats.messagesReceived++
       this._stats.lastActivity = Date.now()
-
       // Обработка подтверждений
       if (message.id && this.pendingMessages.has(message.id)) {
         const pending = this.pendingMessages.get(message.id)
@@ -284,11 +262,9 @@ class WebSocketClient {
         pending.resolve(message.payload)
         return
       }
-
       // Обработка обычных сообщений
       this._emit(message.type, message.payload)
       this._emit('message', message)
-
       // Пробуем оценить сетевые метрики если есть timestamp
       if (message && typeof message.timestamp === 'number') {
         const now = performance.now()
@@ -313,7 +289,6 @@ class WebSocketClient {
     this.isConnected = false
     this._clearTimers()
     this._emit('close', event)
-
     if (event.code !== 1000) {
       // Не нормальное отключение
       this._scheduleReconnect()
@@ -333,9 +308,7 @@ class WebSocketClient {
 
     this._stats.reconnectCount++
     const delay = this.config.reconnectInterval * Math.pow(1.5, this._stats.reconnectCount - 1)
-
     this.log(`Reconnecting in ${Math.round(delay / 1000)}s (attempt ${this._stats.reconnectCount})`)
-
     this.reconnectTimer = setTimeout(() => {
       this.connect().catch(() => {
         this._scheduleReconnect()
@@ -380,10 +353,12 @@ class WebSocketClient {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = null
     }
+
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer)
       this.heartbeatTimer = null
     }
+
     this.messageTimeouts.forEach(timeout => clearTimeout(timeout))
     this.messageTimeouts.clear()
     // Чистим коалесцирование
@@ -396,19 +371,15 @@ class WebSocketClient {
     const timestamp = new Date().toLocaleTimeString()
     const prefix = `[WS:${this.role}]`
     const coloredMessage = `%c${prefix} ${message}`
-
     const style =
       type === 'error'
         ? 'color: #ef4444; font-weight: bold;'
         : type === 'warning'
           ? 'color: #f59e0b; font-weight: bold;'
           : 'color: #3b82f6; font-weight: bold;'
-
     console[type === 'error' ? 'error' : 'log'](coloredMessage, style, timestamp)
   }
-
   // ===== ГЕТТЕРЫ =====
-
   get isReady() {
     return this.isConnected && this.ws?.readyState === WebSocket.OPEN
   }
@@ -417,7 +388,6 @@ class WebSocketClient {
     return { ...this._stats }
   }
 }
-
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = WebSocketClient

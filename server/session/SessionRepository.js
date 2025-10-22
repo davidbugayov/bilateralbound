@@ -1,5 +1,5 @@
+'use strict'
 const { v4: uuidv4 } = require('uuid')
-
 // Интерфейс для управления данными сессий
 class SessionRepository {
   constructor() {
@@ -7,7 +7,6 @@ class SessionRepository {
     this.sessionCache = new Map() // Кэш для часто запрашиваемых сессий
     this.cacheExpiration = 30000 // 30 секунд
   }
-
   // Валидация пользовательского ID сессии: латиница/цифры/подчеркивание/дефис, 3..32 символа
   isValidCustomId(id) {
     return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id)
@@ -23,10 +22,12 @@ class SessionRepository {
     if (!this.isValidCustomId(id)) {
       throw new Error('Invalid session id format')
     }
+
     if (this.sessions.has(id)) {
       // Возвращаем существующую сессию, делая операцию идемпотентной
       return this.sessions.get(id)
     }
+
     return this._createInternal(id, sessionData)
   }
 
@@ -67,10 +68,8 @@ class SessionRepository {
     if (cached && Date.now() - cached.timestamp < this.cacheExpiration) {
       return cached.session
     }
-
     // Ищем в основном хранилище
     const session = this.sessions.get(sessionId) || null
-
     // Кэшируем результат (даже если null)
     if (session) {
       this.sessionCache.set(sessionId, {
@@ -85,25 +84,19 @@ class SessionRepository {
   update(sessionId, updates) {
     const session = this.findById(sessionId)
     if (!session) return false
-
     Object.assign(session, updates)
     session.lastActivity = Date.now()
-
     // Инвалидируем кэш
     this.sessionCache.delete(sessionId)
-
     return true
   }
 
   updateBallState(sessionId, ballUpdates) {
     const session = this.findById(sessionId)
     if (!session) return false
-
     Object.assign(session.ballState, ballUpdates)
-
     // Инвалидируем кэш
     this.sessionCache.delete(sessionId)
-
     return true
   }
 
@@ -111,7 +104,6 @@ class SessionRepository {
     this.sessionCache.delete(sessionId) // Очищаем кэш
     return this.sessions.delete(sessionId)
   }
-
   // Очистка устаревшего кэша для оптимизации памяти
   cleanupCache() {
     const now = Date.now()
@@ -140,10 +132,8 @@ class SessionRepository {
     }
 
     expiredIds.forEach(id => this.delete(id))
-
     // Также очищаем устаревший кэш
     this.cleanupCache()
-
     return expiredIds.length
   }
 }

@@ -1,40 +1,33 @@
+'use strict'
 /**
  * Оптимизированный счетчик Яндекс.Метрики
  * Решает проблемы с обнаружением и загрузкой
  */
-
 ;(function () {
   'use strict'
-
   // Конфигурация счетчика
   const METRIKA_ID = '104698530'
   const METRIKA_URL = 'https://mc.yandex.ru/metrika/tag.js'
-
   // Глобальные переменные для отслеживания состояния
   let metrikaLoaded = false
   let metrikaInitiated = false
   let loadAttempts = 0
   const MAX_ATTEMPTS = 3
-
   // Функция для создания и вставки счетчика
   function createMetrikaScript() {
     if (metrikaLoaded) return
-
     const script = document.createElement('script')
     script.type = 'text/javascript'
     script.async = true
     script.src = METRIKA_URL
-
     script.onload = function () {
       metrikaLoaded = true
-
       initMetrika()
     }
 
     script.onerror = function () {
       loadAttempts++
       console.warn(`⚠️ Ошибка загрузки Яндекс.Метрики (попытка ${loadAttempts}/${MAX_ATTEMPTS})`)
-
       if (loadAttempts < MAX_ATTEMPTS) {
         // Повторная попытка через 2 секунды
         setTimeout(createMetrikaScript, 2000)
@@ -44,7 +37,6 @@
         createNoscriptFallback()
       }
     }
-
     // Ищем существующий скрипт Метрики и удаляем дубликаты
     const existingScripts = document.querySelectorAll('script[src*="metrika"]')
     existingScripts.forEach(existing => {
@@ -52,16 +44,15 @@
         existing.remove()
       }
     })
-
     // Вставляем новый скрипт в head
     const head = document.head || document.getElementsByTagName('head')[0]
+
     if (head) {
       head.insertBefore(script, head.firstChild)
     } else {
       document.documentElement.appendChild(script)
     }
   }
-
   // Функция инициализации Метрики
   function initMetrika() {
     if (metrikaInitiated || !globalThis.ym) {
@@ -80,16 +71,13 @@
           windowTitle: document.title
         }
       })
-
       metrikaInitiated = true
-
       // Отправляем событие о загрузке страницы
       trackPageView()
     } catch (error) {
       console.error('❌ Ошибка инициализации Яндекс.Метрики:', error)
     }
   }
-
   // Функция отслеживания просмотра страницы
   function trackPageView() {
     if (metrikaInitiated && globalThis.ym) {
@@ -103,7 +91,6 @@
       }
     }
   }
-
   // Функция создания fallback счетчика
   function createNoscriptFallback() {
     const noscript = document.createElement('noscript')
@@ -113,18 +100,18 @@
       '" style="position:absolute; left:-9999px;" alt="" /></div>'
     document.body.insertBefore(noscript, document.body.firstChild)
   }
-
   // Функция проверки доступности Метрики
   function checkMetrikaAvailability() {
     if (typeof globalThis.ym !== 'undefined' && globalThis.ym) {
       if (!metrikaInitiated) {
         initMetrika()
       }
+
       return true
     }
+
     return false
   }
-
   // Функция принудительной проверки состояния Метрики
   function forceCheckMetrika() {
     const startTime = Date.now()
@@ -134,14 +121,12 @@
       }
     }, 100)
   }
-
   // Функция для отладки
   function debugMetrika() {
     if (typeof globalThis.ym !== 'undefined') {
       /* empty */
     }
   }
-
   // Экспортируем функции для использования в других скриптах
   globalThis.MetrikaManager = {
     init: function () {
@@ -168,7 +153,6 @@
     debug: debugMetrika,
     forceCheck: forceCheckMetrika
   }
-
   // Запуск загрузки счетчика
   if (document.readyState === 'loading') {
     // DOM еще не загружен
@@ -180,7 +164,6 @@
     // DOM уже загружен
     setTimeout(createMetrikaScript, 100)
   }
-
   // Экспонируем функцию для обратной совместимости
   globalThis.ym =
     globalThis.ym ||
@@ -199,12 +182,9 @@
         globalThis.ym.q.push(args)
       }
     }
-
   // очередь для отложенных вызовов
   globalThis.ym.q = globalThis.ym.q || []
-
   // Добавляем проверку через 5 секунд для гарантии
   setTimeout(forceCheckMetrika, 5000)
-
   // Экспонируем для отладки в консоли
 })()

@@ -1,5 +1,5 @@
+'use strict'
 const { logger } = require('../logger.js')
-
 // Интерфейс для управления WebSocket соединениями
 class WebSocketManager {
   constructor(sessionRepository) {
@@ -10,13 +10,11 @@ class WebSocketManager {
   addClient(sessionId, ws, role) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
-
     session.clients.set(ws, {
       role,
       connectedAt: Date.now(),
       sessionId
     })
-
     // Обновляем статус подключения
     if (role === 'controller') {
       session.controllerConnected = true
@@ -33,22 +31,20 @@ class WebSocketManager {
       if (session.clients.has(ws)) {
         const clientInfo = session.clients.get(ws)
         session.clients.delete(ws)
-
         // Проверяем, остались ли клиенты этой роли
         this._updateConnectionStatus(session, clientInfo.role)
         this.logger.logSession(session.id, `${clientInfo.role} disconnected via WebSocket`)
-
         // Возвращаем ID сессии для дальнейшей обработки (например, для остановки физики)
         return session.id
       }
     }
+
     return null
   }
 
   _updateConnectionStatus(session, disconnectedRole) {
     let hasController = false
     let hasViewer = false
-
     for (const [, info] of session.clients) {
       if (info.role === 'controller') hasController = true
       if (info.role === 'viewer') hasViewer = true
