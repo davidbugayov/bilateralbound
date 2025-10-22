@@ -1,7 +1,7 @@
 const { WebSocketServer } = require('ws')
 const { logger, DEBUG_MODE } = require('../logger.js')
 
-function setupWebSocketServer (server, sessionManager) {
+function setupWebSocketServer(server, sessionManager) {
   const wss = new WebSocketServer({ server })
 
   wss.on('connection', (ws, req) => {
@@ -22,7 +22,9 @@ function setupWebSocketServer (server, sessionManager) {
     }
 
     ws.isAlive = true
-    ws.on('pong', () => { ws.isAlive = true })
+    ws.on('pong', () => {
+      ws.isAlive = true
+    })
 
     sessionManager.handleWebSocketConnection(ws, sessionId, role)
 
@@ -47,15 +49,17 @@ function setupWebSocketServer (server, sessionManager) {
           for (const { client } of clients) {
             if (client !== ws && client.readyState === 1) {
               try {
-                client.send(JSON.stringify({
-                  type: 'controller_connected',
-                  payload: {
-                    controllerConnected: true,
-                    timestamp: data.timestamp,
-                    sessionId: data.sessionId
-                  },
-                  timestamp: Date.now()
-                }))
+                client.send(
+                  JSON.stringify({
+                    type: 'controller_connected',
+                    payload: {
+                      controllerConnected: true,
+                      timestamp: data.timestamp,
+                      sessionId: data.sessionId
+                    },
+                    timestamp: Date.now()
+                  })
+                )
               } catch (error) {
                 logger.error(`Error sending controller_connected: ${error.message}`)
               }
@@ -71,15 +75,17 @@ function setupWebSocketServer (server, sessionManager) {
           for (const { client } of clients) {
             if (client !== ws && client.readyState === 1) {
               try {
-                client.send(JSON.stringify({
-                  type: 'viewer_connected',
-                  payload: {
-                    viewerConnected: true,
-                    timestamp: data.timestamp,
-                    sessionId: data.sessionId
-                  },
-                  timestamp: Date.now()
-                }))
+                client.send(
+                  JSON.stringify({
+                    type: 'viewer_connected',
+                    payload: {
+                      viewerConnected: true,
+                      timestamp: data.timestamp,
+                      sessionId: data.sessionId
+                    },
+                    timestamp: Date.now()
+                  })
+                )
               } catch (error) {
                 logger.error(`Error sending viewer_connected: ${error.message}`)
               }
@@ -108,11 +114,13 @@ function setupWebSocketServer (server, sessionManager) {
         for (const { client } of clients) {
           if (client !== ws && client.readyState === 1) {
             try {
-              client.send(JSON.stringify({
-                type: 'controller_disconnected',
-                payload: { controllerConnected: false },
-                timestamp: Date.now()
-              }))
+              client.send(
+                JSON.stringify({
+                  type: 'controller_disconnected',
+                  payload: { controllerConnected: false },
+                  timestamp: Date.now()
+                })
+              )
             } catch (error) {
               logger.error(`Error sending controller_disconnected: ${error.message}`)
             }
@@ -121,13 +129,13 @@ function setupWebSocketServer (server, sessionManager) {
       }
     })
 
-    ws.on('error', (error) => {
+    ws.on('error', error => {
       logger.error(`WebSocket error for session ${sessionId}: ${error.message}`)
     })
   })
 
-  const heartbeatInterval = setInterval(function ping () {
-    wss.clients.forEach(function each (ws) {
+  const heartbeatInterval = setInterval(function ping() {
+    wss.clients.forEach(function each(ws) {
       if (ws.isAlive === false) return ws.terminate()
       ws.isAlive = false
       ws.ping()

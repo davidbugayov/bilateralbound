@@ -1,1321 +1,1428 @@
 <!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
 
-  <title>BilateralBound - EMDR терапия для пациентов</title>
-  <meta name="description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
-  <meta name="keywords" content="EMDR терапия, EMDR терапевт, психолог для супружеских пар, парная терапия, ПТСР лечение, биодинамическая стимуляция, bilateralbound, игра, multiplayer, шарик, физика, realtime" />
-  <meta name="author" content="Bugaev David" />
-  <meta name="robots" content="index, follow" />
-  <meta name="language" content="Russian" />
-  <meta name="theme-color" content="#2563eb" />
+    <title>BilateralBound - EMDR терапия для пациентов</title>
+    <meta
+      name="description"
+      content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний"
+    />
+    <meta
+      name="keywords"
+      content="EMDR терапия, EMDR терапевт, психолог для супружеских пар, парная терапия, ПТСР лечение, биодинамическая стимуляция, bilateralbound, игра, multiplayer, шарик, физика, realtime"
+    />
+    <meta name="author" content="Bugaev David" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="Russian" />
+    <meta name="theme-color" content="#2563eb" />
 
-  <meta name="category" content="Health & Wellness, Mental Health" />
-  <meta name="therapy-type" content="EMDR, Bilateral Stimulation" />
-  <meta name="target-audience" content="Couples, Individuals, Therapists" />
-  <link rel="canonical" href="https://emdrbilateral.ru/" />
+    <meta name="category" content="Health & Wellness, Mental Health" />
+    <meta name="therapy-type" content="EMDR, Bilateral Stimulation" />
+    <meta name="target-audience" content="Couples, Individuals, Therapists" />
+    <link rel="canonical" href="https://emdrbilateral.ru/" />
 
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="BilateralBound - EMDR терапия для пациентов" />
-  <meta property="og:description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
-  <meta property="og:image" content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200" />
-  <meta property="og:url" content="https://emdrbilateral.ru/" />
-  <meta property="og:site_name" content="BilateralBound" />
-  <meta property="og:locale" content="ru_RU" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:type" content="image/png" />
-  <meta property="article:author" content="Bugaev David" />
-  <meta property="article:section" content="Mental Health, Therapy" />
-  <meta property="article:tag" content="EMDR терапия" />
-  <meta property="article:tag" content="парная терапия" />
-  <meta property="article:tag" content="психолог для пар" />
-  <meta property="article:tag" content="биодинамическая стимуляция" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="BilateralBound - EMDR терапия для пациентов" />
+    <meta
+      property="og:description"
+      content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний"
+    />
+    <meta property="og:image" content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200" />
+    <meta property="og:url" content="https://emdrbilateral.ru/" />
+    <meta property="og:site_name" content="BilateralBound" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="article:author" content="Bugaev David" />
+    <meta property="article:section" content="Mental Health, Therapy" />
+    <meta property="article:tag" content="EMDR терапия" />
+    <meta property="article:tag" content="парная терапия" />
+    <meta property="article:tag" content="психолог для пар" />
+    <meta property="article:tag" content="биодинамическая стимуляция" />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="BilateralBound - EMDR терапия для пациентов" />
-  <meta name="twitter:description" content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний" />
-  <meta name="twitter:image" content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200" />
-  <meta name="twitter:site" content="@bilateralbound" />
-  <meta name="twitter:creator" content="@bilateralbound" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="BilateralBound - EMDR терапия для пациентов" />
+    <meta
+      name="twitter:description"
+      content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний"
+    />
+    <meta name="twitter:image" content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200" />
+    <meta name="twitter:site" content="@bilateralbound" />
+    <meta name="twitter:creator" content="@bilateralbound" />
 
-  <link rel="preload" href="./js/common.js" as="script" />
-  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-  <link rel="preconnect" href="https://bilateralbound.onrender.com" crossorigin>
+    <link rel="preload" href="./js/common.js" as="script" />
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="preconnect" href="https://bilateralbound.onrender.com" crossorigin />
 
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": ["WebApplication", "MedicalTherapy", "VideoGame"],
-    "name": "BilateralBound - EMDR терапия для пациентов",
-    "description": "Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний",
-    "url": "https://emdrbilateral.ru/",
-    "applicationCategory": ["HealthcareApplication", "GameApplication"],
-    "operatingSystem": "Web Browser",
-    "medicalSpecialty": "Psychiatry",
-    "therapyType": "EMDR",
-    "targetPopulation": "Couples, Individuals",
-    "genre": "Therapeutic Game",
-    "author": {
-      "@type": "Organization",
-      "name": "BilateralBound Team",
-      "medicalSpecialty": "Mental Health"
-    },
-    "provider": {
-      "@type": ["MedicalOrganization", "GameDeveloper"],
-      "name": "BilateralBound",
-      "medicalSpecialty": "Psychiatry",
-      "serviceType": ["EMDR Therapy", "Therapeutic Gaming"]
-    },
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "RUB",
-      "description": "Бесплатная EMDR терапия для работы с ПТСР, тревожными расстройствами, депрессией, фобиями и последствиями психологических травм."
-    }
-  }
-  </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["WebApplication", "MedicalTherapy", "VideoGame"],
+        "name": "BilateralBound - EMDR терапия для пациентов",
+        "description": "Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний",
+        "url": "https://emdrbilateral.ru/",
+        "applicationCategory": ["HealthcareApplication", "GameApplication"],
+        "operatingSystem": "Web Browser",
+        "medicalSpecialty": "Psychiatry",
+        "therapyType": "EMDR",
+        "targetPopulation": "Couples, Individuals",
+        "genre": "Therapeutic Game",
+        "author": {
+          "@type": "Organization",
+          "name": "BilateralBound Team",
+          "medicalSpecialty": "Mental Health"
+        },
+        "provider": {
+          "@type": ["MedicalOrganization", "GameDeveloper"],
+          "name": "BilateralBound",
+          "medicalSpecialty": "Psychiatry",
+          "serviceType": ["EMDR Therapy", "Therapeutic Gaming"]
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "RUB",
+          "description": "Бесплатная EMDR терапия для работы с ПТСР, тревожными расстройствами, депрессией, фобиями и последствиями психологических травм."
+        }
+      }
+    </script>
 
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202501031200" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=202501031200" />
-  <link rel="apple-touch-icon" href="/favicon.svg?v=202501031200" />
-  <link rel="shortcut icon" href="/favicon.ico?v=202501031200" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202501031200" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=202501031200" />
+    <link rel="apple-touch-icon" href="/favicon.svg?v=202501031200" />
+    <link rel="shortcut icon" href="/favicon.ico?v=202501031200" />
 
-  <link rel="stylesheet" href="/css/shared-components.css?v=2.81.0">
-  <link rel="stylesheet" href="/css/light-theme.css?v=2.81.0">
-  
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.81.0" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.81.0" />
 
-    .theme-toggle-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-    }
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-    .theme-toggle-btn {
-      background: rgba(37, 99, 235, 0.9);
-      color: white;
-      border: 0;
-      padding: 12px 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
+      .theme-toggle-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+      }
 
-    .theme-toggle-btn:hover {
-      background: rgba(37, 99, 235, 1);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    }
+      .theme-toggle-btn {
+        background: rgba(37, 99, 235, 0.9);
+        color: white;
+        border: 0;
+        padding: 12px 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
 
-    .light-theme .theme-toggle-btn {
-      background: rgba(30, 64, 175, 0.9);
-    }
+      .theme-toggle-btn:hover {
+        background: rgba(37, 99, 235, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+      }
 
-    .light-theme .theme-toggle-btn:hover {
-      background: rgba(30, 64, 175, 1);
-    }
+      .light-theme .theme-toggle-btn {
+        background: rgba(30, 64, 175, 0.9);
+      }
 
-    html, body {
-      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      max-width: 100%;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-      background-attachment: fixed;
-      color: #e2e8f0;
-      overflow-x: hidden;
-      overscroll-behavior: none;
-      -webkit-overflow-scrolling: touch;
-      min-height: 100vh;
-      position: relative;
-    }
+      .light-theme .theme-toggle-btn:hover {
+        background: rgba(30, 64, 175, 1);
+      }
 
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background:
-        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
-      pointer-events: none;
-      z-index: -1;
-    }
+      html,
+      body {
+        font-family:
+          'Segoe UI',
+          system-ui,
+          -apple-system,
+          Roboto,
+          Arial,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        background-attachment: fixed;
+        color: #e2e8f0;
+        overflow-x: hidden;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+        min-height: 100vh;
+        position: relative;
+      }
 
-    /* Light theme body styling */
-    html:has(body.light-theme),
-    body.light-theme {
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
-      background-attachment: fixed;
-      color: #1e293b;
-    }
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+          radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+      }
 
-    body.light-theme::before {
-      background:
-        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
-    }
+      /* Light theme body styling */
+      html:has(body.light-theme),
+      body.light-theme {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+        background-attachment: fixed;
+        color: #1e293b;
+      }
 
-    .wrap {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 32px;
-      position: relative;
-      z-index: 1;
-    }
+      body.light-theme::before {
+        background:
+          radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.05) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+      }
 
-    .card {
-      background: rgba(17, 24, 39, 0.95);
-      border: 1px solid rgba(31, 41, 55, 0.8);
-      border-radius: 24px;
-      padding: 48px;
-      box-shadow:
-        0 25px 50px -12px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(255, 255, 255, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
-    }
-
-    .card h1 {
-      background: linear-gradient(135deg, #60a5fa, #a855f7, #34d399);
-      background-size: 200% 200%;
-      animation: gradientShift 3s ease-in-out infinite;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0 0 24px 0;
-      font-size: 2.5rem;
-      font-weight: 700;
-      text-align: center;
-      letter-spacing: -0.025em;
-    }
-
-    @keyframes gradientShift {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-    }
-
-    .card .subtitle {
-      font-size: 1.25rem;
-      color: #94a3b8;
-      margin-bottom: 32px;
-      text-align: center;
-      font-weight: 300;
-      letter-spacing: 0.025em;
-    }
-
-    .info-card {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15));
-      border: 1px solid rgba(59, 130, 246, 0.4);
-      border-radius: 20px;
-      padding: 32px;
-      margin: 24px 0;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .info-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    }
-
-    .info-card h3 {
-      margin-top: 0;
-      color: #60a5fa;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-
-    .main-button {
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
-      color: white;
-      border: 0;
-      padding: 18px 36px;
-      border-radius: 16px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
-    }
-
-    .main-button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s;
-    }
-
-    .main-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 35px rgba(37, 99, 235, 0.4);
-    }
-
-    .main-button:hover::before {
-      left: 100%;
-    }
-
-    .steps-container {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 32px;
-      margin: 24px 0;
-    }
-
-    .steps-container h3 {
-      margin-top: 0;
-      color: #fbbf24;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 1.4rem;
-    }
-
-    .step {
-      counter-increment: step-counter;
-      margin: 20px 0;
-      padding-left: 48px;
-      position: relative;
-      line-height: 1.6;
-    }
-
-    .step::before {
-      content: counter(step-counter);
-      position: absolute;
-      left: 0;
-      top: 0;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-
-    .indications-card {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.1));
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      border-radius: 20px;
-      padding: 32px;
-      margin: 24px 0;
-    }
-
-    .indications-card h3 {
-      margin-top: 0;
-      color: #10b981;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 1.4rem;
-    }
-
-    .indications-card ul {
-      margin: 16px 0;
-      padding-left: 24px;
-      line-height: 1.8;
-    }
-
-    .indications-card li {
-      margin: 8px 0;
-    }
-
-    .warning-card {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 146, 60, 0.1));
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      border-radius: 20px;
-      padding: 32px;
-      margin: 24px 0;
-    }
-
-    .warning-card h3 {
-      margin-top: 0;
-      color: #f59e0b;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 1.4rem;
-    }
-
-    .footer {
-      background: rgba(2, 6, 23, 0.95);
-      padding: 8px 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      font-size: 12px;
-      color: #94a3b8;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      display: inline-block;
-    }
-
-    @media (max-width: 768px) {
       .wrap {
-        padding: 16px;
-        gap: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 32px;
+        position: relative;
+        z-index: 1;
       }
 
       .card {
-        padding: 24px;
+        background: rgba(17, 24, 39, 0.95);
+        border: 1px solid rgba(31, 41, 55, 0.8);
+        border-radius: 24px;
+        padding: 48px;
+        box-shadow:
+          0 25px 50px -12px rgba(0, 0, 0, 0.4),
+          0 0 0 1px rgba(255, 255, 255, 0.05),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
       }
 
       .card h1 {
-        font-size: 2rem;
+        background: linear-gradient(135deg, #60a5fa, #a855f7, #34d399);
+        background-size: 200% 200%;
+        animation: gradientShift 3s ease-in-out infinite;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0 0 24px 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: -0.025em;
+      }
+
+      @keyframes gradientShift {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
       }
 
       .card .subtitle {
-        font-size: 1.1rem;
+        font-size: 1.25rem;
+        color: #94a3b8;
+        margin-bottom: 32px;
+        text-align: center;
+        font-weight: 300;
+        letter-spacing: 0.025em;
       }
 
-      .info-card, .steps-container, .indications-card, .warning-card {
-        padding: 20px;
+      .info-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15));
+        border: 1px solid rgba(59, 130, 246, 0.4);
+        border-radius: 20px;
+        padding: 32px;
+        margin: 24px 0;
+        position: relative;
+        overflow: hidden;
       }
-    }
 
-    @media (max-width: 480px) {
-      .card h1 {
-        font-size: 1.75rem;
+      .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      }
+
+      .info-card h3 {
+        margin-top: 0;
+        color: #60a5fa;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.5rem;
+        font-weight: 600;
       }
 
       .main-button {
-        padding: 16px 24px;
-        font-size: 1rem;
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        color: white;
+        border: 0;
+        padding: 18px 36px;
+        border-radius: 16px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
       }
-    }
 
-    .light-theme {
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
-      color: #1e293b;
-      min-height: 100vh;
-    }
+      .main-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+      }
 
-    .light-theme .card {
-      background: rgba(255, 255, 255, 0.95);
-      border-color: rgba(148, 163, 184, 0.3);
-      color: #1e293b;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    }
+      .main-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(37, 99, 235, 0.4);
+      }
 
-    .light-theme .card h1 {
-      background: linear-gradient(135deg, #1e40af, #7c3aed, #059669);
-      background-size: 200% 200%;
-      animation: gradientShift 3s ease-in-out infinite;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+      .main-button:hover::before {
+        left: 100%;
+      }
 
-    .light-theme .info-card {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
-      border-color: rgba(59, 130, 246, 0.4);
-      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
-    }
+      .steps-container {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 32px;
+        margin: 24px 0;
+      }
 
-    .light-theme .info-card h3 {
-      color: #1e40af;
-    }
+      .steps-container h3 {
+        margin-top: 0;
+        color: #fbbf24;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.4rem;
+      }
 
-    .light-theme .main-button {
-      background: linear-gradient(135deg, #1e40af, #7c3aed);
-      color: white;
-      box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
-    }
+      .step {
+        counter-increment: step-counter;
+        margin: 20px 0;
+        padding-left: 48px;
+        position: relative;
+        line-height: 1.6;
+      }
 
-    .light-theme .main-button:hover {
-      background: linear-gradient(135deg, #1e3a8a, #6d28d9);
-      box-shadow: 0 12px 35px rgba(30, 64, 175, 0.4);
-    }
+      .step::before {
+        content: counter(step-counter);
+        position: absolute;
+        left: 0;
+        top: 0;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      }
 
-    .light-theme .steps-container {
-      background: rgba(255, 255, 255, 0.8);
-      border-color: #e2e8f0;
-      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
-    }
+      .indications-card {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.1));
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        border-radius: 20px;
+        padding: 32px;
+        margin: 24px 0;
+      }
 
-    .light-theme .steps-container h3 {
-      color: #92400e;
-    }
+      .indications-card h3 {
+        margin-top: 0;
+        color: #10b981;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.4rem;
+      }
 
-    .light-theme .indications-card {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05));
-      border-color: rgba(16, 185, 129, 0.4);
-      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
-    }
+      .indications-card ul {
+        margin: 16px 0;
+        padding-left: 24px;
+        line-height: 1.8;
+      }
 
-    .light-theme .indications-card h3 {
-      color: #047857;
-    }
+      .indications-card li {
+        margin: 8px 0;
+      }
 
-    .light-theme .warning-card {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 146, 60, 0.05));
-      border-color: rgba(245, 158, 11, 0.4);
-      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
-    }
+      .warning-card {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 146, 60, 0.1));
+        border: 1px solid rgba(245, 158, 11, 0.4);
+        border-radius: 20px;
+        padding: 32px;
+        margin: 24px 0;
+      }
 
-    .light-theme .warning-card h3 {
-      color: #d97706;
-    }
+      .warning-card h3 {
+        margin-top: 0;
+        color: #f59e0b;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.4rem;
+      }
 
-    .light-theme .card .subtitle {
-      color: #64748b;
-    }
+      .footer {
+        background: rgba(2, 6, 23, 0.95);
+        padding: 8px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 12px;
+        color: #94a3b8;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        display: inline-block;
+      }
 
-    .light-theme .footer {
-      background: rgba(248, 250, 252, 0.95);
-      border-color: rgba(148, 163, 184, 0.3);
-      color: #64748b;
-    }
+      @media (max-width: 768px) {
+        .wrap {
+          padding: 16px;
+          gap: 20px;
+        }
 
-    /* Light theme для постоянных ссылок */
-    .light-theme #customClientId {
-      background: rgba(255, 255, 255, 0.9) !important;
-      border-color: rgba(59, 130, 246, 0.4) !important;
-      color: #1e293b !important;
-    }
+        .card {
+          padding: 24px;
+        }
 
-    .light-theme #customClientId:focus {
-      background: rgba(255, 255, 255, 1) !important;
-      border-color: rgba(37, 99, 235, 0.6) !important;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
+        .card h1 {
+          font-size: 2rem;
+        }
 
-    .light-theme #generatedViewerUrl,
-    .light-theme #generatedControllerUrl {
-      background: rgba(248, 250, 252, 0.9) !important;
-      color: #1e293b !important;
-    }
+        .card .subtitle {
+          font-size: 1.1rem;
+        }
 
-    .light-theme #generatedViewerUrl {
-      border-color: rgba(59, 130, 246, 0.5) !important;
-    }
+        .info-card,
+        .steps-container,
+        .indications-card,
+        .warning-card {
+          padding: 20px;
+        }
+      }
 
-    .light-theme #generatedControllerUrl {
-      border-color: rgba(168, 85, 247, 0.5) !important;
-    }
+      @media (max-width: 480px) {
+        .card h1 {
+          font-size: 1.75rem;
+        }
 
-    .theme-notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #3b82f6;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      z-index: 10000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      animation: slideIn 0.3s ease-out;
-    }
+        .main-button {
+          padding: 16px 24px;
+          font-size: 1rem;
+        }
+      }
 
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
+      .light-theme {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+        color: #1e293b;
+        min-height: 100vh;
+      }
 
-    @keyframes slideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-  </style>
-  
-  <!-- Yandex.Metrika optimized counter -->
-  <script src="/js/metrika-optimized.js" defer></script>
-  <noscript><div><img src="https://mc.yandex.ru/watch/104698530" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-  <!-- /Yandex.Metrika optimized counter -->
+      .light-theme .card {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(148, 163, 184, 0.3);
+        color: #1e293b;
+        box-shadow:
+          0 25px 50px -12px rgba(0, 0, 0, 0.15),
+          0 0 0 1px rgba(255, 255, 255, 0.05);
+      }
 
-  <script src="./js/common.js?v=2.81.0" defer></script>
-  <script src="./js/notification-system.js?v=2.81.0" defer></script>
-  <script src="./js/new-features.js?v=2.81.0" defer></script>
+      .light-theme .card h1 {
+        background: linear-gradient(135deg, #1e40af, #7c3aed, #059669);
+        background-size: 200% 200%;
+        animation: gradientShift 3s ease-in-out infinite;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
 
-</head>
-<body>
-  <div class="theme-toggle-container">
-    <button id="themeToggleBtn" class="theme-toggle-btn">
-      🌓 Тема
-    </button>
-  </div>
+      .light-theme .info-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+        border-color: rgba(59, 130, 246, 0.4);
+        box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+      }
 
-  <div class="wrap">
-    <div class="card">
-      <h1>BilateralBound - EMDR Терапия</h1>
-      <p class="subtitle">
-        Инновационная платформа для EMDR терапии с биодинамической стимуляцией
-      </p>
+      .light-theme .info-card h3 {
+        color: #1e40af;
+      }
 
-      <div class="info-card">
-        <h3>
-          🎯 Что такое EMDR терапия?
-        </h3>
-        <p style="margin: 12px 0; line-height: 1.6;">
-          <strong>EMDR (Eye Movement Desensitization and Reprocessing)</strong> — это научно обоснованный метод психотерапии для лечения 
-          посттравматического стрессового расстройства (ПТСР), тревожных расстройств и психологических травм.
+      .light-theme .main-button {
+        background: linear-gradient(135deg, #1e40af, #7c3aed);
+        color: white;
+        box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
+      }
+
+      .light-theme .main-button:hover {
+        background: linear-gradient(135deg, #1e3a8a, #6d28d9);
+        box-shadow: 0 12px 35px rgba(30, 64, 175, 0.4);
+      }
+
+      .light-theme .steps-container {
+        background: rgba(255, 255, 255, 0.8);
+        border-color: #e2e8f0;
+        box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+      }
+
+      .light-theme .steps-container h3 {
+        color: #92400e;
+      }
+
+      .light-theme .indications-card {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05));
+        border-color: rgba(16, 185, 129, 0.4);
+        box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+      }
+
+      .light-theme .indications-card h3 {
+        color: #047857;
+      }
+
+      .light-theme .warning-card {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 146, 60, 0.05));
+        border-color: rgba(245, 158, 11, 0.4);
+        box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+      }
+
+      .light-theme .warning-card h3 {
+        color: #d97706;
+      }
+
+      .light-theme .card .subtitle {
+        color: #64748b;
+      }
+
+      .light-theme .footer {
+        background: rgba(248, 250, 252, 0.95);
+        border-color: rgba(148, 163, 184, 0.3);
+        color: #64748b;
+      }
+
+      /* Light theme для постоянных ссылок */
+      .light-theme #customClientId {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-color: rgba(59, 130, 246, 0.4) !important;
+        color: #1e293b !important;
+      }
+
+      .light-theme #customClientId:focus {
+        background: rgba(255, 255, 255, 1) !important;
+        border-color: rgba(37, 99, 235, 0.6) !important;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      .light-theme #generatedViewerUrl,
+      .light-theme #generatedControllerUrl {
+        background: rgba(248, 250, 252, 0.9) !important;
+        color: #1e293b !important;
+      }
+
+      .light-theme #generatedViewerUrl {
+        border-color: rgba(59, 130, 246, 0.5) !important;
+      }
+
+      .light-theme #generatedControllerUrl {
+        border-color: rgba(168, 85, 247, 0.5) !important;
+      }
+
+      .theme-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #3b82f6;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+    </style>
+
+    <!-- Yandex.Metrika optimized counter -->
+    <script src="/js/metrika-optimized.js" defer></script>
+    <noscript
+      ><div>
+        <img
+          src="https://mc.yandex.ru/watch/104698530"
+          style="position: absolute; left: -9999px"
+          alt=""
+        /></div
+    ></noscript>
+    <!-- /Yandex.Metrika optimized counter -->
+
+    <script src="./js/common.js?v=2.81.0" defer></script>
+    <script src="./js/notification-system.js?v=2.81.0" defer></script>
+    <script src="./js/new-features.js?v=2.81.0" defer></script>
+  </head>
+  <body>
+    <div class="theme-toggle-container">
+      <button id="themeToggleBtn" class="theme-toggle-btn">🌓 Тема</button>
+    </div>
+
+    <div class="wrap">
+      <div class="card">
+        <h1>BilateralBound - EMDR Терапия</h1>
+        <p class="subtitle">
+          Инновационная платформа для EMDR терапии с биодинамической стимуляцией
         </p>
-        <p style="margin: 12px 0; line-height: 1.6;">
-          Наша платформа использует <strong>биодинамическую стимуляцию</strong> — движение шарика создает 
-          двустороннюю стимуляцию мозга, помогая переработать травматические воспоминания.
-        </p>
-      </div>
 
-      <div id="createSection">
-        <button id="createSessionBtn" class="main-button" onclick="createSession()">
-          🚀 Начать EMDR сессию
-        </button>
-
-        <div class="info-card" style="margin-top: 32px;">
-          <h3>
-            🔗 Постоянные ссылки для клиентов
-          </h3>
-          <p style="margin: 12px 0; line-height: 1.6;">
-            Создайте персональные ссылки для ваших клиентов. Вы сможете использовать их многократно — 
-            ссылки остаются постоянными и не требуют генерации каждый раз заново.
+        <div class="info-card">
+          <h3>🎯 Что такое EMDR терапия?</h3>
+          <p style="margin: 12px 0; line-height: 1.6">
+            <strong>EMDR (Eye Movement Desensitization and Reprocessing)</strong> — это научно
+            обоснованный метод психотерапии для лечения посттравматического стрессового расстройства
+            (ПТСР), тревожных расстройств и психологических травм.
           </p>
-          <div style="margin-top: 20px;">
-            <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 500;">
-              ID клиента (3-32 символа: латиница, цифры, _ или -)
-            </label>
-            <div style="display: flex; gap: 12px; align-items: flex-start;">
-              <input 
-                type="text" 
-                id="customClientId" 
-                placeholder="anna_2025 или client-ivan"
-                style="
-                  flex: 1;
-                  padding: 14px 18px;
-                  border: 2px solid rgba(59, 130, 246, 0.3);
-                  border-radius: 12px;
-                  background: rgba(15, 23, 42, 0.6);
-                  color: #e2e8f0;
-                  font-size: 1rem;
-                  transition: all 0.3s ease;
-                "
-                maxlength="32"
-              />
-              <button 
-                id="generateLinksBtn" 
-                class="main-button"
-                onclick="generatePermanentLinks()"
-                style="padding: 14px 28px; white-space: nowrap;"
+          <p style="margin: 12px 0; line-height: 1.6">
+            Наша платформа использует <strong>биодинамическую стимуляцию</strong> — движение шарика
+            создает двустороннюю стимуляцию мозга, помогая переработать травматические воспоминания.
+          </p>
+        </div>
+
+        <div id="createSection">
+          <button id="createSessionBtn" class="main-button" onclick="createSession()">
+            🚀 Начать EMDR сессию
+          </button>
+
+          <div class="info-card" style="margin-top: 32px">
+            <h3>🔗 Постоянные ссылки для клиентов</h3>
+            <p style="margin: 12px 0; line-height: 1.6">
+              Создайте персональные ссылки для ваших клиентов. Вы сможете использовать их
+              многократно — ссылки остаются постоянными и не требуют генерации каждый раз заново.
+            </p>
+            <div style="margin-top: 20px">
+              <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 500">
+                ID клиента (3-32 символа: латиница, цифры, _ или -)
+              </label>
+              <div style="display: flex; gap: 12px; align-items: flex-start">
+                <input
+                  type="text"
+                  id="customClientId"
+                  placeholder="anna_2025 или client-ivan"
+                  style="
+                    flex: 1;
+                    padding: 14px 18px;
+                    border: 2px solid rgba(59, 130, 246, 0.3);
+                    border-radius: 12px;
+                    background: rgba(15, 23, 42, 0.6);
+                    color: #e2e8f0;
+                    font-size: 1rem;
+                    transition: all 0.3s ease;
+                  "
+                  maxlength="32"
+                />
+                <button
+                  id="generateLinksBtn"
+                  class="main-button"
+                  onclick="generatePermanentLinks()"
+                  style="padding: 14px 28px; white-space: nowrap"
+                >
+                  🔗 Создать ссылки
+                </button>
+              </div>
+              <p
+                id="linkValidationMessage"
+                style="margin: 8px 0 0 0; font-size: 0.9rem; color: #94a3b8; min-height: 20px"
               >
-                🔗 Создать ссылки
-              </button>
-            </div>
-            <p id="linkValidationMessage" style="margin: 8px 0 0 0; font-size: 0.9rem; color: #94a3b8; min-height: 20px;">
-              Примеры: anna_2025, client-ivan, session42
-            </p>
-          </div>
-          
-          <div id="generatedLinksContainer" style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(59, 130, 246, 0.3);">
-            <p style="color: #34d399; font-weight: 600; margin-bottom: 16px;">
-              ✅ Постоянные ссылки созданы!
-            </p>
-            
-            <div style="margin-bottom: 16px;">
-              <label style="display: block; margin-bottom: 6px; color: #60a5fa; font-weight: 500; font-size: 0.95rem;">
-                👁️ Ссылка для клиента (Viewer):
-              </label>
-              <div style="display: flex; gap: 8px;">
-                <input 
-                  type="text" 
-                  id="generatedViewerUrl" 
-                  readonly
-                  style="
-                    flex: 1;
-                    padding: 10px 14px;
-                    border: 1px solid rgba(59, 130, 246, 0.4);
-                    border-radius: 8px;
-                    background: rgba(15, 23, 42, 0.8);
-                    color: #60a5fa;
-                    font-size: 0.9rem;
-                    font-family: 'Courier New', monospace;
-                  "
-                />
-                <button 
-                  onclick="copyToClipboard('generatedViewerUrl', 'Ссылка для клиента скопирована!')"
-                  style="
-                    padding: 10px 20px;
-                    background: #3b82f6;
-                    color: white;
-                    border: 0;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    transition: all 0.2s ease;
-                  "
-                  onmouseover="this.style.background='#2563eb'"
-                  onmouseout="this.style.background='#3b82f6'"
-                >
-                  📋 Копировать
-                </button>
-              </div>
-            </div>
-            
-            <div style="margin-bottom: 16px;">
-              <label style="display: block; margin-bottom: 6px; color: #a855f7; font-weight: 500; font-size: 0.95rem;">
-                🎮 Ссылка для терапевта (Controller):
-              </label>
-              <div style="display: flex; gap: 8px;">
-                <input 
-                  type="text" 
-                  id="generatedControllerUrl" 
-                  readonly
-                  style="
-                    flex: 1;
-                    padding: 10px 14px;
-                    border: 1px solid rgba(168, 85, 247, 0.4);
-                    border-radius: 8px;
-                    background: rgba(15, 23, 42, 0.8);
-                    color: #a855f7;
-                    font-size: 0.9rem;
-                    font-family: 'Courier New', monospace;
-                  "
-                />
-                <button 
-                  onclick="copyToClipboard('generatedControllerUrl', 'Ссылка для терапевта скопирована!')"
-                  style="
-                    padding: 10px 20px;
-                    background: #8b5cf6;
-                    color: white;
-                    border: 0;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    transition: all 0.2s ease;
-                  "
-                  onmouseover="this.style.background='#7c3aed'"
-                  onmouseout="this.style.background='#8b5cf6'"
-                >
-                  📋 Копировать
-                </button>
-              </div>
-            </div>
-            
-            <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 12px; padding: 16px; margin-top: 16px;">
-              <p style="margin: 0; color: #6ee7b7; font-size: 0.9rem; line-height: 1.5;">
-                💡 <strong>Сохраните эти ссылки!</strong> Они постоянные и будут работать всегда. 
-                Отправьте ссылку viewer клиенту, а ссылку controller откройте сами для управления сессией.
+                Примеры: anna_2025, client-ivan, session42
               </p>
             </div>
-          </div>
-        </div>
 
-        <div class="info-card" style="margin-top: 32px;">
-          <h3>
-            🔄 Восстановить сессию по ID
-          </h3>
-          <p style="margin: 12px 0; line-height: 1.6;">
-            Если у вас есть ID сохраненной сессии, введите его, чтобы загрузить все настройки и продолжить работу.
-          </p>
-          <div style="margin-top: 20px;">
-            <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 500;">
-              ID существующей сессии
-            </label>
-            <div style="display: flex; gap: 12px; align-items: flex-start;">
-              <input 
-                type="text" 
-                id="existingSessionId" 
-                placeholder="Введите ID сессии..."
-                style="
-                  flex: 1;
-                  padding: 14px 18px;
-                  border: 2px solid rgba(59, 130, 246, 0.3);
-                  border-radius: 12px;
-                  background: rgba(15, 23, 42, 0.6);
-                  color: #e2e8f0;
-                  font-size: 1rem;
-                  transition: all 0.3s ease;
-                "
-              />
-              <button 
-                id="loadSessionBtn" 
-                class="main-button"
-                onclick="loadSession()"
-                style="padding: 14px 28px; white-space: nowrap;"
-              >
-                📥 Загрузить
-              </button>
-            </div>
-            <p id="loadSessionMessage" style="margin: 8px 0 0 0; font-size: 0.9rem; color: #94a3b8; min-height: 20px;"></p>
-          </div>
+            <div
+              id="generatedLinksContainer"
+              style="
+                display: none;
+                margin-top: 24px;
+                padding-top: 24px;
+                border-top: 1px solid rgba(59, 130, 246, 0.3);
+              "
+            >
+              <p style="color: #34d399; font-weight: 600; margin-bottom: 16px">
+                ✅ Постоянные ссылки созданы!
+              </p>
 
-          <div id="restoredLinksContainer" style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(59, 130, 246, 0.3);">
-            <p style="color: #34d399; font-weight: 600; margin-bottom: 16px;">
-              ✅ Сессия найдена!
-            </p>
-            
-            <div style="margin-bottom: 16px;">
-              <label style="display: block; margin-bottom: 6px; color: #60a5fa; font-weight: 500; font-size: 0.95rem;">
-                👁️ Ссылка для клиента (Viewer):
-              </label>
-              <div style="display: flex; gap: 8px;">
-                <input 
-                  type="text" 
-                  id="restoredViewerUrl" 
-                  readonly
+              <div style="margin-bottom: 16px">
+                <label
                   style="
-                    flex: 1;
-                    padding: 10px 14px;
-                    border: 1px solid rgba(59, 130, 246, 0.4);
-                    border-radius: 8px;
-                    background: rgba(15, 23, 42, 0.8);
+                    display: block;
+                    margin-bottom: 6px;
                     color: #60a5fa;
-                    font-size: 0.9rem;
-                    font-family: 'Courier New', monospace;
-                  "
-                />
-                <button 
-                  onclick="copyToClipboard('restoredViewerUrl', 'Ссылка для клиента скопирована!')"
-                  style="
-                    padding: 10px 20px;
-                    background: #3b82f6;
-                    color: white;
-                    border: 0;
-                    border-radius: 8px;
-                    cursor: pointer;
                     font-weight: 500;
-                    transition: all 0.2s ease;
+                    font-size: 0.95rem;
                   "
-                  onmouseover="this.style.background='#2563eb'"
-                  onmouseout="this.style.background='#3b82f6'"
                 >
-                  📋 Копировать
-                </button>
+                  👁️ Ссылка для клиента (Viewer):
+                </label>
+                <div style="display: flex; gap: 8px">
+                  <input
+                    type="text"
+                    id="generatedViewerUrl"
+                    readonly
+                    style="
+                      flex: 1;
+                      padding: 10px 14px;
+                      border: 1px solid rgba(59, 130, 246, 0.4);
+                      border-radius: 8px;
+                      background: rgba(15, 23, 42, 0.8);
+                      color: #60a5fa;
+                      font-size: 0.9rem;
+                      font-family: 'Courier New', monospace;
+                    "
+                  />
+                  <button
+                    onclick="copyToClipboard('generatedViewerUrl', 'Ссылка для клиента скопирована!')"
+                    style="
+                      padding: 10px 20px;
+                      background: #3b82f6;
+                      color: white;
+                      border: 0;
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-weight: 500;
+                      transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='#2563eb'"
+                    onmouseout="this.style.background='#3b82f6'"
+                  >
+                    📋 Копировать
+                  </button>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px">
+                <label
+                  style="
+                    display: block;
+                    margin-bottom: 6px;
+                    color: #a855f7;
+                    font-weight: 500;
+                    font-size: 0.95rem;
+                  "
+                >
+                  🎮 Ссылка для терапевта (Controller):
+                </label>
+                <div style="display: flex; gap: 8px">
+                  <input
+                    type="text"
+                    id="generatedControllerUrl"
+                    readonly
+                    style="
+                      flex: 1;
+                      padding: 10px 14px;
+                      border: 1px solid rgba(168, 85, 247, 0.4);
+                      border-radius: 8px;
+                      background: rgba(15, 23, 42, 0.8);
+                      color: #a855f7;
+                      font-size: 0.9rem;
+                      font-family: 'Courier New', monospace;
+                    "
+                  />
+                  <button
+                    onclick="copyToClipboard('generatedControllerUrl', 'Ссылка для терапевта скопирована!')"
+                    style="
+                      padding: 10px 20px;
+                      background: #8b5cf6;
+                      color: white;
+                      border: 0;
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-weight: 500;
+                      transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='#7c3aed'"
+                    onmouseout="this.style.background='#8b5cf6'"
+                  >
+                    📋 Копировать
+                  </button>
+                </div>
+              </div>
+
+              <div
+                style="
+                  background: rgba(52, 211, 153, 0.1);
+                  border: 1px solid rgba(52, 211, 153, 0.3);
+                  border-radius: 12px;
+                  padding: 16px;
+                  margin-top: 16px;
+                "
+              >
+                <p style="margin: 0; color: #6ee7b7; font-size: 0.9rem; line-height: 1.5">
+                  💡 <strong>Сохраните эти ссылки!</strong> Они постоянные и будут работать всегда.
+                  Отправьте ссылку viewer клиенту, а ссылку controller откройте сами для управления
+                  сессией.
+                </p>
               </div>
             </div>
-            
-            <div style="margin-bottom: 16px;">
-              <label style="display: block; margin-bottom: 6px; color: #a855f7; font-weight: 500; font-size: 0.95rem;">
-                🎮 Ссылка для терапевта (Controller):
+          </div>
+
+          <div class="info-card" style="margin-top: 32px">
+            <h3>🔄 Восстановить сессию по ID</h3>
+            <p style="margin: 12px 0; line-height: 1.6">
+              Если у вас есть ID сохраненной сессии, введите его, чтобы загрузить все настройки и
+              продолжить работу.
+            </p>
+            <div style="margin-top: 20px">
+              <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 500">
+                ID существующей сессии
               </label>
-              <div style="display: flex; gap: 8px;">
-                <input 
-                  type="text" 
-                  id="restoredControllerUrl" 
-                  readonly
+              <div style="display: flex; gap: 12px; align-items: flex-start">
+                <input
+                  type="text"
+                  id="existingSessionId"
+                  placeholder="Введите ID сессии..."
                   style="
                     flex: 1;
-                    padding: 10px 14px;
-                    border: 1px solid rgba(168, 85, 247, 0.4);
-                    border-radius: 8px;
-                    background: rgba(15, 23, 42, 0.8);
-                    color: #a855f7;
-                    font-size: 0.9rem;
-                    font-family: 'Courier New', monospace;
+                    padding: 14px 18px;
+                    border: 2px solid rgba(59, 130, 246, 0.3);
+                    border-radius: 12px;
+                    background: rgba(15, 23, 42, 0.6);
+                    color: #e2e8f0;
+                    font-size: 1rem;
+                    transition: all 0.3s ease;
                   "
                 />
-                <button 
-                  onclick="copyToClipboard('restoredControllerUrl', 'Ссылка для терапевта скопирована!')"
-                  style="
-                    padding: 10px 20px;
-                    background: #8b5cf6;
-                    color: white;
-                    border: 0;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    transition: all 0.2s ease;
-                  "
-                  onmouseover="this.style.background='#7c3aed'"
-                  onmouseout="this.style.background='#8b5cf6'"
+                <button
+                  id="loadSessionBtn"
+                  class="main-button"
+                  onclick="loadSession()"
+                  style="padding: 14px 28px; white-space: nowrap"
                 >
-                  📋 Копировать
+                  📥 Загрузить
                 </button>
+              </div>
+              <p
+                id="loadSessionMessage"
+                style="margin: 8px 0 0 0; font-size: 0.9rem; color: #94a3b8; min-height: 20px"
+              ></p>
+            </div>
+
+            <div
+              id="restoredLinksContainer"
+              style="
+                display: none;
+                margin-top: 24px;
+                padding-top: 24px;
+                border-top: 1px solid rgba(59, 130, 246, 0.3);
+              "
+            >
+              <p style="color: #34d399; font-weight: 600; margin-bottom: 16px">
+                ✅ Сессия найдена!
+              </p>
+
+              <div style="margin-bottom: 16px">
+                <label
+                  style="
+                    display: block;
+                    margin-bottom: 6px;
+                    color: #60a5fa;
+                    font-weight: 500;
+                    font-size: 0.95rem;
+                  "
+                >
+                  👁️ Ссылка для клиента (Viewer):
+                </label>
+                <div style="display: flex; gap: 8px">
+                  <input
+                    type="text"
+                    id="restoredViewerUrl"
+                    readonly
+                    style="
+                      flex: 1;
+                      padding: 10px 14px;
+                      border: 1px solid rgba(59, 130, 246, 0.4);
+                      border-radius: 8px;
+                      background: rgba(15, 23, 42, 0.8);
+                      color: #60a5fa;
+                      font-size: 0.9rem;
+                      font-family: 'Courier New', monospace;
+                    "
+                  />
+                  <button
+                    onclick="copyToClipboard('restoredViewerUrl', 'Ссылка для клиента скопирована!')"
+                    style="
+                      padding: 10px 20px;
+                      background: #3b82f6;
+                      color: white;
+                      border: 0;
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-weight: 500;
+                      transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='#2563eb'"
+                    onmouseout="this.style.background='#3b82f6'"
+                  >
+                    📋 Копировать
+                  </button>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px">
+                <label
+                  style="
+                    display: block;
+                    margin-bottom: 6px;
+                    color: #a855f7;
+                    font-weight: 500;
+                    font-size: 0.95rem;
+                  "
+                >
+                  🎮 Ссылка для терапевта (Controller):
+                </label>
+                <div style="display: flex; gap: 8px">
+                  <input
+                    type="text"
+                    id="restoredControllerUrl"
+                    readonly
+                    style="
+                      flex: 1;
+                      padding: 10px 14px;
+                      border: 1px solid rgba(168, 85, 247, 0.4);
+                      border-radius: 8px;
+                      background: rgba(15, 23, 42, 0.8);
+                      color: #a855f7;
+                      font-size: 0.9rem;
+                      font-family: 'Courier New', monospace;
+                    "
+                  />
+                  <button
+                    onclick="copyToClipboard('restoredControllerUrl', 'Ссылка для терапевта скопирована!')"
+                    style="
+                      padding: 10px 20px;
+                      background: #8b5cf6;
+                      color: white;
+                      border: 0;
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-weight: 500;
+                      transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='#7c3aed'"
+                    onmouseout="this.style.background='#8b5cf6'"
+                  >
+                    📋 Копировать
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="steps-container">
-          <h3>
-            📋 Как начать терапию:
-          </h3>
-          <div style="counter-reset: step-counter;">
-            <div class="step">
-              <strong>Создайте сессию</strong> — нажмите "Начать EMDR сессию"
-            </div>
-            <div class="step">
-              <strong>Пригласите пациента</strong> — отправьте ссылку для просмотра
-            </div>
-            <div class="step">
-              <strong>Проведите терапию</strong> — управляйте движением шарика для биодинамической стимуляции
+          <div class="steps-container">
+            <h3>📋 Как начать терапию:</h3>
+            <div style="counter-reset: step-counter">
+              <div class="step">
+                <strong>Создайте сессию</strong> — нажмите "Начать EMDR сессию"
+              </div>
+              <div class="step">
+                <strong>Пригласите пациента</strong> — отправьте ссылку для просмотра
+              </div>
+              <div class="step">
+                <strong>Проведите терапию</strong> — управляйте движением шарика для биодинамической
+                стимуляции
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="indications-card">
-          <h3>
-            ✅ Показания к применению:
-          </h3>
-          <ul>
-            <li>Посттравматическое стрессовое расстройство (ПТСР)</li>
-            <li>Тревожные расстройства и панические атаки</li>
-            <li>Депрессия и эмоциональные травмы</li>
-            <li>Фобии и навязчивые состояния</li>
-            <li>Парная терапия и семейные конфликты</li>
-          </ul>
-        </div>
+          <div class="indications-card">
+            <h3>✅ Показания к применению:</h3>
+            <ul>
+              <li>Посттравматическое стрессовое расстройство (ПТСР)</li>
+              <li>Тревожные расстройства и панические атаки</li>
+              <li>Депрессия и эмоциональные травмы</li>
+              <li>Фобии и навязчивые состояния</li>
+              <li>Парная терапия и семейные конфликты</li>
+            </ul>
+          </div>
 
-        <div class="warning-card">
-          <h3>
-            ⚠️ Важно помнить:
-          </h3>
-          <p>
-            EMDR терапия должна проводиться только квалифицированными специалистами.
-            Данная платформа предназначена для использования в профессиональной психотерапевтической практике.
-          </p>
-        </div>
-        <div style="text-align: right; margin-top: 24px;">
-          <div class="footer">
-            ⚡ BilateralBound v2.100.0
+          <div class="warning-card">
+            <h3>⚠️ Важно помнить:</h3>
+            <p>
+              EMDR терапия должна проводиться только квалифицированными специалистами. Данная
+              платформа предназначена для использования в профессиональной психотерапевтической
+              практике.
+            </p>
+          </div>
+          <div style="text-align: right; margin-top: 24px">
+            <div class="footer">⚡ BilateralBound v2.100.1</div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    async function loadSessionScripts() {
-      return new Promise((resolve, reject) => {
-        const scripts = [
-          '/js/physics-engine.js', 
-          '/js/renderer.js',
-          '/js/websocket-client.js',
-          '/js/shared-components.js'
-        ];
-        
-        let loadedCount = 0;
-        const totalScripts = scripts.length;
-        
-        scripts.forEach(src => {
-          const script = document.createElement('script');
-          script.src = src;
-          script.defer = true;
-          script.onload = () => {
-            loadedCount++;
-            if (loadedCount === totalScripts) {
-              console.log('✅ Все скрипты сессии загружены');
-              resolve();
+    <script>
+      async function loadSessionScripts() {
+        return new Promise((resolve, reject) => {
+          const scripts = [
+            '/js/physics-engine.js',
+            '/js/renderer.js',
+            '/js/websocket-client.js',
+            '/js/shared-components.js'
+          ]
+
+          let loadedCount = 0
+          const totalScripts = scripts.length
+
+          scripts.forEach(src => {
+            const script = document.createElement('script')
+            script.src = src
+            script.defer = true
+            script.onload = () => {
+              loadedCount++
+              if (loadedCount === totalScripts) {
+                console.log('✅ Все скрипты сессии загружены')
+                resolve()
+              }
             }
-          };
-          script.onerror = () => {
-            console.error('❌ Ошибка загрузки скрипта:', src);
-            reject(new Error(`Failed to load ${src}`));
-          };
-          document.head.appendChild(script);
-        });
-      });
-    }
-
-    async function createSession() {
-      const btn = document.getElementById('createSessionBtn');
-      
-      if (btn.disabled) {
-        console.log('⚠️ Создание сессии уже в процессе...');
-        return;
-      }
-      
-      const originalText = btn.innerHTML;
-      
-      try {
-        btn.innerHTML = '⏳ Загрузка...';
-        btn.disabled = true;
-        
-        console.log('🔄 Загрузка скриптов сессии...');
-        await loadSessionScripts();
-        
-        btn.innerHTML = '🔄 Создание сессии...';
-        console.log('🔄 Создание сессии...');
-        const response = await fetch('/api/session', { method: 'POST' });
-        
-        console.log('📡 Ответ сервера:', response.status, response.statusText);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Ошибка ответа:', errorText);
-          alert(`HTTP ${response.status}: ${errorText || 'Не удалось создать сессию'}`);
-          return;
-        }
-
-        const data = await response.json();
-        console.log('✅ Данные сессии:', data);
-        
-        const sessionId = data.sessionId;
-        if (!sessionId) {
-          console.error('Сессия создана, но ID не получен');
-          alert('Сессия создана, но ID не получен');
-          return;
-        }
-
-        console.log('🔗 Подключение контроллера к сессии:', sessionId);
-        
-        const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        });
-        
-        if (!connectResponse.ok) {
-          const connectError = await connectResponse.text();
-          console.error(`Ошибка подключения контроллера: ${connectError}`);
-          alert(`Ошибка подключения контроллера: ${connectError}`);
-          return;
-        }
-        
-        console.log('✅ Контроллер подключен к сессии');
-        startStatusMonitoring(sessionId);
-        window.location.href = `/c/${sessionId}`;
-
-      } catch (error) {
-        console.error('❌ Полная ошибка:', error);
-        alert('Ошибка при создании сессии: ' + error.message);
-        
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-      }
-    }
-
-    function startStatusMonitoring() {
-        console.log('Status monitoring not needed on main page');
-    }
-
-    function resetCreateSessionButton() {
-      const btn = document.getElementById('createSessionBtn');
-      if (btn) {
-        btn.innerHTML = '🚀 Начать EMDR сессию';
-        btn.disabled = false;
-      }
-    }
-
-    // === Функции для постоянных ссылок ===
-    
-    /**
-     * Валидация ID клиента
-     */
-    function validateClientId(clientId) {
-      const pattern = /^[A-Za-z0-9_-]{3,32}$/;
-      return pattern.test(clientId);
-    }
-
-    /**
-     * Обновление сообщения валидации
-     */
-    function updateValidationMessage(message, isError = false) {
-      const msgElement = document.getElementById('linkValidationMessage');
-      if (msgElement) {
-        msgElement.textContent = message;
-        msgElement.style.color = isError ? '#ef4444' : '#94a3b8';
-      }
-    }
-
-    /**
-     * Копирование текста в буфер обмена
-     */
-    async function copyToClipboard(inputId, successMessage) {
-      const input = document.getElementById(inputId);
-      if (!input) return;
-
-      try {
-        await navigator.clipboard.writeText(input.value);
-        
-        // Показываем уведомление об успехе
-        if (window.showSuccessNotification) {
-          window.showSuccessNotification(successMessage);
-        } else {
-          alert(successMessage);
-        }
-      } catch (error) {
-        console.error('Ошибка копирования:', error);
-        if (window.showErrorNotification) {
-          window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку.');
-        } else {
-          alert('Не удалось скопировать ссылку.');
-        }
-      }
-    }
-
-    /**
-     * Генерация постоянных ссылок для клиента
-     */
-    async function generatePermanentLinks() {
-      const input = document.getElementById('customClientId');
-      const btn = document.getElementById('generateLinksBtn');
-      const container = document.getElementById('generatedLinksContainer');
-      const viewerUrlInput = document.getElementById('generatedViewerUrl');
-      const controllerUrlInput = document.getElementById('generatedControllerUrl');
-
-      if (!input || !btn) return;
-
-      const clientId = input.value.trim();
-
-      // Валидация
-      if (!clientId) {
-        updateValidationMessage('❌ Пожалуйста, введите ID клиента', true);
-        input.focus();
-        return;
+            script.onerror = () => {
+              console.error('❌ Ошибка загрузки скрипта:', src)
+              reject(new Error(`Failed to load ${src}`))
+            }
+            document.head.appendChild(script)
+          })
+        })
       }
 
-      if (!validateClientId(clientId)) {
-        updateValidationMessage('❌ Неверный формат. Используйте только латиницу, цифры, _ или - (3-32 символа)', true);
-        input.focus();
-        return;
-      }
+      async function createSession() {
+        const btn = document.getElementById('createSessionBtn')
 
-      const originalBtnText = btn.innerHTML;
-      
-      try {
-        btn.innerHTML = '⏳ Создание...';
-        btn.disabled = true;
-        updateValidationMessage('Создание постоянных ссылок...', false);
-
-        // Отправляем запрос на резервирование сессии
-        const response = await fetch(`/api/session/${clientId}/reserve`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }));
-          return Promise.reject(new Error(errorData.error || `HTTP ${response.status}`));
+        if (btn.disabled) {
+          console.log('⚠️ Создание сессии уже в процессе...')
+          return
         }
 
-        const data = await response.json();
-        console.log('✅ Постоянные ссылки созданы:', data);
+        const originalText = btn.innerHTML
 
-        // Отображаем сгенерированные ссылки
-        if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl;
-        if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl;
-        if (container) container.style.display = 'block';
+        try {
+          btn.innerHTML = '⏳ Загрузка...'
+          btn.disabled = true
 
-        updateValidationMessage('✅ Ссылки успешно созданы!', false);
-        
-        if (window.showSuccessNotification) {
-          window.showSuccessNotification('🎉 Постоянные ссылки созданы!');
-        }
+          console.log('🔄 Загрузка скриптов сессии...')
+          await loadSessionScripts()
 
-        // Прокручиваем к результатам
-        setTimeout(() => {
-          container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 100);
+          btn.innerHTML = '🔄 Создание сессии...'
+          console.log('🔄 Создание сессии...')
+          const response = await fetch('/api/session', { method: 'POST' })
 
-      } catch (error) {
-        console.error('❌ Ошибка создания постоянных ссылок:', error);
-        updateValidationMessage(`❌ Ошибка: ${error.message}`, true);
-        
-        if (window.showErrorNotification) {
-          window.showErrorNotification('Ошибка создания ссылок: ' + error.message);
-        } else {
-          alert('Ошибка создания ссылок: ' + error.message);
-        }
-      } finally {
-        btn.innerHTML = originalBtnText;
-        btn.disabled = false;
-      }
-    }
+          console.log('📡 Ответ сервера:', response.status, response.statusText)
 
-    // Добавляем валидацию в реальном времени при вводе
-    document.addEventListener('DOMContentLoaded', () => {
-      const input = document.getElementById('customClientId');
-      if (input) {
-        input.addEventListener('input', (e) => {
-          const value = e.target.value.trim();
-          if (!value) {
-            updateValidationMessage('Примеры: anna_2025, client-ivan, session42', false);
-          } else if (validateClientId(value)) {
-            updateValidationMessage('✅ ID клиента корректен', false);
-          } else {
-            updateValidationMessage('⚠️ Используйте латиницу, цифры, _ или - (3-32 символа)', true);
+          if (!response.ok) {
+            const errorText = await response.text()
+            console.error('❌ Ошибка ответа:', errorText)
+            alert(`HTTP ${response.status}: ${errorText || 'Не удалось создать сессию'}`)
+            return
           }
-        });
 
-        // Обработка Enter
-        input.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            generatePermanentLinks();
+          const data = await response.json()
+          console.log('✅ Данные сессии:', data)
+
+          const sessionId = data.sessionId
+          if (!sessionId) {
+            console.error('Сессия создана, но ID не получен')
+            alert('Сессия создана, но ID не получен')
+            return
           }
-        });
-      }
-    });
 
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        resetCreateSessionButton();
-      }
-    });
+          console.log('🔗 Подключение контроллера к сессии:', sessionId)
 
-    window.addEventListener('focus', resetCreateSessionButton);
+          const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          })
 
-    async function loadSession() {
-      const input = document.getElementById('existingSessionId');
-      const btn = document.getElementById('loadSessionBtn');
-      const messageEl = document.getElementById('loadSessionMessage');
-      const container = document.getElementById('restoredLinksContainer');
-      const viewerUrlInput = document.getElementById('restoredViewerUrl');
-      const controllerUrlInput = document.getElementById('restoredControllerUrl');
-
-      if (!input || !btn || !messageEl || !container || !viewerUrlInput || !controllerUrlInput) {
-        console.error('Один из элементов для восстановления сессии не найден');
-        return;
-      }
-
-      const sessionId = input.value.trim();
-      
-      // Скрываем предыдущие результаты
-      container.style.display = 'none';
-
-      if (!sessionId) {
-        messageEl.textContent = '❌ Пожалуйста, введите ID сессии.';
-        messageEl.style.color = '#ef4444';
-        input.focus();
-        return;
-      }
-
-      const originalBtnText = btn.innerHTML;
-      try {
-        btn.innerHTML = '⏳ Загрузка...';
-        btn.disabled = true;
-        messageEl.textContent = 'Проверка сессии...';
-        messageEl.style.color = '#94a3b8';
-
-        const response = await fetch(`/api/session/${sessionId}/state`);
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            return Promise.reject(new Error('Сессия с таким ID не найдена.'));
+          if (!connectResponse.ok) {
+            const connectError = await connectResponse.text()
+            console.error(`Ошибка подключения контроллера: ${connectError}`)
+            alert(`Ошибка подключения контроллера: ${connectError}`)
+            return
           }
-          return Promise.reject(new Error(`Ошибка сервера: ${response.status}`));
+
+          console.log('✅ Контроллер подключен к сессии')
+          startStatusMonitoring(sessionId)
+          window.location.href = `/c/${sessionId}`
+        } catch (error) {
+          console.error('❌ Полная ошибка:', error)
+          alert('Ошибка при создании сессии: ' + error.message)
+
+          btn.innerHTML = originalText
+          btn.disabled = false
         }
-
-        const data = await response.json();
-        console.log('✅ Сессия найдена:', data);
-        messageEl.textContent = ''; // Очищаем сообщение при успехе
-
-        const baseUrl = `${window.location.protocol}//${window.location.host}`;
-        viewerUrlInput.value = `${baseUrl}/s/${sessionId}`;
-        controllerUrlInput.value = `${baseUrl}/c/${sessionId}`;
-        container.style.display = 'block';
-
-        if (window.showSuccessNotification) {
-          window.showSuccessNotification('🎉 Сессия найдена!');
-        }
-        
-        // Прокручиваем к результатам
-        setTimeout(() => {
-          container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 100);
-
-      } catch (error) {
-        console.error('❌ Ошибка загрузки сессии:', error);
-        messageEl.textContent = `❌ ${error.message}`;
-        messageEl.style.color = '#ef4444';
-      } finally {
-        btn.innerHTML = originalBtnText;
-        btn.disabled = false;
       }
-    }
 
-    // Функция копирования в буфер обмена
-    function copy(elementId) {
-      const element = document.getElementById(elementId);
-      if (element && element.value) {
-        navigator.clipboard.writeText(element.value).then(() => {
+      function startStatusMonitoring() {
+        console.log('Status monitoring not needed on main page')
+      }
+
+      function resetCreateSessionButton() {
+        const btn = document.getElementById('createSessionBtn')
+        if (btn) {
+          btn.innerHTML = '🚀 Начать EMDR сессию'
+          btn.disabled = false
+        }
+      }
+
+      // === Функции для постоянных ссылок ===
+
+      /**
+       * Валидация ID клиента
+       */
+      function validateClientId(clientId) {
+        const pattern = /^[A-Za-z0-9_-]{3,32}$/
+        return pattern.test(clientId)
+      }
+
+      /**
+       * Обновление сообщения валидации
+       */
+      function updateValidationMessage(message, isError = false) {
+        const msgElement = document.getElementById('linkValidationMessage')
+        if (msgElement) {
+          msgElement.textContent = message
+          msgElement.style.color = isError ? '#ef4444' : '#94a3b8'
+        }
+      }
+
+      /**
+       * Копирование текста в буфер обмена
+       */
+      async function copyToClipboard(inputId, successMessage) {
+        const input = document.getElementById(inputId)
+        if (!input) return
+
+        try {
+          await navigator.clipboard.writeText(input.value)
+
+          // Показываем уведомление об успехе
           if (window.showSuccessNotification) {
-            window.showSuccessNotification('Ссылка скопирована в буфер обмена');
+            window.showSuccessNotification(successMessage)
+          } else {
+            alert(successMessage)
           }
-        }).catch(err => {
-          console.error('Ошибка копирования: ', err);
+        } catch (error) {
+          console.error('Ошибка копирования:', error)
           if (window.showErrorNotification) {
-            window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку в буфер обмена');
+            window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку.')
+          } else {
+            alert('Не удалось скопировать ссылку.')
           }
-        });
-      } else {
-        if (window.showErrorNotification) {
-          window.showErrorNotification('Ошибка', 'Ссылка не найдена');
         }
       }
-    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      resetCreateSessionButton();
+      /**
+       * Генерация постоянных ссылок для клиента
+       */
+      async function generatePermanentLinks() {
+        const input = document.getElementById('customClientId')
+        const btn = document.getElementById('generateLinksBtn')
+        const container = document.getElementById('generatedLinksContainer')
+        const viewerUrlInput = document.getElementById('generatedViewerUrl')
+        const controllerUrlInput = document.getElementById('generatedControllerUrl')
 
-      // Инициализация кнопки темы - только один раз
-      let themeInitialized = false;
+        if (!input || !btn) return
 
-      const initThemeToggle = () => {
-        if (themeInitialized) return; // Уже инициализировано
+        const clientId = input.value.trim()
 
-        const themeToggleBtn = document.getElementById('themeToggleBtn');
-        if (themeToggleBtn && window.themeManager) {
-          // Удаляем все существующие обработчики клика
-          const newBtn = themeToggleBtn.cloneNode(true);
-          themeToggleBtn.parentNode.replaceChild(newBtn, themeToggleBtn);
-
-          // Добавляем обработчик только один раз
-          newBtn.addEventListener('click', () => window.themeManager.toggleTheme());
-          themeInitialized = true;
-          console.log('✅ Кнопка темы инициализирована');
-        } else if (!window.themeManager) {
-          // Если themeManager еще не загружен, ждем его
-          setTimeout(initThemeToggle, 100);
+        // Валидация
+        if (!clientId) {
+          updateValidationMessage('❌ Пожалуйста, введите ID клиента', true)
+          input.focus()
+          return
         }
-      };
 
-      // Запускаем инициализацию
-      initThemeToggle();
-    });
-  </script>
-</body>
+        if (!validateClientId(clientId)) {
+          updateValidationMessage(
+            '❌ Неверный формат. Используйте только латиницу, цифры, _ или - (3-32 символа)',
+            true
+          )
+          input.focus()
+          return
+        }
+
+        const originalBtnText = btn.innerHTML
+
+        try {
+          btn.innerHTML = '⏳ Создание...'
+          btn.disabled = true
+          updateValidationMessage('Создание постоянных ссылок...', false)
+
+          // Отправляем запрос на резервирование сессии
+          const response = await fetch(`/api/session/${clientId}/reserve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }))
+            return Promise.reject(new Error(errorData.error || `HTTP ${response.status}`))
+          }
+
+          const data = await response.json()
+          console.log('✅ Постоянные ссылки созданы:', data)
+
+          // Отображаем сгенерированные ссылки
+          if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl
+          if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl
+          if (container) container.style.display = 'block'
+
+          updateValidationMessage('✅ Ссылки успешно созданы!', false)
+
+          if (window.showSuccessNotification) {
+            window.showSuccessNotification('🎉 Постоянные ссылки созданы!')
+          }
+
+          // Прокручиваем к результатам
+          setTimeout(() => {
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          }, 100)
+        } catch (error) {
+          console.error('❌ Ошибка создания постоянных ссылок:', error)
+          updateValidationMessage(`❌ Ошибка: ${error.message}`, true)
+
+          if (window.showErrorNotification) {
+            window.showErrorNotification('Ошибка создания ссылок: ' + error.message)
+          } else {
+            alert('Ошибка создания ссылок: ' + error.message)
+          }
+        } finally {
+          btn.innerHTML = originalBtnText
+          btn.disabled = false
+        }
+      }
+
+      // Добавляем валидацию в реальном времени при вводе
+      document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('customClientId')
+        if (input) {
+          input.addEventListener('input', e => {
+            const value = e.target.value.trim()
+            if (!value) {
+              updateValidationMessage('Примеры: anna_2025, client-ivan, session42', false)
+            } else if (validateClientId(value)) {
+              updateValidationMessage('✅ ID клиента корректен', false)
+            } else {
+              updateValidationMessage(
+                '⚠️ Используйте латиницу, цифры, _ или - (3-32 символа)',
+                true
+              )
+            }
+          })
+
+          // Обработка Enter
+          input.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              generatePermanentLinks()
+            }
+          })
+        }
+      })
+
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          resetCreateSessionButton()
+        }
+      })
+
+      window.addEventListener('focus', resetCreateSessionButton)
+
+      async function loadSession() {
+        const input = document.getElementById('existingSessionId')
+        const btn = document.getElementById('loadSessionBtn')
+        const messageEl = document.getElementById('loadSessionMessage')
+        const container = document.getElementById('restoredLinksContainer')
+        const viewerUrlInput = document.getElementById('restoredViewerUrl')
+        const controllerUrlInput = document.getElementById('restoredControllerUrl')
+
+        if (!input || !btn || !messageEl || !container || !viewerUrlInput || !controllerUrlInput) {
+          console.error('Один из элементов для восстановления сессии не найден')
+          return
+        }
+
+        const sessionId = input.value.trim()
+
+        // Скрываем предыдущие результаты
+        container.style.display = 'none'
+
+        if (!sessionId) {
+          messageEl.textContent = '❌ Пожалуйста, введите ID сессии.'
+          messageEl.style.color = '#ef4444'
+          input.focus()
+          return
+        }
+
+        const originalBtnText = btn.innerHTML
+        try {
+          btn.innerHTML = '⏳ Загрузка...'
+          btn.disabled = true
+          messageEl.textContent = 'Проверка сессии...'
+          messageEl.style.color = '#94a3b8'
+
+          const response = await fetch(`/api/session/${sessionId}/state`)
+
+          if (!response.ok) {
+            if (response.status === 404) {
+              return Promise.reject(new Error('Сессия с таким ID не найдена.'))
+            }
+            return Promise.reject(new Error(`Ошибка сервера: ${response.status}`))
+          }
+
+          const data = await response.json()
+          console.log('✅ Сессия найдена:', data)
+          messageEl.textContent = '' // Очищаем сообщение при успехе
+
+          const baseUrl = `${window.location.protocol}//${window.location.host}`
+          viewerUrlInput.value = `${baseUrl}/s/${sessionId}`
+          controllerUrlInput.value = `${baseUrl}/c/${sessionId}`
+          container.style.display = 'block'
+
+          if (window.showSuccessNotification) {
+            window.showSuccessNotification('🎉 Сессия найдена!')
+          }
+
+          // Прокручиваем к результатам
+          setTimeout(() => {
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          }, 100)
+        } catch (error) {
+          console.error('❌ Ошибка загрузки сессии:', error)
+          messageEl.textContent = `❌ ${error.message}`
+          messageEl.style.color = '#ef4444'
+        } finally {
+          btn.innerHTML = originalBtnText
+          btn.disabled = false
+        }
+      }
+
+      // Функция копирования в буфер обмена
+      function copy(elementId) {
+        const element = document.getElementById(elementId)
+        if (element && element.value) {
+          navigator.clipboard
+            .writeText(element.value)
+            .then(() => {
+              if (window.showSuccessNotification) {
+                window.showSuccessNotification('Ссылка скопирована в буфер обмена')
+              }
+            })
+            .catch(err => {
+              console.error('Ошибка копирования: ', err)
+              if (window.showErrorNotification) {
+                window.showErrorNotification(
+                  'Ошибка копирования',
+                  'Не удалось скопировать ссылку в буфер обмена'
+                )
+              }
+            })
+        } else {
+          if (window.showErrorNotification) {
+            window.showErrorNotification('Ошибка', 'Ссылка не найдена')
+          }
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        resetCreateSessionButton()
+
+        // Инициализация кнопки темы - только один раз
+        let themeInitialized = false
+
+        const initThemeToggle = () => {
+          if (themeInitialized) return // Уже инициализировано
+
+          const themeToggleBtn = document.getElementById('themeToggleBtn')
+          if (themeToggleBtn && window.themeManager) {
+            // Удаляем все существующие обработчики клика
+            const newBtn = themeToggleBtn.cloneNode(true)
+            themeToggleBtn.parentNode.replaceChild(newBtn, themeToggleBtn)
+
+            // Добавляем обработчик только один раз
+            newBtn.addEventListener('click', () => window.themeManager.toggleTheme())
+            themeInitialized = true
+            console.log('✅ Кнопка темы инициализирована')
+          } else if (!window.themeManager) {
+            // Если themeManager еще не загружен, ждем его
+            setTimeout(initThemeToggle, 100)
+          }
+        }
+
+        // Запускаем инициализацию
+        initThemeToggle()
+      })
+    </script>
+  </body>
 </html>

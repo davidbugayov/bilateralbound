@@ -6,7 +6,7 @@
 /* exported applyPreset, createCustomPreset, exportSession, importSession */
 
 class FeatureManager {
-  constructor () {
+  constructor() {
     this.presets = this.loadPresets()
     this.sessionHistory = []
     this.sessions = this.loadSessions()
@@ -16,7 +16,7 @@ class FeatureManager {
   /**
    * Инициализация новых функций
    */
-  initFeatures () {
+  initFeatures() {
     this.addPresetControls()
     this.addSessionManagerUI()
     this.addSessionExportImport()
@@ -24,13 +24,12 @@ class FeatureManager {
     this.addKeyboardShortcuts()
     this.addThemeToggle()
     this.updateHeaderSessionName()
-    console.log('✅ Новые функции инициализированы')
   }
 
   /**
    * Управление пресетами настроек
    */
-  loadPresets () {
+  loadPresets() {
     const defaultPresets = {
       Релаксация: {
         speed: 20,
@@ -75,7 +74,7 @@ class FeatureManager {
     return defaultPresets
   }
 
-  addPresetControls () {
+  addPresetControls() {
     const container = document.getElementById('presetControls')
     if (!container) return
 
@@ -103,7 +102,7 @@ class FeatureManager {
   /**
    * Применение предустановленных настроек
    */
-  async applyPreset (preset) {
+  async applyPreset(preset) {
     try {
       // Применяем скорость
       if (preset.speed && window.components?.speed) {
@@ -130,7 +129,10 @@ class FeatureManager {
       }
 
       // Показываем уведомление
-      this.showNotification(`Пресет "${Object.keys(this.presets).find(key => this.presets[key] === preset)}" применён`, 'success')
+      this.showNotification(
+        `Пресет "${Object.keys(this.presets).find(key => this.presets[key] === preset)}" применён`,
+        'success'
+      )
     } catch {
       this.showNotification('Ошибка применения пресета', 'error')
     }
@@ -139,7 +141,7 @@ class FeatureManager {
   /**
    * Сохраняет текущее состояние как кастомный пресет
    */
-  createCustomPreset () {
+  createCustomPreset() {
     const name = prompt('Название нового пресета:')
     if (!name || name.trim() === '') return
 
@@ -157,7 +159,7 @@ class FeatureManager {
     this.showNotification(`Пресет "${name}" сохранён`, 'success')
   }
 
-  savePresets () {
+  savePresets() {
     try {
       localStorage.setItem('bb_presets', JSON.stringify(this.presets))
     } catch {
@@ -168,7 +170,7 @@ class FeatureManager {
   /**
    * Управление экспортом/импортом сессий
    */
-  addSessionExportImport () {
+  addSessionExportImport() {
     const container = document.getElementById('sessionControls')
     if (!container) return
 
@@ -191,7 +193,7 @@ class FeatureManager {
     importInput.type = 'file'
     importInput.accept = '.json'
     importInput.style.display = 'none'
-    importInput.onchange = (e) => this.importSession(e.target.files[0])
+    importInput.onchange = e => this.importSession(e.target.files[0])
 
     const importBtn = document.createElement('button')
     importBtn.className = 'btn outline'
@@ -209,7 +211,7 @@ class FeatureManager {
   /**
    * Экспорт текущей сессии в JSON файл
    */
-  exportSession () {
+  exportSession() {
     const sessionData = {
       timestamp: new Date().toISOString(),
       sessionId: window.__current?.sessionId,
@@ -246,7 +248,7 @@ class FeatureManager {
   /**
    * Импорт сессии из JSON файла
    */
-  async importSession (file) {
+  async importSession(file) {
     if (!file) return
 
     try {
@@ -307,7 +309,7 @@ class FeatureManager {
   /**
    * Управление историей сессий
    */
-  addHistoryControls () {
+  addHistoryControls() {
     this.sessionHistory.push({
       timestamp: Date.now(),
       settings: this.captureCurrentSettings()
@@ -322,7 +324,7 @@ class FeatureManager {
   /**
    * Захват текущих настроек
    */
-  captureCurrentSettings () {
+  captureCurrentSettings() {
     return {
       speed: window.components?.speed?.getSpeed() || 40,
       direction: window.currentDirectionMode || 'horizontal',
@@ -335,8 +337,8 @@ class FeatureManager {
   /**
    * Горячие клавиши
    */
-  addKeyboardShortcuts () {
-    document.addEventListener('keydown', (e) => {
+  addKeyboardShortcuts() {
+    document.addEventListener('keydown', e => {
       // Игнорируем если фокус в input
       if (e.target.tagName === 'INPUT') return
 
@@ -369,7 +371,7 @@ class FeatureManager {
   /**
    * Обработка стрелок клавиатуры
    */
-  handleArrowKeys (key) {
+  handleArrowKeys(key) {
     const directionMap = {
       ArrowUp: 'vertical',
       ArrowDown: 'vertical',
@@ -382,7 +384,7 @@ class FeatureManager {
   /**
    * Отмена последнего изменения
    */
-  async undoLastChange () {
+  async undoLastChange() {
     if (this.sessionHistory.length < 2) {
       this.showNotification('Нет изменений для отмены', 'warning')
       return
@@ -398,7 +400,7 @@ class FeatureManager {
   /**
    * Применяет сохраненное состояние
    */
-  async applyState (state) {
+  async applyState(state) {
     if (state.speed && window.components?.speed) {
       window.components.speed.setSpeed(state.speed)
       await this.sendUpdate({ speed: state.speed })
@@ -424,7 +426,7 @@ class FeatureManager {
   /**
    * Переключатель темы
    */
-  addThemeToggle () {
+  addThemeToggle() {
     // Основная кнопка темы
     const toggleBtn = document.getElementById('themeToggle')
     if (toggleBtn) {
@@ -441,7 +443,7 @@ class FeatureManager {
     this.loadTheme()
   }
 
-  toggleTheme () {
+  toggleTheme() {
     const body = document.body
     const isDark = body.classList.contains('light-theme')
 
@@ -456,7 +458,7 @@ class FeatureManager {
     }
   }
 
-  loadTheme () {
+  loadTheme() {
     const savedTheme = localStorage.getItem('bb_theme') || 'dark'
     if (savedTheme === 'light') {
       document.body.classList.add('light-theme')
@@ -466,14 +468,19 @@ class FeatureManager {
   /**
    * Менеджер локальных сессий (с именем)
    */
-  loadSessions () {
+  loadSessions() {
     try {
       const raw = localStorage.getItem('bb_sessions')
       if (!raw) return []
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed
       // миграция из старого формата объекта
-      if (parsed && typeof parsed === 'object' && parsed.sessions && Array.isArray(parsed.sessions)) {
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        parsed.sessions &&
+        Array.isArray(parsed.sessions)
+      ) {
         return parsed.sessions
       }
     } catch {
@@ -482,7 +489,7 @@ class FeatureManager {
     return []
   }
 
-  saveSessions () {
+  saveSessions() {
     try {
       localStorage.setItem('bb_sessions', JSON.stringify(this.sessions))
     } catch {
@@ -490,7 +497,7 @@ class FeatureManager {
     }
   }
 
-  loadCurrentSessionId () {
+  loadCurrentSessionId() {
     try {
       return localStorage.getItem('bb_current_session') || null
     } catch {
@@ -498,7 +505,7 @@ class FeatureManager {
     }
   }
 
-  persistCurrentSessionId (id) {
+  persistCurrentSessionId(id) {
     try {
       if (id) {
         localStorage.setItem('bb_current_session', id)
@@ -511,7 +518,7 @@ class FeatureManager {
     this.currentSessionId = id || null
   }
 
-  addSessionManagerUI () {
+  addSessionManagerUI() {
     const container = document.getElementById('sessionControls')
     if (!container) return
 
@@ -547,7 +554,7 @@ class FeatureManager {
     this.renderSessionsList()
   }
 
-  renderSessionsList () {
+  renderSessionsList() {
     const listWrap = document.getElementById('bbSessionsList')
     if (!listWrap) return
     listWrap.innerHTML = ''
@@ -569,7 +576,7 @@ class FeatureManager {
     this.sessions
       .slice()
       .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-      .forEach((s) => {
+      .forEach(s => {
         const item = document.createElement('div')
         item.style.display = 'flex'
         item.style.alignItems = 'center'
@@ -624,7 +631,7 @@ class FeatureManager {
     listWrap.appendChild(ul)
   }
 
-  buildCurrentSessionData () {
+  buildCurrentSessionData() {
     // Похоже на exportSession, но не создаёт файл
     return {
       timestamp: new Date().toISOString(),
@@ -647,7 +654,7 @@ class FeatureManager {
     }
   }
 
-  async applySessionData (sessionData) {
+  async applySessionData(sessionData) {
     try {
       const settings = sessionData?.settings || {}
       if (settings.speed && window.components?.speed) {
@@ -678,7 +685,7 @@ class FeatureManager {
     }
   }
 
-  saveNamedSession (nameRaw) {
+  saveNamedSession(nameRaw) {
     const name = (nameRaw || '').trim() || 'Сессия'
     const now = new Date().toISOString()
 
@@ -690,7 +697,9 @@ class FeatureManager {
       this.persistCurrentSessionId(session.id)
     } else {
       // создаём новую
-      const id = crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+      const id = crypto?.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
       session = {
         id,
         name,
@@ -708,7 +717,7 @@ class FeatureManager {
     this.showNotification(`Сессия "${name}" сохранена`, 'success')
   }
 
-  updateCurrentSession (nameRaw) {
+  updateCurrentSession(nameRaw) {
     if (!this.currentSessionId) {
       this.showNotification('Нет выбранной сессии для обновления', 'warning')
       return
@@ -728,7 +737,7 @@ class FeatureManager {
     this.showNotification('Сессия обновлена', 'success')
   }
 
-  async loadSessionById (id) {
+  async loadSessionById(id) {
     const session = this.sessions.find(s => s.id === id)
     if (!session) return
     await this.applySessionData(session.data)
@@ -740,7 +749,7 @@ class FeatureManager {
     this.showNotification(`Загружена сессия "${session.name}"`, 'success')
   }
 
-  renameSessionById (id) {
+  renameSessionById(id) {
     const session = this.sessions.find(s => s.id === id)
     if (!session) return
     const newName = prompt('Новое название сессии:', session.name)
@@ -754,7 +763,7 @@ class FeatureManager {
     this.renderSessionsList()
   }
 
-  deleteSessionById (id) {
+  deleteSessionById(id) {
     const idx = this.sessions.findIndex(s => s.id === id)
     if (idx === -1) return
     const [removed] = this.sessions.splice(idx, 1)
@@ -769,13 +778,15 @@ class FeatureManager {
     this.showNotification(`Сессия "${removed?.name || ''}" удалена`, 'success')
   }
 
-  updateHeaderSessionName () {
+  updateHeaderSessionName() {
     try {
       const el = document.getElementById('sessionInfo')
       if (!el) return
       const current = this.sessions.find(s => s.id === this.currentSessionId)
       const nameTxt = current?.name ? `Название: ${current.name}` : 'Название: —'
-      const createdTxt = current?.createdAt ? ` • Создана: ${new Date(current.createdAt).toLocaleString()}` : ''
+      const createdTxt = current?.createdAt
+        ? ` • Создана: ${new Date(current.createdAt).toLocaleString()}`
+        : ''
       el.textContent = `${nameTxt}${createdTxt}`
     } catch {
       // ignore
@@ -785,13 +796,13 @@ class FeatureManager {
   /**
    * Утилиты
    */
-  async sendUpdate (data) {
+  async sendUpdate(data) {
     if (window.wsClient && window.wsClient.send) {
       await window.wsClient.send('WS_MSG.controllerUpdate', data)
     }
   }
 
-  showNotification (message, type = 'info') {
+  showNotification(message, type = 'info') {
     if (type === 'success' && window.showSuccessNotification) {
       window.showSuccessNotification(message)
     } else if (type === 'error' && window.showErrorNotification) {
@@ -817,10 +828,10 @@ class FeatureManager {
 }
 
 // Экспортируем функции для глобального использования
-window.applyPreset = (preset) => window.featureManager?.applyPreset(preset)
+window.applyPreset = preset => window.featureManager?.applyPreset(preset)
 window.createCustomPreset = () => window.featureManager?.createCustomPreset()
 window.exportSession = () => window.featureManager?.exportSession()
-window.importSession = (file) => window.featureManager?.importSession(file)
+window.importSession = file => window.featureManager?.importSession(file)
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {

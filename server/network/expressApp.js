@@ -13,18 +13,19 @@ const { DEBUG_MODE, logger } = require('../logger.js')
 const getNetworkInterfaces = () => {
   const interfaces = os.networkInterfaces()
   const result = {}
-  Object.keys(interfaces).forEach((key) => {
-    const iface = interfaces[key].find((alias) => alias.family === 'IPv4' && !alias.internal)
+  Object.keys(interfaces).forEach(key => {
+    const iface = interfaces[key].find(alias => alias.family === 'IPv4' && !alias.internal)
     if (iface) result[key] = iface.address
   })
   return result
 }
 
 // Проверка доступности порта
-const checkPortAvailability = (port) => {
+const checkPortAvailability = port => {
   return new Promise((resolve, reject) => {
-    const tester = net.createServer()
-      .once('error', (err) => {
+    const tester = net
+      .createServer()
+      .once('error', err => {
         if (err.code === 'EADDRINUSE') {
           resolve(false)
         } else {
@@ -38,8 +39,8 @@ const checkPortAvailability = (port) => {
   })
 }
 
-function setupExpressApp (sessionManager, apiCache) {
-    const networkInterfaces = getNetworkInterfaces()
+function setupExpressApp(sessionManager, apiCache) {
+  const networkInterfaces = getNetworkInterfaces()
   const app = express()
 
   // Request ID middleware for traceability
@@ -57,24 +58,26 @@ function setupExpressApp (sessionManager, apiCache) {
   })
 
   // Расширенная конфигурация Helmet
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ['\'self\''],
-        styleSrc: ['\'self\'', '\'unsafe-inline\''],
-        styleSrcAttr: ['\'self\'', '\'unsafe-inline\''],
-        styleSrcElem: ['\'self\'', '\'unsafe-inline\''],
-        scriptSrc: ['\'self\'', '\'unsafe-inline\''],
-        scriptSrcAttr: ['\'self\'', '\'unsafe-inline\''],
-        scriptSrcElem: ['\'self\'', '\'unsafe-inline\'', 'https://mc.yandex.ru'],
-        imgSrc: ['\'self\'', 'data:', 'https:', 'https://*.mc.yandex.ru'],
-        connectSrc: ['\'self\'', 'https://mc.yandex.ru', 'https://mc.yandex.com'],
-        frameSrc: ['\'self\'', 'https://mc.yandex.md']
-      }
-    },
-    crossOriginResourcePolicy: { policy: 'same-site' },
-    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
-  }))
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          styleSrcAttr: ["'self'", "'unsafe-inline'"],
+          styleSrcElem: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrcAttr: ["'self'", "'unsafe-inline'"],
+          scriptSrcElem: ["'self'", "'unsafe-inline'", 'https://mc.yandex.ru'],
+          imgSrc: ["'self'", 'data:', 'https:', 'https://*.mc.yandex.ru'],
+          connectSrc: ["'self'", 'https://mc.yandex.ru', 'https://mc.yandex.com'],
+          frameSrc: ["'self'", 'https://mc.yandex.md']
+        }
+      },
+      crossOriginResourcePolicy: { policy: 'same-site' },
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+    })
+  )
 
   // Добавляем middleware для проверки доступности порта при старте
   app.use(async (req, res, next) => {
@@ -99,24 +102,37 @@ function setupExpressApp (sessionManager, apiCache) {
       standardHeaders: true,
       legacyHeaders: false,
       trustProxy: true,
-      keyGenerator: (req) => req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown'
+      keyGenerator: req =>
+        req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown'
     })
     app.use('/api/', limiter)
   }
 
   // CORS middleware
-  app.use(cors({
-    origin: config.getCorsConfig().origins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept', 'X-Request-Id'],
-    credentials: true,
-    optionsSuccessStatus: 200
-  }))
+  app.use(
+    cors({
+      origin: config.getCorsConfig().origins,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Origin',
+        'Accept',
+        'X-Request-Id'
+      ],
+      credentials: true,
+      optionsSuccessStatus: 200
+    })
+  )
 
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', req.headers.origin || '*')
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Origin, Accept, X-Request-Id')
+    res.header(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, X-Requested-With, Origin, Accept, X-Request-Id'
+    )
     res.header('Access-Control-Allow-Credentials', 'true')
     if (req.method === 'OPTIONS') res.sendStatus(200)
     else next()
@@ -136,15 +152,17 @@ function setupExpressApp (sessionManager, apiCache) {
 
   // Static files
   const publicPath = path.join(__dirname, '..', '..', 'public')
-  app.use(express.static(publicPath, {
-    etag: false,
-    lastModified: false,
-    setHeaders: (res) => {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-    }
-  }))
+  app.use(
+    express.static(publicPath, {
+      etag: false,
+      lastModified: false,
+      setHeaders: res => {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        res.setHeader('Pragma', 'no-cache')
+        res.setHeader('Expires', '0')
+      }
+    })
+  )
   app.use('/test', express.static(path.join(__dirname, '..', '..')))
 
   // Root route - serve index.html
@@ -209,10 +227,15 @@ function setupExpressApp (sessionManager, apiCache) {
     const session = sessionManager.getSession(sessionId)
     if (!session) return res.status(404).json({ error: 'Session not found', requestId: req.id })
 
-    const responseData = { ...session.ballState, viewerConnected: session.viewerConnected, controllerConnected: session.controllerConnected, viewerScreenSize: session.viewerScreenSize }
+    const responseData = {
+      ...session.ballState,
+      viewerConnected: session.viewerConnected,
+      controllerConnected: session.controllerConnected,
+      viewerScreenSize: session.viewerScreenSize
+    }
     // Нормализуем направление vx/vy кратковременно после смены размера/первого коннекта для стабильности API
     if (session.normalizeDirectionUntilTs && Date.now() < session.normalizeDirectionUntilTs) {
-      const clamp01 = (v) => Math.max(-1, Math.min(1, typeof v === 'number' ? v : 0))
+      const clamp01 = v => Math.max(-1, Math.min(1, typeof v === 'number' ? v : 0))
       responseData.vx = clamp01(responseData.vx)
       responseData.vy = clamp01(responseData.vy)
     }
@@ -223,7 +246,8 @@ function setupExpressApp (sessionManager, apiCache) {
 
   app.post('/api/session/:sessionId/controller/connect', (req, res) => {
     const { sessionId } = req.params
-    if (!sessionManager.getSession(sessionId)) return res.status(404).json({ error: 'Session not found', requestId: req.id })
+    if (!sessionManager.getSession(sessionId))
+      return res.status(404).json({ error: 'Session not found', requestId: req.id })
     sessionManager.updateBallState(sessionId, req.body)
     sessionManager.sessionRepository.update(sessionId, { controllerConnected: true })
     apiCache.delete(`state_${sessionId}`)
@@ -232,7 +256,8 @@ function setupExpressApp (sessionManager, apiCache) {
 
   app.post('/api/session/:sessionId/controller/update', (req, res) => {
     const { sessionId } = req.params
-    if (!sessionManager.getSession(sessionId)) return res.status(404).json({ error: 'Session not found', requestId: req.id })
+    if (!sessionManager.getSession(sessionId))
+      return res.status(404).json({ error: 'Session not found', requestId: req.id })
     sessionManager.updateBallState(sessionId, req.body)
     res.json({ success: true, message: 'Controller update processed' })
   })
@@ -240,7 +265,8 @@ function setupExpressApp (sessionManager, apiCache) {
   app.post('/api/session/:sessionId/viewer/connect', (req, res) => {
     const { sessionId } = req.params
     const { screenSize } = req.body
-    if (!sessionManager.getSession(sessionId)) return res.status(404).json({ error: 'Session not found', requestId: req.id })
+    if (!sessionManager.getSession(sessionId))
+      return res.status(404).json({ error: 'Session not found', requestId: req.id })
     sessionManager.sessionRepository.update(sessionId, { viewerConnected: true })
     if (screenSize) {
       sessionManager.setViewerScreenSize(sessionId, screenSize)
@@ -252,7 +278,8 @@ function setupExpressApp (sessionManager, apiCache) {
   app.post('/api/session/:sessionId/viewer/screen-size', (req, res) => {
     const { sessionId } = req.params
     const { width, height } = req.body || {}
-    if (!sessionManager.getSession(sessionId)) return res.status(404).json({ error: 'Session not found', requestId: req.id })
+    if (!sessionManager.getSession(sessionId))
+      return res.status(404).json({ error: 'Session not found', requestId: req.id })
     if (typeof width === 'number' && typeof height === 'number') {
       sessionManager.setViewerScreenSize(sessionId, { width, height })
       apiCache.delete(`state_${sessionId}`)

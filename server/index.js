@@ -8,7 +8,6 @@ const setupWebSocketServer = require('./network/webSocketServer.js')
 
 console.log('\n\n--- SERVER STARTING (Modular Architecture) ---\n\n')
 
-
 // 1. Инициализация кэша и менеджера сессий
 const apiCache = new Map()
 const sessionManager = new SessionManager(apiCache)
@@ -22,7 +21,7 @@ const { heartbeatInterval } = setupWebSocketServer(server, sessionManager)
 
 // 4. Запуск сервера с обработкой ошибки EADDRINUSE
 const PORT = config.getServerConfig().PORT
-server.on('error', (err) => {
+server.on('error', err => {
   if (err.code === 'EADDRINUSE') {
     logger.error(`Port ${PORT} is already in use. Waiting before retry...`)
     setTimeout(() => {
@@ -39,33 +38,40 @@ server.on('error', (err) => {
 
 server.listen(PORT, () => {
   // Unconditional stdout so test harness detects readiness
-  console.log(`Server listening on http://localhost:${PORT}`)
+
   logger.info('Modular server architecture is ready.')
 })
 
 // 5. Настройка фоновых задач (очистка)
 const cleanupIntervals = []
-cleanupIntervals.push(setInterval(() => {
-  sessionManager.cleanupExpiredSessions()
-}, 60000))
+cleanupIntervals.push(
+  setInterval(() => {
+    sessionManager.cleanupExpiredSessions()
+  }, 60000)
+)
 
-cleanupIntervals.push(setInterval(() => {
-  const now = Date.now()
-  let removedCount = 0
-  for (const [key, cached] of apiCache) {
-    const adaptiveTTL = (cached.type === 'ball_state' ? 50 : 1000) * 3 // Simplified TTL logic
-    if (now - cached.timestamp > adaptiveTTL) {
-      apiCache.delete(key)
-      removedCount++
-    }
-  }
-  if (removedCount > 0) {
-    logger.info(`API cache cleanup: ${removedCount} items removed.`)
-  }
-}, 2 * 60 * 1000))
+cleanupIntervals.push(
+  setInterval(
+    () => {
+      const now = Date.now()
+      let removedCount = 0
+      for (const [key, cached] of apiCache) {
+        const adaptiveTTL = (cached.type === 'ball_state' ? 50 : 1000) * 3 // Simplified TTL logic
+        if (now - cached.timestamp > adaptiveTTL) {
+          apiCache.delete(key)
+          removedCount++
+        }
+      }
+      if (removedCount > 0) {
+        logger.info(`API cache cleanup: ${removedCount} items removed.`)
+      }
+    },
+    2 * 60 * 1000
+  )
+)
 
 // 6. Graceful shutdown
-function gracefulShutdown () {
+function gracefulShutdown() {
   logger.info('Shutting down gracefully...')
   clearInterval(heartbeatInterval)
   cleanupIntervals.forEach(interval => clearInterval(interval))

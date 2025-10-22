@@ -1,880 +1,1191 @@
 <!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
 
-  <title>BilateralBound - EMDR терапия контроллер</title>
-  <meta name="description" content="EMDR терапия контроллер для управления биодинамической стимуляцией. Инструмент для EMDR терапевта при проведении парной терапии" />
-  <meta name="keywords" content="EMDR терапия, EMDR контроллер, биодинамическая стимуляция, парная терапия, психолог для пар, управление сессией" />
-  <meta name="author" content="Bugaev David" />
-  <meta name="robots" content="noindex, nofollow" />
-  <meta name="theme-color" content="#2563eb" />
+    <title>BilateralBound - EMDR терапия контроллер</title>
+    <meta
+      name="description"
+      content="EMDR терапия контроллер для управления биодинамической стимуляцией. Инструмент для EMDR терапевта при проведении парной терапии"
+    />
+    <meta
+      name="keywords"
+      content="EMDR терапия, EMDR контроллер, биодинамическая стимуляция, парная терапия, психолог для пар, управление сессией"
+    />
+    <meta name="author" content="Bugaev David" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#2563eb" />
 
-  <meta name="therapy-type" content="EMDR Controller" />
-  <meta name="target-audience" content="EMDR Therapists, Couples Therapists" />
+    <meta name="therapy-type" content="EMDR Controller" />
+    <meta name="target-audience" content="EMDR Therapists, Couples Therapists" />
 
-  <link rel="preload" href="/js/common.js" as="script" />
-  <link rel="preload" href="/css/common.css" as="style" />
-  <link rel="preload" href="/css/shared-components.css?v=202501031200" as="style" />
+    <link rel="preload" href="/js/common.js" as="script" />
+    <link rel="preload" href="/css/common.css" as="style" />
+    <link rel="preload" href="/css/shared-components.css?v=202501031200" as="style" />
 
-  <link rel="icon" type="image/svg+xml" href="/favicon-controller.svg?v=202509031200" />
-  <link rel="icon" type="image/x-icon" href="/favicon-controller.ico?v=202509031200" />
-  <link rel="apple-touch-icon" href="/favicon-controller.svg?v=202509031200" />
-  <link rel="shortcut icon" href="/favicon-controller.ico?v=202509031200" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-controller.svg?v=202509031200" />
+    <link rel="icon" type="image/x-icon" href="/favicon-controller.ico?v=202509031200" />
+    <link rel="apple-touch-icon" href="/favicon-controller.svg?v=202509031200" />
+    <link rel="shortcut icon" href="/favicon-controller.ico?v=202509031200" />
 
-  <link rel="stylesheet" href="/css/common.css">
-  <link rel="stylesheet" href="/css/shared-components.css?v=202501031200">
-  <link rel="stylesheet" href="/css/light-theme.css?v=20250103120">
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=202501031200" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=20250103120" />
 
-  <!-- Yandex.Metrika optimized counter -->
-  <script src="/js/metrika-optimized.js" defer></script>
-  <noscript><div><img src="https://mc.yandex.ru/watch/104698530" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-  <!-- /Yandex.Metrika optimized counter -->
+    <!-- Yandex.Metrika optimized counter -->
+    <script src="/js/metrika-optimized.js" defer></script>
+    <noscript
+      ><div>
+        <img
+          src="https://mc.yandex.ru/watch/104698530"
+          style="position: absolute; left: -9999px"
+          alt=""
+        /></div
+    ></noscript>
+    <!-- /Yandex.Metrika optimized counter -->
 
-  <style>
-    html, body { 
-      width: 100%; 
-      max-width: 100%; 
-      overflow-x: hidden;
-      overscroll-behavior: none;
-      -webkit-overflow-scrolling: touch;
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-
-    .control-section {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 0;
-      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.3);
-    }
-
-    .light-theme .control-section {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
-    }
-
-    .floating-preview {
-      position: sticky;
-      top: 20px;
-      z-index: 10;
-      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.3), 0 4px 16px -2px rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(15px);
-    }
-
-    .drag-handle {
-      cursor: move;
-      margin: 0 0 16px 0;
-      padding: 8px 12px;
-      background: #334155;
-      border: 1px solid #475569;
-      border-radius: 8px;
-      user-select: none;
-      color: #cbd5e1;
-    }
-
-    .light-theme .drag-handle {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      color: #64748b;
-    }
-
-    button { 
-      background: #2563eb; 
-      color: white; 
-      border: 0; 
-      padding: 10px 14px; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      transition: all 0.2s ease; 
-    }
-
-    button:hover { 
-      background: #1d4ed8; 
-      transform: translateY(-1px); 
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
-    }
-
-    .btn { 
-      padding: 8px 16px; 
-      font-size: 14px; 
-      font-weight: 500; 
-    }
-    .btn.outline {
-      background: transparent;
-      border: 1px solid #cbd5e1;
-      color: #64748b;
-    }
-    .btn.outline:hover {
-      background: #f1f5f9;
-      color: #374151;
-      border-color: #94a3b8;
-    }
-
-    .light-theme .btn.outline {
-      border: 1px solid #cbd5e1;
-      color: #64748b;
-    }
-
-    .light-theme .btn.outline:hover {
-      background: #f1f5f9;
-      color: #374151;
-      border-color: #94a3b8;
-    }
-
-    .color-btn { 
-      padding: 8px 16px; 
-      font-size: 14px; 
-      border-radius: 6px; 
-      transition: all 0.2s ease; 
-    }
-    .color-btn:hover { 
-      transform: scale(1.05); 
-    }
-
-    .size-btn {
-      padding: 8px 16px;
-      font-size: 14px;
-      background: #475569;
-      color: #cbd5e1;
-      border: 1px solid #64748b;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-    }
-    .size-btn:hover {
-      background: #64748b;
-      color: #e2e8f0;
-      border-color: #94a3b8;
-    }
-    .size-btn.active {
-      background: #2563eb;
-      color: white;
-      border-color: #2563eb;
-    }
-
-    .light-theme .size-btn {
-      background: #f8fafc;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
-    }
-
-    .light-theme .size-btn:hover {
-      background: #e2e8f0;
-      color: #374151;
-      border-color: #cbd5e1;
-    }
-
-    .viewer-link-container { 
-      margin: 12px 0; 
-    }
-
-    .link-input-group {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .link-input-group input {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1px solid #475569;
-      border-radius: 6px;
-      background: #334155;
-      color: #e2e8f0;
-      font-size: 14px;
-    }
-
-    .link-input-group input:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-    }
-
-    .copy-btn {
-      padding: 8px 12px;
-      font-size: 12px;
-      background: #475569;
-      color: #cbd5e1;
-      border: 1px solid #64748b;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .copy-btn:hover {
-      background: #64748b;
-      color: #e2e8f0;
-      border-color: #94a3b8;
-    }
-
-    .light-theme .link-input-group input {
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      color: #374151;
-    }
-
-    .light-theme .link-input-group input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-    }
-
-    .light-theme .copy-btn {
-      background: #f8fafc;
-      color: #64748b;
-      border: 1px solid #cbd5e1;
-    }
-
-    .light-theme .copy-btn:hover {
-      background: #e2e8f0;
-      color: #374151;
-      border-color: #94a3b8;
-    }
-
-    .speed-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .speed-container input[type="range"] {
-      width: 100%;
-      max-width: 300px;
-      height: 6px;
-      background: linear-gradient(135deg, #475569 0%, #64748b 100%);
-      border-radius: 3px;
-      outline: none;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .speed-container input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.4);
-      border: 2px solid #1e293b;
-    }
-
-    .speed-container input[type="range"]::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid #1e293b;
-      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.4);
-    }
-
-    .light-theme .speed-container input[type="range"] {
-      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-    }
-
-    .light-theme .speed-container input[type="range"]::-webkit-slider-thumb {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      border: 2px solid #ffffff;
-    }
-
-    .light-theme .speed-container input[type="range"]::-moz-range-thumb {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      border: 2px solid #ffffff;
-    }
-
-    .controls-grid { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      gap: 0; 
-      align-items: start; 
-    }
-    .controls-card {
-      background: #334155;
-      border: 1px solid #475569;
-      border-radius: 10px;
-      padding: 12px;
-    }
-    .controls-title {
-      margin: 0 0 8px 0;
-      font-size: 14px;
-      color: #cbd5e1;
-      font-weight: 500;
-    }
-
-    .light-theme .controls-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-    }
-
-    .light-theme .controls-title {
-      color: #64748b;
-    }
-    .direction-row { 
-      display: flex; 
-      gap: 8px; 
-      flex-wrap: wrap; 
-      justify-content: center; 
-    }
-
-    .actions-grid { 
-      display: grid; 
-      grid-template-columns: 1.2fr .9fr .9fr; 
-      gap: 8px; 
-      align-items: stretch; 
-    }
-    .actions-grid .btn { 
-      width: 100%; 
-    }
-    .actions-grid .btn.primary { 
-      font-weight: 600; 
-    }
-
-    .segmented {
-      display: flex;
-      gap: 0;
-      border: 1px solid #475569;
-      border-radius: 10px;
-      overflow: hidden;
-      background: #334155;
-      flex-wrap: wrap;
-    }
-    .segmented .seg-btn {
-      flex: 1 1 25%;
-      padding: 10px 12px;
-      font-size: 13px;
-      color: #cbd5e1;
-      background: transparent;
-      border: 0;
-      cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease;
-      min-width: 0;
-    }
-    .segmented .seg-btn + .seg-btn {
-      border-left: 1px solid #475569;
-    }
-    .segmented .seg-btn:hover {
-      background: #475569;
-      color: #e2e8f0;
-    }
-    .segmented .seg-btn.active {
-      background: #2563eb;
-      color: #ffffff;
-    }
-
-    .light-theme .segmented {
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-    }
-
-    .light-theme .segmented .seg-btn {
-      color: #64748b;
-    }
-
-    .light-theme .segmented .seg-btn + .seg-btn {
-      border-left: 1px solid #e2e8f0;
-    }
-
-    .light-theme .segmented .seg-btn:hover {
-      background: #e2e8f0;
-      color: #374151;
-    }
-    .segmented .seg-btn strong { 
-      font-weight: 600; 
-    }
-
-    @media (max-width: 768px) {
-      .controls-grid { 
-        grid-template-columns: 1fr; 
+    <style>
+      html,
+      body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
       }
-      .actions_grid { 
-        grid-template-columns: 1fr; 
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
       }
-      .segmented { 
-        flex-wrap: wrap; 
-        overflow-x: hidden; 
+
+      .control-section {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 0;
+        box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.3);
       }
-      .segmented .seg-btn { 
-        flex: 1 1 25%; 
-        min-width: 0; 
-        padding: 10px 8px; 
-        font-size: 12px; 
+
+      .light-theme .control-section {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
       }
-    }
 
-    .appearance-grid { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr 1fr; 
-      gap: 0; 
-      align-items: start; 
-    }
-    @media (max-width: 1024px) { 
-      .appearance-grid { 
-        grid-template-columns: 1fr 1fr; 
-      } 
-    }
-    @media (max-width: 768px) { 
-      .appearance-grid { 
-        grid-template-columns: 1fr; 
-      } 
-    }
-
-    @media (max-width: 768px) {
-      body { 
-        padding: 0; 
+      .floating-preview {
+        position: sticky;
+        top: 20px;
+        z-index: 10;
+        box-shadow:
+          0 8px 32px -4px rgba(0, 0, 0, 0.3),
+          0 4px 16px -2px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(15px);
       }
-      .wrap { 
-        gap: 16px; 
-        padding: 12px; 
+
+      .drag-handle {
+        cursor: move;
+        margin: 0 0 16px 0;
+        padding: 8px 12px;
+        background: #334155;
+        border: 1px solid #475569;
+        border-radius: 8px;
+        user-select: none;
+        color: #cbd5e1;
       }
-      .control-section { 
-        padding: 16px; 
+
+      .light-theme .drag-handle {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
       }
-      .speed-container input[type="range"] { 
-        max-width: 250px; 
+
+      button {
+        background: #2563eb;
+        color: white;
+        border: 0;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
       }
-    }
 
-    .back-btn {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background: #334155;
-      color: #cbd5e1;
-      border: 1px solid #475569;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      z-index: 1000;
-    }
+      button:hover {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-    .back-btn:hover {
-      background: #475569;
-      color: #e2e8f0;
-      border-color: #64748b;
-    }
+      .btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .btn.outline {
+        background: transparent;
+        border: 1px solid #cbd5e1;
+        color: #64748b;
+      }
+      .btn.outline:hover {
+        background: #f1f5f9;
+        color: #374151;
+        border-color: #94a3b8;
+      }
 
-    .light-theme .back-btn {
-      background: #f8fafc;
-      color: #64748b;
-      border: 1px solid #cbd5e1;
-    }
+      .light-theme .btn.outline {
+        border: 1px solid #cbd5e1;
+        color: #64748b;
+      }
 
-    .light-theme .back-btn:hover {
-      background: #e2e8f0;
-      color: #374151;
-      border-color: #94a3b8;
-    }
+      .light-theme .btn.outline:hover {
+        background: #f1f5f9;
+        color: #374151;
+        border-color: #94a3b8;
+      }
 
-    .theme-toggle-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-    }
+      .color-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+      .color-btn:hover {
+        transform: scale(1.05);
+      }
 
-    .theme-toggle-btn {
-      background: rgba(37, 99, 235, 0.9);
-      color: white;
-      border: 0;
-      padding: 12px 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
+      .size-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        background: #475569;
+        color: #cbd5e1;
+        border: 1px solid #64748b;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+      .size-btn:hover {
+        background: #64748b;
+        color: #e2e8f0;
+        border-color: #94a3b8;
+      }
+      .size-btn.active {
+        background: #2563eb;
+        color: white;
+        border-color: #2563eb;
+      }
 
-    .theme-toggle-btn:hover {
-      background: rgba(37, 99, 235, 1);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    }
+      .light-theme .size-btn {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+      }
 
-    .light-theme .theme-toggle-btn {
-      background: rgba(30, 64, 175, 0.9);
-    }
+      .light-theme .size-btn:hover {
+        background: #e2e8f0;
+        color: #374151;
+        border-color: #cbd5e1;
+      }
 
-    .light-theme .theme-toggle-btn:hover {
-      background: rgba(30, 64, 175, 1);
-    }
+      .viewer-link-container {
+        margin: 12px 0;
+      }
 
-    .kbd {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      background: #334155;
-      border: 1px solid #475569;
-      border-bottom-width: 3px;
-      border-radius: 6px;
-      padding: 2px 6px;
-      color: #cbd5e1;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
+      .link-input-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
 
-    .light-theme .kbd {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      color: #374151;
-    }
+      .link-input-group input {
+        flex: 1;
+        padding: 10px 12px;
+        border: 1px solid #475569;
+        border-radius: 6px;
+        background: #334155;
+        color: #e2e8f0;
+        font-size: 14px;
+      }
 
-    /* Fullscreen overlay and panel theme support */
-    #previewOverlay {
-      background: #0f172a !important;
-    }
+      .link-input-group input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+      }
 
-    #previewFullscreenCanvas {
-      background: #020617 !important;
-    }
+      .copy-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        background: #475569;
+        color: #cbd5e1;
+        border: 1px solid #64748b;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .copy-btn:hover {
+        background: #64748b;
+        color: #e2e8f0;
+        border-color: #94a3b8;
+      }
 
-    #previewFsPanel {
-      background: rgba(30, 41, 59, 0.95) !important;
-      border: 1px solid #475569 !important;
-      height: auto !important;
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-    }
+      .light-theme .link-input-group input {
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #374151;
+      }
 
-    #previewFsPanel input {
-      background: #1e293b !important;
-      border: 1px solid #334155 !important;
-      color: #e2e8f0 !important;
-    }
+      .light-theme .link-input-group input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      }
 
-    .light-theme #previewOverlay {
-      background: rgba(248, 250, 252, 0.98) !important;
-    }
+      .light-theme .copy-btn {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #cbd5e1;
+      }
 
-    .light-theme #previewFullscreenCanvas {
-      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-    }
+      .light-theme .copy-btn:hover {
+        background: #e2e8f0;
+        color: #374151;
+        border-color: #94a3b8;
+      }
 
-    .light-theme #previewFsPanel {
-      background: rgba(255, 255, 255, 0.95) !important;
-      border: 1px solid #e2e8f0 !important;
-    }
+      .speed-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+      }
 
-    .light-theme #previewFsPanel input {
-      background: #ffffff !important;
-      border: 1px solid #cbd5e1 !important;
-      color: #374151 !important;
-    }
+      .speed-container input[type='range'] {
+        width: 100%;
+        max-width: 300px;
+        height: 6px;
+        background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+        border-radius: 3px;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
 
-    .light-theme #previewFsPanel label {
-      color: #64748b !important;
-    }
+      .speed-container input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.4);
+        border: 2px solid #1e293b;
+      }
 
-    .light-theme #fsCurSid {
-      color: #374151 !important;
-    }
+      .speed-container input[type='range']::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid #1e293b;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.4);
+      }
 
-    /* bbCounters dark theme support */
-    #bbCounters > div {
-      background: #334155 !important;
-      border: 1px solid #475569 !important;
-    }
+      .light-theme .speed-container input[type='range'] {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      }
 
-    #bbCounters > div > div > div:first-child {
-      color: #cbd5e1 !important;
-    }
+      .light-theme .speed-container input[type='range']::-webkit-slider-thumb {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border: 2px solid #ffffff;
+      }
 
-    #bbTimer {
-      background: #1e293b !important;
-      border: 1px solid #475569 !important;
-      color: #e2e8f0 !important;
-    }
+      .light-theme .speed-container input[type='range']::-moz-range-thumb {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border: 2px solid #ffffff;
+      }
 
-    #bbPasses, #bbSets {
-      color: #e2e8f0 !important;
-    }
+      .controls-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        align-items: start;
+      }
+      .controls-card {
+        background: #334155;
+        border: 1px solid #475569;
+        border-radius: 10px;
+        padding: 12px;
+      }
+      .controls-title {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        color: #cbd5e1;
+        font-weight: 500;
+      }
 
-    .light-theme #bbCounters > div {
-      background: #f8fafc !important;
-      border: 1px solid #e2e8f0 !important;
-    }
+      .light-theme .controls-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+      }
 
-    .light-theme #bbCounters > div > div > div:first-child {
-      color: #64748b !important;
-    }
+      .light-theme .controls-title {
+        color: #64748b;
+      }
+      .direction-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
 
-    .light-theme #bbTimer {
-      background: #ffffff !important;
-      border: 1px solid #e2e8f0 !important;
-      color: #374151 !important;
-    }
+      .actions-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.9fr 0.9fr;
+        gap: 8px;
+        align-items: stretch;
+      }
+      .actions-grid .btn {
+        width: 100%;
+      }
+      .actions-grid .btn.primary {
+        font-weight: 600;
+      }
 
-    .light-theme #bbPasses, .light-theme #bbSets {
-      color: #374151 !important;
-    }
+      .segmented {
+        display: flex;
+        gap: 0;
+        border: 1px solid #475569;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #334155;
+        flex-wrap: wrap;
+      }
+      .segmented .seg-btn {
+        flex: 1 1 25%;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #cbd5e1;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        transition:
+          background 0.15s ease,
+          color 0.15s ease;
+        min-width: 0;
+      }
+      .segmented .seg-btn + .seg-btn {
+        border-left: 1px solid #475569;
+      }
+      .segmented .seg-btn:hover {
+        background: #475569;
+        color: #e2e8f0;
+      }
+      .segmented .seg-btn.active {
+        background: #2563eb;
+        color: #ffffff;
+      }
 
-    /* Preview canvas dark theme support */
-    #preview {
-      border: 1px solid #475569 !important;
-      background: #020617 !important;
-    }
+      .light-theme .segmented {
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+      }
 
-    .light-theme #preview {
-      border: 1px solid #e2e8f0 !important;
-      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-    }
+      .light-theme .segmented .seg-btn {
+        color: #64748b;
+      }
 
-    /* Viewer info dark theme support */
-    #viewerInfo {
-      background: rgba(30, 41, 59, 0.9) !important;
-      border: 1px solid #475569 !important;
-      color: #cbd5e1 !important;
-    }
+      .light-theme .segmented .seg-btn + .seg-btn {
+        border-left: 1px solid #e2e8f0;
+      }
 
-    .light-theme #viewerInfo {
-      background: rgba(255, 255, 255, 0.9) !important;
-      border: 1px solid #e2e8f0 !important;
-      color: #64748b !important;
-    }
+      .light-theme .segmented .seg-btn:hover {
+        background: #e2e8f0;
+        color: #374151;
+      }
+      .segmented .seg-btn strong {
+        font-weight: 600;
+      }
 
-    /* Text colors for session info */
-    #sessionInfo {
-      color: #94a3b8 !important;
-    }
+      @media (max-width: 768px) {
+        .controls-grid {
+          grid-template-columns: 1fr;
+        }
+        .actions_grid {
+          grid-template-columns: 1fr;
+        }
+        .segmented {
+          flex-wrap: wrap;
+          overflow-x: hidden;
+        }
+        .segmented .seg-btn {
+          flex: 1 1 25%;
+          min-width: 0;
+          padding: 10px 8px;
+          font-size: 12px;
+        }
+      }
 
-    .light-theme #sessionInfo {
-      color: #64748b !important;
-    }
+      .appearance-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0;
+        align-items: start;
+      }
+      @media (max-width: 1024px) {
+        .appearance-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 768px) {
+        .appearance-grid {
+          grid-template-columns: 1fr;
+        }
+      }
 
-    #viewerStatus {
-      color: #ef4444 !important;
-    }
+      @media (max-width: 768px) {
+        body {
+          padding: 0;
+        }
+        .wrap {
+          gap: 16px;
+          padding: 12px;
+        }
+        .control-section {
+          padding: 16px;
+        }
+        .speed-container input[type='range'] {
+          max-width: 250px;
+        }
+      }
 
-    .light-theme #viewerStatus {
-      color: #ef4444 !important;
-    }
+      .back-btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: #334155;
+        color: #cbd5e1;
+        border: 1px solid #475569;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 1000;
+      }
 
-    /* Control section headings */
-    .control-section h3 {
-      color: #e2e8f0;
-    }
+      .back-btn:hover {
+        background: #475569;
+        color: #e2e8f0;
+        border-color: #64748b;
+      }
 
-    .light-theme .control-section h3 {
-      color: #1e293b;
-    }
+      .light-theme .back-btn {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #cbd5e1;
+      }
 
-    .control-section p {
-      color: #94a3b8;
-    }
+      .light-theme .back-btn:hover {
+        background: #e2e8f0;
+        color: #374151;
+        border-color: #94a3b8;
+      }
 
-    .light-theme .control-section p {
-      color: #64748b;
-    }
-  </style>
-</head>
-<body>
-  <button class="back-btn" onclick="goBack()">← На главную</button>
+      .theme-toggle-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+      }
 
-  <div class="theme-toggle-container">
-    <button id="themeToggleBtn" class="theme-toggle-btn">
-      🌓 Тема
-    </button>
-  </div>
+      .theme-toggle-btn {
+        background: rgba(37, 99, 235, 0.9);
+        color: white;
+        border: 0;
+        padding: 12px 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
 
-  <div class="wrap">
-    <div class="control-section">
-      <h3>🎮 Сессия: <span id="curSid">...</span></h3>
-      <p id="sessionInfo" style="margin: 4px 0; font-size: 14px; color: #64748b;">Сессия: загрузка...</p>
-      <p style="margin: 8px 0; color: #64748b;">Статус зрителя: <span id="viewerStatus" style="color: #ef4444;">Ожидание...</span></p>
-      <div class="viewer-link-container">
-        <div class="link-input-group">
-          <input id="view" readonly placeholder="Ссылка для зрителя будет здесь..." onclick="this.select()">
-          <button onclick="copy('view')" class="copy-btn">📋 Копировать</button>
-        </div>
-      </div>
-      <div id="bbCounters" style="margin-top: 12px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
-        <div style="display: flex; gap: 18px; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px;">
-          <div style="min-width: 110px; text-align: center;">
-            <div style="font-size: 20px; color: #64748b; font-weight: 600;">Таймер</div>
-            <div id="bbTimer" style="font-size: 36px; font-weight: 700; color: #374151; background: #ffffff; padding: 2px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">0:00</div>
-          </div>
-          <div style="min-width: 90px; text-align: center;">
-            <div style="font-size: 20px; color: #64748b; font-weight: 600;">Пасы</div>
-            <div id="bbPasses" style="font-size: 36px; font-weight: 700; color: #374151;">0</div>
-          </div>
-          <div style="min-width: 90px; text-align: center;">
-            <div style="font-size: 20px; color: #64748b; font-weight: 600;">Сеты</div>
-            <div id="bbSets" style="font-size: 36px; font-weight: 700; color: #374151;">0</div>
-          </div>
-        </div>
-        <button id="bbResetBtn" class="btn outline" style="height: 44px; min-width: 90px;">Сброс</button>
-      </div>
+      .theme-toggle-btn:hover {
+        background: rgba(37, 99, 235, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+      }
+
+      .light-theme .theme-toggle-btn {
+        background: rgba(30, 64, 175, 0.9);
+      }
+
+      .light-theme .theme-toggle-btn:hover {
+        background: rgba(30, 64, 175, 1);
+      }
+
+      .kbd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: #334155;
+        border: 1px solid #475569;
+        border-bottom-width: 3px;
+        border-radius: 6px;
+        padding: 2px 6px;
+        color: #cbd5e1;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .light-theme .kbd {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        color: #374151;
+      }
+
+      /* Fullscreen overlay and panel theme support */
+      #previewOverlay {
+        background: #0f172a !important;
+      }
+
+      #previewFullscreenCanvas {
+        background: #020617 !important;
+      }
+
+      #previewFsPanel {
+        background: rgba(30, 41, 59, 0.95) !important;
+        border: 1px solid #475569 !important;
+        height: auto !important;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+      }
+
+      #previewFsPanel input {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        color: #e2e8f0 !important;
+      }
+
+      .light-theme #previewOverlay {
+        background: rgba(248, 250, 252, 0.98) !important;
+      }
+
+      .light-theme #previewFullscreenCanvas {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+      }
+
+      .light-theme #previewFsPanel {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+
+      .light-theme #previewFsPanel input {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #374151 !important;
+      }
+
+      .light-theme #previewFsPanel label {
+        color: #64748b !important;
+      }
+
+      .light-theme #fsCurSid {
+        color: #374151 !important;
+      }
+
+      /* bbCounters dark theme support */
+      #bbCounters > div {
+        background: #334155 !important;
+        border: 1px solid #475569 !important;
+      }
+
+      #bbCounters > div > div > div:first-child {
+        color: #cbd5e1 !important;
+      }
+
+      #bbTimer {
+        background: #1e293b !important;
+        border: 1px solid #475569 !important;
+        color: #e2e8f0 !important;
+      }
+
+      #bbPasses,
+      #bbSets {
+        color: #e2e8f0 !important;
+      }
+
+      .light-theme #bbCounters > div {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+
+      .light-theme #bbCounters > div > div > div:first-child {
+        color: #64748b !important;
+      }
+
+      .light-theme #bbTimer {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #374151 !important;
+      }
+
+      .light-theme #bbPasses,
+      .light-theme #bbSets {
+        color: #374151 !important;
+      }
+
+      /* Preview canvas dark theme support */
+      #preview {
+        border: 1px solid #475569 !important;
+        background: #020617 !important;
+      }
+
+      .light-theme #preview {
+        border: 1px solid #e2e8f0 !important;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+      }
+
+      /* Viewer info dark theme support */
+      #viewerInfo {
+        background: rgba(30, 41, 59, 0.9) !important;
+        border: 1px solid #475569 !important;
+        color: #cbd5e1 !important;
+      }
+
+      .light-theme #viewerInfo {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #64748b !important;
+      }
+
+      /* Text colors for session info */
+      #sessionInfo {
+        color: #94a3b8 !important;
+      }
+
+      .light-theme #sessionInfo {
+        color: #64748b !important;
+      }
+
+      #viewerStatus {
+        color: #ef4444 !important;
+      }
+
+      .light-theme #viewerStatus {
+        color: #ef4444 !important;
+      }
+
+      /* Control section headings */
+      .control-section h3 {
+        color: #e2e8f0;
+      }
+
+      .light-theme .control-section h3 {
+        color: #1e293b;
+      }
+
+      .control-section p {
+        color: #94a3b8;
+      }
+
+      .light-theme .control-section p {
+        color: #64748b;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="back-btn" onclick="goBack()">← На главную</button>
+
+    <div class="theme-toggle-container">
+      <button id="themeToggleBtn" class="theme-toggle-btn">🌓 Тема</button>
     </div>
 
-    <div id="previewWrap" style="display: none;" class="control-section floating-preview">
-      <div class="drag-handle" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-        <span>👁️ Превью движения</span>
-        <button id="openPreviewFullscreenBtn" class="btn outline" style="padding:6px 10px;">⛶ Полноэкранный</button>
-      </div>
-      <div style="text-align: center; position: relative; padding-bottom: 35px;">
-        <canvas id="preview" style="border: 1px solid #374151; background: #020617;"></canvas>
-        <div id="viewerInfo" style="display: none; margin-top: 8px; font-size: 12px; color: #64748b; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(255, 255, 255, 0.9); padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
-          Вьювер и размер экрана
-        </div>
-
-      </div>
-    </div>
-
-    <div id="previewOverlay" style="display:none; position:fixed; inset:0; background:#0b1220; z-index:2000;">
-      <canvas id="previewFullscreenCanvas" style="display:block; width:100vw; height:100vh; background:#020617;"></canvas>
-      <div id="previewFsPanel" style="position:absolute; top:20px; right:20px; width:320px; height:380px; background: rgba(0,0,0,0.75); border:1px solid #1f2937; padding:16px; border-radius:16px; backdrop-filter: blur(12px); transition: opacity .25s ease; opacity:1; display:grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto auto auto; gap:8px; align-items:center;">
-        <div style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
-          <span id="fsCurSid" style="color:#cbd5e1; font-weight:600; font-size:12px; text-align:center;">SID: ...</span>
-          <div style="display:flex; align-items:center; gap:6px;">
-            <input id="fsViewLink" readonly style="flex:1; padding:6px 8px; background:#0b1220; color:#e2e8f0; border:1px solid #1f2937; border-radius:6px; font-size:11px;" />
-            <button class="copy-btn" style="padding:6px 8px; font-size:12px;" onclick="copy('fsViewLink')">📋</button>
+    <div class="wrap">
+      <div class="control-section">
+        <h3>🎮 Сессия: <span id="curSid">...</span></h3>
+        <p id="sessionInfo" style="margin: 4px 0; font-size: 14px; color: #64748b">
+          Сессия: загрузка...
+        </p>
+        <p style="margin: 8px 0; color: #64748b">
+          Статус зрителя: <span id="viewerStatus" style="color: #ef4444">Ожидание...</span>
+        </p>
+        <div class="viewer-link-container">
+          <div class="link-input-group">
+            <input
+              id="view"
+              readonly
+              placeholder="Ссылка для зрителя будет здесь..."
+              onclick="this.select()"
+            />
+            <button onclick="copy('view')" class="copy-btn">📋 Копировать</button>
           </div>
         </div>
-        
-        <button class="btn" onclick="togglePlayPause()" id="fsPlayPauseBtn" style="grid-column: 1; font-size:12px; padding:8px;">▶️ Старт</button>
-        
-        <button class="btn outline" onclick="resetAll()" style="grid-column: 1 / -1; font-size:12px; padding:8px; margin-top:4px;">🔄 Сброс</button>
-        
-        <div style="grid-column: 1 / -1; display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
-          <button class="seg-btn" id="fsDirH" style="font-size:11px; padding:6px;">↔️ Гориз</button>
-          <button class="seg-btn" id="fsDirV" style="font-size:11px; padding:6px;">↕️ Вертик</button>
-          <button class="seg-btn" id="fsDirDL" style="font-size:11px; padding:6px;">↙️↘️ Диаг1</button>
-          <button class="seg-btn" id="fsDirDR" style="font-size:11px; padding:6px;">↖️↗️ Диаг2</button>
-          <button class="seg-btn" id="fsDirRandom" style="font-size:11px; padding:6px;">🎲 Случайное</button>
-        </div>
-        
-        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:8px;">
-          <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Скорость</label>
-          <input type="range" id="fsSpeed" min="0" max="100" value="40" style="flex:1;" />
-        </div>
-        
-        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:4px;">
-          <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Размер</label>
-          <button class="size-btn" id="fsSize1" style="font-size:10px; padding:4px 6px;">×1</button>
-          <button class="size-btn" id="fsSize2" style="font-size:10px; padding:4px 6px;">×2</button>
-          <button class="size-btn" id="fsSize3" style="font-size:10px; padding:4px 6px;">×3</button>
-          <button class="size-btn" id="fsSize4" style="font-size:10px; padding:4px 6px;">×4</button>
-        </div>
-        
-        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:3px; margin-bottom:4px;">
-          <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Мяч</label>
-          <button class="color-btn" id="fsBallCol1" style="background:#60a5fa; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol2" style="background:#ef4444; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol3" style="background:#10b981; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol4" style="background:#f59e0b; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol5" style="background:#8b5cf6; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol6" style="background:#f97316; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol7" style="background:#06b6d4; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol8" style="background:#84cc16; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol9" style="background:#fb7185; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBallCol10" style="background:#ffffff; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-        </div>
-        
-        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:3px;">
-          <label style="color:#cbd5e1; font-size:11px; min-width:50px;">Фон</label>
-          <button class="color-btn" id="fsBg1" style="background:#020617; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBg2" style="background:#000000; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBg3" style="background:#111827; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBg4" style="background:#0a2540; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBg5" style="background:#052e16; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBg6" style="background:#1a102a; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBg7" style="background:#2b1b0e; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBg8" style="background:#032f2f; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBg9" style="background:#2a0e14; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-          <button class="color-btn" id="fsBg10" style="background:#0f172a; width:14px; height:14px; padding:0; border-radius:50%;"></button>
-        </div>
-        
-        <button class="btn outline" id="exitPreviewFullscreenBtn" style="grid-column: 1 / -1; font-size:12px; padding:8px; margin-top:4px;">⤫ Закрыть</button>
-      </div>
-    </div>
-
-    <div class="control-section">
-      <h3>🎮 Управление и направление</h3>
-      <div class="controls-grid">
-        <div class="controls-card">
-          <p class="controls-title">Действия</p>
-          <div class="actions-grid">
-            <button id="playPauseBtn" class="btn primary" onclick="togglePlayPause()">▶️ Старт</button>
-            <button class="btn danger" onclick="resetSession()">🔄 Сброс</button>
+        <div
+          id="bbCounters"
+          style="margin-top: 12px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap"
+        >
+          <div
+            style="
+              display: flex;
+              gap: 18px;
+              align-items: center;
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 10px;
+              padding: 10px 14px;
+            "
+          >
+            <div style="min-width: 110px; text-align: center">
+              <div style="font-size: 20px; color: #64748b; font-weight: 600">Таймер</div>
+              <div
+                id="bbTimer"
+                style="
+                  font-size: 36px;
+                  font-weight: 700;
+                  color: #374151;
+                  background: #ffffff;
+                  padding: 2px 10px;
+                  border-radius: 8px;
+                  border: 1px solid #e2e8f0;
+                "
+              >
+                0:00
+              </div>
+            </div>
+            <div style="min-width: 90px; text-align: center">
+              <div style="font-size: 20px; color: #64748b; font-weight: 600">Пасы</div>
+              <div id="bbPasses" style="font-size: 36px; font-weight: 700; color: #374151">0</div>
+            </div>
+            <div style="min-width: 90px; text-align: center">
+              <div style="font-size: 20px; color: #64748b; font-weight: 600">Сеты</div>
+              <div id="bbSets" style="font-size: 36px; font-weight: 700; color: #374151">0</div>
+            </div>
           </div>
-          <p class="controls-title" style="margin-top: 12px;">Направление</p>
-          <div class="direction-row">
-            <div class="segmented" id="directionSegmented">
-              <button class="seg-btn" data-mode="horizontal" onclick="setDirection('horizontal')" aria-label="Горизонтально" title="Горизонтальное движение"><strong>↔️</strong> Гориз.</button>
-              <button class="seg-btn" data-mode="vertical" onclick="setDirection('vertical')" aria-label="Вертикально" title="Вертикальное движение"><strong>↕️</strong> Вертик.</button>
-              <button class="seg-btn" data-mode="diagRL" onclick="setDirection('diagRL')" aria-label="Диагональ слева направо" title="Диагональ L→R"><strong>↖️↗️</strong> L→R</button>
-              <button class="seg-btn" data-mode="diagRLL" onclick="setDirection('diagRLL')" aria-label="Диагональ справа налево" title="Диагональ R→L"><strong>↙️↘️</strong> R→L</button>
-              <button class="seg-btn" data-mode="random" onclick="setDirection('random')" aria-label="Случайное направление" title="Случайное направление"><strong>🎲</strong> Случайное</button>
+          <button id="bbResetBtn" class="btn outline" style="height: 44px; min-width: 90px">
+            Сброс
+          </button>
+        </div>
+      </div>
+
+      <div id="previewWrap" style="display: none" class="control-section floating-preview">
+        <div
+          class="drag-handle"
+          style="display: flex; align-items: center; justify-content: space-between; gap: 12px"
+        >
+          <span>👁️ Превью движения</span>
+          <button id="openPreviewFullscreenBtn" class="btn outline" style="padding: 6px 10px">
+            ⛶ Полноэкранный
+          </button>
+        </div>
+        <div style="text-align: center; position: relative; padding-bottom: 35px">
+          <canvas id="preview" style="border: 1px solid #374151; background: #020617"></canvas>
+          <div
+            id="viewerInfo"
+            style="
+              display: none;
+              margin-top: 8px;
+              font-size: 12px;
+              color: #64748b;
+              position: absolute;
+              bottom: 10px;
+              left: 50%;
+              transform: translateX(-50%);
+              white-space: nowrap;
+              background: rgba(255, 255, 255, 0.9);
+              padding: 4px 8px;
+              border-radius: 4px;
+              border: 1px solid #e2e8f0;
+            "
+          >
+            Вьювер и размер экрана
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="previewOverlay"
+        style="display: none; position: fixed; inset: 0; background: #0b1220; z-index: 2000"
+      >
+        <canvas
+          id="previewFullscreenCanvas"
+          style="display: block; width: 100vw; height: 100vh; background: #020617"
+        ></canvas>
+        <div
+          id="previewFsPanel"
+          style="
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            height: 380px;
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid #1f2937;
+            padding: 16px;
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            transition: opacity 0.25s ease;
+            opacity: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto auto auto auto auto;
+            gap: 8px;
+            align-items: center;
+          "
+        >
+          <div
+            style="
+              grid-column: 1 / -1;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              margin-bottom: 8px;
+            "
+          >
+            <span
+              id="fsCurSid"
+              style="color: #cbd5e1; font-weight: 600; font-size: 12px; text-align: center"
+              >SID: ...</span
+            >
+            <div style="display: flex; align-items: center; gap: 6px">
+              <input
+                id="fsViewLink"
+                readonly
+                style="
+                  flex: 1;
+                  padding: 6px 8px;
+                  background: #0b1220;
+                  color: #e2e8f0;
+                  border: 1px solid #1f2937;
+                  border-radius: 6px;
+                  font-size: 11px;
+                "
+              />
+              <button
+                class="copy-btn"
+                style="padding: 6px 8px; font-size: 12px"
+                onclick="copy('fsViewLink')"
+              >
+                📋
+              </button>
+            </div>
+          </div>
+
+          <button
+            class="btn"
+            onclick="togglePlayPause()"
+            id="fsPlayPauseBtn"
+            style="grid-column: 1; font-size: 12px; padding: 8px"
+          >
+            ▶️ Старт
+          </button>
+
+          <button
+            class="btn outline"
+            onclick="resetAll()"
+            style="grid-column: 1 / -1; font-size: 12px; padding: 8px; margin-top: 4px"
+          >
+            🔄 Сброс
+          </button>
+
+          <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 4px">
+            <button class="seg-btn" id="fsDirH" style="font-size: 11px; padding: 6px">
+              ↔️ Гориз
+            </button>
+            <button class="seg-btn" id="fsDirV" style="font-size: 11px; padding: 6px">
+              ↕️ Вертик
+            </button>
+            <button class="seg-btn" id="fsDirDL" style="font-size: 11px; padding: 6px">
+              ↙️↘️ Диаг1
+            </button>
+            <button class="seg-btn" id="fsDirDR" style="font-size: 11px; padding: 6px">
+              ↖️↗️ Диаг2
+            </button>
+            <button class="seg-btn" id="fsDirRandom" style="font-size: 11px; padding: 6px">
+              🎲 Случайное
+            </button>
+          </div>
+
+          <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 8px">
+            <label style="color: #cbd5e1; font-size: 11px; min-width: 50px">Скорость</label>
+            <input type="range" id="fsSpeed" min="0" max="100" value="40" style="flex: 1" />
+          </div>
+
+          <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 4px">
+            <label style="color: #cbd5e1; font-size: 11px; min-width: 50px">Размер</label>
+            <button class="size-btn" id="fsSize1" style="font-size: 10px; padding: 4px 6px">
+              ×1
+            </button>
+            <button class="size-btn" id="fsSize2" style="font-size: 10px; padding: 4px 6px">
+              ×2
+            </button>
+            <button class="size-btn" id="fsSize3" style="font-size: 10px; padding: 4px 6px">
+              ×3
+            </button>
+            <button class="size-btn" id="fsSize4" style="font-size: 10px; padding: 4px 6px">
+              ×4
+            </button>
+          </div>
+
+          <div
+            style="
+              grid-column: 1 / -1;
+              display: flex;
+              align-items: center;
+              gap: 3px;
+              margin-bottom: 4px;
+            "
+          >
+            <label style="color: #cbd5e1; font-size: 11px; min-width: 50px">Мяч</label>
+            <button
+              class="color-btn"
+              id="fsBallCol1"
+              style="background: #60a5fa; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBallCol2"
+              style="background: #ef4444; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBallCol3"
+              style="background: #10b981; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBallCol4"
+              style="background: #f59e0b; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBallCol5"
+              style="background: #8b5cf6; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBallCol6"
+              style="background: #f97316; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBallCol7"
+              style="background: #06b6d4; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBallCol8"
+              style="background: #84cc16; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBallCol9"
+              style="background: #fb7185; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBallCol10"
+              style="background: #ffffff; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+          </div>
+
+          <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 3px">
+            <label style="color: #cbd5e1; font-size: 11px; min-width: 50px">Фон</label>
+            <button
+              class="color-btn"
+              id="fsBg1"
+              style="background: #020617; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBg2"
+              style="background: #000000; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBg3"
+              style="background: #111827; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBg4"
+              style="background: #0a2540; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBg5"
+              style="background: #052e16; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBg6"
+              style="background: #1a102a; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBg7"
+              style="background: #2b1b0e; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBg8"
+              style="background: #032f2f; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBg9"
+              style="background: #2a0e14; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+            <button
+              class="color-btn"
+              id="fsBg10"
+              style="background: #0f172a; width: 14px; height: 14px; padding: 0; border-radius: 50%"
+            ></button>
+          </div>
+
+          <button
+            class="btn outline"
+            id="exitPreviewFullscreenBtn"
+            style="grid-column: 1 / -1; font-size: 12px; padding: 8px; margin-top: 4px"
+          >
+            ⤫ Закрыть
+          </button>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <h3>🎮 Управление и направление</h3>
+        <div class="controls-grid">
+          <div class="controls-card">
+            <p class="controls-title">Действия</p>
+            <div class="actions-grid">
+              <button id="playPauseBtn" class="btn primary" onclick="togglePlayPause()">
+                ▶️ Старт
+              </button>
+              <button class="btn danger" onclick="resetSession()">🔄 Сброс</button>
+            </div>
+            <p class="controls-title" style="margin-top: 12px">Направление</p>
+            <div class="direction-row">
+              <div class="segmented" id="directionSegmented">
+                <button
+                  class="seg-btn"
+                  data-mode="horizontal"
+                  onclick="setDirection('horizontal')"
+                  aria-label="Горизонтально"
+                  title="Горизонтальное движение"
+                >
+                  <strong>↔️</strong> Гориз.
+                </button>
+                <button
+                  class="seg-btn"
+                  data-mode="vertical"
+                  onclick="setDirection('vertical')"
+                  aria-label="Вертикально"
+                  title="Вертикальное движение"
+                >
+                  <strong>↕️</strong> Вертик.
+                </button>
+                <button
+                  class="seg-btn"
+                  data-mode="diagRL"
+                  onclick="setDirection('diagRL')"
+                  aria-label="Диагональ слева направо"
+                  title="Диагональ L→R"
+                >
+                  <strong>↖️↗️</strong> L→R
+                </button>
+                <button
+                  class="seg-btn"
+                  data-mode="diagRLL"
+                  onclick="setDirection('diagRLL')"
+                  aria-label="Диагональ справа налево"
+                  title="Диагональ R→L"
+                >
+                  <strong>↙️↘️</strong> R→L
+                </button>
+                <button
+                  class="seg-btn"
+                  data-mode="random"
+                  onclick="setDirection('random')"
+                  aria-label="Случайное направление"
+                  title="Случайное направление"
+                >
+                  <strong>🎲</strong> Случайное
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="controls-card">
+            <p class="controls-title">Скорость</p>
+            <div id="speedControl"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <h3>🎨 Оформление</h3>
+        <div class="appearance-grid">
+          <div class="controls-card">
+            <p class="controls-title">Цвет шарика</p>
+            <div id="ballColorControl"></div>
+          </div>
+          <div class="controls-card">
+            <p class="controls-title">Цвет фона</p>
+            <div id="bgColorControl"></div>
+          </div>
+          <div class="controls-card">
+            <p class="controls-title">Размер шарика</p>
+            <div id="sizeControl"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <h3>🛠️ Инструменты и настройки</h3>
+        <div class="appearance-grid">
+          <div class="controls-card">
+            <p class="controls-title">💾 Управление сессией</p>
+            <div id="sessionControls"></div>
+            <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+              <button class="btn btn-gradient" onclick="createCustomPreset()" style="width: 100%">
+                ⭐ Создать пресет
+              </button>
+              <button class="btn outline" onclick="goBack()" style="width: 100%">
+                🏠 На главную
+              </button>
+            </div>
+          </div>
+          <div class="controls-card">
+            <p class="controls-title">🎯 Пресеты</p>
+            <div id="presetControls"></div>
+          </div>
+          <div class="controls-card">
+            <p class="controls-title">⌨️ Горячие клавиши</p>
+            <div style="font-size: 12px; line-height: 1.6">
+              <div><span class="kbd">Пробел</span> — Старт/Стоп</div>
+              <div><span class="kbd">Ctrl+Z</span> — Отмена действия</div>
+              <div><span class="kbd">Ctrl+S</span> — Сохранить пресет</div>
+              <div><span class="kbd">F</span> — Полноэкранное превью</div>
+              <div><span class="kbd">↑↓←→</span> — Управление направлением</div>
             </div>
           </div>
         </div>
-        <div class="controls-card">
-          <p class="controls-title">Скорость</p>
-          <div id="speedControl"></div>
-        </div>
       </div>
     </div>
 
-    <div class="control-section">
-      <h3>🎨 Оформление</h3>
-      <div class="appearance-grid">
-        <div class="controls-card">
-          <p class="controls-title">Цвет шарика</p>
-          <div id="ballColorControl"></div>
-        </div>
-        <div class="controls-card">
-          <p class="controls-title">Цвет фона</p>
-          <div id="bgColorControl"></div>
-        </div>
-        <div class="controls-card">
-          <p class="controls-title">Размер шарика</p>
-          <div id="sizeControl"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="control-section">
-      <h3>🛠️ Инструменты и настройки</h3>
-      <div class="appearance-grid">
-        <div class="controls-card">
-          <p class="controls-title">💾 Управление сессией</p>
-          <div id="sessionControls"></div>
-          <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <button class="btn btn-gradient" onclick="createCustomPreset()" style="width: 100%;">⭐ Создать пресет</button>
-            <button class="btn outline" onclick="goBack()" style="width: 100%;">🏠 На главную</button>
-          </div>
-        </div>
-        <div class="controls-card">
-          <p class="controls-title">🎯 Пресеты</p>
-          <div id="presetControls"></div>
-        </div>
-        <div class="controls-card">
-          <p class="controls-title">⌨️ Горячие клавиши</p>
-          <div style="font-size: 12px; line-height: 1.6;">
-            <div><span class="kbd">Пробел</span> — Старт/Стоп</div>
-            <div><span class="kbd">Ctrl+Z</span> — Отмена действия</div>
-            <div><span class="kbd">Ctrl+S</span> — Сохранить пресет</div>
-            <div><span class="kbd">F</span> — Полноэкранное превью</div>
-            <div><span class="kbd">↑↓←→</span> — Управление направлением</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="/js/common.js" defer></script>
-  <script src="/js/physics-engine.js" defer></script>
-  <script src="/js/renderer.js" defer></script>
-  <script src="/js/shared-components.js" defer></script>
-  <script src="/js/websocket-client.js" defer></script>
-  <script src="/js/config.js" defer></script>
-  <script src="/js/notification-system.js" defer></script>
-  <script src="/js/new-features.js" defer></script>
-  <script src="/js/controller.js" defer></script>
-</body>
+    <script src="/js/common.js" defer></script>
+    <script src="/js/physics-engine.js" defer></script>
+    <script src="/js/renderer.js" defer></script>
+    <script src="/js/shared-components.js" defer></script>
+    <script src="/js/websocket-client.js" defer></script>
+    <script src="/js/config.js" defer></script>
+    <script src="/js/notification-system.js" defer></script>
+    <script src="/js/new-features.js" defer></script>
+    <script src="/js/controller.js" defer></script>
+  </body>
 </html>

@@ -6,7 +6,7 @@ const ValidationUtils = require('../utils/validation.js')
 const { logger, DEBUG_MODE } = require('../logger.js')
 // Основной оркестратор сессий
 class SessionManager {
-  constructor (apiCache) {
+  constructor(apiCache) {
     this.sessionRepository = new SessionRepository()
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
     this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
@@ -16,12 +16,12 @@ class SessionManager {
       ...logger,
       logSession: (sessionId, msg, level = 'info') => {
         // Оптимизированное логирование - только для отладки
-        if (DEBUG_MODE && level === 'debug') console.log(`[SESSION:${sessionId}] ${msg}`)
+        if (DEBUG_MODE && level === 'debug') logger.logSession(sessionId, msg)
       }
     }
   }
 
-  createSession (ballState = {}) {
+  createSession(ballState = {}) {
     const session = this.sessionRepository.create({ ballState })
 
     session.physicsEngine = new PhysicsEngine({
@@ -41,7 +41,7 @@ class SessionManager {
   }
 
   // Создание сессии с определенным ID (для постоянных ссылок)
-  findOrCreateSession (sessionId, ballState = {}) {
+  findOrCreateSession(sessionId, ballState = {}) {
     const session = this.sessionRepository.findOrCreateById(sessionId, { ballState })
     if (!session) return null
 
@@ -60,7 +60,7 @@ class SessionManager {
     return session
   }
 
-  _initPhysicsCallbacks (session) {
+  _initPhysicsCallbacks(session) {
     // Немедленная рассылка состояния при отскоке, чтобы вьювер видел касание границ
     session.physicsEngine.bounceCallback = () => {
       try {
@@ -72,11 +72,11 @@ class SessionManager {
     }
   }
 
-  getSession (sessionId) {
+  getSession(sessionId) {
     return this.sessionRepository.findById(sessionId)
   }
 
-  updateBallState (sessionId, updates) {
+  updateBallState(sessionId, updates) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
@@ -102,7 +102,7 @@ class SessionManager {
 
     // Обработка возврата в центр при смене направления или остановке
     if (validatedUpdates.returnToCenter && session.physicsEngine) {
-      console.log(`[SERVER] Обработка returnToCenter для сессии ${sessionId}`)
+      
       // Используем специальный метод для плавного возврата в центр
       session.physicsEngine.returnToCenter()
 
@@ -111,7 +111,11 @@ class SessionManager {
         session.physicsEngine.setPaused(true)
       }
 
-      this.logger.logSession(sessionId, '[RETURN_TO_CENTER] Initiating smooth return to center', 'debug')
+      this.logger.logSession(
+        sessionId,
+        '[RETURN_TO_CENTER] Initiating smooth return to center',
+        'debug'
+      )
     }
 
     if (session.physicsEngine) {
@@ -120,8 +124,11 @@ class SessionManager {
       // Нормализация vx/vy ДОПУСКАЕТСЯ только кратковременно после смены размера экрана
       // чтобы стабилизировать внешний контракт (см. normalizeDirectionUntilTs)
       if (
-        session.normalizeDirectionUntilTs && Date.now() < session.normalizeDirectionUntilTs &&
-        session.physicsEngine && session.physicsEngine.state && session.physicsEngine.state.lastDirection
+        session.normalizeDirectionUntilTs &&
+        Date.now() < session.normalizeDirectionUntilTs &&
+        session.physicsEngine &&
+        session.physicsEngine.state &&
+        session.physicsEngine.state.lastDirection
       ) {
         const dx = session.physicsEngine.state.lastDirection.x || 0
         const dy = session.physicsEngine.state.lastDirection.y || 0
@@ -140,7 +147,7 @@ class SessionManager {
   /**
    * Определяет задержку throttling в зависимости от типа обновления
    */
-  _getThrottleDelay (updates) {
+  _getThrottleDelay(updates) {
     if (!updates) return 50
 
     if (updates.colorBall !== undefined || updates.colorBg !== undefined) return 200
@@ -151,7 +158,7 @@ class SessionManager {
     return 50
   }
 
-  handleWebSocketConnection (ws, sessionId, role) {
+  handleWebSocketConnection(ws, sessionId, role) {
     if (!this.webSocketManager.addClient(sessionId, ws, role)) {
       ws.close(1011, 'Session not found')
       return
@@ -166,16 +173,32 @@ class SessionManager {
         this.stateBroadcaster.broadcastInitialState(sessionId, ws, session.ballState)
       } else {
         // Controller connected
-        try { ws.initialStateSent = false } catch { /* ignore */ }
+        try {
+          ws.initialStateSent = false
+        } catch {
+          /* ignore */
+        }
 
         // Send initial_state immediately if viewer screen size is already set
-        if (session.viewerScreenSize && session.viewerScreenSize.width > 0 && session.viewerScreenSize.height > 0) {
-          const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
+        if (
+          session.viewerScreenSize &&
+          session.viewerScreenSize.width > 0 &&
+          session.viewerScreenSize.height > 0
+        ) {
+          const finalState = session.physicsEngine
+            ? session.physicsEngine.getState()
+            : session.ballState
           this.stateBroadcaster.broadcastInitialState(sessionId, ws, finalState)
           ws.initialStateSent = true
-          this.logger.logSession(sessionId, 'Sent initial_state to controller (viewer screen size already set)')
+          this.logger.logSession(
+            sessionId,
+            'Sent initial_state to controller (viewer screen size already set)'
+          )
         } else {
-          this.logger.logSession(sessionId, 'Controller connected, deferring initial_state until viewer screen size is set.')
+          this.logger.logSession(
+            sessionId,
+            'Controller connected, deferring initial_state until viewer screen size is set.'
+          )
         }
       }
     }
@@ -188,7 +211,7 @@ class SessionManager {
     }
   }
 
-  handleWebSocketDisconnection (ws) {
+  handleWebSocketDisconnection(ws) {
     const sessionId = this.webSocketManager.removeClient(ws)
     if (sessionId) {
       this._schedulePhysicsUpdate(sessionId)
@@ -207,7 +230,7 @@ class SessionManager {
    * @param {string} sessionId - ID сессии
    * @param {boolean} isConnected - Статус подключения контроллера
    */
-  broadcastControllerConnection (sessionId, isConnected) {
+  broadcastControllerConnection(sessionId, isConnected) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
 
@@ -219,10 +242,14 @@ class SessionManager {
     })
 
     for (const { client } of clients) {
-      if (client.readyState === 1) { // WebSocket.OPEN
+      if (client.readyState === 1) {
+        // WebSocket.OPEN
         try {
           client.send(message)
-          this.logger.logSession(sessionId, `Broadcasted controller ${isConnected ? 'connected' : 'disconnected'} to client`)
+          this.logger.logSession(
+            sessionId,
+            `Broadcasted controller ${isConnected ? 'connected' : 'disconnected'} to client`
+          )
         } catch (error) {
           this.logger.error(`Error broadcasting controller connection status: ${error.message}`)
         }
@@ -230,7 +257,7 @@ class SessionManager {
     }
   }
 
-  setViewerScreenSize (sessionId, screenSize) {
+  setViewerScreenSize(sessionId, screenSize) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
@@ -239,7 +266,11 @@ class SessionManager {
     if (!validatedSize) return false
 
     // Сохраняем прежний размер экрана, если он уже был задан ранее
-    const hadPrevSize = !!(session.viewerScreenSize && session.viewerScreenSize.width > 0 && session.viewerScreenSize.height > 0)
+    const hadPrevSize = !!(
+      session.viewerScreenSize &&
+      session.viewerScreenSize.width > 0 &&
+      session.viewerScreenSize.height > 0
+    )
     const oldWidth = hadPrevSize ? session.viewerScreenSize.width : null
     const oldHeight = hadPrevSize ? session.viewerScreenSize.height : null
 
@@ -256,7 +287,10 @@ class SessionManager {
         // Первый раз получили размеры вьювера — строго центрируем мяч
         session.physicsEngine.setPosition(validatedSize.width / 2, validatedSize.height / 2)
         session.physicsEngine.setVelocity(0, 0)
-      } else if (currentState && (oldWidth !== validatedSize.width || oldHeight !== validatedSize.height)) {
+      } else if (
+        currentState &&
+        (oldWidth !== validatedSize.width || oldHeight !== validatedSize.height)
+      ) {
         // Масштабируем позицию мяча к новому размеру экрана
         const scaleX = validatedSize.width / oldWidth
         const scaleY = validatedSize.height / oldHeight
@@ -303,7 +337,7 @@ class SessionManager {
     return true
   }
 
-  startPhysics (sessionId) {
+  startPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
 
@@ -311,7 +345,7 @@ class SessionManager {
     this.logger.logSession(sessionId, 'Physics manager initialized', 'debug')
   }
 
-  _schedulePhysicsUpdate (sessionId) {
+  _schedulePhysicsUpdate(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
 
@@ -323,10 +357,14 @@ class SessionManager {
 
     // Server no longer steps physics; it only synchronizes state on explicit updates.
     // We still may broadcast a lightweight sync when commands arrive elsewhere.
-    this.logger.logSession(sessionId, 'Server-side physics loop disabled (client-authoritative movement).', 'debug')
+    this.logger.logSession(
+      sessionId,
+      'Server-side physics loop disabled (client-authoritative movement).',
+      'debug'
+    )
   }
 
-  stopPhysics (sessionId) {
+  stopPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (session && session.mainLoop) {
       clearInterval(session.mainLoop)
@@ -334,7 +372,7 @@ class SessionManager {
     }
   }
 
-  cleanupExpiredSessions () {
+  cleanupExpiredSessions() {
     const expiredIds = this.sessionRepository.cleanupExpired()
     if (expiredIds.length > 0) {
       this.logger.info(`Cleaned up ${expiredIds.length} expired sessions.`)
@@ -343,11 +381,11 @@ class SessionManager {
     return expiredIds.length
   }
 
-  getSessionCount () {
+  getSessionCount() {
     return this.sessionRepository.getAll().length
   }
 
-  getClientInfo (ws) {
+  getClientInfo(ws) {
     for (const session of this.sessionRepository.getAll()) {
       if (session.clients.has(ws)) {
         const clientInfo = session.clients.get(ws)

@@ -1,13 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="EMDR терапия вьювер - наблюдение за биодинамической стимуляцией. Инструмент для пациентов при проведении EMDR терапии онлайн" />
-    <meta name="keywords" content="EMDR терапия, EMDR вьювер, биодинамическая стимуляция, парная терапия, психолог для пар, просмотр сессии" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="description"
+      content="EMDR терапия вьювер - наблюдение за биодинамической стимуляцией. Инструмент для пациентов при проведении EMDR терапии онлайн"
+    />
+    <meta
+      name="keywords"
+      content="EMDR терапия, EMDR вьювер, биодинамическая стимуляция, парная терапия, психолог для пар, просмотр сессии"
+    />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#020617" />
@@ -26,302 +35,320 @@
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="BilateralBound - EMDR терапия для пациентов" />
-    <meta property="og:description" content="EMDR терапия вьювер для наблюдения за биодинамической стимуляцией в парной терапии" />
+    <meta
+      property="og:description"
+      content="EMDR терапия вьювер для наблюдения за биодинамической стимуляцией в парной терапии"
+    />
     <meta property="article:tag" content="EMDR терапия" />
     <meta property="article:tag" content="биодинамическая стимуляция" />
 
     <!-- Preload critical resources -->
     <link rel="preload" href="/js/common.js" as="script" />
     <link rel="preload" href="/css/shared-components.css" as="style" />
-    
+
     <!-- Styles -->
-    <link rel="stylesheet" href="/css/shared-components.css">
-    <link rel="stylesheet" href="/css/light-theme.css">
+    <link rel="stylesheet" href="/css/shared-components.css" />
+    <link rel="stylesheet" href="/css/light-theme.css" />
 
     <!-- Yandex.Metrika optimized counter -->
     <script src="/js/metrika-optimized.js" defer></script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/104698530" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <noscript
+      ><div>
+        <img
+          src="https://mc.yandex.ru/watch/104698530"
+          style="position: absolute; left: -9999px"
+          alt=""
+        /></div
+    ></noscript>
     <!-- /Yandex.Metrika optimized counter -->
 
     <style>
-        /* Reset & Base */
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            margin: 0; 
-            padding: 0;
-            background: #020617;
-            overflow: hidden; 
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        
-        /* Light theme for viewer */
-        body.light-theme {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
-        }
-        
-        body.light-theme .viewer-header {
-            background: rgba(255, 255, 255, 0.95);
-            border-color: rgba(148, 163, 184, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        
-        body.light-theme .viewer-header span {
-            color: #1e293b;
-        }
-        
-        body.light-theme .viewer-canvas {
-            background: #ffffff;
-        }
-        
-        body.light-theme .status-overlay {
-            background: rgba(255, 255, 255, 0.95);
-            border-color: rgba(148, 163, 184, 0.3);
-            color: #1e293b;
-            backdrop-filter: blur(10px);
-        }
-        
-        body.light-theme .status-online {
-            border-color: #22c55e;
-            color: #22c55e;
-        }
-        
-        body.light-theme .status-offline {
-            border-color: #ef4444;
-            color: #ef4444;
-        }
-        
-        body.light-theme .fullscreen-btn {
-            background: rgba(255, 255, 255, 0.95);
-            border-color: rgba(148, 163, 184, 0.3);
-            color: #1e293b;
-            backdrop-filter: blur(10px);
-        }
-        
-        body.light-theme .fullscreen-btn:hover {
-            background: rgba(241, 245, 249, 0.9);
-            border-color: rgba(148, 163, 184, 0.5);
-        }
-        
-        body.light-theme .loading {
-            color: #1e293b;
-        }
-        
-        body.light-theme .loading::after {
-            border-color: #3b82f6;
-            border-top-color: transparent;
-        }
+      /* Reset & Base */
+      * {
+        box-sizing: border-box;
+      }
 
-        /* Layout */
-        .viewer-container {
-            flex: 1;
-            position: relative;
-            background: #020617;
-        }
+      body {
+        margin: 0;
+        padding: 0;
+        background: #020617;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
 
-        .viewer-header {
-            position: absolute;
-            top: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            z-index: 1000;
-            backdrop-filter: blur(8px);
-        }
-        
-        .viewer-header img {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            object-fit: cover;
-            display: block;
-        }
-        
-        .viewer-header span {
-            color: #e2e8f0;
-            font-weight: 600;
-            letter-spacing: 0.2px;
-            font-size: 13px;
-        }
+      /* Light theme for viewer */
+      body.light-theme {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+      }
 
-        .viewer-canvas {
-            width: 100%; 
-            height: 100%; 
-            background: #020617; 
-            display: block; 
-        }
+      body.light-theme .viewer-header {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(148, 163, 184, 0.3);
+        backdrop-filter: blur(10px);
+      }
 
-        /* Overlays */
+      body.light-theme .viewer-header span {
+        color: #1e293b;
+      }
+
+      body.light-theme .viewer-canvas {
+        background: #ffffff;
+      }
+
+      body.light-theme .status-overlay {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(148, 163, 184, 0.3);
+        color: #1e293b;
+        backdrop-filter: blur(10px);
+      }
+
+      body.light-theme .status-online {
+        border-color: #22c55e;
+        color: #22c55e;
+      }
+
+      body.light-theme .status-offline {
+        border-color: #ef4444;
+        color: #ef4444;
+      }
+
+      body.light-theme .fullscreen-btn {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(148, 163, 184, 0.3);
+        color: #1e293b;
+        backdrop-filter: blur(10px);
+      }
+
+      body.light-theme .fullscreen-btn:hover {
+        background: rgba(241, 245, 249, 0.9);
+        border-color: rgba(148, 163, 184, 0.5);
+      }
+
+      body.light-theme .loading {
+        color: #1e293b;
+      }
+
+      body.light-theme .loading::after {
+        border-color: #3b82f6;
+        border-top-color: transparent;
+      }
+
+      /* Layout */
+      .viewer-container {
+        flex: 1;
+        position: relative;
+        background: #020617;
+      }
+
+      .viewer-header {
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        z-index: 1000;
+        backdrop-filter: blur(8px);
+      }
+
+      .viewer-header img {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .viewer-header span {
+        color: #e2e8f0;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        font-size: 13px;
+      }
+
+      .viewer-canvas {
+        width: 100%;
+        height: 100%;
+        background: #020617;
+        display: block;
+      }
+
+      /* Overlays */
+      .status-overlay {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 14px;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+
+      .status-online {
+        border-color: #22c55e;
+        color: #22c55e;
+      }
+
+      .status-offline {
+        border-color: #ef4444;
+        color: #ef4444;
+      }
+
+      /* Controls */
+      .fullscreen-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 10px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+
+      .fullscreen-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.05);
+      }
+
+      /* Loading */
+      .loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 18px;
+        text-align: center;
+        z-index: 999;
+      }
+
+      .loading::after {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #60a5fa;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
         .status-overlay {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 14px;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+          top: 12px;
+          left: 12px;
+          padding: 12px 18px;
+          font-size: 14px;
+          border-radius: 12px;
+          max-width: calc(100vw - 120px);
         }
 
-        .status-online {
-            border-color: #22c55e;
-            color: #22c55e;
-        }
-
-        .status-offline {
-            border-color: #ef4444;
-            color: #ef4444;
-        }
-
-        /* Controls */
         .fullscreen-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+          top: 12px;
+          right: 12px;
+          padding: 12px 16px;
+          font-size: 13px;
+          border-radius: 10px;
+          min-width: 140px;
+          touch-action: manipulation;
+          transition: all 0.2s ease;
         }
 
-        .fullscreen-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.05);
+        .fullscreen-btn:active {
+          transform: scale(0.95);
+          background: rgba(0, 0, 0, 0.9);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .status-overlay {
+          top: 8px;
+          left: 8px;
+          padding: 10px 14px;
+          font-size: 12px;
+          border-radius: 10px;
         }
 
-        /* Loading */
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 18px;
-            text-align: center;
-            z-index: 999;
+        .fullscreen-btn {
+          top: 8px;
+          right: 8px;
+          padding: 10px 14px;
+          font-size: 12px;
+          min-width: 120px;
+          border-radius: 8px;
         }
 
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #60a5fa;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
+        .sessionInfo {
+          font-size: 11px !important;
         }
+      }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+      /* Animations */
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .status-overlay {
-                top: 12px;
-                left: 12px;
-                padding: 12px 18px;
-                font-size: 14px;
-                border-radius: 12px;
-                max-width: calc(100vw - 120px);
-            }
-
-            .fullscreen-btn {
-                top: 12px;
-                right: 12px;
-                padding: 12px 16px;
-                font-size: 13px;
-                border-radius: 10px;
-                min-width: 140px;
-                touch-action: manipulation;
-                transition: all 0.2s ease;
-            }
-
-            .fullscreen-btn:active {
-                transform: scale(0.95);
-                background: rgba(0, 0, 0, 0.9);
-            }
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
+      }
 
-        @media (max-width: 480px) {
-            .status-overlay {
-                top: 8px;
-                left: 8px;
-                padding: 10px 14px;
-                font-size: 12px;
-                border-radius: 10px;
-            }
+      .pulse {
+        animation: pulse 2s infinite;
+      }
 
-            .fullscreen-btn {
-                top: 8px;
-                right: 8px;
-                padding: 10px 14px;
-                font-size: 12px;
-                min-width: 120px;
-                border-radius: 8px;
-            }
-
-            .sessionInfo {
-                font-size: 11px !important;
-            }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
         }
-
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
+        50% {
+          opacity: 0.7;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="viewer-container">
-        <canvas id="viewerCanvas" class="viewer-canvas"></canvas>
-        <div id="statusContainer"></div>
-        
-        <button class="fullscreen-btn" onclick="toggleFullscreen()">
-            ⛶ Полноэкранный
-        </button>
-        
-        
-        <div id="loading" class="loading">
-            Загрузка...
-        </div>
+      <canvas id="viewerCanvas" class="viewer-canvas"></canvas>
+      <div id="statusContainer"></div>
+
+      <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Полноэкранный</button>
+
+      <div id="loading" class="loading">Загрузка...</div>
     </div>
 
     <script src="/js/common.js" defer></script>
@@ -331,391 +358,401 @@
     <script src="/js/shared-components.js" defer></script>
 
     <script>
-        // Global variables
-        let wsClient;
-        let physicsEngine;
-        let ballRenderer;
-        let isFullscreen = false;
-        let components = {};
-        let resizeTimeout = null;
-        let lastScreenSizeUpdate = 0;
+      // Global variables
+      let wsClient
+      let physicsEngine
+      let ballRenderer
+      let isFullscreen = false
+      let components = {}
+      let resizeTimeout = null
+      let lastScreenSizeUpdate = 0
 
-        // Debug loggers
-        window.debugLog = window.debugLog || function() {};
-        window.debugError = window.debugError || function() {};
-        window.debugWarn = window.debugWarn || function() {};
+      // Debug loggers
+      window.debugLog = window.debugLog || function () {}
+      window.debugError = window.debugError || function () {}
+      window.debugWarn = window.debugWarn || function () {}
 
-        // Initialize on DOM load
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                const sessionId = getSessionIdFromUrl();
-                if (!sessionId) {
-                    showError('Session ID не найден в URL');
-                    return;
-                }
-                
-                debugLog('📱 Session ID получен:', sessionId);
-                initializeComponents();
-                await initializeViewer(sessionId);
-                
-            } catch (error) {
-                debugError('❌ Критическая ошибка инициализации:', error);
-                showError('Ошибка инициализации: ' + error.message);
-            }
-        });
+      // Initialize on DOM load
+      document.addEventListener('DOMContentLoaded', async function () {
+        try {
+          const sessionId = getSessionIdFromUrl()
+          if (!sessionId) {
+            showError('Session ID не найден в URL')
+            return
+          }
 
-        function initializeComponents() {
-            components.status = sharedComponents.createStatusIndicator(
-                document.getElementById('statusContainer'),
-                {
-                    title: 'Подключение...',
-                    showIcon: true,
-                    autoHide: false
-                }
-            );
+          debugLog('📱 Session ID получен:', sessionId)
+          initializeComponents()
+          await initializeViewer(sessionId)
+        } catch (error) {
+          debugError('❌ Критическая ошибка инициализации:', error)
+          showError('Ошибка инициализации: ' + error.message)
         }
+      })
 
-        async function initializeViewer(sessionId) {
-            try {
-                debugLog('📱 Инициализация viewer для сессии:', sessionId);
-                hideLoading();
+      function initializeComponents() {
+        components.status = sharedComponents.createStatusIndicator(
+          document.getElementById('statusContainer'),
+          {
+            title: 'Подключение...',
+            showIcon: true,
+            autoHide: false
+          }
+        )
+      }
 
-                if (!window.__current) {
-                    window.__current = {};
-                }
-                window.__current.sessionId = sessionId;
+      async function initializeViewer(sessionId) {
+        try {
+          debugLog('📱 Инициализация viewer для сессии:', sessionId)
+          hideLoading()
 
-                const canvas = document.getElementById('viewerCanvas');
-                if (!canvas) {
-                    console.error('Canvas не найден');
-                    return;
-                }
+          if (!window.__current) {
+            window.__current = {}
+          }
+          window.__current.sessionId = sessionId
 
-                resizeCanvas();
+          const canvas = document.getElementById('viewerCanvas')
+          if (!canvas) {
+            console.error('Canvas не найден')
+            return
+          }
 
-                physicsEngine = new PhysicsEngine({
-                    worldWidth: window.innerWidth,
-                    worldHeight: window.innerHeight,
-                    isViewer: true,
-                    bounceCallback: null
-                });
-                window.physicsEngine = physicsEngine;
+          resizeCanvas()
 
-                ballRenderer = new BallRenderer(canvas, physicsEngine, {
-                    localPhysics: false,
-                    bounceCallback: null
-                });
+          physicsEngine = new PhysicsEngine({
+            worldWidth: window.innerWidth,
+            worldHeight: window.innerHeight,
+            isViewer: true,
+            bounceCallback: null
+          })
+          window.physicsEngine = physicsEngine
 
-                await connectToSession(sessionId);
+          ballRenderer = new BallRenderer(canvas, physicsEngine, {
+            localPhysics: false,
+            bounceCallback: null
+          })
 
-                wsClient = new WebSocketClient(sessionId, 'viewer');
-                window.wsClient = wsClient;
-                
-                wsClient.on(WS_MSG.initialState, (state) => {
-                    debugLog('✅ Получено начальное состояние', state);
-                    physicsEngine.applyCommand(state);
-                    if (state && state.paused === false) {
-                        physicsEngine.setPaused(false);
-                    }
-                    updateStatus(state);
-                });
+          await connectToSession(sessionId)
 
-                wsClient.on(WS_MSG.stateUpdate, (command) => {
-                    physicsEngine.applyCommand(command);
-                    if (command && command.paused === false) {
-                        physicsEngine.setPaused(false);
-                    }
-                    // НЕ обновляем статус контроллера при обновлениях состояния мяча
-                    // updateStatus(command);
-                });
+          wsClient = new WebSocketClient(sessionId, 'viewer')
+          window.wsClient = wsClient
 
-                // Обработчик для события подключения контроллера
-                wsClient.on('controller_connected', (data) => {
-                    debugLog('🔌 Контроллер подключился:', data);
-                    updateStatus(data);
-                });
-
-                wsClient.on('controller_disconnected', (data) => {
-                    debugLog('🔌 Контроллер отключился:', data);
-                    updateStatus(data);
-                });
-
-                wsClient.on('open', () => {
-                    debugLog('✅ WebSocket connection established.');
-                    components.status.setStatus('success', 'Соединение установлено');
-                    // Запрашиваем текущее состояние подключения контроллера
-                    wsClient.send('get_controller_status', {})
-                        .catch(error => debugWarn('Не удалось запросить статус контроллера:', error));
-                    
-                    // Уведомляем сервер о подключении вьювера
-                    wsClient.send('viewer_connected', { 
-                        timestamp: Date.now(),
-                        sessionId: sessionId,
-                        role: 'viewer'
-                    });
-                });
-
-                wsClient.on('close', () => {
-                    debugWarn('🔌 WebSocket connection closed.');
-                    showError('Соединение потеряно. Попытка переподключения...');
-                });
-
-                wsClient.on('error', (error) => {
-                    debugError('❌ WebSocket error:', error);
-                    showError('Ошибка соединения.');
-                });
-
-                // Обработчик для получения статуса контроллера
-                wsClient.on('controller_status', (status) => {
-                    debugLog('📊 Статус контроллера:', status);
-                    updateStatus(status);
-                });
-                
-                await wsClient.connect();
-
-                // Physics and render loops
-                const PHYSICS_TICK_RATE = 60;
-                const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE;
-                let __lastPhysicsUpdateTs = performance.now();
-
-                function physicsLoop() {
-                    if (physicsEngine) {
-                        physicsEngine.update(PHYSICS_DT / 1000);
-                        __lastPhysicsUpdateTs = performance.now();
-                    }
-                }
-
-                function renderLoop() {
-                    if (!physicsEngine || !ballRenderer) {
-                        requestAnimationFrame(renderLoop);
-                        return;
-                    }
-
-                    const now = performance.now();
-                    const alpha = Math.max(0, Math.min(1, (now - __lastPhysicsUpdateTs) / PHYSICS_DT));
-
-                    const interpolatedState = physicsEngine.getInterpolatedBall(alpha);
-                    ballRenderer.drawFrame(interpolatedState);
-                    requestAnimationFrame(renderLoop);
-                }
-
-                setInterval(physicsLoop, PHYSICS_DT);
-                requestAnimationFrame(renderLoop);
-                setupEventListeners();
-
-                debugLog('✅ Viewer успешно инициализирован');
-
-            } catch (error) {
-                debugError('❌ Ошибка инициализации viewer:', error);
-                showError('Ошибка инициализации: ' + error.message);
+          wsClient.on(WS_MSG.initialState, state => {
+            debugLog('✅ Получено начальное состояние', state)
+            physicsEngine.applyCommand(state)
+            if (state && state.paused === false) {
+              physicsEngine.setPaused(false)
             }
-        }
+            updateStatus(state)
+          })
 
-        async function connectToSession(sessionId) {
-            try {
-                const canvasElement = document.getElementById('viewerCanvas');
-                if (!canvasElement) {
-                    console.error('Canvas не найден');
-                    return;
-                }
-
-                const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        screenSize: {
-                            width: window.innerWidth,
-                            height: window.innerHeight
-                        }
-                    })
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`HTTP ${response.status}: ${errorText || 'Не удалось подключиться к сессии'}`);
-                    return;
-                }
-                
-                debugLog('✅ Подключение к сессии успешно');
-                
-            } catch (error) {
-                debugError('❌ Ошибка подключения к сессии:', error);
-                throw error;
+          wsClient.on(WS_MSG.stateUpdate, command => {
+            physicsEngine.applyCommand(command)
+            if (command && command.paused === false) {
+              physicsEngine.setPaused(false)
             }
-        }
+            // НЕ обновляем статус контроллера при обновлениях состояния мяча
+            // updateStatus(command);
+          })
 
-        function resizeCanvas() {
-            const canvas = document.getElementById('viewerCanvas');
-            if (!canvas) return;
+          // Обработчик для события подключения контроллера
+          wsClient.on('controller_connected', data => {
+            debugLog('🔌 Контроллер подключился:', data)
+            updateStatus(data)
+          })
 
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+          wsClient.on('controller_disconnected', data => {
+            debugLog('🔌 Контроллер отключился:', data)
+            updateStatus(data)
+          })
 
+          wsClient.on('open', () => {
+            debugLog('✅ WebSocket connection established.')
+            components.status.setStatus('success', 'Соединение установлено')
+            // Запрашиваем текущее состояние подключения контроллера
+            wsClient
+              .send('get_controller_status', {})
+              .catch(error => debugWarn('Не удалось запросить статус контроллера:', error))
+
+            // Уведомляем сервер о подключении вьювера
+            wsClient.send('viewer_connected', {
+              timestamp: Date.now(),
+              sessionId: sessionId,
+              role: 'viewer'
+            })
+          })
+
+          wsClient.on('close', () => {
+            debugWarn('🔌 WebSocket connection closed.')
+            showError('Соединение потеряно. Попытка переподключения...')
+          })
+
+          wsClient.on('error', error => {
+            debugError('❌ WebSocket error:', error)
+            showError('Ошибка соединения.')
+          })
+
+          // Обработчик для получения статуса контроллера
+          wsClient.on('controller_status', status => {
+            debugLog('📊 Статус контроллера:', status)
+            updateStatus(status)
+          })
+
+          await wsClient.connect()
+
+          // Physics and render loops
+          const PHYSICS_TICK_RATE = 60
+          const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
+          let __lastPhysicsUpdateTs = performance.now()
+
+          function physicsLoop() {
             if (physicsEngine) {
-                physicsEngine.setWorldSize(canvas.width, canvas.height);
+              physicsEngine.update(PHYSICS_DT / 1000)
+              __lastPhysicsUpdateTs = performance.now()
+            }
+          }
+
+          function renderLoop() {
+            if (!physicsEngine || !ballRenderer) {
+              requestAnimationFrame(renderLoop)
+              return
             }
 
-            if (ballRenderer) {
-                ballRenderer.resize(canvas.width, canvas.height);
-            }
+            const now = performance.now()
+            const alpha = Math.max(0, Math.min(1, (now - __lastPhysicsUpdateTs) / PHYSICS_DT))
+
+            const interpolatedState = physicsEngine.getInterpolatedBall(alpha)
+            ballRenderer.drawFrame(interpolatedState)
+            requestAnimationFrame(renderLoop)
+          }
+
+          setInterval(physicsLoop, PHYSICS_DT)
+          requestAnimationFrame(renderLoop)
+          setupEventListeners()
+
+          debugLog('✅ Viewer успешно инициализирован')
+        } catch (error) {
+          debugError('❌ Ошибка инициализации viewer:', error)
+          showError('Ошибка инициализации: ' + error.message)
+        }
+      }
+
+      async function connectToSession(sessionId) {
+        try {
+          const canvasElement = document.getElementById('viewerCanvas')
+          if (!canvasElement) {
+            console.error('Canvas не найден')
+            return
+          }
+
+          const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              screenSize: {
+                width: window.innerWidth,
+                height: window.innerHeight
+              }
+            })
+          })
+
+          if (!response.ok) {
+            const errorText = await response.text()
+            console.error(
+              `HTTP ${response.status}: ${errorText || 'Не удалось подключиться к сессии'}`
+            )
+            return
+          }
+
+          debugLog('✅ Подключение к сессии успешно')
+        } catch (error) {
+          debugError('❌ Ошибка подключения к сессии:', error)
+          throw error
+        }
+      }
+
+      function resizeCanvas() {
+        const canvas = document.getElementById('viewerCanvas')
+        if (!canvas) return
+
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+
+        if (physicsEngine) {
+          physicsEngine.setWorldSize(canvas.width, canvas.height)
         }
 
-        async function updateScreenSize() {
-            const sessionId = getSessionIdFromUrl();
-            if (!sessionId) return;
-
-            try {
-                const now = Date.now();
-                if (now - lastScreenSizeUpdate < 2000) {
-                    return;
-                }
-
-                const response = await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        width: window.innerWidth,
-                        height: window.innerHeight
-                    }),
-                    signal: AbortSignal.timeout(5000)
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    const errorMessage = `HTTP ${response.status}: ${errorText || 'Неизвестная ошибка'}`;
-                    showWarning(`Не удалось обновить размер экрана: ${errorMessage}`);
-                    return;
-                }
-
-                lastScreenSizeUpdate = now;
-                debugLog(`✅ Размер экрана обновлен на сервере: ${window.innerWidth}×${window.innerHeight}`);
-            } catch (error) {
-                if (error.name === 'AbortError') {
-                    debugLog('⏰ Таймаут при обновлении размера экрана');
-                } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    debugLog('🌐 Сеть недоступна при обновлении размера экрана');
-                } else {
-                    debugError('Ошибка при обновлении размера экрана:', error);
-                }
-            }
+        if (ballRenderer) {
+          ballRenderer.resize(canvas.width, canvas.height)
         }
-        
-        function updateStatus(sessionData) {
-            if (components.status) {
-                debugLog('📊 Обновление статуса:', sessionData);
-                
-                // Проверяем наличие данных о подключении контроллера
-                if (sessionData.controllerConnected === true) {
-                    components.status.setStatus('success', 'Контроллер подключен');
-                    debugLog('✅ Статус обновлен: Контроллер подключен');
-                } else if (sessionData.controllerConnected === false) {
-                    components.status.setStatus('error', 'Контроллер отключен');
-                    debugLog('❌ Статус обновлен: Контроллер отключен');
-                } else {
-                    // Если данных о контроллере нет, используем статус WebSocket соединения
-                    if (wsClient && wsClient.isConnected) {
-                        components.status.setStatus('success', 'Соединение установлено, ожидание контроллера...');
-                        debugLog('⏳ Статус обновлен: Ожидание контроллера');
-                    } else {
-                        components.status.setStatus('error', 'Контроллер отключен');
-                        debugLog('❌ Статус обновлен: Контроллер отключен (нет WebSocket)');
-                    }
-                }
-            }
-        }
-        
-        function showError(message) {
-            if (components.status) {
-                components.status.setStatus('error', message);
-            }
-        }
+      }
 
-        function showWarning(message) {
-            debugWarn('⚠️ Предупреждение viewer:', message);
-        }
-        
-        function hideLoading() {
-            const loading = document.getElementById('loading');
-            if (loading) {
-                loading.style.display = 'none';
-            }
-        }
-        
-        // Fullscreen & Mobile
-        let screenWakeLock = null;
-        
-        async function requestScreenWakeLock() {
-            try {
-                if ('wakeLock' in navigator && document.visibilityState === 'visible') {
-                    screenWakeLock = await navigator.wakeLock.request('screen');
-                    screenWakeLock.addEventListener('release', () => {
-                        debugLog('🔓 Wake Lock released');
-                    });
-                    debugLog('🔒 Wake Lock acquired');
-                }
-            } catch (e) {
-                debugWarn('Wake Lock not available:', e?.message || e);
-            }
-        }
-        
-        async function releaseScreenWakeLock() {
-            try {
-                if (screenWakeLock) {
-                    await screenWakeLock.release();
-                    screenWakeLock = null;
-                }
-            } catch (error) {}
-        }
+      async function updateScreenSize() {
+        const sessionId = getSessionIdFromUrl()
+        if (!sessionId) return
 
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && isFullscreen) {
-                requestScreenWakeLock();
-            }
-        });
+        try {
+          const now = Date.now()
+          if (now - lastScreenSizeUpdate < 2000) {
+            return
+          }
 
-        document.addEventListener('fullscreenchange', () => {
-            isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || document.mozFullScreenElement);
-            const btn = document.querySelector('.fullscreen-btn');
-            if (btn) {
-                btn.textContent = isFullscreen ? '⛶ Выйти' : '⛶ Полноэкранный';
-            }
-            if (isFullscreen) {
-                requestScreenWakeLock();
+          const response = await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              width: window.innerWidth,
+              height: window.innerHeight
+            }),
+            signal: AbortSignal.timeout(5000)
+          })
+
+          if (!response.ok) {
+            const errorText = await response.text()
+            const errorMessage = `HTTP ${response.status}: ${errorText || 'Неизвестная ошибка'}`
+            showWarning(`Не удалось обновить размер экрана: ${errorMessage}`)
+            return
+          }
+
+          lastScreenSizeUpdate = now
+          debugLog(
+            `✅ Размер экрана обновлен на сервере: ${window.innerWidth}×${window.innerHeight}`
+          )
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            debugLog('⏰ Таймаут при обновлении размера экрана')
+          } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            debugLog('🌐 Сеть недоступна при обновлении размера экрана')
+          } else {
+            debugError('Ошибка при обновлении размера экрана:', error)
+          }
+        }
+      }
+
+      function updateStatus(sessionData) {
+        if (components.status) {
+          debugLog('📊 Обновление статуса:', sessionData)
+
+          // Проверяем наличие данных о подключении контроллера
+          if (sessionData.controllerConnected === true) {
+            components.status.setStatus('success', 'Контроллер подключен')
+            debugLog('✅ Статус обновлен: Контроллер подключен')
+          } else if (sessionData.controllerConnected === false) {
+            components.status.setStatus('error', 'Контроллер отключен')
+            debugLog('❌ Статус обновлен: Контроллер отключен')
+          } else {
+            // Если данных о контроллере нет, используем статус WebSocket соединения
+            if (wsClient && wsClient.isConnected) {
+              components.status.setStatus(
+                'success',
+                'Соединение установлено, ожидание контроллера...'
+              )
+              debugLog('⏳ Статус обновлен: Ожидание контроллера')
             } else {
-                releaseScreenWakeLock();
+              components.status.setStatus('error', 'Контроллер отключен')
+              debugLog('❌ Статус обновлен: Контроллер отключен (нет WebSocket)')
             }
-        });
-
-        // Double tap for fullscreen
-        let lastTap = 0;
-        document.getElementById('viewerCanvas').addEventListener('touchend', function(event) {
-            const currentTime = new Date().getTime();
-            if (currentTime - lastTap < 300) {
-                event.preventDefault();
-                toggleFullscreen();
-            }
-            lastTap = currentTime;
-        });
-
-        function setupEventListeners() {
-            if (window) {
-                window.addEventListener('resize', () => {
-                    clearTimeout(resizeTimeout);
-                    resizeTimeout = setTimeout(() => {
-                        resizeCanvas();
-                        updateScreenSize().catch(() => {
-                            debugLog('Размер экрана не обновлен (сеть недоступна)');
-                        });
-                    }, 1500);
-                });
-            }
-
-            if (document) {
-                document.addEventListener('gesturestart', (event) => event.preventDefault());
-                document.addEventListener('gesturechange', (event) => event.preventDefault());
-                document.addEventListener('gestureend', (event) => event.preventDefault());
-            }
+          }
         }
+      }
+
+      function showError(message) {
+        if (components.status) {
+          components.status.setStatus('error', message)
+        }
+      }
+
+      function showWarning(message) {
+        debugWarn('⚠️ Предупреждение viewer:', message)
+      }
+
+      function hideLoading() {
+        const loading = document.getElementById('loading')
+        if (loading) {
+          loading.style.display = 'none'
+        }
+      }
+
+      // Fullscreen & Mobile
+      let screenWakeLock = null
+
+      async function requestScreenWakeLock() {
+        try {
+          if ('wakeLock' in navigator && document.visibilityState === 'visible') {
+            screenWakeLock = await navigator.wakeLock.request('screen')
+            screenWakeLock.addEventListener('release', () => {
+              debugLog('🔓 Wake Lock released')
+            })
+            debugLog('🔒 Wake Lock acquired')
+          }
+        } catch (e) {
+          debugWarn('Wake Lock not available:', e?.message || e)
+        }
+      }
+
+      async function releaseScreenWakeLock() {
+        try {
+          if (screenWakeLock) {
+            await screenWakeLock.release()
+            screenWakeLock = null
+          }
+        } catch (error) {}
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && isFullscreen) {
+          requestScreenWakeLock()
+        }
+      })
+
+      document.addEventListener('fullscreenchange', () => {
+        isFullscreen = !!(
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.msFullscreenElement ||
+          document.mozFullScreenElement
+        )
+        const btn = document.querySelector('.fullscreen-btn')
+        if (btn) {
+          btn.textContent = isFullscreen ? '⛶ Выйти' : '⛶ Полноэкранный'
+        }
+        if (isFullscreen) {
+          requestScreenWakeLock()
+        } else {
+          releaseScreenWakeLock()
+        }
+      })
+
+      // Double tap for fullscreen
+      let lastTap = 0
+      document.getElementById('viewerCanvas').addEventListener('touchend', function (event) {
+        const currentTime = new Date().getTime()
+        if (currentTime - lastTap < 300) {
+          event.preventDefault()
+          toggleFullscreen()
+        }
+        lastTap = currentTime
+      })
+
+      function setupEventListeners() {
+        if (window) {
+          window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout)
+            resizeTimeout = setTimeout(() => {
+              resizeCanvas()
+              updateScreenSize().catch(() => {
+                debugLog('Размер экрана не обновлен (сеть недоступна)')
+              })
+            }, 1500)
+          })
+        }
+
+        if (document) {
+          document.addEventListener('gesturestart', event => event.preventDefault())
+          document.addEventListener('gesturechange', event => event.preventDefault())
+          document.addEventListener('gestureend', event => event.preventDefault())
+        }
+      }
     </script>
-</body>
+  </body>
 </html>

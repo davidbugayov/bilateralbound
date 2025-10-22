@@ -2,12 +2,12 @@ const { logger } = require('../logger.js')
 
 // Интерфейс для управления WebSocket соединениями
 class WebSocketManager {
-  constructor (sessionRepository) {
+  constructor(sessionRepository) {
     this.sessionRepository = sessionRepository
     this.logger = logger
   }
 
-  addClient (sessionId, ws, role) {
+  addClient(sessionId, ws, role) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
@@ -28,7 +28,7 @@ class WebSocketManager {
     return true
   }
 
-  removeClient (ws) {
+  removeClient(ws) {
     for (const session of this.sessionRepository.getAll()) {
       if (session.clients.has(ws)) {
         const clientInfo = session.clients.get(ws)
@@ -45,7 +45,7 @@ class WebSocketManager {
     return null
   }
 
-  _updateConnectionStatus (session, disconnectedRole) {
+  _updateConnectionStatus(session, disconnectedRole) {
     let hasController = false
     let hasViewer = false
 
@@ -61,7 +61,7 @@ class WebSocketManager {
     }
   }
 
-  getClients (sessionId, role = null) {
+  getClients(sessionId, role = null) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return []
 
@@ -71,8 +71,7 @@ class WebSocketManager {
         .map(([client, info]) => ({ client, info }))
     }
 
-    return Array.from(session.clients.entries())
-      .map(([client, info]) => ({ client, info }))
+    return Array.from(session.clients.entries()).map(([client, info]) => ({ client, info }))
   }
 }
 

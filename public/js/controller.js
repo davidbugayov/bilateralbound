@@ -34,7 +34,12 @@ let __ignoreServerPausedUntilTs = 0 // Кратковременная блоки
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
-if (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.rendering && typeof window.BBConfig.rendering.hiddenThrottleMs === 'number') {
+if (
+  typeof window !== 'undefined' &&
+  window.BBConfig &&
+  window.BBConfig.rendering &&
+  typeof window.BBConfig.rendering.hiddenThrottleMs === 'number'
+) {
   hiddenThrottleMs = window.BBConfig.rendering.hiddenThrottleMs
 }
 let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
@@ -58,7 +63,7 @@ const bbCounters = {
   $sets: null,
   _lastBounceTs: 0,
   bounceHits: 0, // количество отдельных стуков (2 стука = 1 пасс)
-  initDom () {
+  initDom() {
     this.$timer = document.getElementById('bbTimer')
     this.$passes = document.getElementById('bbPasses')
     this.$sets = document.getElementById('bbSets')
@@ -68,11 +73,11 @@ const bbCounters = {
     }
     this.render()
   },
-  start () {
+  start() {
     this.running = true
     this.lastTickTs = performance.now()
   },
-  stop (incrementSet = false) {
+  stop(incrementSet = false) {
     this.tick(performance.now())
     this.running = false
     if (incrementSet) {
@@ -86,7 +91,7 @@ const bbCounters = {
     this.timerMs = 0
     this.render()
   },
-  resetAll () {
+  resetAll() {
     this.timerMs = 0
     this.passes = 0
     this.sets = 0
@@ -94,7 +99,7 @@ const bbCounters = {
     this._lastBounceTs = 0
     this.render()
   },
-  onBounce () {
+  onBounce() {
     if (!this.running) return
     const now = performance.now()
     if (now - this._lastBounceTs < 120) return
@@ -107,26 +112,26 @@ const bbCounters = {
 
     this.render()
   },
-  tick (nowTs) {
+  tick(nowTs) {
     if (!this.running) return
     const dt = nowTs - this.lastTickTs
     if (dt > 0) {
       this.timerMs += dt
       this.lastTickTs = nowTs
       // не перерисовываем чаще 10/с
-      if (this._lastRenderTs === undefined || nowTs - this._lastRenderTs > 100) {
+      if (!this || !this._lastRenderTs || nowTs - this._lastRenderTs > 100) {
         this._lastRenderTs = nowTs
         this.render()
       }
     }
   },
-  formatTime (ms) {
+  formatTime(ms) {
     const totalSec = Math.floor(ms / 1000)
     const m = Math.floor(totalSec / 60)
     const s = totalSec % 60
     return `${m}:${String(s).padStart(2, '0')}`
   },
-  render () {
+  render() {
     if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
     if (this.$passes) this.$passes.textContent = String(this.passes)
     if (this.$sets) this.$sets.textContent = String(this.sets)
@@ -137,7 +142,7 @@ const bbCounters = {
 let __lastBounceTs = 0
 let __lastVxSign = 0
 let __lastVySign = 0
-function detectAndCountBounceFromServer (prev, curr) {
+function detectAndCountBounceFromServer(prev, curr) {
   try {
     if (!prev || !curr) return
     if (!bbCounters.running) return
@@ -162,10 +167,20 @@ function detectAndCountBounceFromServer (prev, curr) {
 
     let bounced = false
 
-    if (currSignX !== 0 && __lastVxSign !== 0 && currSignX !== __lastVxSign && Math.abs(currVx) > minSpeed) {
+    if (
+      currSignX !== 0 &&
+      __lastVxSign !== 0 &&
+      currSignX !== __lastVxSign &&
+      Math.abs(currVx) > minSpeed
+    ) {
       bounced = true
     }
-    if (currSignY !== 0 && __lastVySign !== 0 && currSignY !== __lastVySign && Math.abs(currVy) > minSpeed) {
+    if (
+      currSignY !== 0 &&
+      __lastVySign !== 0 &&
+      currSignY !== __lastVySign &&
+      Math.abs(currVy) > minSpeed
+    ) {
       bounced = true
     }
 
@@ -197,10 +212,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })
 })
-  /**
+/**
  * Современная инициализация контроллера с улучшенной обработкой ошибок
  */
-async function initializeController () {
+async function initializeController() {
   const logger = createLogger('Controller')
 
   try {
@@ -262,7 +277,7 @@ async function initializeController () {
         if (isPreviewFullscreen) resizePreviewFullscreen()
       })
       // Горячие клавиши: F – toggle, Esc – закрыть
-      document.addEventListener('keydown', (e) => {
+      document.addEventListener('keydown', e => {
         const key = e.key?.toLowerCase()
         if (key === 'f') {
           if (!isPreviewFullscreen) openPreviewFullscreen()
@@ -274,9 +289,7 @@ async function initializeController () {
     }
 
     // Обработчик навигации назад в браузере
-    window.addEventListener('popstate', (event) => {
-      console.log('🔙 Popstate event:', event.state, 'Hash:', window.location.hash, 'Fullscreen:', isPreviewFullscreen)
-
+    window.addEventListener('popstate', event => {
       if (isPreviewFullscreen) {
         // Если мы в полноэкранном режиме и произошла навигация назад
         closePreviewFullscreen()
@@ -298,7 +311,7 @@ async function initializeController () {
 /**
  * Завершает инициализацию после подключения вьювера
  */
-async function completeInitialization () {
+async function completeInitialization() {
   if (isInitialized) {
     return // Уже инициализировано
   }
@@ -318,7 +331,7 @@ async function completeInitialization () {
 /**
  * Современная инициализация DOM элементов
  */
-async function initializeDOMElements (sessionId) {
+async function initializeDOMElements(sessionId) {
   const elements = {
     curSid: 'curSid',
     view: 'view',
@@ -362,7 +375,7 @@ async function initializeDOMElements (sessionId) {
   return initializedElements
 }
 
-function updateViewerLink (sessionId) {
+function updateViewerLink(sessionId) {
   const viewLinkInput = document.getElementById('view')
   if (viewLinkInput) {
     viewLinkInput.value = `${window.location.origin}/s/${sessionId}`
@@ -372,7 +385,7 @@ function updateViewerLink (sessionId) {
 /**
  * Современная инициализация WebSocket клиента
  */
-async function initializeWebSocketClient (sessionId) {
+async function initializeWebSocketClient(sessionId) {
   const logger = createLogger('WebSocket')
 
   // Создаем клиента с улучшенной конфигурацией
@@ -407,7 +420,7 @@ async function initializeWebSocketClient (sessionId) {
 /**
  * Настройка обработчиков WebSocket событий
  */
-function setupWebSocketEventHandlers (wsClient, logger, sessionId) {
+function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   wsClient.on('open', () => {
     logger.success('WebSocket соединение установлено')
     updateConnectionStatus(true)
@@ -420,21 +433,21 @@ function setupWebSocketEventHandlers (wsClient, logger, sessionId) {
     })
   })
 
-  wsClient.on('close', (event) => {
+  wsClient.on('close', event => {
     logger.warning(`WebSocket соединение закрыто (код: ${event.code})`)
     updateConnectionStatus(false)
     window.__current.viewerConnected = false
     updateViewerStatusUI()
   })
 
-  wsClient.on('error', (error) => {
+  wsClient.on('error', error => {
     logger.error(`WebSocket ошибка: ${error.type}`, error)
     if (error.type === 'connection') {
       showNotification('Потеряно соединение с сервером', 'error')
     }
   })
 
-  wsClient.on(WS_MSG.viewerStatus, (data) => {
+  wsClient.on(WS_MSG.viewerStatus, data => {
     logger.info('Получен статус viewer', data)
     window.__current.viewerConnected = data.connected
     if (data.screenSize) {
@@ -449,7 +462,7 @@ function setupWebSocketEventHandlers (wsClient, logger, sessionId) {
     updateViewerStatusUI()
   })
 
-  wsClient.on(WS_MSG.initialState, (state) => {
+  wsClient.on(WS_MSG.initialState, state => {
     logger.info('Получено начальное состояние', state)
     lastServerState = state // Кэшируем состояние
 
@@ -486,7 +499,7 @@ function setupWebSocketEventHandlers (wsClient, logger, sessionId) {
   })
 
   // Включаем обратно: превью теперь "глупый" рендерер состояния сервера
-  wsClient.on(WS_MSG.stateUpdate, (state) => {
+  wsClient.on(WS_MSG.stateUpdate, state => {
     // Игнорируем обновления и логи, пока вьювер не подключится.
     if (!window.__current.viewerConnected) {
       return
@@ -497,7 +510,8 @@ function setupWebSocketEventHandlers (wsClient, logger, sessionId) {
     if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
       const prevSize = window.__current.viewerScreenSize || { width: 0, height: 0 }
       const nextSize = state.viewerScreenSize
-      const sizeChanged = !prevSize || prevSize.width !== nextSize.width || prevSize.height !== nextSize.height
+      const sizeChanged =
+        !prevSize || prevSize.width !== nextSize.width || prevSize.height !== nextSize.height
 
       window.__current.viewerConnected = true
       window.__current.viewerScreenSize = nextSize
@@ -519,24 +533,28 @@ function setupWebSocketEventHandlers (wsClient, logger, sessionId) {
     const base = (window.BBConfig && window.BBConfig.smoothing) || {}
 
     // Адаптивное демпфирование на основе джиттера (улучшено)
-    const adaptiveDamping = Math.min(25, Math.max(10,
-      (base.damping || 15) + (jitterMs / 15) + (rttMs / 50)
-    ))
+    const adaptiveDamping = Math.min(
+      25,
+      Math.max(10, (base.damping || 15) + jitterMs / 15 + rttMs / 50)
+    )
 
     // Адаптивная жесткость на основе условий сети
-    const adaptiveStiffness = Math.min(35, Math.max(20,
-      (base.stiffness || 25) - (jitterMs / 50) + (rttMs > 100 ? 5 : 0)
-    ))
+    const adaptiveStiffness = Math.min(
+      35,
+      Math.max(20, (base.stiffness || 25) - jitterMs / 50 + (rttMs > 100 ? 5 : 0))
+    )
 
     // Адаптивное время предикции на основе RTT
-    const adaptivePredictTime = Math.min(0.15, Math.max(0.08,
-      (base.maxPredictSec || 0.1) + Math.max(0, (rttMs / 1000 - 0.05) * 0.3)
-    ))
+    const adaptivePredictTime = Math.min(
+      0.15,
+      Math.max(0.08, (base.maxPredictSec || 0.1) + Math.max(0, (rttMs / 1000 - 0.05) * 0.3))
+    )
 
     // Адаптивная дистанция снапа на основе стабильности сети
-    const adaptiveSnapDistance = Math.min(0.4, Math.max(0.15,
-      (base.snapDistance || 0.2) + (jitterMs > 20 ? 0.1 : 0)
-    ))
+    const adaptiveSnapDistance = Math.min(
+      0.4,
+      Math.max(0.15, (base.snapDistance || 0.2) + (jitterMs > 20 ? 0.1 : 0))
+    )
 
     previewPhysicsEngine.setSmoothingOptions({
       damping: adaptiveDamping,
@@ -559,11 +577,15 @@ function setupWebSocketEventHandlers (wsClient, logger, sessionId) {
 /**
  * Улучшенная локальная симуляция для более плавного движения
  */
-function applyServerStateToPreview (state) {
+function applyServerStateToPreview(state) {
   if (!previewPhysicsEngine || !state) return
 
   // Синхронизируем размер мира движка с размерами экрана вьювера
-  if (state.viewerScreenSize && typeof state.viewerScreenSize.width === 'number' && typeof state.viewerScreenSize.height === 'number') {
+  if (
+    state.viewerScreenSize &&
+    typeof state.viewerScreenSize.width === 'number' &&
+    typeof state.viewerScreenSize.height === 'number'
+  ) {
     previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height)
   }
 
@@ -592,13 +614,13 @@ function applyServerStateToPreview (state) {
 const PHYSICS_TICK_RATE = 60 // Гц
 const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
 
-function physicsLoop () {
+function physicsLoop() {
   if (previewPhysicsEngine) {
     previewPhysicsEngine.update(PHYSICS_DT / 1000)
   }
 }
 
-function renderPreviewLoop (timestamp) {
+function renderPreviewLoop(timestamp) {
   if (!previewPhysicsEngine || !globalThis.__previewRenderer) {
     requestAnimationFrame(renderPreviewLoop)
     return
@@ -606,7 +628,8 @@ function renderPreviewLoop (timestamp) {
 
   // Вычисляем alpha для интерполяции на основе реального времени последнего обновления физики
   const now = performance.now()
-  const lastPhysicsUpdate = (previewPhysicsEngine && previewPhysicsEngine.__lastPhysicsUpdateTs) || now
+  const lastPhysicsUpdate =
+    (previewPhysicsEngine && previewPhysicsEngine.__lastPhysicsUpdateTs) || now
   const alpha = Math.max(0, Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT))
 
   // Обновляем таймер счётчиков
@@ -629,10 +652,12 @@ function renderPreviewLoop (timestamp) {
 /**
  * Обновление статуса соединения
  */
-function updateConnectionStatus (isConnected) {
+function updateConnectionStatus(isConnected) {
   const wsStatus = document.getElementById('wsStatus')
   if (wsStatus) {
-    wsStatus.className = isConnected ? 'status-indicator connected' : 'status-indicator disconnected'
+    wsStatus.className = isConnected
+      ? 'status-indicator connected'
+      : 'status-indicator disconnected'
     wsStatus.textContent = isConnected ? 'Подключен' : 'Отключен'
   }
 }
@@ -640,7 +665,7 @@ function updateConnectionStatus (isConnected) {
 /**
  * Показ уведомления
  */
-function showNotification (message, type = 'info') {
+function showNotification(message, type = 'info') {
   // Обертка для ожидания инициализации notificationSystem
   const tryShowNotification = (attempt = 0) => {
     if (window.notificationSystem) {
@@ -676,17 +701,15 @@ function showNotification (message, type = 'info') {
 /**
  * Создание логгера для модуля
  */
-function createLogger (moduleName) {
+function createLogger(moduleName) {
   const startTime = performance.now()
 
   return {
     info: (message, data) => {
       const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
-      console.log(`[${timestamp}s] ${moduleName}: ${message}`, data || '')
     },
     success: (message, data) => {
       const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
-      console.log(`[${timestamp}s] ✅ ${moduleName}: ${message}`, data || '')
     },
     warning: (message, data) => {
       const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
@@ -703,7 +726,7 @@ function createLogger (moduleName) {
  * Кастомная ошибка приложения
  */
 class AppError extends Error {
-  constructor (code, message, details = {}) {
+  constructor(code, message, details = {}) {
     super(message)
     this.name = 'AppError'
     this.code = code
@@ -715,7 +738,7 @@ class AppError extends Error {
 /**
  * Обработка ошибок инициализации
  */
-async function handleInitializationError (error, logger) {
+async function handleInitializationError(error, logger) {
   logger.error('Критическая ошибка инициализации:', error)
 
   if (error instanceof AppError) {
@@ -727,17 +750,17 @@ async function handleInitializationError (error, logger) {
         // Показываем ошибку пользователю
         break
       default:
-        // Показываем ошибку пользователю
+      // Показываем ошибку пользователю
     }
   }
 
-    // Показываем ошибку пользователю
-    // Логируем для отладки
+  // Показываем ошибку пользователю
+  // Логируем для отладки
 }
 
 // ===== СИНХРОНИЗАЦИЯ UI =====
 
-function syncUIWithState (ballState) {
+function syncUIWithState(ballState) {
   try {
     if (!ballState) {
       return
@@ -794,25 +817,33 @@ function syncUIWithState (ballState) {
 
 // ===== ИНИЦИАЛИЗАЦИЯ КОМПОНЕНТОВ =====
 
-function initializeComponents () {
+function initializeComponents() {
   // Создаем компонент управления скоростью
-  components.speed = sharedComponents.createSpeedControl(
-    document.getElementById('speedControl'),
-    {
-      onSpeedChange: throttle((speed) => {
-        updateSpeed(speed).catch(console.error)
-      }, 100) // Ограничиваем отправку: не чаще чем раз в 100 мс
-    }
-  )
+  components.speed = sharedComponents.createSpeedControl(document.getElementById('speedControl'), {
+    onSpeedChange: throttle(speed => {
+      updateSpeed(speed).catch(console.error)
+    }, 100) // Ограничиваем отправку: не чаще чем раз в 100 мс
+  })
 
   // Создаем компонент управления цветом шарика
   components.ballColor = sharedComponents.createColorControl(
     document.getElementById('ballColorControl'),
     {
-      colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff'],
+      colors: [
+        '#60a5fa',
+        '#ef4444',
+        '#10b981',
+        '#f59e0b',
+        '#8b5cf6',
+        '#f97316',
+        '#06b6d4',
+        '#84cc16',
+        '#fb7185',
+        '#ffffff'
+      ],
       defaultValue: '#60a5fa', // Дефолтный цвет мяча
       title: '', // Заголовок уже есть в HTML
-      onColorChange: (color) => {
+      onColorChange: color => {
         setBallColor(color)
         // Не меняем радиус превью при смене цвета
       }
@@ -823,10 +854,21 @@ function initializeComponents () {
   components.bgColor = sharedComponents.createColorControl(
     document.getElementById('bgColorControl'),
     {
-      colors: ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a'],
+      colors: [
+        '#020617',
+        '#000000',
+        '#111827',
+        '#0a2540',
+        '#052e16',
+        '#1a102a',
+        '#2b1b0e',
+        '#032f2f',
+        '#2a0e14',
+        '#0f172a'
+      ],
       defaultValue: '#020617', // Дефолтный цвет фона
       title: '', // Заголовок уже есть в HTML
-      onColorChange: (color) => {
+      onColorChange: color => {
         setBackgroundColor(color)
         // Не меняем радиус превью при смене фона
       }
@@ -834,22 +876,19 @@ function initializeComponents () {
   )
 
   // Создаем компонент управления размером
-  components.size = sharedComponents.createSizeControl(
-    document.getElementById('sizeControl'),
-    {
-      sizes: [20, 40, 80, 100],
-      defaultValue: 20,
-      title: '', // Заголовок уже есть в HTML
-      onSizeChange: (size) => {
-        setBallSize(size)
-      }
+  components.size = sharedComponents.createSizeControl(document.getElementById('sizeControl'), {
+    sizes: [20, 40, 80, 100],
+    defaultValue: 20,
+    title: '', // Заголовок уже есть в HTML
+    onSizeChange: size => {
+      setBallSize(size)
     }
-  )
+  })
 }
 
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 
-function safeSend (type, payload) {
+function safeSend(type, payload) {
   try {
     if (wsClient && typeof wsClient.send === 'function') {
       wsClient.send(type, payload)
@@ -859,7 +898,7 @@ function safeSend (type, payload) {
   }
 }
 
-async function updateSpeed (speed) {
+async function updateSpeed(speed) {
   try {
     // Отправляем изменение скорости всегда, даже если вьювер ещё не подключен
     // (сервер сохранит значение и применит при старте)
@@ -869,7 +908,7 @@ async function updateSpeed (speed) {
   }
 }
 
-async function initializePreview () {
+async function initializePreview() {
   // Показываем текст ожидания подключения вьювера
   showWaitingForViewer()
 
@@ -901,7 +940,11 @@ async function initializePreview () {
     // Создаем движок физики для превью
     previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
     // Экспортируем для UI‑тестов
-    try { window.__previewPhysics = previewPhysicsEngine } catch { /* ignore */ }
+    try {
+      window.__previewPhysics = previewPhysicsEngine
+    } catch {
+      /* ignore */
+    }
     // Клиент теперь вычисляет физику локально (включая отскоки), сервер только синхронизирует
     previewPhysicsEngine.isViewer = true
     // Считаем пасы по локальным событиям отскока
@@ -923,11 +966,10 @@ async function initializePreview () {
       localPhysics: false // Рендерер только рисует, физика обновляется отдельно
     })
 
-     window.__previewRenderer.setFrameCallback((deltaTime) => {
-       // Дополнительная логика для превью может быть добавлена здесь
-       // deltaTime параметр сохранен для совместимости с интерфейсом
-       console.log('Preview frame callback called with deltaTime:', deltaTime);
-     })
+    window.__previewRenderer.setFrameCallback(deltaTime => {
+      // Дополнительная логика для превью может быть добавлена здесь
+      // deltaTime параметр сохранен для совместимости с интерфейсом
+    })
 
     globalThis.__previewCanvas = canvas
 
@@ -936,7 +978,10 @@ async function initializePreview () {
     const canvasHeight = canvas.height
     // Если есть размеры вьювера, используем их как основу для мира физики
     if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
-      previewPhysicsEngine.setWorldSize(window.__current.viewerScreenSize.width, window.__current.viewerScreenSize.height)
+      previewPhysicsEngine.setWorldSize(
+        window.__current.viewerScreenSize.width,
+        window.__current.viewerScreenSize.height
+      )
       // Центрируем мяч относительно размеров вьювера
       const viewerCenterX = window.__current.viewerScreenSize.width / 2
       const viewerCenterY = window.__current.viewerScreenSize.height / 2
@@ -949,14 +994,12 @@ async function initializePreview () {
       previewPhysicsEngine.setPosition(canvasWidth / 2, canvasHeight / 2)
       previewPhysicsEngine.setVelocity(0, 0)
     }
-
-    console.log('✅ Превью инициализировано, мяч центрирован')
   } catch (error) {
     console.warn('Error initializing preview:', error)
   }
 }
 
-function showWaitingForViewer () {
+function showWaitingForViewer() {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
     viewerInfo.textContent = '⏳ Ожидание подключения вьювера'
@@ -964,7 +1007,7 @@ function showWaitingForViewer () {
   }
 }
 
-function updatePreviewSize (viewerScreenSize) {
+function updatePreviewSize(viewerScreenSize) {
   if (!viewerScreenSize || !globalThis.__previewRenderer || !previewPhysicsEngine) {
     showWaitingForViewer()
     return
@@ -1003,7 +1046,12 @@ function updatePreviewSize (viewerScreenSize) {
 
   // Синхронизируем размер мира движка с размерами экрана вьювера,
   // чтобы предикция и клампинг соответствовали реальным границам вьювера
-  if (previewPhysicsEngine && viewerScreenSize && typeof viewerScreenSize.width === 'number' && typeof viewerScreenSize.height === 'number') {
+  if (
+    previewPhysicsEngine &&
+    viewerScreenSize &&
+    typeof viewerScreenSize.width === 'number' &&
+    typeof viewerScreenSize.height === 'number'
+  ) {
     previewPhysicsEngine.setWorldSize(viewerScreenSize.width, viewerScreenSize.height)
   }
 
@@ -1049,7 +1097,7 @@ function updatePreviewSize (viewerScreenSize) {
 /**
  * Устанавливает направление движения шарика
  */
-function setDirection (directionMode) {
+function setDirection(directionMode) {
   if (!directionMode) return
 
   try {
@@ -1079,7 +1127,8 @@ function setDirection (directionMode) {
         dirY = -0.707
         displayText = 'Диагональ (право-верх)'
         break
-      case 'random': { // Случайное направление
+      case 'random': {
+        // Случайное направление
         // Генерируем случайный угол в радианах
         const angle = Math.random() * 2 * Math.PI
         dirX = Math.cos(angle)
@@ -1123,13 +1172,15 @@ function setDirection (directionMode) {
     updateDirectionButtons()
     updateDirectionDisplay(dirX, dirY, displayText)
 
-    console.log(`🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`)
+    console.log(
+      `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
+    )
   } catch (error) {
     console.error('Ошибка установки направления:', error)
   }
 }
 
-function setBallColor (color) {
+function setBallColor(color) {
   // Оптимизация: меньше обновлений когда нет вьювера
   if (!window.__current.viewerConnected) {
     // Тихо пропускаем обновление цвета мяча
@@ -1138,7 +1189,7 @@ function setBallColor (color) {
   safeSend(WS_MSG.controllerUpdate, { colorBall: color })
 }
 
-function setBallSize (size) {
+function setBallSize(size) {
   // Оптимизация: меньше обновлений когда нет вьювера
   if (!window.__current.viewerConnected) {
     // Тихо пропускаем обновление размера мяча
@@ -1147,14 +1198,14 @@ function setBallSize (size) {
   safeSend(WS_MSG.controllerUpdate, { radius: size })
 }
 
-function setBallSizeMultiplier (multiplier) {
+function setBallSizeMultiplier(multiplier) {
   // Базовый размер 20, умножаем на множитель
   const baseSize = 20
   const newSize = baseSize * multiplier
   setBallSize(newSize)
 }
 
-function setBackgroundColor (color) {
+function setBackgroundColor(color) {
   // Отправляем изменение на сервер
   if (globalThis.__current.viewerConnected) {
     safeSend(WS_MSG.controllerUpdate, { colorBg: color })
@@ -1170,11 +1221,10 @@ function setBackgroundColor (color) {
   }
 }
 
-
 /**
  * Обновляет состояние кнопок направления
  */
-function updateDirectionButtons () {
+function updateDirectionButtons() {
   // Обновляем активное состояние кнопок направления в основном интерфейсе
   const directionButtons = document.querySelectorAll('[data-mode]')
   directionButtons.forEach(button => {
@@ -1207,7 +1257,7 @@ function updateDirectionButtons () {
 /**
  * Обновляет индикатор направления и отображает информацию о текущем направлении
  */
-function updateDirectionDisplay (dirX, dirY, customText = null) {
+function updateDirectionDisplay(dirX, dirY, customText = null) {
   try {
     // Ищем элемент для отображения направления
     const directionDisplay = document.getElementById('currentDirection')
@@ -1247,14 +1297,16 @@ function updateDirectionDisplay (dirX, dirY, customText = null) {
     // Обновляем иконку направления в полноэкранном режиме
     const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
-      fsDirectionDisplay.innerHTML = directionDisplay ? directionDisplay.innerHTML : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
+      fsDirectionDisplay.innerHTML = directionDisplay
+        ? directionDisplay.innerHTML
+        : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
     }
   } catch (error) {
     console.error('Ошибка обновления отображения направления:', error)
   }
 }
 
-function updatePlayPauseButton () {
+function updatePlayPauseButton() {
   const button = document.getElementById('playPauseBtn')
   if (!button) return
 
@@ -1267,7 +1319,7 @@ function updatePlayPauseButton () {
   }
 }
 
-function togglePlayPause () {
+function togglePlayPause() {
   const payload = {}
 
   if (isPlaying) {
@@ -1295,7 +1347,10 @@ function togglePlayPause () {
       paused: false,
       dirX: currentDirection.dx,
       dirY: currentDirection.dy,
-      speed: (components.speed && typeof components.speed.getSpeed === 'function') ? components.speed.getSpeed() : 40
+      speed:
+        components.speed && typeof components.speed.getSpeed === 'function'
+          ? components.speed.getSpeed()
+          : 40
     })
 
     safeSend(WS_MSG.controllerUpdate, payload)
@@ -1330,13 +1385,16 @@ function togglePlayPause () {
 /**
  * Масштабирует состояние вьювера к размерам превью
  */
-function getScaledState (state) {
+function getScaledState(state) {
   if (!globalThis.__current.viewerScreenSize || !globalThis.__previewCanvas || !state) {
     return state // Возвращаем как есть, если нет данных для масштабирования
   }
 
   const viewerSize = globalThis.__current.viewerScreenSize
-  const previewSize = { width: globalThis.__previewCanvas.width, height: globalThis.__previewCanvas.height }
+  const previewSize = {
+    width: globalThis.__previewCanvas.width,
+    height: globalThis.__previewCanvas.height
+  }
 
   if (viewerSize.width <= 0 || viewerSize.height <= 0) {
     return state
@@ -1352,12 +1410,10 @@ function getScaledState (state) {
 
   // Фолбэк: если координаты нечисловые (undefined/null/NaN) — ставим центр экрана вьювера
   // Это происходит когда вьювер подключился, но размер экрана еще не установлен
-  const rawX = (typeof state.x === 'number' && !Number.isNaN(state.x))
-    ? state.x
-    : (viewerSize.width / 2)
-  const rawY = (typeof state.y === 'number' && !Number.isNaN(state.y))
-    ? state.y
-    : (viewerSize.height / 2)
+  const rawX =
+    typeof state.x === 'number' && !Number.isNaN(state.x) ? state.x : viewerSize.width / 2
+  const rawY =
+    typeof state.y === 'number' && !Number.isNaN(state.y) ? state.y : viewerSize.height / 2
 
   scaledState.x = rawX * scaleX
   scaledState.y = rawY * scaleY
@@ -1367,7 +1423,7 @@ function getScaledState (state) {
   return scaledState
 }
 
-function updateViewerStatusUI () {
+function updateViewerStatusUI() {
   // Обновляем статус вьювера
   const viewerStatusEl = document.getElementById('viewerStatus')
   if (viewerStatusEl) {
@@ -1387,11 +1443,9 @@ function updateViewerStatusUI () {
   }
 }
 
-function openPreviewFullscreen () {
+function openPreviewFullscreen() {
   const overlay = document.getElementById('previewOverlay')
   if (!overlay || !previewFsCanvas) return
-
-  console.log('🚀 Opening fullscreen preview')
 
   // Добавляем запись в историю браузера для корректного возврата
   const currentUrl = window.location.href
@@ -1407,12 +1461,16 @@ function openPreviewFullscreen () {
       previewPhysicsEngine.isViewer = true
     }
     if (!previewFsRenderer) {
-      previewFsRenderer = new BallRenderer(previewFsCanvas, previewPhysicsEngine, { localPhysics: false })
+      previewFsRenderer = new BallRenderer(previewFsCanvas, previewPhysicsEngine, {
+        localPhysics: false
+      })
       previewFsRenderer.start()
     } else {
       previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   resizePreviewFullscreen()
   setupFsPanelAutoHide()
@@ -1423,11 +1481,9 @@ function openPreviewFullscreen () {
   fillFsSessionInfo()
 }
 
-function closePreviewFullscreen () {
+function closePreviewFullscreen() {
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
-
-  console.log('🚪 Closing fullscreen preview')
 
   // Убираем хэш из URL без изменения истории
   const currentUrl = window.location.href
@@ -1438,13 +1494,19 @@ function closePreviewFullscreen () {
   isPreviewFullscreen = false
 }
 
-function resizePreviewFullscreen () {
+function resizePreviewFullscreen() {
   if (!previewFsCanvas) return
   previewFsCanvas.width = window.innerWidth
   previewFsCanvas.height = window.innerHeight
   if (previewPhysicsEngine) {
     const vs = (window.__current && window.__current.viewerScreenSize) || null
-    if (vs && typeof vs.width === 'number' && typeof vs.height === 'number' && vs.width > 0 && vs.height > 0) {
+    if (
+      vs &&
+      typeof vs.width === 'number' &&
+      typeof vs.height === 'number' &&
+      vs.width > 0 &&
+      vs.height > 0
+    ) {
       previewPhysicsEngine.setWorldSize(vs.width, vs.height)
     } else {
       // Фолбэк на размеры окна, если размеры вьювера ещё неизвестны
@@ -1453,23 +1515,34 @@ function resizePreviewFullscreen () {
   }
 }
 
-function setupFsPanelAutoHide () {
+function setupFsPanelAutoHide() {
   const panel = document.getElementById('previewFsPanel')
   const overlay = document.getElementById('previewOverlay')
   if (!panel || !overlay) return
-  const show = () => { panel.style.opacity = '1' }
-  const hide = () => { panel.style.opacity = '0' }
+  const show = () => {
+    panel.style.opacity = '1'
+  }
+  const hide = () => {
+    panel.style.opacity = '0'
+  }
   const scheduleHide = () => {
     clearTimeout(fsPanelHideTimer)
     fsPanelHideTimer = setTimeout(hide, 2000)
   }
   // Показ при движении мыши и нажатиях
-  overlay.addEventListener('mousemove', () => { show(); scheduleHide() })
-  overlay.addEventListener('click', () => { show(); scheduleHide() })
-  show(); scheduleHide()
+  overlay.addEventListener('mousemove', () => {
+    show()
+    scheduleHide()
+  })
+  overlay.addEventListener('click', () => {
+    show()
+    scheduleHide()
+  })
+  show()
+  scheduleHide()
 }
 
-function setupFsPanelDrag () {
+function setupFsPanelDrag() {
   const panel = document.getElementById('previewFsPanel')
   const overlay = document.getElementById('previewOverlay')
   if (!panel || !overlay) return
@@ -1482,74 +1555,102 @@ function setupFsPanelDrag () {
   }
   const onMove = (x, y) => {
     if (!fsPanelDrag.active) return
-    panel.style.left = (x - fsPanelDrag.offsetX) + 'px'
-    panel.style.top = (y - fsPanelDrag.offsetY) + 'px'
+    panel.style.left = x - fsPanelDrag.offsetX + 'px'
+    panel.style.top = y - fsPanelDrag.offsetY + 'px'
     panel.style.transform = 'translateX(0)'
   }
-  const onUp = () => { fsPanelDrag.active = false }
+  const onUp = () => {
+    fsPanelDrag.active = false
+  }
 
-  panel.addEventListener('mousedown', (e) => { onDown(e.clientX, e.clientY) })
-  overlay.addEventListener('mousemove', (e) => { onMove(e.clientX, e.clientY) })
+  panel.addEventListener('mousedown', e => {
+    onDown(e.clientX, e.clientY)
+  })
+  overlay.addEventListener('mousemove', e => {
+    onMove(e.clientX, e.clientY)
+  })
   window.addEventListener('mouseup', onUp)
 
-  panel.addEventListener('touchstart', (e) => {
-    const t = e.touches[0]
-    onDown(t.clientX, t.clientY)
-  }, { passive: true })
-  overlay.addEventListener('touchmove', (e) => {
-    const t = e.touches[0]
-    onMove(t.clientX, t.clientY)
-  }, { passive: true })
+  panel.addEventListener(
+    'touchstart',
+    e => {
+      const t = e.touches[0]
+      onDown(t.clientX, t.clientY)
+    },
+    { passive: true }
+  )
+  overlay.addEventListener(
+    'touchmove',
+    e => {
+      const t = e.touches[0]
+      onMove(t.clientX, t.clientY)
+    },
+    { passive: true }
+  )
   window.addEventListener('touchend', onUp, { passive: true })
 }
 
-function setupFullscreenGestures () {
+function setupFullscreenGestures() {
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
 
-  let startX = 0; let startY = 0; let swiping = false
+  let startX = 0
+  let startY = 0
+  let swiping = false
   const threshold = 40
 
-  overlay.addEventListener('touchstart', (e) => {
-    const t = e.touches[0]
-    startX = t.clientX
-    startY = t.clientY
-    swiping = true
-  }, { passive: true })
+  overlay.addEventListener(
+    'touchstart',
+    e => {
+      const t = e.touches[0]
+      startX = t.clientX
+      startY = t.clientY
+      swiping = true
+    },
+    { passive: true }
+  )
 
-  overlay.addEventListener('touchmove', (e) => {
-    // жесты без блокировки скролла/зумов
-    e.preventDefault(); // Предотвращаем прокрутку страницы при жестах
-  }, { passive: true })
+  overlay.addEventListener(
+    'touchmove',
+    e => {
+      // жесты без блокировки скролла/зумов
+      e.preventDefault() // Предотвращаем прокрутку страницы при жестах
+    },
+    { passive: true }
+  )
 
-  overlay.addEventListener('touchend', (e) => {
-    if (!swiping) return
-    swiping = false
-    const t = e.changedTouches[0]
-    const dx = t.clientX - startX
-    const dy = t.clientY - startY
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
-      // горизонтальные свайпы — смена направления
-      if (dx > 0) {
-        setDirection('horizontal')
-      } else {
-        // горизонтально влево — диагональ как альтернатива
-        setDirection('vertical')
+  overlay.addEventListener(
+    'touchend',
+    e => {
+      if (!swiping) return
+      swiping = false
+      const t = e.changedTouches[0]
+      const dx = t.clientX - startX
+      const dy = t.clientY - startY
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
+        // горизонтальные свайпы — смена направления
+        if (dx > 0) {
+          setDirection('horizontal')
+        } else {
+          // горизонтально влево — диагональ как альтернатива
+          setDirection('vertical')
+        }
+      } else if (Math.abs(dy) > threshold) {
+        // вертикальные свайпы — старт/стоп
+        if (dy < 0) {
+          // свайп вверх — старт
+          if (!isPlaying) togglePlayPause()
+        } else {
+          // свайп вниз — стоп
+          if (isPlaying) togglePlayPause()
+        }
       }
-    } else if (Math.abs(dy) > threshold) {
-      // вертикальные свайпы — старт/стоп
-      if (dy < 0) {
-        // свайп вверх — старт
-        if (!isPlaying) togglePlayPause()
-      } else {
-        // свайп вниз — стоп
-        if (isPlaying) togglePlayPause()
-      }
-    }
-  }, { passive: true })
+    },
+    { passive: true }
+  )
 }
 
-function syncFsPlayPauseButton () {
+function syncFsPlayPauseButton() {
   const btn = document.getElementById('fsPlayPauseBtn')
   if (!btn) return
   if (isPlaying) {
@@ -1559,11 +1660,14 @@ function syncFsPlayPauseButton () {
   }
 }
 
-function wireFullscreenControls () {
+function wireFullscreenControls() {
   const speed = document.getElementById('fsSpeed')
   if (speed) {
-    speed.value = (components.speed && typeof components.speed.getSpeed === 'function') ? components.speed.getSpeed() : 40
-    speed.oninput = (e) => updateSpeed(Number(e.target.value))
+    speed.value =
+      components.speed && typeof components.speed.getSpeed === 'function'
+        ? components.speed.getSpeed()
+        : 40
+    speed.oninput = e => updateSpeed(Number(e.target.value))
   }
 
   const size1 = document.getElementById('fsSize1')
@@ -1587,21 +1691,43 @@ function wireFullscreenControls () {
   if (dRandom) dRandom.onclick = () => setDirection('random')
 
   // Ball color buttons (10 colors from main preview)
-  const ballColors = ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff']
+  const ballColors = [
+    '#60a5fa',
+    '#ef4444',
+    '#10b981',
+    '#f59e0b',
+    '#8b5cf6',
+    '#f97316',
+    '#06b6d4',
+    '#84cc16',
+    '#fb7185',
+    '#ffffff'
+  ]
   for (let i = 1; i <= 10; i++) {
     const btn = document.getElementById(`fsBallCol${i}`)
     if (btn) btn.onclick = () => setBallColor(ballColors[i - 1])
   }
 
   // Background color buttons (10 colors from main preview)
-  const bgColors = ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a']
+  const bgColors = [
+    '#020617',
+    '#000000',
+    '#111827',
+    '#0a2540',
+    '#052e16',
+    '#1a102a',
+    '#2b1b0e',
+    '#032f2f',
+    '#2a0e14',
+    '#0f172a'
+  ]
   for (let i = 1; i <= 10; i++) {
     const btn = document.getElementById(`fsBg${i}`)
     if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1])
   }
 }
 
-function fillFsSessionInfo () {
+function fillFsSessionInfo() {
   try {
     const sid = globalThis.__current?.sessionId || '...'
     const fsSid = document.getElementById('fsCurSid')

@@ -1,4 +1,4 @@
-(function () {
+;(function () {
   if (typeof globalThis === 'undefined') return
   globalThis.BBConfig = globalThis.BBConfig || {
     // Оптимизированные настройки рендеринга для плавного движения

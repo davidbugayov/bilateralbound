@@ -175,7 +175,7 @@ describe('BilateralBound E2E Tests', () => {
     test('should change ball speed when speed slider is moved', async () => {
       const speedSlider = await page.$('input[type="range"]');
       if (!speedSlider) {
-        console.log('Speed slider not found, skipping test');
+        
         return;
       }
       
@@ -193,7 +193,7 @@ describe('BilateralBound E2E Tests', () => {
     test('should display speed value correctly', async () => {
       const speedDisplay = await page.$('.speed-value');
       if (!speedDisplay) {
-        console.log('Speed display not found, skipping test');
+        
         return;
       }
       

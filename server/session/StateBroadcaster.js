@@ -2,13 +2,13 @@ const { logger, DEBUG_MODE } = require('../logger.js')
 
 // Интерфейс для рассылки состояния клиентам
 class StateBroadcaster {
-  constructor (sessionRepository, webSocketManager) {
+  constructor(sessionRepository, webSocketManager) {
     this.sessionRepository = sessionRepository
     this.webSocketManager = webSocketManager
     this.logger = logger
   }
 
-  broadcastState (sessionId, stateType = 'state_update', payload = null) {
+  broadcastState(sessionId, stateType = 'state_update', payload = null) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
@@ -30,14 +30,15 @@ class StateBroadcaster {
       }
     }
 
-    if (sentCount > 0 && DEBUG_MODE) { // Логируем только в DEBUG режиме для производительности
+    if (sentCount > 0 && DEBUG_MODE) {
+      // Логируем только в DEBUG режиме для производительности
       this.logger.logSession(sessionId, `Broadcasted ${stateType} to ${sentCount} clients`)
     }
 
     return sentCount > 0
   }
 
-  broadcastViewerStatus (sessionId) {
+  broadcastViewerStatus(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
@@ -47,7 +48,7 @@ class StateBroadcaster {
     })
   }
 
-  broadcastInitialState (sessionId, client, currentState) {
+  broadcastInitialState(sessionId, client, currentState) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
 
@@ -78,7 +79,7 @@ class StateBroadcaster {
     return false
   }
 
-  _isClientReady (client) {
+  _isClientReady(client) {
     return client && client.readyState === 1 // WebSocket.OPEN
   }
 }

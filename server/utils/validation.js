@@ -7,7 +7,7 @@ class ValidationUtils {
   /**
    * Валидирует обновления состояния мяча
    */
-  static validateBallStateUpdates (updates) {
+  static validateBallStateUpdates(updates) {
     if (!updates || typeof updates !== 'object') {
       return {}
     }
@@ -15,12 +15,22 @@ class ValidationUtils {
     const validated = {}
 
     // Валидация скорости
-    if (typeof updates.speed === 'number' && updates.speed >= 0 && updates.speed <= 100 && !isNaN(updates.speed)) {
+    if (
+      typeof updates.speed === 'number' &&
+      updates.speed >= 0 &&
+      updates.speed <= 100 &&
+      !isNaN(updates.speed)
+    ) {
       validated.speed = updates.speed
     }
 
     // Валидация радиуса
-    if (typeof updates.radius === 'number' && updates.radius > 0 && updates.radius <= 1000 && !isNaN(updates.radius)) {
+    if (
+      typeof updates.radius === 'number' &&
+      updates.radius > 0 &&
+      updates.radius <= 1000 &&
+      !isNaN(updates.radius)
+    ) {
       validated.radius = updates.radius
     }
 
@@ -56,7 +66,7 @@ class ValidationUtils {
   /**
    * Валидирует WebSocket команды
    */
-  static validateWebSocketCommand (command) {
+  static validateWebSocketCommand(command) {
     if (!command || typeof command !== 'object') {
       return {}
     }
@@ -77,7 +87,12 @@ class ValidationUtils {
       if (typeof command.dirY === 'number' && Math.abs(command.dirY) <= 1 && !isNaN(command.dirY)) {
         validated.dirY = command.dirY
       }
-      if (typeof command.speed === 'number' && command.speed >= 0 && command.speed <= 100 && !isNaN(command.speed)) {
+      if (
+        typeof command.speed === 'number' &&
+        command.speed >= 0 &&
+        command.speed <= 100 &&
+        !isNaN(command.speed)
+      ) {
         validated.speed = command.speed
       }
     }
@@ -89,7 +104,12 @@ class ValidationUtils {
     if (command.reset === true) {
       validated.reset = true
     }
-    if (typeof command.radius === 'number' && command.radius > 0 && command.radius <= 1000 && !isNaN(command.radius)) {
+    if (
+      typeof command.radius === 'number' &&
+      command.radius > 0 &&
+      command.radius <= 1000 &&
+      !isNaN(command.radius)
+    ) {
       validated.radius = command.radius
     }
     if (typeof command.colorBall === 'string' && /^#[0-9a-fA-F]{6}$/.test(command.colorBall)) {
@@ -105,7 +125,7 @@ class ValidationUtils {
   /**
    * Валидирует размеры экрана
    */
-  static validateScreenSize (screenSize) {
+  static validateScreenSize(screenSize) {
     if (!screenSize || typeof screenSize !== 'object') {
       return null
     }

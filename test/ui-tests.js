@@ -11,7 +11,7 @@ const BASE = 'http://localhost:3002'
 
 function log(msg) {
   const ts = new Date().toISOString()
-  console.log(`ℹ️ [${ts}] ${msg}`)
+  
 }
 
 async function api(path, method = 'GET', body = null) {

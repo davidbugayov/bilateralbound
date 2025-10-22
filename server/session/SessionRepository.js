@@ -2,23 +2,23 @@ const { v4: uuidv4 } = require('uuid')
 
 // Интерфейс для управления данными сессий
 class SessionRepository {
-  constructor () {
+  constructor() {
     this.sessions = new Map()
     this.sessionCache = new Map() // Кэш для часто запрашиваемых сессий
     this.cacheExpiration = 30000 // 30 секунд
   }
 
   // Валидация пользовательского ID сессии: латиница/цифры/подчеркивание/дефис, 3..32 символа
-  isValidCustomId (id) {
+  isValidCustomId(id) {
     return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id)
   }
 
-  create (sessionData = {}) {
+  create(sessionData = {}) {
     const session = this._createInternal(uuidv4().substring(0, 6), sessionData)
     return session
   }
 
-  createWithId (customId, sessionData = {}) {
+  createWithId(customId, sessionData = {}) {
     const id = String(customId)
     if (!this.isValidCustomId(id)) {
       throw new Error('Invalid session id format')
@@ -30,12 +30,12 @@ class SessionRepository {
     return this._createInternal(id, sessionData)
   }
 
-  findOrCreateById (id, sessionData = {}) {
+  findOrCreateById(id, sessionData = {}) {
     if (!this.isValidCustomId(id)) return null
     return this.sessions.get(id) || this._createInternal(id, sessionData)
   }
 
-  _createInternal (id, sessionData = {}) {
+  _createInternal(id, sessionData = {}) {
     const session = {
       id,
       ballState: {
@@ -61,7 +61,7 @@ class SessionRepository {
     return session
   }
 
-  findById (sessionId) {
+  findById(sessionId) {
     // Проверяем кэш сначала
     const cached = this.sessionCache.get(sessionId)
     if (cached && Date.now() - cached.timestamp < this.cacheExpiration) {
@@ -82,7 +82,7 @@ class SessionRepository {
     return session
   }
 
-  update (sessionId, updates) {
+  update(sessionId, updates) {
     const session = this.findById(sessionId)
     if (!session) return false
 
@@ -95,7 +95,7 @@ class SessionRepository {
     return true
   }
 
-  updateBallState (sessionId, ballUpdates) {
+  updateBallState(sessionId, ballUpdates) {
     const session = this.findById(sessionId)
     if (!session) return false
 
@@ -107,13 +107,13 @@ class SessionRepository {
     return true
   }
 
-  delete (sessionId) {
+  delete(sessionId) {
     this.sessionCache.delete(sessionId) // Очищаем кэш
     return this.sessions.delete(sessionId)
   }
 
   // Очистка устаревшего кэша для оптимизации памяти
-  cleanupCache () {
+  cleanupCache() {
     const now = Date.now()
     for (const [sessionId, cached] of this.sessionCache) {
       if (now - cached.timestamp > this.cacheExpiration) {
@@ -122,11 +122,12 @@ class SessionRepository {
     }
   }
 
-  getAll () {
+  getAll() {
     return Array.from(this.sessions.values())
   }
 
-  cleanupExpired (maxAge = 60 * 60 * 1000) { // 1 hour
+  cleanupExpired(maxAge = 60 * 60 * 1000) {
+    // 1 hour
     const now = Date.now()
     const expiredIds = []
 

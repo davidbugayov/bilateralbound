@@ -17,7 +17,7 @@ class PermanentLinksTest {
   log(message, status = 'info') {
     const timestamp = new Date().toISOString();
     const emoji = status === 'success' ? '✅' : status === 'error' ? '❌' : 'ℹ️';
-    console.log(`[${timestamp}] ${emoji} ${message}`);
+    
     this.testResults.push({ timestamp, status, message });
   }
 
@@ -202,23 +202,22 @@ class PermanentLinksTest {
   }
 
   printResults() {
-    console.log('\n📊 Результаты тестирования:');
+    
     console.log('=' .repeat(50));
     
     this.testResults.forEach(result => {
       const icon = result.status === 'success' ? '✅' : result.status === 'error' ? '❌' : 'ℹ️';
-      console.log(`${icon} ${result.message}`);
+      
     });
 
     const successCount = this.testResults.filter(r => r.status === 'success').length;
     const totalCount = this.testResults.length;
     
-    console.log(`\n📈 Итог: ${successCount}/${totalCount} тестов пройдено успешно`);
     
     if (successCount === totalCount) {
-      console.log('🎉 Все тесты пройдены! Постоянные ссылки работают корректно.');
+      
     } else {
-      console.log('⚠️  Некоторые тесты не пройдены. Требуется дополнительная отладка.');
+      
     }
   }
 

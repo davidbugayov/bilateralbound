@@ -5,7 +5,7 @@
  */
 
 class BallRenderer {
-  constructor (canvas, physicsEngine, options = {}) {
+  constructor(canvas, physicsEngine, options = {}) {
     // Проверяем входные параметры
     if (!canvas) {
       throw new Error('Canvas element is required for BallRenderer')
@@ -79,9 +79,9 @@ class BallRenderer {
   }
 
   /**
-     * Запускает рендеринг
-     */
-  start () {
+   * Запускает рендеринг
+   */
+  start() {
     if (this.animationFrameId) {
       this.stop()
     }
@@ -93,9 +93,9 @@ class BallRenderer {
   }
 
   /**
-     * Останавливает рендеринг
-     */
-  stop () {
+   * Останавливает рендеринг
+   */
+  stop() {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId)
       this.animationFrameId = null
@@ -103,16 +103,16 @@ class BallRenderer {
   }
 
   /**
-     * Устанавливает callback для каждого кадра
-     */
-  setFrameCallback (callback) {
+   * Устанавливает callback для каждого кадра
+   */
+  setFrameCallback(callback) {
     this.onFrameCallback = callback
   }
 
   /**
-     * Основной цикл рендеринга (оптимизированный)
-     */
-  renderLoop (currentTime) {
+   * Основной цикл рендеринга (оптимизированный)
+   */
+  renderLoop(currentTime) {
     // Усиленная проверка на валидность всех компонентов
     if (!this.canvas || !this.ctx || !this.physics) {
       this.stop()
@@ -149,7 +149,8 @@ class BallRenderer {
     if (this.adaptiveFrameRate) {
       this.frameTimeHistory.push(deltaTime)
       if (this.frameTimeHistory.length > 20) this.frameTimeHistory.shift()
-      const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
+      const avgFrameTime =
+        this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
       this.actualFps = 1000 / Math.max(1, avgFrameTime)
     }
 
@@ -187,7 +188,10 @@ class BallRenderer {
         } else {
           // Внешний цикл физики: синхронизируемся с реальным последним тиком физики
           const now = currentTime
-          const lastTs = (this.physics && this.physics.__lastPhysicsUpdateTs) ? this.physics.__lastPhysicsUpdateTs : now
+          const lastTs =
+            this.physics && this.physics.__lastPhysicsUpdateTs
+              ? this.physics.__lastPhysicsUpdateTs
+              : now
           alpha = Math.max(0, Math.min(1, (now - lastTs) / this.fixedStepMs))
         }
       }
@@ -203,9 +207,9 @@ class BallRenderer {
   }
 
   /**
-     * Рендерит сцену (оптимизированная версия)
-     */
-  render (alpha = 1) {
+   * Рендерит сцену (оптимизированная версия)
+   */
+  render(alpha = 1) {
     // Финальная проверка перед рендерингом
     if (!this.canvas || !this.ctx || !this.physics) {
       return
@@ -216,13 +220,17 @@ class BallRenderer {
         // Полная перерисовка
         this.ctx.fillStyle = this.colors.bg
         this.fillRect(0, 0, this.canvas.width, this.canvas.height)
-        const ballState = (this.physics.getInterpolatedBall) ? this.physics.getInterpolatedBall(alpha) : this.physics.ball
+        const ballState = this.physics.getInterpolatedBall
+          ? this.physics.getInterpolatedBall(alpha)
+          : this.physics.ball
         this.renderBall(ballState)
       } else {
         // Простейшая dirty-стратегия: очищаем только окрестность предыдущего и текущего положения
         const padding = 4
         const prev = this._prevBall || { x: -1, y: -1, radius: 0 }
-        const curr = (this.physics.getInterpolatedBall) ? this.physics.getInterpolatedBall(alpha) : this.physics.ball
+        const curr = this.physics.getInterpolatedBall
+          ? this.physics.getInterpolatedBall(alpha)
+          : this.physics.ball
         // Очистка предыдущего региона
         if (prev.x >= 0) {
           const w = prev.radius * 2 + padding * 2
@@ -244,9 +252,9 @@ class BallRenderer {
   }
 
   /**
-     * Рисует шарик (оптимизированная версия)
-     */
-  renderBall (ballState) {
+   * Рисует шарик (оптимизированная версия)
+   */
+  renderBall(ballState) {
     const ball = ballState || this.ball
 
     // Проверяем валидность данных шарика
@@ -268,8 +276,12 @@ class BallRenderer {
         // Градиент не должен зависеть от абсолютной позиции шара,
         // чтобы исключить визуальные артефакты при ресайзе.
         const g = this.ctx.createRadialGradient(
-          -ball.radius * 0.3, -ball.radius * 0.3, 0,
-          0, 0, ball.radius
+          -ball.radius * 0.3,
+          -ball.radius * 0.3,
+          0,
+          0,
+          0,
+          ball.radius
         )
         g.addColorStop(0, col)
         g.addColorStop(1, this.adjustBrightness(col, -20))
@@ -312,7 +324,7 @@ class BallRenderer {
   /**
    * Изменяет яркость цвета
    */
-  adjustBrightness (color, amount) {
+  adjustBrightness(color, amount) {
     const hex = color.replace('#', '')
     const r = Math.max(0, Math.min(255, parseInt(hex.slice(0, 2), 16) + amount))
     const g = Math.max(0, Math.min(255, parseInt(hex.slice(2, 4), 16) + amount))
@@ -321,9 +333,9 @@ class BallRenderer {
   }
 
   /**
-     * Изменяет размеры canvas
-     */
-  resize (width, height) {
+   * Изменяет размеры canvas
+   */
+  resize(width, height) {
     if (!this.canvas) {
       return
     }
@@ -354,7 +366,7 @@ class BallRenderer {
   /**
    * Проверяет и восстанавливает canvas при необходимости
    */
-  validateCanvas () {
+  validateCanvas() {
     if (!this.canvas) {
       return false
     }
@@ -375,9 +387,9 @@ class BallRenderer {
           // Тихо восстанавливаем контекст канваса
           return true
         }
-    } catch {
-      // ignore
-    }
+      } catch {
+        // ignore
+      }
       return false
     }
 
@@ -387,16 +399,16 @@ class BallRenderer {
   // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ПЕРЕИСПОЛЬЗОВАНИЯ ===
 
   /**
-     * Клонирует рендерер для нового canvas
-     */
-  clone (newCanvas) {
+   * Клонирует рендерер для нового canvas
+   */
+  clone(newCanvas) {
     return new BallRenderer(newCanvas, this.physics)
   }
 
   /**
-     * Устанавливает новый движок физики
-     */
-  setPhysicsEngine (physicsEngine) {
+   * Устанавливает новый движок физики
+   */
+  setPhysicsEngine(physicsEngine) {
     if (!physicsEngine) {
       return
     }
@@ -413,25 +425,25 @@ class BallRenderer {
   }
 
   /**
-     * Рендерит сцену без обновления физики (для статичного рендеринга)
-     */
-  renderStatic () {
+   * Рендерит сцену без обновления физики (для статичного рендеринга)
+   */
+  renderStatic() {
     this.render(1)
   }
 
   /**
-     * Устанавливает FPS для рендеринга
-     */
-  setFPS (fps) {
+   * Устанавливает FPS для рендеринга
+   */
+  setFPS(fps) {
     const safeFps = Math.max(15, Math.min(240, fps || 60))
     this.targetFrameTime = 1000 / safeFps
     this.fixedStepMs = 1000 / safeFps
   }
 
   /**
-     * Получает текущий FPS
-     */
-  getFPS () {
+   * Получает текущий FPS
+   */
+  getFPS() {
     return 1000 / this.targetFrameTime
   }
 
@@ -440,7 +452,7 @@ class BallRenderer {
    * Удобно для внешнего цикла рендеринга.
    * @param {object} state - Состояние для рендеринга.
    */
-  drawFrame (state) {
+  drawFrame(state) {
     if (!this.validateCanvas() || !state) {
       return
     }
@@ -460,7 +472,7 @@ class BallRenderer {
   /**
    * Устанавливает цвет фона
    */
-  setBackgroundColor (color) {
+  setBackgroundColor(color) {
     if (this.colors) {
       this.colors.bg = color
     }

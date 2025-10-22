@@ -16,7 +16,7 @@ class Tester {
   log(msg, type = 'info') {
     const ts = new Date().toISOString();
     const p = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
-    console.log(`${p} [${ts}] ${msg}`);
+    
   }
 
   async startServer() {

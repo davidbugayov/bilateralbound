@@ -4,15 +4,15 @@
  */
 
 class SharedComponents {
-  constructor () {
+  constructor() {
     this.components = new Map()
     this.eventListeners = new Map()
   }
 
   /**
-     * Создает переиспользуемый компонент управления скоростью
-     */
-  createSpeedControl (container, options = {}) {
+   * Создает переиспользуемый компонент управления скоростью
+   */
+  createSpeedControl(container, options = {}) {
     const defaultOptions = {
       min: 0,
       max: 100,
@@ -31,7 +31,7 @@ class SharedComponents {
       elements: {},
 
       // Создает HTML для контроля скорости
-      render () {
+      render() {
         const speedControl = document.createElement('div')
         speedControl.className = 'speed-control'
 
@@ -98,7 +98,7 @@ class SharedComponents {
       },
 
       // Настраивает ссылки на элементы
-      setupElements () {
+      setupElements() {
         this.elements.range = container.querySelector('.speed-range')
         this.elements.value = container.querySelector('.speed-value')
         this.elements.display = container.querySelector('.speed-display')
@@ -108,9 +108,9 @@ class SharedComponents {
       },
 
       // Настраивает обработчики событий
-      setupEventListeners () {
+      setupEventListeners() {
         if (this.elements.range) {
-          this.elements.range.addEventListener('input', (e) => {
+          this.elements.range.addEventListener('input', e => {
             this.setSpeed(parseInt(e.target.value))
           })
         }
@@ -128,7 +128,7 @@ class SharedComponents {
       },
 
       // Обновляет активный пресет
-      updateActivePreset (speed) {
+      updateActivePreset(speed) {
         if (!this.elements.presets || !this.elements.presets.length) return
 
         // Снимаем активное состояние со всех
@@ -150,7 +150,7 @@ class SharedComponents {
       },
 
       // Устанавливает скорость
-      setSpeed (speed) {
+      setSpeed(speed) {
         this.currentSpeed = Math.max(this.options.min, Math.min(this.options.max, speed))
 
         if (this.elements.range) {
@@ -176,12 +176,12 @@ class SharedComponents {
       },
 
       // Получает текущую скорость
-      getSpeed () {
+      getSpeed() {
         return this.currentSpeed
       },
 
       // Сбрасывает скорость
-      reset () {
+      reset() {
         this.setSpeed(this.options.defaultValue)
       }
     }
@@ -190,9 +190,9 @@ class SharedComponents {
   }
 
   /**
-     * Создает переиспользуемый компонент управления цветом
-     */
-  createColorControl (container, options = {}) {
+   * Создает переиспользуемый компонент управления цветом
+   */
+  createColorControl(container, options = {}) {
     const defaultOptions = {
       colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
       defaultValue: null, // Будет установлен в colors[0] если не указан
@@ -208,20 +208,24 @@ class SharedComponents {
       elements: {},
 
       // Создает HTML для контроля цвета
-      render () {
+      render() {
         const colorControl = document.createElement('div')
         colorControl.className = 'color-control'
 
         colorControl.innerHTML = `
                     <h3>${defaultOptions.title}</h3>
                     <div class="color-palette">
-                        ${defaultOptions.colors.map(color => `
+                        ${defaultOptions.colors
+                          .map(
+                            color => `
                             <button class="color-btn" 
                                     data-color="${color}" 
                                     style="background-color: ${color}"
                                     title="${color}">
                             </button>
-                        `).join('')}
+                        `
+                          )
+                          .join('')}
                     </div>
                 `
 
@@ -235,7 +239,7 @@ class SharedComponents {
       },
 
       // Настраивает обработчики событий
-      setupEventListeners () {
+      setupEventListeners() {
         const buttons = container.querySelectorAll('.color-btn')
         buttons.forEach(button => {
           button.addEventListener('click', () => {
@@ -246,7 +250,7 @@ class SharedComponents {
       },
 
       // Устанавливает цвет
-      setColor (color) {
+      setColor(color) {
         this.currentColor = color
 
         // Обновляем активную кнопку
@@ -262,7 +266,7 @@ class SharedComponents {
       },
 
       // Получает текущий цвет
-      getColor () {
+      getColor() {
         return this.currentColor
       }
     }
@@ -271,9 +275,9 @@ class SharedComponents {
   }
 
   /**
-     * Создает переиспользуемый компонент управления размером
-     */
-  createSizeControl (container, options = {}) {
+   * Создает переиспользуемый компонент управления размером
+   */
+  createSizeControl(container, options = {}) {
     const defaultOptions = {
       sizes: [20, 40, 80, 100],
       defaultValue: 20,
@@ -289,20 +293,24 @@ class SharedComponents {
       elements: {},
 
       // Создает HTML для контроля размера
-      render () {
+      render() {
         const sizeControl = document.createElement('div')
         sizeControl.className = 'size-control'
 
         sizeControl.innerHTML = `
                     <h3>${defaultOptions.title}</h3>
                     <div class="size-palette">
-                        ${defaultOptions.sizes.map((size, index) => `
+                        ${defaultOptions.sizes
+                          .map(
+                            (size, index) => `
                             <button class="size-btn" 
                                     data-size="${size}"
                                     title="${size}px">
                                 x${index + 1}
                             </button>
-                        `).join('')}
+                        `
+                          )
+                          .join('')}
                     </div>
                 `
 
@@ -316,7 +324,7 @@ class SharedComponents {
       },
 
       // Настраивает обработчики событий
-      setupEventListeners () {
+      setupEventListeners() {
         const buttons = container.querySelectorAll('.size-btn')
         buttons.forEach(button => {
           button.addEventListener('click', () => {
@@ -327,7 +335,7 @@ class SharedComponents {
       },
 
       // Устанавливает размер
-      setSize (size) {
+      setSize(size) {
         this.currentSize = size
 
         // Обновляем активную кнопку
@@ -343,7 +351,7 @@ class SharedComponents {
       },
 
       // Получает текущий размер
-      getSize () {
+      getSize() {
         return this.currentSize
       }
     }
@@ -352,9 +360,9 @@ class SharedComponents {
   }
 
   /**
-     * Создает переиспользуемый компонент статуса
-     */
-  createStatusIndicator (container, options = {}) {
+   * Создает переиспользуемый компонент статуса
+   */
+  createStatusIndicator(container, options = {}) {
     const defaultOptions = {
       title: 'Статус',
       showIcon: true,
@@ -370,7 +378,7 @@ class SharedComponents {
       elements: {},
 
       // Создает HTML для индикатора статуса
-      render () {
+      render() {
         const statusIndicator = document.createElement('div')
         statusIndicator.className = 'status-indicator'
 
@@ -387,14 +395,14 @@ class SharedComponents {
       },
 
       // Настраивает ссылки на элементы
-      setupElements () {
+      setupElements() {
         this.elements.container = container.querySelector('.status-indicator')
         this.elements.icon = container.querySelector('.status-icon')
         this.elements.text = container.querySelector('.status-text')
       },
 
       // Устанавливает статус
-      setStatus (status, message = '') {
+      setStatus(status, message = '') {
         this.currentStatus = status
 
         const statusMap = {
@@ -427,17 +435,17 @@ class SharedComponents {
       },
 
       // Показывает индикатор
-      show () {
+      show() {
         this.elements.container.style.display = 'block'
       },
 
       // Скрывает индикатор
-      hide () {
+      hide() {
         this.elements.container.style.display = 'none'
       },
 
       // Получает текущий статус
-      getStatus () {
+      getStatus() {
         return this.currentStatus
       }
     }
