@@ -717,21 +717,14 @@ function syncUIWithState(ballState) {
     }
 
     if (ballState.paused !== undefined) {
-  // Если только что был локальный клик Старт/Стоп — не даём серверу мгновенно
-  // перетянуть состояние кнопки обратно (оптимистичный UI)
-  const now = performance.now()
-  if (now >= __ignoreServerPausedUntilTs) {
-    // Обновляем состояние игры на основе серверного состояния
-    isPlaying = !ballState.paused
-    updatePlayPauseButton()
-  } else {
-    // Но всё равно обновим предупреждающе фон кнопки, если рассинхрон
-    updatePlayPauseButton()
-    return
-  }
-      // Обновляем состояние игры на основе серверного состояния
-      isPlaying = !ballState.paused
-      updatePlayPauseButton()
+      // Если только что был локальный клик Старт/Стоп — не даём серверу мгновенно
+      // перетянуть состояние кнопки обратно (оптимистичный UI)
+      const now = performance.now()
+      if (now >= __ignoreServerPausedUntilTs) {
+        // Обновляем состояние игры на основе серверного состояния
+        isPlaying = !ballState.paused
+        updatePlayPauseButton()
+      }
     }
 
     if (ballState.dirX !== undefined && ballState.dirY !== undefined) {

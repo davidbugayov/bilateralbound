@@ -4,10 +4,11 @@
  */
 
 class NotificationSystem {
+  container = null
+  notifications = []
+  autoHideTimeout = 5000
+
   constructor() {
-    this.container = null
-    this.notifications = []
-    this.autoHideTimeout = 5000
     this.init()
   }
 

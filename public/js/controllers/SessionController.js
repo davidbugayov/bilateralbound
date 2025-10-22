@@ -12,4 +12,18 @@ export class SessionController {
     this.wsClient = wsClient
     this.appState = appState
   }
+
+  /**
+   * Проверяет валидность состояния контроллера
+   */
+  isValid() {
+    return !!this.wsClient && !!this.appState
+  }
+
+  /**
+   * Возвращает текущее состояние сессии
+   */
+  getSessionState() {
+    return this.appState
+  }
 }
