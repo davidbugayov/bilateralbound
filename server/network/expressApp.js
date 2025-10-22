@@ -53,7 +53,7 @@ function setupExpressApp(sessionManager, apiCache) {
   // Улучшенная обработка безопасности с учетом сетевых интерфейсов
   app.use((req, res, next) => {
     const interfaceIP = networkInterfaces[Object.keys(networkInterfaces)[0]]
-    req.interfaceIP = interfaceIP || '127.0.0.1'
+    req.interfaceIP = interfaceIP || '127.0.1'
     next()
   })
 

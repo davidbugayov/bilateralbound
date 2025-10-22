@@ -14,9 +14,10 @@ class WebSocketClient {
 
     // Конфигурация с умолчаниями - используем глобальную конфигурацию
     const globalConfig =
-      (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.network) || {}
+      (typeof globalThis !== 'undefined' && globalThis.BBConfig && globalThis.BBConfig.network) ||
+      {}
     this.config = {
-      isSecure: window.location.protocol === 'https:',
+      isSecure: globalThis.location.protocol === 'https:',
       maxReconnectAttempts: globalConfig.maxReconnectAttempts || 5,
       reconnectInterval: globalConfig.reconnectDelay || 3000,
       heartbeatInterval: globalConfig.heartbeatInterval || 25000,
@@ -65,7 +66,7 @@ class WebSocketClient {
 
   _generateWebSocketUrl() {
     const protocol = this.config.isSecure ? 'wss:' : 'ws:'
-    const host = window.location.host
+    const host = globalThis.location.host
     const url = new URL(`${protocol}//${host}`)
     url.searchParams.set('sessionId', this.sessionId)
     url.searchParams.set('role', this.role)

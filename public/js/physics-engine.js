@@ -25,9 +25,9 @@ class PhysicsEngine {
     }
 
     // Применяем глобальную конфигурацию при наличии
-    if (typeof window !== 'undefined' && window.BBConfig) {
-      if (window.BBConfig.smoothing) {
-        this.options.smoothing = { ...this.options.smoothing, ...window.BBConfig.smoothing }
+    if (typeof globalThis !== 'undefined' && globalThis.BBConfig) {
+      if (globalThis.BBConfig.smoothing) {
+        this.options.smoothing = { ...this.options.smoothing, ...globalThis.BBConfig.smoothing }
       }
     }
 
@@ -98,7 +98,7 @@ class PhysicsEngine {
         smoothing: {
           stiffness: 15,
           damping: 8,
-          maxPredictSec: 1.0,
+          maxPredictSec: 1,
           snapDistance: 0.8
         }
       },
@@ -297,13 +297,14 @@ class PhysicsEngine {
   }
 
   /**
-   * ПРОДВИНУТАЯ интерполяция v4.0 с буферизацией состояний и экспоненциальным сглаживанием
+   * ПРОДВИНУТАЯ интерполяция v4 с буферизацией состояний и экспоненциальным сглаживанием
    * Решение проблемы дергания на основе лучших практик игровой индустрии
    */
   updateViewerInterpolation(deltaTime) {
     if (
       (this.state.paused && !this.state.allowInterpWhenPaused) ||
-      !this.state || !this.state.targetX
+      !this.state ||
+      !this.state.targetX
     )
       return
 
@@ -675,9 +676,9 @@ class PhysicsEngine {
 
     // Дополнительно инициируем DOM-событие для счётчика пасов на стороне контроллера
     try {
-      if (typeof window !== 'undefined') {
+      if (typeof globalThis !== 'undefined') {
         const ev = new CustomEvent('bb_bounce', { detail: { x: this.ball.x, y: this.ball.y } })
-        window.dispatchEvent(ev)
+        globalThis.dispatchEvent(ev)
       }
     } catch {
       // ignore
@@ -997,8 +998,8 @@ class PhysicsEngine {
 }
 
 // Экспортируем для использования
-if (typeof window !== 'undefined') {
-  window.PhysicsEngine = PhysicsEngine
+if (typeof globalThis !== 'undefined') {
+  globalThis.PhysicsEngine = PhysicsEngine
 }
 
 if (typeof module !== 'undefined' && module.exports) {

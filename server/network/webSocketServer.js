@@ -108,7 +108,7 @@ function setupWebSocketServer(server, sessionManager) {
       sessionManager.handleWebSocketDisconnection(ws)
       // Рассылаем событие об отключении контроллера всем оставшимся клиентам
       const clientInfo = sessionManager.getClientInfo(ws)
-      if (clientInfo && clientInfo.role === 'controller') {
+      if (clientInfo?.role === 'controller') {
         // Получаем всех клиентов сессии
         const clients = sessionManager.webSocketManager.getClients(sessionId)
         for (const { client } of clients) {

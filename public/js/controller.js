@@ -19,8 +19,8 @@ globalThis.__previewScale = 1 // Коэффициент масштабирова
 // 3. Глобальные переменные для логики контроллера
 const components = {}
 // Экспортируем ссылку на компоненты для использования в новых функциях
-if (typeof window !== 'undefined') {
-  window.components = components
+if (typeof globalThis !== 'undefined') {
+  globalThis.components = components
 }
 let lastServerState = null // Кэшируем последнее состояние от сервера
 let directionState = { dx: 1, dy: 0 }
@@ -35,12 +35,12 @@ let __ignoreServerPausedUntilTs = 0 // Кратковременная блоки
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
 if (
-  typeof window !== 'undefined' &&
-  window.BBConfig &&
-  window.BBConfig.rendering &&
-  typeof window.BBConfig.rendering.hiddenThrottleMs === 'number'
+  typeof globalThis !== 'undefined' &&
+  globalThis.BBConfig &&
+  globalThis.BBConfig.rendering &&
+  typeof globalThis.BBConfig.rendering.hiddenThrottleMs === 'number'
 ) {
-  hiddenThrottleMs = window.BBConfig.rendering.hiddenThrottleMs
+  hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
 }
 let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
 
@@ -205,8 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bbCounters.initDom()
 
   // При изменении размера окна контроллера — пересчитать превью по текущим размерам вьювера
-  window.addEventListener('resize', () => {
-    const size = window.__current?.viewerScreenSize
+  globalThis.addEventListener('resize', () => {
+    const size = globalThis.__current?.viewerScreenSize
     if (size?.width > 0 && size?.height > 0) {
       updatePreviewSize(size)
     }
@@ -273,7 +273,7 @@ async function initializeController() {
     if (openFsBtn && exitFsBtn && overlay && previewFsCanvas) {
       openFsBtn.addEventListener('click', openPreviewFullscreen)
       exitFsBtn.addEventListener('click', closePreviewFullscreen)
-      window.addEventListener('resize', () => {
+      globalThis.addEventListener('resize', () => {
         if (isPreviewFullscreen) resizePreviewFullscreen()
       })
       // Горячие клавиши: F – toggle, Esc – закрыть
@@ -289,11 +289,11 @@ async function initializeController() {
     }
 
     // Обработчик навигации назад в браузере
-    window.addEventListener('popstate', event => {
+    globalThis.addEventListener('popstate', event => {
       if (isPreviewFullscreen) {
         // Если мы в полноэкранном режиме и произошла навигация назад
         closePreviewFullscreen()
-      } else if (window.location.hash === '#fullscreen-preview' && !isPreviewFullscreen) {
+      } else if (globalThis.location.hash === '#fullscreen-preview' && !isPreviewFullscreen) {
         // Если пользователь попал на хэш полноэкранного режима, но режим не активен
         openPreviewFullscreen()
       }
@@ -378,7 +378,7 @@ async function initializeDOMElements(sessionId) {
 function updateViewerLink(sessionId) {
   const viewLinkInput = document.getElementById('view')
   if (viewLinkInput) {
-    viewLinkInput.value = `${window.location.origin}/s/${sessionId}`
+    viewLinkInput.value = `${globalThis.location.origin}/s/${sessionId}`
   }
 }
 
@@ -436,7 +436,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   wsClient.on('close', event => {
     logger.warning(`WebSocket соединение закрыто (код: ${event.code})`)
     updateConnectionStatus(false)
-    window.__current.viewerConnected = false
+    globalThis.__current.viewerConnected = false
     updateViewerStatusUI()
   })
 
@@ -449,9 +449,9 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
   wsClient.on(WS_MSG.viewerStatus, data => {
     logger.info('Получен статус viewer', data)
-    window.__current.viewerConnected = data.connected
+    globalThis.__current.viewerConnected = data.connected
     if (data.screenSize) {
-      window.__current.viewerScreenSize = data.screenSize
+      globalThis.__current.viewerScreenSize = data.screenSize
     }
 
     // Если вьювер подключился, завершаем инициализацию
@@ -469,7 +469,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     // ВАЖНО: Сначала обновляем размер превью, если есть данные,
     // и только потом применяем состояние. Это решает проблему гонки состояний.
     if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
-      window.__current.viewerScreenSize = state.viewerScreenSize
+      globalThis.__current.viewerScreenSize = state.viewerScreenSize
       updatePreviewSize(state.viewerScreenSize)
     }
 
@@ -478,9 +478,12 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     try {
       if (previewPhysicsEngine) {
         // Всегда центрируем мяч в превью относительно центра вьювера (в координатах вьювера)
-        if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
-          const viewerCenterX = window.__current.viewerScreenSize.width / 2
-          const viewerCenterY = window.__current.viewerScreenSize.height / 2
+        if (
+          globalThis.__current.viewerScreenSize &&
+          globalThis.__current.viewerScreenSize.width > 0
+        ) {
+          const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
+          const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
           previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
           previewPhysicsEngine.setVelocity(0, 0)
           // Принудительно устанавливаем центр в state, чтобы applyServerStateToPreview использовал его
@@ -501,20 +504,20 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   // Включаем обратно: превью теперь "глупый" рендерер состояния сервера
   wsClient.on(WS_MSG.stateUpdate, state => {
     // Игнорируем обновления и логи, пока вьювер не подключится.
-    if (!window.__current.viewerConnected) {
+    if (!globalThis.__current.viewerConnected) {
       return
     }
     // Тихая обработка обновлений состояния
     lastServerState = state // Кэшируем состояние
     // Если пришли новые размеры экрана вьювера — обновим превью
     if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
-      const prevSize = window.__current.viewerScreenSize || { width: 0, height: 0 }
+      const prevSize = globalThis.__current.viewerScreenSize || { width: 0, height: 0 }
       const nextSize = state.viewerScreenSize
       const sizeChanged =
         !prevSize || prevSize.width !== nextSize.width || prevSize.height !== nextSize.height
 
-      window.__current.viewerConnected = true
-      window.__current.viewerScreenSize = nextSize
+      globalThis.__current.viewerConnected = true
+      globalThis.__current.viewerScreenSize = nextSize
 
       if (sizeChanged) {
         updatePreviewSize(nextSize)
@@ -530,7 +533,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   wsClient.on(WS_MSG.netMetrics, ({ rttMs, jitterMs }) => {
     if (!previewPhysicsEngine) return
 
-    const base = (window.BBConfig && window.BBConfig.smoothing) || {}
+    const base = (globalThis.BBConfig && globalThis.BBConfig.smoothing) || {}
 
     // Адаптивное демпфирование на основе джиттера (улучшено)
     const adaptiveDamping = Math.min(
@@ -628,8 +631,7 @@ function renderPreviewLoop(timestamp) {
 
   // Вычисляем alpha для интерполяции на основе реального времени последнего обновления физики
   const now = performance.now()
-  const lastPhysicsUpdate =
-    (previewPhysicsEngine && previewPhysicsEngine.__lastPhysicsUpdateTs) || now
+  const lastPhysicsUpdate = previewPhysicsEngine?.__lastPhysicsUpdateTs || now
   const alpha = Math.max(0, Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT))
 
   // Обновляем таймер счётчиков
@@ -668,7 +670,7 @@ function updateConnectionStatus(isConnected) {
 function showNotification(message, type = 'info') {
   // Обертка для ожидания инициализации notificationSystem
   const tryShowNotification = (attempt = 0) => {
-    if (window.notificationSystem) {
+    if (globalThis.notificationSystem) {
       const titles = {
         success: '',
         error: 'Ошибка',
@@ -676,7 +678,7 @@ function showNotification(message, type = 'info') {
         info: ''
       }
       const title = titles[type] || ''
-      window.notificationSystem.show({
+      globalThis.notificationSystem.show({
         type: type,
         title: title,
         message: message
@@ -768,8 +770,8 @@ function syncUIWithState(ballState) {
 
     updatePreviewSize(ballState.viewerScreenSize)
 
-    window.__current.viewerConnected = ballState.viewerConnected
-    window.__current.viewerScreenSize = ballState.viewerScreenSize
+    globalThis.__current.viewerConnected = ballState.viewerConnected
+    globalThis.__current.viewerScreenSize = ballState.viewerScreenSize
     updateViewerStatusUI()
 
     if (ballState.speed !== undefined && components.speed) {
@@ -941,17 +943,17 @@ async function initializePreview() {
     previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
     // Экспортируем для UI‑тестов
     try {
-      window.__previewPhysics = previewPhysicsEngine
+      globalThis.__previewPhysics = previewPhysicsEngine
     } catch {
       /* ignore */
     }
     // Клиент теперь вычисляет физику локально (включая отскоки), сервер только синхронизирует
     previewPhysicsEngine.isViewer = true
     // Считаем пасы по локальным событиям отскока
-    window.addEventListener('bb_bounce', () => bbCounters.onBounce())
+    globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce())
     // Применяем глобальные настройки сглаживания, если есть
-    if (window.BBConfig && window.BBConfig.smoothing) {
-      previewPhysicsEngine.setSmoothingOptions(window.BBConfig.smoothing)
+    if (globalThis.BBConfig && globalThis.BBConfig.smoothing) {
+      previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
     }
 
     // Запускаем ЦИКЛ ФИЗИКИ с фиксированным шагом
@@ -962,11 +964,11 @@ async function initializePreview() {
     requestAnimationFrame(renderPreviewLoop)
 
     // Создаем рендерер, который НЕ будет обновлять физику
-    window.__previewRenderer = new BallRenderer(canvas, previewPhysicsEngine, {
+    globalThis.__previewRenderer = new BallRenderer(canvas, previewPhysicsEngine, {
       localPhysics: false // Рендерер только рисует, физика обновляется отдельно
     })
 
-    window.__previewRenderer.setFrameCallback(deltaTime => {
+    globalThis.__previewRenderer.setFrameCallback(deltaTime => {
       // Дополнительная логика для превью может быть добавлена здесь
       // deltaTime параметр сохранен для совместимости с интерфейсом
     })
@@ -977,14 +979,14 @@ async function initializePreview() {
     const canvasWidth = canvas.width
     const canvasHeight = canvas.height
     // Если есть размеры вьювера, используем их как основу для мира физики
-    if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
+    if (globalThis.__current.viewerScreenSize && globalThis.__current.viewerScreenSize.width > 0) {
       previewPhysicsEngine.setWorldSize(
-        window.__current.viewerScreenSize.width,
-        window.__current.viewerScreenSize.height
+        globalThis.__current.viewerScreenSize.width,
+        globalThis.__current.viewerScreenSize.height
       )
       // Центрируем мяч относительно размеров вьювера
-      const viewerCenterX = window.__current.viewerScreenSize.width / 2
-      const viewerCenterY = window.__current.viewerScreenSize.height / 2
+      const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
+      const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
       previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
       previewPhysicsEngine.setVelocity(0, 0)
     } else {
@@ -1182,7 +1184,7 @@ function setDirection(directionMode) {
 
 function setBallColor(color) {
   // Оптимизация: меньше обновлений когда нет вьювера
-  if (!window.__current.viewerConnected) {
+  if (!globalThis.__current.viewerConnected) {
     // Тихо пропускаем обновление цвета мяча
     return
   }
@@ -1191,7 +1193,7 @@ function setBallColor(color) {
 
 function setBallSize(size) {
   // Оптимизация: меньше обновлений когда нет вьювера
-  if (!window.__current.viewerConnected) {
+  if (!globalThis.__current.viewerConnected) {
     // Тихо пропускаем обновление размера мяча
     return
   }
@@ -1372,7 +1374,7 @@ function togglePlayPause() {
     // сейчас мы перешли в режим паузы
   } else {
     // режим «Старт» — больше не блокируем paused=false от сервера
-    window.forcePauseUntilUserAction = false
+    globalThis.forcePauseUntilUserAction = false
   }
 
   // Финальное подтверждение состояния на кнопке
@@ -1427,12 +1429,15 @@ function updateViewerStatusUI() {
   // Обновляем статус вьювера
   const viewerStatusEl = document.getElementById('viewerStatus')
   if (viewerStatusEl) {
-    if (window.__current.viewerConnected) {
+    if (globalThis.__current.viewerConnected) {
       viewerStatusEl.textContent = 'Подключен'
       viewerStatusEl.style.color = '#22c55e' // ярко-зеленый цвет
       viewerStatusEl.style.fontWeight = '600' // делаем текст жирным для лучшей видимости
-      if (window.__current.viewerScreenSize && window.__current.viewerScreenSize.width > 0) {
-        updatePreviewSize(window.__current.viewerScreenSize)
+      if (
+        globalThis.__current.viewerScreenSize &&
+        globalThis.__current.viewerScreenSize.width > 0
+      ) {
+        updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
     } else {
       viewerStatusEl.textContent = 'Ожидание...'
@@ -1448,7 +1453,7 @@ function openPreviewFullscreen() {
   if (!overlay || !previewFsCanvas) return
 
   // Добавляем запись в историю браузера для корректного возврата
-  const currentUrl = window.location.href
+  const currentUrl = globalThis.location.href
   const fullscreenUrl = currentUrl + '#fullscreen-preview'
   history.pushState({ fullscreen: true, returnUrl: currentUrl }, '', fullscreenUrl)
 
@@ -1486,7 +1491,7 @@ function closePreviewFullscreen() {
   if (!overlay) return
 
   // Убираем хэш из URL без изменения истории
-  const currentUrl = window.location.href
+  const currentUrl = globalThis.location.href
   const baseUrl = currentUrl.split('#')[0]
   history.replaceState(null, '', baseUrl)
 
@@ -1496,10 +1501,10 @@ function closePreviewFullscreen() {
 
 function resizePreviewFullscreen() {
   if (!previewFsCanvas) return
-  previewFsCanvas.width = window.innerWidth
-  previewFsCanvas.height = window.innerHeight
+  previewFsCanvas.width = globalThis.innerWidth
+  previewFsCanvas.height = globalThis.innerHeight
   if (previewPhysicsEngine) {
-    const vs = (window.__current && window.__current.viewerScreenSize) || null
+    const vs = (globalThis.__current && globalThis.__current.viewerScreenSize) || null
     if (
       vs &&
       typeof vs.width === 'number' &&
@@ -1510,7 +1515,7 @@ function resizePreviewFullscreen() {
       previewPhysicsEngine.setWorldSize(vs.width, vs.height)
     } else {
       // Фолбэк на размеры окна, если размеры вьювера ещё неизвестны
-      previewPhysicsEngine.setWorldSize(window.innerWidth, window.innerHeight)
+      previewPhysicsEngine.setWorldSize(globalThis.innerWidth, globalThis.innerHeight)
     }
   }
 }
@@ -1569,7 +1574,7 @@ function setupFsPanelDrag() {
   overlay.addEventListener('mousemove', e => {
     onMove(e.clientX, e.clientY)
   })
-  window.addEventListener('mouseup', onUp)
+  globalThis.addEventListener('mouseup', onUp)
 
   panel.addEventListener(
     'touchstart',
@@ -1587,7 +1592,7 @@ function setupFsPanelDrag() {
     },
     { passive: true }
   )
-  window.addEventListener('touchend', onUp, { passive: true })
+  globalThis.addEventListener('touchend', onUp, { passive: true })
 }
 
 function setupFullscreenGestures() {

@@ -458,9 +458,9 @@ class SharedComponents {
 const sharedComponents = new SharedComponents()
 
 // Экспортируем для использования
-if (typeof window !== 'undefined') {
-  window.SharedComponents = SharedComponents
-  window.sharedComponents = sharedComponents
+if (typeof globalThis !== 'undefined') {
+  globalThis.SharedComponents = SharedComponents
+  globalThis.sharedComponents = sharedComponents
 }
 
 if (typeof module !== 'undefined' && module.exports) {

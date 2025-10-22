@@ -105,27 +105,27 @@ class FeatureManager {
   async applyPreset(preset) {
     try {
       // Применяем скорость
-      if (preset.speed && window.components?.speed) {
-        window.components.speed.setSpeed(preset.speed)
+      if (preset.speed && globalThis.components?.speed) {
+        globalThis.components.speed.setSpeed(preset.speed)
         await this.sendUpdate({ speed: preset.speed })
       }
 
       // Применяем направление
       if (preset.direction) {
-        window.setDirection(preset.direction)
+        globalThis.setDirection(preset.direction)
       }
 
       // Применяем цвета
       if (preset.colorBall) {
-        window.setBallColor(preset.colorBall)
+        globalThis.setBallColor(preset.colorBall)
       }
       if (preset.colorBg) {
-        window.setBackgroundColor(preset.colorBg)
+        globalThis.setBackgroundColor(preset.colorBg)
       }
 
       // Применяем размер
       if (preset.size) {
-        window.setBallSize(preset.size)
+        globalThis.setBallSize(preset.size)
       }
 
       // Показываем уведомление
@@ -146,11 +146,11 @@ class FeatureManager {
     if (!name || name.trim() === '') return
 
     const preset = {
-      speed: window.components?.speed?.getSpeed() || 40,
+      speed: globalThis.components?.speed?.getSpeed() || 40,
       colorBall: document.querySelector('.color-btn.active')?.style.backgroundColor || '#60a5fa',
       colorBg: document.body.style.backgroundColor || '#020617',
       size: document.querySelector('.size-btn.active')?.dataset.size || 20,
-      direction: window.currentDirectionMode || 'horizontal'
+      direction: globalThis.currentDirectionMode || 'horizontal'
     }
 
     this.presets[name.trim()] = preset
@@ -214,21 +214,21 @@ class FeatureManager {
   exportSession() {
     const sessionData = {
       timestamp: new Date().toISOString(),
-      sessionId: window.__current?.sessionId,
+      sessionId: globalThis.__current?.sessionId,
       settings: {
-        speed: window.components?.speed?.getSpeed() || 40,
-        direction: window.currentDirectionMode || 'horizontal',
+        speed: globalThis.components?.speed?.getSpeed() || 40,
+        direction: globalThis.currentDirectionMode || 'horizontal',
         ballColor: document.querySelector('.color-btn.active')?.style.backgroundColor || '#60a5fa',
         bgColor: document.body.style.backgroundColor || '#020617',
         ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20,
-        isPlaying: window.isPlaying || false
+        isPlaying: globalThis.isPlaying || false
       },
-      viewerConnected: window.__current?.viewerConnected || false,
-      viewerScreenSize: window.__current?.viewerScreenSize || null,
+      viewerConnected: globalThis.__current?.viewerConnected || false,
+      viewerScreenSize: globalThis.__current?.viewerScreenSize || null,
       counters: {
-        timer: window.bbCounters?.timerMs || 0,
-        passes: window.bbCounters?.passes || 0,
-        sets: window.bbCounters?.sets || 0
+        timer: globalThis.bbCounters?.timerMs || 0,
+        passes: globalThis.bbCounters?.passes || 0,
+        sets: globalThis.bbCounters?.sets || 0
       }
     }
 
@@ -260,43 +260,43 @@ class FeatureManager {
         const settings = sessionData.settings
 
         // Применяем скорость
-        if (settings.speed && window.components?.speed) {
-          window.components.speed.setSpeed(settings.speed)
+        if (settings.speed && globalThis.components?.speed) {
+          globalThis.components.speed.setSpeed(settings.speed)
           await this.sendUpdate({ speed: settings.speed })
         }
 
         // Применяем направление
         if (settings.direction) {
-          window.setDirection(settings.direction)
+          globalThis.setDirection(settings.direction)
         }
 
         // Применяем цвета
         if (settings.ballColor) {
-          window.setBallColor(settings.ballColor)
+          globalThis.setBallColor(settings.ballColor)
         }
         if (settings.bgColor) {
-          window.setBackgroundColor(settings.bgColor)
+          globalThis.setBackgroundColor(settings.bgColor)
         }
 
         // Применяем размер
         if (settings.ballSize) {
-          window.setBallSize(settings.ballSize)
+          globalThis.setBallSize(settings.ballSize)
         }
 
         // Применяем состояние игры
-        if (settings.isPlaying && !window.isPlaying) {
-          window.togglePlayPause()
-        } else if (!settings.isPlaying && window.isPlaying) {
-          window.togglePlayPause()
+        if (settings.isPlaying && !globalThis.isPlaying) {
+          globalThis.togglePlayPause()
+        } else if (!settings.isPlaying && globalThis.isPlaying) {
+          globalThis.togglePlayPause()
         }
       }
 
       // Восстанавливаем счётчики
-      if (sessionData.counters && window.bbCounters) {
-        window.bbCounters.timerMs = sessionData.counters.timer || 0
-        window.bbCounters.passes = sessionData.counters.passes || 0
-        window.bbCounters.sets = sessionData.counters.sets || 0
-        window.bbCounters.render()
+      if (sessionData.counters && globalThis.bbCounters) {
+        globalThis.bbCounters.timerMs = sessionData.counters.timer || 0
+        globalThis.bbCounters.passes = sessionData.counters.passes || 0
+        globalThis.bbCounters.sets = sessionData.counters.sets || 0
+        globalThis.bbCounters.render()
       }
 
       this.showNotification('Сессия импортирована', 'success')
@@ -326,8 +326,8 @@ class FeatureManager {
    */
   captureCurrentSettings() {
     return {
-      speed: window.components?.speed?.getSpeed() || 40,
-      direction: window.currentDirectionMode || 'horizontal',
+      speed: globalThis.components?.speed?.getSpeed() || 40,
+      direction: globalThis.currentDirectionMode || 'horizontal',
       ballColor: document.querySelector('.color-btn.active')?.style.backgroundColor || '#60a5fa',
       bgColor: document.body.style.backgroundColor || '#020617',
       ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20
@@ -401,25 +401,25 @@ class FeatureManager {
    * Применяет сохраненное состояние
    */
   async applyState(state) {
-    if (state.speed && window.components?.speed) {
-      window.components.speed.setSpeed(state.speed)
+    if (state.speed && globalThis.components?.speed) {
+      globalThis.components.speed.setSpeed(state.speed)
       await this.sendUpdate({ speed: state.speed })
     }
 
     if (state.direction) {
-      window.setDirection(state.direction)
+      globalThis.setDirection(state.direction)
     }
 
     if (state.ballColor) {
-      window.setBallColor(state.ballColor)
+      globalThis.setBallColor(state.ballColor)
     }
 
     if (state.bgColor) {
-      window.setBackgroundColor(state.bgColor)
+      globalThis.setBackgroundColor(state.bgColor)
     }
 
     if (state.ballSize) {
-      window.setBallSize(state.ballSize)
+      globalThis.setBallSize(state.ballSize)
     }
   }
 
@@ -635,21 +635,21 @@ class FeatureManager {
     // Похоже на exportSession, но не создаёт файл
     return {
       timestamp: new Date().toISOString(),
-      sessionId: window.__current?.sessionId || null,
+      sessionId: globalThis.__current?.sessionId || null,
       settings: {
-        speed: window.components?.speed?.getSpeed() || 40,
-        direction: window.currentDirectionMode || 'horizontal',
+        speed: globalThis.components?.speed?.getSpeed() || 40,
+        direction: globalThis.currentDirectionMode || 'horizontal',
         ballColor: document.querySelector('.color-btn.active')?.style.backgroundColor || '#60a5fa',
         bgColor: document.body.style.backgroundColor || '#020617',
         ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20,
-        isPlaying: window.isPlaying || false
+        isPlaying: globalThis.isPlaying || false
       },
-      viewerConnected: window.__current?.viewerConnected || false,
-      viewerScreenSize: window.__current?.viewerScreenSize || null,
+      viewerConnected: globalThis.__current?.viewerConnected || false,
+      viewerScreenSize: globalThis.__current?.viewerScreenSize || null,
       counters: {
-        timer: window.bbCounters?.timerMs || 0,
-        passes: window.bbCounters?.passes || 0,
-        sets: window.bbCounters?.sets || 0
+        timer: globalThis.bbCounters?.timerMs || 0,
+        passes: globalThis.bbCounters?.passes || 0,
+        sets: globalThis.bbCounters?.sets || 0
       }
     }
   }
@@ -657,27 +657,27 @@ class FeatureManager {
   async applySessionData(sessionData) {
     try {
       const settings = sessionData?.settings || {}
-      if (settings.speed && window.components?.speed) {
-        window.components.speed.setSpeed(settings.speed)
+      if (settings.speed && globalThis.components?.speed) {
+        globalThis.components.speed.setSpeed(settings.speed)
         await this.sendUpdate({ speed: settings.speed })
       }
-      if (settings.direction) window.setDirection(settings.direction)
-      if (settings.ballColor) window.setBallColor(settings.ballColor)
-      if (settings.bgColor) window.setBackgroundColor(settings.bgColor)
-      if (settings.ballSize) window.setBallSize(settings.ballSize)
+      if (settings.direction) globalThis.setDirection(settings.direction)
+      if (settings.ballColor) globalThis.setBallColor(settings.ballColor)
+      if (settings.bgColor) globalThis.setBackgroundColor(settings.bgColor)
+      if (settings.ballSize) globalThis.setBallSize(settings.ballSize)
 
       // isPlaying
       if (typeof settings.isPlaying === 'boolean') {
-        if (settings.isPlaying && !window.isPlaying) window.togglePlayPause()
-        if (!settings.isPlaying && window.isPlaying) window.togglePlayPause()
+        if (settings.isPlaying && !globalThis.isPlaying) globalThis.togglePlayPause()
+        if (!settings.isPlaying && globalThis.isPlaying) globalThis.togglePlayPause()
       }
 
       // counters
-      if (sessionData.counters && window.bbCounters) {
-        window.bbCounters.timerMs = sessionData.counters.timer || 0
-        window.bbCounters.passes = sessionData.counters.passes || 0
-        window.bbCounters.sets = sessionData.counters.sets || 0
-        window.bbCounters.render?.()
+      if (sessionData.counters && globalThis.bbCounters) {
+        globalThis.bbCounters.timerMs = sessionData.counters.timer || 0
+        globalThis.bbCounters.passes = sessionData.counters.passes || 0
+        globalThis.bbCounters.sets = sessionData.counters.sets || 0
+        globalThis.bbCounters.render?.()
       }
     } catch (e) {
       console.error('applySessionData error', e)
@@ -797,20 +797,20 @@ class FeatureManager {
    * Утилиты
    */
   async sendUpdate(data) {
-    if (window.wsClient && window.wsClient.send) {
-      await window.wsClient.send('WS_MSG.controllerUpdate', data)
+    if (globalThis.wsClient && globalThis.wsClient.send) {
+      await globalThis.wsClient.send('WS_MSG.controllerUpdate', data)
     }
   }
 
   showNotification(message, type = 'info') {
-    if (type === 'success' && window.showSuccessNotification) {
-      window.showSuccessNotification(message)
-    } else if (type === 'error' && window.showErrorNotification) {
-      window.showErrorNotification('Ошибка', message)
-    } else if (type === 'warning' && window.showWarningNotification) {
-      window.showWarningNotification('Внимание', message)
-    } else if (window.showInfoNotification) {
-      window.showInfoNotification('Информация', message)
+    if (type === 'success' && globalThis.showSuccessNotification) {
+      globalThis.showSuccessNotification(message)
+    } else if (type === 'error' && globalThis.showErrorNotification) {
+      globalThis.showErrorNotification('Ошибка', message)
+    } else if (type === 'warning' && globalThis.showWarningNotification) {
+      globalThis.showWarningNotification('Внимание', message)
+    } else if (globalThis.showInfoNotification) {
+      globalThis.showInfoNotification('Информация', message)
     } else {
       // Fallback for old notification system
       const notification = document.createElement('div')
@@ -828,12 +828,12 @@ class FeatureManager {
 }
 
 // Экспортируем функции для глобального использования
-window.applyPreset = preset => window.featureManager?.applyPreset(preset)
-window.createCustomPreset = () => window.featureManager?.createCustomPreset()
-window.exportSession = () => window.featureManager?.exportSession()
-window.importSession = file => window.featureManager?.importSession(file)
+globalThis.applyPreset = preset => globalThis.featureManager?.applyPreset(preset)
+globalThis.createCustomPreset = () => globalThis.featureManager?.createCustomPreset()
+globalThis.exportSession = () => globalThis.featureManager?.exportSession()
+globalThis.importSession = file => globalThis.featureManager?.importSession(file)
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
-  window.featureManager = new FeatureManager()
+  globalThis.featureManager = new FeatureManager()
 })

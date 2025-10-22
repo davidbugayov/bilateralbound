@@ -64,12 +64,12 @@
 
   // Функция инициализации Метрики
   function initMetrika() {
-    if (metrikaInitiated || !window.ym) {
+    if (metrikaInitiated || !globalThis.ym) {
       return
     }
 
     try {
-      window.ym(METRIKA_ID, 'init', {
+      globalThis.ym(METRIKA_ID, 'init', {
         ssr: true,
         webvisor: true,
         clickmap: true,
@@ -92,9 +92,9 @@
 
   // Функция отслеживания просмотра страницы
   function trackPageView() {
-    if (metrikaInitiated && window.ym) {
+    if (metrikaInitiated && globalThis.ym) {
       try {
-        window.ym(METRIKA_ID, 'hit', window.location.href, {
+        globalThis.ym(METRIKA_ID, 'hit', globalThis.location.href, {
           referer: document.referrer,
           title: document.title
         })
@@ -116,7 +116,7 @@
 
   // Функция проверки доступности Метрики
   function checkMetrikaAvailability() {
-    if (typeof window.ym !== 'undefined' && window.ym) {
+    if (typeof globalThis.ym !== 'undefined' && globalThis.ym) {
       if (!metrikaInitiated) {
         initMetrika()
       }
@@ -137,19 +137,28 @@
 
   // Функция для отладки
   function debugMetrika() {
-    if (typeof window.ym !== 'undefined') {
+    if (typeof globalThis.ym !== 'undefined') {
+      /* empty */
     }
   }
 
   // Экспортируем функции для использования в других скриптах
-  window.MetrikaManager = {
+  globalThis.MetrikaManager = {
     init: function () {
       createMetrikaScript()
     },
     track: function (params) {
-      if (metrikaInitiated && window.ym) {
+      if (metrikaInitiated && globalThis.ym) {
         try {
-          window.ym(METRIKA_ID, 'reachGoal', params.event, params.params || {})
+          globalThis.ym(
+            METRIKA_ID,
+            'reachGoal',
+            params.event,
+            params.params ||
+              {
+                /* empty */
+              }
+          )
         } catch (error) {
           console.error('❌ Ошибка отправки события в Яндекс.Метрику:', error)
         }
@@ -173,8 +182,8 @@
   }
 
   // Экспонируем функцию для обратной совместимости
-  window.ym =
-    window.ym ||
+  globalThis.ym =
+    globalThis.ym ||
     function () {
       const args = Array.prototype.slice.call(arguments)
       const method = args[1]
@@ -182,17 +191,17 @@
       if (method === 'init') {
         // Откладываем инициализацию
         setTimeout(() => {
-          if (window.ym && window.ym.q) {
-            window.ym.q.push(args)
+          if (globalThis.ym && globalThis.ym.q) {
+            globalThis.ym.q.push(args)
           }
         }, 100)
-      } else if (window.ym && window.ym.q) {
-        window.ym.q.push(args)
+      } else if (globalThis.ym && globalThis.ym.q) {
+        globalThis.ym.q.push(args)
       }
     }
 
   // очередь для отложенных вызовов
-  window.ym.q = window.ym.q || []
+  globalThis.ym.q = globalThis.ym.q || []
 
   // Добавляем проверку через 5 секунд для гарантии
   setTimeout(forceCheckMetrika, 5000)

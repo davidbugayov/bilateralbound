@@ -22,10 +22,10 @@ class VersionManager {
     getCurrentVersion() {
         try {
             const packageData = JSON.parse(fs.readFileSync(this.packageFile, 'utf8'));
-            return packageData.version || '1.0.0';
+            return packageData.version || '1.0';
         } catch {
             
-            return '1.0.0';
+            return '1.0';
         }
     }
 
@@ -101,7 +101,7 @@ class VersionManager {
 
         switch (bumpType) {
             case 'major':
-                return `${major + 1}.0.0`;
+                return `${major + 1}.0`;
             case 'minor':
                 return `${major}.${minor + 1}.0`;
             case 'patch':
@@ -214,8 +214,7 @@ class VersionManager {
     async updateVersion() {
         
         const commitInfo = this.getLastCommitInfo();
-        
-        
+
         // Определяем тип обновления версии
         const bumpType = this.determineVersionBump(commitInfo.message);
         
@@ -233,7 +232,6 @@ class VersionManager {
         this.updateVersionFile(newVersion, commitInfo);
         this.updateFooterVersion(newVersion);
 
-        
         return true;
     }
 

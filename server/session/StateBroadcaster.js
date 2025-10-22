@@ -80,7 +80,7 @@ class StateBroadcaster {
   }
 
   _isClientReady(client) {
-    return client && client.readyState === 1 // WebSocket.OPEN
+    return client?.readyState === 1 // WebSocket.OPEN
   }
 }
 

@@ -158,13 +158,14 @@ class ThemeManager {
       // Сейчас светлая тема - переключаем на темную
       body.classList.remove('light-theme')
       localStorage.setItem(this.themeKey, 'dark')
-      if (window.showSuccessNotification) window.showSuccessNotification('Тёмная тема активирована')
+      if (globalThis.showSuccessNotification)
+        globalThis.showSuccessNotification('Тёмная тема активирована')
     } else {
       // Сейчас темная тема - переключаем на светлую
       body.classList.add('light-theme')
       localStorage.setItem(this.themeKey, 'light')
-      if (window.showSuccessNotification)
-        window.showSuccessNotification('Светлая тема активирована')
+      if (globalThis.showSuccessNotification)
+        globalThis.showSuccessNotification('Светлая тема активирована')
     }
   }
 
@@ -177,5 +178,5 @@ class ThemeManager {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  window.themeManager = new ThemeManager()
+  globalThis.themeManager = new ThemeManager()
 })

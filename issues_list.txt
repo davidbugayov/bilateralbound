@@ -1,0 +1,10 @@
+javascript:S6582 Prefer using an optional chain expression instead, as it's more concise and easier to read. metrika-optimized.js:194
+javascript:S6582 Prefer using an optional chain expression instead, as it's more concise and easier to read. metrika-optimized.js:198
+javascript:S1854 Remove this useless assignment to variable "timestamp". controller.js:711
+javascript:S1481 Remove the declaration of the unused 'timestamp' variable. controller.js:711
+javascript:S1481 Remove the declaration of the unused 'timestamp' variable. controller.js:714
+javascript:S1854 Remove this useless assignment to variable "timestamp". controller.js:714
+javascript:S6582 Prefer using an optional chain expression instead, as it's more concise and easier to read. physics-engine.js:306
+javascript:S6544 Expected non-Promise value in a boolean conditional. common.js:62
+javascript:S7757 Prefer class field declaration over `this` assignment in constructor for static values. common.js:137
+javascript:S7748 Don't use a zero fraction in the number. config.js:41

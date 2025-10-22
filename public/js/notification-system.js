@@ -505,12 +505,14 @@ class NotificationSystem {
 }
 
 // Создаем глобальный экземпляр
-if (typeof window !== 'undefined') {
-  window.notificationSystem = new NotificationSystem()
-  window.showSuccessNotification = (title, message) =>
-    window.notificationSystem.success(title, message)
-  window.showErrorNotification = (title, message) => window.notificationSystem.error(title, message)
-  window.showWarningNotification = (title, message) =>
-    window.notificationSystem.warning(title, message)
-  window.showInfoNotification = (title, message) => window.notificationSystem.info(title, message)
+if (typeof globalThis !== 'undefined') {
+  globalThis.notificationSystem = new NotificationSystem()
+  globalThis.showSuccessNotification = (title, message) =>
+    globalThis.notificationSystem.success(title, message)
+  globalThis.showErrorNotification = (title, message) =>
+    globalThis.notificationSystem.error(title, message)
+  globalThis.showWarningNotification = (title, message) =>
+    globalThis.notificationSystem.warning(title, message)
+  globalThis.showInfoNotification = (title, message) =>
+    globalThis.notificationSystem.info(title, message)
 }

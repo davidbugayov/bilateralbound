@@ -102,7 +102,6 @@ class SessionManager {
 
     // Обработка возврата в центр при смене направления или остановке
     if (validatedUpdates.returnToCenter && session.physicsEngine) {
-      
       // Используем специальный метод для плавного возврата в центр
       session.physicsEngine.returnToCenter()
 
@@ -220,7 +219,7 @@ class SessionManager {
 
     // Рассылаем событие об отключении контроллера всем клиентам
     const clientInfo = this.getClientInfo(ws)
-    if (clientInfo && clientInfo.role === 'controller') {
+    if (clientInfo?.role === 'controller') {
       this.broadcastControllerConnection(sessionId, false)
     }
   }
@@ -366,7 +365,7 @@ class SessionManager {
 
   stopPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
-    if (session && session.mainLoop) {
+    if (session?.mainLoop) {
       clearInterval(session.mainLoop)
       session.mainLoop = null
     }

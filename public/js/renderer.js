@@ -46,12 +46,12 @@ class BallRenderer {
     }
 
     // Применяем глобальную конфигурацию рендеринга
-    if (typeof window !== 'undefined' && window.BBConfig && window.BBConfig.rendering) {
-      if (window.BBConfig.rendering.adaptiveFrameRate !== undefined) {
-        this.adaptiveFrameRate = window.BBConfig.rendering.adaptiveFrameRate
+    if (typeof globalThis !== 'undefined' && globalThis.BBConfig && globalThis.BBConfig.rendering) {
+      if (globalThis.BBConfig.rendering.adaptiveFrameRate !== undefined) {
+        this.adaptiveFrameRate = globalThis.BBConfig.rendering.adaptiveFrameRate
       }
-      if (window.BBConfig.rendering.maxFrameTime) {
-        this.maxFrameTime = window.BBConfig.rendering.maxFrameTime
+      if (globalThis.BBConfig.rendering.maxFrameTime) {
+        this.maxFrameTime = globalThis.BBConfig.rendering.maxFrameTime
       }
     }
 
@@ -483,8 +483,8 @@ class BallRenderer {
 }
 
 // Экспортируем для использования
-if (typeof window !== 'undefined') {
-  window.BallRenderer = BallRenderer
+if (typeof globalThis !== 'undefined') {
+  globalThis.BallRenderer = BallRenderer
 }
 
 if (typeof module !== 'undefined' && module.exports) {
