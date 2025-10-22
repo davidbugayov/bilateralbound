@@ -1,6 +1,6 @@
 {
   "name": "bilateralbound",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Real-time EMDR therapy tool with scalable architecture",
   "main": "server/index.js",
   "scripts": {
@@ -14,6 +14,7 @@
     "test:ui": "node test/ui-tests.js",
     "lint": "eslint server/index.js server/**/*.js public/js/*.js --ext .js",
     "lint:fix": "eslint server/index.js server/**/*.js public/js/*.js --ext .js --fix",
+    "sonar": "sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=squ_905250fe10f92ca67a2047f50eb25ca24d593d43",
     "format": "prettier --write \"server/**/*.js\" \"public/js/*.js\" \"public/*.html\"",
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "version": "node version-manager.js",

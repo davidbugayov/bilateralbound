@@ -758,7 +758,7 @@ function initializeComponents() {
   // Создаем компонент управления скоростью
   components.speed = sharedComponents.createSpeedControl(document.getElementById('speedControl'), {
     onSpeedChange: throttle(speed => {
-      updateSpeed(speed).catch(console.error)
+      updateSpeed(speed)
     }, 100) // Ограничиваем отправку: не чаще чем раз в 100 мс
   })
   // Создаем компонент управления цветом шарика

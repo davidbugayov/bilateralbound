@@ -142,9 +142,8 @@ class WebSocketClient {
         this._sendMessage(message)
         return
       }
-    }
-    // Коалесцирование для обычных сообщений
-    if (this.config.coalesceTypes.includes(type) && !options.expectResponse) {
+    } else if (this.config.coalesceTypes.includes(type) && !options.expectResponse) {
+      // Коалесцирование для обычных сообщений
       this._coalesceBuffers.set(type, payload)
       if (!this._coalesceTimers.has(type)) {
         const timerId = setTimeout(() => {
@@ -167,25 +166,23 @@ class WebSocketClient {
         }, this.config.coalesceDelayMs)
         this._coalesceTimers.set(type, timerId)
       }
-
-      return
-    }
-    // Обычная отправка для остальных сообщений
-    const messageId = ++this.messageIdCounter
-    const message = { id: messageId, type, payload, timestamp: Date.now() }
-
-    if (options.expectResponse) {
-      return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          this.pendingMessages.delete(messageId)
-          reject(new Error(`Message timeout: ${type}`))
-        }, this.config.messageTimeout)
-        this.pendingMessages.set(messageId, { resolve, reject, timeout })
-        this._sendMessage(message)
-      })
     } else {
-      this._sendMessage(message)
-      return
+      // Обычная отправка для остальных сообщений
+      const messageId = ++this.messageIdCounter
+      const message = { id: messageId, type, payload, timestamp: Date.now() }
+
+      if (options.expectResponse) {
+        return new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            this.pendingMessages.delete(messageId)
+            reject(new Error(`Message timeout: ${type}`))
+          }, this.config.messageTimeout)
+          this.pendingMessages.set(messageId, { resolve, reject, timeout })
+          this._sendMessage(message)
+        })
+      } else {
+        this._sendMessage(message)
+      }
     }
   }
   /**
