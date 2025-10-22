@@ -2,12 +2,44 @@ const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
+const os = require('os')
 const path = require('path')
+const net = require('net')
 const { v4: uuidv4 } = require('uuid')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
 
+// Определяем доступные сетевые интерфейсы
+const getNetworkInterfaces = () => {
+  const interfaces = os.networkInterfaces()
+  const result = {}
+  Object.keys(interfaces).forEach((key) => {
+    const iface = interfaces[key].find((alias) => alias.family === 'IPv4' && !alias.internal)
+    if (iface) result[key] = iface.address
+  })
+  return result
+}
+
+// Проверка доступности порта
+const checkPortAvailability = (port) => {
+  return new Promise((resolve, reject) => {
+    const tester = net.createServer()
+      .once('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          resolve(false)
+        } else {
+          reject(err)
+        }
+      })
+      .once('listening', () => {
+        tester.once('close', () => resolve(true)).close()
+      })
+      .listen(port)
+  })
+}
+
 function setupExpressApp (sessionManager, apiCache) {
+    const networkInterfaces = getNetworkInterfaces()
   const app = express()
 
   // Request ID middleware for traceability
@@ -17,7 +49,14 @@ function setupExpressApp (sessionManager, apiCache) {
     next()
   })
 
-  // Security middleware
+  // Улучшенная обработка безопасности с учетом сетевых интерфейсов
+  app.use((req, res, next) => {
+    const interfaceIP = networkInterfaces[Object.keys(networkInterfaces)[0]]
+    req.interfaceIP = interfaceIP || '127.0.0.1'
+    next()
+  })
+
+  // Расширенная конфигурация Helmet
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
@@ -32,8 +71,23 @@ function setupExpressApp (sessionManager, apiCache) {
         connectSrc: ['\'self\'', 'https://mc.yandex.ru', 'https://mc.yandex.com'],
         frameSrc: ['\'self\'', 'https://mc.yandex.md']
       }
-    }
+    },
+    crossOriginResourcePolicy: { policy: 'same-site' },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
   }))
+
+  // Добавляем middleware для проверки доступности порта при старте
+  app.use(async (req, res, next) => {
+    try {
+      const portAvailable = await checkPortAvailability(config.port)
+      if (!portAvailable) {
+        logger.warn(`[${req.id}] Port ${config.port} is not available during request`)
+      }
+      next()
+    } catch (error) {
+      next(error)
+    }
+  })
 
   // Rate limiting
   const isLocal = process.env.NODE_ENV !== 'production'

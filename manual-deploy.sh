@@ -101,9 +101,9 @@ deploy_environment() {
         ssh_exec "cd ${WORK_DIR} && node version-manager.js"
     fi
     
-    # Принудительно пересоздаем systemd service файл для обновления порта
+    # Обновленная конфигурация systemd с увеличенным таймаутом
     local SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
-    log "Force recreating systemd service file to apply new port..."
+    log "Updating systemd service file with extended timeout for graceful shutdown..."
     
     ssh_exec "cat > ${SERVICE_FILE} << 'EOF'
 [Unit]
@@ -118,32 +118,86 @@ Group=root
 WorkingDirectory=${WORK_DIR}
 ExecStart=/usr/bin/node server/index.js
 Restart=always
-RestartSec=5
-StartLimitInterval=60s
-StartLimitBurst=3
+RestartSec=10
+TimeoutStopSec=30
+TimeoutStartSec=30
+KillMode=mixed
+KillSignal=SIGTERM
+SendSIGKILL=yes
+WatchdogSec=30
 
+# Настройки безопасности
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=${WORK_DIR} /tmp
+MemoryMax=2G
+CPUQuota=75%
 
+# Логирование и мониторинг
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=${SERVICE_NAME}
 
+# Переменные окружения
 Environment=NODE_ENV=production
 Environment=PORT=${PORT}
+
+# Опции Node.js
+Environment=NODE_OPTIONS=--max-old-space-size=4096
 
 [Install]
 WantedBy=multi-user.target
 EOF"
+
+    # Перезагружаем демон systemd и применяем изменения
+    log "Reloading systemd daemon and applying new configuration..."
     ssh_exec "systemctl daemon-reload"
     
-    # Запускаем сервис
-    log "Starting service ${SERVICE_NAME}..."
-    ssh_exec "systemctl enable ${SERVICE_NAME}"
+    # Убиваем все процессы, занимающие порт, перед запуском
+    log "Ensuring port ${PORT} is free with proper cleanup..."
+    ssh_exec "lsof -t -i:${PORT} | xargs -r kill -15 || true"
+    sleep 3
+    ssh_exec "lsof -t -i:${PORT} | xargs -r kill -9 || true"
+    sleep 2
+    
+    # Принудительное освобождение порта и ожидание
+    log "Force releasing port ${PORT} and waiting for socket cleanup..."
+    ssh_exec "netstat -tlnp | grep :${PORT} | awk '{print $7}' | cut -d'/' -f1 | xargs -r kill -9 2>/dev/null || true"
+    sleep 5  # Увеличено время ожидания для полного освобождения сокета
+    
+    # Проверяем что порт действительно свободен
+    if ssh_exec "lsof -i :${PORT}"; then
+        log_warn "Port ${PORT} still in use, forcing one final cleanup..."
+        ssh_exec "pkill -f 'node server/index.js' || true"
+        sleep 5  # Увеличено время ожидания после финальной очистки
+    fi
+    
+    # Дополнительная проверка и принудительная остановка через pkill
+    ssh_exec "pkill -9 -f 'bilateralbound-prod-ru' || true"
+    sleep 3
+    
+    # Останавливаем сервис если он уже запущен
+    ssh_exec "systemctl stop ${SERVICE_NAME} || true"
+    sleep 2
+    
+    # Запускаем сервис с новой конфигурацией
+    log "Starting service ${SERVICE_NAME} with graceful restart configuration..."
+    ssh_exec "systemctl daemon-reload"
     ssh_exec "systemctl start ${SERVICE_NAME}"
+    sleep 3
+    
+    # Проверяем статус запуска
+    log "Verifying service startup with health check..."
+    if ssh_exec "systemctl is-active --quiet ${SERVICE_NAME}"; then
+        log_success "${ENV_NAME} deployed successfully!"
+        ssh_exec "systemctl status ${SERVICE_NAME} --no-pager | head -20"
+    else
+        log_error "${ENV_NAME} deployment failed!"
+        ssh_exec "journalctl -u ${SERVICE_NAME} --since '5 minutes ago' --no-pager | head -30"
+        return 1
+    fi
     
     # Ждем запуска
     sleep 3
