@@ -111,22 +111,22 @@ class SharedComponents {
         }
         // Обработчики для пресетов скорости (в простом режиме отсутствуют)
         if (this.elements.presets && this.elements.presets.length) {
-          this.elements.presets.forEach(preset => {
+          for (const preset of this.elements.presets) {
             preset.addEventListener('click', () => {
               const speed = Number.parseInt(preset.dataset.speed, 10)
               this.setSpeed(speed)
               this.updateActivePreset(speed)
             })
-          })
+          }
         }
       },
       // Обновляет активный пресет
       updateActivePreset(speed) {
         if (!this.elements.presets || !this.elements.presets.length) return
         // Снимаем активное состояние со всех
-        this.elements.presets.forEach(preset => {
+        for (const preset of this.elements.presets) {
           preset.classList.remove('active')
-        })
+        }
         // Определяем активный пресет на основе скорости
         let activePreset = null
         if (speed <= 30) activePreset = 'slow'
@@ -217,21 +217,21 @@ class SharedComponents {
       // Настраивает обработчики событий
       setupEventListeners() {
         const buttons = container.querySelectorAll('.color-btn')
-        buttons.forEach(button => {
+        for (const button of buttons) {
           button.addEventListener('click', () => {
             const color = button.dataset.color
             this.setColor(color)
           })
-        })
+        }
       },
       // Устанавливает цвет
       setColor(color) {
         this.currentColor = color
         // Обновляем активную кнопку
         const buttons = container.querySelectorAll('.color-btn')
-        buttons.forEach(btn => {
+        for (const btn of buttons) {
           btn.classList.toggle('active', btn.dataset.color === color)
-        })
+        }
         // Вызываем callback
         if (this.options.onColorChange) {
           this.options.onColorChange(color)
@@ -291,21 +291,21 @@ class SharedComponents {
       // Настраивает обработчики событий
       setupEventListeners() {
         const buttons = container.querySelectorAll('.size-btn')
-        buttons.forEach(button => {
+        for (const button of buttons) {
           button.addEventListener('click', () => {
             const size = Number.parseInt(button.dataset.size, 10)
             this.setSize(size)
           })
-        })
+        }
       },
       // Устанавливает размер
       setSize(size) {
         this.currentSize = size
         // Обновляем активную кнопку
         const buttons = container.querySelectorAll('.size-btn')
-        buttons.forEach(btn => {
+        for (const btn of buttons) {
           btn.classList.toggle('active', Number.parseInt(btn.dataset.size, 10) === size)
-        })
+        }
         // Вызываем callback
         if (this.options.onSizeChange) {
           this.options.onSizeChange(size)

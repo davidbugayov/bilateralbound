@@ -1184,9 +1184,7 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     // Обновляем иконку направления в полноэкранном режиме
     const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
-      fsDirectionDisplay.innerHTML = directionDisplay
-        ? directionDisplay.innerHTML
-        : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
+      fsDirectionDisplay.innerHTML = directionDisplay?.innerHTML ?? `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
     }
   } catch (error) {
     console.error('Ошибка обновления отображения направления:', error)
@@ -1541,63 +1539,67 @@ function syncFsPlayPauseButton() {
 
 function wireFullscreenControls() {
   // Функция разбита для снижения когнитивной сложности
+  setupFullscreenSpeedControl()
+  setupFullscreenSizeControls()
+  setupFullscreenDirectionControls()
+  setupFullscreenColorControls()
+}
+
+function setupFullscreenSpeedControl() {
   const speed = document.getElementById('fsSpeed')
   if (speed) {
-    speed.value =
-      components.speed && typeof components.speed.getSpeed === 'function'
-        ? components.speed.getSpeed()
-        : 40
-    speed.oninput = e => updateSpeed(Number(e.target.value))
+    speed.value = components.speed?.getSpeed?.() ?? 40
+    speed.oninput = e => updateSpeed(Number(e.target?.value))
   }
+}
 
+function setupFullscreenSizeControls() {
   const size1 = document.getElementById('fsSize1')
   const size2 = document.getElementById('fsSize2')
   const size3 = document.getElementById('fsSize3')
   const size4 = document.getElementById('fsSize4')
+
   if (size1) size1.onclick = () => setBallSizeMultiplier(1)
   if (size2) size2.onclick = () => setBallSizeMultiplier(2)
   if (size3) size3.onclick = () => setBallSizeMultiplier(3)
   if (size4) size4.onclick = () => setBallSizeMultiplier(4)
+}
+
+function setupFullscreenDirectionControls() {
   const dH = document.getElementById('fsDirH')
   const dV = document.getElementById('fsDirV')
   const dDL = document.getElementById('fsDirDL')
   const dDR = document.getElementById('fsDirDR')
   const dRandom = document.getElementById('fsDirRandom')
+
   if (dH) dH.onclick = () => setDirection('horizontal')
   if (dV) dV.onclick = () => setDirection('vertical')
   if (dDL) dDL.onclick = () => setDirection('diagRLL')
   if (dDR) dDR.onclick = () => setDirection('diagRL')
   if (dRandom) dRandom.onclick = () => setDirection('random')
-  // Ball color buttons (10 colors from main preview)
+}
+
+function setupFullscreenColorControls() {
+  setupFullscreenBallColorControls()
+  setupFullscreenBackgroundColorControls()
+}
+
+function setupFullscreenBallColorControls() {
   const ballColors = [
-    '#60a5fa',
-    '#ef4444',
-    '#10b981',
-    '#f59e0b',
-    '#8b5cf6',
-    '#f97316',
-    '#06b6d4',
-    '#84cc16',
-    '#fb7185',
-    '#ffffff'
+    '#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+    '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff'
   ]
 
   for (let i = 1; i <= 10; i++) {
     const btn = document.getElementById(`fsBallCol${i}`)
     if (btn) btn.onclick = () => setBallColor(ballColors[i - 1])
   }
-  // Background color buttons (10 colors from main preview)
+}
+
+function setupFullscreenBackgroundColorControls() {
   const bgColors = [
-    '#020617',
-    '#000000',
-    '#111827',
-    '#0a2540',
-    '#052e16',
-    '#1a102a',
-    '#2b1b0e',
-    '#032f2f',
-    '#2a0e14',
-    '#0f172a'
+    '#020617', '#000000', '#111827', '#0a2540', '#052e16',
+    '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a'
   ]
 
   for (let i = 1; i <= 10; i++) {

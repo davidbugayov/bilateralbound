@@ -135,11 +135,11 @@ function setupWebSocketServer(server, sessionManager) {
   })
 
   const heartbeatInterval = setInterval(function ping() {
-    wss.clients.forEach(function each(ws) {
+    for (const ws of wss.clients) {
       if (ws.isAlive === false) return ws.terminate()
       ws.isAlive = false
       ws.ping()
-    })
+    }
   }, 30000)
 
   return { wss, heartbeatInterval }
