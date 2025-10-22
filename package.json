@@ -1,6 +1,6 @@
 {
   "name": "bilateralbound",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Real-time EMDR therapy tool with scalable architecture",
   "main": "server/index.js",
   "scripts": {

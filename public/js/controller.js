@@ -132,49 +132,34 @@ const bbCounters = {
 let __lastBounceTs = 0
 let __lastVxSign = 0
 let __lastVySign = 0
+function _hasBounced(currentVelocity, lastSign, minSpeed) {
+  const currentSign = Math.sign(currentVelocity)
+  return currentSign !== 0 && lastSign !== 0 && currentSign !== lastSign && Math.abs(currentVelocity) > minSpeed
+}
+
 function detectAndCountBounceFromServer(prev, curr) {
   // Функция разбита для снижения когнитивной сложности
   try {
-    if (!prev || !curr) return
-    if (!bbCounters.running) return
+    if (!prev || !curr || !bbCounters.running) return
     const now = performance.now()
     if (now - __lastBounceTs < 120) return // защита от дабл‑триггера
+
     const minSpeed = 10 // пикс/с, фильтр дрожания
-    const prevVx = typeof prev.vx === 'number' ? prev.vx : 0
-    const prevVy = typeof prev.vy === 'number' ? prev.vy : 0
-    const currVx = typeof curr.vx === 'number' ? curr.vx : 0
-    const currVy = typeof curr.vy === 'number' ? curr.vy : 0
+    const currVx = curr.vx || 0
+    const currVy = curr.vy || 0
+
     // Восстанавливаем последние ненулевые знаки, чтобы переживать кадры с vx/vy=0
-    const prevSignX = Math.sign(prevVx)
-    const prevSignY = Math.sign(prevVy)
-    if (__lastVxSign === 0 && prevSignX !== 0) __lastVxSign = prevSignX
-    if (__lastVySign === 0 && prevSignY !== 0) __lastVySign = prevSignY
-    const currSignX = Math.sign(currVx)
-    const currSignY = Math.sign(currVy)
-    let bounced = false
-    if (
-      currSignX !== 0 &&
-      __lastVxSign !== 0 &&
-      currSignX !== __lastVxSign &&
-      Math.abs(currVx) > minSpeed
-    ) {
-      bounced = true
-    }
+    if (__lastVxSign === 0) __lastVxSign = Math.sign(prev.vx || 0)
+    if (__lastVySign === 0) __lastVySign = Math.sign(prev.vy || 0)
 
-    if (
-      currSignY !== 0 &&
-      __lastVySign !== 0 &&
-      currSignY !== __lastVySign &&
-      Math.abs(currVy) > minSpeed
-    ) {
-      bounced = true
-    }
-
-    if (bounced) {
+    if (_hasBounced(currVx, __lastVxSign, minSpeed) || _hasBounced(currVy, __lastVySign, minSpeed)) {
       __lastBounceTs = now
       bbCounters.onBounce()
     }
+
     // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
+    const currSignX = Math.sign(currVx)
+    const currSignY = Math.sign(currVy)
     if (currSignX !== 0) __lastVxSign = currSignX
     if (currSignY !== 0) __lastVySign = currSignY
   } catch {
@@ -753,71 +738,58 @@ function syncUIWithState(ballState) {
   }
 }
 // ===== ИНИЦИАЛИЗАЦИЯ КОМПОНЕНТОВ =====
-function initializeComponents() {
-  // Функция разбита для снижения когнитивной сложности
-  // Создаем компонент управления скоростью
+function _initializeSpeedControl() {
   components.speed = sharedComponents.createSpeedControl(document.getElementById('speedControl'), {
     onSpeedChange: throttle(speed => {
       updateSpeed(speed)
-    }, 100) // Ограничиваем отправку: не чаще чем раз в 100 мс
-  })
-  // Создаем компонент управления цветом шарика
+    }, 100)
+  });
+}
+
+function _initializeBallColorControl() {
   components.ballColor = sharedComponents.createColorControl(
     document.getElementById('ballColorControl'),
     {
-      colors: [
-        '#60a5fa',
-        '#ef4444',
-        '#10b981',
-        '#f59e0b',
-        '#8b5cf6',
-        '#f97316',
-        '#06b6d4',
-        '#84cc16',
-        '#fb7185',
-        '#ffffff'
-      ],
-      defaultValue: '#60a5fa', // Дефолтный цвет мяча
-      title: '', // Заголовок уже есть в HTML
+      colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff'],
+      defaultValue: '#60a5fa',
+      title: '',
       onColorChange: color => {
         setBallColor(color)
-        // Не меняем радиус превью при смене цвета
       }
     }
-  )
-  // Создаем компонент управления цветом фона
+  );
+}
+
+function _initializeBgColorControl() {
   components.bgColor = sharedComponents.createColorControl(
     document.getElementById('bgColorControl'),
     {
-      colors: [
-        '#020617',
-        '#000000',
-        '#111827',
-        '#0a2540',
-        '#052e16',
-        '#1a102a',
-        '#2b1b0e',
-        '#032f2f',
-        '#2a0e14',
-        '#0f172a'
-      ],
-      defaultValue: '#020617', // Дефолтный цвет фона
-      title: '', // Заголовок уже есть в HTML
+      colors: ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a'],
+      defaultValue: '#020617',
+      title: '',
       onColorChange: color => {
         setBackgroundColor(color)
-        // Не меняем радиус превью при смене фона
       }
     }
-  )
-  // Создаем компонент управления размером
+  );
+}
+
+function _initializeSizeControl() {
   components.size = sharedComponents.createSizeControl(document.getElementById('sizeControl'), {
     sizes: [20, 40, 80, 100],
     defaultValue: 20,
-    title: '', // Заголовок уже есть в HTML
+    title: '',
     onSizeChange: size => {
       setBallSize(size)
     }
-  })
+  });
+}
+
+function initializeComponents() {
+  _initializeSpeedControl();
+  _initializeBallColorControl();
+  _initializeBgColorControl();
+  _initializeSizeControl();
 }
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 function safeSend(type, payload) {
@@ -1223,98 +1195,91 @@ function updatePlayPauseButton() {
   }
 }
 
-function togglePlayPause() {
-  // Функция разбита для снижения когнитивной сложности
-const payload = {}
-
-if (isPlaying) {
-    // Останавливаем игру с плавным возвратом в центр
-    payload.paused = true
-    payload.returnToCenter = true // Флаг для плавного возврата в центр
-    safeSend(WS_MSG.controllerUpdate, payload)
-    isPlaying = false
-    updatePlayPauseButton() // мгновенный отклик UI
-    // При остановке увеличиваем сет
-    bbCounters.stop(true)
-    // Не позволяем серверному paused мгновенно вернуть кнопку в Старт/Стоп некорректно
-    __ignoreServerPausedUntilTs = performance.now() + 800
-    // Двойная фиксация UI после возможных синхронных апдейтов
-    setTimeout(updatePlayPauseButton, 0)
-    setTimeout(updatePlayPauseButton, 300)
-  } else {
-    // Запускаем игру
-    let currentDirection = directionState || { dx: 1, dy: 0 }
-
-    if (currentDirection.dx === 0 && currentDirection.dy === 0) {
-      currentDirection = { dx: 1, dy: 0 }
-    }
-
-    Object.assign(payload, {
-      paused: false,
-      dirX: currentDirection.dx,
-      dirY: currentDirection.dy,
-      speed: components.speed?.getSpeed() ?? 40
-    })
-    safeSend(WS_MSG.controllerUpdate, payload)
-    isPlaying = true
-    updatePlayPauseButton() // мгновенный отклик UI
-    // Запускаем таймер
-    bbCounters.start()
-    __ignoreServerPausedUntilTs = performance.now() + 800
-    setTimeout(updatePlayPauseButton, 0)
-    setTimeout(updatePlayPauseButton, 300)
+function _handlePlay() {
+  let currentDirection = directionState || { dx: 1, dy: 0 }
+  if (currentDirection.dx === 0 && currentDirection.dy === 0) {
+    currentDirection = { dx: 1, dy: 0 }
   }
-  // Немедленно применяем команду к локальному движку для мгновенной реакции
+  const payload = {
+    paused: false,
+    dirX: currentDirection.dx,
+    dirY: currentDirection.dy,
+    speed: components.speed?.getSpeed() ?? 40
+  }
+  safeSend(WS_MSG.controllerUpdate, payload)
+  isPlaying = true
+  bbCounters.start()
   if (previewPhysicsEngine) {
     previewPhysicsEngine.applyCommand(payload)
   }
-  // Пользователь явно нажал кнопку — снимаем принудительную паузу
-  if (!isPlaying) {
-    // сейчас мы перешли в режим паузы
-  } else {
-    // режим «Старт» — больше не блокируем paused=false от сервера
-    globalThis.forcePauseUntilUserAction = false
+  globalThis.forcePauseUntilUserAction = false
+}
+
+function _handlePause() {
+  const payload = {
+    paused: true,
+    returnToCenter: true
   }
-  // Финальное подтверждение состояния на кнопке
+  safeSend(WS_MSG.controllerUpdate, payload)
+  isPlaying = false
+  bbCounters.stop(true)
+  if (previewPhysicsEngine) {
+    previewPhysicsEngine.applyCommand(payload)
+  }
+}
+
+function togglePlayPause() {
+  if (isPlaying) {
+    _handlePause()
+  } else {
+    _handlePlay()
+  }
+  __ignoreServerPausedUntilTs = performance.now() + 800
   updatePlayPauseButton()
+  setTimeout(updatePlayPauseButton, 0)
+  setTimeout(updatePlayPauseButton, 300)
   syncFsPlayPauseButton()
 }
 // ===== УТИЛИТЫ =====
 /**
  * Масштабирует состояние вьювера к размерам превью
  */
+function _normalizeCoordinate(coord, fallback) {
+  return typeof coord === 'number' && !Number.isNaN(coord) ? coord : fallback;
+}
+
 function getScaledState(state) {
-  // Функция разбита для снижения когнитивной сложности
   if (!globalThis.__current.viewerScreenSize || !globalThis.__previewCanvas || !state) {
-    return state // Возвращаем как есть, если нет данных для масштабирования
+    return state;
   }
 
-  const viewerSize = globalThis.__current.viewerScreenSize
+  const viewerSize = globalThis.__current.viewerScreenSize;
   const previewSize = {
     width: globalThis.__previewCanvas.width,
-    height: globalThis.__previewCanvas.height
-  }
+    height: globalThis.__previewCanvas.height,
+  };
 
   if (viewerSize.width <= 0 || viewerSize.height <= 0) {
-    return state
+    return state;
   }
-  // **МАТЕМАТИЧЕСКИ КОРРЕКТНОЕ МАСШТАБИРОВАНИЕ**
-  const scaleX = previewSize.width / viewerSize.width
-  const scaleY = previewSize.height / viewerSize.height
-  // Для радиуса используем минимальный масштаб, чтобы он точно вписывался и не искажался
-  const scaleRadius = Math.min(scaleX, scaleY)
-  const scaledState = { ...state }
-  // Фолбэк: если координаты нечисловые (undefined/null/NaN) — ставим центр экрана вьювера
-  // Это происходит когда вьювер подключился, но размер экрана еще не установлен
-  const rawX =
-    typeof state.x === 'number' && !Number.isNaN(state.x) ? state.x : viewerSize.width / 2
-  const rawY =
-    typeof state.y === 'number' && !Number.isNaN(state.y) ? state.y : viewerSize.height / 2
-  scaledState.x = rawX * scaleX
-  scaledState.y = rawY * scaleY
-  if (scaledState.radius !== undefined) scaledState.radius *= scaleRadius
-  else if (typeof state.radius === 'number') scaledState.radius = state.radius * scaleRadius
-  return scaledState
+
+  const scaleX = previewSize.width / viewerSize.width;
+  const scaleY = previewSize.height / viewerSize.height;
+  const scaleRadius = Math.min(scaleX, scaleY);
+
+  const scaledState = { ...state };
+
+  const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2);
+  const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2);
+
+  scaledState.x = rawX * scaleX;
+  scaledState.y = rawY * scaleY;
+
+  if (typeof scaledState.radius === 'number') {
+    scaledState.radius *= scaleRadius;
+  }
+
+  return scaledState;
 }
 
 function updateViewerStatusUI() {

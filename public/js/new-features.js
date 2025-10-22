@@ -4,6 +4,14 @@
  * Добавлены в v1.2.0
  */
 /* exported applyPreset, createCustomPreset, exportSession, importSession */
+
+function _generateId() {
+  if (crypto?.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+}
+
 class FeatureManager {
   constructor() {
     this.presets = this.loadPresets()
@@ -636,28 +644,12 @@ class FeatureManager {
 
   saveNamedSession(nameRaw) {
     const name = (nameRaw || '').trim() || 'Сессия'
-    const now = new Date().toISOString()
-    // если существует с таким именем — обновим его
-    let session = this.sessions.find(s => s.name === name)
-    if (session) {
-      session.data = this.buildCurrentSessionData()
-      session.updatedAt = now
-      this.persistCurrentSessionId(session.id)
-    } else {
-      // создаём новую
-      const id = crypto?.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-      session = {
-        id,
-        name,
-        createdAt: now,
-        updatedAt: now,
-        data: this.buildCurrentSessionData()
-      }
+    const existingSession = this.sessions.find(s => s.name === name)
 
-      this.sessions.push(session)
-      this.persistCurrentSessionId(id)
+    if (existingSession) {
+      this._updateExistingSession(existingSession)
+    } else {
+      this._createNewSession(name)
     }
 
     this.saveSessions()
@@ -712,6 +704,42 @@ class FeatureManager {
     const input = document.getElementById('bbSessionNameInput')
     if (this.currentSessionId === id && input) input.value = session.name
     this.renderSessionsList()
+  }
+
+  deleteSessionById(id) {
+    const idx = this.sessions.findIndex(s => s.id === id)
+    if (idx === -1) return
+    const [removed] = this.sessions.splice(idx, 1)
+    if (this.currentSessionId === id) {
+      this.persistCurrentSessionId(null)
+      const input = document.getElementById('bbSessionNameInput')
+      if (input) input.value = ''
+    }
+
+    this.saveSessions()
+    this.renderSessionsList()
+    this.updateHeaderSessionName()
+    this.showNotification(`Сессия "${removed?.name || ''}" удалена`, 'success')
+  }
+
+  _updateExistingSession(session) {
+    session.data = this.buildCurrentSessionData()
+    session.updatedAt = new Date().toISOString()
+    this.persistCurrentSessionId(session.id)
+  }
+
+  _createNewSession(name) {
+    const now = new Date().toISOString()
+    const id = _generateId()
+    const session = {
+      id,
+      name,
+      createdAt: now,
+      updatedAt: now,
+      data: this.buildCurrentSessionData()
+    }
+    this.sessions.push(session)
+    this.persistCurrentSessionId(id)
   }
 
   deleteSessionById(id) {
