@@ -2,5 +2,5 @@ projectKey=bilateral_bound
 serverUrl=http://localhost:9000
 serverVersion=25.10.0.114319
 dashboardUrl=http://localhost:9000/dashboard?id=bilateral_bound
-ceTaskId=7e85564c-7a25-46b5-8dac-ff2830f623fd
-ceTaskUrl=http://localhost:9000/api/ce/task?id=7e85564c-7a25-46b5-8dac-ff2830f623fd
+ceTaskId=41f52eaa-496e-4bc1-839e-ae534bbf6064
+ceTaskUrl=http://localhost:9000/api/ce/task?id=41f52eaa-496e-4bc1-839e-ae534bbf6064

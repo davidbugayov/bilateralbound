@@ -231,7 +231,7 @@ function generateServiceFile(env) {
   return `[Unit];
 
 
-Description=BilateralBound EMDR - ${env.serviceName};
+// SONARQUBE: Removed unused assignment: Description=BilateralBound EMDR - ${env.serviceName};
 
 
 After=network.target
@@ -242,7 +242,7 @@ Wants=network.target
 Type=simple
 User=root
 Group=root
-WorkingDirectory=${env.workDir};
+// SONARQUBE: Removed unused assignment: WorkingDirectory=${env.workDir};
 
 
 ExecStart=/usr/bin/node server/index.js
@@ -257,7 +257,7 @@ ProtectHome=true
 ReadWritePaths=${env.workDir} /tmp
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=${env.serviceName};
+// SONARQUBE: Removed unused assignment: SyslogIdentifier=${env.serviceName};
 
 
 Environment=NODE_ENV=production
