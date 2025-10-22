@@ -278,25 +278,38 @@ class PhysicsEngine {
   }
   /**
    * ПРОДВИНУТАЯ интерполяция v4 с буферизацией состояний и экспоненциальным сглаживанием
-   * Решение проблемы дергания на основе лучших практик игровой индустрии
    */
   updateViewerInterpolation(deltaTime) {
-    if (
+    if (!this._canInterpolate()) return
+
+    const currentTime = performance.now()
+    const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
+
+    this._updateStateBuffer(currentTime)
+    this._applyExponentialSmoothing(timeSinceLastUpdate / 1000)
+
+    const { clampedTargetX, clampedTargetY } = this._calculateAdaptiveClamping()
+
+    this._applySpringPhysics(clampedTargetX, clampedTargetY, deltaTime)
+    this._limitStepSize(clampedTargetX, clampedTargetY, deltaTime)
+    this._interpolatePosition()
+    this._autoSnapIfNeeded(clampedTargetX, clampedTargetY)
+  }
+
+  _canInterpolate() {
+    return !(
       (this.state.paused && !this.state.allowInterpWhenPaused) ||
       !this.state ||
       !this.state.targetX
     )
-      return
-    const currentTime = performance.now()
-    const timeSinceLastUpdate = (currentTime - (this.lastServerUpdate || currentTime)) / 1000
-    // === БУФЕРИЗАЦИЯ СОСТОЯНИЙ ДЛЯ СГЛАЖИВАНИЯ ===
-    // Сохраняем историю состояний для интерполяции между обновлениями
+  }
+
+  _updateStateBuffer(currentTime) {
     if (!this._stateBuffer) {
       this._stateBuffer = []
-
-      this._bufferSize = this.options.smoothing.bufferSize || 15 // Размер буфера из конфига
+      this._bufferSize = this.options.smoothing.bufferSize || 15
     }
-    // Добавляем текущее состояние в буфер
+
     this._stateBuffer.push({
       x: this.ball.x,
       y: this.ball.y,
@@ -304,39 +317,40 @@ class PhysicsEngine {
       vy: this.state.lastVy || 0,
       timestamp: currentTime
     })
-    // Ограничиваем размер буфера
+
     if (this._stateBuffer.length > this._bufferSize) {
       this._stateBuffer.shift()
     }
-    // === ЭКСПОНЕНЦИАЛЬНОЕ СГЛАЖИВАНИЕ ВСЕХ ПАРАМЕТРОВ ===
-    const predictTime = Math.min(timeSinceLastUpdate, this.options.smoothing.maxPredictSec || 0.03)
-    const alpha = this.options.smoothing.velocitySmoothingAlpha || 0.08 // Еще более агрессивное сглаживание
+  }
+
+  _applyExponentialSmoothing(predictTime) {
+    const alpha = this.options.smoothing.velocitySmoothingAlpha || 0.08
     const vx = this.state.lastVx || 0
     const vy = this.state.lastVy || 0
-    // Агрессивное экспоненциальное сглаживание скорости для максимальной стабильности
+
     if (!this._smoothedVelocity) {
       this._smoothedVelocity = { x: vx, y: vy }
     } else {
       this._smoothedVelocity.x = this._smoothedVelocity.x * (1 - alpha) + vx * alpha
       this._smoothedVelocity.y = this._smoothedVelocity.y * (1 - alpha) + vy * alpha
     }
-    // Предикция позиции с использованием сглаженной скорости
-    const predictedTargetX = this.state.targetX + this._smoothedVelocity.x * predictTime
-    const predictedTargetY = this.state.targetY + this._smoothedVelocity.y * predictTime
-    // === АДАПТИВНЫЙ КЛАМПИНГ С ПРЕДИКЦИЕЙ ОТСКОКОВ ===
+  }
+
+  _calculateAdaptiveClamping() {
+    const predictTime = this.options.smoothing.maxPredictSec || 0.03
     const radius = this.ball.radius
     const w = this.options.worldWidth
     const h = this.options.worldHeight
-    // Граничные условия с предикцией отскоков (улучшенная версия)
+
+    const predictedTargetX = this.state.targetX + this._smoothedVelocity.x * predictTime
+    const predictedTargetY = this.state.targetY + this._smoothedVelocity.y * predictTime
+
     let clampedTargetX = predictedTargetX
     let clampedTargetY = predictedTargetY
-    // Предсказываем будущие отскоки для более точной интерполяции
+
     if (Math.abs(this._smoothedVelocity.x) > 0) {
       const timeToBounceX = this._calculateTimeToBounce(
-        this.ball.x,
-        this._smoothedVelocity.x,
-        radius,
-        w
+        this.ball.x, this._smoothedVelocity.x, radius, w
       )
       if (timeToBounceX < predictTime) {
         clampedTargetX = predictedTargetX < w / 2 ? radius : w - radius
@@ -347,10 +361,7 @@ class PhysicsEngine {
 
     if (Math.abs(this._smoothedVelocity.y) > 0) {
       const timeToBounceY = this._calculateTimeToBounce(
-        this.ball.y,
-        this._smoothedVelocity.y,
-        radius,
-        h
+        this.ball.y, this._smoothedVelocity.y, radius, h
       )
       if (timeToBounceY < predictTime) {
         clampedTargetY = predictedTargetY < h / 2 ? radius : h - radius
@@ -358,37 +369,49 @@ class PhysicsEngine {
         clampedTargetY = Math.min(h - radius, Math.max(radius, predictedTargetY))
       }
     }
-    // === ПРОДВИНУТАЯ ПРУЖИНА С ЭКСПОНЕНЦИАЛЬНЫМ СГЛАЖИВАНИЕМ ===
+
+    return { clampedTargetX, clampedTargetY }
+  }
+
+  _applySpringPhysics(clampedTargetX, clampedTargetY, deltaTime) {
     const dx = clampedTargetX - this.ball.x
     const dy = clampedTargetY - this.ball.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
-    // Адаптивная жесткость на основе расстояния и скорости
+    const distance = Math.hypot(dx, dy)
+
     const baseStiffness = this.options.smoothing.stiffness || 25
-    const adaptiveStiffness = baseStiffness * (1 + Math.min(distance / 150, 3))
-    // Адаптивное демпфирование на основе скорости
     const speed = Math.hypot(this._smoothedVelocity.x, this._smoothedVelocity.y)
+
+    const adaptiveStiffness = baseStiffness * (1 + Math.min(distance / 150, 3))
     const baseDamping = this.options.smoothing.damping || 15
     const adaptiveDamping = baseDamping * (1 + Math.min(speed / 800, 2))
-    // Ускорение пружины с улучшенной формулой
+
     const ax = adaptiveStiffness * dx - adaptiveDamping * this.state.smoothVx
     const ay = adaptiveStiffness * dy - adaptiveDamping * this.state.smoothVy
-    // Интегрируем скорость с ограничением максимального ускорения
-    const maxAcceleration = 8000 // Увеличено для лучшей отзывчивости
+
+    const maxAcceleration = 8000
     const clampedAx = Math.max(-maxAcceleration, Math.min(maxAcceleration, ax))
     const clampedAy = Math.max(-maxAcceleration, Math.min(maxAcceleration, ay))
+
     this.state.smoothVx += clampedAx * deltaTime
     this.state.smoothVy += clampedAy * deltaTime
-    // === УМНОЕ ОГРАНИЧЕНИЕ ШАГА С АДАПТИВНЫМ МАКСИМУМОМ ===
+  }
+
+  _limitStepSize(clampedTargetX, clampedTargetY, deltaTime) {
+    const dx = clampedTargetX - this.ball.x
+    const dy = clampedTargetY - this.ball.y
+    const distance = Math.hypot(dx, dy)
+
     let stepX = this.state.smoothVx * deltaTime
     let stepY = this.state.smoothVy * deltaTime
     const stepMagnitude = Math.hypot(stepX, stepY)
-    // Адаптивное ограничение шага на основе расстояния и скорости
+
     const adaptiveMaxStep = Math.min(
-      distance * 2.5, // Увеличено для лучшей отзывчивости
+      distance * 2.5,
       Math.abs(this._smoothedVelocity.x) * deltaTime * 4,
       Math.abs(this._smoothedVelocity.y) * deltaTime * 4,
-      150 // Увеличен максимум
+      150
     )
+
     if (stepMagnitude > adaptiveMaxStep && adaptiveMaxStep > 0) {
       const scale = adaptiveMaxStep / stepMagnitude
       stepX *= scale
@@ -396,30 +419,47 @@ class PhysicsEngine {
       this.state.smoothVx *= scale
       this.state.smoothVy *= scale
     }
-    // === МАКСИМАЛЬНО ПЛАВНАЯ ИНТЕРПОЛЯЦИЯ ПОЗИЦИИ ===
+
+    return { stepX, stepY }
+  }
+
+  _interpolatePosition(deltaTime = 0.016) {
+    const { stepX, stepY } = this._limitStepSize(
+      this.state.targetX, this.state.targetY, deltaTime
+    )
+
     const smoothingFactor = this.options.smoothing.smoothingFactor || 0.25
-    // Сохраняем предыдущую позицию для интерполяции
+    const radius = this.ball.radius
+    const w = this.options.worldWidth
+    const h = this.options.worldHeight
+
     this._prevPos.x = this.ball.x
     this._prevPos.y = this.ball.y
-    // Новая позиция с экспоненциальным сглаживанием
+
     const newX = this.ball.x + stepX
     const newY = this.ball.y + stepY
-    // Агрессивное экспоненциальное сглаживание позиции для максимальной плавности
+
     this.ball.x = this.ball.x * (1 - smoothingFactor) + newX * smoothingFactor
     this.ball.y = this.ball.y * (1 - smoothingFactor) + newY * smoothingFactor
-    // Улучшенный клампинг визуальной позиции
+
     this.ball.x = Math.min(w - radius, Math.max(radius, this.ball.x))
     this.ball.y = Math.min(h - radius, Math.max(radius, this.ball.y))
+
     this._currPos.x = this.ball.x
     this._currPos.y = this.ball.y
-    // === УМНЫЙ АВТО-СНАП С ГИСТЕРЕЗИСОМ ===
+  }
+
+  _autoSnapIfNeeded(clampedTargetX, clampedTargetY) {
+    const dx = clampedTargetX - this.ball.x
+    const dy = clampedTargetY - this.ball.y
+    const distance = Math.hypot(dx, dy)
+
     const snapDistance = this.options.smoothing.snapDistance || 0.2
-    const lowSpeedThreshold = 3 // Уменьшено для более раннего снапа
-    if (
-      distance < snapDistance &&
-      Math.abs(this.state.smoothVx) < lowSpeedThreshold &&
-      Math.abs(this.state.smoothVy) < lowSpeedThreshold
-    ) {
+    const lowSpeedThreshold = 3
+
+    if (distance < snapDistance &&
+        Math.abs(this.state.smoothVx) < lowSpeedThreshold &&
+        Math.abs(this.state.smoothVy) < lowSpeedThreshold) {
       this.ball.x = clampedTargetX
       this.ball.y = clampedTargetY
       this._currPos.x = this.ball.x
@@ -663,12 +703,11 @@ class PhysicsEngine {
     return this._interpBall
   }
   /**
-   * Применяет команду от сервера
+   * Валидирует входящую команду от сервера
    */
-  applyCommand(command) {
-    if (!command) return
-    // === ВАЛИДАЦИЯ ВХОДНЫХ ДАННЫХ ===
+  _validateCommand(command) {
     const validatedCommand = {}
+
     // Валидация для вьювера (клиентского режима)
     if (this.isViewer) {
       if (typeof command.x === 'number' && !Number.isNaN(command.x)) validatedCommand.x = command.x
@@ -711,6 +750,7 @@ class PhysicsEngine {
         validatedCommand.speed = command.speed
       }
     }
+
     // Общие валидации для всех режимов
     if (typeof command.paused === 'boolean') {
       validatedCommand.paused = command.paused
@@ -736,6 +776,17 @@ class PhysicsEngine {
     if (typeof command.colorBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(command.colorBg)) {
       validatedCommand.colorBg = command.colorBg
     }
+
+    return validatedCommand
+  }
+
+  /**
+   * Применяет команду от сервера
+   */
+  applyCommand(command) {
+    if (!command) return
+    // === ВАЛИДАЦИЯ ВХОДНЫХ ДАННЫХ ===
+    const validatedCommand = this._validateCommand(command)
     // Если нет валидных полей, выходим
     if (Object.keys(validatedCommand).length === 0) {
       return

@@ -145,12 +145,12 @@ function detectAndCountBounceFromServer(prev, curr) {
     if (now - __lastBounceTs < 120) return // защита от дабл‑триггера
 
     const minSpeed = 10 // пикс/с, фильтр дрожания
-    const currVx = curr.vx || 0
-    const currVy = curr.vy || 0
+    const currVx = curr?.vx || 0
+    const currVy = curr?.vy || 0
 
     // Восстанавливаем последние ненулевые знаки, чтобы переживать кадры с vx/vy=0
-    if (__lastVxSign === 0) __lastVxSign = Math.sign(prev.vx || 0)
-    if (__lastVySign === 0) __lastVySign = Math.sign(prev.vy || 0)
+    if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
+    if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
 
     if (_hasBounced(currVx, __lastVxSign, minSpeed) || _hasBounced(currVy, __lastVySign, minSpeed)) {
       __lastBounceTs = now
@@ -184,83 +184,94 @@ document.addEventListener('DOMContentLoaded', () => {
  * Современная инициализация контроллера с улучшенной обработкой ошибок
  */
 async function initializeController() {
-  // Функция разбита для снижения когнитивной сложности
   const logger = createLogger('Controller')
   try {
     logger.info('Начинаем инициализацию контроллера')
-    // 1. Валидация и получение сессии
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
       console.error('ID сессии не найден в URL')
       showNotification('ID сессии не найден в URL', 'error')
       return
     }
-    // Сохраняем sessionId в глобальном состоянии
+
     globalThis.__current.sessionId = sessionId
     logger.info(`Работаем с сессией: ${sessionId}`)
-    // Уведомляем сервер о подключении контроллера (для постоянных ссылок)
-    try {
-      const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
-      })
-      if (connectResponse.ok) {
-        logger.info('Контроллер зарегистрирован на сервере')
-      } else {
-        logger.warn('Не удалось зарегистрировать контроллер на сервере')
-      }
-    } catch (error) {
-      logger.warn('Ошибка регистрации контроллера:', error)
-    }
-    // 2. Инициализация DOM элементов - делаем это сразу
+
+    await registerControllerOnServer(sessionId, logger)
     await initializeDOMElements(sessionId)
-    // Показываем блок превью сразу, но без запущенной анимации
-    const previewWrap = document.getElementById('previewWrap')
-    if (previewWrap) {
-      previewWrap.style.display = 'block'
-    }
-    // Инициализируем компоненты сразу
+
+    // UI initialization
+    await initializePreviewUI()
     initializeComponents()
-    // Инициализируем превью сразу, чтобы пользователь видел мяч
     await initializePreview()
-    // Навешиваем обработчики полноэкранного превью
-    const openFsBtn = document.getElementById('openPreviewFullscreenBtn')
-    const exitFsBtn = document.getElementById('exitPreviewFullscreenBtn')
-    const overlay = document.getElementById('previewOverlay')
-    previewFsCanvas = document.getElementById('previewFullscreenCanvas')
-    if (openFsBtn && exitFsBtn && overlay && previewFsCanvas) {
-      openFsBtn.addEventListener('click', openPreviewFullscreen)
-      exitFsBtn.addEventListener('click', closePreviewFullscreen)
-      globalThis.addEventListener('resize', () => {
-        if (isPreviewFullscreen) resizePreviewFullscreen()
-      })
-      // Горячие клавиши: F – toggle, Esc – закрыть
-      document.addEventListener('keydown', e => {
-        const key = e.key?.toLowerCase()
-        if (key === 'f') {
-          if (!isPreviewFullscreen) openPreviewFullscreen()
-          else closePreviewFullscreen()
-        } else if (key === 'escape') {
-          if (isPreviewFullscreen) closePreviewFullscreen()
-        }
-      })
-    }
-    // Обработчик навигации назад в браузере
-    globalThis.addEventListener('popstate', event => {
-      if (isPreviewFullscreen) {
-        // Если мы в полноэкранном режиме и произошла навигация назад
-        closePreviewFullscreen()
-      } else if (globalThis.location.hash === '#fullscreen-preview' && isPreviewFullscreen === false) {
-        // Если пользователь попал на хэш полноэкранного режима, но режим не активен
-        openPreviewFullscreen()
-      }
-    })
-    // 3. Инициализация WebSocket с современным API
+    setupFullscreenListeners()
+
     await initializeWebSocketClient(sessionId)
     logger.info('🔌 WebSocket клиент инициализирован, ожидаем подключения вьювера...')
   } catch {
     console.warn('Error initializing controller')
+  }
+}
+
+// Extracted helper functions to reduce cognitive complexity
+async function registerControllerOnServer(sessionId, logger) {
+  try {
+    const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    })
+    if (connectResponse.ok) {
+      logger.info('Контроллер зарегистрирован на сервере')
+    } else {
+      logger.warn('Не удалось зарегистрировать контроллер на сервере')
+    }
+  } catch (error) {
+    logger.warn('Ошибка регистрации контроллера:', error)
+  }
+}
+
+async function initializePreviewUI() {
+  const previewWrap = document.getElementById('previewWrap')
+  if (previewWrap) {
+    previewWrap.style.display = 'block'
+  }
+}
+
+function setupFullscreenListeners() {
+  const openFsBtn = document.getElementById('openPreviewFullscreenBtn')
+  const exitFsBtn = document.getElementById('exitPreviewFullscreenBtn')
+  const overlay = document.getElementById('previewOverlay')
+  previewFsCanvas = document.getElementById('previewFullscreenCanvas')
+
+  if (openFsBtn && exitFsBtn && overlay && previewFsCanvas) {
+    openFsBtn.addEventListener('click', openPreviewFullscreen)
+    exitFsBtn.addEventListener('click', closePreviewFullscreen)
+
+    globalThis.addEventListener('resize', () => {
+      if (isPreviewFullscreen) resizePreviewFullscreen()
+    })
+
+    document.addEventListener('keydown', handleFullscreenKeydown)
+    globalThis.addEventListener('popstate', handlePopState)
+  }
+}
+
+function handleFullscreenKeydown(e) {
+  const key = e.key?.toLowerCase()
+  if (key === 'f') {
+    if (!isPreviewFullscreen) openPreviewFullscreen()
+    else closePreviewFullscreen()
+  } else if (key === 'escape') {
+    if (isPreviewFullscreen) closePreviewFullscreen()
+  }
+}
+
+function handlePopState(event) {
+  if (isPreviewFullscreen) {
+    closePreviewFullscreen()
+  } else if (globalThis.location.hash === '#fullscreen-preview' && isPreviewFullscreen === false) {
+    openPreviewFullscreen()
   }
 }
 /**

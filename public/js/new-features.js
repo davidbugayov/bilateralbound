@@ -742,22 +742,6 @@ class FeatureManager {
     this.persistCurrentSessionId(id)
   }
 
-  deleteSessionById(id) {
-    const idx = this.sessions.findIndex(s => s.id === id)
-    if (idx === -1) return
-    const [removed] = this.sessions.splice(idx, 1)
-    if (this.currentSessionId === id) {
-      this.persistCurrentSessionId(null)
-      const input = document.getElementById('bbSessionNameInput')
-      if (input) input.value = ''
-    }
-
-    this.saveSessions()
-    this.renderSessionsList()
-    this.updateHeaderSessionName()
-    this.showNotification(`Сессия "${removed?.name || ''}" удалена`, 'success')
-  }
-
   updateHeaderSessionName() {
     try {
       const el = document.getElementById('sessionInfo')
