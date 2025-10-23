@@ -13,7 +13,7 @@ const debugError =
 const debugWarn =
   typeof globalThis !== 'undefined' && globalThis.debugWarn ? globalThis.debugWarn : () => {}
 // Используем общие утилиты, если доступны, иначе fallback
-const getSessionIdFromUrl = globalThis.CommonUtils
+const getSessionIdFromUrl = (globalThis.CommonUtils && typeof globalThis.CommonUtils.getSessionIdFromUrl === 'function')
   ? globalThis.CommonUtils.getSessionIdFromUrl
   : function () {
       const path = globalThis.location.pathname
@@ -27,7 +27,7 @@ const getSessionIdFromUrl = globalThis.CommonUtils
     }
 
 const toggleFullscreen =
-  globalThis.CommonUtils && typeof globalThis.CommonUtils.toggleFullscreen === 'function'
+  (globalThis.CommonUtils && typeof globalThis.CommonUtils.toggleFullscreen === 'function')
     ? globalThis.CommonUtils.toggleFullscreen
     : (function () {
         // Robust fullscreen toggle fallback using the Fullscreen API
@@ -69,7 +69,7 @@ const toggleFullscreen =
                 target.msRequestFullscreen?.() ||
                 target.mozRequestFullScreen?.()
 
-              if (fullscreenPromise) {
+              if (fullscreenPromise !== undefined) {
                 await fullscreenPromise
               } else {
                 throw new Error('Fullscreen API not available')
@@ -82,7 +82,7 @@ const toggleFullscreen =
         }
       })()
 const throttle =
-  globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function'
+  (globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function')
     ? globalThis.CommonUtils.throttle
     : function throttleImplementation(fn, wait = 100) {
         if (typeof fn !== 'function') return () => {}
@@ -135,8 +135,9 @@ if (typeof globalThis !== 'undefined') {
 }
 
 class ThemeManager {
+  themeKey = 'bb_theme'
+
   constructor() {
-    this.themeKey = 'bb_theme'
     this.init()
   }
 

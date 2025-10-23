@@ -5,10 +5,10 @@
 
 class NotificationSystem {
   autoHideTimeout = 5000
+  container = null
+  notifications = []
 
   constructor() {
-    this.container = null
-    this.notifications = []
     this.init()
   }
 
@@ -284,12 +284,12 @@ class NotificationSystem {
     // Проверяем дубликаты: объединяем по сообщению
     // Если уже есть уведомление с тем же текстом, но, возможно, другим типом/заголовком,
     // заменяем его новым (прячем старое и показываем актуальное), чтобы исключить "смешанные" цвета.
-    const duplicate = this.notifications.find(n => n.config?.message === config?.message)
+    const duplicate = this.notifications.find(n => n.config?.message === config.message)
     if (duplicate) {
       // Если полностью совпадает (тип и заголовок), просто игнорируем повтор
       if (
-        duplicate.config?.type === config?.type &&
-        (duplicate.config?.title || '') === (config?.title || '')
+        duplicate.config?.type === config.type &&
+        (duplicate.config?.title || '') === (config.title || '')
       ) {
         return
       }
@@ -426,14 +426,14 @@ class NotificationSystem {
    * Скрывает уведомление
    */
   hide(notification) {
-    if (!notification || !notification.element) return
+    if (!notification?.element) return
 
     clearTimeout(notification.hideTimeout)
 
     notification.element.classList.add('removing')
 
     setTimeout(() => {
-      if (notification.element && notification.element.parentElement) {
+      if (notification.element?.parentElement) {
         notification.element.remove()
       }
 

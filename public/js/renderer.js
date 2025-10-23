@@ -135,33 +135,32 @@ class BallRenderer {
   }
 
   renderLoop(currentTime) {
-    if (!this.validateCanvas()) {
-      this.stop()
-      return
-    }
+    if (this.validateCanvas()) {
+      const clientW = this.canvas.clientWidth
+      const clientH = this.canvas.clientHeight
+      if ((clientW && clientW !== this.canvas.width) || (clientH && clientH !== this.canvas.height)) {
+        this.resize(clientW || this.canvas.width, clientH || this.canvas.height)
+        this.lastTime = currentTime
+        this.animationFrameId = requestAnimationFrame(this.renderLoop)
+        return
+      }
 
-    const clientW = this.canvas.clientWidth
-    const clientH = this.canvas.clientHeight
-    if ((clientW && clientW !== this.canvas.width) || (clientH && clientH !== this.canvas.height)) {
-      this.resize(clientW || this.canvas.width, clientH || this.canvas.height)
-      this.lastTime = currentTime
+      const clampedDeltaTime = this._calculateDeltaTime(currentTime)
+      this.frameCount++
+
+      try {
+        this._updatePhysics(clampedDeltaTime)
+        this._renderFrame(currentTime)
+        this.lastTime = currentTime
+      } catch {
+        this.stop()
+        return
+      }
+
       this.animationFrameId = requestAnimationFrame(this.renderLoop)
-      return
-    }
-
-    const clampedDeltaTime = this._calculateDeltaTime(currentTime)
-    this.frameCount++
-
-    try {
-      this._updatePhysics(clampedDeltaTime)
-      this._renderFrame(currentTime)
-      this.lastTime = currentTime
-    } catch {
+    } else {
       this.stop()
-      return
     }
-
-    this.animationFrameId = requestAnimationFrame(this.renderLoop)
   }
   /**
    * Рендерит сцену (оптимизированная версия)

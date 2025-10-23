@@ -10,11 +10,11 @@
  * @returns {string} Уникальный ID сессии
  */
 function _generateId() {
-  if (crypto && crypto.randomUUID) {
+  // Используем криптографически стойкий метод генерации случайных чисел
+  if (crypto?.randomUUID) {
     return crypto.randomUUID()
   }
-  // Используем криптографически стойкий метод генерации случайных чисел
-  if (crypto && crypto.getRandomValues) {
+  if (crypto?.getRandomValues) {
     const array = new Uint32Array(2)
     crypto.getRandomValues(array)
     return `${Date.now()}_${array[0].toString(36)}_${array[1].toString(36)}`
@@ -671,11 +671,7 @@ class FeatureManager {
    * @private
    */
   _applySessionPlayState(isPlaying) {
-    if (typeof isPlaying !== 'boolean') return
-
-    if (isPlaying && !globalThis.isPlaying) {
-      globalThis.togglePlayPause()
-    } else if (!isPlaying && globalThis.isPlaying) {
+    if (typeof isPlaying === 'boolean' && isPlaying !== globalThis.isPlaying) {
       globalThis.togglePlayPause()
     }
   }

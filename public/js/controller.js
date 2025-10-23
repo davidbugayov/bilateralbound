@@ -462,8 +462,8 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     // Тихая обработка обновлений состояния
     lastServerState = state // Кэшируем состояние
     // Если пришли новые размеры экрана вьювера — обновим превью
-    if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
-      const prevSize = globalThis.__current.viewerScreenSize || { width: 0, height: 0 }
+    if (state.viewerScreenSize?.width > 0) {
+      const prevSize = globalThis.__current?.viewerScreenSize || { width: 0, height: 0 }
       const nextSize = state.viewerScreenSize
       const sizeChanged =
         !prevSize || prevSize.width !== nextSize.width || prevSize.height !== nextSize.height
@@ -482,7 +482,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   // АДАПТИВНАЯ адаптация сглаживания по сетевым метрикам (улучшенная версия)
   wsClient.on(WS_MSG.netMetrics, ({ rttMs, jitterMs }) => {
     if (!previewPhysicsEngine) return
-    const base = (globalThis.BBConfig && globalThis.BBConfig.smoothing) || {}
+    const base = globalThis.BBConfig?.smoothing || {}
     // Адаптивное демпфирование на основе джиттера (улучшено)
     const adaptiveDamping = Math.min(
       25,
@@ -569,7 +569,7 @@ function renderPreviewLoop(timestamp) {
   }
   // Вычисляем alpha для интерполяции на основе реального времени последнего обновления физики
   const now = performance.now()
-  const lastPhysicsUpdate = previewPhysicsEngine && previewPhysicsEngine.__lastPhysicsUpdateTs ? previewPhysicsEngine.__lastPhysicsUpdateTs : now
+  const lastPhysicsUpdate = previewPhysicsEngine?.__lastPhysicsUpdateTs ?? now
   const alpha = Math.max(0, Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT))
   // Обновляем таймер счётчиков
   bbCounters.tick(timestamp)
@@ -802,7 +802,7 @@ function initializeComponents() {
 function safeSend(type, payload) {
   // Функция разбита для снижения когнитивной сложности
   try {
-    if (wsClient && typeof wsClient.send === 'function') {
+    if (typeof wsClient?.send === 'function') {
       wsClient.send(type, payload)
     }
   } catch {
@@ -996,49 +996,47 @@ function updateViewerInfo(viewerScreenSize) {
 };
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ МЯЧОМ =====
 /**
- * Устанавливает направление движения шарика
+ * Преобразует текстовый режим в вектор направления.
+ * @param {string} directionMode - Режим направления ('horizontal', 'vertical', 'diagRL', 'diagRLL', 'random').
+ * @returns {{dirX: number, dirY: number}|null} Возвращает объект с вектором направления или null, если режим неизвестен.
  */
-function setDirection(directionMode) {
-  // Функция разбита для снижения когнитивной сложности
-  if (directionMode) {
-    try {
-      // Преобразуем текстовый режим в вектор направления
-    let dirX = 0
-    let dirY = 0
-    switch (directionMode) {
-      case 'horizontal':
-        dirX = 1
-        dirY = 0
-        break
-      case 'vertical':
-        dirX = 0
-        dirY = 1
-        break
-      case 'diagRL': // Диагональ вправо-вниз
-        dirX = 0.707
-        dirY = 0.707
-        break
-      case 'diagRLL': // Диагональ вправо-вверх
-        dirX = 0.707
-        dirY = -0.707
-        break
-      case 'random': {
-        // Случайное направление
-        // Генерируем случайный угол в радианах
-        const angle = Math.random() * 2 * Math.PI
-        dirX = Math.cos(angle)
-        dirY = Math.sin(angle)
-        break
-      }
-
-      default:
-        console.warn('Неизвестный режим направления:', directionMode)
-        return
+function getDirectionVector (directionMode) {
+  switch (directionMode) {
+    case 'horizontal':
+      return { dirX: 1, dirY: 0 }
+    case 'vertical':
+      return { dirX: 0, dirY: 1 }
+    case 'diagRL': // Диагональ вправо-вниз
+      return { dirX: 0.707, dirY: 0.707 }
+    case 'diagRLL': // Диагональ вправо-вверх
+      return { dirX: 0.707, dirY: -0.707 }
+    case 'random': {
+      // Случайное направление
+      const angle = Math.random() * 2 * Math.PI
+      return { dirX: Math.cos(angle), dirY: Math.sin(angle) }
     }
-    // Обновляем глобальное состояние направления
-    directionState = { dx: dirX, dy: dirY }
+    default:
+      console.warn('Неизвестный режим направления:', directionMode)
+      return null
+  }
+}
 
+/**
+ * Устанавливает направление движения шарика.
+ * @param {string} directionMode - Режим направления для установки.
+ */
+function setDirection (directionMode) {
+  if (!directionMode) return
+
+  try {
+    const directionVector = getDirectionVector(directionMode)
+    if (!directionVector) return
+
+    const { dirX, dirY } = directionVector
+
+    directionState = { dx: dirX, dy: dirY }
     currentDirectionMode = directionMode
+
     if (isPlaying) {
       // Если игра идет, плавно меняем направление через центр
       safeSend(WS_MSG.controllerUpdate, {
@@ -1048,27 +1046,25 @@ function setDirection(directionMode) {
       setTimeout(() => {
         safeSend(WS_MSG.controllerUpdate, {
           paused: false,
-          dirX: dirX,
-          dirY: dirY
+          dirX,
+          dirY
         })
       }, 200) // Уменьшаем задержку для более быстрого отклика
     } else {
       // Если игра на паузе, просто обновляем направление без запуска движения
       safeSend(WS_MSG.controllerUpdate, {
-        dirX: dirX,
-        dirY: dirY
-        // `paused` не отправляем, чтобы не менять текущее состояние паузы
+        dirX,
+        dirY
       })
     }
-    // Обновляем UI для обратной связи
+
     updateDirectionButtons()
     updateDirectionDisplay(dirX, dirY)
     console.log(
       `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
     )
-    } catch (error) {
-      console.error('Ошибка установки направления:', error)
-    }
+  } catch (error) {
+    console.error('Ошибка установки направления:', error)
   }
 }
 
@@ -1149,43 +1145,47 @@ function updateDirectionButtons() {
   }
 }
 /**
+ * Получает иконку и текст для текущего режима направления
+ */
+function getDirectionInfo(mode) {
+  switch (mode) {
+    case 'horizontal':
+      return { text: 'Горизонтальное', icon: '↔️' }
+    case 'vertical':
+      return { text: 'Вертикальное', icon: '↕️' }
+    case 'diagRL':
+      return { text: 'Диагональ (право-вниз)', icon: '↘️' }
+    case 'diagRLL':
+      return { text: 'Диагональ (право-верх)', icon: '↗️' }
+    case 'random':
+      return { text: 'Случайное', icon: '🎲' }
+    default:
+      console.warn(`Неизвестный режим направления: ${mode}`)
+      return { text: 'Неизвестное направление', icon: '❓' }
+  }
+}
+
+/**
  * Обновляет индикатор направления и отображает информацию о текущем направлении
  */
 function updateDirectionDisplay(dirX, dirY, customText = null) {
-  // Функция разбита для снижения когнитивной сложности
   try {
     // Ищем элемент для отображения направления
     const directionDisplay = document.getElementById('currentDirection')
     let directionText = customText || 'Неизвестно'
     let directionIcon
+
     if (!customText) {
       // ОПРЕДЕЛЯЕМ НАПРАВЛЕНИЕ ТОЛЬКО ПО currentDirectionMode - игнорируем dirX/dirY
-      if (currentDirectionMode === 'horizontal') {
-        directionText = 'Горизонтальное'
-        directionIcon = '↔️'
-      } else if (currentDirectionMode === 'vertical') {
-        directionText = 'Вертикальное'
-        directionIcon = '↕️'
-      } else if (currentDirectionMode === 'diagRL') {
-        directionText = 'Диагональ (право-вниз)'
-        directionIcon = '↘️'
-      } else if (currentDirectionMode === 'diagRLL') {
-        directionText = 'Диагональ (право-верх)'
-        directionIcon = '↗️'
-      } else if (currentDirectionMode === 'random') {
-        directionText = 'Случайное'
-        directionIcon = '🎲'
-      } else {
-        // Если режим неизвестен, показываем вопрос
-        directionText = 'Неизвестное направление'
-        directionIcon = '❓'
-        console.warn(`Неизвестный режим направления: ${currentDirectionMode}`)
-      }
+      const directionInfo = getDirectionInfo(currentDirectionMode)
+      directionText = directionInfo.text
+      directionIcon = directionInfo.icon
     }
 
     if (directionDisplay) {
       directionDisplay.innerHTML = `${directionIcon}`
     }
+
     // Обновляем иконку направления в полноэкранном режиме
     const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
@@ -1519,28 +1519,29 @@ function setupFullscreenGestures() {
   overlay.addEventListener(
     'touchend',
     e => {
-      if (!swiping) return
-      swiping = false
-      const t = e.changedTouches[0]
+      if (swiping) {
+        swiping = false
+        const t = e.changedTouches[0]
 
-      const dx = t.clientX - startX
-      const dy = t.clientY - startY
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
-        // горизонтальные свайпы — смена направления
-        if (dx > 0) {
-          setDirection('horizontal')
-        } else {
-          // горизонтально влево — диагональ как альтернатива
-          setDirection('vertical')
-        }
-      } else if (Math.abs(dy) > threshold) {
-        // вертикальные свайпы — старт/стоп
-        if (dy < 0) {
-          // свайп вверх — старт
-          if (!isPlaying) togglePlayPause()
-        } else {
-          // свайп вниз — стоп
-          if (isPlaying) togglePlayPause()
+        const dx = t.clientX - startX
+        const dy = t.clientY - startY
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
+          // горизонтальные свайпы — смена направления
+          if (dx > 0) {
+            setDirection('horizontal')
+          } else {
+            // горизонтально влево — диагональ как альтернатива
+            setDirection('vertical')
+          }
+        } else if (Math.abs(dy) > threshold) {
+          // вертикальные свайпы — старт/стоп
+          if (dy < 0) {
+            // свайп вверх — старт
+            if (!isPlaying) togglePlayPause()
+          } else {
+            // свайп вниз — стоп
+            if (isPlaying) togglePlayPause()
+          }
         }
       }
     },

@@ -325,9 +325,8 @@ class PhysicsEngine {
 
   _canInterpolate() {
     return (
-      (!this.state.paused || this.state.allowInterpWhenPaused) &&
-      this.state &&
-      this.state.targetX
+      (this.state.allowInterpWhenPaused || !this.state.paused) &&
+      this.state?.targetX
     )
   }
 
@@ -516,17 +515,14 @@ class PhysicsEngine {
    * @private
    */
   _updateViewerPhysics(deltaTime) {
-    if (this.state.paused && !this.state.allowInterpWhenPaused) {
-      // На паузе без анимии делать нечего
-      return
-    }
-    
-    if (this.state.paused && this.state.allowInterpWhenPaused) {
-      // Плавный возврат к цели (центр) на паузе
-      this.updateViewerInterpolation(deltaTime)
-    } else {
-      // Активное движение — интегрируем позицию непрерывно
-      this.updateClientPhysics(deltaTime)
+    if (!this.state.paused || this.state.allowInterpWhenPaused) {
+      if (this.state.paused && this.state.allowInterpWhenPaused) {
+        // Плавный возврат к цели (центр) на паузе
+        this.updateViewerInterpolation(deltaTime)
+      } else {
+        // Активное движение — интегрируем позицию непрерывно
+        this.updateClientPhysics(deltaTime)
+      }
     }
   }
 
