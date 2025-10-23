@@ -104,7 +104,7 @@ class SessionManager {
   updateBallState(sessionId, updates) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
-    
+
     if (!this._shouldUpdateState(session, updates)) {
       return false
     }
@@ -126,7 +126,7 @@ class SessionManager {
     const now = Date.now()
     const lastUpdate = session.lastStateUpdate || 0
     const throttleDelay = this._getThrottleDelay(updates)
-    
+
     if (now - lastUpdate < throttleDelay && !updates?.reset) {
       return false
     }

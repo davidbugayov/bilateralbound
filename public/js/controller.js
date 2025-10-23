@@ -644,7 +644,7 @@ function createLogger(moduleName) {
     info: () => {
       // Параметры не используются
     },
-    success: (message, data) => {
+    success: () => {
       // Неиспользуемая переменная timestamp удалена
     },
     warning: (message, data) => {
@@ -878,7 +878,7 @@ async function initializePreview() {
     globalThis.__previewRenderer = new BallRenderer(canvas, previewPhysicsEngine, {
       localPhysics: false // Рендерер только рисует, физика обновляется отдельно
     })
-    globalThis.__previewRenderer.setFrameCallback(deltaTime => {
+    globalThis.__previewRenderer.setFrameCallback(() => {
       // Дополнительная логика для превью может быть добавлена здесь
       // deltaTime параметр сохранен для совместимости с интерфейсом
     })
@@ -930,7 +930,7 @@ function updatePreviewSize(viewerScreenSize) {
   const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
   setCanvasDimensions(canvas, previewWidth, previewHeight)
   updatePhysicsEngineWorldSize(viewerScreenSize)
-  applyServerStateOrCenter(viewerScreenSize)
+  applyServerStateOrCenter()
   updateViewerInfo(viewerScreenSize)
 }
 
@@ -975,15 +975,15 @@ function updatePhysicsEngineWorldSize(viewerScreenSize) {
   }
 }
 
-function applyServerStateOrCenter(viewerScreenSize) {
+function applyServerStateOrCenter() {
   if (lastServerState) {
     previewPhysicsEngine.applyCommand(lastServerState)
   } else {
-    centerBallInViewer(viewerScreenSize)
+    centerBallInViewer()
   }
 }
 
-function centerBallInViewer(viewerScreenSize) {
+function centerBallInViewer() {
   if (globalThis.__current.viewerScreenSize?.width > 0) {
     const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
     const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
@@ -998,7 +998,7 @@ function updateViewerInfo(viewerScreenSize) {
     viewerInfo.textContent = `Вьювер: ${viewerScreenSize.width}×${viewerScreenSize.height}`
     viewerInfo.style.display = 'block'
   }
-};
+}
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ МЯЧОМ =====
 /**
  * Преобразует текстовый режим в вектор направления.

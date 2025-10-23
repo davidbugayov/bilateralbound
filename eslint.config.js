@@ -19,7 +19,7 @@ module.exports = [
   {
     files: ['public/js/controllers/*.js', 'public/js/utils/*.js'],
     languageOptions: {
-      ecmaVersion: 2021,
+      ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
         console: 'readonly',
@@ -81,7 +81,7 @@ module.exports = [
       'no-var': 'error',
 
       // Мягкие правила для предупреждений
-      'no-unused-vars': 'warn',
+      'no-unused-vars': 'error',
       'prefer-const': 'warn',
       'no-empty': 'warn',
       'no-multiple-empty-lines': 'warn',
@@ -98,7 +98,7 @@ module.exports = [
     files: ['**/*.js'],
     ignores: ['public/js/controllers/*.js', 'public/js/utils/*.js', 'node_modules/**', 'dist/**', 'build/**', 'coverage/**', '*.min.js', 'public/emdr-therapy/**', 'docs/**', 'test/**', '*.config.js'],
     languageOptions: {
-      ecmaVersion: 2021,
+      ecmaVersion: 2022,
       sourceType: 'commonjs',
       globals: {
         console: 'readonly',
@@ -160,7 +160,7 @@ module.exports = [
       'no-var': 'error',
 
       // Мягкие правила для предупреждений
-      'no-unused-vars': 'warn',
+      'no-unused-vars': 'error',
       'prefer-const': 'warn',
       'no-empty': 'warn',
       'no-multiple-empty-lines': 'warn',

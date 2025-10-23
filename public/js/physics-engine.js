@@ -281,22 +281,21 @@ class PhysicsEngine {
     if (!this._canInterpolate()) return
 
     const currentTime = performance.now()
-    const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
 
     // Обновляем буфер состояний
     this._updateStateBuffer(currentTime)
-    this._applyExponentialSmoothing(timeSinceLastUpdate / 1000)
+    this._applyExponentialSmoothing()
 
     // Вычисляем целевые позиции с учетом предсказания
     const { clampedTargetX, clampedTargetY } = this._calculateAdaptiveClamping()
-    
+
     // Применяем физику пружины
     this._applySpringPhysics(clampedTargetX, clampedTargetY, deltaTime)
     const { stepX, stepY } = this._limitStepSize(clampedTargetX, clampedTargetY, deltaTime)
-    
+
     // Обновляем позицию мяча
     this._interpolatePositionWithSteps(stepX, stepY)
-    
+
     // Применяем финальное позиционирование
     this._autoSnapIfNeeded(clampedTargetX, clampedTargetY)
   }
@@ -347,7 +346,7 @@ class PhysicsEngine {
     }
   }
 
-  _applyExponentialSmoothing(predictTime) {
+  _applyExponentialSmoothing() {
     const alpha = this.options.smoothing?.velocitySmoothingAlpha || 0.08
     const vx = this.state.lastVx || 0
     const vy = this.state.lastVy || 0

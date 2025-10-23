@@ -105,12 +105,12 @@ const throttle =
         let last = 0
         let timeoutId = null
         let trailingArgs = null
-        
+
         return function throttled(...args) {
           const now = Date.now()
           const remaining = wait - (now - last)
           trailingArgs = args
-          
+
           if (remaining <= 0 || remaining > wait) {
             // Немедленное выполнение
             if (timeoutId) {
