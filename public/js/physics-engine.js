@@ -767,10 +767,10 @@ class PhysicsEngine {
    */
   _validateViewerCommand(command) {
     const validated = {}
-    if (typeof command.x === 'number' && !Number.isNaN(command.x)) validated.x = command.x
-    if (typeof command.y === 'number' && !Number.isNaN(command.y)) validated.y = command.y
-    if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) validated.vx = command.vx
-    if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) validated.vy = command.vy
+    if (typeof command.x === 'number' && isFinite(command.x)) validated.x = command.x
+    if (typeof command.y === 'number' && isFinite(command.y)) validated.y = command.y
+    if (typeof command.vx === 'number' && isFinite(command.vx)) validated.vx = command.vx
+    if (typeof command.vy === 'number' && isFinite(command.vy)) validated.vy = command.vy
     if (
       typeof command.speed === 'number' &&
       command.speed >= 0 &&

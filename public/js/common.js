@@ -33,7 +33,7 @@ const toggleFullscreen =
         // Robust fullscreen toggle fallback using the Fullscreen API
         const canFullscreen = () => {
           const docEl = document.documentElement
-          return (
+          return !!(
             docEl.requestFullscreen ||
             docEl.webkitRequestFullscreen ||
             docEl.msRequestFullscreen ||
@@ -49,37 +49,37 @@ const toggleFullscreen =
             document.mozFullScreenElement
           )
 
-        return async function toggleFullscreen(el) {
-          try {
-            if (!canFullscreen()) {
-              return false
-            }
+            return async function toggleFullscreen(el) {
+              try {
+                if (canFullscreen()) {
+                  if (isFs()) {
+                    document.exitFullscreen?.() ||
+                    document.webkitExitFullscreen?.() ||
+                    document.msExitFullscreen?.() ||
+                    document.mozCancelFullScreen?.()
+                    return true
+                  } else {
+                    const target = el || document.documentElement
+                    const fullscreenPromise =
+                      target.requestFullscreen?.() ||
+                      target.webkitRequestFullscreen?.() ||
+                      target.msRequestFullscreen?.() ||
+                      target.mozRequestFullScreen?.()
 
-            if (isFs()) {
-              document.exitFullscreen?.() ||
-              document.webkitExitFullscreen?.() ||
-              document.msExitFullscreen?.() ||
-              document.mozCancelFullScreen?.()
-              return true
-            } else {
-              const target = el || document.documentElement
-              const fullscreenPromise =
-                target.requestFullscreen?.() ||
-                target.webkitRequestFullscreen?.() ||
-                target.msRequestFullscreen?.() ||
-                target.mozRequestFullScreen?.()
-
-              if (fullscreenPromise !== undefined) {
-                await fullscreenPromise
-              } else {
-                throw new Error('Fullscreen API not available')
+                    if (fullscreenPromise instanceof Promise) {
+                      await fullscreenPromise
+                    } else {
+                      throw new Error('Fullscreen API not available')
+                    }
+                    return true
+                  }
+                } else {
+                  return false
+                }
+              } catch {
+                return false
               }
-              return true
             }
-          } catch {
-            return false
-          }
-        }
       })()
 const throttle =
   (globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function')
@@ -104,7 +104,7 @@ const throttle =
             }
             last = now
             fn.apply(this, args)
-          } else if (!timeoutId) {
+          } else if (timeoutId === null) {
             // Отложенное выполнение
             timeoutId = setTimeout(() => {
               last = Date.now()

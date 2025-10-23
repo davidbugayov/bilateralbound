@@ -32,7 +32,7 @@ let __ignoreServerPausedUntilTs = 0 // Кратковременная блоки
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
-  if (globalThis.BBConfig?.rendering?.hiddenThrottleMs !== undefined) {
+  if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
     hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
   }
 
@@ -684,23 +684,23 @@ async function handleInitializationError(error, logger) {
 }
 // ===== СИНХРОНИЗАЦИЯ UI =====
 function _syncUISpeed(ballState) {
-  if (ballState.speed !== undefined && components.speed) {
-    components.speed.setSpeed(ballState.speed)
+  if (ballState.speed !== undefined) {
+    components.speed?.setSpeed(ballState.speed)
   }
 }
 
 function _syncUISize(ballState) {
-  if (ballState.radius !== undefined && components.size) {
-    components.size.setSize(ballState.radius)
+  if (ballState.radius !== undefined) {
+    components.size?.setSize(ballState.radius)
   }
 }
 
 function _syncUIColors(ballState) {
-  if (ballState.colorBall && components.ballColor) {
-    components.ballColor.setColor(ballState.colorBall)
+  if (ballState.colorBall) {
+    components.ballColor?.setColor(ballState.colorBall)
   }
-  if (ballState.colorBg && components.bgColor) {
-    components.bgColor.setColor(ballState.colorBg)
+  if (ballState.colorBg) {
+    components.bgColor?.setColor(ballState.colorBg)
   }
 }
 
@@ -860,10 +860,10 @@ async function initializePreview() {
     previewPhysicsEngine.isViewer = true
     // Считаем пасы по локальным событиям отскока
     globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce())
-    // Применяем глобальные настройки сглаживания, если есть
-    if (globalThis.BBConfig && globalThis.BBConfig.smoothing) {
-      previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
-    }
+  // Применяем глобальные настройки сглаживания, если есть
+  if (globalThis.BBConfig?.smoothing) {
+    previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
+  }
     // Запускаем ЦИКЛ ФИЗИКИ с фиксированным шагом
     if (physicsInterval) clearInterval(physicsInterval)
     physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
@@ -1026,68 +1026,62 @@ function getDirectionVector (directionMode) {
  * @param {string} directionMode - Режим направления для установки.
  */
 function setDirection (directionMode) {
-  if (!directionMode) return
+  if (directionMode) {
+    try {
+      const directionVector = getDirectionVector(directionMode)
+      if (directionVector) {
+        const { dirX, dirY } = directionVector
 
-  try {
-    const directionVector = getDirectionVector(directionMode)
-    if (!directionVector) return
+        directionState = { dx: dirX, dy: dirY }
+        currentDirectionMode = directionMode
 
-    const { dirX, dirY } = directionVector
+        if (isPlaying) {
+          // Если игра идет, плавно меняем направление через центр
+          safeSend(WS_MSG.controllerUpdate, {
+            paused: true,
+            returnToCenter: true
+          })
+          setTimeout(() => {
+            safeSend(WS_MSG.controllerUpdate, {
+              paused: false,
+              dirX,
+              dirY
+            })
+          }, 200) // Уменьшаем задержку для более быстрого отклика
+        } else {
+          // Если игра на паузе, просто обновляем направление без запуска движения
+          safeSend(WS_MSG.controllerUpdate, {
+            dirX,
+            dirY
+          })
+        }
 
-    directionState = { dx: dirX, dy: dirY }
-    currentDirectionMode = directionMode
-
-    if (isPlaying) {
-      // Если игра идет, плавно меняем направление через центр
-      safeSend(WS_MSG.controllerUpdate, {
-        paused: true,
-        returnToCenter: true
-      })
-      setTimeout(() => {
-        safeSend(WS_MSG.controllerUpdate, {
-          paused: false,
-          dirX,
-          dirY
-        })
-      }, 200) // Уменьшаем задержку для более быстрого отклика
-    } else {
-      // Если игра на паузе, просто обновляем направление без запуска движения
-      safeSend(WS_MSG.controllerUpdate, {
-        dirX,
-        dirY
-      })
+        updateDirectionButtons()
+        updateDirectionDisplay(dirX, dirY)
+        console.log(
+          `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
+        )
+      }
+    } catch (error) {
+      console.error('Ошибка установки направления:', error)
     }
-
-    updateDirectionButtons()
-    updateDirectionDisplay(dirX, dirY)
-    console.log(
-      `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
-    )
-  } catch (error) {
-    console.error('Ошибка установки направления:', error)
   }
 }
 
 function setBallColor(color) {
   // Функция разбита для снижения когнитивной сложности
   // Оптимизация: меньше обновлений когда нет вьювера
-  if (!globalThis.__current?.viewerConnected) {
-    // Тихо пропускаем обновление цвета мяча
-    return
+  if (globalThis.__current?.viewerConnected) {
+    safeSend(WS_MSG.controllerUpdate, { colorBall: color })
   }
-
-  safeSend(WS_MSG.controllerUpdate, { colorBall: color })
 }
 
 function setBallSize(size) {
   // Функция разбита для снижения когнитивной сложности
   // Оптимизация: меньше обновлений когда нет вьювера
-  if (!globalThis.__current.viewerConnected) {
-    // Тихо пропускаем обновление размера мяча
-    return
+  if (globalThis.__current.viewerConnected) {
+    safeSend(WS_MSG.controllerUpdate, { radius: size })
   }
-
-  safeSend(WS_MSG.controllerUpdate, { radius: size })
 }
 
 function setBallSizeMultiplier(multiplier) {
@@ -1200,13 +1194,14 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
 function updatePlayPauseButton() {
   // Функция разбита для снижения когнитивной сложности
   const button = document.getElementById('playPauseBtn')
-  if (!button) return
-  if (isPlaying) {
-    button.textContent = '⏸ Стоп'
-    button.classList.add('playing')
-  } else {
-    button.textContent = '▶️ Старт'
-    button.classList.remove('playing')
+  if (button) {
+    if (isPlaying) {
+      button.textContent = '⏸ Стоп'
+      button.classList.add('playing')
+    } else {
+      button.textContent = '▶️ Старт'
+      button.classList.remove('playing')
+    }
   }
 }
 
@@ -1284,7 +1279,7 @@ function _syncFullscreenPlayPause() {
  * Масштабирует состояние вьювера к размерам превью
  */
 function _normalizeCoordinate(coord, fallback) {
-  return typeof coord === 'number' && !Number.isNaN(coord) ? coord : fallback;
+  return typeof coord === 'number' && isFinite(coord) ? coord : fallback;
 }
 
 function getScaledState(state) {
@@ -1571,9 +1566,9 @@ function wireFullscreenControls() {
 function setupFullscreenSpeedControl() {
   const speed = document.getElementById('fsSpeed')
   if (speed) {
-    if (components.speed && components.speed.getSpeed) {
-      speed.value = components.speed.getSpeed()
-    } else {
+      if (components.speed?.getSpeed) {
+        speed.value = components.speed.getSpeed()
+      } else {
       speed.value = 40
     }
     speed.oninput = e => {
