@@ -28,23 +28,9 @@ function setupWebSocketServer(server, sessionManager) {
 
     sessionManager.handleWebSocketConnection(ws, sessionId, role)
 
-    ws.on('message', message => {
-      try {
-        const clientInfo = sessionManager.getClientInfo(ws)
-        if (!clientInfo) return
-
-        const { sessionId, role } = clientInfo
-        const data = JSON.parse(message)
-
-        if (data.type === 'heartbeat') return
-
-        if (DEBUG_MODE) {
-          logger.logSession(sessionId, `[MSG IN] ${role}:${data.type}`, 'debug')
-        }
-
-        // Обрабатываем событие подключения контроллера
-        if (data.type === 'controller_connected' && role === 'controller') {
-          // Рассылаем событие о подключении контроллера всем клиентам сессии
+    const messageHandlers = {
+      controller_connected: (data, { sessionId, role }) => {
+        if (role === 'controller') {
           const clients = sessionManager.webSocketManager.getClients(sessionId)
           for (const { client } of clients) {
             if (client !== ws && client.readyState === 1) {
@@ -65,12 +51,10 @@ function setupWebSocketServer(server, sessionManager) {
               }
             }
           }
-          return
         }
-
-        // Обрабатываем событие подключения вьювера
-        if (data.type === 'viewer_connected' && role === 'viewer') {
-          // Рассылаем событие о подключении вьювера всем клиентам сессии
+      },
+      viewer_connected: (data, { sessionId, role }) => {
+        if (role === 'viewer') {
           const clients = sessionManager.webSocketManager.getClients(sessionId)
           for (const { client } of clients) {
             if (client !== ws && client.readyState === 1) {
@@ -91,11 +75,30 @@ function setupWebSocketServer(server, sessionManager) {
               }
             }
           }
-          return
+        }
+      },
+      controller_update: (data, { sessionId, role }) => {
+        if (role === 'controller') {
+          sessionManager.updateBallState(sessionId, data.payload)
+        }
+      }
+    }
+
+    ws.on('message', message => {
+      try {
+        const clientInfo = sessionManager.getClientInfo(ws)
+        if (!clientInfo) return
+
+        const data = JSON.parse(message)
+        if (data.type === 'heartbeat') return
+
+        if (DEBUG_MODE) {
+          logger.logSession(clientInfo.sessionId, `[MSG IN] ${clientInfo.role}:${data.type}`, 'debug')
         }
 
-        if (role === 'controller' && data.type === 'controller_update') {
-          sessionManager.updateBallState(sessionId, data.payload)
+        const handler = messageHandlers[data.type]
+        if (handler) {
+          handler(data, clientInfo)
         }
       } catch (error) {
         const clientInfoForError = sessionManager.getClientInfo(ws)

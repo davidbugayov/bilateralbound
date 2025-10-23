@@ -104,61 +104,106 @@ class SessionManager {
   updateBallState(sessionId, updates) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
-    const now = Date.now()
-    const lastUpdate = session.lastStateUpdate || 0
-    // Упрощенное throttling
-    const throttleDelay = this._getThrottleDelay(updates)
-    if (now - lastUpdate < throttleDelay && !updates?.reset) {
+    
+    if (!this._shouldUpdateState(session, updates)) {
       return false
     }
-    // Используем централизованную валидацию
+
     const validatedUpdates = ValidationUtils.validateBallStateUpdates(updates)
     if (Object.keys(validatedUpdates).length === 0) {
       this.logger.logSession(sessionId, '[VALIDATION] No valid fields in update, ignoring')
       return false
     }
 
+    return this._applyValidatedUpdates(session, validatedUpdates)
+  }
+
+  /**
+   * Проверяет, нужно ли обновлять состояние сессии
+   * @private
+   */
+  _shouldUpdateState(session, updates) {
+    const now = Date.now()
+    const lastUpdate = session.lastStateUpdate || 0
+    const throttleDelay = this._getThrottleDelay(updates)
+    
+    if (now - lastUpdate < throttleDelay && !updates?.reset) {
+      return false
+    }
+
     session.lastStateUpdate = now
     session.lastActivity = now
-    // Обработка возврата в центр при смене направления или остановке
+    return true
+  }
+
+  /**
+   * Применяет валидированные обновления к сессии
+   * @private
+   */
+  _applyValidatedUpdates(session, validatedUpdates) {
+    this._handleReturnToCenter(session, validatedUpdates)
+    this._applyPhysicsUpdates(session, validatedUpdates)
+    this._postUpdateActions(session)
+    return true
+  }
+
+  /**
+   * Обрабатывает возврат в центр при необходимости
+   * @private
+   */
+  _handleReturnToCenter(session, validatedUpdates) {
     if (validatedUpdates.returnToCenter && session.physicsEngine) {
-      // Используем специальный метод для плавного возврата в центр
       session.physicsEngine.returnToCenter()
-      // Если это возврат при остановке, устанавливаем паузу
       if (validatedUpdates.paused) {
         session.physicsEngine.setPaused(true)
       }
-
       this.logger.logSession(
         sessionId,
         '[RETURN_TO_CENTER] Initiating smooth return to center',
         'debug'
       )
     }
+  }
 
+  /**
+   * Применяет физические обновления к сессии
+   * @private
+   */
+  _applyPhysicsUpdates(session, validatedUpdates) {
     if (session.physicsEngine) {
       session.physicsEngine.applyCommand(validatedUpdates)
       Object.assign(session.ballState, session.physicsEngine.getState())
-      // Нормализация vx/vy ДОПУСКАЕТСЯ только кратковременно после смены размера экрана
-      // чтобы стабилизировать внешний контракт (см. normalizeDirectionUntilTs)
-      if (
-        session.normalizeDirectionUntilTs &&
-        Date.now() < session.normalizeDirectionUntilTs &&
-        session?.physicsEngine?.physicsEngine?.state
-      ) {
-        const dx = session.physicsEngine.state.lastDirection.x || 0
-        const dy = session.physicsEngine.state.lastDirection.y || 0
-        session.ballState.vx = Math.max(-1, Math.min(1, dx))
-        session.ballState.vy = Math.max(-1, Math.min(1, dy))
-      }
+      this._normalizeDirectionIfNeeded(session)
     } else {
-      this.sessionRepository.updateBallState(sessionId, validatedUpdates)
+      this.sessionRepository.updateBallState(session.id, validatedUpdates)
     }
+  }
 
-    this._schedulePhysicsUpdate(sessionId)
-    this.apiCache.delete(`state_${sessionId}`)
-    this.stateBroadcaster.broadcastState(sessionId)
-    return true
+  /**
+   * Нормализует направление при необходимости
+   * @private
+   */
+  _normalizeDirectionIfNeeded(session) {
+    if (
+      session.normalizeDirectionUntilTs &&
+      Date.now() < session.normalizeDirectionUntilTs &&
+      session?.physicsEngine?.physicsEngine?.state
+    ) {
+      const dx = session.physicsEngine.state.lastDirection.x || 0
+      const dy = session.physicsEngine.state.lastDirection.y || 0
+      session.ballState.vx = Math.max(-1, Math.min(1, dx))
+      session.ballState.vy = Math.max(-1, Math.min(1, dy))
+    }
+  }
+
+  /**
+   * Выполняет действия после обновления
+   * @private
+   */
+  _postUpdateActions(session) {
+    this._schedulePhysicsUpdate(session.id)
+    this.apiCache.delete(`state_${session.id}`)
+    this.stateBroadcaster.broadcastState(session.id)
   }
   /**
    * Определяет задержку throttling в зависимости от типа обновления

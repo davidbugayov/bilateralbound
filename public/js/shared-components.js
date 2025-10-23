@@ -110,7 +110,7 @@ class SharedComponents {
           })
         }
         // Обработчики для пресетов скорости (в простом режиме отсутствуют)
-        if (this.elements.presets && this.elements.presets.length) {
+        if (this.elements.presets?.length) {
           for (const preset of this.elements.presets) {
             preset.addEventListener('click', () => {
               const speed = Number.parseInt(preset.dataset.speed, 10)
@@ -122,7 +122,7 @@ class SharedComponents {
       },
       // Обновляет активный пресет
       updateActivePreset(speed) {
-        if (!this.elements.presets || !this.elements.presets.length) return
+        if (!this.elements.presets?.length) return
         // Снимаем активное состояние со всех
         for (const preset of this.elements.presets) {
           preset.classList.remove('active')

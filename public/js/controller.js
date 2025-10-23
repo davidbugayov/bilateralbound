@@ -260,8 +260,11 @@ function setupFullscreenListeners() {
 function handleFullscreenKeydown(e) {
   const key = e.key?.toLowerCase()
   if (key === 'f') {
-    if (!isPreviewFullscreen) openPreviewFullscreen()
-    else closePreviewFullscreen()
+    if (isPreviewFullscreen) {
+      closePreviewFullscreen()
+    } else {
+      openPreviewFullscreen()
+    }
   } else if (key === 'escape') {
     if (isPreviewFullscreen) closePreviewFullscreen()
   }
@@ -311,10 +314,10 @@ async function initializeDOMElements(sessionId) {
 
   for (const [key, id] of Object.entries(elements)) {
     const element = document.getElementById(id)
-    if (!element) {
-      missingElements.push(id)
-    } else {
+    if (element) {
       initializedElements[key] = element
+    } else {
+      missingElements.push(id)
     }
   }
 
@@ -680,54 +683,63 @@ async function handleInitializationError(error, logger) {
   // Логируем для отладки
 }
 // ===== СИНХРОНИЗАЦИЯ UI =====
-function syncUIWithState(ballState) {
-  // Функция разбита для снижения когнитивной сложности
-  try {
-    if (!ballState) {
-      return
+function _syncUISpeed(ballState) {
+  if (ballState.speed !== undefined && components.speed) {
+    components.speed.setSpeed(ballState.speed)
+  }
+}
+
+function _syncUISize(ballState) {
+  if (ballState.radius !== undefined && components.size) {
+    components.size.setSize(ballState.radius)
+  }
+}
+
+function _syncUIColors(ballState) {
+  if (ballState.colorBall && components.ballColor) {
+    components.ballColor.setColor(ballState.colorBall)
+  }
+  if (ballState.colorBg && components.bgColor) {
+    components.bgColor.setColor(ballState.colorBg)
+  }
+}
+
+function _syncUIPause(ballState) {
+  if (ballState.paused !== undefined) {
+    const now = performance.now()
+    if (now >= __ignoreServerPausedUntilTs) {
+      isPlaying = !ballState.paused
+      updatePlayPauseButton()
     }
+  }
+}
+
+function _syncUIDirection(ballState) {
+  if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
+    directionState = { dx: ballState.dirX, dy: ballState.dirY }
+    if (Math.abs(ballState.dirX) > 0.9) currentDirectionMode = 'horizontal'
+    else if (Math.abs(ballState.dirY) > 0.9) currentDirectionMode = 'vertical'
+    else if (ballState.dirX > 0 && ballState.dirY > 0) currentDirectionMode = 'diagRL'
+    else if (ballState.dirX > 0 && ballState.dirY < 0) currentDirectionMode = 'diagRLL'
+    updateDirectionButtons()
+    updateDirectionDisplay(ballState.dirX, ballState.dirY)
+  }
+}
+
+function syncUIWithState(ballState) {
+  try {
+    if (!ballState) return
 
     updatePreviewSize(ballState.viewerScreenSize)
     globalThis.__current.viewerConnected = ballState.viewerConnected
     globalThis.__current.viewerScreenSize = ballState.viewerScreenSize
     updateViewerStatusUI()
-    if (ballState.speed !== undefined && components.speed) {
-      components.speed.setSpeed(ballState.speed)
-    }
 
-    if (ballState.radius !== undefined && components.size) {
-      components.size.setSize(ballState.radius)
-    }
-
-    if (ballState.colorBall && components.ballColor) {
-      components.ballColor.setColor(ballState.colorBall)
-    }
-
-    if (ballState.colorBg && components.bgColor) {
-      components.bgColor.setColor(ballState.colorBg)
-    }
-
-    if (ballState.paused !== undefined) {
-      // Если только что был локальный клик Старт/Стоп — не даём серверу мгновенно
-      // перетянуть состояние кнопки обратно (оптимистичный UI)
-      const now = performance.now()
-      if (now >= __ignoreServerPausedUntilTs) {
-        // Обновляем состояние игры на основе серверного состояния
-        isPlaying = !ballState.paused
-        updatePlayPauseButton()
-      }
-    }
-
-    if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
-      directionState = { dx: ballState.dirX, dy: ballState.dirY }
-      // Определяем режим направления по вектору
-      if (Math.abs(ballState.dirX) > 0.9) currentDirectionMode = 'horizontal'
-      else if (Math.abs(ballState.dirY) > 0.9) currentDirectionMode = 'vertical'
-      else if (ballState.dirX > 0 && ballState.dirY > 0) currentDirectionMode = 'diagRL'
-      else if (ballState.dirX > 0 && ballState.dirY < 0) currentDirectionMode = 'diagRLL'
-      updateDirectionButtons()
-      updateDirectionDisplay(ballState.dirX, ballState.dirY)
-    }
+    _syncUISpeed(ballState)
+    _syncUISize(ballState)
+    _syncUIColors(ballState)
+    _syncUIPause(ballState)
+    _syncUIDirection(ballState)
   } catch {
     console.warn('Error in syncUIWithState')
   }
@@ -902,38 +914,56 @@ function showWaitingForViewer() {
 }
 
 function updatePreviewSize(viewerScreenSize) {
-  // Функция разбита для снижения когнитивной сложности
-  if (!viewerScreenSize || !globalThis.__previewRenderer || !previewPhysicsEngine) {
+  if (!canUpdatePreview(viewerScreenSize)) {
     showWaitingForViewer()
     return
   }
 
   const canvas = document.getElementById('preview')
-  if (!canvas) {
-    return
-  }
+  if (!canvas) return
 
+  const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
+  setCanvasDimensions(canvas, previewWidth, previewHeight)
+  updatePhysicsEngineWorldSize(viewerScreenSize)
+  applyServerStateOrCenter(viewerScreenSize)
+  updateViewerInfo(viewerScreenSize)
+}
+
+function canUpdatePreview(viewerScreenSize) {
+  return (
+    viewerScreenSize &&
+    globalThis.__previewRenderer &&
+    previewPhysicsEngine
+  )
+}
+
+function calculatePreviewDimensions(canvas, viewerScreenSize) {
   const container = canvas.parentElement
   const containerRect = container.getBoundingClientRect()
-  // Увеличенные размеры для превью
+  
   const maxWidth = Math.min(containerRect.width - 40, 500)
   const maxHeight = Math.min(400, maxWidth * 0.75)
   const viewerRatio = viewerScreenSize.width / viewerScreenSize.height
-  // **ИСПРАВЛЕННАЯ ЛОГИКА СОХРАНЕНИЯ ПРОПОРЦИЙ**
+  
   let previewWidth = maxWidth
   let previewHeight = previewWidth / viewerRatio
+  
   if (previewHeight > maxHeight) {
     previewHeight = maxHeight
     previewWidth = previewHeight * viewerRatio
   }
-  // Устанавливаем итоговые размеры
+  
+  return { previewWidth, previewHeight }
+}
+
+function setCanvasDimensions(canvas, previewWidth, previewHeight) {
   canvas.width = previewWidth
   canvas.height = previewHeight
-  // Синхронизируем CSS размеры с внутренними, чтобы круг не сплющивался
   canvas.style.width = canvas.width + 'px'
   canvas.style.height = canvas.height + 'px'
-  // Синхронизируем размер мира движка с размерами экрана вьювера,
-  // чтобы предикция и клампинг соответствовали реальным границам вьювера
+}
+
+function updatePhysicsEngineWorldSize(viewerScreenSize) {
   if (
     previewPhysicsEngine &&
     viewerScreenSize &&
@@ -942,47 +972,41 @@ function updatePreviewSize(viewerScreenSize) {
   ) {
     previewPhysicsEngine.setWorldSize(viewerScreenSize.width, viewerScreenSize.height)
   }
-  // ВАЖНО: Не масштабируем радиус в движке, масштаб произойдёт в отрисовке
-  // После изменения размера, немедленно перерисовываем последнее известное состояние в новом масштабе
+}
+
+function applyServerStateOrCenter(viewerScreenSize) {
   if (lastServerState) {
-    // Применяем СЫРОЕ состояние сервера (в координатах вьювера),
-    // отрисовка сама выполнит масштабирование
     previewPhysicsEngine.applyCommand(lastServerState)
   } else {
-    // Если нет состояния сервера, но есть размеры вьювера, центрируем мяч относительно них
-    // Физика работает в координатах вьювера, поэтому используем их напрямую
-    if (globalThis.__current.viewerScreenSize && globalThis.__current.viewerScreenSize.width > 0) {
-      const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
-      const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
-      previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
-      previewPhysicsEngine.setVelocity(0, 0)
-    }
+    centerBallInViewer(viewerScreenSize)
   }
+}
 
+function centerBallInViewer(viewerScreenSize) {
+  if (globalThis.__current.viewerScreenSize && globalThis.__current.viewerScreenSize.width > 0) {
+    const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
+    const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
+    previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
+    previewPhysicsEngine.setVelocity(0, 0)
+  }
+}
+
+function updateViewerInfo(viewerScreenSize) {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
     viewerInfo.textContent = `Вьювер: ${viewerScreenSize.width}×${viewerScreenSize.height}`
     viewerInfo.style.display = 'block'
   }
-  // Если нет состояния сервера (как при первом подключении вьювера), центрируем мяч
-  // Это решает проблему, когда контроллер подключается раньше вьювера
-  if (!lastServerState) {
-    const viewerCenterX = viewerScreenSize.width / 2
-    const viewerCenterY = viewerScreenSize.height / 2
-    previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
-    previewPhysicsEngine.setVelocity(0, 0)
-  }
-  // Тихо завершаем обновление размера превью
-}
+};
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ МЯЧОМ =====
 /**
  * Устанавливает направление движения шарика
  */
 function setDirection(directionMode) {
   // Функция разбита для снижения когнитивной сложности
-  if (!directionMode) return
-  try {
-    // Преобразуем текстовый режим в вектор направления
+  if (directionMode) {
+    try {
+      // Преобразуем текстовый режим в вектор направления
     let dirX = 0
     let dirY = 0
     switch (directionMode) {
@@ -1046,8 +1070,9 @@ function setDirection(directionMode) {
     console.log(
       `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
     )
-  } catch (error) {
-    console.error('Ошибка установки направления:', error)
+    } catch (error) {
+      console.error('Ошибка установки направления:', error)
+    }
   }
 }
 
@@ -1222,20 +1247,61 @@ function _handlePause() {
 }
 
 function togglePlayPause() {
-  if (isPlaying) {
-    _handlePause()
+  const wasPlaying = isPlaying
+  if (wasPlaying) {
+    this._handlePauseTransition()
   } else {
-    _handlePlay()
+    this._handlePlayTransition()
   }
-  __ignoreServerPausedUntilTs = performance.now() + 800
+  
+  this._schedulePlayPauseAnimations()
+  this._syncFullscreenPlayPause()
+}
 
+/**
+ * Обрабатывает переход в состояние паузы
+ * @private
+ * @description Вызывается при переключении в режим паузы, обрабатывает логику паузы
+ *              и устанавливает временной блок для игнорирования серверных команд
+ */
+function _handlePauseTransition() {
+  _handlePause()
+  __ignoreServerPausedUntilTs = performance.now() + 800
+}
+
+/**
+ * Обрабатывает переход в состояние воспроизведения
+ * @private
+ * @description Вызывается при запуске воспроизведения, обрабатывает логику старта
+ *              и устанавливает временной блок для игнорирования серверных команд
+ */
+function _handlePlayTransition() {
+  _handlePlay()
+  __ignoreServerPausedUntilTs = performance.now() + 800
+}
+
+/**
+ * Планирует анимации для кнопки play/pause
+ * @private
+ * @description Обеспечивает плавное обновление состояния кнопки play/pause с помощью
+ *              таймаутов для визуальной обратной связи пользователя
+ */
+function _schedulePlayPauseAnimations() {
   // Обновляем кнопку сразу
   updatePlayPauseButton()
-
+  
   // Планируем дополнительные обновления для анимации через разные интервалы
-  setTimeout(() => updatePlayPauseButton(), 150) // Одно обновление через 150мс
-  setTimeout(() => updatePlayPauseButton(), 300) // Второе обновление через 300мс
+  setTimeout(() => updatePlayPauseButton(), 150)
+  setTimeout(() => updatePlayPauseButton(), 300)
+}
 
+/**
+ * Синхронизирует кнопку play/pause в полноэкранном режиме
+ * @private
+ * @description Обновляет состояние кнопки play/pause в полноэкранном превью
+ *              для согласованности интерфейса
+ */
+function _syncFullscreenPlayPause() {
   syncFsPlayPauseButton()
 }
 // ===== УТИЛИТЫ =====

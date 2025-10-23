@@ -80,25 +80,28 @@ const toggleFullscreen =
 const throttle =
   globalThis.CommonUtils && !(globalThis.CommonUtils instanceof Promise) && typeof globalThis.CommonUtils.throttle === 'function'
     ? globalThis.CommonUtils.throttle
-    : function (fn, wait = 100) {
+    : function throttleImplementation(fn, wait = 100) {
         if (typeof fn !== 'function') return () => {}
 
         let last = 0
         let timeoutId = null
         let trailingArgs = null
-        return function (...args) {
+        
+        return function throttled(...args) {
           const now = Date.now()
           const remaining = wait - (now - last)
           trailingArgs = args
+          
           if (remaining <= 0 || remaining > wait) {
+            // Немедленное выполнение
             if (timeoutId) {
               clearTimeout(timeoutId)
               timeoutId = null
             }
-
             last = now
             fn.apply(this, args)
           } else if (!timeoutId) {
+            // Отложенное выполнение
             timeoutId = setTimeout(() => {
               last = Date.now()
               timeoutId = null
@@ -128,8 +131,9 @@ if (typeof globalThis !== 'undefined') {
 }
 
 class ThemeManager {
+  themeKey = 'bb_theme'
+
   constructor() {
-    this.themeKey = 'bb_theme'
     this.init()
   }
 

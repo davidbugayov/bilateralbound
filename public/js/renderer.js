@@ -93,28 +93,53 @@ class BallRenderer {
   setFrameCallback(callback) {
     this.onFrameCallback = callback
   }
-  /**
-   * Основной цикл рендеринга (оптимизированный)
-   */
+  _calculateDeltaTime(currentTime) {
+    const deltaTime = currentTime - this.lastTime
+    if (this.adaptiveFrameRate) {
+      this.frameTimeHistory.push(deltaTime)
+      if (this.frameTimeHistory.length > 20) this.frameTimeHistory.shift()
+      const avgFrameTime =
+        this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
+      this.actualFps = 1000 / Math.max(1, avgFrameTime)
+    }
+    return Math.min(deltaTime, this.maxFrameTime)
+  }
+
+  _updatePhysics(clampedDeltaTime) {
+    this.accumulatorMs += clampedDeltaTime
+    if (this.onFrameCallback) {
+      this.onFrameCallback(clampedDeltaTime)
+    }
+    if (this.options.localPhysics) {
+      let substeps = 0
+      while (this.accumulatorMs >= this.fixedStepMs && substeps < this.maxSubsteps) {
+        this.physics.update(this.fixedStepMs / 1000)
+        this.accumulatorMs -= this.fixedStepMs
+        substeps++
+      }
+    }
+  }
+
+  _renderFrame(currentTime) {
+    let alpha = 1
+    if (this.fixedStepMs > 0) {
+      if (this.options.localPhysics) {
+        alpha = Math.max(0, Math.min(1, this.accumulatorMs / this.fixedStepMs))
+      } else {
+        const now = currentTime
+        const lastTs = this.physics?.__lastPhysicsUpdateTs ?? now
+        alpha = Math.max(0, Math.min(1, (now - lastTs) / this.fixedStepMs))
+      }
+    }
+    this.render(alpha)
+  }
+
   renderLoop(currentTime) {
-    // Усиленная проверка на валидность всех компонентов
-    if (!this.canvas || !this.ctx || !this.physics) {
-      this.stop()
-      return
-    }
-    // Проверяем что canvas все еще существует и имеет правильный контекст
-    if (!this.canvas.parentNode || this.ctx.canvas !== this.canvas) {
-      this.stop()
-      return
-    }
-    // Используем метод валидации canvas
     if (!this.validateCanvas()) {
       this.stop()
       return
     }
-    // Если браузер уже изменил CSS‑размеры canvas (clientWidth/Height),
-    // мгновенно синхронизируем внутренние размеры и пропускаем кадр,
-    // чтобы избежать неравномерного масштабирования (сплющивания).
+
     const clientW = this.canvas.clientWidth
     const clientH = this.canvas.clientHeight
     if ((clientW && clientW !== this.canvas.width) || (clientH && clientH !== this.canvas.height)) {
@@ -124,51 +149,12 @@ class BallRenderer {
       return
     }
 
-    const deltaTime = currentTime - this.lastTime
-    // Адаптивная статистика FPS (без регулировки пропуском кадров)
-    if (this.adaptiveFrameRate) {
-      this.frameTimeHistory.push(deltaTime)
-      if (this.frameTimeHistory.length > 20) this.frameTimeHistory.shift()
-      const avgFrameTime =
-        this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
-      this.actualFps = 1000 / Math.max(1, avgFrameTime)
-    }
-    // Ограничиваем deltaTime для предотвращения огромных прыжков
-    const clampedDeltaTime = Math.min(deltaTime, this.maxFrameTime)
-    this.accumulatorMs += clampedDeltaTime
-    // Обновляем счетчик кадров для FPS
+    const clampedDeltaTime = this._calculateDeltaTime(currentTime)
     this.frameCount++
-    // Всегда обновляем физику с плавным deltaTime
-    try {
-      // Вызываем callback перед обновлением физики (передаём реальный dt кадра)
-      if (this.onFrameCallback) {
-        this.onFrameCallback(clampedDeltaTime)
-      }
-      // Физика теперь обновляется ВНЕШНИМ циклом (например, в controller.js)
-      // Рендерер только получает alpha для интерполяции
-      if (this.options.localPhysics) {
-        let substeps = 0
-        while (this.accumulatorMs >= this.fixedStepMs && substeps < this.maxSubsteps) {
-          this.physics.update(this.fixedStepMs / 1000)
-          this.accumulatorMs -= this.fixedStepMs
-          substeps++
-        }
-      }
-      // Рендерим сцену с интерполяцией между шагами физики
-      let alpha = 1
-      if (this.fixedStepMs > 0) {
-        if (this.options.localPhysics) {
-          // Локальная физика: используем накопитель субшагов
-          alpha = Math.max(0, Math.min(1, this.accumulatorMs / this.fixedStepMs))
-        } else {
-          // Внешний цикл физики: синхронизируемся с реальным последним тиком физики
-          const now = currentTime
-          const lastTs = this.physics?.__lastPhysicsUpdateTs ?? now
-          alpha = Math.max(0, Math.min(1, (now - lastTs) / this.fixedStepMs))
-        }
-      }
 
-      this.render(alpha)
+    try {
+      this._updatePhysics(clampedDeltaTime)
+      this._renderFrame(currentTime)
       this.lastTime = currentTime
     } catch {
       this.stop()
@@ -228,10 +214,8 @@ class BallRenderer {
   renderBall(ballState) {
     const ball = ballState || this.ball
     // Проверяем валидность данных шарика
-    if (!ball || typeof ball.x !== 'number' || typeof ball.y !== 'number') {
-      return
-    }
-    // Проверяем разумные значения
+    if (ball && typeof ball.x === 'number' && typeof ball.y === 'number') {
+      // Проверяем разумные значения
     if (ball.radius <= 0 || ball.radius > 1000) {
       return
     }
@@ -282,6 +266,7 @@ class BallRenderer {
       this.ctx.shadowOffsetY = 0
     } catch {
       // ignore
+    }
     }
   }
   /**

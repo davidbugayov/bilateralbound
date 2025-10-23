@@ -4,10 +4,11 @@
  */
 
 class NotificationSystem {
+  container = null
+  notifications = []
+  autoHideTimeout = 5000
+
   constructor() {
-    this.container = null;
-    this.notifications = [];
-    this.autoHideTimeout = 5000;
     this.init()
   }
 
@@ -283,7 +284,7 @@ class NotificationSystem {
     // Проверяем дубликаты: объединяем по сообщению
     // Если уже есть уведомление с тем же текстом, но, возможно, другим типом/заголовком,
     // заменяем его новым (прячем старое и показываем актуальное), чтобы исключить "смешанные" цвета.
-    const duplicate = this.notifications.find(n => n.config && n.config.message === config.message)
+    const duplicate = this.notifications.find(n => n.config?.message === config.message)
     if (duplicate) {
       // Если полностью совпадает (тип и заголовок), просто игнорируем повтор
       if (

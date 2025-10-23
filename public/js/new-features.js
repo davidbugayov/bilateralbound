@@ -119,35 +119,75 @@ class FeatureManager {
    */
   async applyPreset(preset) {
     try {
-      // Применяем скорость
-      if (preset.speed && globalThis.components?.speed) {
-        globalThis.components.speed.setSpeed(preset.speed)
-        await this.sendUpdate({ speed: preset.speed })
-      }
-      // Применяем направление
-      if (preset.direction) {
-        globalThis.setDirection(preset.direction)
-      }
-      // Применяем цвета
-      if (preset.colorBall) {
-        globalThis.setBallColor(preset.colorBall)
-      }
-
-      if (preset.colorBg) {
-        globalThis.setBackgroundColor(preset.colorBg)
-      }
-      // Применяем размер
-      if (preset.size) {
-        globalThis.setBallSize(preset.size)
-      }
-      // Показываем уведомление
-      this.showNotification(
-        `Пресет "${Object.keys(this.presets).find(key => this.presets[key] === preset)}" применён`,
-        'success'
-      )
+      await this._applyPresetSettings(preset)
+      this._showPresetAppliedNotification(preset)
     } catch {
       this.showNotification('Ошибка применения пресета', 'error')
     }
+  }
+
+  /**
+   * Применяет настройки пресета
+   * @private
+   */
+  async _applyPresetSettings(preset) {
+    await this._applyPresetSpeed(preset.speed)
+    this._applyPresetDirection(preset.direction)
+    this._applyPresetColors(preset.colorBall, preset.colorBg)
+    this._applyPresetSize(preset.size)
+  }
+
+  /**
+   * Применяет скорость пресета
+   * @private
+   */
+  async _applyPresetSpeed(speed) {
+    if (speed && globalThis.components?.speed) {
+      globalThis.components.speed.setSpeed(speed)
+      await this.sendUpdate({ speed })
+    }
+  }
+
+  /**
+   * Применяет направление пресета
+   * @private
+   */
+  _applyPresetDirection(direction) {
+    if (direction) {
+      globalThis.setDirection(direction)
+    }
+  }
+
+  /**
+   * Применяет цвета пресета
+   * @private
+   */
+  _applyPresetColors(colorBall, colorBg) {
+    if (colorBall) {
+      globalThis.setBallColor(colorBall)
+    }
+    if (colorBg) {
+      globalThis.setBackgroundColor(colorBg)
+    }
+  }
+
+  /**
+   * Применяет размер пресета
+   * @private
+   */
+  _applyPresetSize(size) {
+    if (size) {
+      globalThis.setBallSize(size)
+    }
+  }
+
+  /**
+   * Показывает уведомление об применении пресета
+   * @private
+   */
+  _showPresetAppliedNotification(preset) {
+    const presetName = Object.keys(this.presets).find(key => this.presets[key] === preset)
+    this.showNotification(`Пресет "${presetName}" применён`, 'success')
   }
   /**
    * Сохраняет текущее состояние как кастомный пресет
@@ -348,30 +388,42 @@ class FeatureManager {
    * Горячие клавиши
    */
   addKeyboardShortcuts() {
-    document.addEventListener('keydown', e => {
-      // Игнорируем если фокус в input
-      if (e.target.tagName === 'INPUT') return
-      // Ctrl+Z - отменить последнее изменение
-      if (e.ctrlKey && e.key === 'z') {
-        e.preventDefault()
-        this.undoLastChange().catch(console.error)
+    document.addEventListener('keydown', e => this.handleKeyPress(e))
+  }
+
+  handleKeyPress(event) {
+    // Игнорируем если фокус в input
+    if (event.target.tagName === 'INPUT') return
+
+    // Обработка комбинаций Ctrl
+    if (event.ctrlKey) {
+      switch (event.key) {
+        case 'z':
+          event.preventDefault()
+          this.undoLastChange().catch(console.error)
+          break
+        case 's':
+          event.preventDefault()
+          this.createCustomPreset()
+          break
       }
-      // Ctrl+S - сохранить пресет
-      if (e.ctrlKey && e.key === 's') {
-        e.preventDefault()
-        this.createCustomPreset()
-      }
-      // Пробел - старт/стоп
-      if (e.key === ' ') {
-        e.preventDefault()
+      return
+    }
+
+    // Обработка одиночных клавиш
+    switch (event.key) {
+      case ' ':
+        event.preventDefault()
         togglePlayPause()
-      }
-      // Стрелки - управление направлением
-      if (e.key.startsWith('Arrow')) {
-        e.preventDefault()
-        this.handleArrowKeys(e.key)
-      }
-    })
+        break
+      case 'ArrowUp':
+      case 'ArrowDown':
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        event.preventDefault()
+        this.handleArrowKeys(event.key)
+        break
+    }
   }
   /**
    * Обработка стрелок клавиатуры

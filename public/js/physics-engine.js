@@ -280,22 +280,47 @@ class PhysicsEngine {
   updateViewerInterpolation(deltaTime) {
     if (!this._canInterpolate()) return
 
-    this._performInterpolationStep(deltaTime)
-  }
-
-  _performInterpolationStep(deltaTime) {
     const currentTime = performance.now()
     const timeSinceLastUpdate = currentTime - (this.lastServerUpdate || currentTime)
 
+    // Обновляем буфер состояний
     this._updateStateBuffer(currentTime)
     this._applyExponentialSmoothing(timeSinceLastUpdate / 1000)
 
+    // Вычисляем целевые позиции с учетом предсказания
     const { clampedTargetX, clampedTargetY } = this._calculateAdaptiveClamping()
-
+    
+    // Применяем физику пружины
     this._applySpringPhysics(clampedTargetX, clampedTargetY, deltaTime)
-    this._limitStepSize(clampedTargetX, clampedTargetY, deltaTime)
-    this._interpolatePosition()
+    const { stepX, stepY } = this._limitStepSize(clampedTargetX, clampedTargetY, deltaTime)
+    
+    // Обновляем позицию мяча
+    this._interpolatePositionWithSteps(stepX, stepY)
+    
+    // Применяем финальное позиционирование
     this._autoSnapIfNeeded(clampedTargetX, clampedTargetY)
+  }
+
+  _interpolatePositionWithSteps(stepX, stepY) {
+    const smoothingFactor = this.options.smoothing.smoothingFactor || 0.25
+    const radius = this.ball.radius
+    const w = this.options.worldWidth
+    const h = this.options.worldHeight
+
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+
+    const newX = this.ball.x + stepX
+    const newY = this.ball.y + stepY
+
+    this.ball.x = this.ball.x * (1 - smoothingFactor) + newX * smoothingFactor
+    this.ball.y = this.ball.y * (1 - smoothingFactor) + newY * smoothingFactor
+
+    this.ball.x = this.min(w - radius, this.max(radius, this.ball.x))
+    this.ball.y = this.min(h - radius, this.max(radius, this.ball.y))
+
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
   }
 
   _canInterpolate() {
@@ -330,11 +355,11 @@ class PhysicsEngine {
     const vx = this.state.lastVx || 0
     const vy = this.state.lastVy || 0
 
-    if (!this._smoothedVelocity) {
-      this._smoothedVelocity = { x: vx, y: vy }
-    } else {
+    if (this._smoothedVelocity) {
       this._smoothedVelocity.x = this._smoothedVelocity.x * (1 - alpha) + vx * alpha
       this._smoothedVelocity.y = this._smoothedVelocity.y * (1 - alpha) + vy * alpha
+    } else {
+      this._smoothedVelocity = { x: vx, y: vy }
     }
   }
 
@@ -477,25 +502,67 @@ class PhysicsEngine {
    * Обновляет физику за указанное время
    */
   update(deltaTime) {
-    // В режиме вьювера теперь используется полноценная клиентская физика
     if (this.isViewer) {
-      if (this.state.paused && !this.state.allowInterpWhenPaused) {
-        // На паузе без анимации делать нечего
-      } else if (this.state.paused && this.state.allowInterpWhenPaused) {
-        // Плавный возврат к цели (центр) на паузе
-        this.updateViewerInterpolation(deltaTime)
-      } else {
-        // Активное движение — интегрируем позицию непрерывно
-        this.updateClientPhysics(deltaTime)
-      }
-      // Отмечаем момент последнего обновления физики/интерполяции для синхронизации рендера
-      this.__lastPhysicsUpdateTs = performance?.now?.() ?? Date.now()
-      return
+      this._updateViewerPhysics(deltaTime)
+    } else {
+      this._updateServerPhysics(deltaTime)
     }
-    // Для сервера используем полную физику с отскоками
-    this.updateServerPhysics(deltaTime)
     // Отмечаем момент последнего обновления физики
     this.__lastPhysicsUpdateTs = performance?.now?.() ?? Date.now()
+  }
+
+  /**
+   * Обновляет физику в режиме вьювера
+   * @private
+   */
+  _updateViewerPhysics(deltaTime) {
+    if (this.state.paused && !this.state.allowInterpWhenPaused) {
+      // На паузе без анимии делать нечего
+      return
+    }
+    
+    if (this.state.paused && this.state.allowInterpWhenPaused) {
+      // Плавный возврат к цели (центр) на паузе
+      this.updateViewerInterpolation(deltaTime)
+    } else {
+      // Активное движение — интегрируем позицию непрерывно
+      this.updateClientPhysics(deltaTime)
+    }
+  }
+
+  /**
+   * Обновляет серверную физику
+   * @private
+   */
+  _updateServerPhysics(deltaTime) {
+    // Для сервера используем полную физику с отскоками
+    // Вызываем оригинальный метод обновления серверной физики
+    // (не рекурсивно, так как это private метод)
+    const originalUpdateServerPhysics = (deltaTime) => {
+      if (this.state.paused) return
+      // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
+      // Не обновляем физику, пока размеры мира не будут явно установлены
+      if (!this._worldSizeSet) {
+        return
+      }
+      // Пересчитываем скорость напрямую из направления и процента скорости
+      const speedPercent = this.ball.speed / 100
+      const pixelsPerSecond = speedPercent * this.options.maxSpeed
+      this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
+      this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
+      // Сохраняем предыдущую позицию для интерполяции
+      this._prevPos.x = this.ball.x
+      this._prevPos.y = this.ball.y
+      // Обновляем позицию
+      this.ball.x += this.ball.vx * deltaTime
+      this.ball.y += this.ball.vy * deltaTime
+      // Обрабатываем коллизии с границами
+      this.handleBoundaryCollisions()
+      // Запоминаем текущую позицию как «текущую» для интерполяции
+      this._currPos.x = this.ball.x
+      this._currPos.y = this.ball.y
+    }
+    originalUpdateServerPhysics(deltaTime)
   }
   /**
    * Обновляет серверную физику с полной обработкой отскоков

@@ -68,13 +68,13 @@ export class SessionController {
    * @param {*} data - данные события
    */
   notifyListeners(event, data) {
-    this.listeners.forEach(listener => {
+    for (const listener of this.listeners) {
       try {
         listener(event, data)
       } catch (error) {
         console.error('SessionController listener error:', error)
       }
-    })
+    }
   }
 
   /**
