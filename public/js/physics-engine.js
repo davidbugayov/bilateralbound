@@ -302,7 +302,7 @@ class PhysicsEngine {
   }
 
   _interpolatePositionWithSteps(stepX, stepY) {
-    const smoothingFactor = this.options.smoothing.smoothingFactor || 0.25
+    const smoothingFactor = this.options?.smoothing?.smoothingFactor ?? 0.25
     const radius = this.ball.radius
     const w = this.options.worldWidth
     const h = this.options.worldHeight
@@ -455,7 +455,7 @@ class PhysicsEngine {
       this.state.targetX, this.state.targetY, deltaTime
     )
 
-    const smoothingFactor = this.options.smoothing.smoothingFactor || 0.25
+    const smoothingFactor = this.options?.smoothing?.smoothingFactor ?? 0.25
     const radius = this.ball.radius
     const w = this.options.worldWidth
     const h = this.options.worldHeight
@@ -672,25 +672,25 @@ class PhysicsEngine {
     const worldHeight = this.options.worldHeight
     let bounced = false
     // Проверяем левую и правую границы
-    if (ball.x - radius < 0) {
+    if (ball.x < radius) {
       ball.x = radius // Клампим позицию
       // Сохраняем осевой замок: не вводим горизонталь, если она была 0
       const dx = this.state.lastDirection.x || 0
       this.state.lastDirection.x = Math.abs(dx) < 1e-6 ? 0 : Math.abs(dx)
       bounced = true
-    } else if (ball.x + radius > worldWidth) {
+    } else if (ball.x > worldWidth - radius) {
       ball.x = worldWidth - radius // Клампим позицию
       const dx = this.state.lastDirection.x || 0
       this.state.lastDirection.x = Math.abs(dx) < 1e-6 ? 0 : -Math.abs(dx)
       bounced = true
     }
     // Проверяем верхнюю и нижнюю границы
-    if (ball.y - radius < 0) {
+    if (ball.y < radius) {
       ball.y = radius // Клампим позицию
       const dy = this.state.lastDirection.y || 0
       this.state.lastDirection.y = Math.abs(dy) < 1e-6 ? 0 : Math.abs(dy)
       bounced = true
-    } else if (ball.y + radius > worldHeight) {
+    } else if (ball.y > worldHeight - radius) {
       ball.y = worldHeight - radius // Клампим позицию
       const dy = this.state.lastDirection.y || 0
       this.state.lastDirection.y = Math.abs(dy) < 1e-6 ? 0 : -Math.abs(dy)

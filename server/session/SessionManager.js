@@ -158,7 +158,7 @@ class SessionManager {
         session.physicsEngine.setPaused(true)
       }
       this.logger.logSession(
-        sessionId,
+        session.id,
         '[RETURN_TO_CENTER] Initiating smooth return to center',
         'debug'
       )
@@ -233,44 +233,80 @@ class SessionManager {
     if (session) {
       session.lastActivity = Date.now()
       this._schedulePhysicsUpdate(sessionId)
-      if (role === 'viewer') {
-        this.stateBroadcaster.broadcastInitialState(sessionId, ws, session.ballState)
-      } else {
-        // Controller connected
-        try {
-          ws.initialStateSent = false
-        } catch {
-          /* ignore */
-        }
-        // Send initial_state immediately if viewer screen size is already set
-        if (
-          session.viewerScreenSize &&
-          session.viewerScreenSize.width > 0 &&
-          session.viewerScreenSize.height > 0
-        ) {
-          const finalState = session.physicsEngine
-            ? session.physicsEngine.getState()
-            : session.ballState
-          this.stateBroadcaster.broadcastInitialState(sessionId, ws, finalState)
-          ws.initialStateSent = true
-          this.logger.logSession(
-            sessionId,
-            'Sent initial_state to controller (viewer screen size already set)'
-          )
-        } else {
-          this.logger.logSession(
-            sessionId,
-            'Controller connected, deferring initial_state until viewer screen size is set.'
-          )
-        }
-      }
+      this._handleInitialStateBroadcast(sessionId, ws, role, session)
     }
 
     this.stateBroadcaster.broadcastViewerStatus(sessionId)
-    // Рассылаем событие о подключении контроллера всем клиентам
+    this._broadcastControllerConnectionIfNeeded(sessionId, role)
+  }
+
+  /**
+   * Обрабатывает начальную рассылку состояния для клиента
+   * @private
+   */
+  _handleInitialStateBroadcast(sessionId, ws, role, session) {
+    if (role === 'viewer') {
+      this.stateBroadcaster.broadcastInitialState(sessionId, ws, session.ballState)
+    } else {
+      this._handleControllerInitialState(sessionId, ws, role, session)
+    }
+  }
+
+  /**
+   * Обрабатывает начальное состояние для контроллера
+   * @private
+   */
+  _handleControllerInitialState(sessionId, ws, role, session) {
+    try {
+      ws.initialStateSent = false
+    } catch {
+      /* ignore */
+    }
+
+    if (this._isViewerScreenSizeSet(session)) {
+      this._broadcastInitialStateToController(sessionId, ws, session)
+    } else {
+      this.logger.logSession(
+        sessionId,
+        'Controller connected, deferring initial_state until viewer screen size is set.'
+      )
+    }
+  }
+
+  /**
+   * Рассылает начальное состояние контроллеру
+   * @private
+   */
+  _broadcastInitialStateToController(sessionId, ws, session) {
+    const finalState = session.physicsEngine
+      ? session.physicsEngine.getState()
+      : session.ballState
+    this.stateBroadcaster.broadcastInitialState(sessionId, ws, finalState)
+    ws.initialStateSent = true
+    this.logger.logSession(
+      sessionId,
+      'Sent initial_state to controller (viewer screen size already set)'
+    )
+  }
+
+  /**
+   * Рассылает событие подключения контроллера, если нужно
+   * @private
+   */
+  _broadcastControllerConnectionIfNeeded(sessionId, role) {
     if (role === 'controller') {
       this.broadcastControllerConnection(sessionId, true)
     }
+  }
+
+  /**
+   * Проверяет, установлен ли размер экрана вьювера
+   * @private
+   */
+  _isViewerScreenSizeSet(session) {
+    return session.viewerScreenSize &&
+           session.viewerScreenSize.width > 0 &&
+           session.viewerScreenSize.height > 0
   }
 
   /**
@@ -328,70 +364,129 @@ class SessionManager {
   setViewerScreenSize(sessionId, screenSize) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return false
-    // Валидируем размеры экрана
+
     const validatedSize = ValidationUtils.validateScreenSize(screenSize)
     if (!validatedSize) return false
-    // Сохраняем прежний размер экрана, если он уже был задан ранее
-    const hadPrevSize = !!(
-      session.viewerScreenSize &&
-      session.viewerScreenSize.width > 0 &&
-      session.viewerScreenSize.height > 0
-    )
-    const oldWidth = hadPrevSize ? session.viewerScreenSize.width : null
-    const oldHeight = hadPrevSize ? session.viewerScreenSize.height : null
+
+    const hadPrevSize = this._isViewerScreenSizeSet(session)
+    this._storePreviousScreenSize(session, hadPrevSize)
+
     session.viewerScreenSize = validatedSize
+    this._updatePhysicsEngineForNewScreen(session, validatedSize, hadPrevSize)
+
+    this.stateBroadcaster.broadcastState(sessionId)
+    this._setDirectionNormalizationTimeout(session, hadPrevSize)
+    this._sendInitialStateToControllers(sessionId, session)
+
+    return true
+  }
+
+  /**
+   * Сохраняет предыдущий размер экрана
+   * @private
+   */
+  _storePreviousScreenSize(session, hadPrevSize) {
+    if (hadPrevSize) {
+      session._oldWidth = session.viewerScreenSize.width
+      session._oldHeight = session.viewerScreenSize.height
+    }
+  }
+
+  /**
+   * Обновляет физический движок для нового размера экрана
+   * @private
+   */
+  _updatePhysicsEngineForNewScreen(session, validatedSize, hadPrevSize) {
     if (session.physicsEngine) {
-      // Сохраняем текущее состояние мяча перед изменением размера
       const currentState = session.physicsEngine.getState()
       const wasPlaying = !session.ballState.paused
+
       session.physicsEngine.setWorldSize(validatedSize.width, validatedSize.height)
+
       if (!hadPrevSize) {
-        // Первый раз получили размеры вьювера — строго центрируем мяч
-        session.physicsEngine.setPosition(validatedSize.width / 2, validatedSize.height / 2)
-        session.physicsEngine.setVelocity(0, 0)
-      } else if (
-        currentState &&
-        (oldWidth !== validatedSize.width || oldHeight !== validatedSize.height)
-      ) {
-        // Масштабируем позицию мяча к новому размеру экрана
-        const scaleX = validatedSize.width / oldWidth
-        const scaleY = validatedSize.height / oldHeight
-        const newX = Math.min(currentState.x * scaleX, validatedSize.width - currentState.radius)
-        const newY = Math.min(currentState.y * scaleY, validatedSize.height - currentState.radius)
-        session.physicsEngine.setPosition(
-          Math.max(newX, currentState.radius),
-          Math.max(newY, currentState.radius)
-        )
-        // Восстанавливаем скорость и направление
-        if (wasPlaying) {
-          session.physicsEngine.setVelocity(currentState.vx, currentState.vy)
-        }
+        this._initializeBallPosition(session, validatedSize)
+      } else if (this._shouldScaleBallPosition(session, currentState)) {
+        this._scaleBallPosition(session, currentState, validatedSize, wasPlaying)
       }
 
       Object.assign(session.ballState, session.physicsEngine.getState())
     } else {
-      session.ballState.x = validatedSize.width / 2
-      session.ballState.y = validatedSize.height / 2
-      session.ballState.vx = 0
-      session.ballState.vy = 0
+      this._setDefaultBallState(session, validatedSize)
     }
+  }
 
-    this.stateBroadcaster.broadcastState(sessionId)
-    // В течение короткого периода после смены размера возвращаем нормализованное направление в API
-    // чтобы стабилизировать внешний контракт (см. testScreenSizeChangeStability)
-    // Для первого подключения окно короче, для последующих смен размеров — дольше
+  /**
+   * Инициализирует позицию мяча при первом подключении
+   * @private
+   */
+  _initializeBallPosition(session, validatedSize) {
+    session.physicsEngine.setPosition(validatedSize.width / 2, validatedSize.height / 2)
+    session.physicsEngine.setVelocity(0, 0)
+  }
+
+  /**
+   * Масштабирует позицию мяча при изменении размера экрана
+   * @private
+   */
+  _scaleBallPosition(session, currentState, validatedSize, wasPlaying) {
+    const scaleX = validatedSize.width / session._oldWidth
+    const scaleY = validatedSize.height / session._oldHeight
+    const newX = Math.min(currentState.x * scaleX, validatedSize.width - currentState.radius)
+    const newY = Math.min(currentState.y * scaleY, validatedSize.height - currentState.radius)
+
+    session.physicsEngine.setPosition(
+      Math.max(newX, currentState.radius),
+      Math.max(newY, currentState.radius)
+    )
+
+    if (wasPlaying) {
+      session.physicsEngine.setVelocity(currentState.vx, currentState.vy)
+    }
+  }
+
+  /**
+   * Устанавливает состояние мяча по умолчанию
+   * @private
+   */
+  _setDefaultBallState(session, validatedSize) {
+    session.ballState.x = validatedSize.width / 2
+    session.ballState.y = validatedSize.height / 2
+    session.ballState.vx = 0
+    session.ballState.vy = 0
+  }
+
+  /**
+   * Проверяет, нужно ли масштабировать позицию мяча
+   * @private
+   */
+  _shouldScaleBallPosition(session, currentState) {
+    return currentState &&
+           (session._oldWidth !== session.viewerScreenSize.width ||
+            session._oldHeight !== session.viewerScreenSize.height)
+  }
+
+  /**
+   * Устанавливает таймаут для нормализации направления
+   * @private
+   */
+  _setDirectionNormalizationTimeout(session, hadPrevSize) {
     session.normalizeDirectionUntilTs = Date.now() + (hadPrevSize ? 600 : 150)
-    // Отправляем начальное состояние контроллеру
+  }
+
+  /**
+   * Отправляет начальное состояние контроллерам
+   * @private
+   */
+  _sendInitialStateToControllers(sessionId, session) {
     const clients = this.webSocketManager.getClients(sessionId)
     const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
+
     for (const { client, info } of clients) {
       if (info.role === 'controller' && !client.initialStateSent) {
         this.stateBroadcaster.broadcastInitialState(sessionId, client, finalState)
         client.initialStateSent = true
       }
     }
-
-    return true
   }
 
   /**

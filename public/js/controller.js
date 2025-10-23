@@ -112,7 +112,7 @@ const bbCounters = {
       this.timerMs += dt
       this.lastTickTs = nowTs
       // не перерисовываем чаще 10/с
-      if (!this || !this._lastRenderTs || nowTs - this._lastRenderTs > 100) {
+      if (!this?._lastRenderTs || nowTs - (this._lastRenderTs || 0) > 100) {
         this._lastRenderTs = nowTs
         this.render()
       }
@@ -260,7 +260,7 @@ function setupFullscreenListeners() {
 }
 
 function handleFullscreenKeydown(e) {
-  const key = e.key?.toLowerCase()
+  const key = e?.key?.toLowerCase()
   if (key === 'f') {
     if (isPreviewFullscreen) {
       closePreviewFullscreen()
@@ -404,8 +404,8 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     updateViewerStatusUI()
   })
   wsClient.on('error', error => {
-    logger.error(`WebSocket ошибка: ${error.type}`, error)
-    if (error.type === 'connection') {
+    logger.error(`WebSocket ошибка: ${error?.type}`, error)
+    if (error?.type === 'connection') {
       showNotification('Потеряно соединение с сервером', 'error')
     }
   })
@@ -437,8 +437,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       if (previewPhysicsEngine) {
         // Всегда центрируем мяч в превью относительно центра вьювера (в координатах вьювера)
         if (
-          globalThis.__current.viewerScreenSize &&
-          globalThis.__current.viewerScreenSize.width > 0
+          globalThis.__current?.viewerScreenSize?.width > 0
         ) {
           const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
           const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
@@ -464,10 +463,10 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     lastServerState = state // Кэшируем состояние
     // Если пришли новые размеры экрана вьювера — обновим превью
     if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
-    const prevSize = globalThis.__current.viewerScreenSize || { width: 0, height: 0 }
-    const nextSize = state.viewerScreenSize
-    const sizeChanged =
-      !prevSize || prevSize.width !== nextSize.width || prevSize.height !== nextSize.height
+      const prevSize = globalThis.__current.viewerScreenSize || { width: 0, height: 0 }
+      const nextSize = state.viewerScreenSize
+      const sizeChanged =
+        !prevSize || prevSize.width !== nextSize.width || prevSize.height !== nextSize.height
       globalThis.__current.viewerConnected = true
       globalThis.__current.viewerScreenSize = nextSize
       if (sizeChanged) {
@@ -1076,7 +1075,7 @@ function setDirection(directionMode) {
 function setBallColor(color) {
   // Функция разбита для снижения когнитивной сложности
   // Оптимизация: меньше обновлений когда нет вьювера
-  if (!globalThis.__current.viewerConnected) {
+  if (!globalThis.__current?.viewerConnected) {
     // Тихо пропускаем обновление цвета мяча
     return
   }
@@ -1220,7 +1219,7 @@ function _handlePlay() {
     paused: false,
     dirX: currentDirection.dx,
     dirY: currentDirection.dy,
-    speed: components.speed && components.speed.getSpeed ? components.speed.getSpeed() : 40
+    speed: components.speed?.getSpeed() ?? 40
   }
   safeSend(WS_MSG.controllerUpdate, payload)
   isPlaying = true
@@ -1599,8 +1598,8 @@ function setupFullscreenSpeedControl() {
       speed.value = 40
     }
     speed.oninput = e => {
-      const target = e.target
-      if (target && target.value !== undefined) {
+      const target = e?.target
+      if (target?.value !== undefined) {
         updateSpeed(Number(target.value))
       }
     }
@@ -1665,7 +1664,7 @@ function setupFullscreenBackgroundColorControls() {
 function fillFsSessionInfo() {
   // Функция разбита для снижения когнитивной сложности
   try {
-    const sid = globalThis.__current && globalThis.__current.sessionId ? globalThis.__current.sessionId : '...'
+    const sid = globalThis.__current?.sessionId ?? '...'
     const fsSid = document.getElementById('fsCurSid')
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')

@@ -14,61 +14,80 @@ class ValidationUtils {
 
     const validated = {}
 
-    // Валидация скорости
-    if (
-      typeof updates.speed === 'number' &&
-      updates.speed >= 0 &&
-      updates.speed <= 100 &&
-      !Number.isNaN(updates.speed)
-    ) {
+    this._validateSpeed(updates, validated)
+    this._validateRadius(updates, validated)
+    this._validatePause(updates, validated)
+    this._validateDirection(updates, validated)
+    this._validateColors(updates, validated)
+    this._validateCommands(updates, validated)
+
+    return validated
+  }
+
+  /**
+   * Валидирует значение скорости
+   * @private
+   */
+  static _validateSpeed(updates, validated) {
+    if (this._isValidSpeed(updates.speed)) {
       validated.speed = updates.speed
     }
+  }
 
-    // Валидация радиуса
-    if (
-      typeof updates.radius === 'number' &&
-      updates.radius > 0 &&
-      updates.radius <= 1000 &&
-      !Number.isNaN(updates.radius)
-    ) {
+  /**
+   * Валидирует значение радиуса
+   * @private
+   */
+  static _validateRadius(updates, validated) {
+    if (this._isValidRadius(updates.radius)) {
       validated.radius = updates.radius
     }
+  }
 
-    // Валидация паузы
+  /**
+   * Валидирует паузу
+   * @private
+   */
+  static _validatePause(updates, validated) {
     if (typeof updates.paused === 'boolean') {
       validated.paused = updates.paused
     }
+  }
 
-    // Валидация направления
-    if (
-      typeof updates.dirX === 'number' &&
-      Math.abs(updates.dirX) <= 1 &&
-      !Number.isNaN(updates.dirX)
-    ) {
+  /**
+   * Валидирует направление
+   * @private
+   */
+  static _validateDirection(updates, validated) {
+    if (this._isValidDirectionValue(updates.dirX)) {
       validated.dirX = updates.dirX
     }
-    if (
-      typeof updates.dirY === 'number' &&
-      Math.abs(updates.dirY) <= 1 &&
-      !Number.isNaN(updates.dirY)
-    ) {
+    if (this._isValidDirectionValue(updates.dirY)) {
       validated.dirY = updates.dirY
     }
+  }
 
-    // Валидация цветов
-    if (typeof updates.colorBall === 'string' && /^#[0-9a-fA-F]{6}$/.test(updates.colorBall)) {
+  /**
+   * Валидирует цвета
+   * @private
+   */
+  static _validateColors(updates, validated) {
+    if (this._isValidColor(updates.colorBall)) {
       validated.colorBall = updates.colorBall
     }
-    if (typeof updates.colorBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(updates.colorBg)) {
+    if (this._isValidColor(updates.colorBg)) {
       validated.colorBg = updates.colorBg
     }
+  }
 
-    // Валидация команд
+  /**
+   * Валидирует команды
+   * @private
+   */
+  static _validateCommands(updates, validated) {
     if (updates.reset === true) validated.reset = true
     if (updates.resume === true) validated.paused = false
     if (updates.pause === true) validated.paused = true
-
-    return validated
   }
 
   /**
@@ -81,61 +100,97 @@ class ValidationUtils {
 
     const validated = {}
 
-    // Валидация для вьювера (клиентского режима)
     if (command.role === 'viewer') {
-      if (typeof command.x === 'number' && !Number.isNaN(command.x)) validated.x = command.x
-      if (typeof command.y === 'number' && !Number.isNaN(command.y)) validated.y = command.y
-      if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) validated.vx = command.vx
-      if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) validated.vy = command.vy
+      this._validateViewerCommand(command, validated)
     } else {
-      // Валидация для серверного режима
-      if (
-        typeof command.dirX === 'number' &&
-        Math.abs(command.dirX) <= 1 &&
-        !Number.isNaN(command.dirX)
-      ) {
-        validated.dirX = command.dirX
-      }
-      if (
-        typeof command.dirY === 'number' &&
-        Math.abs(command.dirY) <= 1 &&
-        !Number.isNaN(command.dirY)
-      ) {
-        validated.dirY = command.dirY
-      }
-      if (
-        typeof command.speed === 'number' &&
-        command.speed >= 0 &&
-        command.speed <= 100 &&
-        !Number.isNaN(command.speed)
-      ) {
-        validated.speed = command.speed
-      }
+      this._validateControllerCommand(command, validated)
     }
 
     // Общие валидации для всех режимов
+    this._validateCommonCommandFields(command, validated)
+
+    return validated
+  }
+
+  /**
+   * Валидирует команды для режима viewer
+   * @private
+   */
+  static _validateViewerCommand(command, validated) {
+    if (typeof command.x === 'number' && !Number.isNaN(command.x)) validated.x = command.x
+    if (typeof command.y === 'number' && !Number.isNaN(command.y)) validated.y = command.y
+    if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) validated.vx = command.vx
+    if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) validated.vy = command.vy
+  }
+
+  /**
+   * Валидирует команды для режима controller
+   * @private
+   */
+  static _validateControllerCommand(command, validated) {
+    if (this._isValidDirectionValue(command.dirX)) {
+      validated.dirX = command.dirX
+    }
+    if (this._isValidDirectionValue(command.dirY)) {
+      validated.dirY = command.dirY
+    }
+    if (this._isValidSpeed(command.speed)) {
+      validated.speed = command.speed
+    }
+  }
+
+  /**
+   * Валидирует общие поля команд
+   * @private
+   */
+  static _validateCommonCommandFields(command, validated) {
     if (typeof command.paused === 'boolean') {
       validated.paused = command.paused
     }
     if (command.reset === true) {
       validated.reset = true
     }
-    if (
-      typeof command.radius === 'number' &&
-      command.radius > 0 &&
-      command.radius <= 1000 &&
-      !Number.isNaN(command.radius)
-    ) {
+    if (this._isValidRadius(command.radius)) {
       validated.radius = command.radius
     }
-    if (typeof command.colorBall === 'string' && /^#[0-9a-fA-F]{6}$/.test(command.colorBall)) {
+    if (this._isValidColor(command.colorBall)) {
       validated.colorBall = command.colorBall
     }
-    if (typeof command.colorBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(command.colorBg)) {
+    if (this._isValidColor(command.colorBg)) {
       validated.colorBg = command.colorBg
     }
+  }
 
-    return validated
+  /**
+   * Проверяет корректность значения направления
+   * @private
+   */
+  static _isValidDirectionValue(value) {
+    return typeof value === 'number' && Math.abs(value) <= 1 && !Number.isNaN(value)
+  }
+
+  /**
+   * Проверяет корректность значения скорости
+   * @private
+   */
+  static _isValidSpeed(value) {
+    return typeof value === 'number' && value >= 0 && value <= 100 && !Number.isNaN(value)
+  }
+
+  /**
+   * Проверяет корректность значения радиуса
+   * @private
+   */
+  static _isValidRadius(value) {
+    return typeof value === 'number' && value > 0 && value <= 1000 && !Number.isNaN(value)
+  }
+
+  /**
+   * Проверяет корректность hex цвета
+   * @private
+   */
+  static _isValidColor(value) {
+    return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)
   }
 
   /**

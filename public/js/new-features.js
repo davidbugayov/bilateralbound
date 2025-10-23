@@ -133,54 +133,7 @@ class FeatureManager {
    * @private
    */
   async _applyPresetSettings(preset) {
-    await this._applyPresetSpeed(preset.speed)
-    this._applyPresetDirection(preset.direction)
-    this._applyPresetColors(preset.colorBall, preset.colorBg)
-    this._applyPresetSize(preset.size)
-  }
-
-  /**
-   * Применяет скорость пресета
-   * @private
-   */
-  async _applyPresetSpeed(speed) {
-    if (speed && globalThis.components && globalThis.components.speed) {
-      globalThis.components.speed.setSpeed(speed)
-      await this.sendUpdate({ speed })
-    }
-  }
-
-  /**
-   * Применяет направление пресета
-   * @private
-   */
-  _applyPresetDirection(direction) {
-    if (direction) {
-      globalThis.setDirection(direction)
-    }
-  }
-
-  /**
-   * Применяет цвета пресета
-   * @private
-   */
-  _applyPresetColors(colorBall, colorBg) {
-    if (colorBall) {
-      globalThis.setBallColor(colorBall)
-    }
-    if (colorBg) {
-      globalThis.setBackgroundColor(colorBg)
-    }
-  }
-
-  /**
-   * Применяет размер пресета
-   * @private
-   */
-  _applyPresetSize(size) {
-    if (size) {
-      globalThis.setBallSize(size)
-    }
+    await this._applyCommonSettings(preset)
   }
 
   /**
@@ -200,10 +153,10 @@ class FeatureManager {
     if (!name || name.trim() === '') return
     const colorBtn = document.querySelector('.color-btn.active')
     const preset = {
-      speed: globalThis.components && globalThis.components.speed ? globalThis.components.speed.getSpeed() : 40,
-      colorBall: colorBtn && colorBtn.style.backgroundColor ? colorBtn.style.backgroundColor : '#60a5fa',
+      speed: globalThis.components?.speed?.getSpeed?.() ?? 40,
+      colorBall: colorBtn?.style?.backgroundColor ?? '#60a5fa',
       colorBg: document.body.style.backgroundColor || '#020617',
-      size: document.querySelector('.size-btn.active')?.dataset.size || 20,
+      size: document.querySelector('.size-btn.active')?.dataset?.size ?? 20,
       direction: globalThis.currentDirectionMode || 'horizontal'
     }
 
@@ -263,21 +216,21 @@ class FeatureManager {
     const colorBtn = document.querySelector('.color-btn.active')
     const sessionData = {
       timestamp: new Date().toISOString(),
-      sessionId: globalThis.__current && globalThis.__current.sessionId ? globalThis.__current.sessionId : null,
+      sessionId: globalThis.__current?.sessionId ?? null,
       settings: {
-        speed: globalThis.components && globalThis.components.speed ? globalThis.components.speed.getSpeed() : 40,
+        speed: globalThis.components?.speed?.getSpeed() ?? 40,
         direction: globalThis.currentDirectionMode || 'horizontal',
-        ballColor: colorBtn && colorBtn.style.backgroundColor ? colorBtn.style.backgroundColor : '#60a5fa',
+        ballColor: colorBtn?.style?.backgroundColor ?? '#60a5fa',
         bgColor: document.body.style.backgroundColor || '#020617',
-        ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20,
+        ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 20,
         isPlaying: globalThis.isPlaying || false
       },
-      viewerConnected: globalThis.__current && globalThis.__current.viewerConnected ? globalThis.__current.viewerConnected : false,
-      viewerScreenSize: globalThis.__current && globalThis.__current.viewerScreenSize ? globalThis.__current.viewerScreenSize : null,
+      viewerConnected: globalThis.__current?.viewerConnected ?? false,
+      viewerScreenSize: globalThis.__current?.viewerScreenSize ?? null,
       counters: {
-        timer: globalThis.bbCounters && globalThis.bbCounters.timerMs ? globalThis.bbCounters.timerMs : 0,
-        passes: globalThis.bbCounters && globalThis.bbCounters.passes ? globalThis.bbCounters.passes : 0,
-        sets: globalThis.bbCounters && globalThis.bbCounters.sets ? globalThis.bbCounters.sets : 0
+        timer: globalThis.bbCounters?.timerMs ?? 0,
+        passes: globalThis.bbCounters?.passes ?? 0,
+        sets: globalThis.bbCounters?.sets ?? 0
       }
     }
 
@@ -317,27 +270,31 @@ class FeatureManager {
   }
 
   async applySettings(settings) {
-    await this.applySpeedSetting(settings.speed)
-    this.applyDirectionSetting(settings.direction)
-    this.applyColorSettings(settings.ballColor, settings.bgColor)
-    this.applySizeSetting(settings.ballSize)
+    await this._applyCommonSettings(settings)
     this.applyPlayStateSetting(settings.isPlaying)
   }
 
-  async applySpeedSetting(speed) {
-    if (speed && globalThis.components && globalThis.components.speed) {
+  async _applyCommonSettings(settings) {
+    await this._applySpeedSetting(settings.speed)
+    this._applyDirectionSetting(settings.direction)
+    this._applyColorSettings(settings.ballColor, settings.bgColor)
+    this._applySizeSetting(settings.ballSize)
+  }
+
+  async _applySpeedSetting(speed) {
+    if (speed && globalThis.components?.speed) {
       globalThis.components.speed.setSpeed(speed)
       await this.sendUpdate({ speed: speed })
     }
   }
 
-  applyDirectionSetting(direction) {
+  _applyDirectionSetting(direction) {
     if (direction) {
       globalThis.setDirection(direction)
     }
   }
 
-  applyColorSettings(ballColor, bgColor) {
+  _applyColorSettings(ballColor, bgColor) {
     if (ballColor) {
       globalThis.setBallColor(ballColor)
     }
@@ -347,7 +304,7 @@ class FeatureManager {
     }
   }
 
-  applySizeSetting(ballSize) {
+  _applySizeSetting(ballSize) {
     if (ballSize) {
       globalThis.setBallSize(ballSize)
     }
@@ -364,7 +321,7 @@ class FeatureManager {
       globalThis.bbCounters.timerMs = counters.timer || 0
       globalThis.bbCounters.passes = counters.passes || 0
       globalThis.bbCounters.sets = counters.sets || 0
-      globalThis.bbCounters.render()
+      globalThis.bbCounters.render?.()
     }
   }
 
@@ -388,11 +345,11 @@ class FeatureManager {
   captureCurrentSettings() {
     const colorBtn = document.querySelector('.color-btn.active')
     return {
-      speed: globalThis.components && globalThis.components.speed ? globalThis.components.speed.getSpeed() : 40,
+      speed: globalThis.components?.speed?.getSpeed() ?? 40,
       direction: globalThis.currentDirectionMode || 'horizontal',
-      ballColor: colorBtn && colorBtn.style.backgroundColor ? colorBtn.style.backgroundColor : '#60a5fa',
+      ballColor: colorBtn?.style?.backgroundColor ?? '#60a5fa',
       bgColor: document.body.style.backgroundColor || '#020617',
-      ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20
+      ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 20
     }
   }
 
@@ -472,26 +429,7 @@ class FeatureManager {
    * Применяет сохраненное состояние
    */
   async applyState(state) {
-    if (state.speed && globalThis.components && globalThis.components.speed) {
-      globalThis.components.speed.setSpeed(state.speed)
-      await this.sendUpdate({ speed: state.speed })
-    }
-
-    if (state.direction) {
-      globalThis.setDirection(state.direction)
-    }
-
-    if (state.ballColor) {
-      globalThis.setBallColor(state.ballColor)
-    }
-
-    if (state.bgColor) {
-      globalThis.setBackgroundColor(state.bgColor)
-    }
-
-    if (state.ballSize) {
-      globalThis.setBallSize(state.ballSize)
-    }
+    await this._applyCommonSettings(state)
   }
 
   /**
@@ -688,21 +626,21 @@ class FeatureManager {
     const colorBtn = document.querySelector('.color-btn.active')
     return {
       timestamp: new Date().toISOString(),
-      sessionId: globalThis.__current && globalThis.__current.sessionId ? globalThis.__current.sessionId : null,
+      sessionId: globalThis.__current?.sessionId ?? null,
       settings: {
-        speed: globalThis.components && globalThis.components.speed ? globalThis.components.speed.getSpeed() : 40,
+        speed: globalThis.components?.speed?.getSpeed() ?? 40,
         direction: globalThis.currentDirectionMode || 'horizontal',
-        ballColor: colorBtn && colorBtn.style.backgroundColor ? colorBtn.style.backgroundColor : '#60a5fa',
+        ballColor: colorBtn?.style?.backgroundColor ?? '#60a5fa',
         bgColor: document.body.style.backgroundColor || '#020617',
-        ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20,
+        ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 20,
         isPlaying: globalThis.isPlaying || false
       },
-      viewerConnected: globalThis.__current && globalThis.__current.viewerConnected ? globalThis.__current.viewerConnected : false,
-      viewerScreenSize: globalThis.__current && globalThis.__current.viewerScreenSize ? globalThis.__current.viewerScreenSize : null,
+      viewerConnected: globalThis.__current?.viewerConnected ?? false,
+      viewerScreenSize: globalThis.__current?.viewerScreenSize ?? null,
       counters: {
-        timer: globalThis.bbCounters && globalThis.bbCounters.timerMs ? globalThis.bbCounters.timerMs : 0,
-        passes: globalThis.bbCounters && globalThis.bbCounters.passes ? globalThis.bbCounters.passes : 0,
-        sets: globalThis.bbCounters && globalThis.bbCounters.sets ? globalThis.bbCounters.sets : 0
+        timer: globalThis.bbCounters?.timerMs ?? 0,
+        passes: globalThis.bbCounters?.passes ?? 0,
+        sets: globalThis.bbCounters?.sets ?? 0
       }
     }
   }
@@ -724,55 +662,8 @@ class FeatureManager {
   async _applySessionSettings(settings) {
     if (!settings) return
 
-    await this._applySessionSpeed(settings.speed)
-    this._applySessionDirection(settings.direction)
-    this._applySessionColors(settings.ballColor, settings.bgColor)
-    this._applySessionSize(settings.ballSize)
+    await this._applyCommonSettings(settings)
     this._applySessionPlayState(settings.isPlaying)
-  }
-
-  /**
-   * Применяет скорость сессии
-   * @private
-   */
-  async _applySessionSpeed(speed) {
-    if (speed && globalThis.components && globalThis.components.speed) {
-      globalThis.components.speed.setSpeed(speed)
-      await this.sendUpdate({ speed: speed })
-    }
-  }
-
-  /**
-   * Применяет направление сессии
-   * @private
-   */
-  _applySessionDirection(direction) {
-    if (direction) {
-      globalThis.setDirection(direction)
-    }
-  }
-
-  /**
-   * Применяет цвета сессии
-   * @private
-   */
-  _applySessionColors(ballColor, bgColor) {
-    if (ballColor) {
-      globalThis.setBallColor(ballColor)
-    }
-    if (bgColor) {
-      globalThis.setBackgroundColor(bgColor)
-    }
-  }
-
-  /**
-   * Применяет размер сессии
-   * @private
-   */
-  _applySessionSize(ballSize) {
-    if (ballSize) {
-      globalThis.setBallSize(ballSize)
-    }
   }
 
   /**
@@ -781,7 +672,7 @@ class FeatureManager {
    */
   _applySessionPlayState(isPlaying) {
     if (typeof isPlaying !== 'boolean') return
-    
+
     if (isPlaying && !globalThis.isPlaying) {
       globalThis.togglePlayPause()
     } else if (!isPlaying && globalThis.isPlaying) {
@@ -921,7 +812,7 @@ class FeatureManager {
    * Утилиты
    */
   async sendUpdate(data) {
-    await globalThis.wsClient?.send('WS_MSG.controllerUpdate', data)
+    await globalThis.wsClient?.send?.('WS_MSG.controllerUpdate', data)
   }
 
   /**
@@ -968,10 +859,10 @@ class FeatureManager {
   }
 }
 // Экспортируем функции для глобального использования
-globalThis.applyPreset = preset => globalThis.featureManager && globalThis.featureManager.applyPreset(preset)
-globalThis.createCustomPreset = () => globalThis.featureManager && globalThis.featureManager.createCustomPreset()
-globalThis.exportSession = () => globalThis.featureManager && globalThis.featureManager.exportSession()
-globalThis.importSession = file => globalThis.featureManager && globalThis.featureManager.importSession(file)
+globalThis.applyPreset = preset => globalThis.featureManager?.applyPreset?.(preset)
+globalThis.createCustomPreset = () => globalThis.featureManager?.createCustomPreset?.()
+globalThis.exportSession = () => globalThis.featureManager?.exportSession?.()
+globalThis.importSession = file => globalThis.featureManager?.importSession?.(file)
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
   globalThis.featureManager = new FeatureManager()
