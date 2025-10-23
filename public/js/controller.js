@@ -142,31 +142,34 @@ function _hasBounced(currentVelocity, lastSign, minSpeed) {
 function detectAndCountBounceFromServer(prev, curr) {
   // Функция разбита для снижения когнитивной сложности
   try {
-    if (!prev || !curr || !bbCounters.running) return
-    const now = performance.now()
-    if (now - __lastBounceTs >= 120) { // Изменено отрицательное условие
-      const minSpeed = 10 // пикс/с, фильтр дрожания
-      const currVx = curr?.vx || 0
-      const currVy = curr?.vy || 0
+    if (prev && curr && bbCounters.running) {
+      const now = performance.now()
+      if (now - __lastBounceTs >= 120) {
+        const minSpeed = 10 // пикс/с, фильтр дрожания
+        const currVx = curr?.vx || 0
+        const currVy = curr?.vy || 0
 
-      // Восстанавливаем последние ненулевые знаки, чтобы переживать кадры с vx/vy=0
-      if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
-      if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
+        // Восстанавливаем последние ненулевые знаки, чтобы переживать кадры с vx/vy=0
+        if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
+        if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
 
-      if (_hasBounced(currVx, __lastVxSign, minSpeed) || _hasBounced(currVy, __lastVySign, minSpeed)) {
-        __lastBounceTs = now
-        bbCounters.onBounce()
+        if (_hasBounced(currVx, __lastVxSign, minSpeed) || _hasBounced(currVy, __lastVySign, minSpeed)) {
+          __lastBounceTs = now
+          bbCounters.onBounce()
+        }
+
+        // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
+        const currSignX = Math.sign(currVx)
+        const currSignY = Math.sign(currVy)
+        if (currSignX !== 0) __lastVxSign = currSignX
+        if (currSignY !== 0) __lastVySign = currSignY
       }
-
-      // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
-      const currSignX = Math.sign(currVx)
-      const currSignY = Math.sign(currVy)
-      if (currSignX !== 0) __lastVxSign = currSignX
-      if (currSignY !== 0) __lastVySign = currSignY
     }
   } catch {
     console.warn('Error in detectAndCountBounceFromServer')
   }
+}
+}
 }
 // 4. Остальная логика выполняется после полной загрузки страницы
 document.addEventListener('DOMContentLoaded', () => {
@@ -1553,7 +1556,7 @@ function setupFullscreenGestures() {
           // вертикальные свайпы — старт/стоп
           if (dy < 0) {
             // свайп вверх — старт
-            if (!isPlaying) togglePlayPause()
+            if (isPlaying === false) togglePlayPause()
           } else if (isPlaying) {
             // свайп вниз — стоп
             togglePlayPause()

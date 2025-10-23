@@ -824,7 +824,7 @@ class PhysicsEngine {
       typeof command.radius === 'number' &&
       command.radius > 0 &&
       command.radius <= 1000 &&
-      !Number.isNaN(command.radius)
+      Number.isFinite(command.radius)
     ) {
       validated.radius = command.radius
     }
@@ -973,7 +973,7 @@ class PhysicsEngine {
   }
 
   _handleServerUnpause(command) {
-    const willBeUnpaused = command.paused === false || !this.state.paused
+    const willBeUnpaused = command.paused === false || this.state.paused === false
     if (willBeUnpaused) {
       this._restoreServerVelocity()
     }

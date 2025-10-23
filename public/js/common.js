@@ -62,13 +62,15 @@ const toggleFullscreen =
             }
 
             if (isFs()) {
-              // Await directly. If no function exists, this will await `undefined`, which is safe.
-              await (
+              const exitPromise =
                 document.exitFullscreen?.() ||
                 document.webkitExitFullscreen?.() ||
                 document.msExitFullscreen?.() ||
                 document.mozCancelFullScreen?.()
-              )
+              // Await only if a promise was returned
+              if (exitPromise instanceof Promise) {
+                await exitPromise
+              }
             } else {
               const target = el || document.documentElement
               const requestPromise =
@@ -78,12 +80,13 @@ const toggleFullscreen =
                 target.mozRequestFullScreen?.()
 
               // Only proceed if a promise was returned.
-              if (!requestPromise) {
-                // Если не промис, значит вызов не удался или не поддерживается.
-                // canFullscreen должен был это отловить, но для подстраховки:
+              if (requestPromise instanceof Promise) {
+                await requestPromise
+              } else {
+                // If no promise, the call failed or is not supported.
+                // canFullscreen should have caught this, but as a fallback:
                 return false
               }
-              await requestPromise
             }
             return true
           } catch (err) {
@@ -151,15 +154,17 @@ if (typeof globalThis !== 'undefined') {
  */
 class ThemeManager {
   /**
+   * The key used to store the theme preference in localStorage.
+   * @type {string}
+   * @private
+   */
+  themeKey = 'bb_theme'
+
+  /**
    * Initializes the ThemeManager.
    * @constructor
    */
   constructor() {
-    /**
-     * The key used to store the theme preference in localStorage.
-     * @type {string}
-     */
-    this.themeKey = 'bb_theme'
     this.init()
   }
 
@@ -193,12 +198,10 @@ class ThemeManager {
       // Сейчас светлая тема - переключаем на темную
       body.classList.remove('light-theme')
       localStorage.setItem(this.themeKey, 'dark')
-      globalThis.showSuccessNotification?.('Тёмная тема активирована')
     } else {
       // Сейчас темная тема - переключаем на светлую
       body.classList.add('light-theme')
       localStorage.setItem(this.themeKey, 'light')
-      globalThis.showSuccessNotification?.('Светлая тема активирована')
     }
   }
 
