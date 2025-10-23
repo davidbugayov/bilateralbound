@@ -577,9 +577,7 @@ function renderPreviewLoop(timestamp) {
   const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
   const stateToRender = getScaledState(interpolatedState)
   // Рендерим кадр
-  if (globalThis.__previewRenderer && globalThis.__previewRenderer.drawFrame) {
-    globalThis.__previewRenderer.drawFrame(stateToRender)
-  }
+  globalThis.__previewRenderer?.drawFrame(stateToRender)
   if (document.hidden) {
     setTimeout(() => requestAnimationFrame(renderPreviewLoop), hiddenThrottleMs)
   } else {
@@ -979,7 +977,7 @@ function applyServerStateOrCenter(viewerScreenSize) {
 }
 
 function centerBallInViewer(viewerScreenSize) {
-  if (globalThis.__current.viewerScreenSize && globalThis.__current.viewerScreenSize.width > 0) {
+  if (globalThis.__current.viewerScreenSize?.width > 0) {
     const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
     const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
     previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
@@ -1022,49 +1020,68 @@ function getDirectionVector (directionMode) {
 }
 
 /**
+ * @private
+ * Handles the direction change logic when the session is active.
+ * It smoothly transitions by pausing, centering, and then resuming with the new direction.
+ * @param {number} dirX - The new X direction component.
+ * @param {number} dirY - The new Y direction component.
+ */
+function _applyDirectionChangeWhenPlaying (dirX, dirY) {
+  safeSend(WS_MSG.controllerUpdate, {
+    paused: true,
+    returnToCenter: true
+  })
+  setTimeout(() => {
+    safeSend(WS_MSG.controllerUpdate, {
+      paused: false,
+      dirX,
+      dirY
+    })
+  }, 200)
+}
+
+/**
+ * @private
+ * Handles the direction change logic when the session is paused.
+ * It updates the direction on the server without starting the movement.
+ * @param {number} dirX - The new X direction component.
+ * @param {number} dirY - The new Y direction component.
+ */
+function _applyDirectionChangeWhenPaused (dirX, dirY) {
+  safeSend(WS_MSG.controllerUpdate, {
+    dirX,
+    dirY
+  })
+}
+
+/**
  * Устанавливает направление движения шарика.
  * @param {string} directionMode - Режим направления для установки.
  */
 function setDirection (directionMode) {
-  if (directionMode) {
-    try {
-      const directionVector = getDirectionVector(directionMode)
-      if (directionVector) {
-        const { dirX, dirY } = directionVector
+  if (!directionMode) return
 
-        directionState = { dx: dirX, dy: dirY }
-        currentDirectionMode = directionMode
+  try {
+    const directionVector = getDirectionVector(directionMode)
+    if (!directionVector) return
 
-        if (isPlaying) {
-          // Если игра идет, плавно меняем направление через центр
-          safeSend(WS_MSG.controllerUpdate, {
-            paused: true,
-            returnToCenter: true
-          })
-          setTimeout(() => {
-            safeSend(WS_MSG.controllerUpdate, {
-              paused: false,
-              dirX,
-              dirY
-            })
-          }, 200) // Уменьшаем задержку для более быстрого отклика
-        } else {
-          // Если игра на паузе, просто обновляем направление без запуска движения
-          safeSend(WS_MSG.controllerUpdate, {
-            dirX,
-            dirY
-          })
-        }
+    const { dirX, dirY } = directionVector
+    directionState = { dx: dirX, dy: dirY }
+    currentDirectionMode = directionMode
 
-        updateDirectionButtons()
-        updateDirectionDisplay(dirX, dirY)
-        console.log(
-          `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
-        )
-      }
-    } catch (error) {
-      console.error('Ошибка установки направления:', error)
+    if (isPlaying) {
+      _applyDirectionChangeWhenPlaying(dirX, dirY)
+    } else {
+      _applyDirectionChangeWhenPaused(dirX, dirY)
     }
+
+    updateDirectionButtons()
+    updateDirectionDisplay(dirX, dirY)
+    console.log(
+      `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
+    )
+  } catch (error) {
+    console.error('Ошибка установки направления:', error)
   }
 }
 
@@ -1276,10 +1293,14 @@ function _syncFullscreenPlayPause() {
 
 // ===== УТИЛИТЫ =====
 /**
- * Масштабирует состояние вьювера к размерам превью
+ * Нормализует координату, проверяя, является ли она конечным числом.
+ * @param {*} coord - Значение координаты для нормализации.
+ * @param {*} fallback - Значение по умолчанию, если координата не является конечным числом.
+ * @returns {number} Нормализованная координата или значение по умолчанию.
+ * @private
  */
 function _normalizeCoordinate(coord, fallback) {
-  return typeof coord === 'number' && isFinite(coord) ? coord : fallback;
+  return typeof coord === 'number' && Number.isFinite(coord) ? coord : fallback;
 }
 
 function getScaledState(state) {
@@ -1325,7 +1346,7 @@ function updateViewerStatusUI() {
       viewerStatusEl.textContent = 'Подключен'
       viewerStatusEl.style.color = '#22c55e' // ярко-зеленый цвет
       viewerStatusEl.style.fontWeight = '600' // делаем текст жирным для лучшей видимости
-      if (globalThis.__current.viewerScreenSize && globalThis.__current.viewerScreenSize.width > 0) {
+      if (globalThis.__current.viewerScreenSize?.width > 0) {
         updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
     } else {
@@ -1533,9 +1554,9 @@ function setupFullscreenGestures() {
           if (dy < 0) {
             // свайп вверх — старт
             if (!isPlaying) togglePlayPause()
-          } else {
+          } else if (isPlaying) {
             // свайп вниз — стоп
-            if (isPlaying) togglePlayPause()
+            togglePlayPause()
           }
         }
       }

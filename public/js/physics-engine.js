@@ -721,12 +721,15 @@ class PhysicsEngine {
       this.ball.vy = dirY * this.options.minSpeed
     }
   }
-  // Гарантирует, что мяч и целевые координаты находятся в пределах экрана
+  /**
+   * Ensures the ball and its target coordinates are within the world boundaries.
+   * @returns {void}
+   */
   clampBallWithinBounds() {
     const radius = this.ball.radius
     const w = this.options.worldWidth
     const h = this.options.worldHeight
-    if (!(w > 0 && h > 0 && radius >= 0)) return
+    if (w <= 0 || h <= 0 || radius < 0) return
     const clampedX = this.max(radius, this.min(w - radius, this.ball.x))
     const clampedY = this.max(radius, this.min(h - radius, this.ball.y))
     if (clampedX !== this.ball.x) {
@@ -761,16 +764,17 @@ class PhysicsEngine {
     return this._interpBall
   }
   /**
-   * @param {object} command - Команда для валидации.
-   * @returns {object} - Валидированная команда.
+   * Validates viewer-specific commands, ensuring coordinates and velocities are finite numbers.
+   * @param {object} command - The command object to validate.
+   * @returns {object} A new object with validated properties.
    * @private
    */
   _validateViewerCommand(command) {
     const validated = {}
-    if (typeof command.x === 'number' && isFinite(command.x)) validated.x = command.x
-    if (typeof command.y === 'number' && isFinite(command.y)) validated.y = command.y
-    if (typeof command.vx === 'number' && isFinite(command.vx)) validated.vx = command.vx
-    if (typeof command.vy === 'number' && isFinite(command.vy)) validated.vy = command.vy
+    if (typeof command.x === 'number' && Number.isFinite(command.x)) validated.x = command.x
+    if (typeof command.y === 'number' && Number.isFinite(command.y)) validated.y = command.y
+    if (typeof command.vx === 'number' && Number.isFinite(command.vx)) validated.vx = command.vx
+    if (typeof command.vy === 'number' && Number.isFinite(command.vy)) validated.vy = command.vy
     if (
       typeof command.speed === 'number' &&
       command.speed >= 0 &&
@@ -783,16 +787,17 @@ class PhysicsEngine {
   }
 
   /**
-   * @param {object} command - Команда для валидации.
-   * @returns {object} - Валидированная команда.
+   * Validates server-specific commands, ensuring direction vectors are finite numbers.
+   * @param {object} command - The command object to validate.
+   * @returns {object} A new object with validated properties.
    * @private
    */
   _validateServerCommand(command) {
     const validated = {}
-    if (typeof command.dirX === 'number' && Math.abs(command.dirX) <= 1 && !Number.isNaN(command.dirX)) {
+    if (typeof command.dirX === 'number' && Math.abs(command.dirX) <= 1 && Number.isFinite(command.dirX)) {
       validated.dirX = command.dirX
     }
-    if (typeof command.dirY === 'number' && Math.abs(command.dirY) <= 1 && !Number.isNaN(command.dirY)) {
+    if (typeof command.dirY === 'number' && Math.abs(command.dirY) <= 1 && Number.isFinite(command.dirY)) {
       validated.dirY = command.dirY
     }
     if (

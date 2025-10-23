@@ -76,6 +76,10 @@ Desktop.ini
 # Temporary files
 *.tmp
 *.temp
+
+# SonarQube scanner files
+.scannerwork/
+sonar_open_issues.json
 server.out
 server.pid
 cfd.pid

@@ -163,46 +163,65 @@ class BallRenderer {
     }
   }
   /**
-   * Рендерит сцену (оптимизированная версия)
+   * Renders the scene using a full repaint strategy.
+   * @param {number} alpha - The interpolation factor.
+   * @private
+   */
+  _renderFull(alpha) {
+    this.ctx.fillStyle = this.colors.bg
+    this.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    const ballState = this.physics.getInterpolatedBall
+      ? this.physics.getInterpolatedBall(alpha)
+      : this.physics.ball
+    this.renderBall(ballState)
+  }
+
+  /**
+   * Renders the scene using a dirty regions strategy to minimize repaint areas.
+   * @param {number} alpha - The interpolation factor.
+   * @private
+   */
+  _renderDirty(alpha) {
+    const padding = 4
+    const prev = this._prevBall || { x: -1, y: -1, radius: 0 }
+
+    const curr = this.physics.getInterpolatedBall
+      ? this.physics.getInterpolatedBall(alpha)
+      : this.physics.ball
+    // Очистка предыдущего региона
+    if (prev.x >= 0) {
+      const w = prev.radius * 2 + padding * 2
+      const h = prev.radius * 2 + padding * 2
+      this.ctx.fillStyle = this.colors.bg
+      this.fillRect(prev.x - prev.radius - padding, prev.y - prev.radius - padding, w, h)
+    }
+    // Очистка текущего региона и отрисовка мяча
+    const w2 = curr.radius * 2 + padding * 2
+    const h2 = curr.radius * 2 + padding * 2
+    this.ctx.fillStyle = this.colors.bg
+    this.fillRect(curr.x - curr.radius - padding, curr.y - curr.radius - padding, w2, h2)
+    this.renderBall(curr)
+    this._prevBall = { x: curr.x, y: curr.y, radius: curr.radius }
+  }
+
+  /**
+   * Renders the scene, choosing the optimal strategy (full or dirty regions).
+   * @param {number} [alpha=1] - The interpolation factor for smooth animation.
    */
   render(alpha = 1) {
-    // Финальная проверка перед рендерингом
-    if (this.canvas && this.ctx && this.physics) {
-      try {
-        if (this.options.dirtyRegions) {
-          // Простейшая dirty-стратегия: очищаем только окрестность предыдущего и текущего положения
-          const padding = 4
-          const prev = this._prevBall || { x: -1, y: -1, radius: 0 }
+    if (!this.canvas || !this.ctx || !this.physics) {
+      return
+    }
 
-          const curr = this.physics.getInterpolatedBall
-            ? this.physics.getInterpolatedBall(alpha)
-            : this.physics.ball
-          // Очистка предыдущего региона
-          if (prev.x >= 0) {
-            const w = prev.radius * 2 + padding * 2
-            const h = prev.radius * 2 + padding * 2
-            this.ctx.fillStyle = this.colors.bg
-            this.fillRect(prev.x - prev.radius - padding, prev.y - prev.radius - padding, w, h)
-          }
-          // Очистка текущего региона и отрисовка мяча
-          const w2 = curr.radius * 2 + padding * 2
-          const h2 = curr.radius * 2 + padding * 2
-          this.ctx.fillStyle = this.colors.bg
-          this.fillRect(curr.x - curr.radius - padding, curr.y - curr.radius - padding, w2, h2)
-          this.renderBall(curr)
-          this._prevBall = { x: curr.x, y: curr.y, radius: curr.radius }
-        } else {
-          // Полная перерисовка
-          this.ctx.fillStyle = this.colors.bg
-          this.fillRect(0, 0, this.canvas.width, this.canvas.height)
-          const ballState = this.physics.getInterpolatedBall
-            ? this.physics.getInterpolatedBall(alpha)
-            : this.physics.ball
-          this.renderBall(ballState)
-        }
-      } catch {
-        // Не останавливаем рендер луп, просто пропускаем кадр
+    try {
+      if (this.options.dirtyRegions) {
+        this._renderDirty(alpha)
+      } else {
+        this._renderFull(alpha)
       }
+    } catch (e) {
+      // Log the error for debugging but don't stop the render loop
+      console.error('Error during render:', e)
     }
   }
   /**

@@ -49,37 +49,48 @@ const toggleFullscreen =
             document.mozFullScreenElement
           )
 
-            return async function toggleFullscreen(el) {
-              try {
-                if (canFullscreen()) {
-                  if (isFs()) {
-                    document.exitFullscreen?.() ||
-                    document.webkitExitFullscreen?.() ||
-                    document.msExitFullscreen?.() ||
-                    document.mozCancelFullScreen?.()
-                    return true
-                  } else {
-                    const target = el || document.documentElement
-                    const fullscreenPromise =
-                      target.requestFullscreen?.() ||
-                      target.webkitRequestFullscreen?.() ||
-                      target.msRequestFullscreen?.() ||
-                      target.mozRequestFullScreen?.()
+        /**
+         * Toggles fullscreen mode for a given element or the entire page.
+         * Uses the Fullscreen API with fallbacks for different browsers.
+         * @param {HTMLElement} [el] - The element to make fullscreen. Defaults to document.documentElement.
+         * @returns {Promise<boolean>} A promise that resolves to true if the state changed, false otherwise.
+         */
+        return async function toggleFullscreen(el) {
+          try {
+            if (!canFullscreen()) {
+              return false
+            }
 
-                    if (fullscreenPromise instanceof Promise) {
-                      await fullscreenPromise
-                    } else {
-                      throw new Error('Fullscreen API not available')
-                    }
-                    return true
-                  }
-                } else {
-                  return false
-                }
-              } catch {
+            if (isFs()) {
+              // Await directly. If no function exists, this will await `undefined`, which is safe.
+              await (
+                document.exitFullscreen?.() ||
+                document.webkitExitFullscreen?.() ||
+                document.msExitFullscreen?.() ||
+                document.mozCancelFullScreen?.()
+              )
+            } else {
+              const target = el || document.documentElement
+              const requestPromise =
+                target.requestFullscreen?.() ||
+                target.webkitRequestFullscreen?.() ||
+                target.msRequestFullscreen?.() ||
+                target.mozRequestFullScreen?.()
+
+              // Only proceed if a promise was returned.
+              if (!requestPromise) {
+                // Если не промис, значит вызов не удался или не поддерживается.
+                // canFullscreen должен был это отловить, но для подстраховки:
                 return false
               }
+              await requestPromise
             }
+            return true
+          } catch (err) {
+            debugError('Fullscreen API error:', err)
+            return false
+          }
+        }
       })()
 const throttle =
   (globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function')
@@ -134,18 +145,37 @@ if (typeof globalThis !== 'undefined') {
   })
 }
 
+/**
+ * Manages the theme (light/dark) of the application.
+ * @class ThemeManager
+ */
 class ThemeManager {
-  themeKey = 'bb_theme'
-
+  /**
+   * Initializes the ThemeManager.
+   * @constructor
+   */
   constructor() {
+    /**
+     * The key used to store the theme preference in localStorage.
+     * @type {string}
+     */
+    this.themeKey = 'bb_theme'
     this.init()
   }
 
+  /**
+   * Loads the saved theme and sets up the theme toggle button.
+   * @private
+   */
   init() {
     this.loadTheme()
     this.setupThemeToggle()
   }
 
+  /**
+   * Loads the theme from localStorage and applies it to the body.
+   * @private
+   */
   loadTheme() {
     const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
     if (savedTheme === 'light') {
@@ -153,6 +183,9 @@ class ThemeManager {
     }
   }
 
+  /**
+   * Toggles the theme between light and dark mode and saves the preference.
+   */
   toggleTheme() {
     const body = document.body
     const isLight = body.classList.contains('light-theme')
@@ -169,6 +202,10 @@ class ThemeManager {
     }
   }
 
+  /**
+   * Finds the theme toggle button and attaches a click event listener.
+   * @private
+   */
   setupThemeToggle() {
     const toggleBtn = document.getElementById('themeToggleBtn')
     if (toggleBtn) {
