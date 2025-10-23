@@ -32,7 +32,9 @@ let __ignoreServerPausedUntilTs = 0 // Кратковременная блоки
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
-hiddenThrottleMs = globalThis.BBConfig?.rendering?.hiddenThrottleMs ?? hiddenThrottleMs
+  if (globalThis.BBConfig?.rendering?.hiddenThrottleMs !== undefined) {
+    hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
+  }
 
 let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
 // --- Elements ---
@@ -265,15 +267,15 @@ function handleFullscreenKeydown(e) {
     } else {
       openPreviewFullscreen()
     }
-  } else if (key === 'escape') {
-    if (isPreviewFullscreen) closePreviewFullscreen()
+  } else if (key === 'escape' && isPreviewFullscreen) {
+    closePreviewFullscreen()
   }
 }
 
 function handlePopState() {
   if (isPreviewFullscreen) {
     closePreviewFullscreen()
-  } else if (globalThis.location.hash === '#fullscreen-preview' && isPreviewFullscreen === false) {
+  } else if (globalThis.location.hash === '#fullscreen-preview') {
     openPreviewFullscreen()
   }
 }
@@ -462,11 +464,10 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     lastServerState = state // Кэшируем состояние
     // Если пришли новые размеры экрана вьювера — обновим превью
     if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
-      const prevSize = globalThis.__current.viewerScreenSize || { width: 0, height: 0 }
-
-      const nextSize = state.viewerScreenSize
-      const sizeChanged =
-        !prevSize || prevSize.width !== nextSize.width || prevSize.height !== nextSize.height
+    const prevSize = globalThis.__current.viewerScreenSize || { width: 0, height: 0 }
+    const nextSize = state.viewerScreenSize
+    const sizeChanged =
+      !prevSize || prevSize.width !== nextSize.width || prevSize.height !== nextSize.height
       globalThis.__current.viewerConnected = true
       globalThis.__current.viewerScreenSize = nextSize
       if (sizeChanged) {
@@ -569,7 +570,7 @@ function renderPreviewLoop(timestamp) {
   }
   // Вычисляем alpha для интерполяции на основе реального времени последнего обновления физики
   const now = performance.now()
-  const lastPhysicsUpdate = previewPhysicsEngine?.__lastPhysicsUpdateTs || now
+  const lastPhysicsUpdate = previewPhysicsEngine && previewPhysicsEngine.__lastPhysicsUpdateTs ? previewPhysicsEngine.__lastPhysicsUpdateTs : now
   const alpha = Math.max(0, Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT))
   // Обновляем таймер счётчиков
   bbCounters.tick(timestamp)
@@ -577,7 +578,9 @@ function renderPreviewLoop(timestamp) {
   const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
   const stateToRender = getScaledState(interpolatedState)
   // Рендерим кадр
-  globalThis.__previewRenderer?.drawFrame(stateToRender)
+  if (globalThis.__previewRenderer && globalThis.__previewRenderer.drawFrame) {
+    globalThis.__previewRenderer.drawFrame(stateToRender)
+  }
   if (document.hidden) {
     setTimeout(() => requestAnimationFrame(renderPreviewLoop), hiddenThrottleMs)
   } else {
@@ -611,7 +614,6 @@ function showNotification(message, type = 'info') {
         warning: 'Внимание',
         info: ''
       }
-
       const title = titles[type] || ''
       globalThis.notificationSystem.show({
         type: type,
@@ -632,7 +634,6 @@ function showNotification(message, type = 'info') {
       setTimeout(() => fallbackToast.remove(), 3000)
     }
   }
-
   tryShowNotification()
 }
 /**
@@ -940,19 +941,15 @@ function canUpdatePreview(viewerScreenSize) {
 function calculatePreviewDimensions(canvas, viewerScreenSize) {
   const container = canvas.parentElement
   const containerRect = container.getBoundingClientRect()
-  
   const maxWidth = Math.min(containerRect.width - 40, 500)
   const maxHeight = Math.min(400, maxWidth * 0.75)
   const viewerRatio = viewerScreenSize.width / viewerScreenSize.height
-  
   let previewWidth = maxWidth
   let previewHeight = previewWidth / viewerRatio
-  
   if (previewHeight > maxHeight) {
     previewHeight = maxHeight
     previewWidth = previewHeight * viewerRatio
   }
-  
   return { previewWidth, previewHeight }
 }
 
@@ -1193,7 +1190,8 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     // Обновляем иконку направления в полноэкранном режиме
     const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
-      fsDirectionDisplay.innerHTML = directionDisplay?.innerHTML ?? `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
+      const displayContent = directionDisplay ? directionDisplay.innerHTML : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
+      fsDirectionDisplay.innerHTML = displayContent
     }
   } catch (error) {
     console.error('Ошибка обновления отображения направления:', error)
@@ -1222,7 +1220,7 @@ function _handlePlay() {
     paused: false,
     dirX: currentDirection.dx,
     dirY: currentDirection.dy,
-    speed: components.speed?.getSpeed() ?? 40
+    speed: components.speed && components.speed.getSpeed ? components.speed.getSpeed() : 40
   }
   safeSend(WS_MSG.controllerUpdate, payload)
   isPlaying = true
@@ -1355,10 +1353,7 @@ function updateViewerStatusUI() {
       viewerStatusEl.textContent = 'Подключен'
       viewerStatusEl.style.color = '#22c55e' // ярко-зеленый цвет
       viewerStatusEl.style.fontWeight = '600' // делаем текст жирным для лучшей видимости
-      if (
-        globalThis.__current.viewerScreenSize &&
-        globalThis.__current.viewerScreenSize.width > 0
-      ) {
+      if (globalThis.__current.viewerScreenSize && globalThis.__current.viewerScreenSize.width > 0) {
         updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
     } else {
@@ -1427,7 +1422,7 @@ function resizePreviewFullscreen() {
   previewFsCanvas.height = globalThis.innerHeight
   if (previewPhysicsEngine) {
     const vs = globalThis.__current?.viewerScreenSize
-    if (vs?.width > 0 && vs?.height > 0) {
+    if (vs && vs.width > 0 && vs.height > 0) {
       previewPhysicsEngine.setWorldSize(vs.width, vs.height)
     } else {
       // Фолбэк на размеры окна, если размеры вьювера ещё неизвестны
@@ -1598,8 +1593,17 @@ function wireFullscreenControls() {
 function setupFullscreenSpeedControl() {
   const speed = document.getElementById('fsSpeed')
   if (speed) {
-    speed.value = components.speed?.getSpeed?.() ?? 40
-    speed.oninput = e => updateSpeed(Number(e.target?.value))
+    if (components.speed && components.speed.getSpeed) {
+      speed.value = components.speed.getSpeed()
+    } else {
+      speed.value = 40
+    }
+    speed.oninput = e => {
+      const target = e.target
+      if (target && target.value !== undefined) {
+        updateSpeed(Number(target.value))
+      }
+    }
   }
 }
 
@@ -1661,7 +1665,7 @@ function setupFullscreenBackgroundColorControls() {
 function fillFsSessionInfo() {
   // Функция разбита для снижения когнитивной сложности
   try {
-    const sid = globalThis.__current?.sessionId || '...'
+    const sid = globalThis.__current && globalThis.__current.sessionId ? globalThis.__current.sessionId : '...'
     const fsSid = document.getElementById('fsCurSid')
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')

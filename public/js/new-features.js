@@ -10,11 +10,11 @@
  * @returns {string} Уникальный ID сессии
  */
 function _generateId() {
-  if (crypto?.randomUUID) {
+  if (crypto && crypto.randomUUID) {
     return crypto.randomUUID()
   }
   // Используем криптографически стойкий метод генерации случайных чисел
-  if (crypto?.getRandomValues) {
+  if (crypto && crypto.getRandomValues) {
     const array = new Uint32Array(2)
     crypto.getRandomValues(array)
     return `${Date.now()}_${array[0].toString(36)}_${array[1].toString(36)}`
@@ -27,11 +27,11 @@ class FeatureManager {
   constructor() {
     this.presets = this.loadPresets()
     this.sessionHistory = []
-
     this.sessions = this.loadSessions()
     this.currentSessionId = this.loadCurrentSessionId()
     this.initFeatures()
   }
+
   /**
    * Инициализация новых функций
    */
@@ -44,19 +44,20 @@ class FeatureManager {
     this.addThemeToggle()
     this.updateHeaderSessionName()
   }
+
   /**
    * Управление пресетами настроек
    */
   loadPresets() {
     const defaultPresets = {
-      Релаксация: {
+      'Релаксация': {
         speed: 20,
         direction: 'horizontal',
         colorBall: '#60a5fa',
         colorBg: '#020617',
         size: 20
       },
-      Активация: {
+      'Активация': {
         speed: 80,
         direction: 'vertical',
         colorBall: '#ef4444',
@@ -70,7 +71,7 @@ class FeatureManager {
         colorBg: '#052e16',
         size: 25
       },
-      Динамическая: {
+      'Динамическая': {
         speed: 60,
         direction: 'diagRLL',
         colorBall: '#f59e0b',
@@ -114,6 +115,7 @@ class FeatureManager {
     }
     container.appendChild(presetGrid)
   }
+
   /**
    * Применение предустановленных настроек
    */
@@ -142,7 +144,7 @@ class FeatureManager {
    * @private
    */
   async _applyPresetSpeed(speed) {
-    if (speed && globalThis.components?.speed) {
+    if (speed && globalThis.components && globalThis.components.speed) {
       globalThis.components.speed.setSpeed(speed)
       await this.sendUpdate({ speed })
     }
@@ -189,15 +191,17 @@ class FeatureManager {
     const presetName = Object.keys(this.presets).find(key => this.presets[key] === preset)
     this.showNotification(`Пресет "${presetName}" применён`, 'success')
   }
+
   /**
    * Сохраняет текущее состояние как кастомный пресет
    */
   createCustomPreset() {
     const name = prompt('Название нового пресета:')
     if (!name || name.trim() === '') return
+    const colorBtn = document.querySelector('.color-btn.active')
     const preset = {
-      speed: globalThis.components?.speed?.getSpeed() || 40,
-      colorBall: document.querySelector('.color-btn.active')?.style.backgroundColor || '#60a5fa',
+      speed: globalThis.components && globalThis.components.speed ? globalThis.components.speed.getSpeed() : 40,
+      colorBall: colorBtn && colorBtn.style.backgroundColor ? colorBtn.style.backgroundColor : '#60a5fa',
       colorBg: document.body.style.backgroundColor || '#020617',
       size: document.querySelector('.size-btn.active')?.dataset.size || 20,
       direction: globalThis.currentDirectionMode || 'horizontal'
@@ -216,6 +220,7 @@ class FeatureManager {
       console.warn('Не удалось сохранить пресеты')
     }
   }
+
   /**
    * Управление экспортом/импортом сессий
    */
@@ -250,27 +255,29 @@ class FeatureManager {
     container.appendChild(buttonContainer)
     container.appendChild(importInput)
   }
+
   /**
    * Экспорт текущей сессии в JSON файл
    */
   exportSession() {
+    const colorBtn = document.querySelector('.color-btn.active')
     const sessionData = {
       timestamp: new Date().toISOString(),
-      sessionId: globalThis.__current?.sessionId,
+      sessionId: globalThis.__current && globalThis.__current.sessionId ? globalThis.__current.sessionId : null,
       settings: {
-        speed: globalThis.components?.speed?.getSpeed() || 40,
+        speed: globalThis.components && globalThis.components.speed ? globalThis.components.speed.getSpeed() : 40,
         direction: globalThis.currentDirectionMode || 'horizontal',
-        ballColor: document.querySelector('.color-btn.active')?.style.backgroundColor || '#60a5fa',
+        ballColor: colorBtn && colorBtn.style.backgroundColor ? colorBtn.style.backgroundColor : '#60a5fa',
         bgColor: document.body.style.backgroundColor || '#020617',
         ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20,
         isPlaying: globalThis.isPlaying || false
       },
-      viewerConnected: globalThis.__current?.viewerConnected || false,
-      viewerScreenSize: globalThis.__current?.viewerScreenSize || null,
+      viewerConnected: globalThis.__current && globalThis.__current.viewerConnected ? globalThis.__current.viewerConnected : false,
+      viewerScreenSize: globalThis.__current && globalThis.__current.viewerScreenSize ? globalThis.__current.viewerScreenSize : null,
       counters: {
-        timer: globalThis.bbCounters?.timerMs || 0,
-        passes: globalThis.bbCounters?.passes || 0,
-        sets: globalThis.bbCounters?.sets || 0
+        timer: globalThis.bbCounters && globalThis.bbCounters.timerMs ? globalThis.bbCounters.timerMs : 0,
+        passes: globalThis.bbCounters && globalThis.bbCounters.passes ? globalThis.bbCounters.passes : 0,
+        sets: globalThis.bbCounters && globalThis.bbCounters.sets ? globalThis.bbCounters.sets : 0
       }
     }
 
@@ -284,6 +291,7 @@ class FeatureManager {
     URL.revokeObjectURL(url)
     this.showNotification('Сессия экспортирована', 'success')
   }
+
   /**
    * Импорт сессии из JSON файла
    */
@@ -317,7 +325,7 @@ class FeatureManager {
   }
 
   async applySpeedSetting(speed) {
-    if (speed && globalThis.components?.speed) {
+    if (speed && globalThis.components && globalThis.components.speed) {
       globalThis.components.speed.setSpeed(speed)
       await this.sendUpdate({ speed: speed })
     }
@@ -359,6 +367,7 @@ class FeatureManager {
       globalThis.bbCounters.render()
     }
   }
+
   /**
    * Управление историей сессий
    */
@@ -372,18 +381,21 @@ class FeatureManager {
       this.sessionHistory.shift()
     }
   }
+
   /**
    * Захват текущих настроек
    */
   captureCurrentSettings() {
+    const colorBtn = document.querySelector('.color-btn.active')
     return {
-      speed: globalThis.components?.speed?.getSpeed() || 40,
+      speed: globalThis.components && globalThis.components.speed ? globalThis.components.speed.getSpeed() : 40,
       direction: globalThis.currentDirectionMode || 'horizontal',
-      ballColor: document.querySelector('.color-btn.active')?.style.backgroundColor || '#60a5fa',
+      ballColor: colorBtn && colorBtn.style.backgroundColor ? colorBtn.style.backgroundColor : '#60a5fa',
       bgColor: document.body.style.backgroundColor || '#020617',
       ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20
     }
   }
+
   /**
    * Горячие клавиши
    */
@@ -425,6 +437,7 @@ class FeatureManager {
         break
     }
   }
+
   /**
    * Обработка стрелок клавиатуры
    */
@@ -438,6 +451,7 @@ class FeatureManager {
 
     setDirection(directionMap[key])
   }
+
   /**
    * Отмена последнего изменения
    */
@@ -453,11 +467,12 @@ class FeatureManager {
     await this.applyState(previousState)
     this.showNotification('Изменение отменено', 'success')
   }
+
   /**
    * Применяет сохраненное состояние
    */
   async applyState(state) {
-    if (state.speed && globalThis.components?.speed) {
+    if (state.speed && globalThis.components && globalThis.components.speed) {
       globalThis.components.speed.setSpeed(state.speed)
       await this.sendUpdate({ speed: state.speed })
     }
@@ -478,6 +493,7 @@ class FeatureManager {
       globalThis.setBallSize(state.ballSize)
     }
   }
+
   /**
    * Переключатель темы
    */
@@ -516,6 +532,7 @@ class FeatureManager {
       document.body.classList.add('light-theme')
     }
   }
+
   /**
    * Менеджер локальных сессий (с именем)
    */
@@ -668,56 +685,121 @@ class FeatureManager {
 
   buildCurrentSessionData() {
     // Похоже на exportSession, но не создаёт файл
+    const colorBtn = document.querySelector('.color-btn.active')
     return {
       timestamp: new Date().toISOString(),
-      sessionId: globalThis.__current?.sessionId || null,
+      sessionId: globalThis.__current && globalThis.__current.sessionId ? globalThis.__current.sessionId : null,
       settings: {
-        speed: globalThis.components?.speed?.getSpeed() || 40,
+        speed: globalThis.components && globalThis.components.speed ? globalThis.components.speed.getSpeed() : 40,
         direction: globalThis.currentDirectionMode || 'horizontal',
-        ballColor: document.querySelector('.color-btn.active')?.style.backgroundColor || '#60a5fa',
+        ballColor: colorBtn && colorBtn.style.backgroundColor ? colorBtn.style.backgroundColor : '#60a5fa',
         bgColor: document.body.style.backgroundColor || '#020617',
         ballSize: document.querySelector('.size-btn.active')?.dataset.size || 20,
         isPlaying: globalThis.isPlaying || false
       },
-      viewerConnected: globalThis.__current?.viewerConnected || false,
-      viewerScreenSize: globalThis.__current?.viewerScreenSize || null,
+      viewerConnected: globalThis.__current && globalThis.__current.viewerConnected ? globalThis.__current.viewerConnected : false,
+      viewerScreenSize: globalThis.__current && globalThis.__current.viewerScreenSize ? globalThis.__current.viewerScreenSize : null,
       counters: {
-        timer: globalThis.bbCounters?.timerMs || 0,
-        passes: globalThis.bbCounters?.passes || 0,
-        sets: globalThis.bbCounters?.sets || 0
+        timer: globalThis.bbCounters && globalThis.bbCounters.timerMs ? globalThis.bbCounters.timerMs : 0,
+        passes: globalThis.bbCounters && globalThis.bbCounters.passes ? globalThis.bbCounters.passes : 0,
+        sets: globalThis.bbCounters && globalThis.bbCounters.sets ? globalThis.bbCounters.sets : 0
       }
     }
   }
 
   async applySessionData(sessionData) {
     try {
-      const settings = sessionData?.settings || {}
-
-      if (settings.speed && globalThis.components?.speed) {
-        globalThis.components.speed.setSpeed(settings.speed)
-        await this.sendUpdate({ speed: settings.speed })
-      }
-
-      if (settings.direction) globalThis.setDirection(settings.direction)
-      if (settings.ballColor) globalThis.setBallColor(settings.ballColor)
-      if (settings.bgColor) globalThis.setBackgroundColor(settings.bgColor)
-      if (settings.ballSize) globalThis.setBallSize(settings.ballSize)
-      // isPlaying
-      if (typeof settings.isPlaying === 'boolean') {
-        if (settings.isPlaying && !globalThis.isPlaying) globalThis.togglePlayPause()
-        if (!settings.isPlaying && globalThis.isPlaying) globalThis.togglePlayPause()
-      }
-      // counters
-      if (sessionData.counters && globalThis.bbCounters) {
-        globalThis.bbCounters.timerMs = sessionData.counters.timer || 0
-        globalThis.bbCounters.passes = sessionData.counters.passes || 0
-        globalThis.bbCounters.sets = sessionData.counters.sets || 0
-        globalThis.bbCounters.render?.()
-      }
+      await this._applySessionSettings(sessionData?.settings || {})
+      this._applySessionCounters(sessionData?.counters)
     } catch (e) {
       console.error('applySessionData error', e)
       this.showNotification('Ошибка применения сессии', 'error')
     }
+  }
+
+  /**
+   * Применяет настройки сессии
+   * @private
+   */
+  async _applySessionSettings(settings) {
+    if (!settings) return
+
+    await this._applySessionSpeed(settings.speed)
+    this._applySessionDirection(settings.direction)
+    this._applySessionColors(settings.ballColor, settings.bgColor)
+    this._applySessionSize(settings.ballSize)
+    this._applySessionPlayState(settings.isPlaying)
+  }
+
+  /**
+   * Применяет скорость сессии
+   * @private
+   */
+  async _applySessionSpeed(speed) {
+    if (speed && globalThis.components && globalThis.components.speed) {
+      globalThis.components.speed.setSpeed(speed)
+      await this.sendUpdate({ speed: speed })
+    }
+  }
+
+  /**
+   * Применяет направление сессии
+   * @private
+   */
+  _applySessionDirection(direction) {
+    if (direction) {
+      globalThis.setDirection(direction)
+    }
+  }
+
+  /**
+   * Применяет цвета сессии
+   * @private
+   */
+  _applySessionColors(ballColor, bgColor) {
+    if (ballColor) {
+      globalThis.setBallColor(ballColor)
+    }
+    if (bgColor) {
+      globalThis.setBackgroundColor(bgColor)
+    }
+  }
+
+  /**
+   * Применяет размер сессии
+   * @private
+   */
+  _applySessionSize(ballSize) {
+    if (ballSize) {
+      globalThis.setBallSize(ballSize)
+    }
+  }
+
+  /**
+   * Применяет состояние воспроизведения сессии
+   * @private
+   */
+  _applySessionPlayState(isPlaying) {
+    if (typeof isPlaying !== 'boolean') return
+    
+    if (isPlaying && !globalThis.isPlaying) {
+      globalThis.togglePlayPause()
+    } else if (!isPlaying && globalThis.isPlaying) {
+      globalThis.togglePlayPause()
+    }
+  }
+
+  /**
+   * Применяет счётчики сессии
+   * @private
+   */
+  _applySessionCounters(counters) {
+    if (!counters || !globalThis.bbCounters) return
+
+    globalThis.bbCounters.timerMs = counters.timer || 0
+    globalThis.bbCounters.passes = counters.passes || 0
+    globalThis.bbCounters.sets = counters.sets || 0
+    globalThis.bbCounters.render?.()
   }
 
   saveNamedSession(nameRaw) {
@@ -834,6 +916,7 @@ class FeatureManager {
       // ignore
     }
   }
+
   /**
    * Утилиты
    */
@@ -885,10 +968,10 @@ class FeatureManager {
   }
 }
 // Экспортируем функции для глобального использования
-globalThis.applyPreset = preset => globalThis.featureManager?.applyPreset(preset)
-globalThis.createCustomPreset = () => globalThis.featureManager?.createCustomPreset()
-globalThis.exportSession = () => globalThis.featureManager?.exportSession()
-globalThis.importSession = file => globalThis.featureManager?.importSession(file)
+globalThis.applyPreset = preset => globalThis.featureManager && globalThis.featureManager.applyPreset(preset)
+globalThis.createCustomPreset = () => globalThis.featureManager && globalThis.featureManager.createCustomPreset()
+globalThis.exportSession = () => globalThis.featureManager && globalThis.featureManager.exportSession()
+globalThis.importSession = file => globalThis.featureManager && globalThis.featureManager.importSession(file)
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
   globalThis.featureManager = new FeatureManager()

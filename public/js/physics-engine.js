@@ -868,13 +868,21 @@ class PhysicsEngine {
    * @returns {object} - Валидированная и очищенная команда.
    */
   _validateCommand(command) {
-    const modeSpecificValidated = this.isViewer
+    const modeSpecificValidated = this._getModeSpecificValidatedCommand(command)
+    const commonValidated = this._validateCommonCommands(command)
+    return { ...modeSpecificValidated, ...commonValidated }
+  }
+
+  /**
+   * Валидирует специфичные для режима команды
+   * @param {object} command - Входящая команда.
+   * @returns {object} - Валидированная команда.
+   * @private
+   */
+  _getModeSpecificValidatedCommand(command) {
+    return this.isViewer
       ? this._validateViewerCommand(command)
       : this._validateServerCommand(command)
-
-    const commonValidated = this._validateCommonCommands(command)
-
-    return { ...modeSpecificValidated, ...commonValidated }
   }
 
   /**

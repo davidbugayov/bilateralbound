@@ -216,9 +216,9 @@ class BallRenderer {
     // Проверяем валидность данных шарика
     if (ball && typeof ball.x === 'number' && typeof ball.y === 'number') {
       // Проверяем разумные значения
-    if (ball.radius <= 0 || ball.radius > 1000) {
-      return
-    }
+      if (ball.radius <= 0 || ball.radius > 1000) {
+        return
+      }
 
     try {
       // Кэшируем градиент и геометрию круга по (radius,color)
