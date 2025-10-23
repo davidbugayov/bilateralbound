@@ -169,8 +169,6 @@ function detectAndCountBounceFromServer(prev, curr) {
     console.warn('Error in detectAndCountBounceFromServer')
   }
 }
-}
-}
 // 4. Остальная логика выполняется после полной загрузки страницы
 document.addEventListener('DOMContentLoaded', () => {
   // Тихая инициализация
@@ -715,13 +713,19 @@ function _syncUIPause(ballState) {
   }
 }
 
+function _getDirectionMode(dirX, dirY) {
+  if (Math.abs(dirX) > 0.9) return 'horizontal'
+  if (Math.abs(dirY) > 0.9) return 'vertical'
+  if (dirX > 0 && dirY > 0) return 'diagRL'
+  if (dirX > 0 && dirY < 0) return 'diagRLL'
+  return null
+}
+
 function _syncUIDirection(ballState) {
   if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
     directionState = { dx: ballState.dirX, dy: ballState.dirY }
-    if (Math.abs(ballState.dirX) > 0.9) currentDirectionMode = 'horizontal'
-    else if (Math.abs(ballState.dirY) > 0.9) currentDirectionMode = 'vertical'
-    else if (ballState.dirX > 0 && ballState.dirY > 0) currentDirectionMode = 'diagRL'
-    else if (ballState.dirX > 0 && ballState.dirY < 0) currentDirectionMode = 'diagRLL'
+    const mode = _getDirectionMode(ballState.dirX, ballState.dirY)
+    if (mode) currentDirectionMode = mode
     updateDirectionButtons()
     updateDirectionDisplay(ballState.dirX, ballState.dirY)
   }
