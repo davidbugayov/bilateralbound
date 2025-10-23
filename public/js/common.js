@@ -13,7 +13,8 @@ const debugError =
 const debugWarn =
   typeof globalThis !== 'undefined' && globalThis.debugWarn ? globalThis.debugWarn : () => {}
 // Используем общие утилиты, если доступны, иначе fallback
-const getSessionIdFromUrl = (globalThis.CommonUtils && typeof globalThis.CommonUtils.getSessionIdFromUrl === 'function')
+const getSessionIdFromUrl = (globalThis.CommonUtils?.getSessionIdFromUrl &&
+  typeof globalThis.CommonUtils.getSessionIdFromUrl === 'function')
   ? globalThis.CommonUtils.getSessionIdFromUrl
   : function () {
       const path = globalThis.location.pathname
@@ -26,10 +27,10 @@ const getSessionIdFromUrl = (globalThis.CommonUtils && typeof globalThis.CommonU
       return urlParams.get('sessionId')
     }
 
-const toggleFullscreen =
-  (globalThis.CommonUtils && typeof globalThis.CommonUtils.toggleFullscreen === 'function')
-    ? globalThis.CommonUtils.toggleFullscreen
-    : (function () {
+const toggleFullscreen = (globalThis.CommonUtils?.toggleFullscreen &&
+  typeof globalThis.CommonUtils.toggleFullscreen === 'function')
+  ? globalThis.CommonUtils.toggleFullscreen
+  : (function () {
         // Robust fullscreen toggle fallback using the Fullscreen API
         const canFullscreen = () => {
           const docEl = document.documentElement

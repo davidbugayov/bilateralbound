@@ -324,10 +324,8 @@ class PhysicsEngine {
   }
 
   _canInterpolate() {
-    return (
-      (this.state.allowInterpWhenPaused || !this.state.paused) &&
-      this.state?.targetX
-    )
+    const isActiveMovement = this.state.allowInterpWhenPaused || !this.state.paused
+    return isActiveMovement && Boolean(this.state?.targetX)
   }
 
   _updateStateBuffer(currentTime) {
