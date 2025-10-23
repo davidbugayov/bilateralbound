@@ -63,13 +63,17 @@ const toggleFullscreen =
               return true
             } else {
               const target = el || document.documentElement
-              await (
+              const fullscreenPromise =
                 target.requestFullscreen?.() ||
                 target.webkitRequestFullscreen?.() ||
                 target.msRequestFullscreen?.() ||
-                target.mozRequestFullScreen?.() ||
-                Promise.reject(new Error('Fullscreen API not available'))
-              )
+                target.mozRequestFullScreen?.()
+
+              if (fullscreenPromise) {
+                await fullscreenPromise
+              } else {
+                throw new Error('Fullscreen API not available')
+              }
               return true
             }
           } catch {

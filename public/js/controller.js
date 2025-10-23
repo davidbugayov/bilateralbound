@@ -1246,61 +1246,39 @@ function _handlePause() {
 function togglePlayPause() {
   const wasPlaying = isPlaying
   if (wasPlaying) {
-    this._handlePauseTransition()
+    _handlePauseTransition()
   } else {
-    this._handlePlayTransition()
+    _handlePlayTransition()
   }
-  
-  this._schedulePlayPauseAnimations()
-  this._syncFullscreenPlayPause()
+
+  _schedulePlayPauseAnimations()
+  _syncFullscreenPlayPause()
 }
 
-/**
- * Обрабатывает переход в состояние паузы
- * @private
- * @description Вызывается при переключении в режим паузы, обрабатывает логику паузы
- *              и устанавливает временной блок для игнорирования серверных команд
- */
 function _handlePauseTransition() {
   _handlePause()
   __ignoreServerPausedUntilTs = performance.now() + 800
 }
 
-/**
- * Обрабатывает переход в состояние воспроизведения
- * @private
- * @description Вызывается при запуске воспроизведения, обрабатывает логику старта
- *              и устанавливает временной блок для игнорирования серверных команд
- */
 function _handlePlayTransition() {
   _handlePlay()
   __ignoreServerPausedUntilTs = performance.now() + 800
 }
 
-/**
- * Планирует анимации для кнопки play/pause
- * @private
- * @description Обеспечивает плавное обновление состояния кнопки play/pause с помощью
- *              таймаутов для визуальной обратной связи пользователя
- */
 function _schedulePlayPauseAnimations() {
   // Обновляем кнопку сразу
   updatePlayPauseButton()
-  
+
   // Планируем дополнительные обновления для анимации через разные интервалы
   setTimeout(() => updatePlayPauseButton(), 150)
   setTimeout(() => updatePlayPauseButton(), 300)
 }
 
-/**
- * Синхронизирует кнопку play/pause в полноэкранном режиме
- * @private
- * @description Обновляет состояние кнопки play/pause в полноэкранном превью
- *              для согласованности интерфейса
- */
 function _syncFullscreenPlayPause() {
   syncFsPlayPauseButton()
 }
+
+
 // ===== УТИЛИТЫ =====
 /**
  * Масштабирует состояние вьювера к размерам превью

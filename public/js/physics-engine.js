@@ -405,11 +405,11 @@ class PhysicsEngine {
     const dy = clampedTargetY - this.ball.y
     const distance = Math.hypot(dx, dy)
 
-    const baseStiffness = this.options.smoothing.stiffness || 25
+    const baseStiffness = this.options?.smoothing?.stiffness ?? 25
     const speed = Math.hypot(this._smoothedVelocity.x, this._smoothedVelocity.y)
 
     const adaptiveStiffness = baseStiffness * (1 + Math.min(distance / 150, 3))
-    const baseDamping = this.options.smoothing.damping || 15
+    const baseDamping = this.options?.smoothing?.damping ?? 15
     const adaptiveDamping = baseDamping * (1 + Math.min(speed / 800, 2))
 
     const ax = adaptiveStiffness * dx - adaptiveDamping * this.state.smoothVx
@@ -564,33 +564,7 @@ class PhysicsEngine {
     }
     originalUpdateServerPhysics(deltaTime)
   }
-  /**
-   * Обновляет серверную физику с полной обработкой отскоков
-   */
-  updateServerPhysics(deltaTime) {
-    if (this.state.paused) return
-    // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
-    // Не обновляем физику, пока размеры мира не будут явно установлены
-    if (!this._worldSizeSet) {
-      return
-    }
-    // Пересчитываем скорость напрямую из направления и процента скорости
-    const speedPercent = this.ball.speed / 100
-    const pixelsPerSecond = speedPercent * this.options.maxSpeed
-    this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
-    this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
-    // Сохраняем предыдущую позицию для интерполяции
-    this._prevPos.x = this.ball.x
-    this._prevPos.y = this.ball.y
-    // Обновляем позицию
-    this.ball.x += this.ball.vx * deltaTime
-    this.ball.y += this.ball.vy * deltaTime
-    // Обрабатываем коллизии с границами
-    this.handleBoundaryCollisions()
-    // Запоминаем текущую позицию как «текущую» для интерполяции
-    this._currPos.x = this.ball.x
-    this._currPos.y = this.ball.y
-  }
+
   /**
    * Непрерывная клиентская физика для режима вьювера (client-authoritative)
    */
