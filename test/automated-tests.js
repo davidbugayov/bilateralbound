@@ -88,7 +88,7 @@ class Tester {
     // 1) Подключаем контроллер по WS, слушаем initial_state после того как подключится вьювер
     const controllerSocket = new WebSocket(`${this.wsUrl}/?sessionId=${sessionId}&role=controller`);
 
-    const resultPromise = new Promise(async (resolve) => {
+    const resultPromise = new Promise((resolve) => {
       let gotInitial = false;
       const timeout = setTimeout(() => { if (!gotInitial) resolve(false); }, 6000);
 

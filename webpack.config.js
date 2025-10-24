@@ -6,13 +6,13 @@ module.exports = {
     controller: './public/js/controller.js',
     shared: './public/js/shared-components.js'
   },
-  
+
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'js/[name].bundle.js',
     clean: true
   },
-  
+
   module: {
     rules: [
       {
@@ -42,7 +42,7 @@ module.exports = {
       }
     ]
   },
-  
+
   optimization: {
     splitChunks: {
       chunks: 'all',
@@ -61,9 +61,9 @@ module.exports = {
       }
     }
   },
-  
+
   devtool: 'source-map',
-  
+
   resolve: {
     extensions: ['.js', '.json']
   }

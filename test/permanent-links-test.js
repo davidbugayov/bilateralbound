@@ -203,21 +203,21 @@ class PermanentLinksTest {
 
   printResults() {
     
-    console.log('=' .repeat(50));
-    
+    console.log('='.repeat(50));
+    console.log('📊 Результаты тестирования:');
     this.testResults.forEach(result => {
       const icon = result.status === 'success' ? '✅' : result.status === 'error' ? '❌' : 'ℹ️';
-      
+      console.log(`[${result.timestamp}] ${icon} ${result.message}`);
     });
 
     const successCount = this.testResults.filter(r => r.status === 'success').length;
-    const totalCount = this.testResults.length;
+    const errorCount = this.testResults.filter(r => r.status === 'error').length;
     
-    
-    if (successCount === totalCount) {
-      
+    console.log('='.repeat(50));
+    if (errorCount === 0) {
+      console.log(`🎉 Все ${successCount} тесты пройдены успешно!`);
     } else {
-      
+      console.error(`❌ Обнаружено ${errorCount} ошибок из ${this.testResults.length} шагов.`);
     }
   }
 
