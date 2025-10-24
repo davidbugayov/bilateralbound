@@ -700,7 +700,7 @@ class FeatureManager {
       return
     }
 
-    const name = (nameRaw || session.name || 'Сессия').trim()
+    let name = (nameRaw || session.name || 'Сессия').trim()
     session.name = name
     session.data = this.buildCurrentSessionData()
     session.updatedAt = new Date().toISOString()

@@ -3,16 +3,30 @@
  * Common utilities and functions for BilateralBound
  * Упрощенная версия с использованием общих утилит
  */
-// Условное логирование только в режиме разработки
+/**
+ * Условное логирование только в режиме разработки.
+ * @param {...*} args - Аргументы для логирования.
+ */
 const debugLog =
   typeof globalThis !== 'undefined' && globalThis.debugLog ? globalThis.debugLog : () => {}
 
+/**
+ * Логирует ошибки в режиме разработки.
+ * @param {...*} args - Аргументы для логирования.
+ */
 const debugError =
   typeof globalThis !== 'undefined' && globalThis.debugError ? globalThis.debugError : () => {}
 
+/**
+ * Логирует предупреждения в режиме разработки.
+ * @param {...*} args - Аргументы для логирования.
+ */
 const debugWarn =
   typeof globalThis !== 'undefined' && globalThis.debugWarn ? globalThis.debugWarn : () => {}
-// Используем общие утилиты, если доступны, иначе fallback
+/**
+ * Извлекает ID сессии из URL.
+ * @returns {string|null} ID сессии или null, если не найден.
+ */
 const getSessionIdFromUrl =
   globalThis.CommonUtils?.getSessionIdFromUrl &&
   typeof globalThis.CommonUtils.getSessionIdFromUrl === 'function'
@@ -65,31 +79,16 @@ const toggleFullscreen =
             }
 
             if (isFs()) {
-              const exitPromise =
-                document.exitFullscreen?.() ||
+              await (document.exitFullscreen?.() ||
                 document.webkitExitFullscreen?.() ||
                 document.msExitFullscreen?.() ||
-                document.mozCancelFullScreen?.()
-              // Await only if a promise was returned
-              if (exitPromise instanceof Promise) {
-                await exitPromise;
-              }
+                document.mozCancelFullScreen?.())
             } else {
-              const target = el || document.documentElement;
-              const requestPromise =
-                target.requestFullscreen?.() ||
+              const target = el || document.documentElement
+              await (target.requestFullscreen?.() ||
                 target.webkitRequestFullscreen?.() ||
                 target.msRequestFullscreen?.() ||
-                target.mozRequestFullScreen?.();
-
-              // Only proceed if a promise was returned.
-              if (requestPromise instanceof Promise) {
-                await requestPromise;
-              } else {
-                // If no promise, the call failed or is not supported.
-                // canFullscreen should have caught this, but as a fallback:
-                return false;
-              }
+                target.mozRequestFullScreen?.())
             }
             return true
           } catch (err) {
@@ -98,6 +97,12 @@ const toggleFullscreen =
           }
         }
       })()
+/**
+ * Создает throttled-функцию, которая вызывает fn не чаще одного раза за указанный период.
+ * @param {Function} fn - Функция для throttling.
+ * @param {number} [wait=100] - Период ожидания в миллисекундах.
+ * @returns {Function} Новая throttled-функция.
+ */
 const throttle =
   globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function'
     ? globalThis.CommonUtils.throttle

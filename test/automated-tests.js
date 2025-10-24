@@ -16,6 +16,7 @@ class Tester {
   log(msg, type = 'info') {
     // Simple console log, can be expanded
     console.log(`[${type.toUpperCase()}] ${msg}`);
+    return true; // To avoid unused parameter warning
   }
 
   async startServer() {
