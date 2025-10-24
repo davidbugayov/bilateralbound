@@ -19,7 +19,7 @@
 Система автоматически разворачивает приложение на VPS при push в GitHub:
 
 - **Production (emdrbilateral.online)** - ветка `stable`, порт 3000
-- **Production RU (emdrbilateral.ru)** - ветка `stable`, порт 3001  
+- **Production RU (emdrbilateral.ru)** - ветка `stable`, порт 3001
 - **Development (dev.emdrbilateral.online)** - ветка `main`, порт 3002
 
 ### Компоненты
@@ -54,11 +54,11 @@ webhook-server.js:9000
 
 ### Маппинг окружений
 
-| Домен | Ветка | Директория | Сервис | Порт |
-|-------|-------|------------|--------|------|
-| emdrbilateral.online | stable | /var/www/bilateralbound-prod | bilateralbound-prod | 3000 |
-| emdrbilateral.ru | stable | /var/www/bilateralbound-prod-ru | bilateralbound-prod-ru | 3001 |
-| dev.emdrbilateral.online | main | /var/www/bilateralbound-dev | bilateralbound-dev | 3002 |
+| Домен                    | Ветка  | Директория                      | Сервис                 | Порт |
+| ------------------------ | ------ | ------------------------------- | ---------------------- | ---- |
+| emdrbilateral.online     | stable | /var/www/bilateralbound-prod    | bilateralbound-prod    | 3000 |
+| emdrbilateral.ru         | stable | /var/www/bilateralbound-prod-ru | bilateralbound-prod-ru | 3001 |
+| dev.emdrbilateral.online | main   | /var/www/bilateralbound-dev     | bilateralbound-dev     | 3002 |
 
 ---
 
@@ -75,6 +75,7 @@ chmod +x setup-webhooks.sh manual-deploy.sh
 ```
 
 Скрипт:
+
 - Установит webhook-сервер на VPS
 - Сгенерирует webhook secret
 - Настроит systemd сервис
@@ -90,6 +91,7 @@ chmod +x setup-webhooks.sh manual-deploy.sh
 3. Создайте 3 webhook (по одному для каждого домена):
 
 **Webhook #1 - Production**
+
 ```
 Payload URL: https://emdrbilateral.online/webhook
 Content type: application/json
@@ -99,15 +101,17 @@ Active: ✓
 ```
 
 **Webhook #2 - Production RU**
+
 ```
 Payload URL: https://emdrbilateral.ru/webhook
-Content type: application/json  
+Content type: application/json
 Secret: [ваш сгенерированный secret]
 Events: Just the push event
 Active: ✓
 ```
 
 **Webhook #3 - Development**
+
 ```
 Payload URL: https://dev.emdrbilateral.online/webhook
 Content type: application/json
@@ -142,7 +146,7 @@ ssh root@213.139.229.44 "tail -f /var/log/webhook-deploy.log"
   port: 9000,                    // Порт webhook-сервера
   secret: process.env.WEBHOOK_SECRET,  // Secret из переменной окружения
   logFile: '/var/log/webhook-deploy.log',
-  
+
   environments: {
     'emdrbilateral.online': {
       branch: 'stable',
@@ -164,11 +168,13 @@ ssh root@213.139.229.44 "tail -f /var/log/webhook-deploy.log"
    - Если есть - обновляет код
 
 2. **Остановка сервиса**
+
    ```bash
    systemctl stop bilateralbound-prod
    ```
 
 3. **Обновление кода**
+
    ```bash
    git fetch --all
    git checkout stable
@@ -176,6 +182,7 @@ ssh root@213.139.229.44 "tail -f /var/log/webhook-deploy.log"
    ```
 
 4. **Установка зависимостей**
+
    ```bash
    npm ci --production
    ```
@@ -183,6 +190,7 @@ ssh root@213.139.229.44 "tail -f /var/log/webhook-deploy.log"
 5. **Создание systemd сервиса** (если не существует)
 
 6. **Запуск сервиса**
+
    ```bash
    systemctl enable bilateralbound-prod
    systemctl start bilateralbound-prod
@@ -242,6 +250,7 @@ ssh root@213.139.229.44 "netstat -tuln | grep 9000"
 ### Просмотр логов
 
 **Webhook-сервер (все события деплоя)**
+
 ```bash
 # Файловый лог
 ssh root@213.139.229.44 "tail -f /var/log/webhook-deploy.log"
@@ -251,6 +260,7 @@ ssh root@213.139.229.44 "journalctl -u webhook-server -f"
 ```
 
 **Приложения**
+
 ```bash
 # Production
 ssh root@213.139.229.44 "journalctl -u bilateralbound-prod -f"
@@ -280,17 +290,21 @@ ssh root@213.139.229.44 "journalctl -u bilateralbound-dev -f"
 **Проблема:** GitHub показывает ошибку доставки
 
 **Решение:**
+
 1. Проверьте статус webhook-сервера:
+
    ```bash
    ssh root@213.139.229.44 "systemctl status webhook-server"
    ```
 
 2. Проверьте логи:
+
    ```bash
    ssh root@213.139.229.44 "journalctl -u webhook-server -n 50"
    ```
 
 3. Проверьте firewall:
+
    ```bash
    ssh root@213.139.229.44 "ufw status"
    ```
@@ -305,12 +319,15 @@ ssh root@213.139.229.44 "journalctl -u bilateralbound-dev -f"
 **Проблема:** Webhook получен, но деплой зависает
 
 **Решение:**
+
 1. Проверьте логи деплоя:
+
    ```bash
    ssh root@213.139.229.44 "tail -100 /var/log/webhook-deploy.log"
    ```
 
 2. Проверьте доступ к GitHub:
+
    ```bash
    ssh root@213.139.229.44 "git ls-remote https://github.com/davidbugayov/bilateralbound.git"
    ```
@@ -325,17 +342,21 @@ ssh root@213.139.229.44 "journalctl -u bilateralbound-dev -f"
 **Проблема:** Деплой успешен, но приложение не работает
 
 **Решение:**
+
 1. Проверьте статус сервиса:
+
    ```bash
    ssh root@213.139.229.44 "systemctl status bilateralbound-prod"
    ```
 
 2. Проверьте логи приложения:
+
    ```bash
    ssh root@213.139.229.44 "journalctl -u bilateralbound-prod -n 100"
    ```
 
 3. Проверьте зависимости:
+
    ```bash
    ssh root@213.139.229.44 "cd /var/www/bilateralbound-prod && npm ci --production"
    ```
@@ -350,7 +371,9 @@ ssh root@213.139.229.44 "journalctl -u bilateralbound-dev -f"
 **Проблема:** Webhook получен, но отклонен с ошибкой "Invalid signature"
 
 **Решение:**
+
 1. Проверьте secret в systemd сервисе:
+
    ```bash
    ssh root@213.139.229.44 "systemctl cat webhook-server | grep WEBHOOK_SECRET"
    ```
@@ -367,7 +390,9 @@ ssh root@213.139.229.44 "journalctl -u bilateralbound-dev -f"
 **Проблема:** Сервис не запускается из-за занятого порта
 
 **Решение:**
+
 1. Найдите процесс на порту:
+
    ```bash
    ssh root@213.139.229.44 "lsof -i :3000"
    ```

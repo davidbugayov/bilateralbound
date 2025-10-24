@@ -1,5 +1,5 @@
-"use strict";
 #!/usr/bin/env node
+"use strict";
 /**
  * GitHub Webhook Server для автоматического деплоя
  * Обрабатывает push события из GitHub и запускает соответствующие скрипты деплоя
@@ -10,9 +10,12 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 // Конфигурация
+if (!process.env.WEBHOOK_SECRET) {
+  throw new Error('WEBHOOK_SECRET environment variable is required');
+}
 const CONFIG = {
   port: 8080,
-  secret: process.env.WEBHOOK_SECRET || 'your-webhook-secret-here',
+  secret: process.env.WEBHOOK_SECRET,
   logFile: '/var/log/webhook-deploy.log',
   // Маппинг доменов на конфигурации деплоя
   environments: {

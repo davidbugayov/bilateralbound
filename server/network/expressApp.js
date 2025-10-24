@@ -77,16 +77,16 @@ function setupExpressApp(sessionManager, apiCache) {
     helmet({
       contentSecurityPolicy: {
         directives: {
-          defaultSrc: ['\'self\''],
-          styleSrc: ['\'self\'', '\'unsafe-inline\''],
-          styleSrcAttr: ['\'self\'', '\'unsafe-inline\''],
-          styleSrcElem: ['\'self\'', '\'unsafe-inline\''],
-          scriptSrc: ['\'self\'', '\'unsafe-inline\''],
-          scriptSrcAttr: ['\'self\'', '\'unsafe-inline\''],
-          scriptSrcElem: ['\'self\'', '\'unsafe-inline\'', 'https://mc.yandex.ru'],
-          imgSrc: ['\'self\'', 'data:', 'https:', 'https://*.mc.yandex.ru'],
-          connectSrc: ['\'self\'', 'https://mc.yandex.ru', 'https://mc.yandex.com'],
-          frameSrc: ['\'self\'', 'https://mc.yandex.md']
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          styleSrcAttr: ["'self'", "'unsafe-inline'"],
+          styleSrcElem: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrcAttr: ["'self'", "'unsafe-inline'"],
+          scriptSrcElem: ["'self'", "'unsafe-inline'", 'https://mc.yandex.ru'],
+          imgSrc: ["'self'", 'data:', 'https:', 'https://*.mc.yandex.ru'],
+          connectSrc: ["'self'", 'https://mc.yandex.ru', 'https://mc.yandex.com'],
+          frameSrc: ["'self'", 'https://mc.yandex.md']
         }
       },
       crossOriginResourcePolicy: { policy: 'same-site' },

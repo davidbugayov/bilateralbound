@@ -84,7 +84,7 @@ export class SessionController {
   setupWebSocketListeners() {
     if (!this.wsClient) return
 
-    this.wsClient.on('stateUpdate', (state) => {
+    this.wsClient.on('stateUpdate', state => {
       this.setSessionState(state)
     })
 

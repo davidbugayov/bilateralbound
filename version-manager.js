@@ -1,131 +1,150 @@
 #!/usr/bin/env node
-"use strict";
+'use strict'
 /**
  * Автоматический менеджер версий для BilateralBound
  * Обновляет версию при каждом значимом коммите
  */
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+const fs = require('fs')
+const path = require('path')
+const { execSync } = require('child_process')
 class VersionManager {
-    constructor() {
-    this.versionFile = path.join(__dirname, 'VERSION.md');
-    this.packageFile = path.join(__dirname, 'package.json');
-    this.currentVersion = this.getCurrentVersion();
-    }
-    /**
-     * Получить текущую версию из package.json
-     */
-    getCurrentVersion() {
+  constructor() {
+    this.versionFile = path.join(__dirname, 'VERSION.md')
+    this.packageFile = path.join(__dirname, 'package.json')
+    this.currentVersion = this.getCurrentVersion()
+  }
+  /**
+   * Получить текущую версию из package.json
+   */
+  getCurrentVersion() {
     try {
-    const packageData = JSON.parse(fs.readFileSync(this.packageFile, 'utf8'));
-    return packageData.version || '1.0';
+      const packageData = JSON.parse(fs.readFileSync(this.packageFile, 'utf8'))
+      return packageData.version || '1.0'
     } catch {
-    return '1.0';
+      return '1.0'
     }
-    }
-    /**
-     * Получить информацию о последнем коммите
-     */
-    getLastCommitInfo() {
+  }
+  /**
+   * Получить информацию о последнем коммите
+   */
+  getLastCommitInfo() {
     try {
-    const commitHash = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
-    const commitMessage = execSync('git log -1 --pretty=%B', { encoding: 'utf8' }).trim();
-    const commitDate = execSync('git log -1 --pretty=%cd --date=iso', { encoding: 'utf8' }).trim();
-    const shortHash = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
-    return {
-    hash: commitHash,
-    shortHash,
-    message: commitMessage,
-    date: commitDate
-    };
+      const commitHash = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
+      const commitMessage = execSync('git log -1 --pretty=%B', { encoding: 'utf8' }).trim()
+      const commitDate = execSync('git log -1 --pretty=%cd --date=iso', { encoding: 'utf8' }).trim()
+      const shortHash = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
+      return {
+        hash: commitHash,
+        shortHash,
+        message: commitMessage,
+        date: commitDate
+      }
     } catch {
-    return {
-    hash: 'unknown',
-    shortHash: 'unknown',
-    message: 'Initial commit',
-    date: new Date().toISOString()
-    };
+      return {
+        hash: 'unknown',
+        shortHash: 'unknown',
+        message: 'Initial commit',
+        date: new Date().toISOString()
+      }
     }
-    }
-    /**
-     * Определить тип изменений для семантического версионирования
-     */
-    determineVersionBump(commitMessage) {
-    const message = commitMessage.toLowerCase();
+  }
+  /**
+   * Определить тип изменений для семантического версионирования
+   */
+  determineVersionBump(commitMessage) {
+    const message = commitMessage.toLowerCase()
     // Критерии для major версии (breaking changes)
-    if (message.includes('breaking') || message.includes('major') ||
-    message.includes('breaking change') || message.includes('break') ||
-    message.includes('!:')) {
-    return 'major';
+    if (
+      message.includes('breaking') ||
+      message.includes('major') ||
+      message.includes('breaking change') ||
+      message.includes('break') ||
+      message.includes('!:')
+    ) {
+      return 'major'
     }
     // Критерии для minor версии (новые функции)
-    if (message.includes('feat') || message.includes('feature') ||
-    message.includes('add') || message.includes('new') ||
-    message.includes('minor') || message.includes('optimization') ||
-    message.includes('perf') || message.includes('improve') ||
-    message.includes('enhance') || message.includes('deploy') ||
-    message.includes('fix: скрыть') || message.includes('feat:') ||
-    message.includes('feature:')) {
-    return 'minor';
+    if (
+      message.includes('feat') ||
+      message.includes('feature') ||
+      message.includes('add') ||
+      message.includes('new') ||
+      message.includes('minor') ||
+      message.includes('optimization') ||
+      message.includes('perf') ||
+      message.includes('improve') ||
+      message.includes('enhance') ||
+      message.includes('deploy') ||
+      message.includes('fix: скрыть') ||
+      message.includes('feat:') ||
+      message.includes('feature:')
+    ) {
+      return 'minor'
     }
     // Критерии для patch версии (исправления)
-    if (message.includes('fix') || message.includes('bug') ||
-    message.includes('patch') || message.includes('hotfix') ||
-    message.includes('correct') || message.includes('update') ||
-    message.includes('refactor') || message.includes('style') ||
-    message.includes('docs') || message.includes('test')) {
-    return 'patch';
+    if (
+      message.includes('fix') ||
+      message.includes('bug') ||
+      message.includes('patch') ||
+      message.includes('hotfix') ||
+      message.includes('correct') ||
+      message.includes('update') ||
+      message.includes('refactor') ||
+      message.includes('style') ||
+      message.includes('docs') ||
+      message.includes('test')
+    ) {
+      return 'patch'
     }
     // По умолчанию minor версия для значимых изменений
-    return 'minor';
-    }
-    /**
-     * Увеличить версию
-     */
-    bumpVersion(currentVersion, bumpType) {
-    const [major, minor, patch] = currentVersion.split('.').map(Number);
+    return 'minor'
+  }
+  /**
+   * Увеличить версию
+   */
+  bumpVersion(currentVersion, bumpType) {
+    const [major, minor, patch] = currentVersion.split('.').map(Number)
     switch (bumpType) {
-    case 'major':
-    return `${major + 1}.0`;
-    case 'minor':
-    return `${major}.${minor + 1}.0`;
-    case 'patch':
-    default:
-    return `${major}.${minor}.${patch + 1}`;
+      case 'major':
+        return `${major + 1}.0`
+      case 'minor':
+        return `${major}.${minor + 1}.0`
+      case 'patch':
+      default:
+        return `${major}.${minor}.${patch + 1}`
     }
-    }
-    /**
-     * Обновить версию в package.json
-     */
-    updatePackageVersion(newVersion) {
+  }
+  /**
+   * Обновить версию в package.json
+   */
+  updatePackageVersion(newVersion) {
     try {
-    const packageData = JSON.parse(fs.readFileSync(this.packageFile, 'utf8'));
-    packageData.version = newVersion;
-    fs.writeFileSync(this.packageFile, JSON.stringify(packageData, null, 2));
+      const packageData = JSON.parse(fs.readFileSync(this.packageFile, 'utf8'))
+      packageData.version = newVersion
+      fs.writeFileSync(this.packageFile, JSON.stringify(packageData, null, 2))
     } catch {
-    console.error('❌ Ошибка обновления package.json');
+      console.error('❌ Ошибка обновления package.json')
     }
-    }
-    /**
-     * Обновить файл VERSION.md
-     */
-    updateVersionFile(newVersion, commitInfo) {
+  }
+  /**
+   * Обновить файл VERSION.md
+   */
+  updateVersionFile(newVersion, commitInfo) {
     const versionData = {
-    version: newVersion,
-    status: 'Активна',
-    releaseDate: new Date().toLocaleString('ru-RU', {
-    timeZone: 'Europe/Moscow',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-    }),
-    commitHash: commitInfo.shortHash,
-    commitMessage: commitInfo.message,
-    timestamp: new Date().toISOString()
-    };
+      version: newVersion,
+      status: 'Активна',
+      releaseDate: new Date().toLocaleString('ru-RU', {
+        timeZone: 'Europe/Moscow',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      commitHash: commitInfo.shortHash,
+      commitMessage: commitInfo.message,
+      timestamp: new Date().toISOString()
+    }
     const content = `# BilateralBound - Система Версионирования
 ## Текущая Версия: v${newVersion}
 **Статус:** ${versionData.status}
@@ -147,78 +166,81 @@ class VersionManager {
 - Мобильная версия скрывает индикатор версии
 ---
 *Автоматически сгенерировано: ${versionData.timestamp}*
-`;
+`
     try {
-    fs.writeFileSync(this.versionFile, content);
+      fs.writeFileSync(this.versionFile, content)
     } catch {
-    console.error('❌ Ошибка обновления VERSION.md');
+      console.error('❌ Ошибка обновления VERSION.md')
     }
-    }
-    /**
-     * Обновить версию в футере главной страницы
-     */
-    updateFooterVersion(newVersion) {
+  }
+  /**
+   * Обновить версию в футере главной страницы
+   */
+  updateFooterVersion(newVersion) {
     try {
-    const indexPath = path.join(__dirname, 'public', 'index.html');
-    let content = fs.readFileSync(indexPath, 'utf8');
-    // Ищем строку с версией в футере
-    const versionRegex = /⚡ BilateralBound v\d+\.\d+\.\d+/g;
-    const newVersionText = `⚡ BilateralBound v${newVersion}`;
-    if (versionRegex.test(content)) {
-    content = content.replace(versionRegex, newVersionText);
-    fs.writeFileSync(indexPath, content);
-    return true;
-    } else {
-    return false;
-    }
+      const indexPath = path.join(__dirname, 'public', 'index.html')
+      let content = fs.readFileSync(indexPath, 'utf8')
+      // Ищем строку с версией в футере
+      const versionRegex = /⚡ BilateralBound v\d+\.\d+\.\d+/g
+      const newVersionText = `⚡ BilateralBound v${newVersion}`
+      if (versionRegex.test(content)) {
+        content = content.replace(versionRegex, newVersionText)
+        fs.writeFileSync(indexPath, content)
+        return true
+      } else {
+        return false
+      }
     } catch {
-    console.error('❌ Ошибка обновления версии в футере');
-    return false;
+      console.error('❌ Ошибка обновления версии в футере')
+      return false
     }
-    }
-    /**
-     * Основной процесс обновления версии
-     */
-    async updateVersion() {
-    const commitInfo = this.getLastCommitInfo();
+  }
+  /**
+   * Основной процесс обновления версии
+   */
+  async updateVersion() {
+    const commitInfo = this.getLastCommitInfo()
     // Определяем тип обновления версии
-    const bumpType = this.determineVersionBump(commitInfo.message);
+    const bumpType = this.determineVersionBump(commitInfo.message)
     // Вычисляем новую версию
-    const newVersion = this.bumpVersion(this.currentVersion, bumpType);
+    const newVersion = this.bumpVersion(this.currentVersion, bumpType)
     // Проверяем, нужна ли новая версия
     if (newVersion === this.currentVersion) {
-    return false;
+      return false
     }
     // Обновляем файлы
-    this.updatePackageVersion(newVersion);
-    this.updateVersionFile(newVersion, commitInfo);
-    this.updateFooterVersion(newVersion);
-    return true;
-    }
-    /**
-     * Получить текущую информацию о версии
-     */
-    getVersionInfo() {
+    this.updatePackageVersion(newVersion)
+    this.updateVersionFile(newVersion, commitInfo)
+    this.updateFooterVersion(newVersion)
+    return true
+  }
+  /**
+   * Получить текущую информацию о версии
+   */
+  getVersionInfo() {
     return {
-    current: this.currentVersion,
-    file: this.versionFile,
-    package: this.packageFile
-    };
+      current: this.currentVersion,
+      file: this.versionFile,
+      package: this.packageFile
     }
+  }
 }
 // Экспорт для использования как модуля
-module.exports = VersionManager;
+module.exports = VersionManager
 // Если запущен напрямую
 if (require.main === module) {
-    const manager = new VersionManager();
-    manager.updateVersion().then(success => {
-    if (success) {
-    process.exit(0);
-    } else {
-    process.exit(0);
-    }
-    }).catch(error => {
-    console.error('❌ Ошибка обновления версии:', error.message);
-    process.exit(1);
-    });
+  const manager = new VersionManager()
+  manager
+    .updateVersion()
+    .then(success => {
+      if (success) {
+        process.exit(0)
+      } else {
+        process.exit(0)
+      }
+    })
+    .catch(error => {
+      console.error('❌ Ошибка обновления версии:', error.message)
+      process.exit(1)
+    })
 }

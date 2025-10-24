@@ -40,8 +40,9 @@ const cleanupIntervals = [
   setInterval(() => {
     sessionManager.cleanupExpiredSessions()
   }, 60000),
-  setInterval(() => {
-    const now = Date.now()
+  setInterval(
+    () => {
+      const now = Date.now()
       let removedCount = 0
       for (const [key, cached] of apiCache) {
         const adaptiveTTL = (cached.type === 'ball_state' ? 50 : 1000) * 3 // Simplified TTL logic

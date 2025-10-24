@@ -373,7 +373,10 @@ class PhysicsEngine {
 
     if (Math.abs(this._smoothedVelocity.x) > 0) {
       const timeToBounceX = this._calculateTimeToBounce(
-        this.ball.x, this._smoothedVelocity.x, radius, w
+        this.ball.x,
+        this._smoothedVelocity.x,
+        radius,
+        w
       )
       if (timeToBounceX < predictTime) {
         clampedTargetX = predictedTargetX < w / 2 ? radius : w - radius
@@ -384,7 +387,10 @@ class PhysicsEngine {
 
     if (Math.abs(this._smoothedVelocity.y) > 0) {
       const timeToBounceY = this._calculateTimeToBounce(
-        this.ball.y, this._smoothedVelocity.y, radius, h
+        this.ball.y,
+        this._smoothedVelocity.y,
+        radius,
+        h
       )
       if (timeToBounceY < predictTime) {
         clampedTargetY = predictedTargetY < h / 2 ? radius : h - radius
@@ -447,9 +453,7 @@ class PhysicsEngine {
   }
 
   _interpolatePosition(deltaTime = 0.016) {
-    const { stepX, stepY } = this._limitStepSize(
-      this.state.targetX, this.state.targetY, deltaTime
-    )
+    const { stepX, stepY } = this._limitStepSize(this.state.targetX, this.state.targetY, deltaTime)
 
     const smoothingFactor = this.options?.smoothing?.smoothingFactor ?? 0.25
     const radius = this.ball.radius
@@ -480,9 +484,11 @@ class PhysicsEngine {
     const snapDistance = this.options.smoothing.snapDistance || 0.2
     const lowSpeedThreshold = 3
 
-    if (distance < snapDistance &&
-        Math.abs(this.state.smoothVx) < lowSpeedThreshold &&
-        Math.abs(this.state.smoothVy) < lowSpeedThreshold) {
+    if (
+      distance < snapDistance &&
+      Math.abs(this.state.smoothVx) < lowSpeedThreshold &&
+      Math.abs(this.state.smoothVy) < lowSpeedThreshold
+    ) {
       this.ball.x = clampedTargetX
       this.ball.y = clampedTargetY
       this._currPos.x = this.ball.x
@@ -531,7 +537,7 @@ class PhysicsEngine {
     // Для сервера используем полную физику с отскоками
     // Вызываем оригинальный метод обновления серверной физики
     // (не рекурсивно, так как это private метод)
-    const originalUpdateServerPhysics = (deltaTime) => {
+    const originalUpdateServerPhysics = deltaTime => {
       if (this.state.paused) return
       // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
       // Не обновляем физику, пока размеры мира не будут явно установлены
@@ -791,10 +797,18 @@ class PhysicsEngine {
    */
   _validateServerCommand(command) {
     const validated = {}
-    if (typeof command.dirX === 'number' && Math.abs(command.dirX) <= 1 && Number.isFinite(command.dirX)) {
+    if (
+      typeof command.dirX === 'number' &&
+      Math.abs(command.dirX) <= 1 &&
+      Number.isFinite(command.dirX)
+    ) {
       validated.dirX = command.dirX
     }
-    if (typeof command.dirY === 'number' && Math.abs(command.dirY) <= 1 && Number.isFinite(command.dirY)) {
+    if (
+      typeof command.dirY === 'number' &&
+      Math.abs(command.dirY) <= 1 &&
+      Number.isFinite(command.dirY)
+    ) {
       validated.dirY = command.dirY
     }
     if (
@@ -886,10 +900,14 @@ class PhysicsEngine {
 
   _handleViewerPositionUpdate(command) {
     if (command.x !== undefined && command.y !== undefined) {
-      const cx = Math.min(this.options.worldWidth - this.ball.radius,
-        Math.max(this.ball.radius, command.x))
-      const cy = Math.min(this.options.worldHeight - this.ball.radius,
-        Math.max(this.ball.radius, command.y))
+      const cx = Math.min(
+        this.options.worldWidth - this.ball.radius,
+        Math.max(this.ball.radius, command.x)
+      )
+      const cy = Math.min(
+        this.options.worldHeight - this.ball.radius,
+        Math.max(this.ball.radius, command.y)
+      )
 
       this.state.targetX = cx
       this.state.targetY = cy

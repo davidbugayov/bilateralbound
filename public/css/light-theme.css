@@ -11,7 +11,9 @@ body.light-theme .control-section {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   border: 1px solid rgba(226, 232, 240, 0.8);
   color: #374151;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
   border-radius: 20px;
   backdrop-filter: blur(10px);
 }
@@ -156,7 +158,9 @@ body.light-theme .link-input-group input {
 
 body.light-theme .link-input-group input:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* Кнопки копирования */
@@ -175,25 +179,25 @@ body.light-theme .copy-btn:hover {
 }
 
 /* Слайдеры скорости */
-body.light-theme .speed-container input[type="range"] {
+body.light-theme .speed-container input[type='range'] {
   background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
   border-radius: 8px;
 }
 
-body.light-theme .speed-container input[type="range"]::-webkit-slider-thumb {
+body.light-theme .speed-container input[type='range']::-webkit-slider-thumb {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);
   border: 2px solid #ffffff;
 }
 
-body.light-theme .speed-container input[type="range"]::-moz-range-thumb {
+body.light-theme .speed-container input[type='range']::-moz-range-thumb {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);
   border: 2px solid #ffffff;
 }
 
-body.light-theme .speed-container input[type="range"]:focus {
+body.light-theme .speed-container input[type='range']:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
@@ -245,13 +249,16 @@ body.light-theme .kbd {
 body.light-theme #bbCounters > div {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   border: 1px solid rgba(226, 232, 240, 0.6);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
   border-radius: 20px;
   padding: 16px;
   backdrop-filter: blur(10px);
 }
 
-body.light-theme #bbCounters .font-semibold { /* Targeting the title */
+body.light-theme #bbCounters .font-semibold {
+  /* Targeting the title */
   color: #6b7280;
   font-weight: 500;
   font-size: 14px;
@@ -350,7 +357,9 @@ body.light-theme .card {
   background: #ffffff;
   border-color: #e2e8f0;
   color: #1e293b;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.05),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 body.light-theme .main-button {
@@ -385,7 +394,11 @@ body.light-theme #previewOverlay {
 }
 
 body.light-theme #previewFsPanel {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(248, 250, 252, 0.95) 100%
+  ) !important;
   border-color: rgba(226, 232, 240, 0.8) !important;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
   backdrop-filter: blur(20px);
@@ -456,19 +469,31 @@ body.light-theme #viewerStatus {
 
 /* Прогресс-бары и визуальные элементы */
 body.light-theme .bb-notification.success {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.95) 0%,
+    rgba(5, 150, 105, 0.95) 100%
+  ) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
   color: white !important;
 }
 
 body.light-theme .bb-notification.error {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.95) 0%,
+    rgba(220, 38, 38, 0.95) 100%
+  ) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
   color: white !important;
 }
 
 body.light-theme .bb-notification.info {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.95) 0%,
+    rgba(37, 99, 235, 0.95) 100%
+  ) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
   color: white !important;
 }
@@ -482,33 +507,54 @@ body.light-theme .bb-notification {
 }
 
 body.light-theme .bb-notification.success {
-  background: linear-gradient(135deg, rgba(240, 253, 244, 0.95) 0%, rgba(236, 253, 245, 0.95) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(240, 253, 244, 0.95) 0%,
+    rgba(236, 253, 245, 0.95) 100%
+  ) !important;
   border-left: 4px solid #22c55e !important;
   color: #166534 !important;
 }
 
 body.light-theme .bb-notification.error {
-  background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(254, 242, 242, 0.95) 0%,
+    rgba(254, 226, 226, 0.95) 100%
+  ) !important;
   border-left: 4px solid #ef4444 !important;
   color: #991b1b !important;
 }
 
 body.light-theme .bb-notification.warning {
-  background: linear-gradient(135deg, rgba(251, 236, 225, 0.95) 0%, rgba(245, 158, 11, 0.1) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 236, 225, 0.95) 0%,
+    rgba(245, 158, 11, 0.1) 100%
+  ) !important;
   border-left: 4px solid #f59e0b !important;
   color: #92400e !important;
 }
 
 body.light-theme .bb-notification.info {
-  background: linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(239, 246, 255, 0.95) 0%,
+    rgba(219, 234, 254, 0.95) 100%
+  ) !important;
   border-left: 4px solid #3b82f6 !important;
   color: #1e3a8a !important;
 }
 
 /* Анимации градиента */
 @keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 /* ===== SHARED COMPONENTS LIGHT THEME OVERRIDES ===== */

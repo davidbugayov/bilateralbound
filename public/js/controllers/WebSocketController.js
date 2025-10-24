@@ -9,8 +9,8 @@ export class WebSocketController {
    * @param {Object} appState - глобальное состояние приложения
    */
   constructor(wsClient, appState) {
-    this.wsClient = wsClient;
-    this.appState = appState;
+    this.wsClient = wsClient
+    this.appState = appState
   }
 
   /**
@@ -19,7 +19,7 @@ export class WebSocketController {
    * @returns {Promise} промис с результатом отправки
    */
   sendControllerUpdate(data) {
-    return this.wsClient.send('controller_update', data);
+    return this.wsClient.send('controller_update', data)
   }
 
   /**
@@ -29,7 +29,7 @@ export class WebSocketController {
    * @returns {Promise} промис с результатом отправки
    */
   sendDirectionChange(dirX, dirY) {
-    return this.sendControllerUpdate({ dirX, dirY });
+    return this.sendControllerUpdate({ dirX, dirY })
   }
 
   /**
@@ -38,7 +38,7 @@ export class WebSocketController {
    * @returns {Promise} промис с результатом отправки
    */
   sendPlayPauseToggle(isPlaying) {
-    return this.sendControllerUpdate({ paused: !isPlaying });
+    return this.sendControllerUpdate({ paused: !isPlaying })
   }
 
   /**
@@ -47,7 +47,7 @@ export class WebSocketController {
    * @returns {Promise} промис с результатом отправки
    */
   sendSpeedChange(speed) {
-    return this.sendControllerUpdate({ speed });
+    return this.sendControllerUpdate({ speed })
   }
 
   /**
@@ -55,6 +55,6 @@ export class WebSocketController {
    * @returns {Promise} промис с результатом отправки
    */
   sendReset() {
-    return this.sendControllerUpdate({ reset: true });
+    return this.sendControllerUpdate({ reset: true })
   }
 }

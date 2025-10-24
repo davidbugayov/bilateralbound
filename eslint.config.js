@@ -38,6 +38,8 @@ module.exports = [
       'build/**',
       'coverage/**',
       '*.min.js',
+      '*.bundle.js',
+      'lib/**',
       'public/emdr-therapy/**',
       'docs/**',
       'test/**',

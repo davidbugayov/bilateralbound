@@ -636,11 +636,11 @@
   .mobile-controls {
     display: block !important;
   }
-  
+
   .direction-controls {
     display: none;
   }
-  
+
   .status-indicator {
     top: 12px;
     left: 12px;
@@ -649,7 +649,7 @@
     border-radius: 12px;
     max-width: calc(100vw - 120px);
   }
-  
+
   .speed-control {
     padding: 20px;
     gap: 16px;
@@ -699,11 +699,11 @@
     font-size: 9px;
     padding: 1px 4px;
   }
-  
+
   .color-palette {
     justify-content: center;
   }
-  
+
   .size-palette {
     justify-content: center;
   }
@@ -717,13 +717,13 @@
     font-size: 12px;
     border-radius: 10px;
   }
-  
+
   .mobile-btn {
     padding: 12px;
     font-size: 14px;
     min-height: 45px;
   }
-  
+
   .mobile-speed-range {
     max-width: 200px;
   }

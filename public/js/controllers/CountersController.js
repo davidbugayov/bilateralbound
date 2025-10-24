@@ -8,25 +8,25 @@ export default class CountersController {
    * @param {Object} appState - глобальное состояние приложения
    */
   constructor(appState) {
-    this.appState = appState;
-    this.timerMs = 0;
-    this.passes = 0;
-    this.sets = 0;
-    this.running = false;
+    this.appState = appState
+    this.timerMs = 0
+    this.passes = 0
+    this.sets = 0
+    this.running = false
   }
 
   /**
    * Запускает счётчик времени
    */
   start() {
-    this.running = true;
+    this.running = true
   }
 
   /**
    * Останавливает счётчик времени
    */
   stop() {
-    this.running = false;
+    this.running = false
   }
 
   /**
@@ -35,7 +35,7 @@ export default class CountersController {
    */
   onBounce() {
     if (this.running) {
-      this.passes++;
+      this.passes++
     }
   }
 
@@ -45,10 +45,10 @@ export default class CountersController {
    * @returns {string} отформатированное время
    */
   formatTime(ms) {
-    const totalSec = Math.floor(ms / 1000);
-    const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    const totalSec = Math.floor(ms / 1000)
+    const m = Math.floor(totalSec / 60)
+    const s = totalSec % 60
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
   }
 
   /**
@@ -61,7 +61,7 @@ export default class CountersController {
       passes: this.passes,
       sets: this.sets,
       running: this.running
-    };
+    }
   }
 
   /**
@@ -69,9 +69,9 @@ export default class CountersController {
    * @param {Object} stats - объект с новыми значениями счётчиков
    */
   setStats(stats) {
-    this.timerMs = stats.timerMs || 0;
-    this.passes = stats.passes || 0;
-    this.sets = stats.sets || 0;
-    this.running = stats.running || false;
+    this.timerMs = stats.timerMs || 0
+    this.passes = stats.passes || 0
+    this.sets = stats.sets || 0
+    this.running = stats.running || false
   }
 }

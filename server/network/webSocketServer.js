@@ -93,7 +93,11 @@ function setupWebSocketServer(server, sessionManager) {
         if (data.type === 'heartbeat') return
 
         if (DEBUG_MODE) {
-          logger.logSession(clientInfo.sessionId, `[MSG IN] ${clientInfo.role}:${data.type}`, 'debug')
+          logger.logSession(
+            clientInfo.sessionId,
+            `[MSG IN] ${clientInfo.role}:${data.type}`,
+            'debug'
+          )
         }
 
         const handler = messageHandlers[data.type]

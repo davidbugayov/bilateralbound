@@ -7,12 +7,14 @@
 ## 🎉 **СТАБИЛЬНАЯ ВЕТКА** - Исправление проблемы с паузой
 
 ### ✅ **Что исправлено в стабильной ветке:**
+
 - **🔧 Критическое исправление:** Игра теперь остается в паузе после подключения вьювера
 - **⚡ Стабильность:** Новая сессия создается с `paused: true`
 - **🧪 Тестирование:** Оставлены только стабильные тесты
 - **🎯 Надежность:** Убраны нестабильные UI тесты
 
 ### 📦 **Стабильная ветка:**
+
 - **Ветка:** `stable`
 - **Дата:** 10.09.2025
 
@@ -32,6 +34,7 @@ npm run test:quick
 ```
 
 ### 📊 **Результаты тестирования:**
+
 - **Все тесты** проходят стабильно
 - **Проблема с паузой** полностью исправлена
 - **Надежность:** Стабильная работа
@@ -45,11 +48,13 @@ npm run test:quick
 ### 🌐 Production серверы (Полностью настроены)
 
 **🔧 Разработка (main ветка):**
+
 - **URL:** `https://dev.emdrbilateral.online`
 - **Webhook:** `https://dev.emdrbilateral.online/webhook`
 - **Автообновление:** При push в main ветку
 
 **🏠 Production серверы (stable ветка):**
+
 - **Основной:** `https://emdrbilateral.online`
 - **Русский:** `https://emdrbilateral.ru`
 - **Webhook основной:** `https://emdrbilateral.online/webhook`
@@ -61,11 +66,13 @@ npm run test:quick
 Требуется Node.js 18+.
 
 ### Быстрые ссылки
+
 - Создать/управлять: [davidbugayov.github.io/bilateralbound](https://davidbugayov.github.io/bilateralbound/)
 - **🎯 Тестирование:** `http://localhost:3002/test/test-system.html` (запустите `npm start`)
 - Пример короткой ссылки зрителя на бэкенде: `https://bilateralbound.onrender.com/s/<sid>`
 
 ### 🔗 Постоянные ссылки клиента (Viewer/Controller)
+
 Теперь можно использовать постоянные, один раз выбранные ссылки для каждого клиента — без необходимости каждый раз генерировать новую.
 
 - Формат ссылок:
@@ -75,14 +82,17 @@ npm run test:quick
 - Сервер сам «создаст или восстановит» сессию при первом подключении по этой ссылке. Если старая сессия была очищена, новая будет создана автоматически по тому же ID — ссылка всегда живая.
 
 Как подготовить ссылку заранее (опционально):
+
 - Выполните: `POST /api/session/<clientId>/reserve`
 - В ответ вернутся готовые URL: `/s/<clientId>` и `/c/<clientId>`
 
 Сценарий работы с несколькими клиентами у контроллера:
+
 - Заведите каждому клиенту постоянный `<clientId>` и сохраните у себя список (заметки/CRM/браузерные закладки).
 - Для начала сессии отправляете клиенту ссылку вида `https://<host>/s/<clientId>`, сами открываете `https://<host>/c/<clientId>` — всё будет настроено автоматически.
 
 Технические детали:
+
 - Веб‑сокет соединение теперь «гарантирует» наличие сессии: при подключении по `/c/<id>` или `/s/<id>` сервер создаёт её, если не существует.
 - Дополнительно доступен REST-метод резервирования: `POST /api/session/:sessionId/reserve` (идемпотентный).
 
@@ -90,18 +100,20 @@ npm run test:quick
 
 **Полностью настроенная инфраструктура с автоматическим развертыванием:**
 
-| Домен | Ветка | Статус | Описание |
-|-------|-------|--------|----------|
-| `https://dev.emdrbilateral.online` | main | 🔧 Разработка | Автообновление при push в main |
-| `https://emdrbilateral.online` | stable | 🏠 Production | Автообновление при push в stable |
-| `https://emdrbilateral.ru` | stable | 🏠 Production RU | Автообновление при push в stable |
+| Домен                              | Ветка  | Статус           | Описание                         |
+| ---------------------------------- | ------ | ---------------- | -------------------------------- |
+| `https://dev.emdrbilateral.online` | main   | 🔧 Разработка    | Автообновление при push в main   |
+| `https://emdrbilateral.online`     | stable | 🏠 Production    | Автообновление при push в stable |
+| `https://emdrbilateral.ru`         | stable | 🏠 Production RU | Автообновление при push в stable |
 
 **Webhook URL для GitHub:**
+
 - DEV: `https://dev.emdrbilateral.online/webhook`
 - PROD: `https://emdrbilateral.online/webhook`
 - RU: `https://emdrbilateral.ru/webhook`
 
 **Особенности production серверов:**
+
 - ✅ **HTTPS** с Let's Encrypt сертификатами
 - ✅ **Автоматическое обновление** при push в GitHub
 - ✅ **Git репозиторий** подключен через SSH
@@ -113,15 +125,18 @@ npm run test:quick
 **Быстрый старт:** [WEBHOOK_QUICK_START.md](./WEBHOOK_QUICK_START.md)
 
 Полная система автоматического деплоя настроена для всех окружений:
+
 - Push в `stable` → автодеплой на production (emdrbilateral.online, emdrbilateral.ru)
 - Push в `main` → автодеплой на dev (dev.emdrbilateral.online)
 
 **Установка на новый сервер:**
+
 ```bash
 ./setup-webhooks.sh
 ```
 
 **Ручной деплой (если webhook не сработал):**
+
 ```bash
 ./manual-deploy.sh
 ```
@@ -129,12 +144,14 @@ npm run test:quick
 **Полная документация:** [WEBHOOK_DEPLOY.md](./WEBHOOK_DEPLOY.md)
 
 **Компоненты системы:**
+
 - `webhook-server.js` - Node.js сервер для обработки GitHub webhooks
 - `setup-webhooks.sh` - автоматическая установка на VPS
 - `manual-deploy.sh` - интерактивный скрипт ручного деплоя
 - `webhook-server.service` - systemd сервис для webhook-сервера
 
 **Проверка статуса:**
+
 ```bash
 # Просмотр логов деплоя
 ssh root@213.139.229.44 "tail -f /var/log/webhook-deploy.log"
@@ -166,11 +183,14 @@ npm start
 
 Репозиторий настроен на публикацию из папки `docs/`.
 
-1) Соберите файлы для Pages:
+1. Соберите файлы для Pages:
+
 ```bash
 npm run build:pages
 ```
-2) Закоммитьте и запушьте изменения (`docs/*`):
+
+2. Закоммитьте и запушьте изменения (`docs/*`):
+
 ```bash
 git add docs/
 git commit -m "Build Pages"
@@ -197,16 +217,18 @@ git push
 **Важно:** Мячик в превью (контроллере) и вьювере движется **параллельно только в соотношении**:
 
 - **Превью (контроллер):** Отображает мяч в масштабированном виде относительно размеров превью-канваса
-- **Вьювер:** Отображает мяч в полном размере экрана вьювера  
+- **Вьювер:** Отображает мяч в полном размере экрана вьювера
 - **Синхронизация:** Оба используют одинаковые координаты от сервера, но применяют разное масштабирование для отображения
 
 **Техническая реализация:**
+
 - Сервер отправляет координаты в размерах экрана вьювера (`viewerScreenSize`)
 - Превью применяет функцию `getScaledState()` для масштабирования координат к размерам превью-канваса
 - Вьювер отображает координаты напрямую без дополнительного масштабирования
 - Оба используют одинаковый `PhysicsEngine` с режимом интерполяции для плавного движения
 
 Зритель открывает ссылку вида:
+
 - GitHub Pages: `viewer.html?sid=<sid>&server=https%3A%2F%2Fbilateralbound.onrender.com`
 - Короткая на Render: `https://bilateralbound.onrender.com/s/<sid>`
 
@@ -220,6 +242,7 @@ git push
 - `GET /` — главная страница с созданием сессии и контроллером.
 
 Сокеты (`socket.io`):
+
 - `join-session` `{ sessionId, role: 'viewer'|'controller' }`
 - `control-update` `{ sessionId, input: { dirX, dirY, speedScalar, reset, pause, resume } }`
 - Сервер эмитит `ball-state`, `role-update`, `session-expired`, `viewer-joined`, `viewer-left`.
@@ -276,6 +299,7 @@ npm start
 #### Что проверяют тесты
 
 ##### ✅ Функциональное тестирование
+
 - **Направления движения:** горизонтальное, вертикальное, диагональные
 - **Управление движением:** старт, стоп, пауза, сброс позиции
 - **Изменение цветов:** фон, мяч, проверка контрастности
@@ -283,11 +307,13 @@ npm start
 - **Синхронизация:** состояние между сервером и клиентом
 
 ##### ✅ Интеграционное тестирование
+
 - **WebSocket соединения:** подключение вьювера и контроллера
 - **API endpoints:** создание сессии, получение состояния
 - **Реальное время:** синхронизация состояния в реальном времени
 
 ##### ✅ Регрессионное тестирование
+
 - **Масштабирование радиуса:** мяч не должен сплющиваться
 - **Видимость мяча:** цвета должны обеспечивать хорошую видимость
 - **Синхронизация состояний:** превью должно соответствовать вьюверу
@@ -404,30 +430,32 @@ git pull
    - **Регрессионный тест** - предотвращение повторения багов
 
 2. **Добавить тест в `test-system.html`:**
+
    ```javascript
    async function testNewFeature() {
-       log('info', '🆕 Тестирование новой функции...');
+     log('info', '🆕 Тестирование новой функции...')
 
-       // Отправить команду
-       sendCommand({ newFeatureParam: value });
+     // Отправить команду
+     sendCommand({ newFeatureParam: value })
 
-       // Подождать синхронизации
-       await new Promise(resolve => setTimeout(resolve, 500));
+     // Подождать синхронизации
+     await new Promise(resolve => setTimeout(resolve, 500))
 
-       // Проверить результат
-       const response = await fetch(`/api/session/${sessionId}/state`);
-       const state = await response.json();
+     // Проверить результат
+     const response = await fetch(`/api/session/${sessionId}/state`)
+     const state = await response.json()
 
-       // Проверить ожидаемое поведение
-       if (условие_успеха) {
-           log('success', `✅ Новая функция работает ✓`);
-       } else {
-           log('error', `❌ Новая функция не работает`);
-       }
+     // Проверить ожидаемое поведение
+     if (условие_успеха) {
+       log('success', `✅ Новая функция работает ✓`)
+     } else {
+       log('error', `❌ Новая функция не работает`)
+     }
    }
    ```
 
 3. **Добавить кнопку теста в HTML:**
+
    ```html
    <button class="test-btn" onclick="testNewFeature()">🆕 Новая функция</button>
    ```
@@ -459,8 +487,6 @@ git pull
 
 MIT
 
-
-
 ## 🛠️ Быстрый неинтерактивный ручной деплой
 
 Если вебхуки временно недоступны, можно выполнить деплой одной командой, без меню:
@@ -478,11 +504,13 @@ MIT
 
 Сервер/доступ сконфигурированы в manual-deploy.sh (SERVER, USER, PASSWORD).
 Сервисы systemd:
+
 - bilateralbound-dev (порт 3002)
 - bilateralbound-prod (порт 3000)
 - bilateralbound-prod-ru (порт 3001)
 
 Проверка статуса и логов (также доступны из меню):
+
 ```bash
 # Статусы всех сервисов
 ssh root@213.139.229.44 "systemctl status bilateralbound-dev bilateralbound-prod bilateralbound-prod-ru --no-pager | head -20"
@@ -490,8 +518,6 @@ ssh root@213.139.229.44 "systemctl status bilateralbound-dev bilateralbound-prod
 # Логи
 ssh root@213.139.229.44 "journalctl -u bilateralbound-dev -n 50 --no-pager"
 ```
-
-
 
 ## ⚡ Быстрый деплой (SSH one-liners)
 
@@ -519,5 +545,6 @@ sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 "cd /
 sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 "cd /var/www/bilateralbound-dev && git pull && systemctl restart bilateralbound-dev && systemctl status bilateralbound-dev --no-pager"
 
 Примечания:
+
 - Требуется утилита sshpass (macOS: brew install hudochenkov/sshpass/sshpass; Ubuntu/Debian: sudo apt-get install sshpass)
 - Пароль и адрес заданы внутри скриптов согласно запросу; для продакшена рекомендуется перейти на деплой по ключам SSH и/или использовать WEBHOOK_DEPLOY.md

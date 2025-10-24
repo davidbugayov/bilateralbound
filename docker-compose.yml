@@ -3,8 +3,8 @@ services:
     image: sonarqube:latest
     container_name: sonarqube
     ports:
-      - "9000:9000"
-      - "9092:9092"
+      - '9000:9000'
+      - '9092:9092'
     environment:
       - SONAR_WEB_SYSTEMPASSCODE=myPassword
       - SONAR_FORCEAUTHENTICATION=false

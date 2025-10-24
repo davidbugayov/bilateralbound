@@ -32,9 +32,9 @@ let __ignoreServerPausedUntilTs = 0 // Кратковременная блоки
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
-  if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
-    hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
-  }
+if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
+  hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
+}
 
 let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
 // --- Elements ---
@@ -136,7 +136,12 @@ let __lastVxSign = 0
 let __lastVySign = 0
 function _hasBounced(currentVelocity, lastSign, minSpeed) {
   const currentSign = Math.sign(currentVelocity)
-  return currentSign !== 0 && lastSign !== 0 && currentSign !== lastSign && Math.abs(currentVelocity) > minSpeed
+  return (
+    currentSign !== 0 &&
+    lastSign !== 0 &&
+    currentSign !== lastSign &&
+    Math.abs(currentVelocity) > minSpeed
+  )
 }
 
 function detectAndCountBounceFromServer(prev, curr) {
@@ -153,7 +158,10 @@ function detectAndCountBounceFromServer(prev, curr) {
         if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
         if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
 
-        if (_hasBounced(currVx, __lastVxSign, minSpeed) || _hasBounced(currVy, __lastVySign, minSpeed)) {
+        if (
+          _hasBounced(currVx, __lastVxSign, minSpeed) ||
+          _hasBounced(currVy, __lastVySign, minSpeed)
+        ) {
           __lastBounceTs = now
           bbCounters.onBounce()
         }
@@ -437,9 +445,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     try {
       if (previewPhysicsEngine) {
         // Всегда центрируем мяч в превью относительно центра вьювера (в координатах вьювера)
-        if (
-          globalThis.__current?.viewerScreenSize?.width > 0
-        ) {
+        if (globalThis.__current?.viewerScreenSize?.width > 0) {
           const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
           const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
           previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
@@ -762,7 +768,18 @@ function _initializeBallColorControl() {
   components.ballColor = sharedComponents.createColorControl(
     document.getElementById('ballColorControl'),
     {
-      colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff'],
+      colors: [
+        '#60a5fa',
+        '#ef4444',
+        '#10b981',
+        '#f59e0b',
+        '#8b5cf6',
+        '#f97316',
+        '#06b6d4',
+        '#84cc16',
+        '#fb7185',
+        '#ffffff'
+      ],
       defaultValue: '#60a5fa',
       title: '',
       onColorChange: color => {
@@ -776,7 +793,18 @@ function _initializeBgColorControl() {
   components.bgColor = sharedComponents.createColorControl(
     document.getElementById('bgColorControl'),
     {
-      colors: ['#020617', '#000000', '#111827', '#0a2540', '#052e16', '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a'],
+      colors: [
+        '#020617',
+        '#000000',
+        '#111827',
+        '#0a2540',
+        '#052e16',
+        '#1a102a',
+        '#2b1b0e',
+        '#032f2f',
+        '#2a0e14',
+        '#0f172a'
+      ],
       defaultValue: '#020617',
       title: '',
       onColorChange: color => {
@@ -865,10 +893,10 @@ async function initializePreview() {
     previewPhysicsEngine.isViewer = true
     // Считаем пасы по локальным событиям отскока
     globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce())
-  // Применяем глобальные настройки сглаживания, если есть
-  if (globalThis.BBConfig?.smoothing) {
-    previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
-  }
+    // Применяем глобальные настройки сглаживания, если есть
+    if (globalThis.BBConfig?.smoothing) {
+      previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
+    }
     // Запускаем ЦИКЛ ФИЗИКИ с фиксированным шагом
     if (physicsInterval) clearInterval(physicsInterval)
     physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
@@ -935,11 +963,7 @@ function updatePreviewSize(viewerScreenSize) {
 }
 
 function canUpdatePreview(viewerScreenSize) {
-  return (
-    viewerScreenSize &&
-    globalThis.__previewRenderer &&
-    previewPhysicsEngine
-  )
+  return viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine
 }
 
 function calculatePreviewDimensions(canvas, viewerScreenSize) {
@@ -1005,7 +1029,7 @@ function updateViewerInfo(viewerScreenSize) {
  * @param {string} directionMode - Режим направления ('horizontal', 'vertical', 'diagRL', 'diagRLL', 'random').
  * @returns {{dirX: number, dirY: number}|null} Возвращает объект с вектором направления или null, если режим неизвестен.
  */
-function getDirectionVector (directionMode) {
+function getDirectionVector(directionMode) {
   switch (directionMode) {
     case 'horizontal':
       return { dirX: 1, dirY: 0 }
@@ -1033,7 +1057,7 @@ function getDirectionVector (directionMode) {
  * @param {number} dirX - The new X direction component.
  * @param {number} dirY - The new Y direction component.
  */
-function _applyDirectionChangeWhenPlaying (dirX, dirY) {
+function _applyDirectionChangeWhenPlaying(dirX, dirY) {
   safeSend(WS_MSG.controllerUpdate, {
     paused: true,
     returnToCenter: true
@@ -1054,7 +1078,7 @@ function _applyDirectionChangeWhenPlaying (dirX, dirY) {
  * @param {number} dirX - The new X direction component.
  * @param {number} dirY - The new Y direction component.
  */
-function _applyDirectionChangeWhenPaused (dirX, dirY) {
+function _applyDirectionChangeWhenPaused(dirX, dirY) {
   safeSend(WS_MSG.controllerUpdate, {
     dirX,
     dirY
@@ -1065,7 +1089,7 @@ function _applyDirectionChangeWhenPaused (dirX, dirY) {
  * Устанавливает направление движения шарика.
  * @param {string} directionMode - Режим направления для установки.
  */
-function setDirection (directionMode) {
+function setDirection(directionMode) {
   if (!directionMode) return
 
   try {
@@ -1207,7 +1231,9 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     // Обновляем иконку направления в полноэкранном режиме
     const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
-      const displayContent = directionDisplay ? directionDisplay.innerHTML : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
+      const displayContent = directionDisplay
+        ? directionDisplay.innerHTML
+        : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
       fsDirectionDisplay.innerHTML = displayContent
     }
   } catch (error) {
@@ -1296,7 +1322,6 @@ function _schedulePlayPauseAnimations() {
 function _syncFullscreenPlayPause() {
   syncFsPlayPauseButton()
 }
-
 
 // ===== УТИЛИТЫ =====
 /**
@@ -1594,9 +1619,9 @@ function wireFullscreenControls() {
 function setupFullscreenSpeedControl() {
   const speed = document.getElementById('fsSpeed')
   if (speed) {
-      if (components.speed?.getSpeed) {
-        speed.value = components.speed.getSpeed()
-      } else {
+    if (components.speed?.getSpeed) {
+      speed.value = components.speed.getSpeed()
+    } else {
       speed.value = 40
     }
     speed.oninput = e => {
@@ -1641,8 +1666,16 @@ function setupFullscreenColorControls() {
 
 function setupFullscreenBallColorControls() {
   const ballColors = [
-    '#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
-    '#f97316', '#06b6d4', '#84cc16', '#fb7185', '#ffffff'
+    '#60a5fa',
+    '#ef4444',
+    '#10b981',
+    '#f59e0b',
+    '#8b5cf6',
+    '#f97316',
+    '#06b6d4',
+    '#84cc16',
+    '#fb7185',
+    '#ffffff'
   ]
 
   for (let i = 1; i <= 10; i++) {
@@ -1653,8 +1686,16 @@ function setupFullscreenBallColorControls() {
 
 function setupFullscreenBackgroundColorControls() {
   const bgColors = [
-    '#020617', '#000000', '#111827', '#0a2540', '#052e16',
-    '#1a102a', '#2b1b0e', '#032f2f', '#2a0e14', '#0f172a'
+    '#020617',
+    '#000000',
+    '#111827',
+    '#0a2540',
+    '#052e16',
+    '#1a102a',
+    '#2b1b0e',
+    '#032f2f',
+    '#2a0e14',
+    '#0f172a'
   ]
 
   for (let i = 1; i <= 10; i++) {

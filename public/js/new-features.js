@@ -575,48 +575,48 @@ class FeatureManager {
     for (const s of this.sessions
       .slice()
       .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))) {
-        const item = document.createElement('div')
-        item.style.display = 'flex'
-        item.style.alignItems = 'center'
-        item.style.justifyContent = 'space-between'
-        item.style.background = '#0b1220'
-        item.style.border = '1px solid #1f2937'
-        item.style.borderRadius = '8px'
-        item.style.padding = '8px 10px'
-        const info = document.createElement('div')
-        info.style.display = 'flex'
-        info.style.flexDirection = 'column'
-        const title = document.createElement('div')
-        title.style.color = '#e5e7eb'
-        title.style.fontWeight = '600'
-        title.textContent = s.name || 'Без названия'
-        const meta = document.createElement('div')
-        meta.style.color = '#9ca3af'
-        meta.style.fontSize = '11px'
-        meta.textContent = `Обновлено: ${new Date(s.updatedAt).toLocaleString()}`
-        info.appendChild(title)
-        info.appendChild(meta)
-        const actions = document.createElement('div')
-        actions.style.display = 'flex'
-        actions.style.gap = '6px'
-        const loadBtn = document.createElement('button')
-        loadBtn.className = 'btn'
-        loadBtn.textContent = 'Загрузить'
-        loadBtn.onclick = () => this.loadSessionById(s.id)
-        const renameBtn = document.createElement('button')
-        renameBtn.className = 'btn outline'
-        renameBtn.textContent = '✎ Имя'
-        renameBtn.onclick = () => this.renameSessionById(s.id)
-        const delBtn = document.createElement('button')
-        delBtn.className = 'btn outline'
-        delBtn.textContent = '🗑'
-        delBtn.onclick = () => this.deleteSessionById(s.id)
-        actions.appendChild(loadBtn)
-        actions.appendChild(renameBtn)
-        actions.appendChild(delBtn)
-        item.appendChild(info)
-        item.appendChild(actions)
-        ul.appendChild(item)
+      const item = document.createElement('div')
+      item.style.display = 'flex'
+      item.style.alignItems = 'center'
+      item.style.justifyContent = 'space-between'
+      item.style.background = '#0b1220'
+      item.style.border = '1px solid #1f2937'
+      item.style.borderRadius = '8px'
+      item.style.padding = '8px 10px'
+      const info = document.createElement('div')
+      info.style.display = 'flex'
+      info.style.flexDirection = 'column'
+      const title = document.createElement('div')
+      title.style.color = '#e5e7eb'
+      title.style.fontWeight = '600'
+      title.textContent = s.name || 'Без названия'
+      const meta = document.createElement('div')
+      meta.style.color = '#9ca3af'
+      meta.style.fontSize = '11px'
+      meta.textContent = `Обновлено: ${new Date(s.updatedAt).toLocaleString()}`
+      info.appendChild(title)
+      info.appendChild(meta)
+      const actions = document.createElement('div')
+      actions.style.display = 'flex'
+      actions.style.gap = '6px'
+      const loadBtn = document.createElement('button')
+      loadBtn.className = 'btn'
+      loadBtn.textContent = 'Загрузить'
+      loadBtn.onclick = () => this.loadSessionById(s.id)
+      const renameBtn = document.createElement('button')
+      renameBtn.className = 'btn outline'
+      renameBtn.textContent = '✎ Имя'
+      renameBtn.onclick = () => this.renameSessionById(s.id)
+      const delBtn = document.createElement('button')
+      delBtn.className = 'btn outline'
+      delBtn.textContent = '🗑'
+      delBtn.onclick = () => this.deleteSessionById(s.id)
+      actions.appendChild(loadBtn)
+      actions.appendChild(renameBtn)
+      actions.appendChild(delBtn)
+      item.appendChild(info)
+      item.appendChild(actions)
+      ul.appendChild(item)
     }
     listWrap.appendChild(ul)
   }

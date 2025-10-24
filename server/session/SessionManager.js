@@ -278,9 +278,7 @@ class SessionManager {
    * @private
    */
   _broadcastInitialStateToController(sessionId, ws, session) {
-    const finalState = session.physicsEngine
-      ? session.physicsEngine.getState()
-      : session.ballState
+    const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
     this.stateBroadcaster.broadcastInitialState(sessionId, ws, finalState)
     ws.initialStateSent = true
     this.logger.logSession(
@@ -304,9 +302,11 @@ class SessionManager {
    * @private
    */
   _isViewerScreenSizeSet(session) {
-    return session.viewerScreenSize &&
-           session.viewerScreenSize.width > 0 &&
-           session.viewerScreenSize.height > 0
+    return (
+      session.viewerScreenSize &&
+      session.viewerScreenSize.width > 0 &&
+      session.viewerScreenSize.height > 0
+    )
   }
 
   /**
@@ -460,9 +460,11 @@ class SessionManager {
    * @private
    */
   _shouldScaleBallPosition(session, currentState) {
-    return currentState &&
-           (session._oldWidth !== session.viewerScreenSize.width ||
-            session._oldHeight !== session.viewerScreenSize.height)
+    return (
+      currentState &&
+      (session._oldWidth !== session.viewerScreenSize.width ||
+        session._oldHeight !== session.viewerScreenSize.height)
+    )
   }
 
   /**

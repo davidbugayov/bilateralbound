@@ -138,7 +138,10 @@ class BallRenderer {
     if (this.validateCanvas()) {
       const clientW = this.canvas.clientWidth
       const clientH = this.canvas.clientHeight
-      if ((clientW && clientW !== this.canvas.width) || (clientH && clientH !== this.canvas.height)) {
+      if (
+        (clientW && clientW !== this.canvas.width) ||
+        (clientH && clientH !== this.canvas.height)
+      ) {
         this.resize(clientW || this.canvas.width, clientH || this.canvas.height)
         this.lastTime = currentTime
         this.animationFrameId = requestAnimationFrame(this.renderLoop)
@@ -236,53 +239,53 @@ class BallRenderer {
         return
       }
 
-    try {
-      // Кэшируем градиент и геометрию круга по (radius,color)
-      const col = ball.colorBall || this.colors.ball
-      if (this._cached.radius !== ball.radius || this._cached.color !== col) {
-        this._cached.radius = ball.radius
-        this._cached.color = col
-        // Градиент не должен зависеть от абсолютной позиции шара,
-        // чтобы исключить визуальные артефакты при ресайзе.
-        const g = this.ctx.createRadialGradient(
-          -ball.radius * 0.3,
-          -ball.radius * 0.3,
-          0,
-          0,
-          0,
-          ball.radius
-        )
-        g.addColorStop(0, col)
-        g.addColorStop(1, this.adjustBrightness(col, -20))
-        this._cached.gradient = g
-        const p = new Path2D()
-        p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2)
-        this._cached.path = p
-      }
+      try {
+        // Кэшируем градиент и геометрию круга по (radius,color)
+        const col = ball.colorBall || this.colors.ball
+        if (this._cached.radius !== ball.radius || this._cached.color !== col) {
+          this._cached.radius = ball.radius
+          this._cached.color = col
+          // Градиент не должен зависеть от абсолютной позиции шара,
+          // чтобы исключить визуальные артефакты при ресайзе.
+          const g = this.ctx.createRadialGradient(
+            -ball.radius * 0.3,
+            -ball.radius * 0.3,
+            0,
+            0,
+            0,
+            ball.radius
+          )
+          g.addColorStop(0, col)
+          g.addColorStop(1, this.adjustBrightness(col, -20))
+          this._cached.gradient = g
+          const p = new Path2D()
+          p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2)
+          this._cached.path = p
+        }
 
-      this.beginPath()
-      // Рисуем мяч с градиентом и переиспользуемой формой
-      this.ctx.save()
-      // Включаем сглаживание для более плавного рендеринга
-      this.ctx.imageSmoothingEnabled = true
-      this.ctx.imageSmoothingQuality = 'high'
-      this.ctx.translate(ball.x, ball.y)
-      this.ctx.fillStyle = this._cached.gradient
-      // Добавляем мягкую тень для объема
-      this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
-      this.ctx.shadowBlur = 4
-      this.ctx.shadowOffsetX = 2
-      this.ctx.shadowOffsetY = 2
-      this.ctx.fill(this._cached.path)
-      this.ctx.restore()
-      // Сбрасываем тень для следующих элементов
-      this.ctx.shadowColor = 'transparent'
-      this.ctx.shadowBlur = 0
-      this.ctx.shadowOffsetX = 0
-      this.ctx.shadowOffsetY = 0
-    } catch {
-      // ignore
-    }
+        this.beginPath()
+        // Рисуем мяч с градиентом и переиспользуемой формой
+        this.ctx.save()
+        // Включаем сглаживание для более плавного рендеринга
+        this.ctx.imageSmoothingEnabled = true
+        this.ctx.imageSmoothingQuality = 'high'
+        this.ctx.translate(ball.x, ball.y)
+        this.ctx.fillStyle = this._cached.gradient
+        // Добавляем мягкую тень для объема
+        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
+        this.ctx.shadowBlur = 4
+        this.ctx.shadowOffsetX = 2
+        this.ctx.shadowOffsetY = 2
+        this.ctx.fill(this._cached.path)
+        this.ctx.restore()
+        // Сбрасываем тень для следующих элементов
+        this.ctx.shadowColor = 'transparent'
+        this.ctx.shadowBlur = 0
+        this.ctx.shadowOffsetX = 0
+        this.ctx.shadowOffsetY = 0
+      } catch {
+        // ignore
+      }
     }
   }
   /**
