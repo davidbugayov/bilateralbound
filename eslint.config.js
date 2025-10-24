@@ -1,8 +1,37 @@
+'use strict'
+
+const globals = require('globals')
 const js = require('@eslint/js')
 
 module.exports = [
   js.configs.recommended,
   {
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        // Custom globals
+        WS_MSG: 'readonly',
+        WebSocketClient: 'readonly',
+        PhysicsEngine: 'readonly',
+        BallRenderer: 'readonly',
+        sharedComponents: 'readonly',
+        debugLog: 'readonly',
+        debugError: 'readonly',
+        debugWarn: 'readonly',
+        throttle: 'readonly',
+        getSessionIdFromUrl: 'readonly',
+        setDirection: 'readonly',
+        setBallColor: 'readonly',
+        setBackgroundColor: 'readonly',
+        setBallSize: 'readonly',
+        togglePlayPause: 'readonly',
+        themeManager: 'readonly'
+      }
+    },
+    files: ['**/*.js'],
     ignores: [
       'node_modules/**',
       'dist/**',
@@ -12,162 +41,35 @@ module.exports = [
       'public/emdr-therapy/**',
       'docs/**',
       'test/**',
-      '*.config.js'
-    ]
-  },
-  // Конфигурация для файлов контроллеров с ES6 модулями
-  {
-    files: ['public/js/controllers/*.js', 'public/js/utils/*.js'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      globals: {
-        console: 'readonly',
-        process: 'readonly',
-        Buffer: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        global: 'readonly',
-        require: 'readonly',
-        module: 'readonly',
-        exports: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        // Custom globals
-        WS_MSG: 'readonly',
-        WebSocketClient: 'readonly',
-        PhysicsEngine: 'readonly',
-        BallRenderer: 'readonly',
-        sharedComponents: 'readonly',
-        debugLog: 'readonly',
-        debugError: 'readonly',
-        throttle: 'readonly',
-        getSessionIdFromUrl: 'readonly',
-        setDirection: 'readonly',
-        setBallColor: 'readonly',
-        setBackgroundColor: 'readonly',
-        setBallSize: 'readonly',
-        togglePlayPause: 'readonly',
-        // Browser globals
-        window: 'readonly',
-        document: 'readonly',
-        navigator: 'readonly',
-        location: 'readonly',
-        history: 'readonly',
-        fetch: 'readonly',
-        WebSocket: 'readonly',
-        localStorage: 'readonly',
-        sessionStorage: 'readonly',
-        crypto: 'readonly',
-        // Browser APIs
-        URL: 'readonly',
-        URLSearchParams: 'readonly',
-        Blob: 'readonly',
-        performance: 'readonly',
-        requestAnimationFrame: 'readonly',
-        cancelAnimationFrame: 'readonly',
-        CustomEvent: 'readonly',
-        Path2D: 'readonly',
-        prompt: 'readonly'
-      }
-    },
+      '*.config.js',
+      'webpack.config.js',
+      'jest.config.js',
+      'babel.config.js',
+      '.babelrc'
+    ],
     rules: {
-      // Строгие правила для ошибок
+      // Strict error-level rules
       'no-undef': 'error',
       'no-redeclare': 'error',
       'no-const-assign': 'error',
       'no-var': 'error',
+      'no-unused-vars': ['error', { args: 'none' }],
+      'no-async-promise-executor': 'error',
+      'no-await-in-loop': 'error',
+      'require-atomic-updates': 'error',
 
-      // Мягкие правила для предупреждений
-      'no-unused-vars': 'error',
+      // Softer warning-level rules
       'prefer-const': 'warn',
       'no-empty': 'warn',
-      'no-multiple-empty-lines': 'warn',
+      'no-multiple-empty-lines': ['warn', { max: 2 }],
       'no-trailing-spaces': 'warn',
       'no-extra-semi': 'warn',
+      semi: ['warn', 'never'],
+      quotes: ['warn', 'single'],
+      'quote-props': ['warn', 'as-needed'],
+      'comma-dangle': ['warn', 'never'],
 
-      // Отключенные правила для более мягкого подхода
-      'no-console': 'off',
-      'no-debugger': 'off'
-    }
-  },
-  // Конфигурация для остальных файлов (не контроллеры)
-  {
-    files: ['**/*.js'],
-    ignores: ['public/js/controllers/*.js', 'public/js/utils/*.js', 'node_modules/**', 'dist/**', 'build/**', 'coverage/**', '*.min.js', 'public/emdr-therapy/**', 'docs/**', 'test/**', '*.config.js'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'commonjs',
-      globals: {
-        console: 'readonly',
-        process: 'readonly',
-        Buffer: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        global: 'readonly',
-        require: 'readonly',
-        module: 'readonly',
-        exports: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        // Custom globals
-        WS_MSG: 'readonly',
-        WebSocketClient: 'readonly',
-        PhysicsEngine: 'readonly',
-        BallRenderer: 'readonly',
-        sharedComponents: 'readonly',
-        debugLog: 'readonly',
-        debugError: 'readonly',
-        throttle: 'readonly',
-        getSessionIdFromUrl: 'readonly',
-        setDirection: 'readonly',
-        setBallColor: 'readonly',
-        setBackgroundColor: 'readonly',
-        setBallSize: 'readonly',
-        togglePlayPause: 'readonly',
-        // Browser globals
-        window: 'readonly',
-        document: 'readonly',
-        navigator: 'readonly',
-        location: 'readonly',
-        history: 'readonly',
-        fetch: 'readonly',
-        WebSocket: 'readonly',
-        localStorage: 'readonly',
-        sessionStorage: 'readonly',
-        crypto: 'readonly',
-        // Browser APIs
-        URL: 'readonly',
-        URLSearchParams: 'readonly',
-        Blob: 'readonly',
-        performance: 'readonly',
-        requestAnimationFrame: 'readonly',
-        cancelAnimationFrame: 'readonly',
-        CustomEvent: 'readonly',
-        Path2D: 'readonly',
-        prompt: 'readonly'
-      }
-    },
-    rules: {
-      // Строгие правила для ошибок
-      'no-undef': 'error',
-      'no-redeclare': 'error',
-      'no-const-assign': 'error',
-      'no-var': 'error',
-
-      // Мягкие правила для предупреждений
-      'no-unused-vars': 'error',
-      'prefer-const': 'warn',
-      'no-empty': 'warn',
-      'no-multiple-empty-lines': 'warn',
-      'no-trailing-spaces': 'warn',
-      'no-extra-semi': 'warn',
-
-      // Отключенные правила для более мягкого подхода
+      // Disabled rules for a more lenient approach
       'no-console': 'off',
       'no-debugger': 'off'
     }

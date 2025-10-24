@@ -755,7 +755,7 @@ function _initializeSpeedControl() {
     onSpeedChange: throttle(speed => {
       updateSpeed(speed)
     }, 100)
-  });
+  })
 }
 
 function _initializeBallColorControl() {
@@ -769,7 +769,7 @@ function _initializeBallColorControl() {
         setBallColor(color)
       }
     }
-  );
+  )
 }
 
 function _initializeBgColorControl() {
@@ -783,7 +783,7 @@ function _initializeBgColorControl() {
         setBackgroundColor(color)
       }
     }
-  );
+  )
 }
 
 function _initializeSizeControl() {
@@ -794,14 +794,14 @@ function _initializeSizeControl() {
     onSizeChange: size => {
       setBallSize(size)
     }
-  });
+  })
 }
 
 function initializeComponents() {
-  _initializeSpeedControl();
-  _initializeBallColorControl();
-  _initializeBgColorControl();
-  _initializeSizeControl();
+  _initializeSpeedControl()
+  _initializeBallColorControl()
+  _initializeBgColorControl()
+  _initializeSizeControl()
 }
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 function safeSend(type, payload) {
@@ -1307,41 +1307,41 @@ function _syncFullscreenPlayPause() {
  * @private
  */
 function _normalizeCoordinate(coord, fallback) {
-  return typeof coord === 'number' && Number.isFinite(coord) ? coord : fallback;
+  return typeof coord === 'number' && Number.isFinite(coord) ? coord : fallback
 }
 
 function getScaledState(state) {
   if (!globalThis.__current.viewerScreenSize || !globalThis.__previewCanvas || !state) {
-    return state;
+    return state
   }
 
-  const viewerSize = globalThis.__current.viewerScreenSize;
+  const viewerSize = globalThis.__current.viewerScreenSize
   const previewSize = {
     width: globalThis.__previewCanvas.width,
-    height: globalThis.__previewCanvas.height,
-  };
+    height: globalThis.__previewCanvas.height
+  }
 
   if (viewerSize.width <= 0 || viewerSize.height <= 0) {
-    return state;
+    return state
   }
 
-  const scaleX = previewSize.width / viewerSize.width;
-  const scaleY = previewSize.height / viewerSize.height;
-  const scaleRadius = Math.min(scaleX, scaleY);
+  const scaleX = previewSize.width / viewerSize.width
+  const scaleY = previewSize.height / viewerSize.height
+  const scaleRadius = Math.min(scaleX, scaleY)
 
-  const scaledState = { ...state };
+  const scaledState = { ...state }
 
-  const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2);
-  const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2);
+  const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2)
+  const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2)
 
-  scaledState.x = rawX * scaleX;
-  scaledState.y = rawY * scaleY;
+  scaledState.x = rawX * scaleX
+  scaledState.y = rawY * scaleY
 
   if (typeof scaledState.radius === 'number') {
-    scaledState.radius *= scaleRadius;
+    scaledState.radius *= scaleRadius
   }
 
-  return scaledState;
+  return scaledState
 }
 
 function updateViewerStatusUI() {

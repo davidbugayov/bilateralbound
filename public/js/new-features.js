@@ -50,14 +50,14 @@ class FeatureManager {
    */
   loadPresets() {
     const defaultPresets = {
-      'Релаксация': {
+      Релаксация: {
         speed: 20,
         direction: 'horizontal',
         colorBall: '#60a5fa',
         colorBg: '#020617',
         size: 20
       },
-      'Активация': {
+      Активация: {
         speed: 80,
         direction: 'vertical',
         colorBall: '#ef4444',
@@ -71,7 +71,7 @@ class FeatureManager {
         colorBg: '#052e16',
         size: 25
       },
-      'Динамическая': {
+      Динамическая: {
         speed: 60,
         direction: 'diagRLL',
         colorBall: '#f59e0b',
