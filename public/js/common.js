@@ -79,16 +79,18 @@ const toggleFullscreen =
             }
 
             if (isFs()) {
-              await (document.exitFullscreen?.() ||
-                document.webkitExitFullscreen?.() ||
-                document.msExitFullscreen?.() ||
-                document.mozCancelFullScreen?.())
+              const exitFullscreen = document.exitFullscreen ||
+                document.webkitExitFullscreen ||
+                document.msExitFullscreen ||
+                document.mozCancelFullScreen
+              await exitFullscreen?.call(document)
             } else {
               const target = el || document.documentElement
-              await (target.requestFullscreen?.() ||
-                target.webkitRequestFullscreen?.() ||
-                target.msRequestFullscreen?.() ||
-                target.mozRequestFullScreen?.())
+              const requestFullscreen = target.requestFullscreen ||
+                target.webkitRequestFullscreen ||
+                target.msRequestFullscreen ||
+                target.mozRequestFullScreen
+              await requestFullscreen?.call(target)
             }
             return true
           } catch (err) {

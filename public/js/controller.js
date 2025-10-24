@@ -158,10 +158,10 @@ function detectAndCountBounceFromServer(prev, curr) {
         if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
         if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
 
-        if (
-          _hasBounced(currVx, __lastVxSign, minSpeed) ||
-          _hasBounced(currVy, __lastVySign, minSpeed)
-        ) {
+        const bouncedX = _hasBounced(currVx, __lastVxSign, minSpeed)
+        const bouncedY = _hasBounced(currVy, __lastVySign, minSpeed)
+        
+        if (bouncedX || bouncedY) {
           __lastBounceTs = now
           bbCounters.onBounce()
         }
@@ -1717,6 +1717,9 @@ function fillFsSessionInfo() {
   }
 }
 
+/**
+ * Возвращает на страницу управления сессиями
+ */
 function goBack() {
   window.location.href = '/';
 }
