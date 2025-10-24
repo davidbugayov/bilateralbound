@@ -16,8 +16,6 @@ class PermanentLinksTest {
 
   log(message, status = 'info') {
     const timestamp = new Date().toISOString();
-    const emoji = status === 'success' ? '✅' : status === 'error' ? '❌' : 'ℹ️';
-    
     this.testResults.push({ timestamp, status, message });
   }
 

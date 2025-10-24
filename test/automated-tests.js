@@ -14,9 +14,7 @@ class Tester {
   }
 
   log(msg, type = 'info') {
-    const ts = new Date().toISOString();
-    const p = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
-    
+    // Placeholder for logging logic
   }
 
   async startServer() {
@@ -543,7 +541,6 @@ class Tester {
 
     await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1024, height: 768 } });
 
-    let updatesReceived = 0;
     viewerSocket.on('message', (message) => {
       const data = JSON.parse(message);
       if (data.type === 'state_update') {

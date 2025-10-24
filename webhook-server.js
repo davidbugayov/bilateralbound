@@ -326,14 +326,15 @@ const server = http.createServer(async (req, res) => {
     res.end('OK - deployment started')
     // Запускаем деплой асинхронно
     log(`Starting deployment for environments: ${environments.join(', ')}`)
-    // eslint-disable-next-line no-await-in-loop
+    /* eslint-disable no-await-in-loop */
     for (const environment of environments) {
-    try {
-    await deploy(environment, ref)
-    } catch (error) {
-    log(`Deployment failed for ${environment}: ${error.message}`, 'ERROR')
+      try {
+        await deploy(environment, ref)
+      } catch (error) {
+        log(`Deployment failed for ${environment}: ${error.message}`, 'ERROR')
+      }
     }
-    }
+    /* eslint-enable no-await-in-loop */
     } catch (error) {
     log(`Error processing webhook: ${error.message}`, 'ERROR')
     res.writeHead(500, { 'Content-Type': 'text/plain' })

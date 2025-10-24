@@ -9,9 +9,8 @@ const puppeteer = require('puppeteer')
 
 const BASE = 'http://localhost:3002'
 
-function log(msg) {
-  const ts = new Date().toISOString()
-  
+function log(_msg) {
+  // Placeholder for logging
 }
 
 async function api(path, method = 'GET', body = null) {
@@ -23,7 +22,7 @@ async function api(path, method = 'GET', body = null) {
       res.on('end', () => {
         try {
           resolve({ status: res.statusCode, data: data ? JSON.parse(data) : null })
-        } catch (e) {
+        } catch {
           resolve({ status: res.statusCode, data: null })
         }
       })
