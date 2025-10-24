@@ -72,23 +72,23 @@ const toggleFullscreen =
                 document.mozCancelFullScreen?.()
               // Await only if a promise was returned
               if (exitPromise instanceof Promise) {
-                await exitPromise
+                await exitPromise;
               }
             } else {
-              const target = el || document.documentElement
+              const target = el || document.documentElement;
               const requestPromise =
                 target.requestFullscreen?.() ||
                 target.webkitRequestFullscreen?.() ||
                 target.msRequestFullscreen?.() ||
-                target.mozRequestFullScreen?.()
+                target.mozRequestFullScreen?.();
 
               // Only proceed if a promise was returned.
               if (requestPromise instanceof Promise) {
-                await requestPromise
+                await requestPromise;
               } else {
                 // If no promise, the call failed or is not supported.
                 // canFullscreen should have caught this, but as a fallback:
-                return false
+                return false;
               }
             }
             return true

@@ -1,0 +1,6 @@
+{
+  "local": {
+    "filename": "qodana.yaml",
+    "content": "version: '1.0'\nprofile:\n  name: qodana.starter\ninclude:\n  - name: RegExpSimplifiable\nexclude:\n  - name: All\n    paths:\n      - node_modules\n      - qodana_results\n  - name: HardcodedPasswords\n    paths:\n      - package.json\n"
+  }
+}

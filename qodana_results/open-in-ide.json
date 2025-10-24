@@ -1,0 +1,12 @@
+{
+  "cloud" : {
+    "url" : "https://qodana.cloud/projects/xPEo1/reports/l0VNmv",
+    "reportId" : "l0VNmv",
+    "projectId" : "xPEo1",
+    "projectName" : "My first project",
+    "host" : "https://qodana.cloud"
+  },
+  "vcs" : {
+    "origin" : "ssh://git@github.com/davidbugayov/bilateralbound.git"
+  }
+}

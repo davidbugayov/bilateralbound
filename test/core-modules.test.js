@@ -52,7 +52,7 @@ jest.mock('../public/js/renderer.js', () => {
 
      this.drawFrame = (_state) => {
        // Mock drawFrame method - state parameter kept for interface compatibility
-       
+       console.log('Drawing frame with state:', _state);
      };
 
     return this;

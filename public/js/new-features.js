@@ -213,27 +213,7 @@ class FeatureManager {
    * Экспорт текущей сессии в JSON файл
    */
   exportSession() {
-    const colorBtn = document.querySelector('.color-btn.active')
-    const sessionData = {
-      timestamp: new Date().toISOString(),
-      sessionId: globalThis.__current?.sessionId ?? null,
-      settings: {
-        speed: globalThis.components?.speed?.getSpeed() ?? 40,
-        direction: globalThis.currentDirectionMode || 'horizontal',
-        ballColor: colorBtn?.style?.backgroundColor ?? '#60a5fa',
-        bgColor: document.body.style.backgroundColor || '#020617',
-        ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 20,
-        isPlaying: globalThis.isPlaying || false
-      },
-      viewerConnected: globalThis.__current?.viewerConnected ?? false,
-      viewerScreenSize: globalThis.__current?.viewerScreenSize ?? null,
-      counters: {
-        timer: globalThis.bbCounters?.timerMs ?? 0,
-        passes: globalThis.bbCounters?.passes ?? 0,
-        sets: globalThis.bbCounters?.sets ?? 0
-      }
-    }
-
+    const sessionData = this._getCurrentSessionData();
     const dataStr = JSON.stringify(sessionData, null, 2)
     const dataBlob = new Blob([dataStr], { type: 'application/json' })
     const url = URL.createObjectURL(dataBlob)
@@ -622,8 +602,11 @@ class FeatureManager {
   }
 
   buildCurrentSessionData() {
-    // Похоже на exportSession, но не создаёт файл
-    const colorBtn = document.querySelector('.color-btn.active')
+    return this._getCurrentSessionData();
+  }
+
+  _getCurrentSessionData() {
+    const colorBtn = document.querySelector('.color-btn.active');
     return {
       timestamp: new Date().toISOString(),
       sessionId: globalThis.__current?.sessionId ?? null,
@@ -642,7 +625,7 @@ class FeatureManager {
         passes: globalThis.bbCounters?.passes ?? 0,
         sets: globalThis.bbCounters?.sets ?? 0
       }
-    }
+    };
   }
 
   async applySessionData(sessionData) {

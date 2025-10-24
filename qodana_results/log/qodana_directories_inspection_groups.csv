@@ -1,0 +1,18 @@
+Directory;Absolute Time spent on Inspection Group 'all', s;Percent of Time spent on Inspection Group 'all';Inspections Problem Count in Group 'all';Times Inspection from Group 'all' was Performed
+/data/project;8.69;100.00%;28;5719
+/data/project/public;3.80;43.74%;8;2152
+/data/project/public/js;3.44;39.63%;8;1660
+/data/project/public/js/utils;0.28;3.24%;0;102
+/data/project/public/js/controllers;0.09;1.04%;1;515
+/data/project/public/emdr-therapy;0.06;0.73%;0;105
+/data/project/public/components;0.00;0.02%;0;16
+/data/project/public/css;0.00;0.01%;0;15
+/data/project/test;2.01;23.10%;6;825
+/data/project/server;1.83;21.01%;0;1037
+/data/project/server/network;1.25;14.38%;0;208
+/data/project/server/session;0.40;4.59%;0;416
+/data/project/server/utils;0.08;0.91%;0;104
+/data/project/qodana_results/log;0.56;6.46%;13;138
+/data/project/qodana_results/log/indexing-diagnostic/project.15375f63;0.01;0.07%;0;11
+/data/project/.github/workflows;0.00;0.01%;0;15
+/data/project/.scannerwork;0.00;0.00%;0;10

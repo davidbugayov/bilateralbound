@@ -140,7 +140,6 @@ class WebSocketClient {
         })
       } else {
         this._sendMessage(message)
-        return
       }
     } else if (this.config.coalesceTypes.includes(type) && !options.expectResponse) {
       // Коалесцирование для обычных сообщений

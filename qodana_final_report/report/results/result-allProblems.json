@@ -1,0 +1,693 @@
+{
+  "version": "3",
+  "listProblem": [
+    {
+      "tool": "Code Inspection",
+      "category": "Async code and promises",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Async code and promises",
+          "name": "Async code and promises"
+        }
+      ],
+      "type": "Missing await for an async function call",
+      "tags": [
+        "ECMAScript 6"
+      ],
+      "severity": "Moderate",
+      "comment": "Missing await for an async function call",
+      "detailsInfo": "Reports an `async` function call without an expected `await` prefix inside an `async` function. Such call returns a `Promise` and control flow is continued immediately.\n\nExample:\n\n\n    async function bar() { /* ... */ }\n    async function foo() {\n        bar(); // bad\n    }\n\n\nAfter the quick-fix is applied, the `await` prefix is added:\n\n\n    async function bar() { /* ... */ }\n    async function foo() {\n        await bar(); // good\n    }\n\nWhen the 'Report for promises in return statements' checkbox is selected, also suggests adding `await` in return statements.  \nWhile this is generally not necessary, it gives two main benefits.  \n\n* You won't forget to add `await` when surrounding your code with `try-catch`.\n* An explicit `await` helps V8 runtime to provide [async stack traces](https://bit.ly/v8-zero-cost-async-stack-traces).\n\nInspection ID: ES6MissingAwait",
+      "sources": [
+        {
+          "type": "file",
+          "path": "public/js/common.js",
+          "language": "JavaScript",
+          "line": 69,
+          "offset": 17,
+          "length": 23,
+          "code": {
+            "startLine": 67,
+            "length": 23,
+            "offset": 76,
+            "surroundingCode": "            if (isFs()) {\n              const exitPromise =\n                document.exitFullscreen?.() ||\n                document.webkitExitFullscreen?.() ||\n                document.msExitFullscreen?.() ||"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "ES6MissingAwait"
+      },
+      "hash": "478c36bf76c8d2cc5e917a5fa09223c4860ca3a13720af459ec20e05f3fe3362",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Async code and promises",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Async code and promises",
+          "name": "Async code and promises"
+        }
+      ],
+      "type": "Missing await for an async function call",
+      "tags": [
+        "ECMAScript 6"
+      ],
+      "severity": "Moderate",
+      "comment": "Missing await for an async function call",
+      "detailsInfo": "Reports an `async` function call without an expected `await` prefix inside an `async` function. Such call returns a `Promise` and control flow is continued immediately.\n\nExample:\n\n\n    async function bar() { /* ... */ }\n    async function foo() {\n        bar(); // bad\n    }\n\n\nAfter the quick-fix is applied, the `await` prefix is added:\n\n\n    async function bar() { /* ... */ }\n    async function foo() {\n        await bar(); // good\n    }\n\nWhen the 'Report for promises in return statements' checkbox is selected, also suggests adding `await` in return statements.  \nWhile this is generally not necessary, it gives two main benefits.  \n\n* You won't forget to add `await` when surrounding your code with `try-catch`.\n* An explicit `await` helps V8 runtime to provide [async stack traces](https://bit.ly/v8-zero-cost-async-stack-traces).\n\nInspection ID: ES6MissingAwait",
+      "sources": [
+        {
+          "type": "file",
+          "path": "public/js/common.js",
+          "language": "JavaScript",
+          "line": 80,
+          "offset": 17,
+          "length": 24,
+          "code": {
+            "startLine": 78,
+            "length": 24,
+            "offset": 114,
+            "surroundingCode": "              const target = el || document.documentElement;\n              const requestPromise =\n                target.requestFullscreen?.() ||\n                target.webkitRequestFullscreen?.() ||\n                target.msRequestFullscreen?.() ||"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "ES6MissingAwait"
+      },
+      "hash": "ceea9dcdf5b0c0a79aa5e1e3e2079424282db4153fc44844a9ff0bcf1798854b",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Code quality tools",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Code quality tools",
+          "name": "Code quality tools"
+        }
+      ],
+      "type": "ESLint",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "ESLint: 'updatesReceived' is assigned a value but never used. (no-unused-vars)",
+      "detailsInfo": "Reports a discrepancy detected by the [ESLint](https://eslint.org) linter.   \n\nThe highlighting is based on the rule severity specified in the [ESLint configuration file](https://eslint.org/docs/user-guide/configuring) for each individual rule.   \n\nClear the 'Use rule severity from the configuration file' checkbox to use the severity configured in this inspection for all ESLint rules.\n\nInspection ID: Eslint",
+      "sources": [
+        {
+          "type": "file",
+          "path": "test/automated-tests.js",
+          "language": "JavaScript",
+          "line": 529,
+          "offset": 9,
+          "length": 15,
+          "code": {
+            "startLine": 527,
+            "length": 15,
+            "offset": 107,
+            "surroundingCode": "  async testThrottlingPerformance() {\n    this.log('Тест: Производительность и троттлинг команд');\n    let updatesReceived = 0;\n    const sessionId = await this.createSession();\n    if (!sessionId) {"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "Eslint"
+      },
+      "hash": "5dbfdb1d60c9a57aa67c3f7fd603959ce0ee0526157e5f9e8d6d5a0496a2bb8d",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "General",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/General",
+          "name": "General"
+        }
+      ],
+      "type": "Deprecated symbol used",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "Moderate",
+      "comment": "Deprecated symbol used, consult docs for better alternative",
+      "detailsInfo": "Reports a usage of a deprecated function variable.\n\nInspection ID: JSDeprecatedSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 1303,
+          "offset": 32,
+          "length": 5,
+          "code": {
+            "startLine": 1301,
+            "length": 5,
+            "offset": 123,
+            "surroundingCode": "           title=\"Select 'open-telemetry-metrics.*.csv' files\"\n           class=\"fileInput\"\n           onchange=\"readFiles(event.target.files)\"\n    />\n"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSDeprecatedSymbols"
+      },
+      "hash": "52b84b59ea799f51b2243dd11c231038d4e1ece3191f70284f8c9f49e1477e1d",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "General",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/General",
+          "name": "General"
+        }
+      ],
+      "type": "Deprecated symbol used",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "Moderate",
+      "comment": "Deprecated symbol used, consult docs for better alternative",
+      "detailsInfo": "Reports a usage of a deprecated function variable.\n\nInspection ID: JSDeprecatedSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 1353,
+          "offset": 34,
+          "length": 5,
+          "code": {
+            "startLine": 1351,
+            "length": 5,
+            "offset": 129,
+            "surroundingCode": "             class=\"fileInput\"\n             title=\"Select 'open-telemetry-metrics.*.csv' files\"\n             onchange=\"readFiles(event.target.files)\"\n      />\n"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSDeprecatedSymbols"
+      },
+      "hash": "d320eeb496040a82cb9af83ce77fb3fcd5fffe2532066aded4318855a5a247b5",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused constant min",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 1271,
+          "offset": 13,
+          "length": 3,
+          "code": {
+            "startLine": 1269,
+            "length": 3,
+            "offset": 82,
+            "surroundingCode": "      timeRangeChooser.append(`<option value=\"\">---all---</option>`)\n\n      const min = document.loadedAndParsedData.dateRange[0]\n      const max = document.loadedAndParsedData.dateRange[1]\n      //RC how to iterate time range hour by hour?"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "1b1b1d650a5df4463fad9b2e9cc855d82a78522595d312e0c8919701ec7e03b7",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused constant stubIndexLookups90PMs",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 907,
+          "offset": 13,
+          "length": 21,
+          "code": {
+            "startLine": 905,
+            "length": 21,
+            "offset": 177,
+            "surroundingCode": "      const stubIndexLookups = extractTimeSeries(\"Indexes.stubs.lookups\")\n      const stubIndexLookupsAvgMs = extractTimeSeries(\"Indexes.stubs.lookupDurationAvgMs\")\n      const stubIndexLookups90PMs = extractTimeSeries(\"Indexes.stubs.lookupDuration90PMs\")\n      const stubIndexLookupsMaxMs = extractTimeSeries(\"Indexes.stubs.lookupDurationMaxMs\")\n"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "2bcc21d9deadd6ee868cf0ac6f7c11afa15d8a0acc8547b10a699523408f49eb",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused constant entriesIndexLookups90PMs",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 912,
+          "offset": 13,
+          "length": 24,
+          "code": {
+            "startLine": 910,
+            "length": 24,
+            "offset": 187,
+            "surroundingCode": "      const entriesIndexLookups = extractTimeSeries(\"Indexes.entries.lookups\")\n      const entriesIndexLookupsAvgMs = extractTimeSeries(\"Indexes.entries.lookupDurationAvgMs\")\n      const entriesIndexLookups90PMs = extractTimeSeries(\"Indexes.entries.lookupDuration90PMs\")\n      const entriesIndexLookupsMaxMs = extractTimeSeries(\"Indexes.entries.lookupDurationMaxMs\")\n"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "325973fc549f3de446a6f1b3594d47e58d783e98f96e0f8ef995d92743e6f0dd",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused parameter data",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 1234,
+          "offset": 38,
+          "length": 4,
+          "code": {
+            "startLine": 1232,
+            "length": 4,
+            "offset": 84,
+            "surroundingCode": "\n    /* Updates UI after CSV data is loaded */\n    function updateUIAfterDataLoaded(data) {\n      const names = document.loadedAndParsedData.names\n"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "6b7c0de10da31491bbd573dc9b255f13a17000082bb791d108917c9af2de54ff",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused parameter reject",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 1134,
+          "offset": 50,
+          "length": 6,
+          "code": {
+            "startLine": 1132,
+            "length": 6,
+            "offset": 100,
+            "surroundingCode": "        .reduce((total, size) => total + size, 0)\n\n      const loadingChain = new Promise((resolve, reject) => {\n        let fileContents = []\n        for (file of files) {"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "6f3b233dc24bb782b1173649398bfeb183bed818ed019a1c0e7fb61d0090e801",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused constant flushQueueSizeAvg",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 755,
+          "offset": 13,
+          "length": 17,
+          "code": {
+            "startLine": 753,
+            "length": 17,
+            "offset": 97,
+            "surroundingCode": "      const flushQueueTasksExecuted = extractTimeSeries(\"FlushQueue.tasksExecuted\")\n\n      const flushQueueSizeAvg = extractTimeSeries(\"FlushQueue.queueSizeAvg\")\n      const flushQueueSizeMax = extractTimeSeries(\"FlushQueue.queueSizeMax\")\n      const flushQueueSize90P = extractTimeSeries(\"FlushQueue.queueSize90P\")"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "737415f808ca23a095b41885bd96f49371c639c5a723c029bbc48fc1261e3238",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused constant flushQueueSize90P",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 757,
+          "offset": 13,
+          "length": 17,
+          "code": {
+            "startLine": 755,
+            "length": 17,
+            "offset": 166,
+            "surroundingCode": "      const flushQueueSizeAvg = extractTimeSeries(\"FlushQueue.queueSizeAvg\")\n      const flushQueueSizeMax = extractTimeSeries(\"FlushQueue.queueSizeMax\")\n      const flushQueueSize90P = extractTimeSeries(\"FlushQueue.queueSize90P\")\n\n      const flushQueueWaitingTimeMaxMs = extractTimeSeries(\"FlushQueue.waitingTimeMaxNs\").mulScalar(1e-6)"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "7411cb504250ba6075842971a81318854a12ef6837dd74b2e1563f49ba4a7d2c",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused constant allKeysLookups90PMs",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 902,
+          "offset": 13,
+          "length": 19,
+          "code": {
+            "startLine": 900,
+            "length": 19,
+            "offset": 177,
+            "surroundingCode": "      const allKeysLookups = extractTimeSeries(\"Indexes.allKeys.lookups\")\n      const allKeysLookupsAvgMs = extractTimeSeries(\"Indexes.allKeys.lookupDurationAvgMs\")\n      const allKeysLookups90PMs = extractTimeSeries(\"Indexes.allKeys.lookupDuration90PMs\")\n      const allKeysLookupsMaxMs = extractTimeSeries(\"Indexes.allKeys.lookupDurationMaxMs\")\n"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "95dfe078f2880f027e5929206dc73c4253fa2536b22717f44576ffb751f7e946",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused constant max",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 1272,
+          "offset": 13,
+          "length": 3,
+          "code": {
+            "startLine": 1270,
+            "length": 3,
+            "offset": 73,
+            "surroundingCode": "\n      const min = document.loadedAndParsedData.dateRange[0]\n      const max = document.loadedAndParsedData.dateRange[1]\n      //RC how to iterate time range hour by hour?\n      // for(v=min; v<max; v++) {"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "c37c0276d98b9779c794bc77f28a88af35913061452323ba02c7f60927b25a87",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused constant gcCollections",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 526,
+          "offset": 13,
+          "length": 13,
+          "code": {
+            "startLine": 524,
+            "length": 13,
+            "offset": 84,
+            "surroundingCode": "      const newThreadsCount = extractTimeSeries(\"JVM.newThreadsCount\")\n\n      const gcCollections = extractTimeSeries(\"JVM.GC.collections\")\n      const gcTimesMs = extractTimeSeries(\"JVM.GC.collectionTimesMs\")\n      const totalBytesAllocated = extractTimeSeries(\"JVM.totalBytesAllocated\")"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "d0971e9a6b21aa4fe47d4a168e1bcbbc09927ebf0ac6c9e73f5fc65a28c9a44c",
+      "problemType": "REGULAR"
+    },
+    {
+      "tool": "Code Inspection",
+      "category": "Unused symbols",
+      "categoryPath": [
+        {
+          "id": "JavaScript and TypeScript",
+          "name": "JavaScript and TypeScript"
+        },
+        {
+          "id": "JavaScript and TypeScript/Unused symbols",
+          "name": "Unused symbols"
+        }
+      ],
+      "type": "Unused local symbol",
+      "tags": [
+        "JavaScript"
+      ],
+      "severity": "High",
+      "comment": "Unused constant flushQueueSizeMax",
+      "detailsInfo": "Reports an unused locally accessible parameter, local variable, function, class, or private member declaration.\n\nInspection ID: JSUnusedLocalSymbols",
+      "sources": [
+        {
+          "type": "file",
+          "path": "qodana_final_report/log/open-telemetry-metrics-plotter.html",
+          "language": "HTML",
+          "line": 756,
+          "offset": 13,
+          "length": 17,
+          "code": {
+            "startLine": 754,
+            "length": 17,
+            "offset": 90,
+            "surroundingCode": "\n      const flushQueueSizeAvg = extractTimeSeries(\"FlushQueue.queueSizeAvg\")\n      const flushQueueSizeMax = extractTimeSeries(\"FlushQueue.queueSizeMax\")\n      const flushQueueSize90P = extractTimeSeries(\"FlushQueue.queueSize90P\")\n"
+          }
+        }
+      ],
+      "attributes": {
+        "module": "project",
+        "inspectionName": "JSUnusedLocalSymbols"
+      },
+      "hash": "fd084ece1fa21b5b4466a5b7ef4d30645889e4e22989f6cdf1571174851dc694",
+      "problemType": "REGULAR"
+    }
+  ]
+}

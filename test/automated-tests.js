@@ -14,7 +14,8 @@ class Tester {
   }
 
   log(msg, type = 'info') {
-    // Placeholder for logging logic
+    // Simple console log, can be expanded
+    console.log(`[${type.toUpperCase()}] ${msg}`);
   }
 
   async startServer() {
@@ -541,6 +542,7 @@ class Tester {
 
     await this.req(`/api/session/${sessionId}/viewer/connect`, 'POST', { screenSize: { width: 1024, height: 768 } });
 
+    let updatesReceived = 0;
     viewerSocket.on('message', (message) => {
       const data = JSON.parse(message);
       if (data.type === 'state_update') {
@@ -561,7 +563,7 @@ class Tester {
 
     // Главное - что сервер не упал и отвечает на запросы
     const healthCheckPassed = await this.health();
-    this.log(healthCheckPassed ? '✅ Сервер остался в рабочем состоянии после нагрузки' : '❌ Сервер не отвечает после нагрузки', healthCheckPassed ? 'success' : 'error');
+    this.log(healthCheckPassed ? `✅ Сервер остался в рабочем состоянии после нагрузки (${updatesReceived} обновлений получено)` : '❌ Сервер не отвечает после нагрузки', healthCheckPassed ? 'success' : 'error');
 
     controllerSocket.close();
     viewerSocket.close();

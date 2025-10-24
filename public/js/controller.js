@@ -1716,3 +1716,7 @@ function fillFsSessionInfo() {
     console.warn('Error in fillFsSessionInfo')
   }
 }
+
+function goBack() {
+  window.location.href = '/';
+}

@@ -1,0 +1,145 @@
+Inspection ID;Inspection Group;Inspection Name;Inspection Language;Inspection Type;Absolute Time spent on Inspection, s;Percent of Time spent on Inspection;Problems Count;Times Inspection was Performed
+JSPotentiallyInvalidConstructorUsage;JavaScript and TypeScript/Probable bugs;Potentially invalid constructor usage;JavaScript;LOCAL;2.14;23.10%;0;49
+JSAccessibilityCheck;JavaScript and TypeScript/General;Inaccessible @private and @protected members referenced;JavaScript;LOCAL;1.48;15.97%;0;46
+JSUnusedAssignment;JavaScript and TypeScript/Unused symbols;Unused assignment;JavaScript;LOCAL;1.21;13.08%;0;50
+Eslint;JavaScript and TypeScript/Code quality tools;ESLint;JavaScript;LOCAL;0.89;9.63%;1;45
+KarmaConfigFile;JavaScript and TypeScript/Unit testing;Invalid Karma configuration file;JavaScript;LOCAL;0.50;5.42%;0;59
+JSPrimitiveTypeWrapperUsage;JavaScript and TypeScript/General;Primitive type object wrapper used;JavaScript;LOCAL;0.39;4.22%;0;47
+JSUnusedLocalSymbols;JavaScript and TypeScript/Unused symbols;Unused local symbol;JavaScript;LOCAL;0.27;2.93%;11;45
+NpmVulnerableApiCode;JavaScript and TypeScript/Security;Vulnerable API usage;JavaScript;LOCAL;0.24;2.54%;0;45
+JSVoidFunctionReturnValueUsed;JavaScript and TypeScript/Probable bugs;Void function return value used;JavaScript;LOCAL;0.19;2.04%;0;45
+JSSuspiciousNameCombination;JavaScript and TypeScript/Probable bugs;Suspicious variable/parameter name combination;JavaScript;LOCAL;0.18;1.94%;0;45
+CheckDependencyLicenses;Dependency analysis;Check dependency licenses;;GLOBAL;0.18;1.91%;0;1
+JSIgnoredPromiseFromCall;JavaScript and TypeScript/Async code and promises;Result of method call returning a promise is ignored;JavaScript;LOCAL;0.17;1.88%;0;45
+JSDeprecatedSymbols;JavaScript and TypeScript/General;Deprecated symbol used;JavaScript;LOCAL;0.16;1.67%;2;46
+ES6PreferShortImport;JavaScript and TypeScript/General;Import can be shortened;JavaScript;LOCAL;0.14;1.48%;0;46
+ES6MissingAwait;JavaScript and TypeScript/Async code and promises;Missing await for an async function call;JavaScript;LOCAL;0.13;1.36%;4;46
+JSObjectNullOrUndefined;JavaScript and TypeScript/Control flow issues;Object is 'null' or 'undefined';JavaScript;LOCAL;0.12;1.31%;0;52
+UnnecessaryLocalVariableJS;JavaScript and TypeScript/Data flow;Redundant local variable;JavaScript;LOCAL;0.10;1.05%;4;6
+JSClosureCompilerSyntax;JavaScript and TypeScript/General;Incorrect usage of JSDoc tags;JavaScript;LOCAL;0.09;0.96%;0;51
+WebpackConfigHighlighting;JavaScript and TypeScript/General;Webpack config compliance with JSON Schema;JavaScript;LOCAL;0.08;0.89%;0;46
+ES6RedundantAwait;JavaScript and TypeScript/Async code and promises;Redundant 'await' expression;JavaScript;LOCAL;0.08;0.83%;0;45
+JSValidateJSDoc;JavaScript and TypeScript/General;Syntax errors and unresolved references in JSDoc;JavaScript;LOCAL;0.07;0.71%;0;55
+HardcodedPasswords;Security;Hardcoded passwords;;LOCAL;0.06;0.65%;0;239
+JSIncompatibleTypesComparison;JavaScript and TypeScript/Probable bugs;Comparison of expressions having incompatible types;JavaScript;LOCAL;0.04;0.43%;0;46
+JSConstantReassignment;JavaScript and TypeScript/Validity issues;Attempt to assign to const or readonly variable;JavaScript;LOCAL;0.04;0.38%;0;46
+SuspiciousTypeOfGuard;JavaScript and TypeScript/Control flow issues;Unsound type guard check;JavaScript;LOCAL;0.03;0.37%;0;46
+InjectedReferences;General;Injected references;;LOCAL;0.03;0.35%;0;60
+PointlessBooleanExpressionJS;JavaScript and TypeScript/Control flow issues;Pointless statement or boolean expression;JavaScript;LOCAL;0.02;0.20%;0;48
+DuplicatedCode;General;Duplicated code fragment;;LOCAL;0.02;0.20%;1;5
+MongoJSSideEffects;MongoJS;Statement with side effects;MongoJSExt;LOCAL;0.02;0.17%;0;51
+JSMismatchedCollectionQueryUpdate;JavaScript and TypeScript/General;Mismatched query and update of collection;JavaScript;LOCAL;0.02;0.17%;0;46
+JSPotentiallyInvalidTargetOfIndexedPropertyAccess;JavaScript and TypeScript/Probable bugs;Possibly incorrect target of indexed property access;JavaScript;LOCAL;0.01;0.15%;0;48
+TypeScriptSmartCast;JavaScript and TypeScript/TypeScript;Narrowed type;TypeScript;LOCAL;0.01;0.13%;0;48
+ReservedWordAsName;JavaScript and TypeScript/Validity issues;Reserved word used as name;JavaScript;LOCAL;0.01;0.13%;0;46
+JSDuplicatedDeclaration;JavaScript and TypeScript/General;Duplicate declaration;JavaScript;LOCAL;0.01;0.13%;0;46
+JSPotentiallyInvalidUsageOfThis;JavaScript and TypeScript/Probable bugs;Potentially invalid reference to 'this' from closure;JavaScript;LOCAL;0.01;0.12%;0;46
+ConstantConditionalExpressionJS;JavaScript and TypeScript/Control flow issues;Constant conditional expression;JavaScript;LOCAL;0.01;0.12%;0;68
+NodeCoreCodingAssistance;JavaScript and TypeScript/Node.js;Unresolved Node.js APIs;JavaScript;LOCAL;0.01;0.10%;0;49
+UnreachableCodeJS;JavaScript and TypeScript/Control flow issues;Unreachable code;JavaScript;LOCAL;0.01;0.10%;0;45
+JSReferencingMutableVariableFromClosure;JavaScript and TypeScript/General;Referencing mutable variable from closure;JavaScript;LOCAL;0.01;0.09%;0;48
+JSNonASCIINames;JavaScript and TypeScript/Naming conventions;Identifiers with non-ASCII symbols;JavaScript;LOCAL;0.01;0.09%;0;46
+InfiniteRecursionJS;JavaScript and TypeScript/Probable bugs;Infinite recursion;JavaScript;LOCAL;0.01;0.07%;0;46
+TypeScriptValidateTypes;JavaScript and TypeScript/TypeScript;Type mismatch;TypeScript;LOCAL;0.01;0.07%;0;51
+ES6UnusedImports;JavaScript and TypeScript/Imports and dependencies;Unused import;JavaScript;LOCAL;0.01;0.07%;0;45
+ES6PossiblyAsyncFunction;JavaScript and TypeScript/Async code and promises;'await' in non-async function;JavaScript;LOCAL;0.01;0.06%;0;46
+JSCommentMatchesSignature;JavaScript and TypeScript/General;Mismatched JSDoc and function signature;JavaScript;LOCAL;0.00;0.05%;0;46
+TypeScriptUMDGlobal;JavaScript and TypeScript/TypeScript;Referenced UMD global variable;JavaScript;LOCAL;0.00;0.04%;0;46
+JSDuplicateCaseLabel;JavaScript and TypeScript/Switch statement issues;Duplicate 'case' label;JavaScript;LOCAL;0.00;0.04%;0;45
+AngularIncorrectBlockUsage;Angular;Incorrect usage of Angular block;Angular2Html;LOCAL;0.00;0.03%;0;1
+BadExpressionStatementJS;JavaScript and TypeScript/Validity issues;Expression statement which is not assignment or call;JavaScript;LOCAL;0.00;0.03%;0;51
+RegExpRedundantEscape;RegExp;Redundant character escape;RegExp;LOCAL;0.00;0.03%;0;5
+VulnerableLibrariesLocal;Security;Vulnerable declared dependency;;LOCAL;0.00;0.03%;0;241
+MongoJSResolve;MongoJS;Resolution problems;MongoJSExt;LOCAL;0.00;0.03%;0;45
+TypeScriptMissingConfigOption;JavaScript and TypeScript/TypeScript;Missing tsconfig.json option ;TypeScript;LOCAL;0.00;0.02%;0;52
+AngularInaccessibleSymbol;Angular;Inaccessible component member or directive input;none;LOCAL;0.00;0.02%;0;36
+ThisExpressionReferencesGlobalObjectJS;JavaScript and TypeScript/Validity issues;'this' expression which references the global object;JavaScript;LOCAL;0.00;0.02%;0;46
+JSXDomNesting;JavaScript and TypeScript/React;Invalid DOM element nesting;JavaScript;LOCAL;0.00;0.02%;0;51
+TypeScriptSuspiciousConstructorParameterAssignment;JavaScript and TypeScript/TypeScript;Assigned constructor field parameter;TypeScript;LOCAL;0.00;0.02%;0;45
+JSPotentiallyInvalidUsageOfClassThis;JavaScript and TypeScript/Probable bugs;Potentially invalid reference to 'this' of a class from closure;JavaScript;LOCAL;0.00;0.02%;0;55
+AngularIncorrectLetUsage;Angular;Incorrect usage of @let declaration;Angular2;LOCAL;0.00;0.02%;0;6
+JSUndeclaredVariable;JavaScript and TypeScript/General;Implicitly declared global JavaScript variable;JavaScript;LOCAL;0.00;0.02%;0;49
+TypeScriptJSXUnresolvedComponent;JavaScript and TypeScript/TypeScript;Unresolved JSX component;TypeScript;LOCAL;0.00;0.02%;0;46
+TypeScriptLibrary;JavaScript and TypeScript/TypeScript;Missing global library;TypeScript;LOCAL;0.00;0.02%;0;46
+MaliciousLibrariesLocal;Security;Malicious dependency;;LOCAL;0.00;0.01%;0;241
+InfiniteLoopJS;JavaScript and TypeScript/Probable bugs;Infinite loop statement;JavaScript;LOCAL;0.00;0.01%;0;46
+IncompatibleBitwiseMaskOperation;JavaScript and TypeScript/Bitwise operation issues;Incompatible bitwise mask operation;JavaScript;LOCAL;0.00;0.01%;0;46
+JSTypeOfValues;JavaScript and TypeScript/Probable bugs;'typeof' comparison with non-standard value;JavaScript;LOCAL;0.00;0.01%;0;46
+JSJQueryEfficiency;JavaScript and TypeScript/General;JQuery selector can be optimized;JavaScript;LOCAL;0.00;0.01%;0;45
+RegExpDuplicateCharacterInClass;RegExp;Duplicate character in character class;RegExp;LOCAL;0.00;0.01%;0;12
+ES6RedundantNestingInTemplateLiteral;JavaScript and TypeScript/General;Redundant nesting in template literal;JavaScript;LOCAL;0.00;0.01%;0;45
+UnnecessaryContinueJS;JavaScript and TypeScript/Control flow issues;Unnecessary 'continue' statement;JavaScript;LOCAL;0.00;0.01%;0;51
+JSComparisonWithNaN;JavaScript and TypeScript/Probable bugs;Comparison with NaN;JavaScript;LOCAL;0.00;0.01%;0;45
+UnnecessaryLabelJS;JavaScript and TypeScript/Control flow issues;Unnecessary label;JavaScript;LOCAL;0.00;0.01%;0;45
+JSXUnresolvedComponent;JavaScript and TypeScript/General;Unresolved JSX component;JavaScript;LOCAL;0.00;0.01%;0;52
+SillyAssignmentJS;JavaScript and TypeScript/Assignment issues;Variable is assigned to itself;JavaScript;LOCAL;0.00;0.01%;0;48
+UnnecessaryReturnStatementJS;JavaScript and TypeScript/Control flow issues;Unnecessary 'return' statement;JavaScript;LOCAL;0.00;0.01%;0;46
+VueDuplicateTag;Vue;Duplicate template/script tag;Vue;LOCAL;0.00;0.01%;0;11
+ShiftOutOfRangeJS;JavaScript and TypeScript/Bitwise operation issues;Shift operation by possibly wrong constant;JavaScript;LOCAL;0.00;0.01%;0;51
+JSUnresolvedExtXType;JavaScript and TypeScript/General;Unresolved Ext JS xtype;JavaScript;LOCAL;0.00;0.01%;0;45
+ReturnInsideFinallyBlockJS;JavaScript and TypeScript/Try statement issues;'return' inside 'finally' block;JavaScript;LOCAL;0.00;0.01%;0;45
+FlowJSConfig;JavaScript and TypeScript/Flow type checker;Missing .flowconfig;Flow JS;LOCAL;0.00;0.01%;0;7
+ES6DestructuringVariablesMerge;JavaScript and TypeScript/General;Destructuring properties with the same key;JavaScript;LOCAL;0.00;0.01%;0;46
+LoopStatementThatDoesntLoopJS;JavaScript and TypeScript/Control flow issues;Loop statement that doesn't loop;JavaScript;LOCAL;0.00;0.01%;0;46
+WithStatementJS;JavaScript and TypeScript/Potentially undesirable code constructs;'with' statement;JavaScript;LOCAL;0.00;0.01%;0;47
+AngularDeferBlockOnTrigger;Angular;Problems with @defer `on` triggers;Angular2Html;LOCAL;0.00;0.01%;0;2
+TypeScriptRedundantGenericType;JavaScript and TypeScript/TypeScript;Redundant type arguments;TypeScript;LOCAL;0.00;0.01%;0;46
+RegExpRedundantClassElement;RegExp;Redundant '\d', '[:digit:]', or '\D' class elements;RegExp;LOCAL;0.00;0.01%;0;12
+JSSuspiciousEqPlus;JavaScript and TypeScript/Probable bugs;Suspicious '=+' assignment;JavaScript;LOCAL;0.00;0.01%;0;45
+UnnecessaryLabelOnContinueStatementJS;JavaScript and TypeScript/Control flow issues;Unnecessary label on 'continue' statement;JavaScript;LOCAL;0.00;0.00%;0;48
+CustomRegExpInspection;RegExp;Custom RegExp inspection;;LOCAL;0.00;0.00%;0;243
+RegExpUnexpectedAnchor;RegExp;Begin or end anchor in unexpected position;RegExp;LOCAL;0.00;0.00%;0;12
+JSBitwiseOperatorUsage;JavaScript and TypeScript/Bitwise operation issues;Bitwise operator usage;JavaScript;LOCAL;0.00;0.00%;0;45
+TypeScriptUnresolvedReference;JavaScript and TypeScript/TypeScript;Unresolved TypeScript reference;TypeScript;LOCAL;0.00;0.00%;0;45
+CallerJS;JavaScript and TypeScript/Potentially confusing code constructs;Use of 'caller' property;JavaScript;LOCAL;0.00;0.00%;0;10
+JSUnreachableSwitchBranches;JavaScript and TypeScript/Switch statement issues;Unreachable 'case' branch of a 'switch' statement;JavaScript;LOCAL;0.00;0.00%;0;45
+PointlessArithmeticExpressionJS;JavaScript and TypeScript/Potentially confusing code constructs;Pointless arithmetic expression;JavaScript;LOCAL;0.00;0.00%;0;2
+AngularUnsupportedSyntax;Angular;Unsupported Angular expression syntax;Angular2;LOCAL;0.00;0.00%;0;5
+ThrowInsideFinallyBlockJS;JavaScript and TypeScript/Try statement issues;'throw' inside 'finally' block;JavaScript;LOCAL;0.00;0.00%;0;46
+AngularNonStandaloneComponentImports;Angular;Invalid usage of imports in non-standalone components;TypeScript;LOCAL;0.00;0.00%;0;3
+EqualityComparisonWithCoercionJS;JavaScript and TypeScript/Probable bugs;Equality operator may cause type coercion;JavaScript;LOCAL;0.00;0.00%;0;45
+AngularCliAddDependency;Angular;Angular CLI add dependency;JSON;LOCAL;0.00;0.00%;0;1
+TypeScriptCheckImport;JavaScript and TypeScript/TypeScript;Unresolved imported name;TypeScript;LOCAL;0.00;0.00%;0;47
+JSLastCommaInObjectLiteral;JavaScript and TypeScript/General;Unneeded last comma in object literal;JavaScript;LOCAL;0.00;0.00%;0;46
+FlowJSFlagCommentPlacement;JavaScript and TypeScript/Flow type checker;Misplaced @flow flag;Flow JS;LOCAL;0.00;0.00%;0;3
+FallThroughInSwitchStatementJS;JavaScript and TypeScript/Switch statement issues;Fallthrough in 'switch' statement;JavaScript;LOCAL;0.00;0.00%;0;45
+JSSwitchVariableDeclarationIssue;JavaScript and TypeScript/Switch statement issues;Variable is declared and being used in different 'case' clauses;JavaScript;LOCAL;0.00;0.00%;0;45
+ES6ClassMemberInitializationOrder;JavaScript and TypeScript/General;Use of possibly unassigned property in a static initializer;ECMAScript 6;LOCAL;0.00;0.00%;0;46
+ContinueOrBreakFromFinallyBlockJS;JavaScript and TypeScript/Try statement issues;'continue' or 'break' inside 'finally' block;JavaScript;LOCAL;0.00;0.00%;0;51
+StatementWithEmptyBodyJS;JavaScript and TypeScript/Potentially confusing code constructs;Statement with empty body;JavaScript;LOCAL;0.00;0.00%;0;8
+JSOctalInteger;JavaScript and TypeScript/Validity issues;Octal integer;JavaScript;LOCAL;0.00;0.00%;0;46
+JSUndefinedPropertyAssignment;JavaScript and TypeScript/Code style issues;Undefined property assignment;JavaScript;LOCAL;0.00;0.00%;0;6
+RedundantIfStatementJS;JavaScript and TypeScript/Control flow issues;Redundant 'if' statement;JavaScript;LOCAL;0.00;0.00%;0;6
+JSLastCommaInArrayLiteral;JavaScript and TypeScript/General;Unneeded last comma in array literal;JavaScript;LOCAL;0.00;0.00%;0;48
+TypeScriptAbstractClassConstructorCanBeMadeProtected;JavaScript and TypeScript/TypeScript;Abstract class constructor can be made protected;TypeScript;LOCAL;0.00;0.00%;0;45
+RegExpRedundantNestedCharacterClass;RegExp;Redundant nested character class;RegExp;LOCAL;0.00;0.00%;0;12
+AngularIllegalForLoopTrackAccess;Angular;Illegal @for loop access;HtmlCompatible;LOCAL;0.00;0.00%;0;1
+TypeScriptFieldCanBeMadeReadonly;JavaScript and TypeScript/TypeScript;Field can be readonly;TypeScript;LOCAL;0.00;0.00%;0;46
+AngularUndefinedModuleExport;Angular;Undefined export from Angular module;TypeScript;LOCAL;0.00;0.00%;0;3
+CommaExpressionJS;JavaScript and TypeScript/Potentially undesirable code constructs;Comma expression;JavaScript;LOCAL;0.00;0.00%;0;45
+AngularInvalidEntryComponent;Angular;Invalid entry component;TypeScript;LOCAL;0.00;0.00%;0;5
+ES6BindWithArrowFunction;JavaScript and TypeScript/Probable bugs;Suspicious usage of 'bind' with arrow function;JavaScript;LOCAL;0.00;0.00%;0;45
+AngularRecursiveModuleImportExport;Angular;Recursive import or export of an Angular module or a standalone component;TypeScript;LOCAL;0.00;0.00%;0;4
+JSUnnecessarySemicolon;JavaScript and TypeScript/General;Unnecessary semicolon;JavaScript;LOCAL;0.00;0.00%;0;45
+AngularUnusedComponentImport;Angular;Unused import in an Angular component declaration;TypeScript;LOCAL;0.00;0.00%;0;8
+AngularIncorrectTemplateDefinition;Angular;Incorrect component template definition;TypeScript;LOCAL;0.00;0.00%;0;7
+AngularInvalidSelector;Angular;Missing or invalid selector;none;LOCAL;0.00;0.00%;0;1
+JsCoverageInspection;Code Coverage;Check JavaScript and TypeScript source code coverage;JavaScript;GLOBAL_SIMPLE;0.00;0.00%;0;80
+RegExpSimplifiable;RegExp;Regular expression can be simplified;RegExp;LOCAL;0.00;0.00%;0;12
+UnnecessaryLabelOnBreakStatementJS;JavaScript and TypeScript/Control flow issues;Unnecessary label on 'break' statement;JavaScript;LOCAL;0.00;0.00%;0;52
+RegExpEmptyAlternationBranch;RegExp;Empty branch in alternation;RegExp;LOCAL;0.00;0.00%;0;12
+ExceptionCaughtLocallyJS;JavaScript and TypeScript/Try statement issues;Exception used for local control-flow;JavaScript;LOCAL;0.00;0.00%;0;46
+TypeScriptValidateGenericTypes;JavaScript and TypeScript/TypeScript;Incorrect generic type argument;TypeScript;LOCAL;0.00;0.00%;0;46
+JSConsecutiveCommasInArrayLiteral;JavaScript and TypeScript/Probable bugs;Consecutive commas in array literal;JavaScript;LOCAL;0.00;0.00%;0;45
+TypeScriptDuplicateUnionOrIntersectionType;JavaScript and TypeScript/TypeScript;Duplicate union or intersection type component;TypeScript;LOCAL;0.00;0.00%;0;45
+RegExpSuspiciousBackref;RegExp;Suspicious back reference;RegExp;LOCAL;0.00;0.00%;0;12
+JSAssignmentUsedAsCondition;JavaScript and TypeScript/Assignment issues;Assignment used as condition;JavaScript;LOCAL;0.00;0.00%;0;45
+VueDataFunction;Vue;Data function;Vue;LOCAL;0.00;0.00%;0;12
+RedundantConditionalExpressionJS;JavaScript and TypeScript/Control flow issues;Redundant conditional expression;JavaScript;LOCAL;0.00;0.00%;0;4
+RegExpRepeatedSpace;RegExp;Consecutive spaces;RegExp;LOCAL;0.00;0.00%;0;12
+RegExpDuplicateAlternationBranch;RegExp;Duplicate branch in alternation;RegExp;LOCAL;0.00;0.00%;0;12
+AngularMissingOrInvalidDeclarationInModule;Angular;Missing or invalid component, directive or pipe declaration in a module;TypeScript;LOCAL;0.00;0.00%;0;4
+AngularInvalidImportedOrDeclaredSymbol;Angular;Invalid imported or declared symbol;TypeScript;LOCAL;0.00;0.00%;0;6
+RegExpSingleCharAlternation;RegExp;Single character alternation;RegExp;LOCAL;0.00;0.00%;0;12
+TypeScriptConfig;JavaScript and TypeScript/TypeScript;Inconsistent tsconfig.json properties;JSON;LOCAL;0.00;0.00%;0;10
+RegExpUnnecessaryNonCapturingGroup;RegExp;Unnecessary non-capturing group;RegExp;LOCAL;0.00;0.00%;0;12

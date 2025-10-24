@@ -10,7 +10,7 @@ const puppeteer = require('puppeteer')
 const BASE = 'http://localhost:3002'
 
 function log(_msg) {
-  // Placeholder for logging
+  console.log(_msg);
 }
 
 async function api(path, method = 'GET', body = null) {
