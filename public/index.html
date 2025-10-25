@@ -562,6 +562,19 @@
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
       }
 
+      .light-theme #existingSessionId {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-color: rgba(59, 130, 246, 0.4) !important;
+        color: #1e293b !important;
+      }
+
+      .light-theme #existingSessionId:focus {
+        background: rgba(255, 255, 255, 1) !important;
+        border-color: rgba(37, 99, 235, 0.6) !important;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
       .light-theme #generatedViewerUrl,
       .light-theme #generatedControllerUrl {
         background: rgba(248, 250, 252, 0.9) !important;
@@ -745,7 +758,7 @@
                     "
                   />
                   <button
-                    onclick="copyToClipboard('generatedViewerUrl', 'Ссылка для клиента скопирована!')"
+                    onclick="copy('generatedViewerUrl', 'Ссылка для клиента скопирована!')"
                     style="
                       padding: 10px 20px;
                       background: #3b82f6;
@@ -793,7 +806,7 @@
                     "
                   />
                   <button
-                    onclick="copyToClipboard('generatedControllerUrl', 'Ссылка для терапевта скопирована!')"
+                    onclick="copy('generatedControllerUrl', 'Ссылка для терапевта скопирована!')"
                     style="
                       padding: 10px 20px;
                       background: #8b5cf6;
@@ -913,7 +926,7 @@
                     "
                   />
                   <button
-                    onclick="copyToClipboard('restoredViewerUrl', 'Ссылка для клиента скопирована!')"
+                    onclick="copy('restoredViewerUrl', 'Ссылка для клиента скопирована!')"
                     style="
                       padding: 10px 20px;
                       background: #3b82f6;
@@ -961,7 +974,7 @@
                     "
                   />
                   <button
-                    onclick="copyToClipboard('restoredControllerUrl', 'Ссылка для терапевта скопирована!')"
+                    onclick="copy('restoredControllerUrl', 'Ссылка для терапевта скопирована!')"
                     style="
                       padding: 10px 20px;
                       background: #8b5cf6;
@@ -1157,31 +1170,6 @@
         }
       }
 
-      /**
-       * Копирование текста в буфер обмена
-       */
-      async function copyToClipboard(inputId, successMessage) {
-        const input = document.getElementById(inputId)
-        if (!input) return
-
-        try {
-          await navigator.clipboard.writeText(input.value)
-
-          // Показываем уведомление об успехе
-          if (window.showSuccessNotification) {
-            window.showSuccessNotification(successMessage)
-          } else {
-            alert(successMessage)
-          }
-        } catch (error) {
-          console.error('Ошибка копирования:', error)
-          if (window.showErrorNotification) {
-            window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать ссылку.')
-          } else {
-            alert('Не удалось скопировать ссылку.')
-          }
-        }
-      }
 
       /**
        * Генерация постоянных ссылок для клиента
@@ -1368,32 +1356,6 @@
         }
       }
 
-      // Функция копирования в буфер обмена
-      function copy(elementId) {
-        const element = document.getElementById(elementId)
-        if (element && element.value) {
-          navigator.clipboard
-            .writeText(element.value)
-            .then(() => {
-              if (window.showSuccessNotification) {
-                window.showSuccessNotification('Ссылка скопирована в буфер обмена')
-              }
-            })
-            .catch(err => {
-              console.error('Ошибка копирования: ', err)
-              if (window.showErrorNotification) {
-                window.showErrorNotification(
-                  'Ошибка копирования',
-                  'Не удалось скопировать ссылку в буфер обмена'
-                )
-              }
-            })
-        } else {
-          if (window.showErrorNotification) {
-            window.showErrorNotification('Ошибка', 'Ссылка не найдена')
-          }
-        }
-      }
 
       document.addEventListener('DOMContentLoaded', function () {
         resetCreateSessionButton()
