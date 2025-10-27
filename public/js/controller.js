@@ -1208,7 +1208,10 @@ function getDirectionInfo(mode) {
 }
 
 /**
- * Обновляет индикатор направления и отображает информацию о текущем направлении
+ * Обновляет индикатор направления и отображает информацию о текущем направлении.
+ * @param {number} dirX - Компонент X вектора направления.
+ * @param {number} dirY - Компонент Y вектора направления.
+ * @param {string|null} [customText=null] - Пользовательский текст для отображения.
  */
 function updateDirectionDisplay(dirX, dirY, customText = null) {
   try {
@@ -1231,10 +1234,9 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     // Обновляем иконку направления в полноэкранном режиме
     const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
-      const displayContent = directionDisplay
+      fsDirectionDisplay.innerHTML = directionDisplay
         ? directionDisplay.innerHTML
         : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
-      fsDirectionDisplay.innerHTML = displayContent
     }
   } catch (error) {
     console.error('Ошибка обновления отображения направления:', error)
@@ -1288,9 +1290,12 @@ function _handlePause() {
   }
 }
 
+/**
+ * Переключает состояние воспроизведения/паузы сессии.
+ * Отправляет соответствующие команды на сервер и обновляет UI.
+ */
 function togglePlayPause() {
-  const wasPlaying = isPlaying
-  if (wasPlaying) {
+  if (isPlaying) {
     _handlePauseTransition()
   } else {
     _handlePlayTransition()
@@ -1715,11 +1720,4 @@ function fillFsSessionInfo() {
   } catch {
     console.warn('Error in fillFsSessionInfo')
   }
-}
-
-/**
- * Возвращает на страницу управления сессиями
- */
-function goBack() {
-  window.location.href = '/';
 }

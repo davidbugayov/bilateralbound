@@ -11,7 +11,6 @@ const BASE = 'http://localhost:3002'
 
 function log(msg) {
   console.log(msg);
-  return true; // To avoid unused parameter warning
 }
 
 async function api(path, method = 'GET', body = null) {
