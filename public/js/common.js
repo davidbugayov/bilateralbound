@@ -261,10 +261,18 @@ async function copy(elementId, successMessage) {
   }
 }
 
+/**
+ * Navigates the user to the main page.
+ */
+function goBack() {
+  window.location.href = '/'
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   globalThis.themeManager = new ThemeManager()
 })
 
 if (typeof globalThis !== 'undefined') {
   globalThis.copy = copy
+  globalThis.goBack = goBack
 }

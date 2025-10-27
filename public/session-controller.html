@@ -1184,5 +1184,13 @@
     <script src="/js/notification-system.js" defer></script>
     <script src="/js/new-features.js" defer></script>
     <script src="/js/controller.js" defer></script>
+    <script type="module">
+      import { SessionController } from '/js/controllers/SessionController.js';
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.wsClient) {
+          new SessionController(window.wsClient, window.__current).initialize();
+        }
+      });
+    </script>
   </body>
 </html>
