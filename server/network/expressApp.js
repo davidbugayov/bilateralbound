@@ -177,6 +177,37 @@ function setupExpressApp(sessionManager, apiCache) {
   app.get('/', (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'))
   })
+
+  app.get('/rss.xml', (req, res) => {
+    const baseUrl = `${req.protocol}://${req.get('host')}`
+    const rss = `
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>BilateralBound - EMDR Терапия</title>
+  <link>${baseUrl}</link>
+  <description>Инновационная платформа для EMDR терапии с биодинамической стимуляцией</description>
+  <language>ru</language>
+  <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
+  <item>
+    <title>BilateralBound - EMDR терапия для пациентов</title>
+    <link>${baseUrl}/</link>
+    <description>Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний.</description>
+    <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
+    <guid>${baseUrl}/</guid>
+  </item>
+  <item>
+    <title>EMDR Терапия для Супружеских Пар | Bilateral Stimulation | Психолог Онлайн</title>
+    <link>${baseUrl}/emdr-therapy/</link>
+    <description>Профессиональная EMDR терапия для супружеских пар с использованием билатеральной стимуляции. Эффективное лечение травм, ПТСР, конфликтов в отношениях. Онлайн-сессии с сертифицированным психологом.</description>
+    <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
+    <guid>${baseUrl}/emdr-therapy/</guid>
+  </item>
+</channel>
+</rss>
+    `.trim()
+    res.type('application/xml').send(rss)
+  })
   app.post('/api/session', (req, res) => {
     try {
       const session = sessionManager.createSession()
