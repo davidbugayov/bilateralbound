@@ -1,6 +1,6 @@
 {
   "name": "bilateralbound",
-  "version": "5.5.5",
+  "version": "5.5.7",
   "description": "Real-time EMDR therapy tool with scalable architecture",
   "main": "server/index.js",
   "scripts": {
@@ -20,10 +20,10 @@
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "version": "node version-manager.js",
     "postversion": "git add package.json VERSION.md && git commit -m \"🔖 Release v$(node -e \\\"console.log(require('./package.json').version)\\\")\" && git tag v$(node -e \\\"console.log(require('./package.json').version)\\\")",
-    "deploy:prod": "./manual-deploy.sh --env=prod",
-    "deploy:prod-ru": "./manual-deploy.sh --env=prod-ru",
-    "deploy:dev": "./manual-deploy.sh --env=dev",
-    "deploy:all": "npm run deploy:prod && npm run deploy:prod-ru && npm run deploy:dev"
+    "vps:pull": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"cd /var/www/bilateralbound-prod && git fetch --all && git reset --hard origin/stable; cd /var/www/emdrbilateral && git fetch --all && git reset --hard origin/main\"",
+    "vps:install": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"cd /var/www/bilateralbound-prod && npm install; cd /var/www/emdrbilateral && npm install\"",
+    "vps:start": "sshpass -p 'tOx8q7HN+' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \"pm2 delete all; (cd /var/www/emdrbilateral && PORT=3001 pm2 start server/index.js --name dev.emdrbilateral.online); (cd /var/www/bilateralbound-prod && PORT=3002 pm2 start server/index.js --name emdrbilateral.online); (cd /var/www/bilateralbound-prod && PORT=3003 pm2 start server/index.js --name emdrbilateral.ru); pm2 save\"",
+    "vps:deploy": "npm run vps:pull && npm run vps:install && npm run vps:start"
   },
   "keywords": [
     "emdr",
