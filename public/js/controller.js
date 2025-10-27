@@ -144,34 +144,46 @@ function _hasBounced(currentVelocity, lastSign, minSpeed) {
   )
 }
 
+/**
+ * Обнаруживает и подсчитывает отскоки на основе обновлений состояния сервера.
+ * Рефакторинг для снижения когнитивной сложности.
+ * @param {object} prev - Предыдущее состояние.
+ * @param {object} curr - Текущее состояние.
+ */
 function detectAndCountBounceFromServer(prev, curr) {
-  // Функция разбита для снижения когнитивной сложности
   try {
-    if (prev && curr && bbCounters.running) {
-      const now = performance.now()
-      if (now - __lastBounceTs >= 120) {
-        const minSpeed = 10 // пикс/с, фильтр дрожания
-        const currVx = curr?.vx || 0
-        const currVy = curr?.vy || 0
+    if (!prev || !curr || !bbCounters.running) {
+      return
+    }
 
-        // Восстанавливаем последние ненулевые знаки, чтобы переживать кадры с vx/vy=0
-        if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
-        if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
+    const now = performance.now()
+    if (now - __lastBounceTs < 120) {
+      return
+    }
 
-        const bouncedX = _hasBounced(currVx, __lastVxSign, minSpeed)
-        const bouncedY = _hasBounced(currVy, __lastVySign, minSpeed)
-        
-        if (bouncedX || bouncedY) {
-          __lastBounceTs = now
-          bbCounters.onBounce()
-        }
+    const minSpeed = 10
+    const currVx = curr?.vx || 0
+    const currVy = curr?.vy || 0
 
-        // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
-        const currSignX = Math.sign(currVx)
-        const currSignY = Math.sign(currVy)
-        if (currSignX !== 0) __lastVxSign = currSignX
-        if (currSignY !== 0) __lastVySign = currSignY
-      }
+    if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
+    if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
+
+    const bouncedX = _hasBounced(currVx, __lastVxSign, minSpeed)
+    const bouncedY = _hasBounced(currVy, __lastVySign, minSpeed)
+
+    if (bouncedX || bouncedY) {
+      __lastBounceTs = now
+      bbCounters.onBounce()
+    }
+
+    const currSignX = Math.sign(currVx)
+    if (currSignX !== 0) {
+      __lastVxSign = currSignX
+    }
+
+    const currSignY = Math.sign(currVy)
+    if (currSignY !== 0) {
+      __lastVySign = currSignY
     }
   } catch {
     console.warn('Error in detectAndCountBounceFromServer')
@@ -947,23 +959,23 @@ function showWaitingForViewer() {
 }
 
 function updatePreviewSize(viewerScreenSize) {
-  if (!canUpdatePreview(viewerScreenSize)) {
+  if (canUpdatePreview(viewerScreenSize)) {
+    const canvas = document.getElementById('preview')
+    if (!canvas) return
+
+    const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
+    setCanvasDimensions(canvas, previewWidth, previewHeight)
+    updatePhysicsEngineWorldSize(viewerScreenSize)
+    applyServerStateOrCenter()
+    updateViewerInfo(viewerScreenSize)
+  } else {
     showWaitingForViewer()
-    return
   }
-
-  const canvas = document.getElementById('preview')
-  if (!canvas) return
-
-  const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
-  setCanvasDimensions(canvas, previewWidth, previewHeight)
-  updatePhysicsEngineWorldSize(viewerScreenSize)
-  applyServerStateOrCenter()
-  updateViewerInfo(viewerScreenSize)
 }
 
 function canUpdatePreview(viewerScreenSize) {
-  return viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine
+  const isReady = viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine
+  return Boolean(isReady)
 }
 
 function calculatePreviewDimensions(canvas, viewerScreenSize) {
@@ -1158,31 +1170,152 @@ function setBackgroundColor(color) {
 /**
  * Обновляет состояние кнопок направления
  */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
 function updateDirectionButtons() {
-  // Функция разбита для снижения когнитивной сложности
-  // Обновляем активное состояние кнопок направления в основном интерфейсе
   const directionButtons = document.querySelectorAll('[data-mode]')
   for (const button of directionButtons) {
-    const buttonDirection = button.dataset.mode
-    if (buttonDirection === currentDirectionMode) {
-      button.classList.add('active')
-    } else {
-      button.classList.remove('active')
-    }
+    button.classList.toggle('active', button.dataset.mode === currentDirectionMode)
   }
-  // Обновляем кнопки направления в полноэкранном режиме
-  const fsDirectionButtons = document.querySelectorAll('[id^="fsDir"]')
-  for (const button of fsDirectionButtons) {
-    let buttonDirection = null
-    if (button.id === 'fsDirH') buttonDirection = 'horizontal'
-    else if (button.id === 'fsDirV') buttonDirection = 'vertical'
-    else if (button.id === 'fsDirDL') buttonDirection = 'diagRLL'
-    else if (button.id === 'fsDirDR') buttonDirection = 'diagRL'
-    else if (button.id === 'fsDirRandom') buttonDirection = 'random'
-    if (buttonDirection === currentDirectionMode) {
-      button.classList.add('active')
-    } else {
-      button.classList.remove('active')
+
+  const fsDirectionButtons = {
+    fsDirH: 'horizontal',
+    fsDirV: 'vertical',
+    fsDirDL: 'diagRLL',
+    fsDirDR: 'diagRL',
+    fsDirRandom: 'random'
+  }
+
+  for (const [id, mode] of Object.entries(fsDirectionButtons)) {
+    const button = document.getElementById(id)
+    if (button) {
+      button.classList.toggle('active', mode === currentDirectionMode)
     }
   }
 }
@@ -1340,38 +1473,36 @@ function _normalizeCoordinate(coord, fallback) {
   return typeof coord === 'number' && Number.isFinite(coord) ? coord : fallback
 }
 
+/**
+ * Масштабирует состояние мяча из координат вьювера в координаты превью.
+ * @param {object} state - Состояние мяча для масштабирования.
+ * @returns {object} - Масштабированное состояние.
+ */
 function getScaledState(state) {
-  if (!globalThis.__current.viewerScreenSize || !globalThis.__previewCanvas || !state) {
-    return state
+  const canScale = globalThis.__current.viewerScreenSize && globalThis.__previewCanvas && state
+  if (canScale) {
+    const viewerSize = globalThis.__current.viewerScreenSize
+    const previewSize = {
+      width: globalThis.__previewCanvas.width,
+      height: globalThis.__previewCanvas.height
+    }
+
+    if (viewerSize.width > 0 && viewerSize.height > 0) {
+      const scaleX = previewSize.width / viewerSize.width
+      const scaleY = previewSize.height / viewerSize.height
+      const scaleRadius = Math.min(scaleX, scaleY)
+      const scaledState = { ...state }
+      const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2)
+      const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2)
+      scaledState.x = rawX * scaleX
+      scaledState.y = rawY * scaleY
+      if (typeof scaledState.radius === 'number') {
+        scaledState.radius *= scaleRadius
+      }
+      return scaledState
+    }
   }
-
-  const viewerSize = globalThis.__current.viewerScreenSize
-  const previewSize = {
-    width: globalThis.__previewCanvas.width,
-    height: globalThis.__previewCanvas.height
-  }
-
-  if (viewerSize.width <= 0 || viewerSize.height <= 0) {
-    return state
-  }
-
-  const scaleX = previewSize.width / viewerSize.width
-  const scaleY = previewSize.height / viewerSize.height
-  const scaleRadius = Math.min(scaleX, scaleY)
-
-  const scaledState = { ...state }
-
-  const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2)
-  const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2)
-
-  scaledState.x = rawX * scaleX
-  scaledState.y = rawY * scaleY
-
-  if (typeof scaledState.radius === 'number') {
-    scaledState.radius *= scaleRadius
-  }
-
-  return scaledState
+  return state
 }
 
 function updateViewerStatusUI() {
@@ -1395,16 +1526,11 @@ function updateViewerStatusUI() {
   }
 }
 
-function openPreviewFullscreen() {
-  // Функция разбита для снижения когнитивной сложности
-  const overlay = document.getElementById('previewOverlay')
-  if (!overlay || !previewFsCanvas) return
-  // Добавляем запись в историю браузера для корректного возврата
-  const currentUrl = globalThis.location.href
-  const fullscreenUrl = currentUrl + '#fullscreen-preview'
-  history.pushState({ fullscreen: true, returnUrl: currentUrl }, '', fullscreenUrl)
-  overlay.style.display = 'block'
-  isPreviewFullscreen = true
+/**
+ * Инициализирует движок физики и рендерер для полноэкранного предпросмотра.
+ * @private
+ */
+function _initializeFullscreenRenderer() {
   try {
     if (!previewPhysicsEngine) {
       previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
@@ -1422,6 +1548,24 @@ function openPreviewFullscreen() {
   } catch {
     /* ignore */
   }
+}
+
+/**
+ * Открывает оверлей полноэкранного предпросмотра.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+function openPreviewFullscreen() {
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay || !previewFsCanvas) return
+
+  const currentUrl = globalThis.location.href
+  const fullscreenUrl = currentUrl.split('#')[0] + '#fullscreen-preview'
+  history.pushState({ fullscreen: true, returnUrl: currentUrl }, '', fullscreenUrl)
+
+  overlay.style.display = 'block'
+  isPreviewFullscreen = true
+
+  _initializeFullscreenRenderer()
 
   resizePreviewFullscreen()
   setupFsPanelAutoHide()
@@ -1504,10 +1648,11 @@ function setupFsPanelDrag() {
   }
 
   const onMove = (x, y) => {
-    if (!fsPanelDrag.active) return
-    panel.style.left = x - fsPanelDrag.offsetX + 'px'
-    panel.style.top = y - fsPanelDrag.offsetY + 'px'
-    panel.style.transform = 'translateX(0)'
+    if (fsPanelDrag.active) {
+      panel.style.left = `${x - fsPanelDrag.offsetX}px`
+      panel.style.top = `${y - fsPanelDrag.offsetY}px`
+      panel.style.transform = 'translateX(0)'
+    }
   }
 
   const onUp = () => {
@@ -1542,64 +1687,1000 @@ function setupFsPanelDrag() {
   globalThis.addEventListener('touchend', onUp, { passive: true })
 }
 
+/**
+ * Обрабатывает свайп-жесты в полноэкранном режиме для управления направлением и воспроизведением.
+ * @param {number} dx - Смещение по оси X.
+ * @param {number} dy - Смещение по оси Y.
+ * @param {number} threshold - Порог для срабатывания жеста.
+ * @private
+ */
+function _handleFullscreenSwipe(dx, dy, threshold) {
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
+    if (dx > 0) {
+      setDirection('horizontal')
+    } else {
+      setDirection('vertical')
+    }
+  } else if (Math.abs(dy) > threshold) {
+    const isSwipedUp = dy < 0
+    const isSwipedDown = dy > 0
+
+    if ((isSwipedUp && !isPlaying) || (isSwipedDown && isPlaying)) {
+      togglePlayPause()
+    }
+  }
+}
+
+/**
+ * Настраивает обработку жестов в полноэкранном режиме.
+ */
 function setupFullscreenGestures() {
-  // Функция разбита для снижения когнитивной сложности
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
+
   let startX = 0
   let startY = 0
   let swiping = false
   const threshold = 40
-  overlay.addEventListener(
+
+  const handleTouchStart = e => {
+    const t = e.touches[0]
+    startX = t.clientX
+    startY = t.clientY
+    swiping = true
+  }
+
+  const handleTouchEnd = e => {
+    if (swiping) {
+      swiping = false
+      const t = e.changedTouches[0]
+      const dx = t.clientX - startX
+      const dy = t.clientY - startY
+      _handleFullscreenSwipe(dx, dy, threshold)
+    }
+  }
+
+  overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
+  overlay.addEventListener('touchmove', e => e.preventDefault(), { passive: false })
+  overlay.addEventListener('touchend', handleTouchEnd, { passive: true })
+}
+
+function syncFsPlayPauseButton() {
+  // Функция разбита для снижения когнитивной сложности
+  const btn = document.getElementById('fsPlayPauseBtn')
+  if (!btn) return
+  if (isPlaying) {
+    btn.textContent = '⏸ Стоп'
+  } else {
+    btn.textContent = '▶️ Старт'
+  }
+}
+
+function wireFullscreenControls() {
+  // Функция разбита для снижения когнитивной сложности
+  setupFullscreenSpeedControl()
+  setupFullscreenSizeControls()
+  setupFullscreenDirectionControls()
+  setupFullscreenColorControls()
+}
+
+function setupFullscreenSpeedControl() {
+  const speed = document.getElementById('fsSpeed')
+  if (speed) {
+    if (components.speed?.getSpeed) {
+      speed.value = components.speed.getSpeed()
+    } else {
+      speed.value = 40
+    }
+    speed.oninput = e => {
+      const target = e?.target
+      if (target?.value !== undefined) {
+        updateSpeed(Number(target.value))
+      }
+    }
+  }
+}
+
+function setupFullscreenSizeControls() {
+  const size1 = document.getElementById('fsSize1')
+  const size2 = document.getElementById('fsSize2')
+  const size3 = document.getElementById('fsSize3')
+  const size4 = document.getElementById('fsSize4')
+
+  if (size1) size1.onclick = () => setBallSizeMultiplier(1)
+  if (size2) size2.onclick = () => setBallSizeMultiplier(2)
+  if (size3) size3.onclick = () => setBallSizeMultiplier(3)
+  if (size4) size4.onclick = () => setBallSizeMultiplier(4)
+}
+
+function setupFullscreenDirectionControls() {
+  const dH = document.getElementById('fsDirH')
+  const dV = document.getElementById('fsDirV')
+  const dDL = document.getElementById('fsDirDL')
+  const dDR = document.getElementById('fsDirDR')
+  const dRandom = document.getElementById('fsDirRandom')
+
+  if (dH) dH.onclick = () => setDirection('horizontal')
+  if (dV) dV.onclick = () => setDirection('vertical')
+  if (dDL) dDL.onclick = () => setDirection('diagRLL')
+  if (dDR) dDR.onclick = () => setDirection('diagRL')
+  if (dRandom) dRandom.onclick = () => setDirection('random')
+}
+
+function setupFullscreenColorControls() {
+  setupFullscreenBallColorControls()
+  setupFullscreenBackgroundColorControls()
+}
+
+function setupFullscreenBallColorControls() {
+  const ballColors = [
+    '#60a5fa',
+    '#ef4444',
+    '#10b981',
+    '#f59e0b',
+    '#8b5cf6',
+    '#f97316',
+    '#06b6d4',
+    '#84cc16',
+    '#fb7185',
+    '#ffffff'
+  ]
+
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.getElementById(`fsBallCol${i}`)
+    if (btn) btn.onclick = () => setBallColor(ballColors[i - 1])
+  }
+}
+
+function setupFullscreenBackgroundColorControls() {
+  const bgColors = [
+    '#020617',
+    '#000000',
+    '#111827',
+    '#0a2540',
+    '#052e16',
+    '#1a102a',
+    '#2b1b0e',
+    '#032f2f',
+    '#2a0e14',
+    '#0f172a'
+  ]
+
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.getElementById(`fsBg${i}`)
+    if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1])
+  }
+}
+
+function fillFsSessionInfo() {
+  // Функция разбита для снижения когнитивной сложности
+  try {
+    const sid = globalThis.__current?.sessionId ?? '...'
+    const fsSid = document.getElementById('fsCurSid')
+    if (fsSid) fsSid.textContent = `SID: ${sid}`
+    const fsLink = document.getElementById('fsViewLink')
+    if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`
+  } catch {
+    console.warn('Error in fillFsSessionInfo')
+  }
+}
+<environment_details>
+# IntelliJ IDEA Ultimate Visible Files
+public/js/physics-engine.js
+
+# IntelliJ IDEA Ultimate Open Tabs
+.idea/workspace.xml
+public/index.html
+public/js/controller.js
+test/automated-tests.js
+public/js/websocket-client.js
+qodana_results/qodana.sarif.json
+.github/workflows/qodana_code_quality.yml
+test/permanent-links-test.js
+WEBHOOK_QUICK_START.md
+package.json
+manual-deploy.sh
+nginx-config
+nodemon.json
+OPTIMIZATION_SUMMARY.md
+package-lock.json
+README.md
+VERSION.md
+test/ui-tests.js
+test/core-modules.test.js
+test/TESTS.md
+test/performance.test.js
+sonar_open_issues.json
+public/js/common.js
+public/js/physics-engine.js
+
+# Current Time
+10/27/2025, 4:41:03 PM (Europe/Moscow, UTC+3:00)
+
+# Context Window Usage
+284,176 / 1,048.576K tokens used (27%)
+
+# Current Mode
+ACT MODE
+  if (!canvas) return
+
+  const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
+  setCanvasDimensions(canvas, previewWidth, previewHeight)
+  updatePhysicsEngineWorldSize(viewerScreenSize)
+  applyServerStateOrCenter()
+  updateViewerInfo(viewerScreenSize)
+}
+
+function canUpdatePreview(viewerScreenSize) {
+  const isReady = viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine
+  return Boolean(isReady)
+}
+
+function calculatePreviewDimensions(canvas, viewerScreenSize) {
+  const container = canvas.parentElement
+  const containerRect = container.getBoundingClientRect()
+  const maxWidth = Math.min(containerRect.width - 40, 500)
+  const maxHeight = Math.min(400, maxWidth * 0.75)
+  const viewerRatio = viewerScreenSize.width / viewerScreenSize.height
+  let previewWidth = maxWidth
+  let previewHeight = previewWidth / viewerRatio
+  if (previewHeight > maxHeight) {
+    previewHeight = maxHeight
+    previewWidth = previewHeight * viewerRatio
+  }
+  return { previewWidth, previewHeight }
+}
+
+function setCanvasDimensions(canvas, previewWidth, previewHeight) {
+  canvas.width = previewWidth
+  canvas.height = previewHeight
+  canvas.style.width = canvas.width + 'px'
+  canvas.style.height = canvas.height + 'px'
+}
+
+function updatePhysicsEngineWorldSize(viewerScreenSize) {
+  if (
+    previewPhysicsEngine &&
+    viewerScreenSize &&
+    typeof viewerScreenSize.width === 'number' &&
+    typeof viewerScreenSize.height === 'number'
+  ) {
+    previewPhysicsEngine.setWorldSize(viewerScreenSize.width, viewerScreenSize.height)
+  }
+}
+
+function applyServerStateOrCenter() {
+  if (lastServerState) {
+    previewPhysicsEngine.applyCommand(lastServerState)
+  } else {
+    centerBallInViewer()
+  }
+}
+
+function centerBallInViewer() {
+  if (globalThis.__current.viewerScreenSize?.width > 0) {
+    const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
+    const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
+    previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
+    previewPhysicsEngine.setVelocity(0, 0)
+  }
+}
+
+function updateViewerInfo(viewerScreenSize) {
+  const viewerInfo = document.getElementById('viewerInfo')
+  if (viewerInfo) {
+    viewerInfo.textContent = `Вьювер: ${viewerScreenSize.width}×${viewerScreenSize.height}`
+    viewerInfo.style.display = 'block'
+  }
+}
+// ===== ФУНКЦИИ УПРАВЛЕНИЯ МЯЧОМ =====
+/**
+ * Преобразует текстовый режим в вектор направления.
+ * @param {string} directionMode - Режим направления ('horizontal', 'vertical', 'diagRL', 'diagRLL', 'random').
+ * @returns {{dirX: number, dirY: number}|null} Возвращает объект с вектором направления или null, если режим неизвестен.
+ */
+function getDirectionVector(directionMode) {
+  switch (directionMode) {
+    case 'horizontal':
+      return { dirX: 1, dirY: 0 }
+    case 'vertical':
+      return { dirX: 0, dirY: 1 }
+    case 'diagRL': // Диагональ вправо-вниз
+      return { dirX: 0.707, dirY: 0.707 }
+    case 'diagRLL': // Диагональ вправо-вверх
+      return { dirX: 0.707, dirY: -0.707 }
+    case 'random': {
+      // Случайное направление
+      const angle = Math.random() * 2 * Math.PI
+      return { dirX: Math.cos(angle), dirY: Math.sin(angle) }
+    }
+    default:
+      console.warn('Неизвестный режим направления:', directionMode)
+      return null
+  }
+}
+
+/**
+ * @private
+ * Handles the direction change logic when the session is active.
+ * It smoothly transitions by pausing, centering, and then resuming with the new direction.
+ * @param {number} dirX - The new X direction component.
+ * @param {number} dirY - The new Y direction component.
+ */
+function _applyDirectionChangeWhenPlaying(dirX, dirY) {
+  safeSend(WS_MSG.controllerUpdate, {
+    paused: true,
+    returnToCenter: true
+  })
+  setTimeout(() => {
+    safeSend(WS_MSG.controllerUpdate, {
+      paused: false,
+      dirX,
+      dirY
+    })
+  }, 200)
+}
+
+/**
+ * @private
+ * Handles the direction change logic when the session is paused.
+ * It updates the direction on the server without starting the movement.
+ * @param {number} dirX - The new X direction component.
+ * @param {number} dirY - The new Y direction component.
+ */
+function _applyDirectionChangeWhenPaused(dirX, dirY) {
+  safeSend(WS_MSG.controllerUpdate, {
+    dirX,
+    dirY
+  })
+}
+
+/**
+ * Устанавливает направление движения шарика.
+ * @param {string} directionMode - Режим направления для установки.
+ */
+function setDirection(directionMode) {
+  if (!directionMode) return
+
+  try {
+    const directionVector = getDirectionVector(directionMode)
+    if (!directionVector) return
+
+    const { dirX, dirY } = directionVector
+    directionState = { dx: dirX, dy: dirY }
+    currentDirectionMode = directionMode
+
+    if (isPlaying) {
+      _applyDirectionChangeWhenPlaying(dirX, dirY)
+    } else {
+      _applyDirectionChangeWhenPaused(dirX, dirY)
+    }
+
+    updateDirectionButtons()
+    updateDirectionDisplay(dirX, dirY)
+    console.log(
+      `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
+    )
+  } catch (error) {
+    console.error('Ошибка установки направления:', error)
+  }
+}
+
+function setBallColor(color) {
+  // Функция разбита для снижения когнитивной сложности
+  // Оптимизация: меньше обновлений когда нет вьювера
+  if (globalThis.__current?.viewerConnected) {
+    safeSend(WS_MSG.controllerUpdate, { colorBall: color })
+  }
+}
+
+function setBallSize(size) {
+  // Функция разбита для снижения когнитивной сложности
+  // Оптимизация: меньше обновлений когда нет вьювера
+  if (globalThis.__current.viewerConnected) {
+    safeSend(WS_MSG.controllerUpdate, { radius: size })
+  }
+}
+
+function setBallSizeMultiplier(multiplier) {
+  // Функция разбита для снижения когнитивной сложности
+  // Базовый размер 20, умножаем на множитель
+  const baseSize = 20
+  const newSize = baseSize * multiplier
+  setBallSize(newSize)
+}
+
+function setBackgroundColor(color) {
+  // Функция разбита для снижения когнитивной сложности
+  // Отправляем изменение на сервер
+  if (globalThis.__current.viewerConnected) {
+    safeSend(WS_MSG.controllerUpdate, { colorBg: color })
+  }
+  // Обновляем фон в превью
+  if (globalThis.previewRenderer) {
+    globalThis.previewRenderer.setBackgroundColor(color)
+  }
+  // Обновляем фон в полноэкранном превью
+  if (globalThis.fullscreenPreviewRenderer) {
+    globalThis.fullscreenPreviewRenderer.setBackgroundColor(color)
+  }
+}
+/**
+ * Обновляет состояние кнопок направления
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+function updateDirectionButtons() {
+  const directionButtons = document.querySelectorAll('[data-mode]')
+  for (const button of directionButtons) {
+    button.classList.toggle('active', button.dataset.mode === currentDirectionMode)
+  }
+
+  const fsDirectionButtons = {
+    fsDirH: 'horizontal',
+    fsDirV: 'vertical',
+    fsDirDL: 'diagRLL',
+    fsDirDR: 'diagRL',
+    fsDirRandom: 'random'
+  }
+
+  for (const [id, mode] of Object.entries(fsDirectionButtons)) {
+    const button = document.getElementById(id)
+    if (button) {
+      button.classList.toggle('active', mode === currentDirectionMode)
+    }
+  }
+}
+/**
+ * Получает иконку и текст для текущего режима направления
+ */
+function getDirectionInfo(mode) {
+  switch (mode) {
+    case 'horizontal':
+      return { text: 'Горизонтальное', icon: '↔️' }
+    case 'vertical':
+      return { text: 'Вертикальное', icon: '↕️' }
+    case 'diagRL':
+      return { text: 'Диагональ (право-вниз)', icon: '↘️' }
+    case 'diagRLL':
+      return { text: 'Диагональ (право-верх)', icon: '↗️' }
+    case 'random':
+      return { text: 'Случайное', icon: '🎲' }
+    default:
+      console.warn(`Неизвестный режим направления: ${mode}`)
+      return { text: 'Неизвестное направление', icon: '❓' }
+  }
+}
+
+/**
+ * Обновляет индикатор направления и отображает информацию о текущем направлении.
+ * @param {number} dirX - Компонент X вектора направления.
+ * @param {number} dirY - Компонент Y вектора направления.
+ * @param {string|null} [customText=null] - Пользовательский текст для отображения.
+ */
+function updateDirectionDisplay(dirX, dirY, customText = null) {
+  try {
+    // Ищем элемент для отображения направления
+    const directionDisplay = document.getElementById('currentDirection')
+    let directionText = customText || 'Неизвестно'
+    let directionIcon
+
+    if (!customText) {
+      // ОПРЕДЕЛЯЕМ НАПРАВЛЕНИЕ ТОЛЬКО ПО currentDirectionMode - игнорируем dirX/dirY
+      const directionInfo = getDirectionInfo(currentDirectionMode)
+      directionText = directionInfo.text
+      directionIcon = directionInfo.icon
+    }
+
+    if (directionDisplay) {
+      directionDisplay.innerHTML = `${directionIcon}`
+    }
+
+    // Обновляем иконку направления в полноэкранном режиме
+    const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
+    if (fsDirectionDisplay) {
+      fsDirectionDisplay.innerHTML = directionDisplay
+        ? directionDisplay.innerHTML
+        : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
+    }
+  } catch (error) {
+    console.error('Ошибка обновления отображения направления:', error)
+  }
+}
+
+function updatePlayPauseButton() {
+  // Функция разбита для снижения когнитивной сложности
+  const button = document.getElementById('playPauseBtn')
+  if (button) {
+    if (isPlaying) {
+      button.textContent = '⏸ Стоп'
+      button.classList.add('playing')
+    } else {
+      button.textContent = '▶️ Старт'
+      button.classList.remove('playing')
+    }
+  }
+}
+
+function _handlePlay() {
+  let currentDirection = directionState || { dx: 1, dy: 0 }
+  if (currentDirection.dx === 0 && currentDirection.dy === 0) {
+    currentDirection = { dx: 1, dy: 0 }
+  }
+  const payload = {
+    paused: false,
+    dirX: currentDirection.dx,
+    dirY: currentDirection.dy,
+    speed: components.speed?.getSpeed() ?? 40
+  }
+  safeSend(WS_MSG.controllerUpdate, payload)
+  isPlaying = true
+  bbCounters.start()
+  if (previewPhysicsEngine) {
+    previewPhysicsEngine.applyCommand(payload)
+  }
+  globalThis.forcePauseUntilUserAction = false
+}
+
+function _handlePause() {
+  const payload = {
+    paused: true,
+    returnToCenter: true
+  }
+  safeSend(WS_MSG.controllerUpdate, payload)
+  isPlaying = false
+  bbCounters.stop(true)
+  if (previewPhysicsEngine) {
+    previewPhysicsEngine.applyCommand(payload)
+  }
+}
+
+/**
+ * Переключает состояние воспроизведения/паузы сессии.
+ * Отправляет соответствующие команды на сервер и обновляет UI.
+ */
+function togglePlayPause() {
+  if (isPlaying) {
+    _handlePauseTransition()
+  } else {
+    _handlePlayTransition()
+  }
+
+  _schedulePlayPauseAnimations()
+  _syncFullscreenPlayPause()
+}
+
+function _handlePauseTransition() {
+  _handlePause()
+  __ignoreServerPausedUntilTs = performance.now() + 800
+}
+
+function _handlePlayTransition() {
+  _handlePlay()
+  __ignoreServerPausedUntilTs = performance.now() + 800
+}
+
+function _schedulePlayPauseAnimations() {
+  // Обновляем кнопку сразу
+  updatePlayPauseButton()
+
+  // Планируем дополнительные обновления для анимации через разные интервалы
+  setTimeout(() => updatePlayPauseButton(), 150)
+  setTimeout(() => updatePlayPauseButton(), 300)
+}
+
+function _syncFullscreenPlayPause() {
+  syncFsPlayPauseButton()
+}
+
+// ===== УТИЛИТЫ =====
+/**
+ * Нормализует координату, проверяя, является ли она конечным числом.
+ * @param {*} coord - Значение координаты для нормализации.
+ * @param {*} fallback - Значение по умолчанию, если координата не является конечным числом.
+ * @returns {number} Нормализованная координата или значение по умолчанию.
+ * @private
+ */
+function _normalizeCoordinate(coord, fallback) {
+  return typeof coord === 'number' && Number.isFinite(coord) ? coord : fallback
+}
+
+/**
+ * Масштабирует состояние мяча из координат вьювера в координаты превью.
+ * @param {object} state - Состояние мяча для масштабирования.
+ * @returns {object} - Масштабированное состояние.
+ */
+function getScaledState(state) {
+  const canScale = globalThis.__current.viewerScreenSize && globalThis.__previewCanvas && state
+  if (canScale) {
+    const viewerSize = globalThis.__current.viewerScreenSize
+    const previewSize = {
+      width: globalThis.__previewCanvas.width,
+      height: globalThis.__previewCanvas.height
+    }
+
+    if (viewerSize.width > 0 && viewerSize.height > 0) {
+      const scaleX = previewSize.width / viewerSize.width
+      const scaleY = previewSize.height / viewerSize.height
+      const scaleRadius = Math.min(scaleX, scaleY)
+      const scaledState = { ...state }
+      const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2)
+      const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2)
+      scaledState.x = rawX * scaleX
+      scaledState.y = rawY * scaleY
+      if (typeof scaledState.radius === 'number') {
+        scaledState.radius *= scaleRadius
+      }
+      return scaledState
+    }
+  }
+  return state
+}
+
+function updateViewerStatusUI() {
+  // Функция разбита для снижения когнитивной сложности
+  // Обновляем статус вьювера
+  const viewerStatusEl = document.getElementById('viewerStatus')
+  if (viewerStatusEl) {
+    if (globalThis.__current.viewerConnected) {
+      viewerStatusEl.textContent = 'Подключен'
+      viewerStatusEl.style.color = '#22c55e' // ярко-зеленый цвет
+      viewerStatusEl.style.fontWeight = '600' // делаем текст жирным для лучшей видимости
+      if (globalThis.__current.viewerScreenSize?.width > 0) {
+        updatePreviewSize(globalThis.__current.viewerScreenSize)
+      }
+    } else {
+      viewerStatusEl.textContent = 'Ожидание...'
+      viewerStatusEl.style.color = '#ef4444' // красный
+      viewerStatusEl.style.fontWeight = '400'
+      showWaitingForViewer()
+    }
+  }
+}
+
+/**
+ * Инициализирует движок физики и рендерер для полноэкранного предпросмотра.
+ * @private
+ */
+function _initializeFullscreenRenderer() {
+  try {
+    if (!previewPhysicsEngine) {
+      previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
+      previewPhysicsEngine.isViewer = true
+    }
+
+    if (!previewFsRenderer) {
+      previewFsRenderer = new BallRenderer(previewFsCanvas, previewPhysicsEngine, {
+        localPhysics: false
+      })
+      previewFsRenderer.start()
+    } else {
+      previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Открывает оверлей полноэкранного предпросмотра.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+function openPreviewFullscreen() {
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay || !previewFsCanvas) return
+
+  const currentUrl = globalThis.location.href
+  const fullscreenUrl = currentUrl.split('#')[0] + '#fullscreen-preview'
+  history.pushState({ fullscreen: true, returnUrl: currentUrl }, '', fullscreenUrl)
+
+  overlay.style.display = 'block'
+  isPreviewFullscreen = true
+
+  _initializeFullscreenRenderer()
+
+  resizePreviewFullscreen()
+  setupFsPanelAutoHide()
+  setupFsPanelDrag()
+  setupFullscreenGestures()
+  syncFsPlayPauseButton()
+  wireFullscreenControls()
+  fillFsSessionInfo()
+}
+
+function closePreviewFullscreen() {
+  // Функция разбита для снижения когнитивной сложности
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay) return
+  // Убираем хэш из URL без изменения истории
+  const currentUrl = globalThis.location.href
+  const baseUrl = currentUrl.split('#')[0]
+
+  history.replaceState(null, '', baseUrl)
+  overlay.style.display = 'none'
+  isPreviewFullscreen = false
+}
+
+function resizePreviewFullscreen() {
+  // Функция разбита для снижения когнитивной сложности
+  if (!previewFsCanvas) return
+  previewFsCanvas.width = globalThis.innerWidth
+  previewFsCanvas.height = globalThis.innerHeight
+  if (previewPhysicsEngine) {
+    const vs = globalThis.__current?.viewerScreenSize
+    if (vs && vs.width > 0 && vs.height > 0) {
+      previewPhysicsEngine.setWorldSize(vs.width, vs.height)
+    } else {
+      // Фолбэк на размеры окна, если размеры вьювера ещё неизвестны
+      previewPhysicsEngine.setWorldSize(globalThis.innerWidth, globalThis.innerHeight)
+    }
+  }
+}
+
+function setupFsPanelAutoHide() {
+  // Функция разбита для снижения когнитивной сложности
+  const panel = document.getElementById('previewFsPanel')
+  const overlay = document.getElementById('previewOverlay')
+  if (!panel || !overlay) return
+  const show = () => {
+    panel.style.opacity = '1'
+  }
+
+  const hide = () => {
+    panel.style.opacity = '0'
+  }
+
+  const scheduleHide = () => {
+    clearTimeout(fsPanelHideTimer)
+    fsPanelHideTimer = setTimeout(hide, 2000)
+  }
+  // Показ при движении мыши и нажатиях
+  overlay.addEventListener('mousemove', () => {
+    show()
+    scheduleHide()
+  })
+  overlay.addEventListener('click', () => {
+    show()
+    scheduleHide()
+  })
+  show()
+  scheduleHide()
+}
+
+function setupFsPanelDrag() {
+  // Функция разбита для снижения когнитивной сложности
+  const panel = document.getElementById('previewFsPanel')
+  const overlay = document.getElementById('previewOverlay')
+  if (!panel || !overlay) return
+  const onDown = (x, y) => {
+    const rect = panel.getBoundingClientRect()
+    fsPanelDrag.active = true
+    fsPanelDrag.offsetX = x - rect.left
+    fsPanelDrag.offsetY = y - rect.top
+  }
+
+  const onMove = (x, y) => {
+    if (fsPanelDrag.active) {
+      panel.style.left = `${x - fsPanelDrag.offsetX}px`
+      panel.style.top = `${y - fsPanelDrag.offsetY}px`
+      panel.style.transform = 'translateX(0)'
+    }
+  }
+
+  const onUp = () => {
+    fsPanelDrag.active = false
+  }
+
+  panel.addEventListener('mousedown', e => {
+    onDown(e.clientX, e.clientY)
+  })
+  overlay.addEventListener('mousemove', e => {
+    onMove(e.clientX, e.clientY)
+  })
+  globalThis.addEventListener('mouseup', onUp)
+  panel.addEventListener(
     'touchstart',
     e => {
       const t = e.touches[0]
 
-      startX = t.clientX
-      startY = t.clientY
-      swiping = true
+      onDown(t.clientX, t.clientY)
     },
     { passive: true }
   )
   overlay.addEventListener(
     'touchmove',
     e => {
-      // жесты без блокировки скролла/зумов
-      e.preventDefault() // Предотвращаем прокрутку страницы при жестах
-    },
-    { passive: true }
-  )
-  overlay.addEventListener(
-    'touchend',
-    e => {
-      if (swiping) {
-        swiping = false
-        const t = e.changedTouches[0]
+      const t = e.touches[0]
 
-        const dx = t.clientX - startX
-        const dy = t.clientY - startY
-        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
-          // горизонтальные свайпы — смена направления
-          if (dx > 0) {
-            setDirection('horizontal')
-          } else {
-            // горизонтально влево — диагональ как альтернатива
-            setDirection('vertical')
-          }
-        } else if (Math.abs(dy) > threshold) {
-          // вертикальные свайпы — старт/стоп
-          if (dy < 0) {
-            // свайп вверх — старт
-            if (isPlaying === false) togglePlayPause()
-          } else if (isPlaying) {
-            // свайп вниз — стоп
-            togglePlayPause()
-          }
-        }
-      }
+      onMove(t.clientX, t.clientY)
     },
     { passive: true }
   )
+  globalThis.addEventListener('touchend', onUp, { passive: true })
+}
+
+/**
+ * Обрабатывает свайп-жесты в полноэкранном режиме для управления направлением и воспроизведением.
+ * @param {number} dx - Смещение по оси X.
+ * @param {number} dy - Смещение по оси Y.
+ * @param {number} threshold - Порог для срабатывания жеста.
+ * @private
+ */
+function _handleFullscreenSwipe(dx, dy, threshold) {
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
+    if (dx > 0) {
+      setDirection('horizontal')
+    } else {
+      setDirection('vertical')
+    }
+  } else if (Math.abs(dy) > threshold) {
+    const isSwipedUp = dy < 0
+    const isSwipedDown = dy > 0
+
+    if ((isSwipedUp && !isPlaying) || (isSwipedDown && isPlaying)) {
+      togglePlayPause()
+    }
+  }
+}
+
+/**
+ * Настраивает обработку жестов в полноэкранном режиме.
+ */
+function setupFullscreenGestures() {
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay) return
+
+  let startX = 0
+  let startY = 0
+  let swiping = false
+  const threshold = 40
+
+  const handleTouchStart = e => {
+    const t = e.touches[0]
+    startX = t.clientX
+    startY = t.clientY
+    swiping = true
+  }
+
+  const handleTouchEnd = e => {
+    if (swiping) {
+      swiping = false
+      const t = e.changedTouches[0]
+      const dx = t.clientX - startX
+      const dy = t.clientY - startY
+      _handleFullscreenSwipe(dx, dy, threshold)
+    }
+  }
+
+  overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
+  overlay.addEventListener('touchmove', e => e.preventDefault(), { passive: false })
+  overlay.addEventListener('touchend', handleTouchEnd, { passive: true })
 }
 
 function syncFsPlayPauseButton() {
