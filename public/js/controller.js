@@ -53,22 +53,61 @@ const bbCounters = {
   $timer: null,
   $passes: null,
   $sets: null,
+  $passesPerSecond: null,
+  $speedInfo: null,
   _lastBounceTs: 0,
   bounceHits: 0, // количество отдельных стуков (2 стука = 1 пасс)
+  _passesHistory: [], // История пассов для расчета скорости
+  _lastSpeedMeasurement: 0,
+  _measurementInterval: null,
+  _currentPassesPerSecond: 0,
   initDom() {
     this.$timer = document.getElementById('bbTimer')
     this.$passes = document.getElementById('bbPasses')
     this.$sets = document.getElementById('bbSets')
+    this.$passesPerSecond = document.getElementById('bbPassesPerSecond')
+    this.$speedInfo = document.getElementById('speedInfo')
     const resetBtn = document.getElementById('bbResetBtn')
     if (resetBtn) {
       resetBtn.addEventListener('click', () => this.resetAll())
     }
 
+    // Инициализируем измерение скорости
+    this.initSpeedMeasurement()
     this.render()
+  },
+  initSpeedMeasurement() {
+    // Запускаем измерение скорости каждые 2 секунды
+    this._measurementInterval = setInterval(() => {
+      this.updatePassesPerSecond()
+    }, 2000)
+  },
+  updatePassesPerSecond() {
+    if (!this.running) {
+      this._currentPassesPerSecond = 0
+      return
+    }
+
+    const now = performance.now()
+    // Удаляем старые записи старше 2 секунд
+    this._passesHistory = this._passesHistory.filter(
+      timestamp => now - timestamp < 2000
+    )
+    
+    // Рассчитываем скорость пассов в секунду
+    const passesInLast2Seconds = this._passesHistory.length / 2 // Делим на 2, т.к. считаем за 2 секунды
+    this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10 // Округляем до 1 знака
+    
+    this.renderSpeedInfo()
+  },
+  addPassMeasurement() {
+    this._passesHistory.push(performance.now())
+    this.updatePassesPerSecond()
   },
   start() {
     this.running = true
     this.lastTickTs = performance.now()
+    this._passesHistory = [] // Очищаем историю при старте
   },
   stop(incrementSet = false) {
     this.tick(performance.now())
@@ -79,6 +118,7 @@ const bbCounters = {
       this.passes = 0
       this.bounceHits = 0
       this._lastBounceTs = 0
+      this._passesHistory = [] // Очищаем историю
     }
     // По требованию: после Стоп таймер обнулять
     this.timerMs = 0
@@ -90,6 +130,8 @@ const bbCounters = {
     this.sets = 0
     this.bounceHits = 0
     this._lastBounceTs = 0
+    this._passesHistory = []
+    this._currentPassesPerSecond = 0
     this.render()
   },
   onBounce() {
@@ -101,6 +143,8 @@ const bbCounters = {
     this.bounceHits += 1
     if (this.bounceHits % 2 === 0) {
       this.passes += 1
+      // Добавляем измерение для расчета скорости
+      this.addPassMeasurement()
     }
 
     this.render()
@@ -128,6 +172,41 @@ const bbCounters = {
     if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
     if (this.$passes) this.$passes.textContent = String(this.passes)
     if (this.$sets) this.$sets.textContent = String(this.sets)
+    this.renderSpeedInfo()
+  },
+  renderSpeedInfo() {
+    if (this.$passesPerSecond) {
+      this.$passesPerSecond.textContent = this._currentPassesPerSecond.toString()
+    }
+    
+    // Определяем категорию скорости на основе текущей скорости
+    let speedCategory = ''
+    let speedColor = '#10b981' //默认绿色
+    
+    if (components.speed) {
+      const currentSpeed = components.speed.getSpeed()
+      if (currentSpeed <= 15) {
+        speedCategory = 'Очень медленно'
+        speedColor = '#22c55e' // 绿色
+      } else if (currentSpeed <= 25) {
+        speedCategory = 'Медленно'
+        speedColor = '#3b82f6' // 蓝色
+      } else if (currentSpeed <= 35) {
+        speedCategory = 'Средне'
+        speedColor = '#8b5cf6' // 紫色
+      } else if (currentSpeed <= 50) {
+        speedCategory = 'Быстро'
+        speedColor = '#f59e0b' // 橙色
+      } else {
+        speedCategory = 'Очень быстро'
+        speedColor = '#ef4444' // 红色
+      }
+      
+      if (this.$speedInfo) {
+        this.$speedInfo.textContent = speedCategory
+        this.$speedInfo.style.color = speedColor
+      }
+    }
   }
 }
 // Детектор отскоков по серверным state_update (для подсчёта пасов)
