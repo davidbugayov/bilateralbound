@@ -10,7 +10,7 @@ const { execSync } = require('child_process')
 class VersionManager {
   constructor() {
     this.versionFile = path.join(__dirname, 'VERSION.md')
-    this.packageFile = path.join(__dirname, 'package.json')
+    this.packageFile = path.join(__dirname, '..', 'package.json')
     this.currentVersion = this.getCurrentVersion()
   }
   /**
@@ -122,8 +122,10 @@ class VersionManager {
       const packageData = JSON.parse(fs.readFileSync(this.packageFile, 'utf8'))
       packageData.version = newVersion
       fs.writeFileSync(this.packageFile, JSON.stringify(packageData, null, 2))
+      return true
     } catch {
       console.error('❌ Ошибка обновления package.json')
+      return false
     }
   }
   /**
