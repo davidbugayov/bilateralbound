@@ -1,0 +1,4 @@
+User-agent: *
+Host: https://emdrbilateral.ru
+Sitemap: https://emdrbilateral.ru/sitemap.xml
+Sitemap: https://emdrbilateral.online/sitemap.xml

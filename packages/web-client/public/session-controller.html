@@ -505,7 +505,7 @@
       }
 
       .theme-toggle-btn {
-        background: rgba(37, 99, 235, 0.9);
+        background: rgba(67, 56, 202, 0.9);
         color: white;
         border: 0;
         padding: 12px 20px;
@@ -515,21 +515,35 @@
         font-weight: 500;
         transition: all 0.3s ease;
         backdrop-filter: blur(10px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(67, 56, 202, 0.3);
       }
 
       .theme-toggle-btn:hover {
-        background: rgba(37, 99, 235, 1);
+        background: rgba(67, 56, 202, 1);
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 6px 16px rgba(67, 56, 202, 0.4);
       }
 
+      /* Для темной темы */
+      .dark-theme .theme-toggle-btn {
+        background: rgba(59, 130, 246, 0.9);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      }
+
+      .dark-theme .theme-toggle-btn:hover {
+        background: rgba(59, 130, 246, 1);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+      }
+
+      /* Для светлой темы */
       .light-theme .theme-toggle-btn {
         background: rgba(30, 64, 175, 0.9);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
       }
 
       .light-theme .theme-toggle-btn:hover {
         background: rgba(30, 64, 175, 1);
+        box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
       }
 
       .kbd {

@@ -183,8 +183,8 @@ class ThemeManager {
    * @private
    */
   init() {
-    this.loadTheme()
     this.setupThemeToggle()
+    this.loadTheme()
   }
 
   /**
@@ -192,26 +192,59 @@ class ThemeManager {
    * @private
    */
   loadTheme() {
-    const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
-    if (savedTheme === 'light') {
+    const savedTheme = localStorage.getItem(this.themeKey) || 'neutral'
+
+    // Сначала очищаем все классы тем
+    document.body.classList.remove('dark-theme', 'light-theme')
+
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-theme')
+      this.updateThemeButton('🌙')
+    } else if (savedTheme === 'light') {
       document.body.classList.add('light-theme')
+      this.updateThemeButton('☀️')
+    } else {
+      // neutral
+      this.updateThemeButton('🌅')
     }
   }
 
   /**
-   * Toggles the theme between light and dark mode and saves the preference.
+   * Cycles through themes: dark -> neutral -> light -> dark
    */
   toggleTheme() {
     const body = document.body
-    const isLight = body.classList.contains('light-theme')
-    if (isLight) {
-      // Сейчас светлая тема - переключаем на темную
-      body.classList.remove('light-theme')
+    const hasDarkClass = body.classList.contains('dark-theme')
+    const hasLightClass = body.classList.contains('light-theme')
+
+    // Очищаем классы
+    body.classList.remove('dark-theme', 'light-theme')
+
+    if (hasLightClass) {
+      // Была светлая - переход на темную
+      body.classList.add('dark-theme')
       localStorage.setItem(this.themeKey, 'dark')
+      this.updateThemeButton('🌙')
+    } else if (hasDarkClass) {
+      // Была темная - переход на нейтральную
+      localStorage.setItem(this.themeKey, 'neutral')
+      this.updateThemeButton('🌅')
     } else {
-      // Сейчас темная тема - переключаем на светлую
+      // Была нейтральная - переход на светлую
       body.classList.add('light-theme')
       localStorage.setItem(this.themeKey, 'light')
+      this.updateThemeButton('☀️')
+    }
+  }
+
+  /**
+   * Updates the theme toggle button text/icon
+   * @private
+   */
+  updateThemeButton(text) {
+    const btn = document.getElementById('themeToggleBtn')
+    if (btn) {
+      btn.textContent = text
     }
   }
 
