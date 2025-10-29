@@ -1,5 +1,5 @@
 'use strict'
-const PhysicsEngine = require('../../public/js/physics-engine.js')
+const PhysicsEngine = require('../../../web-client/public/js/physics-engine.js')
 const SessionRepository = require('./SessionRepository.js')
 const WebSocketManager = require('./WebSocketManager.js')
 const StateBroadcaster = require('./StateBroadcaster.js')
