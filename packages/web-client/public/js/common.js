@@ -192,7 +192,7 @@ class ThemeManager {
    * @private
    */
   loadTheme() {
-    const savedTheme = localStorage.getItem(this.themeKey) || 'neutral'
+    const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
 
     // Сначала очищаем все классы тем
     document.body.classList.remove('dark-theme', 'light-theme')
@@ -204,13 +204,14 @@ class ThemeManager {
       document.body.classList.add('light-theme')
       this.updateThemeButton('☀️')
     } else {
-      // neutral
-      this.updateThemeButton('🌅')
+      // Fallback to dark theme
+      document.body.classList.add('dark-theme')
+      this.updateThemeButton('🌙')
     }
   }
 
   /**
-   * Cycles through themes: dark -> neutral -> light -> dark
+   * Cycles through themes: dark -> light -> dark
    */
   toggleTheme() {
     const body = document.body
@@ -225,12 +226,8 @@ class ThemeManager {
       body.classList.add('dark-theme')
       localStorage.setItem(this.themeKey, 'dark')
       this.updateThemeButton('🌙')
-    } else if (hasDarkClass) {
-      // Была темная - переход на нейтральную
-      localStorage.setItem(this.themeKey, 'neutral')
-      this.updateThemeButton('🌅')
     } else {
-      // Была нейтральная - переход на светлую
+      // Была темная - переход на светлую
       body.classList.add('light-theme')
       localStorage.setItem(this.themeKey, 'light')
       this.updateThemeButton('☀️')
