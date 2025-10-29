@@ -53,7 +53,6 @@ jest.mock('../public/js/renderer.js', () => {
      this.drawFrame = (state) => {
        // Mock drawFrame method - state parameter kept for interface compatibility
        console.log('Drawing frame with state:', state);
-       return true; // To avoid unused parameter warning
      };
 
     return this;

@@ -728,46 +728,46 @@
         </div>
         <div
           id="bbCounters"
-          style="margin-top: 12px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap"
+          style="margin-top: 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap"
         >
           <div
             style="
               display: flex;
-              gap: 18px;
+              gap: 12px;
               align-items: center;
               background: #f8fafc;
               border: 1px solid #e2e8f0;
               border-radius: 10px;
-              padding: 10px 14px;
+              padding: 8px 12px;
             "
           >
-            <div style="min-width: 110px; text-align: center">
-              <div style="font-size: 20px; color: #64748b; font-weight: 600">Таймер</div>
+            <div style="min-width: 80px; text-align: center">
+              <div style="font-size: 14px; color: #64748b; font-weight: 500">Таймер</div>
               <div
                 id="bbTimer"
                 style="
-                  font-size: 36px;
+                  font-size: 24px;
                   font-weight: 700;
                   color: #374151;
                   background: #ffffff;
-                  padding: 2px 10px;
-                  border-radius: 8px;
+                  padding: 2px 8px;
+                  border-radius: 6px;
                   border: 1px solid #e2e8f0;
                 "
               >
                 0:00
               </div>
             </div>
-            <div style="min-width: 90px; text-align: center">
-              <div style="font-size: 20px; color: #64748b; font-weight: 600">Пасы</div>
-              <div id="bbPasses" style="font-size: 36px; font-weight: 700; color: #374151">0</div>
+            <div style="min-width: 70px; text-align: center">
+              <div style="font-size: 14px; color: #64748b; font-weight: 500">Пасы</div>
+              <div id="bbPasses" style="font-size: 24px; font-weight: 700; color: #374151">0</div>
             </div>
-            <div style="min-width: 90px; text-align: center">
-              <div style="font-size: 20px; color: #64748b; font-weight: 600">Сеты</div>
-              <div id="bbSets" style="font-size: 36px; font-weight: 700; color: #374151">0</div>
+            <div style="min-width: 70px; text-align: center">
+              <div style="font-size: 14px; color: #64748b; font-weight: 500">Сеты</div>
+              <div id="bbSets" style="font-size: 24px; font-weight: 700; color: #374151">0</div>
             </div>
           </div>
-          <button id="bbResetBtn" class="btn outline" style="height: 44px; min-width: 90px">
+          <button id="bbResetBtn" class="btn outline" style="height: 36px; min-width: 70px; font-size: 12px">
             Сброс
           </button>
         </div>
@@ -912,8 +912,7 @@
           </div>
 
           <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 8px">
-            <label style="color: #cbd5e1; font-size: 11px; min-width: 50px">Скорость</label>
-            <input type="range" id="fsSpeed" min="0" max="100" value="40" style="flex: 1" />
+            <input type="range" id="fsSpeed" min="5" max="60" value="20" style="flex: 1" />
           </div>
 
           <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 4px">
@@ -1184,5 +1183,13 @@
     <script src="/js/notification-system.js" defer></script>
     <script src="/js/new-features.js" defer></script>
     <script src="/js/controller.js" defer></script>
+    <script type="module">
+      import { SessionController } from '/js/controllers/SessionController.js';
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.wsClient) {
+          new SessionController(window.wsClient, window.__current).initialize();
+        }
+      });
+    </script>
   </body>
 </html>

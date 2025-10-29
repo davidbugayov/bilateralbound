@@ -13,9 +13,9 @@ class SharedComponents {
    */
   createSpeedControl(container, options = {}) {
     const defaultOptions = {
-      min: 0,
-      max: 100,
-      defaultValue: 40,
+      min: 5,  // Новое минимальное значение - медленная скорость
+      max: 60, // Новое максимальное значение - быстрая скорость, но отслеживаемая глазами
+      defaultValue: 30, // Установлено значение "Средне" (30)
       onSpeedChange: null,
       showValue: true,
       showLabels: true,
@@ -35,8 +35,7 @@ class SharedComponents {
         if (defaultOptions.simple) {
           speedControl.innerHTML = `
     <div class="speed-info">
-    <h3>Скорость</h3>
-    ${defaultOptions.showValue ? '<div class="speed-display"><span class="speed-value">40</span><span class="speed-unit">%</span></div>' : ''}
+    ${defaultOptions.showValue ? '<div class="speed-display"><span class="speed-value">Средне</span></div>' : ''}
     </div>
     <div class="speed-slider-container">
     <input type="range"
@@ -52,8 +51,7 @@ class SharedComponents {
     <div class="speed-header">
     <div class="speed-icon">⚡</div>
     <div class="speed-info">
-    <h3>Скорость движения</h3>
-    ${defaultOptions.showValue ? '<div class="speed-display"><span class="speed-value">40</span><span class="speed-unit">%</span></div>' : ''}
+    ${defaultOptions.showValue ? '<div class="speed-display"><span class="speed-value">Средне</span></div>' : ''}
     </div>
     <div class="speed-indicator">
     <div class="speed-bar">
@@ -100,7 +98,6 @@ class SharedComponents {
         this.elements.display = container.querySelector('.speed-display')
         this.elements.fill = container.querySelector('.speed-fill')
         this.elements.presets = container.querySelectorAll('.speed-preset')
-        this.elements.unit = container.querySelector('.speed-unit')
       },
       // Настраивает обработчики событий
       setupEventListeners() {
@@ -145,12 +142,42 @@ class SharedComponents {
           this.elements.range.value = this.currentSpeed
         }
 
-        if (this.elements.value) {
-          this.elements.value.textContent = this.currentSpeed
+        // Определяем категорию скорости вместо процента
+        let speedCategory = ''
+        let speedColor = ''
+        
+        if (this.currentSpeed <= 15) {
+          speedCategory = 'Очень медленно'
+          speedColor = '#22c55e' // зеленый
+        } else if (this.currentSpeed <= 25) {
+          speedCategory = 'Медленно'
+          speedColor = '#3b82f6' // синий
+        } else if (this.currentSpeed <= 35) {
+          speedCategory = 'Средне'
+          speedColor = '#8b5cf6' // фиолетовый
+        } else if (this.currentSpeed <= 50) {
+          speedCategory = 'Быстро'
+          speedColor = '#f59e0b' // оранжевый
+        } else {
+          speedCategory = 'Очень быстро'
+          speedColor = '#ef4444' // красный
         }
-        // Обновляем индикатор заполнения
+
+        if (this.elements.value) {
+          this.elements.value.textContent = speedCategory
+          this.elements.value.style.color = speedColor
+        }
+        // Обновляем индикатор заполнения с цветом категории
         if (this.elements.fill) {
           this.elements.fill.style.width = `${this.currentSpeed}%`
+          // Определяем цвет для индикатора на основе категории
+          let fillColor = ''
+          if (this.currentSpeed <= 15) fillColor = '#22c55e'
+          else if (this.currentSpeed <= 25) fillColor = '#3b82f6'
+          else if (this.currentSpeed <= 35) fillColor = '#8b5cf6'
+          else if (this.currentSpeed <= 50) fillColor = '#f59e0b'
+          else fillColor = '#ef4444'
+          this.elements.fill.style.background = fillColor
         }
         // Обновляем активный пресет
         this.updateActivePreset(this.currentSpeed)

@@ -76,9 +76,14 @@ class PhysicsEngine {
     this.applySmoothnessPreset(options.preset || 'default')
   }
 
+  /**
+   * Устанавливает опции сглаживания для движка.
+   * @param {object} [opts={}] - Объект с опциями сглаживания.
+   */
   setSmoothingOptions(opts = {}) {
-    if (!opts || typeof opts !== 'object') return
-    this.options.smoothing = { ...this.options.smoothing, ...opts }
+    if (opts && typeof opts === 'object') {
+      this.options.smoothing = { ...this.options.smoothing, ...opts }
+    }
   }
   /**
    * Применяет пресет для плавности движения
@@ -323,7 +328,7 @@ class PhysicsEngine {
   }
 
   _canInterpolate() {
-    const isActiveMovement = this.state.allowInterpWhenPaused || !this.state.paused
+    const isActiveMovement = this.state.allowInterpWhenPaused || this.state.paused === false
     return isActiveMovement && Boolean(this.state?.targetX)
   }
 
@@ -514,16 +519,16 @@ class PhysicsEngine {
   }
 
   /**
-   * Обновляет физику в режиме вьювера
+   * Обновляет физику в режиме вьювера, управляя интерполяцией и симуляцией.
+   * @param {number} deltaTime - Время, прошедшее с последнего кадра.
    * @private
    */
   _updateViewerPhysics(deltaTime) {
-    if (!this.state.paused || this.state.allowInterpWhenPaused) {
-      if (this.state.paused && this.state.allowInterpWhenPaused) {
-        // Плавный возврат к цели (центр) на паузе
+    const canUpdate = !this.state.paused || this.state.allowInterpWhenPaused
+    if (canUpdate) {
+      if (this.state.paused) {
         this.updateViewerInterpolation(deltaTime)
       } else {
-        // Активное движение — интегрируем позицию непрерывно
         this.updateClientPhysics(deltaTime)
       }
     }
@@ -538,37 +543,44 @@ class PhysicsEngine {
     // Вызываем оригинальный метод обновления серверной физики
     // (не рекурсивно, так как это private метод)
     const originalUpdateServerPhysics = deltaTime => {
-      if (this.state.paused) return
-      // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
-      // Не обновляем физику, пока размеры мира не будут явно установлены
-      if (!this._worldSizeSet) {
+      if (this.state.paused) {
         return
       }
-      // Пересчитываем скорость напрямую из направления и процента скорости
-      const speedPercent = this.ball.speed / 100
-      const pixelsPerSecond = speedPercent * this.options.maxSpeed
-      this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
-      this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
-      // Сохраняем предыдущую позицию для интерполяции
-      this._prevPos.x = this.ball.x
-      this._prevPos.y = this.ball.y
-      // Обновляем позицию
-      this.ball.x += this.ball.vx * deltaTime
-      this.ball.y += this.ball.vy * deltaTime
-      // Обрабатываем коллизии с границами
-      this.handleBoundaryCollisions()
-      // Запоминаем текущую позицию как «текущую» для интерполяции
-      this._currPos.x = this.ball.x
-      this._currPos.y = this.ball.y
+      // ================== НАДЁЖНАЯ ПРОВЕРКА V2 ==================
+      // Обновляем физику, только если размеры мира были установлены
+      if (this._worldSizeSet) {
+        // Пересчитываем скорость напрямую из направления и процента скорости
+        const speedPercent = this.ball.speed / 100
+        const pixelsPerSecond = speedPercent * this.options.maxSpeed
+        this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
+        this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
+        // Сохраняем предыдущую позицию для интерполяции
+        this._prevPos.x = this.ball.x
+        this._prevPos.y = this.ball.y
+        // Обновляем позицию
+        this.ball.x += this.ball.vx * deltaTime
+        this.ball.y += this.ball.vy * deltaTime
+        // Обрабатываем коллизии с границами
+        this.handleBoundaryCollisions()
+        // Запоминаем текущую позицию как «текущую» для интерполяции
+        this._currPos.x = this.ball.x
+        this._currPos.y = this.ball.y
+      }
     }
     originalUpdateServerPhysics(deltaTime)
   }
 
   /**
-   * Непрерывная клиентская физика для режима вьювера (client-authoritative)
+   * Обновляет физику на стороне клиента (во вьювере).
+   * @param {number} deltaTime - Время, прошедшее с последнего кадра.
    */
   updateClientPhysics(deltaTime) {
-    if (this.state.paused || !this._ensureWorldSizeSet()) return
+    if (this.state.paused) {
+      return
+    }
+    if (!this._ensureWorldSizeSet()) {
+      return
+    }
 
     const velocity = this._calculateClientVelocity()
     this._applyAxisLock(velocity)
@@ -950,7 +962,7 @@ class PhysicsEngine {
   _handleViewerSpeedUpdate(command) {
     if (command.speed !== undefined) {
       this.setSpeed(command.speed)
-      if (!this.state.paused) {
+      if (this.state.paused === false) {
         this._updatePredictionBase()
       }
     }

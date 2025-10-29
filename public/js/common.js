@@ -232,11 +232,16 @@ class ThemeManager {
  * @param {string} elementId - ID элемента, из которого нужно скопировать текст.
  * @param {string} successMessage - Сообщение, отображаемое при успешном копировании.
  */
+/**
+ * Копирует текст из элемента в буфер обмена.
+ * @param {string} elementId - ID элемента, из которого нужно скопировать текст.
+ * @param {string} successMessage - Сообщение, отображаемое при успешном копировании.
+ */
 async function copy(elementId, successMessage) {
   const element = document.getElementById(elementId)
-  if (!element || !element.value) {
-    if (window.showErrorNotification) {
-      window.showErrorNotification('Ошибка', 'Элемент для копирования не найден.')
+  if (!element?.value) {
+    if (globalThis.showErrorNotification) {
+      globalThis.showErrorNotification('Ошибка', 'Элемент для копирования не найден.')
     } else {
       console.error('Элемент для копирования не найден:', elementId)
     }
@@ -245,15 +250,22 @@ async function copy(elementId, successMessage) {
 
   try {
     await navigator.clipboard.writeText(element.value)
-    if (window.showSuccessNotification) {
-      window.showSuccessNotification(successMessage || 'Текст скопирован!')
+    if (globalThis.showSuccessNotification) {
+      globalThis.showSuccessNotification(successMessage || 'Текст скопирован!')
     }
   } catch (err) {
     console.error('Ошибка копирования:', err)
-    if (window.showErrorNotification) {
-      window.showErrorNotification('Ошибка копирования', 'Не удалось скопировать текст.')
+    if (globalThis.showErrorNotification) {
+      globalThis.showErrorNotification('Ошибка копирования', 'Не удалось скопировать текст.')
     }
   }
+}
+
+/**
+ * Navigates the user to the main page.
+ */
+function goBack() {
+  window.location.href = '/'
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -262,4 +274,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 if (typeof globalThis !== 'undefined') {
   globalThis.copy = copy
+  globalThis.goBack = goBack
 }

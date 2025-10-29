@@ -53,22 +53,61 @@ const bbCounters = {
   $timer: null,
   $passes: null,
   $sets: null,
+  $passesPerSecond: null,
+  $speedInfo: null,
   _lastBounceTs: 0,
   bounceHits: 0, // количество отдельных стуков (2 стука = 1 пасс)
+  _passesHistory: [], // История пассов для расчета скорости
+  _lastSpeedMeasurement: 0,
+  _measurementInterval: null,
+  _currentPassesPerSecond: 0,
   initDom() {
     this.$timer = document.getElementById('bbTimer')
     this.$passes = document.getElementById('bbPasses')
     this.$sets = document.getElementById('bbSets')
+    this.$passesPerSecond = document.getElementById('bbPassesPerSecond')
+    this.$speedInfo = document.getElementById('speedInfo')
     const resetBtn = document.getElementById('bbResetBtn')
     if (resetBtn) {
       resetBtn.addEventListener('click', () => this.resetAll())
     }
 
+    // Инициализируем измерение скорости
+    this.initSpeedMeasurement()
     this.render()
+  },
+  initSpeedMeasurement() {
+    // Запускаем измерение скорости каждые 2 секунды
+    this._measurementInterval = setInterval(() => {
+      this.updatePassesPerSecond()
+    }, 2000)
+  },
+  updatePassesPerSecond() {
+    if (!this.running) {
+      this._currentPassesPerSecond = 0
+      return
+    }
+
+    const now = performance.now()
+    // Удаляем старые записи старше 2 секунд
+    this._passesHistory = this._passesHistory.filter(
+      timestamp => now - timestamp < 2000
+    )
+    
+    // Рассчитываем скорость пассов в секунду
+    const passesInLast2Seconds = this._passesHistory.length / 2 // Делим на 2, т.к. считаем за 2 секунды
+    this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10 // Округляем до 1 знака
+    
+    this.renderSpeedInfo()
+  },
+  addPassMeasurement() {
+    this._passesHistory.push(performance.now())
+    this.updatePassesPerSecond()
   },
   start() {
     this.running = true
     this.lastTickTs = performance.now()
+    this._passesHistory = [] // Очищаем историю при старте
   },
   stop(incrementSet = false) {
     this.tick(performance.now())
@@ -79,6 +118,7 @@ const bbCounters = {
       this.passes = 0
       this.bounceHits = 0
       this._lastBounceTs = 0
+      this._passesHistory = [] // Очищаем историю
     }
     // По требованию: после Стоп таймер обнулять
     this.timerMs = 0
@@ -90,6 +130,8 @@ const bbCounters = {
     this.sets = 0
     this.bounceHits = 0
     this._lastBounceTs = 0
+    this._passesHistory = []
+    this._currentPassesPerSecond = 0
     this.render()
   },
   onBounce() {
@@ -101,6 +143,8 @@ const bbCounters = {
     this.bounceHits += 1
     if (this.bounceHits % 2 === 0) {
       this.passes += 1
+      // Добавляем измерение для расчета скорости
+      this.addPassMeasurement()
     }
 
     this.render()
@@ -128,6 +172,41 @@ const bbCounters = {
     if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
     if (this.$passes) this.$passes.textContent = String(this.passes)
     if (this.$sets) this.$sets.textContent = String(this.sets)
+    this.renderSpeedInfo()
+  },
+  renderSpeedInfo() {
+    if (this.$passesPerSecond) {
+      this.$passesPerSecond.textContent = this._currentPassesPerSecond.toString()
+    }
+    
+    // Определяем категорию скорости на основе текущей скорости
+    let speedCategory = ''
+    let speedColor = '#10b981' //默认绿色
+    
+    if (components.speed) {
+      const currentSpeed = components.speed.getSpeed()
+      if (currentSpeed <= 15) {
+        speedCategory = 'Очень медленно'
+        speedColor = '#22c55e' // 绿色
+      } else if (currentSpeed <= 25) {
+        speedCategory = 'Медленно'
+        speedColor = '#3b82f6' // 蓝色
+      } else if (currentSpeed <= 35) {
+        speedCategory = 'Средне'
+        speedColor = '#8b5cf6' // 紫色
+      } else if (currentSpeed <= 50) {
+        speedCategory = 'Быстро'
+        speedColor = '#f59e0b' // 橙色
+      } else {
+        speedCategory = 'Очень быстро'
+        speedColor = '#ef4444' // 红色
+      }
+      
+      if (this.$speedInfo) {
+        this.$speedInfo.textContent = speedCategory
+        this.$speedInfo.style.color = speedColor
+      }
+    }
   }
 }
 // Детектор отскоков по серверным state_update (для подсчёта пасов)
@@ -144,34 +223,46 @@ function _hasBounced(currentVelocity, lastSign, minSpeed) {
   )
 }
 
+/**
+ * Обнаруживает и подсчитывает отскоки на основе обновлений состояния сервера.
+ * Рефакторинг для снижения когнитивной сложности.
+ * @param {object} prev - Предыдущее состояние.
+ * @param {object} curr - Текущее состояние.
+ */
 function detectAndCountBounceFromServer(prev, curr) {
-  // Функция разбита для снижения когнитивной сложности
   try {
-    if (prev && curr && bbCounters.running) {
-      const now = performance.now()
-      if (now - __lastBounceTs >= 120) {
-        const minSpeed = 10 // пикс/с, фильтр дрожания
-        const currVx = curr?.vx || 0
-        const currVy = curr?.vy || 0
+    if (!prev || !curr || !bbCounters.running) {
+      return
+    }
 
-        // Восстанавливаем последние ненулевые знаки, чтобы переживать кадры с vx/vy=0
-        if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
-        if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
+    const now = performance.now()
+    if (now - __lastBounceTs < 120) {
+      return
+    }
 
-        const bouncedX = _hasBounced(currVx, __lastVxSign, minSpeed)
-        const bouncedY = _hasBounced(currVy, __lastVySign, minSpeed)
-        
-        if (bouncedX || bouncedY) {
-          __lastBounceTs = now
-          bbCounters.onBounce()
-        }
+    const minSpeed = 10
+    const currVx = curr?.vx || 0
+    const currVy = curr?.vy || 0
 
-        // Обновляем последние знаки только если текущие ненулевые — чтобы нули не затирали память
-        const currSignX = Math.sign(currVx)
-        const currSignY = Math.sign(currVy)
-        if (currSignX !== 0) __lastVxSign = currSignX
-        if (currSignY !== 0) __lastVySign = currSignY
-      }
+    if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
+    if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
+
+    const bouncedX = _hasBounced(currVx, __lastVxSign, minSpeed)
+    const bouncedY = _hasBounced(currVy, __lastVySign, minSpeed)
+
+    if (bouncedX || bouncedY) {
+      __lastBounceTs = now
+      bbCounters.onBounce()
+    }
+
+    const currSignX = Math.sign(currVx)
+    if (currSignX !== 0) {
+      __lastVxSign = currSignX
+    }
+
+    const currSignY = Math.sign(currVy)
+    if (currSignY !== 0) {
+      __lastVySign = currSignY
     }
   } catch {
     console.warn('Error in detectAndCountBounceFromServer')
@@ -947,23 +1038,23 @@ function showWaitingForViewer() {
 }
 
 function updatePreviewSize(viewerScreenSize) {
-  if (!canUpdatePreview(viewerScreenSize)) {
+  if (canUpdatePreview(viewerScreenSize)) {
+    const canvas = document.getElementById('preview')
+    if (!canvas) return
+
+    const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
+    setCanvasDimensions(canvas, previewWidth, previewHeight)
+    updatePhysicsEngineWorldSize(viewerScreenSize)
+    applyServerStateOrCenter()
+    updateViewerInfo(viewerScreenSize)
+  } else {
     showWaitingForViewer()
-    return
   }
-
-  const canvas = document.getElementById('preview')
-  if (!canvas) return
-
-  const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
-  setCanvasDimensions(canvas, previewWidth, previewHeight)
-  updatePhysicsEngineWorldSize(viewerScreenSize)
-  applyServerStateOrCenter()
-  updateViewerInfo(viewerScreenSize)
 }
 
 function canUpdatePreview(viewerScreenSize) {
-  return viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine
+  const isReady = viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine
+  return Boolean(isReady)
 }
 
 function calculatePreviewDimensions(canvas, viewerScreenSize) {
@@ -1158,31 +1249,152 @@ function setBackgroundColor(color) {
 /**
  * Обновляет состояние кнопок направления
  */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+/**
+ * Обновляет состояние кнопок направления в UI.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
 function updateDirectionButtons() {
-  // Функция разбита для снижения когнитивной сложности
-  // Обновляем активное состояние кнопок направления в основном интерфейсе
   const directionButtons = document.querySelectorAll('[data-mode]')
   for (const button of directionButtons) {
-    const buttonDirection = button.dataset.mode
-    if (buttonDirection === currentDirectionMode) {
-      button.classList.add('active')
-    } else {
-      button.classList.remove('active')
-    }
+    button.classList.toggle('active', button.dataset.mode === currentDirectionMode)
   }
-  // Обновляем кнопки направления в полноэкранном режиме
-  const fsDirectionButtons = document.querySelectorAll('[id^="fsDir"]')
-  for (const button of fsDirectionButtons) {
-    let buttonDirection = null
-    if (button.id === 'fsDirH') buttonDirection = 'horizontal'
-    else if (button.id === 'fsDirV') buttonDirection = 'vertical'
-    else if (button.id === 'fsDirDL') buttonDirection = 'diagRLL'
-    else if (button.id === 'fsDirDR') buttonDirection = 'diagRL'
-    else if (button.id === 'fsDirRandom') buttonDirection = 'random'
-    if (buttonDirection === currentDirectionMode) {
-      button.classList.add('active')
-    } else {
-      button.classList.remove('active')
+
+  const fsDirectionButtons = {
+    fsDirH: 'horizontal',
+    fsDirV: 'vertical',
+    fsDirDL: 'diagRLL',
+    fsDirDR: 'diagRL',
+    fsDirRandom: 'random'
+  }
+
+  for (const [id, mode] of Object.entries(fsDirectionButtons)) {
+    const button = document.getElementById(id)
+    if (button) {
+      button.classList.toggle('active', mode === currentDirectionMode)
     }
   }
 }
@@ -1208,7 +1420,10 @@ function getDirectionInfo(mode) {
 }
 
 /**
- * Обновляет индикатор направления и отображает информацию о текущем направлении
+ * Обновляет индикатор направления и отображает информацию о текущем направлении.
+ * @param {number} dirX - Компонент X вектора направления.
+ * @param {number} dirY - Компонент Y вектора направления.
+ * @param {string|null} [customText=null] - Пользовательский текст для отображения.
  */
 function updateDirectionDisplay(dirX, dirY, customText = null) {
   try {
@@ -1231,10 +1446,9 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     // Обновляем иконку направления в полноэкранном режиме
     const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
-      const displayContent = directionDisplay
+      fsDirectionDisplay.innerHTML = directionDisplay
         ? directionDisplay.innerHTML
         : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
-      fsDirectionDisplay.innerHTML = displayContent
     }
   } catch (error) {
     console.error('Ошибка обновления отображения направления:', error)
@@ -1288,9 +1502,12 @@ function _handlePause() {
   }
 }
 
+/**
+ * Переключает состояние воспроизведения/паузы сессии.
+ * Отправляет соответствующие команды на сервер и обновляет UI.
+ */
 function togglePlayPause() {
-  const wasPlaying = isPlaying
-  if (wasPlaying) {
+  if (isPlaying) {
     _handlePauseTransition()
   } else {
     _handlePlayTransition()
@@ -1335,38 +1552,36 @@ function _normalizeCoordinate(coord, fallback) {
   return typeof coord === 'number' && Number.isFinite(coord) ? coord : fallback
 }
 
+/**
+ * Масштабирует состояние мяча из координат вьювера в координаты превью.
+ * @param {object} state - Состояние мяча для масштабирования.
+ * @returns {object} - Масштабированное состояние.
+ */
 function getScaledState(state) {
-  if (!globalThis.__current.viewerScreenSize || !globalThis.__previewCanvas || !state) {
-    return state
+  const canScale = globalThis.__current.viewerScreenSize && globalThis.__previewCanvas && state
+  if (canScale) {
+    const viewerSize = globalThis.__current.viewerScreenSize
+    const previewSize = {
+      width: globalThis.__previewCanvas.width,
+      height: globalThis.__previewCanvas.height
+    }
+
+    if (viewerSize.width > 0 && viewerSize.height > 0) {
+      const scaleX = previewSize.width / viewerSize.width
+      const scaleY = previewSize.height / viewerSize.height
+      const scaleRadius = Math.min(scaleX, scaleY)
+      const scaledState = { ...state }
+      const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2)
+      const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2)
+      scaledState.x = rawX * scaleX
+      scaledState.y = rawY * scaleY
+      if (typeof scaledState.radius === 'number') {
+        scaledState.radius *= scaleRadius
+      }
+      return scaledState
+    }
   }
-
-  const viewerSize = globalThis.__current.viewerScreenSize
-  const previewSize = {
-    width: globalThis.__previewCanvas.width,
-    height: globalThis.__previewCanvas.height
-  }
-
-  if (viewerSize.width <= 0 || viewerSize.height <= 0) {
-    return state
-  }
-
-  const scaleX = previewSize.width / viewerSize.width
-  const scaleY = previewSize.height / viewerSize.height
-  const scaleRadius = Math.min(scaleX, scaleY)
-
-  const scaledState = { ...state }
-
-  const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2)
-  const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2)
-
-  scaledState.x = rawX * scaleX
-  scaledState.y = rawY * scaleY
-
-  if (typeof scaledState.radius === 'number') {
-    scaledState.radius *= scaleRadius
-  }
-
-  return scaledState
+  return state
 }
 
 function updateViewerStatusUI() {
@@ -1390,16 +1605,11 @@ function updateViewerStatusUI() {
   }
 }
 
-function openPreviewFullscreen() {
-  // Функция разбита для снижения когнитивной сложности
-  const overlay = document.getElementById('previewOverlay')
-  if (!overlay || !previewFsCanvas) return
-  // Добавляем запись в историю браузера для корректного возврата
-  const currentUrl = globalThis.location.href
-  const fullscreenUrl = currentUrl + '#fullscreen-preview'
-  history.pushState({ fullscreen: true, returnUrl: currentUrl }, '', fullscreenUrl)
-  overlay.style.display = 'block'
-  isPreviewFullscreen = true
+/**
+ * Инициализирует движок физики и рендерер для полноэкранного предпросмотра.
+ * @private
+ */
+function _initializeFullscreenRenderer() {
   try {
     if (!previewPhysicsEngine) {
       previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
@@ -1417,6 +1627,24 @@ function openPreviewFullscreen() {
   } catch {
     /* ignore */
   }
+}
+
+/**
+ * Открывает оверлей полноэкранного предпросмотра.
+ * Рефакторинг для снижения когнитивной сложности.
+ */
+function openPreviewFullscreen() {
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay || !previewFsCanvas) return
+
+  const currentUrl = globalThis.location.href
+  const fullscreenUrl = currentUrl.split('#')[0] + '#fullscreen-preview'
+  history.pushState({ fullscreen: true, returnUrl: currentUrl }, '', fullscreenUrl)
+
+  overlay.style.display = 'block'
+  isPreviewFullscreen = true
+
+  _initializeFullscreenRenderer()
 
   resizePreviewFullscreen()
   setupFsPanelAutoHide()
@@ -1499,10 +1727,11 @@ function setupFsPanelDrag() {
   }
 
   const onMove = (x, y) => {
-    if (!fsPanelDrag.active) return
-    panel.style.left = x - fsPanelDrag.offsetX + 'px'
-    panel.style.top = y - fsPanelDrag.offsetY + 'px'
-    panel.style.transform = 'translateX(0)'
+    if (fsPanelDrag.active) {
+      panel.style.left = `${x - fsPanelDrag.offsetX}px`
+      panel.style.top = `${y - fsPanelDrag.offsetY}px`
+      panel.style.transform = 'translateX(0)'
+    }
   }
 
   const onUp = () => {
@@ -1537,64 +1766,62 @@ function setupFsPanelDrag() {
   globalThis.addEventListener('touchend', onUp, { passive: true })
 }
 
+/**
+ * Обрабатывает свайп-жесты в полноэкранном режиме для управления направлением и воспроизведением.
+ * @param {number} dx - Смещение по оси X.
+ * @param {number} dy - Смещение по оси Y.
+ * @param {number} threshold - Порог для срабатывания жеста.
+ * @private
+ */
+function _handleFullscreenSwipe(dx, dy, threshold) {
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
+    if (dx > 0) {
+      setDirection('horizontal')
+    } else {
+      setDirection('vertical')
+    }
+  } else if (Math.abs(dy) > threshold) {
+    const isSwipedUp = dy < 0
+    const isSwipedDown = dy > 0
+
+    if ((isSwipedUp && !isPlaying) || (isSwipedDown && isPlaying)) {
+      togglePlayPause()
+    }
+  }
+}
+
+/**
+ * Настраивает обработку жестов в полноэкранном режиме.
+ */
 function setupFullscreenGestures() {
-  // Функция разбита для снижения когнитивной сложности
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
+
   let startX = 0
   let startY = 0
   let swiping = false
   const threshold = 40
-  overlay.addEventListener(
-    'touchstart',
-    e => {
-      const t = e.touches[0]
 
-      startX = t.clientX
-      startY = t.clientY
-      swiping = true
-    },
-    { passive: true }
-  )
-  overlay.addEventListener(
-    'touchmove',
-    e => {
-      // жесты без блокировки скролла/зумов
-      e.preventDefault() // Предотвращаем прокрутку страницы при жестах
-    },
-    { passive: true }
-  )
-  overlay.addEventListener(
-    'touchend',
-    e => {
-      if (swiping) {
-        swiping = false
-        const t = e.changedTouches[0]
+  const handleTouchStart = e => {
+    const t = e.touches[0]
+    startX = t.clientX
+    startY = t.clientY
+    swiping = true
+  }
 
-        const dx = t.clientX - startX
-        const dy = t.clientY - startY
-        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
-          // горизонтальные свайпы — смена направления
-          if (dx > 0) {
-            setDirection('horizontal')
-          } else {
-            // горизонтально влево — диагональ как альтернатива
-            setDirection('vertical')
-          }
-        } else if (Math.abs(dy) > threshold) {
-          // вертикальные свайпы — старт/стоп
-          if (dy < 0) {
-            // свайп вверх — старт
-            if (isPlaying === false) togglePlayPause()
-          } else if (isPlaying) {
-            // свайп вниз — стоп
-            togglePlayPause()
-          }
-        }
-      }
-    },
-    { passive: true }
-  )
+  const handleTouchEnd = e => {
+    if (swiping) {
+      swiping = false
+      const t = e.changedTouches[0]
+      const dx = t.clientX - startX
+      const dy = t.clientY - startY
+      _handleFullscreenSwipe(dx, dy, threshold)
+    }
+  }
+
+  overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
+  overlay.addEventListener('touchmove', e => e.preventDefault(), { passive: false })
+  overlay.addEventListener('touchend', handleTouchEnd, { passive: true })
 }
 
 function syncFsPlayPauseButton() {
@@ -1715,11 +1942,4 @@ function fillFsSessionInfo() {
   } catch {
     console.warn('Error in fillFsSessionInfo')
   }
-}
-
-/**
- * Возвращает на страницу управления сессиями
- */
-function goBack() {
-  window.location.href = '/';
 }
