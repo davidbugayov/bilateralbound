@@ -272,6 +272,21 @@ tramp
 # Render specific
 .render-buildlogs/
 
+# Qodana reports and analysis results
+qodana_final_report/
+qodana_results/
+.sonarcloud/
+
+# Qodana cache and temporary files
+.qodana/
+scanner-report/
+scannerwork/
+
+# SonarQube related files
+sonar-project.properties
+sonar-open-issues.json
+sonarqube-results.sarif
+
 # IMPORTANT: emdr-therapy/ directory should NEVER be deleted!
 # It contains professional EMDR therapy pages for couples
 

@@ -178,7 +178,7 @@ class VersionManager {
    */
   updateFooterVersion(newVersion) {
     try {
-      const indexPath = path.join(__dirname, 'public', 'index.html')
+      const indexPath = path.join(process.cwd(), 'packages', 'web-client', 'public', 'index.html')
       let content = fs.readFileSync(indexPath, 'utf8')
       // Ищем строку с версией в футере
       const versionRegex = /⚡ BilateralBound v\d+\.\d+\.\d+/g

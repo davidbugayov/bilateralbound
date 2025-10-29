@@ -1,0 +1,18 @@
+{
+  "name": "@emdr/types",
+  "version": "1.0.0",
+  "description": "EMDR therapy TypeScript type definitions",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": ["emdr", "therapy", "types", "typescript"],
+  "author": "Bugaev David",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

@@ -1,18 +1,16 @@
-const path = require('path')
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
-  mode: 'production',
-  entry: {
-    controller: './public/js/controller.js',
-    shared: './public/js/shared-components.js'
-  },
-
+  entry: './packages/web-client/public/js/controller.js',
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'js/[name].bundle.js',
-    clean: true
+    path: path.resolve(__dirname, 'packages/web-client/dist'),
+    filename: 'bundle.js',
+    publicPath: '/',
   },
-
+  mode: process.env.NODE_ENV || 'development',
+  devtool: process.env.NODE_ENV === 'production' ? 'source-map' : 'eval-cheap-module-source-map',
   module: {
     rules: [
       {
@@ -21,50 +19,54 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
-          }
-        }
-      },
-      {
-        test: /\.html$/,
-        use: [
-          {
-            loader: 'html-loader',
-            options: {
-              minimize: true
-            }
-          }
-        ]
+            presets: ['@babel/preset-env'],
+          },
+        },
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      }
-    ]
+        use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.(png|svg|jpg|jpeg|gif|ico)$/,
+        type: 'asset/resource',
+      },
+      {
+        test: /\.(html)$/,
+        loader: 'html-loader',
+      },
+    ],
   },
-
-  optimization: {
-    splitChunks: {
-      chunks: 'all',
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
-        },
-        common: {
-          name: 'common',
-          minChunks: 2,
-          chunks: 'all',
-          enforce: true
-        }
-      }
-    }
-  },
-
-  devtool: 'source-map',
-
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: './packages/web-client/public/index.html',
+      filename: 'index.html',
+    }),
+  ],
   resolve: {
-    extensions: ['.js', '.json']
-  }
-}
+    extensions: ['.js', '.json'],
+    alias: {
+      '@emdr/server-core': path.resolve(__dirname, 'packages/server-core'),
+      '@emdr/web-client': path.resolve(__dirname, 'packages/web-client'),
+      '@emdr/shared-utils': path.resolve(__dirname, 'packages/shared-utils'),
+      '@emdr/types': path.resolve(__dirname, 'packages/types'),
+    },
+  },
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'packages/web-client/public'),
+    },
+    compress: true,
+    port: 3000,
+    hot: true,
+    historyApiFallback: true,
+    proxy: {
+      '/api': 'http://localhost:3000',
+      '/ws': {
+        target: 'ws://localhost:3000',
+        ws: true,
+      },
+    },
+  },
+};

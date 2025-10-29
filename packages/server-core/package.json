@@ -1,0 +1,39 @@
+{
+  "name": "@emdr/server-core",
+  "version": "1.0.0",
+  "description": "EMDR therapy server core components",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "test": "jest --coverage",
+    "lint": "eslint server/**/*.js --ext .js",
+    "lint:fix": "eslint server/**/*.js --ext .js --fix"
+  },
+  "keywords": ["emdr", "therapy", "server", "websocket"],
+  "author": "Bugaev David",
+  "license": "ISC",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "uuid": "^9.0.1",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/preset-env": "^7.28.3",
+    "babel-loader": "^10.0.0",
+    "eslint": "^9.37.0",
+    "jest": "^30.1.3",
+    "nodemon": "^3.1.10"
+  }
+}

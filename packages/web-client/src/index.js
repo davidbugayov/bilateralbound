@@ -1,0 +1,16 @@
+import '@/js/controller.js';
+import '@/js/common.js';
+import '@/js/config.js';
+import '@/js/shared-components.js';
+import '@/js/physics-engine.js';
+import '@/js/renderer.js';
+import '@/js/metrika-optimized.js';
+import '@/js/notification-system.js';
+import '@/js/new-features.js';
+import '@/js/websocket-client.js';
+import '@/js/controllers/SessionController.js';
+import '@/js/controllers/CountersController.js';
+import '@/js/controllers/PreviewController.js';
+import '@/js/controllers/UIController.js';
+import '@/js/controllers/WebSocketController.js';
+import '@/js/utils/LazyLoader.js';

@@ -1,0 +1,31 @@
+{
+  "name": "@emdr/web-client",
+  "version": "1.0.0",
+  "description": "EMDR therapy web client",
+  "main": "public/index.html",
+  "type": "module",
+  "scripts": {
+    "start": "webpack --mode=development",
+    "build": "webpack --mode=production",
+    "serve": "npx serve -s public"
+  },
+  "keywords": ["emdr", "therapy", "web", "client"],
+  "author": "Bugaev David",
+  "license": "ISC",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "jquery": "^3.7.1"
+  },
+  "devDependencies": {
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1",
+    "html-webpack-plugin": "^5.6.0",
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0",
+    "file-loader": "^6.2.0",
+    "url-loader": "^4.1.1"
+  }
+}
