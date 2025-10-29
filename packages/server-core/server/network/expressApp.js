@@ -160,7 +160,7 @@ function setupExpressApp(sessionManager, apiCache) {
     })
   })
   // Static files
-  const publicPath = path.join(__dirname, '..', '..', 'public')
+  const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
   app.use(
     express.static(publicPath, {
       etag: false,
