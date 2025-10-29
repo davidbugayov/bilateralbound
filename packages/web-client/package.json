@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "EMDR therapy web client",
   "main": "public/index.html",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "start": "webpack --mode=development",
     "build": "webpack --mode=production",
