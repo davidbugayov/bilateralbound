@@ -304,11 +304,21 @@
       .light-theme .speed-container input[type='range']::-webkit-slider-thumb {
         background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         border: 2px solid #ffffff;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
       }
 
       .light-theme .speed-container input[type='range']::-moz-range-thumb {
         background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         border: 2px solid #ffffff;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+      }
+
+      .light-theme .speed-container {
+        gap: 16px;
+      }
+
+      .light-theme .speed-container input[type='range']:hover {
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
       }
 
       .controls-grid {
@@ -688,11 +698,11 @@
       }
 
       #viewerStatus {
-        color: #ef4444 !important;
+        color: #10b981 !important;
       }
 
       .light-theme #viewerStatus {
-        color: #ef4444 !important;
+        color: #10b981 !important;
       }
 
       /* Control section headings */
@@ -1080,7 +1090,7 @@
               <button id="playPauseBtn" class="btn primary" onclick="togglePlayPause()">
                 ▶️ Старт
               </button>
-              <button class="btn danger" onclick="resetSession()">🔄 Сброс</button>
+              <button class="btn outline" onclick="resetSession()">🔄 Сброс</button>
             </div>
             <p class="controls-title" style="margin-top: 12px">Направление</p>
             <div class="direction-row">
@@ -1165,7 +1175,7 @@
             <p class="controls-title">💾 Управление сессией</p>
             <div id="sessionControls"></div>
             <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr; gap: 10px">
-              <button class="btn btn-gradient" onclick="createCustomPreset()" style="width: 100%">
+              <button class="btn primary" onclick="createCustomPreset()" style="width: 100%">
                 ⭐ Создать пресет
               </button>
             </div>
