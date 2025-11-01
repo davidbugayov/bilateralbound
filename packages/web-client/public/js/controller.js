@@ -178,34 +178,31 @@ const bbCounters = {
     if (this.$passesPerSecond) {
       this.$passesPerSecond.textContent = this._currentPassesPerSecond.toString()
     }
-    
-    // Определяем категорию скорости на основе текущей скорости
-    let speedCategory = ''
-    let speedColor = '#10b981' //默认绿色
-    
-    if (components.speed) {
+
+    if (components.speed && this.$speedInfo) {
       const currentSpeed = components.speed.getSpeed()
+      let speedCategory = ''
+      let speedColor = ''
+
       if (currentSpeed <= 15) {
         speedCategory = 'Очень медленно'
-        speedColor = '#22c55e' // 绿色
+        speedColor = '#22c55e' // зеленый
       } else if (currentSpeed <= 25) {
         speedCategory = 'Медленно'
-        speedColor = '#3b82f6' // 蓝色
+        speedColor = '#3b82f6' // синий
       } else if (currentSpeed <= 35) {
         speedCategory = 'Средне'
-        speedColor = '#8b5cf6' // 紫色
+        speedColor = '#8b5cf6' // фиолетовый
       } else if (currentSpeed <= 50) {
         speedCategory = 'Быстро'
-        speedColor = '#f59e0b' // 橙色
+        speedColor = '#f59e0b' // оранжевый
       } else {
         speedCategory = 'Очень быстро'
-        speedColor = '#ef4444' // 红色
+        speedColor = '#ef4444' // красный
       }
-      
-      if (this.$speedInfo) {
-        this.$speedInfo.textContent = speedCategory
-        this.$speedInfo.style.color = speedColor
-      }
+
+      this.$speedInfo.textContent = speedCategory
+      this.$speedInfo.style.color = speedColor
     }
   }
 }
@@ -1373,10 +1370,6 @@ function setBackgroundColor(color) {
  * Обновляет состояние кнопок направления в UI.
  * Рефакторинг для снижения когнитивной сложности.
  */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
 function updateDirectionButtons() {
   const directionButtons = document.querySelectorAll('[data-mode]')
   for (const button of directionButtons) {
@@ -1431,6 +1424,7 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     const directionDisplay = document.getElementById('currentDirection')
     let directionText = customText || 'Неизвестно'
     let directionIcon
+
 
     if (!customText) {
       // ОПРЕДЕЛЯЕМ НАПРАВЛЕНИЕ ТОЛЬКО ПО currentDirectionMode - игнорируем dirX/dirY
@@ -1591,14 +1585,16 @@ function updateViewerStatusUI() {
   if (viewerStatusEl) {
     if (globalThis.__current.viewerConnected) {
       viewerStatusEl.textContent = 'Подключен'
-      viewerStatusEl.style.color = '#22c55e' // ярко-зеленый цвет
+      viewerStatusEl.classList.add('connected')
+      viewerStatusEl.classList.remove('disconnected')
       viewerStatusEl.style.fontWeight = '600' // делаем текст жирным для лучшей видимости
       if (globalThis.__current.viewerScreenSize?.width > 0) {
         updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
     } else {
       viewerStatusEl.textContent = 'Ожидание...'
-      viewerStatusEl.style.color = '#ef4444' // красный
+      viewerStatusEl.classList.add('disconnected')
+      viewerStatusEl.classList.remove('connected')
       viewerStatusEl.style.fontWeight = '400'
       showWaitingForViewer()
     }

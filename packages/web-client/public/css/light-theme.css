@@ -463,8 +463,15 @@ body.light-theme #sessionInfo {
 }
 
 body.light-theme #viewerStatus {
-  color: #059669 !important;
   font-weight: 600 !important;
+}
+
+body.light-theme #viewerStatus.connected {
+  color: #059669 !important;
+}
+
+body.light-theme #viewerStatus.disconnected {
+  color: #ef4444 !important;
 }
 
 /* Прогресс-бары и визуальные элементы */

@@ -102,10 +102,21 @@ input:focus {
 
 .status-indicator.connected {
   border-color: #10b981;
+  color: #10b981;
 }
 
 .status-indicator.disconnected {
   border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* Стили для элемента viewerStatus */
+#viewerStatus.connected {
+  color: #10b981 !important;
+}
+
+#viewerStatus.disconnected {
+  color: #ef4444 !important;
 }
 
 /* === UTILITY CLASSES === */
