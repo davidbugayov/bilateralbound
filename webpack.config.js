@@ -49,8 +49,6 @@ module.exports = {
     alias: {
       '@emdr/server-core': path.resolve(__dirname, 'packages/server-core'),
       '@emdr/web-client': path.resolve(__dirname, 'packages/web-client'),
-      '@emdr/shared-utils': path.resolve(__dirname, 'packages/shared-utils'),
-      '@emdr/types': path.resolve(__dirname, 'packages/types'),
     },
   },
   devServer: {
