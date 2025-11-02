@@ -40,7 +40,6 @@
     <link rel="stylesheet" href="/css/light-theme.css?v=20250103120" />
 
     <!-- Yandex.Metrika optimized counter -->
-    <script src="/js/metrika-optimized.js" defer></script>
     <noscript
       ><div>
         <img
@@ -1201,13 +1200,5 @@
     <script src="/js/notification-system.js" defer></script>
     <script src="/js/new-features.js" defer></script>
     <script src="/js/controller.js" defer></script>
-    <script type="module">
-      import { SessionController } from '/js/controllers/SessionController.js';
-      document.addEventListener('DOMContentLoaded', () => {
-        if (window.wsClient) {
-          new SessionController(window.wsClient, window.__current).initialize();
-        }
-      });
-    </script>
   </body>
 </html>

@@ -41,7 +41,6 @@ class FeatureManager {
     this.addSessionExportImport()
     this.addHistoryControls()
     this.addKeyboardShortcuts()
-    this.addThemeToggle()
     this.updateHeaderSessionName()
   }
 
@@ -413,43 +412,8 @@ class FeatureManager {
   }
 
   /**
-   * Переключатель темы
+   * Переключатель темы - удалено, используется ThemeManager из common.js
    */
-  addThemeToggle() {
-    // Основная кнопка темы
-    const toggleBtn = document.getElementById('themeToggle')
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', () => this.toggleTheme())
-    }
-    // Кнопка темы в превью (если существует)
-    const previewToggleBtn = document.getElementById('previewThemeToggle')
-    if (previewToggleBtn) {
-      previewToggleBtn.addEventListener('click', () => this.toggleTheme())
-    }
-    // Загружаем сохраненную тему
-    this.loadTheme()
-  }
-
-  toggleTheme() {
-    const body = document.body
-    const isDark = body.classList.contains('light-theme')
-    if (isDark) {
-      body.classList.remove('light-theme')
-      localStorage.setItem('bb_theme', 'dark')
-      this.showNotification('Тёмная тема активирована', 'success')
-    } else {
-      body.classList.add('light-theme')
-      localStorage.setItem('bb_theme', 'light')
-      this.showNotification('Светлая тема активирована', 'success')
-    }
-  }
-
-  loadTheme() {
-    const savedTheme = localStorage.getItem('bb_theme') || 'dark'
-    if (savedTheme === 'light') {
-      document.body.classList.add('light-theme')
-    }
-  }
 
   /**
    * Менеджер локальных сессий (с именем)
@@ -794,48 +758,7 @@ class FeatureManager {
     await globalThis.wsClient?.send?.('WS_MSG.controllerUpdate', data)
   }
 
-  /**
-   * @param {string} message - Сообщение для отображения.
-   * @param {'info' | 'success' | 'error' | 'warning'} [type='info'] - Тип уведомления.
-   */
-  showNotification(message, type = 'info') {
-    const notificationHandlers = {
-      success: globalThis.showSuccessNotification,
-      error: globalThis.showErrorNotification,
-      warning: globalThis.showWarningNotification,
-      info: globalThis.showInfoNotification
-    }
 
-    const handler = notificationHandlers[type]
-    const title = {
-      error: 'Ошибка',
-      warning: 'Внимание',
-      info: 'Информация'
-    }
-
-    if (handler) {
-      handler(title[type] || message, title[type] ? message : undefined)
-    } else {
-      this._fallbackNotification(message, type)
-    }
-  }
-
-  /**
-   * @param {string} message - Сообщение для отображения.
-   * @param {string} type - Тип уведомления.
-   * @private
-   */
-  _fallbackNotification(message, type) {
-    const notification = document.createElement('div')
-    notification.className = 'theme-notification'
-    notification.style.background = type === 'success' ? '#10b981' : '#3b82f6'
-    notification.textContent = message
-    document.body.appendChild(notification)
-    setTimeout(() => {
-      notification.style.animation = 'slideOut 0.3s ease-in forwards'
-      setTimeout(() => notification.remove(), 300)
-    }, 3000)
-  }
 }
 // Экспортируем функции для глобального использования
 globalThis.applyPreset = preset => globalThis.featureManager?.applyPreset?.(preset)

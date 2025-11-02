@@ -1,19 +1,21 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v1.9.2
+## Текущая Версия: v2.0
 **Статус:** Активна
-**Дата релиза:** 2 ноября 2025 г. в 06:46
-**Коммит:** 9a19cb3
-### Основные Изменения v1.9.2:
-- ✨ fix: исправлен цвет прогресса скорости в зависимости от категории
+**Дата релиза:** 2 ноября 2025 г. в 09:14
+**Коммит:** 3c21c76
+### Основные Изменения v2.0:
+- ✨ Update dependencies, clean up unused code and config
 
-- Убраны !important правила для .speed-fill фона в light-theme.css
-- Убраны !important правила для .speed-value цвета в light-theme.css
-- Изменен дефолтный цвет .speed-value на фиолетовый (#8b5cf6)
-- Теперь цвет прогресса динамически меняется в обеих темах согласно скорости
+- Upgrade ESLint to v9 with flat config, update babel-core and preset-env
+- Update express-rate-limit, helmet, uuid to latest major versions
+- Remove unused packages shared-utils and types
+- Clean up .scannerwork directory
+- Update npm scripts for workspaces
+- Test and verify builds
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v1.9.1** - Предыдущая версия
+- **v1.9.2** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -23,4 +25,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-02T03:46:38.937Z*
+*Автоматически сгенерировано: 2025-11-02T06:14:52.922Z*

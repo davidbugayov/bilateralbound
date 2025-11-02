@@ -692,42 +692,7 @@ function updateConnectionStatus(isConnected) {
     wsStatus.textContent = isConnected ? 'Подключен' : 'Отключен'
   }
 }
-/**
- * Показ уведомления
- */
-function showNotification(message, type = 'info') {
-  // Функция разбита для снижения когнитивной сложности
-  // Обертка для ожидания инициализации notificationSystem
-  const tryShowNotification = (attempt = 0) => {
-    if (globalThis.notificationSystem) {
-      const titles = {
-        success: '',
-        error: 'Ошибка',
-        warning: 'Внимание',
-        info: ''
-      }
-      const title = titles[type] || ''
-      globalThis.notificationSystem.show({
-        type: type,
-        title: title,
-        message: message
-      })
-    } else if (attempt < 5) {
-      // Если система еще не готова, пробуем еще раз через 100 мс
-      setTimeout(() => tryShowNotification(attempt + 1), 100)
-    } else {
-      // Fallback, если notificationSystem так и не появилась
-      console.warn('Notification system not found, using fallback.')
-      const fallbackToast = document.createElement('div')
-      fallbackToast.className = 'theme-notification'
-      fallbackToast.style.background = type === 'success' ? '#10b981' : '#ef4444'
-      fallbackToast.textContent = message
-      document.body.appendChild(fallbackToast)
-      setTimeout(() => fallbackToast.remove(), 3000)
-    }
-  }
-  tryShowNotification()
-}
+
 /**
  * Создание логгера для модуля
  */
