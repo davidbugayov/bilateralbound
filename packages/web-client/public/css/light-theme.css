@@ -587,7 +587,6 @@ body.light-theme .speed-info h3 {
 }
 
 body.light-theme .speed-value {
-  color: #2563eb !important;
   text-shadow: none !important;
 }
 
@@ -600,7 +599,6 @@ body.light-theme .speed-bar {
 }
 
 body.light-theme .speed-fill {
-  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%) !important;
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.4) !important;
 }
 
