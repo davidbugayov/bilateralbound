@@ -1,21 +1,22 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v2.0
+## Текущая Версия: v2.0.NaN
 **Статус:** Активна
-**Дата релиза:** 2 ноября 2025 г. в 09:14
-**Коммит:** 3c21c76
-### Основные Изменения v2.0:
-- ✨ Update dependencies, clean up unused code and config
+**Дата релиза:** 4 ноября 2025 г. в 09:18
+**Коммит:** 494ad32
+### Основные Изменения v2.0.NaN:
+- ✨ refactor: очистка проекта от дублирующей логики и неиспользуемых компонентов
 
-- Upgrade ESLint to v9 with flat config, update babel-core and preset-env
-- Update express-rate-limit, helmet, uuid to latest major versions
-- Remove unused packages shared-utils and types
-- Clean up .scannerwork directory
-- Update npm scripts for workspaces
-- Test and verify builds
+- удален дублирующий файл packages/server-core/src/index.js
+- удалена тестовая директория packages/web-client/public/js/controllers/
+- удален компонент LazyLoader.js (использовался только для тестов)
+- удалена вся директория test/ с тестовыми файлами
+- удален metrika-optimized.js из HTML-файлов
+- исправлен сломанный импорт в session-controller.html
+- оптимизирована структура проекта без потери функциональности
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v1.9.2** - Предыдущая версия
+- **v2.0** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -25,4 +26,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-02T06:14:52.922Z*
+*Автоматически сгенерировано: 2025-11-04T06:18:03.648Z*
