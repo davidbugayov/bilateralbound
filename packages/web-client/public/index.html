@@ -57,6 +57,8 @@
     <meta name="twitter:creator" content="@bilateralbound" />
 
     <link rel="preload" href="./js/common.js" as="script" />
+    <link rel="preload" href="/css/shared-components.css" as="style" />
+    <link rel="preload" href="/css/light-theme.css" as="style" />
     <link rel="dns-prefetch" href="//fonts.googleapis.com" />
     <link rel="preconnect" href="https://emdrbilateral.ru" crossorigin />
 
@@ -299,6 +301,10 @@
         position: relative;
         overflow: hidden;
       }
+      .info-card p {
+        margin: 12px 0;
+        line-height: 1.6;
+      }
 
       .info-card::before {
         content: '';
@@ -454,6 +460,123 @@
         display: inline-block;
       }
 
+      /* Refactoring classes */
+      #createSection > section:not(:first-of-type) {
+        margin-top: 32px;
+      }
+      .form-group {
+        margin-top: 20px;
+      }
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #94a3b8;
+        font-weight: 500;
+      }
+      .input-group {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .input-field {
+        flex: 1;
+        padding: 14px 18px;
+        border: 2px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.6);
+        color: #e2e8f0;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+      }
+      .btn-short {
+        padding: 14px 28px;
+        white-space: nowrap;
+      }
+      .validation-message {
+        margin: 8px 0 0 0;
+        font-size: 0.9rem;
+        color: #94a3b8;
+        min-height: 20px;
+      }
+      .links-container {
+        display: none;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(59, 130, 246, 0.3);
+      }
+      .links-container__title {
+        color: #34d399;
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+      .link-group {
+        margin-bottom: 16px;
+      }
+      .link-group__label {
+        display: block;
+        margin-bottom: 6px;
+        color: #60a5fa;
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+      .link-group__label--controller {
+        color: #a855f7;
+      }
+      .link-group__input-wrapper {
+        display: flex;
+        gap: 8px;
+      }
+      .link-group__input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid rgba(59, 130, 246, 0.4);
+        border-radius: 8px;
+        background: rgba(15, 23, 42, 0.8);
+        color: #60a5fa;
+        font-size: 0.9rem;
+        font-family: 'Courier New', monospace;
+      }
+      .link-group__input--controller {
+        border-color: rgba(168, 85, 247, 0.4);
+        color: #a855f7;
+      }
+      .copy-btn {
+        padding: 10px 20px;
+        background: #3b82f6;
+        color: white;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+      .copy-btn:hover {
+        background: #2563eb;
+      }
+      .copy-btn--controller {
+        background: #8b5cf6;
+      }
+      .copy-btn--controller:hover {
+        background: #7c3aed;
+      }
+      .tip-box {
+        background: rgba(52, 211, 153, 0.1);
+        border: 1px solid rgba(52, 211, 153, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+      }
+      .tip-box__text {
+        margin: 0;
+        color: #6ee7b7;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+      .page-footer-container {
+        text-align: right;
+        margin-top: 24px;
+      }
+
       @media (max-width: 768px) {
         .wrap {
           padding: 16px;
@@ -490,11 +613,11 @@
           font-size: 1rem;
         }
 
-        #createSection .info-card div[style*='display: flex'] {
+        .input-group--responsive {
           flex-direction: column;
         }
 
-        #createSection .info-card div[style*='display: flex'] button {
+        .input-group--responsive .main-button {
           width: 100%;
           margin-top: 12px;
         }
@@ -682,359 +805,201 @@
     <script src="./js/new-features.js?v=2.81.0" defer></script>
   </head>
   <body>
-    <div class="theme-toggle-container">
-      <button id="themeToggleBtn" class="theme-toggle-btn">🌓 Тема</button>
-    </div>
+    <header class="theme-toggle-container">
+      <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Переключить тему оформления">🌓 Тема</button>
+    </header>
 
-    <div class="wrap">
-      <div class="card">
-        <h1>BilateralBound - EMDR Терапия</h1>
-        <p class="subtitle">
-          Инновационная платформа для EMDR терапии с биодинамической стимуляцией
-        </p>
+    <main class="wrap">
+      <article class="card">
+        <header>
+          <h1>BilateralBound - EMDR Терапия</h1>
+          <p class="subtitle">
+            Инновационная платформа для EMDR терапии с биодинамической стимуляцией
+          </p>
+        </header>
 
-        <div class="info-card">
+        <section class="info-card">
           <h3>🎯 Что такое EMDR терапия?</h3>
-          <p style="margin: 12px 0; line-height: 1.6">
+          <p class="text-block">
             <strong>EMDR (Eye Movement Desensitization and Reprocessing)</strong> — это научно
             обоснованный метод психотерапии для лечения посттравматического стрессового расстройства
             (ПТСР), тревожных расстройств и психологических травм.
           </p>
-          <p style="margin: 12px 0; line-height: 1.6">
+          <p class="text-block">
             Наша платформа использует <strong>биодинамическую стимуляцию</strong> — движение шарика
             создает двустороннюю стимуляцию мозга, помогая переработать травматические воспоминания.
           </p>
-        </div>
+        </section>
 
-        <div id="createSection">
+        <section id="createSection">
           <button id="createSessionBtn" class="main-button" onclick="createSession()">
             🚀 Начать EMDR сессию
           </button>
 
-          <div class="info-card" style="margin-top: 32px">
+          <section class="info-card">
             <h3>🔗 Постоянные ссылки для клиентов</h3>
-            <p style="margin: 12px 0; line-height: 1.6">
+            <p class="text-block">
               Создайте персональные ссылки для ваших клиентов. Вы сможете использовать их
               многократно — ссылки остаются постоянными и не требуют генерации каждый раз заново.
             </p>
-            <div style="margin-top: 20px">
-              <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 500">
+            <div class="form-group">
+              <label for="customClientId" class="form-label">
                 ID клиента (3-32 символа: латиница, цифры, _ или -)
               </label>
-              <div style="display: flex; gap: 12px; align-items: flex-start">
+              <div class="input-group input-group--responsive">
                 <input
                   type="text"
                   id="customClientId"
+                  class="input-field"
                   placeholder="anna_2025 или client-ivan"
-                  style="
-                    flex: 1;
-                    padding: 14px 18px;
-                    border: 2px solid rgba(59, 130, 246, 0.3);
-                    border-radius: 12px;
-                    background: rgba(15, 23, 42, 0.6);
-                    color: #e2e8f0;
-                    font-size: 1rem;
-                    transition: all 0.3s ease;
-                  "
                   maxlength="32"
+                  aria-describedby="linkValidationMessage"
                 />
                 <button
                   id="generateLinksBtn"
-                  class="main-button"
+                  class="main-button btn-short"
                   onclick="generatePermanentLinks()"
-                  style="padding: 14px 28px; white-space: nowrap"
                 >
                   🔗 Создать
                 </button>
               </div>
-              <p
-                id="linkValidationMessage"
-                style="margin: 8px 0 0 0; font-size: 0.9rem; color: #94a3b8; min-height: 20px"
-              >
+              <p id="linkValidationMessage" class="validation-message" aria-live="polite">
                 Примеры: anna_2025, client-ivan, session42
               </p>
             </div>
 
-            <div
-              id="generatedLinksContainer"
-              style="
-                display: none;
-                margin-top: 24px;
-                padding-top: 24px;
-                border-top: 1px solid rgba(59, 130, 246, 0.3);
-              "
-            >
-              <p style="color: #34d399; font-weight: 600; margin-bottom: 16px">
-                ✅ Постоянные ссылки созданы!
-              </p>
+            <div id="generatedLinksContainer" class="links-container">
+              <p class="links-container__title">✅ Постоянные ссылки созданы!</p>
 
-              <div style="margin-bottom: 16px">
-                <label
-                  style="
-                    display: block;
-                    margin-bottom: 6px;
-                    color: #60a5fa;
-                    font-weight: 500;
-                    font-size: 0.95rem;
-                  "
-                >
+              <div class="link-group">
+                <label for="generatedViewerUrl" class="link-group__label">
                   👁️ Ссылка для клиента (Viewer):
                 </label>
-                <div style="display: flex; gap: 8px">
+                <div class="link-group__input-wrapper">
                   <input
                     type="text"
                     id="generatedViewerUrl"
+                    class="link-group__input"
                     readonly
-                    style="
-                      flex: 1;
-                      padding: 10px 14px;
-                      border: 1px solid rgba(59, 130, 246, 0.4);
-                      border-radius: 8px;
-                      background: rgba(15, 23, 42, 0.8);
-                      color: #60a5fa;
-                      font-size: 0.9rem;
-                      font-family: 'Courier New', monospace;
-                    "
                   />
                   <button
+                    class="copy-btn"
                     onclick="copy('generatedViewerUrl', 'Ссылка для клиента скопирована!')"
-                    style="
-                      padding: 10px 20px;
-                      background: #3b82f6;
-                      color: white;
-                      border: 0;
-                      border-radius: 8px;
-                      cursor: pointer;
-                      font-weight: 500;
-                      transition: all 0.2s ease;
-                    "
-                    onmouseover="this.style.background='#2563eb'"
-                    onmouseout="this.style.background='#3b82f6'"
+                    aria-label="Копировать ссылку для клиента"
                   >
                     📋 Копировать
                   </button>
                 </div>
               </div>
 
-              <div style="margin-bottom: 16px">
-                <label
-                  style="
-                    display: block;
-                    margin-bottom: 6px;
-                    color: #a855f7;
-                    font-weight: 500;
-                    font-size: 0.95rem;
-                  "
-                >
+              <div class="link-group">
+                <label for="generatedControllerUrl" class="link-group__label link-group__label--controller">
                   🎮 Ссылка для терапевта (Controller):
                 </label>
-                <div style="display: flex; gap: 8px">
+                <div class="link-group__input-wrapper">
                   <input
                     type="text"
                     id="generatedControllerUrl"
+                    class="link-group__input link-group__input--controller"
                     readonly
-                    style="
-                      flex: 1;
-                      padding: 10px 14px;
-                      border: 1px solid rgba(168, 85, 247, 0.4);
-                      border-radius: 8px;
-                      background: rgba(15, 23, 42, 0.8);
-                      color: #a855f7;
-                      font-size: 0.9rem;
-                      font-family: 'Courier New', monospace;
-                    "
                   />
                   <button
+                    class="copy-btn copy-btn--controller"
                     onclick="copy('generatedControllerUrl', 'Ссылка для терапевта скопирована!')"
-                    style="
-                      padding: 10px 20px;
-                      background: #8b5cf6;
-                      color: white;
-                      border: 0;
-                      border-radius: 8px;
-                      cursor: pointer;
-                      font-weight: 500;
-                      transition: all 0.2s ease;
-                    "
-                    onmouseover="this.style.background='#7c3aed'"
-                    onmouseout="this.style.background='#8b5cf6'"
+                    aria-label="Копировать ссылку для терапевта"
                   >
                     📋 Копировать
                   </button>
                 </div>
               </div>
 
-              <div
-                style="
-                  background: rgba(52, 211, 153, 0.1);
-                  border: 1px solid rgba(52, 211, 153, 0.3);
-                  border-radius: 12px;
-                  padding: 16px;
-                  margin-top: 16px;
-                "
-              >
-                <p style="margin: 0; color: #6ee7b7; font-size: 0.9rem; line-height: 1.5">
+              <div class="tip-box">
+                <p class="tip-box__text">
                   💡 <strong>Сохраните эти ссылки!</strong> Они постоянные и будут работать всегда.
                   Отправьте ссылку viewer клиенту, а ссылку controller откройте сами для управления
                   сессией.
                 </p>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="info-card" style="margin-top: 32px">
+          <section class="info-card">
             <h3>🔄 Восстановить сессию по ID</h3>
-            <p style="margin: 12px 0; line-height: 1.6">
+            <p class="text-block">
               Если у вас есть ID сохраненной сессии, введите его, чтобы загрузить все настройки и
               продолжить работу.
             </p>
-            <div style="margin-top: 20px">
-              <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 500">
+            <div class="form-group">
+              <label for="existingSessionId" class="form-label">
                 ID существующей сессии
               </label>
-              <div style="display: flex; gap: 12px; align-items: flex-start">
+              <div class="input-group input-group--responsive">
                 <input
                   type="text"
                   id="existingSessionId"
+                  class="input-field"
                   placeholder="Введите ID сессии..."
-                  style="
-                    flex: 1;
-                    padding: 14px 18px;
-                    border: 2px solid rgba(59, 130, 246, 0.3);
-                    border-radius: 12px;
-                    background: rgba(15, 23, 42, 0.6);
-                    color: #e2e8f0;
-                    font-size: 1rem;
-                    transition: all 0.3s ease;
-                  "
+                  aria-describedby="loadSessionMessage"
                 />
                 <button
                   id="loadSessionBtn"
-                  class="main-button"
+                  class="main-button btn-short"
                   onclick="loadSession()"
-                  style="padding: 14px 28px; white-space: nowrap"
                 >
                   📥 Загрузить
                 </button>
               </div>
-              <p
-                id="loadSessionMessage"
-                style="margin: 8px 0 0 0; font-size: 0.9rem; color: #94a3b8; min-height: 20px"
-              ></p>
+              <p id="loadSessionMessage" class="validation-message" aria-live="polite"></p>
             </div>
 
-            <div
-              id="restoredLinksContainer"
-              style="
-                display: none;
-                margin-top: 24px;
-                padding-top: 24px;
-                border-top: 1px solid rgba(59, 130, 246, 0.3);
-              "
-            >
-              <p style="color: #34d399; font-weight: 600; margin-bottom: 16px">
-                ✅ Сессия найдена!
-              </p>
+            <div id="restoredLinksContainer" class="links-container">
+              <p class="links-container__title">✅ Сессия найдена!</p>
 
-              <div style="margin-bottom: 16px">
-                <label
-                  style="
-                    display: block;
-                    margin-bottom: 6px;
-                    color: #60a5fa;
-                    font-weight: 500;
-                    font-size: 0.95rem;
-                  "
-                >
+              <div class="link-group">
+                <label for="restoredViewerUrl" class="link-group__label">
                   👁️ Ссылка для клиента (Viewer):
                 </label>
-                <div style="display: flex; gap: 8px">
+                <div class="link-group__input-wrapper">
                   <input
                     type="text"
                     id="restoredViewerUrl"
+                    class="link-group__input"
                     readonly
-                    style="
-                      flex: 1;
-                      padding: 10px 14px;
-                      border: 1px solid rgba(59, 130, 246, 0.4);
-                      border-radius: 8px;
-                      background: rgba(15, 23, 42, 0.8);
-                      color: #60a5fa;
-                      font-size: 0.9rem;
-                      font-family: 'Courier New', monospace;
-                    "
                   />
                   <button
+                    class="copy-btn"
                     onclick="copy('restoredViewerUrl', 'Ссылка для клиента скопирована!')"
-                    style="
-                      padding: 10px 20px;
-                      background: #3b82f6;
-                      color: white;
-                      border: 0;
-                      border-radius: 8px;
-                      cursor: pointer;
-                      font-weight: 500;
-                      transition: all 0.2s ease;
-                    "
-                    onmouseover="this.style.background='#2563eb'"
-                    onmouseout="this.style.background='#3b82f6'"
+                    aria-label="Копировать восстановленную ссылку для клиента"
                   >
                     📋 Копировать
                   </button>
                 </div>
               </div>
 
-              <div style="margin-bottom: 16px">
-                <label
-                  style="
-                    display: block;
-                    margin-bottom: 6px;
-                    color: #a855f7;
-                    font-weight: 500;
-                    font-size: 0.95rem;
-                  "
-                >
+              <div class="link-group">
+                <label for="restoredControllerUrl" class="link-group__label link-group__label--controller">
                   🎮 Ссылка для терапевта (Controller):
                 </label>
-                <div style="display: flex; gap: 8px">
+                <div class="link-group__input-wrapper">
                   <input
                     type="text"
                     id="restoredControllerUrl"
+                    class="link-group__input link-group__input--controller"
                     readonly
-                    style="
-                      flex: 1;
-                      padding: 10px 14px;
-                      border: 1px solid rgba(168, 85, 247, 0.4);
-                      border-radius: 8px;
-                      background: rgba(15, 23, 42, 0.8);
-                      color: #a855f7;
-                      font-size: 0.9rem;
-                      font-family: 'Courier New', monospace;
-                    "
                   />
                   <button
+                    class="copy-btn copy-btn--controller"
                     onclick="copy('restoredControllerUrl', 'Ссылка для терапевта скопирована!')"
-                    style="
-                      padding: 10px 20px;
-                      background: #8b5cf6;
-                      color: white;
-                      border: 0;
-                      border-radius: 8px;
-                      cursor: pointer;
-                      font-weight: 500;
-                      transition: all 0.2s ease;
-                    "
-                    onmouseover="this.style.background='#7c3aed'"
-                    onmouseout="this.style.background='#8b5cf6'"
+                    aria-label="Копировать восстановленную ссылку для терапевта"
                   >
                     📋 Копировать
                   </button>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="steps-container">
+          <section class="steps-container">
             <h3>📋 Как начать терапию:</h3>
             <div style="counter-reset: step-counter">
               <div class="step">
@@ -1048,9 +1013,9 @@
                 стимуляции
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="indications-card">
+          <section class="indications-card">
             <h3>✅ Показания к применению:</h3>
             <ul>
               <li>Посттравматическое стрессовое расстройство (ПТСР)</li>
@@ -1059,22 +1024,22 @@
               <li>Фобии и навязчивые состояния</li>
               <li>Парная терапия и семейные конфликты</li>
             </ul>
-          </div>
+          </section>
 
-          <div class="warning-card">
+          <section class="warning-card">
             <h3>⚠️ Важно помнить:</h3>
             <p>
               EMDR терапия должна проводиться только квалифицированными специалистами. Данная
               платформа предназначена для использования в профессиональной психотерапевтической
               практике.
             </p>
+          </section>
+          <div class="page-footer-container">
+            <footer class="footer">⚡ BilateralBound v2.0</footer>
           </div>
-          <div style="text-align: right; margin-top: 24px">
-            <div class="footer">⚡ BilateralBound v2.0</div>
-          </div>
-        </div>
-      </div>
-    </div>
+        </section>
+      </article>
+    </main>
 
     <script>
       async function loadSessionScripts() {

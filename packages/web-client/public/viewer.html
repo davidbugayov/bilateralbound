@@ -45,6 +45,7 @@
     <!-- Preload critical resources -->
     <link rel="preload" href="/js/common.js" as="script" />
     <link rel="preload" href="/css/shared-components.css" as="style" />
+    <link rel="preload" href="/css/light-theme.css" as="style" />
 
     <!-- Styles -->
     <link rel="stylesheet" href="/css/shared-components.css" />
@@ -67,13 +68,12 @@
         box-sizing: border-box;
       }
 
+      html,
       body {
         margin: 0;
         padding: 0;
         background: #020617;
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
         height: 100vh;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       }
@@ -81,16 +81,6 @@
       /* Light theme for viewer */
       body.light-theme {
         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
-      }
-
-      body.light-theme .viewer-header {
-        background: rgba(255, 255, 255, 0.95);
-        border-color: rgba(148, 163, 184, 0.3);
-        backdrop-filter: blur(10px);
-      }
-
-      body.light-theme .viewer-header span {
-        color: #1e293b;
       }
 
       body.light-theme .viewer-canvas {
@@ -140,37 +130,9 @@
         flex: 1;
         position: relative;
         background: #020617;
-      }
-
-      .viewer-header {
-        position: absolute;
-        top: 16px;
-        left: 50%;
-        transform: translateX(-50%);
         display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 12px;
-        background: rgba(0, 0, 0, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 10px;
-        z-index: 1000;
-        backdrop-filter: blur(8px);
-      }
-
-      .viewer-header img {
-        width: 28px;
-        height: 28px;
-        border-radius: 6px;
-        object-fit: cover;
-        display: block;
-      }
-
-      .viewer-header span {
-        color: #e2e8f0;
-        font-weight: 600;
-        letter-spacing: 0.2px;
-        font-size: 13px;
+        flex-direction: column;
+        height: 100%;
       }
 
       .viewer-canvas {
@@ -303,10 +265,6 @@
           min-width: 120px;
           border-radius: 8px;
         }
-
-        .sessionInfo {
-          font-size: 11px !important;
-        }
       }
 
       /* Animations */
@@ -338,17 +296,33 @@
           opacity: 0.7;
         }
       }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
     </style>
   </head>
   <body>
-    <div class="viewer-container">
-      <canvas id="viewerCanvas" class="viewer-canvas"></canvas>
-      <div id="statusContainer"></div>
-
-      <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Полноэкранный</button>
-
-      <div id="loading" class="loading">Загрузка...</div>
-    </div>
+    <main class="viewer-container">
+      <header>
+        <div id="statusContainer" aria-live="polite"></div>
+        <button class="fullscreen-btn" onclick="toggleFullscreen()" aria-label="Переключить полноэкранный режим">⛶ Полноэкранный</button>
+      </header>
+      <canvas id="viewerCanvas" class="viewer-canvas" role="img">
+        <p class="sr-only">
+          Анимация движущегося шарика для EMDR-терапии.
+        </p>
+      </canvas>
+      <div id="loading" class="loading" aria-live="polite">Загрузка...</div>
+    </main>
 
     <script src="/js/common.js" defer></script>
     <script src="/js/physics-engine.js" defer></script>
@@ -358,13 +332,13 @@
 
     <script>
       // Global variables
-      let wsClient
-      let physicsEngine
-      let ballRenderer
-      let isFullscreen = false
-      let components = {}
-      let resizeTimeout = null
-      let lastScreenSizeUpdate = 0
+      var wsClient
+      var physicsEngine
+      var ballRenderer
+      var isFullscreen = false
+      var components = {}
+      var resizeTimeout = null
+      var lastScreenSizeUpdate = 0
 
       // Debug loggers
       window.debugLog = window.debugLog || function () {}
@@ -673,7 +647,7 @@
       }
 
       // Fullscreen & Mobile
-      let screenWakeLock = null
+      var screenWakeLock = null
 
       async function requestScreenWakeLock() {
         try {
@@ -723,7 +697,7 @@
       })
 
       // Double tap for fullscreen
-      let lastTap = 0
+      var lastTap = 0
       document.getElementById('viewerCanvas').addEventListener('touchend', function (event) {
         const currentTime = new Date().getTime()
         if (currentTime - lastTap < 300) {

@@ -99,6 +99,10 @@
         border-radius: 8px;
         user-select: none;
         color: #cbd5e1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
       }
 
       .light-theme .drag-handle {
@@ -696,8 +700,6 @@
         color: #64748b !important;
       }
 
-      /* Удалены встроенные стили для viewerStatus, так как цвет управляется CSS классами */
-
       /* Control section headings */
       .control-section h3 {
         color: #e2e8f0;
@@ -714,425 +716,345 @@
       .light-theme .control-section p {
         color: #64748b;
       }
+
+      /* Refactored classes */
+      .hidden {
+        display: none;
+      }
+      .session-info {
+        margin: 4px 0;
+        font-size: 14px;
+      }
+      .viewer-status {
+        margin: 8px 0;
+      }
+      .counters-container {
+        margin-top: 12px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .counters-group {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 8px 12px;
+      }
+      .counter-block {
+        min-width: 80px;
+        text-align: center;
+      }
+      .counter-block--compact {
+        min-width: 70px;
+      }
+      .counter-label {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+      }
+      .counter-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #374151;
+      }
+      .counter-value--timer {
+        background: #ffffff;
+        padding: 2px 8px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+      }
+      .btn-reset-counter {
+        height: 36px;
+        min-width: 70px;
+        font-size: 12px;
+      }
+      .preview-canvas-wrapper {
+        text-align: center;
+        position: relative;
+        padding-bottom: 35px;
+      }
+      .viewer-info-popup {
+        margin-top: 8px;
+        font-size: 12px;
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+      .fullscreen-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+      }
+      .fullscreen-canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+      .fullscreen-panel {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 320px;
+        padding: 16px;
+        border-radius: 16px;
+        backdrop-filter: blur(12px);
+        transition: opacity 0.25s ease;
+        opacity: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto auto auto auto;
+        gap: 8px;
+        align-items: center;
+      }
+      .fs-panel-header {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .fs-session-id {
+        font-weight: 600;
+        font-size: 12px;
+        text-align: center;
+      }
+      .fs-link-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .fs-link-input {
+        flex: 1;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+      }
+      .fs-btn {
+        font-size: 12px;
+        padding: 8px;
+      }
+      .fs-btn-grid {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+      }
+      .fs-seg-btn {
+        font-size: 11px;
+        padding: 6px;
+      }
+      .fs-slider-group {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .fs-slider {
+        flex: 1;
+      }
+      .fs-control-group {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .fs-control-group--colors {
+        gap: 3px;
+        margin-bottom: 4px;
+      }
+      .fs-label {
+        font-size: 11px;
+        min-width: 50px;
+      }
+      .fs-size-btn {
+        font-size: 10px;
+        padding: 4px 6px;
+      }
+      .fs-color-btn {
+        width: 14px;
+        height: 14px;
+        padding: 0;
+        border-radius: 50%;
+      }
+      .btn-full-width {
+        width: 100%;
+      }
+      .hotkey-info {
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
     </style>
   </head>
   <body>
-    <button class="back-btn" onclick="goBack()">← На главную</button>
+    <header>
+      <a class="back-btn" href="/" aria-label="Вернуться на главную страницу">← На главную</a>
+      <div class="theme-toggle-container">
+        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Переключить тему оформления">🌓 Тема</button>
+      </div>
+    </header>
 
-    <div class="theme-toggle-container">
-      <button id="themeToggleBtn" class="theme-toggle-btn">🌓 Тема</button>
-    </div>
-
-    <div class="wrap">
-      <div class="control-section">
-        <h3>🎮 Сессия: <span id="curSid">...</span></h3>
-        <p id="sessionInfo" style="margin: 4px 0; font-size: 14px; color: #64748b">
-          Сессия: загрузка...
-        </p>
-        <p style="margin: 8px 0; color: #64748b">
-          Статус зрителя: <span id="viewerStatus">Ожидание...</span>
+    <main class="wrap">
+      <section class="control-section" aria-labelledby="session-heading">
+        <h3 id="session-heading">🎮 Сессия: <span id="curSid">...</span></h3>
+        <p id="sessionInfo" class="session-info">Сессия: загрузка...</p>
+        <p class="viewer-status">
+          Статус зрителя: <span id="viewerStatus" aria-live="polite">Ожидание...</span>
         </p>
         <div class="viewer-link-container">
+          <label for="view" class="sr-only">Ссылка для зрителя</label>
           <div class="link-input-group">
             <input
               id="view"
               readonly
               placeholder="Ссылка для зрителя будет здесь..."
               onclick="this.select()"
+              aria-label="Ссылка для зрителя"
             />
-            <button onclick="copy('view', 'Ссылка для клиента скопирована!')" class="copy-btn">📋 Копировать</button>
+            <button onclick="copy('view', 'Ссылка для клиента скопирована!')" class="copy-btn" aria-label="Копировать ссылку для зрителя">📋 Копировать</button>
           </div>
         </div>
-        <div
-          id="bbCounters"
-          style="margin-top: 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap"
-        >
-          <div
-            style="
-              display: flex;
-              gap: 12px;
-              align-items: center;
-              background: #f8fafc;
-              border: 1px solid #e2e8f0;
-              border-radius: 10px;
-              padding: 8px 12px;
-            "
-          >
-            <div style="min-width: 80px; text-align: center">
-              <div style="font-size: 14px; color: #64748b; font-weight: 500">Таймер</div>
-              <div
-                id="bbTimer"
-                style="
-                  font-size: 24px;
-                  font-weight: 700;
-                  color: #374151;
-                  background: #ffffff;
-                  padding: 2px 8px;
-                  border-radius: 6px;
-                  border: 1px solid #e2e8f0;
-                "
-              >
-                0:00
-              </div>
+        <div id="bbCounters" class="counters-container">
+          <div class="counters-group">
+            <div class="counter-block">
+              <div class="counter-label">Таймер</div>
+              <div id="bbTimer" class="counter-value counter-value--timer">0:00</div>
             </div>
-            <div style="min-width: 70px; text-align: center">
-              <div style="font-size: 14px; color: #64748b; font-weight: 500">Пасы</div>
-              <div id="bbPasses" style="font-size: 24px; font-weight: 700; color: #374151">0</div>
+            <div class="counter-block counter-block--compact">
+              <div class="counter-label">Пасы</div>
+              <div id="bbPasses" class="counter-value">0</div>
             </div>
-            <div style="min-width: 70px; text-align: center">
-              <div style="font-size: 14px; color: #64748b; font-weight: 500">Сеты</div>
-              <div id="bbSets" style="font-size: 24px; font-weight: 700; color: #374151">0</div>
+            <div class="counter-block counter-block--compact">
+              <div class="counter-label">Сеты</div>
+              <div id="bbSets" class="counter-value">0</div>
             </div>
           </div>
-          <button id="bbResetBtn" class="btn outline" style="height: 36px; min-width: 70px; font-size: 12px">
-            Сброс
-          </button>
+          <button id="bbResetBtn" class="btn outline btn-reset-counter">Сброс</button>
         </div>
-      </div>
+      </section>
 
-      <div id="previewWrap" style="display: none" class="control-section floating-preview">
-        <div
-          class="drag-handle"
-          style="display: flex; align-items: center; justify-content: space-between; gap: 12px"
-        >
-          <span>👁️ Превью движения</span>
+      <aside id="previewWrap" class="control-section floating-preview hidden" aria-labelledby="preview-heading">
+        <div class="drag-handle">
+          <span id="preview-heading">👁️ Превью движения</span>
           <button id="openPreviewFullscreenBtn" class="btn outline" style="padding: 6px 10px">
             ⛶ Полноэкранный
           </button>
         </div>
-        <div style="text-align: center; position: relative; padding-bottom: 35px">
-          <canvas id="preview" style="border: 1px solid #374151; background: #020617"></canvas>
-          <div
-            id="viewerInfo"
-            style="
-              display: none;
-              margin-top: 8px;
-              font-size: 12px;
-              color: #64748b;
-              position: absolute;
-              bottom: 10px;
-              left: 50%;
-              transform: translateX(-50%);
-              white-space: nowrap;
-              background: rgba(255, 255, 255, 0.9);
-              padding: 4px 8px;
-              border-radius: 4px;
-              border: 1px solid #e2e8f0;
-            "
-          >
-            Вьювер и размер экрана
-          </div>
+        <div class="preview-canvas-wrapper">
+          <canvas id="preview"></canvas>
+          <div id="viewerInfo" class="viewer-info-popup hidden">Вьювер и размер экрана</div>
         </div>
-      </div>
+      </aside>
 
-      <div
-        id="previewOverlay"
-        style="display: none; position: fixed; inset: 0; background: #0b1220; z-index: 2000"
-      >
-        <canvas
-          id="previewFullscreenCanvas"
-          style="display: block; width: 100vw; height: 100vh; background: #020617"
-        ></canvas>
-        <div
-          id="previewFsPanel"
-          style="
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 320px;
-            height: 380px;
-            background: rgba(0, 0, 0, 0.75);
-            border: 1px solid #1f2937;
-            padding: 16px;
-            border-radius: 16px;
-            backdrop-filter: blur(12px);
-            transition: opacity 0.25s ease;
-            opacity: 1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto auto auto auto auto auto;
-            gap: 8px;
-            align-items: center;
-          "
-        >
-          <div
-            style="
-              grid-column: 1 / -1;
-              display: flex;
-              flex-direction: column;
-              gap: 6px;
-              margin-bottom: 8px;
-            "
-          >
-            <span
-              id="fsCurSid"
-              style="color: #cbd5e1; font-weight: 600; font-size: 12px; text-align: center"
-              >SID: ...</span
-            >
-            <div style="display: flex; align-items: center; gap: 6px">
-              <input
-                id="fsViewLink"
-                readonly
-                style="
-                  flex: 1;
-                  padding: 6px 8px;
-                  background: #0b1220;
-                  color: #e2e8f0;
-                  border: 1px solid #1f2937;
-                  border-radius: 6px;
-                  font-size: 11px;
-                "
-              />
+      <div id="previewOverlay" class="fullscreen-overlay hidden">
+        <canvas id="previewFullscreenCanvas" class="fullscreen-canvas"></canvas>
+        <div id="previewFsPanel" class="fullscreen-panel">
+          <div class="fs-panel-header">
+            <span id="fsCurSid" class="fs-session-id">SID: ...</span>
+            <div class="fs-link-group">
+              <label for="fsViewLink" class="sr-only">Ссылка для зрителя</label>
+              <input id="fsViewLink" readonly class="fs-link-input" />
               <button
-                class="copy-btn"
-                style="padding: 6px 8px; font-size: 12px"
+                class="copy-btn fs-btn"
                 onclick="copy('fsViewLink', 'Ссылка для клиента скопирована!')"
+                aria-label="Копировать ссылку для зрителя"
               >
                 📋
               </button>
             </div>
           </div>
 
-          <button
-            class="btn"
-            onclick="togglePlayPause()"
-            id="fsPlayPauseBtn"
-            style="grid-column: 1; font-size: 12px; padding: 8px"
-          >
-            ▶️ Старт
-          </button>
+          <button class="btn fs-btn" onclick="togglePlayPause()" id="fsPlayPauseBtn">▶️ Старт</button>
+          <button class="btn outline fs-btn" onclick="resetAll()" style="grid-column: 1 / -1; margin-top: 4px;">🔄 Сброс</button>
 
-          <button
-            class="btn outline"
-            onclick="resetAll()"
-            style="grid-column: 1 / -1; font-size: 12px; padding: 8px; margin-top: 4px"
-          >
-            🔄 Сброс
-          </button>
-
-          <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 4px">
-            <button class="seg-btn" id="fsDirH" style="font-size: 11px; padding: 6px">
-              ↔️ Гориз
-            </button>
-            <button class="seg-btn" id="fsDirV" style="font-size: 11px; padding: 6px">
-              ↕️ Вертик
-            </button>
-            <button class="seg-btn" id="fsDirDL" style="font-size: 11px; padding: 6px">
-              ↙️↘️ Диаг1
-            </button>
-            <button class="seg-btn" id="fsDirDR" style="font-size: 11px; padding: 6px">
-              ↖️↗️ Диаг2
-            </button>
-            <button class="seg-btn" id="fsDirRandom" style="font-size: 11px; padding: 6px">
-              🎲 Случайное
-            </button>
+          <div class="fs-btn-grid">
+            <button class="seg-btn fs-seg-btn" id="fsDirH">↔️ Гориз</button>
+            <button class="seg-btn fs-seg-btn" id="fsDirV">↕️ Вертик</button>
+            <button class="seg-btn fs-seg-btn" id="fsDirDL">↙️↘️ Диаг1</button>
+            <button class="seg-btn fs-seg-btn" id="fsDirDR">↖️↗️ Диаг2</button>
+            <button class="seg-btn fs-seg-btn" id="fsDirRandom">🎲 Случайное</button>
           </div>
 
-          <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 8px">
-            <input type="range" id="fsSpeed" min="5" max="60" value="20" style="flex: 1" />
+          <div class="fs-slider-group">
+            <label for="fsSpeed" class="sr-only">Скорость</label>
+            <input type="range" id="fsSpeed" min="5" max="60" value="20" class="fs-slider" />
           </div>
 
-          <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 4px">
-            <label style="color: #cbd5e1; font-size: 11px; min-width: 50px">Размер</label>
-            <button class="size-btn" id="fsSize1" style="font-size: 10px; padding: 4px 6px">
-              ×1
-            </button>
-            <button class="size-btn" id="fsSize2" style="font-size: 10px; padding: 4px 6px">
-              ×2
-            </button>
-            <button class="size-btn" id="fsSize3" style="font-size: 10px; padding: 4px 6px">
-              ×3
-            </button>
-            <button class="size-btn" id="fsSize4" style="font-size: 10px; padding: 4px 6px">
-              ×4
-            </button>
+          <div class="fs-control-group">
+            <span id="fsSizeLabel" class="fs-label">Размер</span>
+            <button class="size-btn fs-size-btn" id="fsSize1" aria-labelledby="fsSizeLabel">×1</button>
+            <button class="size-btn fs-size-btn" id="fsSize2" aria-labelledby="fsSizeLabel">×2</button>
+            <button class="size-btn fs-size-btn" id="fsSize3" aria-labelledby="fsSizeLabel">×3</button>
+            <button class="size-btn fs-size-btn" id="fsSize4" aria-labelledby="fsSizeLabel">×4</button>
           </div>
 
-          <div
-            style="
-              grid-column: 1 / -1;
-              display: flex;
-              align-items: center;
-              gap: 3px;
-              margin-bottom: 4px;
-            "
-          >
-            <label style="color: #cbd5e1; font-size: 11px; min-width: 50px">Мяч</label>
-            <button
-              class="color-btn"
-              id="fsBallCol1"
-              style="background: #60a5fa; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBallCol2"
-              style="background: #ef4444; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBallCol3"
-              style="background: #10b981; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBallCol4"
-              style="background: #f59e0b; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBallCol5"
-              style="background: #8b5cf6; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBallCol6"
-              style="background: #f97316; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBallCol7"
-              style="background: #06b6d4; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBallCol8"
-              style="background: #84cc16; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBallCol9"
-              style="background: #fb7185; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBallCol10"
-              style="background: #ffffff; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
+          <div class="fs-control-group fs-control-group--colors">
+            <span id="fsBallColorLabel" class="fs-label">Мяч</span>
+            <button class="color-btn fs-color-btn" id="fsBallCol1" style="background: #60a5fa" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol2" style="background: #ef4444" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol3" style="background: #10b981" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol4" style="background: #f59e0b" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol5" style="background: #8b5cf6" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol6" style="background: #f97316" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol7" style="background: #06b6d4" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol8" style="background: #84cc16" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol9" style="background: #fb7185" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol10" style="background: #ffffff" aria-labelledby="fsBallColorLabel"></button>
           </div>
 
-          <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 3px">
-            <label style="color: #cbd5e1; font-size: 11px; min-width: 50px">Фон</label>
-            <button
-              class="color-btn"
-              id="fsBg1"
-              style="background: #020617; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBg2"
-              style="background: #000000; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBg3"
-              style="background: #111827; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBg4"
-              style="background: #0a2540; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBg5"
-              style="background: #052e16; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBg6"
-              style="background: #1a102a; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBg7"
-              style="background: #2b1b0e; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBg8"
-              style="background: #032f2f; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBg9"
-              style="background: #2a0e14; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
-            <button
-              class="color-btn"
-              id="fsBg10"
-              style="background: #0f172a; width: 14px; height: 14px; padding: 0; border-radius: 50%"
-            ></button>
+          <div class="fs-control-group fs-control-group--colors">
+            <span id="fsBgColorLabel" class="fs-label">Фон</span>
+            <button class="color-btn fs-color-btn" id="fsBg1" style="background: #020617" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg2" style="background: #000000" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg3" style="background: #111827" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg4" style="background: #0a2540" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg5" style="background: #052e16" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg6" style="background: #1a102a" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg7" style="background: #2b1b0e" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg8" style="background: #032f2f" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg9" style="background: #2a0e14" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg10" style="background: #0f172a" aria-labelledby="fsBgColorLabel"></button>
           </div>
 
-          <button
-            class="btn outline"
-            id="exitPreviewFullscreenBtn"
-            style="grid-column: 1 / -1; font-size: 12px; padding: 8px; margin-top: 4px"
-          >
-            ⤫ Закрыть
-          </button>
+          <button class="btn outline fs-btn" id="exitPreviewFullscreenBtn" style="grid-column: 1 / -1; margin-top: 4px;">⤫ Закрыть</button>
         </div>
       </div>
 
-      <div class="control-section">
-        <h3>🎮 Управление и направление</h3>
+      <section class="control-section" aria-labelledby="main-controls-heading">
+        <h3 id="main-controls-heading">🎮 Управление и направление</h3>
         <div class="controls-grid">
           <div class="controls-card">
             <p class="controls-title">Действия</p>
             <div class="actions-grid">
-              <button id="playPauseBtn" class="btn primary" onclick="togglePlayPause()">
-                ▶️ Старт
-              </button>
+              <button id="playPauseBtn" class="btn primary" onclick="togglePlayPause()">▶️ Старт</button>
               <button class="btn outline" onclick="resetSession()">🔄 Сброс</button>
             </div>
             <p class="controls-title" style="margin-top: 12px">Направление</p>
             <div class="direction-row">
-              <div class="segmented" id="directionSegmented">
-                <button
-                  class="seg-btn"
-                  data-mode="horizontal"
-                  onclick="setDirection('horizontal')"
-                  aria-label="Горизонтально"
-                  title="Горизонтальное движение"
-                >
-                  <strong>↔️</strong> Гориз.
-                </button>
-                <button
-                  class="seg-btn"
-                  data-mode="vertical"
-                  onclick="setDirection('vertical')"
-                  aria-label="Вертикально"
-                  title="Вертикальное движение"
-                >
-                  <strong>↕️</strong> Вертик.
-                </button>
-                <button
-                  class="seg-btn"
-                  data-mode="diagRL"
-                  onclick="setDirection('diagRL')"
-                  aria-label="Диагональ слева направо"
-                  title="Диагональ L→R"
-                >
-                  <strong>↖️↗️</strong> L→R
-                </button>
-                <button
-                  class="seg-btn"
-                  data-mode="diagRLL"
-                  onclick="setDirection('diagRLL')"
-                  aria-label="Диагональ справа налево"
-                  title="Диагональ R→L"
-                >
-                  <strong>↙️↘️</strong> R→L
-                </button>
-                <button
-                  class="seg-btn"
-                  data-mode="random"
-                  onclick="setDirection('random')"
-                  aria-label="Случайное направление"
-                  title="Случайное направление"
-                >
-                  <strong>🎲</strong> Случайное
-                </button>
+              <div class="segmented" id="directionSegmented" role="group" aria-label="Направление движения">
+                <button class="seg-btn" data-mode="horizontal" onclick="setDirection('horizontal')" aria-label="Горизонтально" title="Горизонтальное движение"><strong>↔️</strong> Гориз.</button>
+                <button class="seg-btn" data-mode="vertical" onclick="setDirection('vertical')" aria-label="Вертикально" title="Вертикальное движение"><strong>↕️</strong> Вертик.</button>
+                <button class="seg-btn" data-mode="diagRL" onclick="setDirection('diagRL')" aria-label="Диагональ слева направо" title="Диагональ L→R"><strong>↖️↗️</strong> L→R</button>
+                <button class="seg-btn" data-mode="diagRLL" onclick="setDirection('diagRLL')" aria-label="Диагональ справа налево" title="Диагональ R→L"><strong>↙️↘️</strong> R→L</button>
+                <button class="seg-btn" data-mode="random" onclick="setDirection('random')" aria-label="Случайное направление" title="Случайное направление"><strong>🎲</strong> Случайное</button>
               </div>
             </div>
           </div>
@@ -1141,10 +1063,10 @@
             <div id="speedControl"></div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="control-section">
-        <h3>🎨 Оформление</h3>
+      <section class="control-section" aria-labelledby="appearance-heading">
+        <h3 id="appearance-heading">🎨 Оформление</h3>
         <div class="appearance-grid">
           <div class="controls-card">
             <p class="controls-title">Цвет шарика</p>
@@ -1159,18 +1081,16 @@
             <div id="sizeControl"></div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="control-section">
-        <h3>🛠️ Инструменты и настройки</h3>
+      <section class="control-section" aria-labelledby="tools-heading">
+        <h3 id="tools-heading">🛠️ Инструменты и настройки</h3>
         <div class="appearance-grid">
           <div class="controls-card">
             <p class="controls-title">💾 Управление сессией</p>
             <div id="sessionControls"></div>
             <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr; gap: 10px">
-              <button class="btn primary" onclick="createCustomPreset()" style="width: 100%">
-                ⭐ Создать пресет
-              </button>
+              <button class="btn primary btn-full-width" onclick="createCustomPreset()">⭐ Создать пресет</button>
             </div>
           </div>
           <div class="controls-card">
@@ -1179,17 +1099,17 @@
           </div>
           <div class="controls-card">
             <p class="controls-title">⌨️ Горячие клавиши</p>
-            <div style="font-size: 12px; line-height: 1.6">
-              <div><span class="kbd">Пробел</span> — Старт/Стоп</div>
-              <div><span class="kbd">Ctrl+Z</span> — Отмена действия</div>
-              <div><span class="kbd">Ctrl+S</span> — Сохранить пресет</div>
-              <div><span class="kbd">F</span> — Полноэкранное превью</div>
-              <div><span class="kbd">↑↓←→</span> — Управление направлением</div>
+            <div class="hotkey-info">
+              <div><kbd>Пробел</kbd> — Старт/Стоп</div>
+              <div><kbd>Ctrl+Z</kbd> — Отмена действия</div>
+              <div><kbd>Ctrl+S</kbd> — Сохранить пресет</div>
+              <div><kbd>F</kbd> — Полноэкранное превью</div>
+              <div><kbd>↑↓←→</kbd> — Управление направлением</div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
 
     <script src="/js/common.js" defer></script>
     <script src="/js/physics-engine.js" defer></script>
