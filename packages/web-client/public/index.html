@@ -1035,7 +1035,7 @@
             </p>
           </section>
           <div class="page-footer-container">
-            <footer class="footer">⚡ BilateralBound v2.8.0</footer>
+            <footer class="footer">⚡ BilateralBound v2.9.0</footer>
           </div>
         </section>
       </article>
@@ -1103,7 +1103,7 @@
 
           btn.innerHTML = '🔄 Создание сессии...'
           console.log('🔄 Создание сессии...')
-          const response = await fetch('http://localhost:3000/api/session', { method: 'POST' })
+          const response = await fetch('/api/session', { method: 'POST' })
 
           console.log('📡 Ответ сервера:', response.status, response.statusText)
           console.log('📡 Content-Type:', response.headers.get('content-type'))
@@ -1135,7 +1135,7 @@
 
           console.log('🔗 Подключение контроллера к сессии:', sessionId)
 
-          const connectResponse = await fetch(`http://localhost:3000/api/session/${sessionId}/controller/connect`, {
+          const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({})
@@ -1232,7 +1232,7 @@
           updateValidationMessage('Создание постоянных ссылок...', false)
 
           // Отправляем запрос на резервирование сессии
-          const response = await fetch(`http://localhost:3000/api/session/${clientId}/reserve`, {
+          const response = await fetch(`/api/session/${clientId}/reserve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
           })
@@ -1343,7 +1343,7 @@
           messageEl.textContent = 'Проверка сессии...'
           messageEl.style.color = '#94a3b8'
 
-          const response = await fetch(`http://localhost:3000/api/session/${sessionId}/state`)
+          const response = await fetch(`/api/session/${sessionId}/state`)
 
           if (!response.ok) {
             if (response.status === 404) {

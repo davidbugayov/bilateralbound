@@ -1,17 +1,17 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v2.8.0
+## Текущая Версия: v2.9.0
 **Статус:** Активна
-**Дата релиза:** 5 ноября 2025 г. в 16:21
-**Коммит:** ca64f49
-### Основные Изменения v2.8.0:
-- ✨ fix: allow Yandex Metrica WebSocket connections in CSP
+**Дата релиза:** 5 ноября 2025 г. в 16:24
+**Коммит:** fd214c5
+### Основные Изменения v2.9.0:
+- ✨ fix: remove localhost connections from CSP for VPS-only deployment
 
-- Add wss://mc.yandex.com to connectSrc directive
-- Fix CSP violation errors for Yandex analytics WebSocket
+- Remove http://localhost:3000, ws://localhost:3000, wss://localhost:3000 from connectSrc
+- Prevent browser permission prompts for local network access on remote VPS
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v2.7.0** - Предыдущая версия
+- **v2.8.0** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -21,4 +21,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-05T13:21:23.206Z*
+*Автоматически сгенерировано: 2025-11-05T13:24:22.971Z*
