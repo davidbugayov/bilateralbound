@@ -1044,6 +1044,16 @@
     <script>
       async function loadSessionScripts() {
         return new Promise((resolve, reject) => {
+          // Check if scripts are already loaded to avoid duplicate loading
+          if (typeof BallRenderer !== 'undefined' &&
+              typeof PhysicsEngine !== 'undefined' &&
+              typeof WebSocketClient !== 'undefined' &&
+              typeof SharedComponents !== 'undefined') {
+            console.log('✅ Скрипты сессии уже загружены')
+            resolve()
+            return
+          }
+
           const scripts = [
             '/js/physics-engine.js',
             '/js/renderer.js',

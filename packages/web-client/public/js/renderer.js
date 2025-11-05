@@ -4,6 +4,7 @@
  * Отвечает за отрисовку шарика и фона
  * Оптимизирован для производительности и переиспользуемости
  */
+if (typeof BallRenderer === 'undefined') {
 class BallRenderer {
   constructor(canvas, physicsEngine, options = {}) {
     // Проверяем входные параметры
@@ -442,4 +443,5 @@ if (typeof globalThis !== 'undefined') {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = BallRenderer
+}
 }

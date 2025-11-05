@@ -4,6 +4,7 @@
  * WebSocketClient - Модернизированный клиент для WebSocket соединений
  * Использует современные возможности JavaScript для лучшей надежности
  */
+if (typeof WebSocketClient === 'undefined') {
 class WebSocketClient {
   constructor(sessionId, role, options = {}) {
     // Валидация входных параметров
@@ -393,4 +394,5 @@ class WebSocketClient {
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = WebSocketClient
+}
 }

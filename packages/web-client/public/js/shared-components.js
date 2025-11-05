@@ -3,6 +3,7 @@
  * SharedComponents - переиспользуемые компоненты для BilateralBound
  * Содержит общую логику для controller и viewer
  */
+if (typeof SharedComponents === 'undefined') {
 class SharedComponents {
   constructor() {
     this.components = new Map()
@@ -434,4 +435,5 @@ if (typeof globalThis !== 'undefined') {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { SharedComponents, sharedComponents }
+}
 }

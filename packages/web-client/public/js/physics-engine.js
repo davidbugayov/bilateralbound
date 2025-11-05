@@ -2,8 +2,9 @@
 /**
  * PhysicsEngine - оптимизированный движок физики для BilateralBound
  * Управляет движением, отскоками и масштабированием шарика
- * Оптимизирован для производительности и переиспользования
+ * Оптимизирован для производительности и переиспользуемости
  */
+if (typeof PhysicsEngine === 'undefined') {
 class PhysicsEngine {
   constructor(options = {}) {
     // Кэшируем часто используемые значения
@@ -1087,4 +1088,5 @@ if (typeof globalThis !== 'undefined') {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = PhysicsEngine
+}
 }
