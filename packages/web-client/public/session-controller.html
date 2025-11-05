@@ -434,14 +434,19 @@
           grid-template-columns: 1fr;
         }
         .segmented {
-          flex-wrap: wrap;
-          overflow-x: hidden;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .segmented::-webkit-scrollbar {
+          display: none;
         }
         .segmented .seg-btn {
-          flex: 1 1 25%;
-          min-width: 0;
-          padding: 10px 8px;
-          font-size: 12px;
+          flex: 1 1 auto;
+          min-width: 60px;
+          padding: 8px 6px;
+          font-size: 11px;
         }
       }
 
@@ -467,11 +472,14 @@
           padding: 0;
         }
         .wrap {
-          gap: 16px;
+          gap: 12px;
           padding: 12px;
         }
         .control-section {
-          padding: 16px;
+          padding: 12px;
+        }
+        .controls-card {
+          padding: 8px;
         }
         .speed-container input[type='range'] {
           max-width: 250px;
