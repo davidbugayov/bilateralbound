@@ -395,4 +395,7 @@ class WebSocketClient {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = WebSocketClient
 }
+
+// Make sure WebSocketClient is globally available
+globalThis.WebSocketClient = WebSocketClient
 }
