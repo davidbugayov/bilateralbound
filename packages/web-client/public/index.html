@@ -1093,14 +1093,23 @@
 
           btn.innerHTML = '🔄 Создание сессии...'
           console.log('🔄 Создание сессии...')
-          const response = await fetch('/api/session', { method: 'POST' })
+          const response = await fetch('http://localhost:3000/api/session', { method: 'POST' })
 
           console.log('📡 Ответ сервера:', response.status, response.statusText)
+          console.log('📡 Content-Type:', response.headers.get('content-type'))
 
           if (!response.ok) {
             const errorText = await response.text()
             console.error('❌ Ошибка ответа:', errorText)
             alert(`HTTP ${response.status}: ${errorText || 'Не удалось создать сессию'}`)
+            return
+          }
+
+          const contentType = response.headers.get('content-type')
+          if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text()
+            console.error('❌ Ответ не JSON:', text.substring(0, 200))
+            alert('Сервер вернул не JSON ответ. Проверьте логи сервера.')
             return
           }
 
@@ -1116,7 +1125,7 @@
 
           console.log('🔗 Подключение контроллера к сессии:', sessionId)
 
-          const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
+          const connectResponse = await fetch(`http://localhost:3000/api/session/${sessionId}/controller/connect`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({})
@@ -1213,7 +1222,7 @@
           updateValidationMessage('Создание постоянных ссылок...', false)
 
           // Отправляем запрос на резервирование сессии
-          const response = await fetch(`/api/session/${clientId}/reserve`, {
+          const response = await fetch(`http://localhost:3000/api/session/${clientId}/reserve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
           })
@@ -1324,7 +1333,7 @@
           messageEl.textContent = 'Проверка сессии...'
           messageEl.style.color = '#94a3b8'
 
-          const response = await fetch(`/api/session/${sessionId}/state`)
+          const response = await fetch(`http://localhost:3000/api/session/${sessionId}/state`)
 
           if (!response.ok) {
             if (response.status === 404) {

@@ -482,32 +482,43 @@
         position: fixed;
         top: 20px;
         left: 20px;
-        background: #334155;
-        color: #cbd5e1;
-        border: 1px solid #475569;
-        padding: 8px 16px;
-        border-radius: 8px;
+        background: rgba(51, 65, 85, 0.7);
+        color: #94a3b8;
+        border: 1px solid rgba(71, 85, 105, 0.2);
+        padding: 6px 12px;
+        border-radius: 6px;
         cursor: pointer;
         transition: all 0.2s ease;
         z-index: 1000;
+        font-size: 13px;
+        backdrop-filter: blur(8px);
+        opacity: 0.7;
       }
 
       .back-btn:hover {
-        background: #475569;
-        color: #e2e8f0;
-        border-color: #64748b;
+        background: rgba(71, 85, 105, 0.9);
+        color: #cbd5e1;
+        border-color: rgba(100, 116, 139, 0.3);
+        opacity: 1;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(51, 65, 85, 0.3);
+      }
+
+      .back-btn:active {
+        transform: translateY(0);
       }
 
       .light-theme .back-btn {
-        background: #f8fafc;
+        background: rgba(248, 250, 252, 0.7);
         color: #64748b;
-        border: 1px solid #cbd5e1;
+        border: 1px solid rgba(226, 232, 240, 0.2);
       }
 
       .light-theme .back-btn:hover {
-        background: #e2e8f0;
+        background: rgba(226, 232, 240, 0.9);
         color: #374151;
-        border-color: #94a3b8;
+        border-color: rgba(148, 163, 184, 0.3);
+        box-shadow: 0 2px 8px rgba(248, 250, 252, 0.3);
       }
 
       .theme-toggle-container {
