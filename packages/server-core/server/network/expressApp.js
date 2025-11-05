@@ -86,7 +86,7 @@ function setupExpressApp(sessionManager, apiCache) {
           scriptSrcAttr: ['\'self\'', '\'unsafe-inline\''],
           scriptSrcElem: ['\'self\'', '\'unsafe-inline\'', 'https://mc.yandex.ru', 'https://mc.yandex.com', 'https://yastatic.net'],
           imgSrc: ['\'self\'', 'data:', 'https:', 'https://*.mc.yandex.ru'],
-          connectSrc: ['\'self\'', 'https://mc.yandex.ru', 'https://mc.yandex.com', 'wss://mc.yandex.com', 'http://localhost:3000', 'ws://localhost:3000', 'wss://localhost:3000'],
+          connectSrc: ['\'self\'', 'https://mc.yandex.ru', 'https://mc.yandex.com', 'wss://mc.yandex.com'],
           frameSrc: ['\'self\'', 'https://mc.yandex.md']
         }
       },
