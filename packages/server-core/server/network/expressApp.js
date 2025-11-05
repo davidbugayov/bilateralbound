@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit')
 const os = require('node:os')
 const path = require('node:path')
 const net = require('node:net')
+const fs = require('node:fs')
 const { v4: uuidv4 } = require('uuid')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
@@ -150,6 +151,38 @@ function setupExpressApp(sessionManager, apiCache) {
     else next()
   })
   app.use(express.json())
+
+  // Static files path
+  const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
+
+  // Root route - serve index.html with injected version (MUST come before static middleware)
+  app.get('/', (req, res) => {
+    try {
+      // Read package.json to get current version
+      const packageJsonPath = path.join(__dirname, '..', '..', '..', '..', 'package.json')
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+      const version = packageJson.version
+
+      // Read index.html
+      const indexPath = path.join(publicPath, 'index.html')
+      let html = fs.readFileSync(indexPath, 'utf8')
+
+      // Replace hardcoded version with dynamic version
+      html = html.replace(/⚡ BilateralBound v[\d.]+/, `⚡ BilateralBound v${version}`)
+
+      // Set headers and send modified HTML
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      res.setHeader('Pragma', 'no-cache')
+      res.setHeader('Expires', '0')
+      res.send(html)
+    } catch (error) {
+      logger.error(`Error serving index.html: ${error.message}`)
+      // Fallback to static file if something goes wrong
+      res.sendFile(path.join(publicPath, 'index.html'))
+    }
+  })
+
   // Routes
   app.get('/health', (req, res) => {
     res.json({
@@ -159,24 +192,58 @@ function setupExpressApp(sessionManager, apiCache) {
       uptime: process.uptime()
     })
   })
-  // Static files
-  const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
-  app.use(
+
+  // Static files - only serve specific paths, not root
+  app.use('/css', express.static(path.join(publicPath, 'css'), {
+    etag: false,
+    lastModified: false,
+    setHeaders: (res, path) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      res.setHeader('Pragma', 'no-cache')
+      res.setHeader('Expires', '0')
+    }
+  }))
+
+  app.use('/js', express.static(path.join(publicPath, 'js'), {
+    etag: false,
+    lastModified: false,
+    setHeaders: (res, path) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      res.setHeader('Pragma', 'no-cache')
+      res.setHeader('Expires', '0')
+    }
+  }))
+
+  app.use('/emdr-therapy', express.static(path.join(publicPath, 'emdr-therapy'), {
+    etag: false,
+    lastModified: false,
+    setHeaders: (res, path) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      res.setHeader('Pragma', 'no-cache')
+      res.setHeader('Expires', '0')
+    }
+  }))
+
+  // Catch-all for other static files (but not index.html)
+  app.use((req, res, next) => {
+    // Skip if it's a root request or index.html request
+    if (req.path === '/' || req.path === '/index.html' || req.path.startsWith('/css/') || req.path.startsWith('/js/') || req.path.startsWith('/emdr-therapy/')) {
+      return next()
+    }
+
+    // For other static files, serve them
     express.static(publicPath, {
+      index: false,
       etag: false,
       lastModified: false,
-      setHeaders: res => {
+      setHeaders: (res, path) => {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         res.setHeader('Pragma', 'no-cache')
         res.setHeader('Expires', '0')
       }
-    })
-  )
-  app.use('/test', express.static(path.join(__dirname, '..', '..')))
-  // Root route - serve index.html
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(publicPath, 'index.html'))
+    })(req, res, next)
   })
+  app.use('/test', express.static(path.join(__dirname, '..', '..')))
 
   app.get('/rss.xml', (req, res) => {
     const baseUrl = `${req.protocol}://${req.get('host')}`
