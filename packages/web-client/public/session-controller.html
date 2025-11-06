@@ -330,6 +330,10 @@
         gap: 0;
         align-items: start;
       }
+      .main-controls-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
       .controls-card {
         background: #334155;
         border: 1px solid #475569;
@@ -1189,7 +1193,7 @@
 
       <section class="control-section" aria-labelledby="main-controls-heading">
         <h3 id="main-controls-heading">🎮 Управление и направление</h3>
-        <div class="controls-grid">
+        <div class="controls-grid main-controls-grid">
           <div class="controls-card">
             <p class="controls-title">Действия</p>
             <div class="actions-grid">
