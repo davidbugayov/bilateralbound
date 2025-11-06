@@ -1,18 +1,17 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v2.9.1
+## Текущая Версия: v2.10.0
 **Статус:** Активна
-**Дата релиза:** 5 ноября 2025 г. в 19:01
-**Коммит:** 6964c8b
-### Основные Изменения v2.9.1:
-- ✨ fix: replace hardcoded localhost URLs with relative paths
+**Дата релиза:** 6 ноября 2025 г. в 10:25
+**Коммит:** b57d346
+### Основные Изменения v2.10.0:
+- ✨ fix: ensure WebSocketClient is globally available
 
-- Change http://localhost:3000/api/* to /api/* in JavaScript
-- Fix CSP violations when accessing API from remote VPS domains
-- Ensure proper API calls work on emdrbilateral.online and emdrbilateral.ru
+- Add globalThis.WebSocketClient assignment to fix 'WebSocketClient is not defined' error
+- This ensures the class is accessible to other scripts that depend on it
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v2.9.0** - Предыдущая версия
+- **v2.9.1** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -22,4 +21,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-05T16:01:35.040Z*
+*Автоматически сгенерировано: 2025-11-06T07:25:11.685Z*

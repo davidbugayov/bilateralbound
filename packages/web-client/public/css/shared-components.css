@@ -688,6 +688,8 @@
   .speed-control {
     padding: 20px;
     gap: 16px;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .speed-header {
@@ -715,11 +717,14 @@
 
   .speed-presets {
     gap: 6px;
+    flex-wrap: wrap;
   }
 
   .speed-preset {
     padding: 8px 6px;
     font-size: 11px;
+    min-width: 60px;
+    flex: 1 1 auto;
   }
 
   .speed-preset span {
@@ -728,6 +733,7 @@
 
   .speed-range {
     max-width: 280px;
+    width: 100%;
   }
 
   .speed-marks .mark {
@@ -737,10 +743,22 @@
 
   .color-palette {
     justify-content: center;
+    gap: 6px;
+  }
+
+  .color-btn {
+    width: 36px;
+    height: 36px;
   }
 
   .size-palette {
     justify-content: center;
+    gap: 6px;
+  }
+
+  .size-btn {
+    padding: 6px 12px;
+    font-size: 13px;
   }
 }
 
