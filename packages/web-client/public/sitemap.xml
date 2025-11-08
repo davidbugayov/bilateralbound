@@ -173,4 +173,24 @@
     <priority>0.1</priority>
   </url>
 
+  <!-- Verification files -->
+  <url>
+    <loc>https://emdrbilateral.ru/google0a8d78e57c19cb2f.html</loc>
+    <lastmod>2024-07-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  <url>
+    <loc>https://emdrbilateral.ru/yandex_736ad8daf3553b6b.html</loc>
+    <lastmod>2024-07-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  <url>
+    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>
+    <lastmod>2024-07-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+
 </urlset>
