@@ -52,6 +52,41 @@ const checkPortAvailability = port => {
 }
 
 /**
+ * Устанавливает заголовки для отключения кэширования
+ * @param {Object} res - Express response объект
+ */
+const setNoCacheHeaders = (res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+  res.setHeader('Pragma', 'no-cache')
+  res.setHeader('Expires', '0')
+}
+
+/**
+ * Middleware для проверки существования сессии
+ * @param {Object} req - Express request объект
+ * @param {Object} res - Express response объект
+ * @param {Function} next - Express next функция
+ */
+const requireSession = (sessionManager, apiCache) => (req, res, next) => {
+  const { sessionId } = req.params
+  const session = sessionManager.getSession(sessionId)
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found', requestId: req.id })
+  }
+  req.session = session
+  next()
+}
+
+/**
+ * Очищает кэш состояния сессии
+ * @param {Map} apiCache - Кэш API
+ * @param {string} sessionId - ID сессии
+ */
+const clearStateCache = (apiCache, sessionId) => {
+  apiCache.delete(`state_${sessionId}`)
+}
+
+/**
  * Настраивает Express приложение
  * @param {Object} sessionManager - Менеджер сессий
  * @param {Map} apiCache - Кэш API
@@ -172,9 +207,7 @@ function setupExpressApp(sessionManager, apiCache) {
 
       // Set headers and send modified HTML
       res.setHeader('Content-Type', 'text/html; charset=utf-8')
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-      res.setHeader('Pragma', 'no-cache')
-      res.setHeader('Expires', '0')
+      setNoCacheHeaders(res)
       res.send(html)
     } catch (error) {
       logger.error(`Error serving index.html: ${error.message}`)
@@ -193,36 +226,15 @@ function setupExpressApp(sessionManager, apiCache) {
     })
   })
 
-  // Static files - only serve specific paths, not root
-  app.use('/css', express.static(path.join(publicPath, 'css'), {
-    etag: false,
-    lastModified: false,
-    setHeaders: (res, path) => {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-      res.setHeader('Pragma', 'no-cache')
-      res.setHeader('Expires', '0')
-    }
-  }))
-
-  app.use('/js', express.static(path.join(publicPath, 'js'), {
-    etag: false,
-    lastModified: false,
-    setHeaders: (res, path) => {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-      res.setHeader('Pragma', 'no-cache')
-      res.setHeader('Expires', '0')
-    }
-  }))
-
-  app.use('/emdr-therapy', express.static(path.join(publicPath, 'emdr-therapy'), {
-    etag: false,
-    lastModified: false,
-    setHeaders: (res, path) => {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-      res.setHeader('Pragma', 'no-cache')
-      res.setHeader('Expires', '0')
-    }
-  }))
+  // Static files - only serve specific paths, not root using helper function
+  const staticDirectories = ['css', 'js', 'emdr-therapy']
+  staticDirectories.forEach(dir => {
+    app.use(`/${dir}`, express.static(path.join(publicPath, dir), {
+      etag: false,
+      lastModified: false,
+      setHeaders: setNoCacheHeaders
+    }))
+  })
 
   // Catch-all for other static files (but not index.html)
   app.use((req, res, next) => {
@@ -236,11 +248,7 @@ function setupExpressApp(sessionManager, apiCache) {
       index: false,
       etag: false,
       lastModified: false,
-      setHeaders: (res, path) => {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        res.setHeader('Pragma', 'no-cache')
-        res.setHeader('Expires', '0')
-      }
+      setHeaders: setNoCacheHeaders
     })(req, res, next)
   })
   app.use('/test', express.static(path.join(__dirname, '..', '..')))
@@ -305,10 +313,8 @@ function setupExpressApp(sessionManager, apiCache) {
       res.status(500).json({ error: error.message, requestId: req.id })
     }
   })
-  app.get('/api/session/:sessionId', (req, res) => {
-    const { sessionId } = req.params
-    const session = sessionManager.getSession(sessionId)
-    if (!session) return res.status(404).json({ error: 'Session not found', requestId: req.id })
+  app.get('/api/session/:sessionId', requireSession(sessionManager, apiCache), (req, res) => {
+    const session = req.session
     res.json({
       id: session.id,
       controllerConnected: session.controllerConnected,
@@ -317,8 +323,9 @@ function setupExpressApp(sessionManager, apiCache) {
       lastActivity: session.lastActivity
     })
   })
-  app.get('/api/session/:sessionId/state', (req, res) => {
+  app.get('/api/session/:sessionId/state', requireSession(sessionManager, apiCache), (req, res) => {
     const { sessionId } = req.params
+    const session = req.session
     const cacheKey = `state_${sessionId}`
     const cached = apiCache.get(cacheKey)
     const adaptiveTTL = 50
@@ -327,8 +334,6 @@ function setupExpressApp(sessionManager, apiCache) {
       return res.json(cached.data)
     }
 
-    const session = sessionManager.getSession(sessionId)
-    if (!session) return res.status(404).json({ error: 'Session not found', requestId: req.id })
     const responseData = {
       ...session.ballState,
       viewerConnected: session.viewerConnected,
@@ -346,44 +351,37 @@ function setupExpressApp(sessionManager, apiCache) {
     res.set('X-Cache-Status', 'MISS')
     res.json(responseData)
   })
-  app.post('/api/session/:sessionId/controller/connect', (req, res) => {
+  app.post('/api/session/:sessionId/controller/connect', requireSession(sessionManager, apiCache), (req, res) => {
     const { sessionId } = req.params
-    if (!sessionManager.getSession(sessionId))
-      return res.status(404).json({ error: 'Session not found', requestId: req.id })
+    const session = req.session
     sessionManager.updateBallState(sessionId, req.body)
     sessionManager.sessionRepository.update(sessionId, { controllerConnected: true })
-    apiCache.delete(`state_${sessionId}`)
+    clearStateCache(apiCache, sessionId)
     res.json({ success: true, message: 'Controller connected' })
   })
-  app.post('/api/session/:sessionId/controller/update', (req, res) => {
+  app.post('/api/session/:sessionId/controller/update', requireSession(sessionManager, apiCache), (req, res) => {
     const { sessionId } = req.params
-    if (!sessionManager.getSession(sessionId))
-      return res.status(404).json({ error: 'Session not found', requestId: req.id })
     sessionManager.updateBallState(sessionId, req.body)
     res.json({ success: true, message: 'Controller update processed' })
   })
-  app.post('/api/session/:sessionId/viewer/connect', (req, res) => {
+  app.post('/api/session/:sessionId/viewer/connect', requireSession(sessionManager, apiCache), (req, res) => {
     const { sessionId } = req.params
     const { screenSize } = req.body
-    if (!sessionManager.getSession(sessionId))
-      return res.status(404).json({ error: 'Session not found', requestId: req.id })
     sessionManager.sessionRepository.update(sessionId, { viewerConnected: true })
     if (screenSize) {
       sessionManager.setViewerScreenSize(sessionId, screenSize)
-      apiCache.delete(`state_${sessionId}`)
+      clearStateCache(apiCache, sessionId)
     }
 
     res.json({ success: true, message: 'Viewer connected' })
   })
-  app.post('/api/session/:sessionId/viewer/screen-size', (req, res) => {
+  app.post('/api/session/:sessionId/viewer/screen-size', requireSession(sessionManager, apiCache), (req, res) => {
     const { sessionId } = req.params
     const { width, height } = req.body || {}
 
-    if (!sessionManager.getSession(sessionId))
-      return res.status(404).json({ error: 'Session not found', requestId: req.id })
     if (typeof width === 'number' && typeof height === 'number') {
       sessionManager.setViewerScreenSize(sessionId, { width, height })
-      apiCache.delete(`state_${sessionId}`)
+      clearStateCache(apiCache, sessionId)
       return res.json({ success: true })
     }
 
