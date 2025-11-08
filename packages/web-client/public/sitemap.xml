@@ -1,27 +1,176 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd
+        http://www.google.com/schemas/sitemap-image/1.1
+        http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd">
+
+  <!-- ============================================ -->
+  <!-- ГЛАВНЫЕ СТРАНИЦЫ - ВЫСОКИЙ ПРИОРИТЕТ -->
+  <!-- ============================================ -->
+
+  <!-- Домашняя страница - основной landing -->
   <url>
     <loc>https://emdrbilateral.ru/</loc>
-    <lastmod>2025-10-29</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://emdrbilateral.ru/emdr-eye.png</image:loc>
+      <image:title>BilateralBound - EMDR терапия для пациентов</image:title>
+      <image:caption>Профессиональная платформа EMDR терапии с биодинамической стимуляцией</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://emdrbilateral.online/</loc>
-    <lastmod>2025-10-29</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://emdrbilateral.online/emdr-eye.png</image:loc>
+      <image:title>BilateralBound - EMDR терапия для пациентов</image:title>
+      <image:caption>Профессиональная платформа EMDR терапии с биодинамической стимуляцией</image:caption>
+    </image:image>
   </url>
+
+  <!-- ============================================ -->
+  <!-- ОСНОВНОЙ КОНТЕНТ - EMDR ТЕРАПИЯ -->
+  <!-- ============================================ -->
+
+  <!-- Профессиональная EMDR терапия для пар -->
   <url>
     <loc>https://emdrbilateral.ru/emdr-therapy/</loc>
-    <lastmod>2025-10-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://emdrbilateral.ru/emdr-eye.svg</image:loc>
+      <image:title>EMDR терапия для супружеских пар</image:title>
+      <image:caption>Профессиональная терапия с билатеральной стимуляцией</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://emdrbilateral.online/emdr-therapy/</loc>
-    <lastmod>2025-10-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://emdrbilateral.online/emdr-eye.svg</image:loc>
+      <image:title>EMDR терапия для супружеских пар</image:title>
+      <image:caption>Профессиональная терапия с билатеральной стимуляцией</image:caption>
+    </image:image>
   </url>
+
+  <!-- ============================================ -->
+  <!-- ФУНКЦИОНАЛЬНЫЕ СТРАНИЦЫ ПЛАТФОРМЫ -->
+  <!-- ============================================ -->
+
+  <!-- Контроллер сессий - для терапевтов -->
+  <url>
+    <loc>https://emdrbilateral.ru/session-controller.html</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://emdrbilateral.online/session-controller.html</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Вьювер - для пациентов -->
+  <url>
+    <loc>https://emdrbilateral.ru/viewer.html</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://emdrbilateral.online/viewer.html</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ============================================ -->
+  <!-- ДОПОЛНИТЕЛЬНЫЕ РЕСУРСЫ -->
+  <!-- ============================================ -->
+
+  <!-- Компоненты интерфейса -->
+  <url>
+    <loc>https://emdrbilateral.ru/components/</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://emdrbilateral.online/components/</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Кнопка компонент -->
+  <url>
+    <loc>https://emdrbilateral.ru/components/button.html</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://emdrbilateral.online/components/button.html</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+  <!-- HTML заголовок компонент -->
+  <url>
+    <loc>https://emdrbilateral.ru/components/html-head.html</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://emdrbilateral.online/components/html-head.html</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+  <!-- ============================================ -->
+  <!-- СЛУЖЕБНЫЕ ФАЙЛЫ - НИЗКИЙ ПРИОРИТЕТ -->
+  <!-- ============================================ -->
+
+  <!-- Robots.txt -->
+  <url>
+    <loc>https://emdrbilateral.ru/robots.txt</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  <url>
+    <loc>https://emdrbilateral.online/robots.txt</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+
+  <!-- Sitemap.xml -->
+  <url>
+    <loc>https://emdrbilateral.ru/sitemap.xml</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  <url>
+    <loc>https://emdrbilateral.online/sitemap.xml</loc>
+    <lastmod>2025-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.1</priority>
+  </url>
+
 </urlset>

@@ -1,19 +1,14 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v2.14.0
+## Текущая Версия: v2.14.1
 **Статус:** Активна
-**Дата релиза:** 8 ноября 2025 г. в 10:51
-**Коммит:** 709bfd4
-### Основные Изменения v2.14.0:
-- ✨ 🎨 Improve desktop controller layout: combine Actions+Direction, separate Speed control
-
-- Combine Actions and Direction controls into single card for better UX
-- Create 2-column desktop layout: Actions+Direction | Speed
-- Maintain responsive design for mobile devices
-- Improve therapist workflow during EMDR sessions
+**Дата релиза:** 8 ноября 2025 г. в 11:53
+**Коммит:** ba75530
+### Основные Изменения v2.14.1:
+- ✨ fix(mobile): улучшен адаптивный дизайн для мобильных устройств
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v2.13.1** - Предыдущая версия
+- **v2.14.0** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -23,4 +18,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-08T07:51:15.891Z*
+*Автоматически сгенерировано: 2025-11-08T08:53:18.552Z*
