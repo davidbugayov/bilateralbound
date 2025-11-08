@@ -1,16 +1,21 @@
 # Robots.txt для сайта EMDR Bilateral Therapy
 # Оптимизированный файл управления индексацией поисковыми ботами
-# Версия: 2.0 | Дата: 2025-11-08
+# Версия: 3.0 | Дата: 2025-11-08
+# Обновлен с учетом лучших практик SEO 2025 года
 
 # ==============================================================================
 # ГЛОБАЛЬНЫЕ ПРАВИЛА ДЛЯ ВСЕХ БОТОВ
 # ==============================================================================
 
 User-agent: *
-# Разрешаем индексацию всего сайта по умолчанию
+# Разрешаем индексацию основного контента
 Allow: /
+Allow: /index.html
+Allow: /session-controller.html
+Allow: /viewer.html
+Allow: /emdr-therapy/
 
-# Блокировка доступа к конфиденциальным и служебным ресурсам
+# Блокировка конфиденциальных и служебных ресурсов
 Disallow: /admin/
 Disallow: /private/
 Disallow: /config/
@@ -44,10 +49,8 @@ Disallow: /qodana_results/
 Disallow: /docker/
 Disallow: /scripts/
 
-# Блокировка статических ресурсов от индексации (экономим краулинговый бюджет)
-Disallow: /css/
-Disallow: /js/
-Disallow: /components/
+# Оптимизированная блокировка статических ресурсов
+# Используем современный подход с паттернами
 Disallow: /*.css$
 Disallow: /*.js$
 Disallow: /*.map$
@@ -63,28 +66,32 @@ Disallow: /*.woff2$
 Disallow: /*.ttf$
 Disallow: /*.eot$
 
+# Блокировка директорий со статическими ресурсами
+Disallow: /css/
+Disallow: /js/
+Disallow: /components/
+
 # ==============================================================================
-# СПЕЦИФИЧЕСКИЕ ПРАВИЛА ДЛЯ ОСНОВНЫХ ПОИСКОВЫХ СИСТЕМ
+# ОСНОВНЫЕ ПОИСКОВЫЕ СИСТЕМЫ
 # ==============================================================================
 
-# Googlebot - основной бот Google
+# Google - основной бот
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 1
-# Явно разрешаем индексацию важного контента
+# Приоритетные страницы для Google
 Allow: /emdr-therapy/
 Allow: /index.html
 Allow: /session-controller.html
 Allow: /viewer.html
-Allow: /emdr-therapy/index.html
 
-# Googlebot Mobile - мобильная версия
-User-agent: Googlebot-Mobile
-Allow: /
-Crawl-delay: 1
-
-# Googlebot Image - изображения
+# Google Images - для изображений
 User-agent: Googlebot-Image
+Allow: /
+Crawl-delay: 2
+
+# Google Video - для видео контента
+User-agent: Googlebot-Video
 Allow: /
 Crawl-delay: 2
 
@@ -92,32 +99,36 @@ Crawl-delay: 2
 User-agent: Yandex
 Allow: /
 Crawl-delay: 1
-# Специальные разрешения для Yandex
 Allow: /emdr-therapy/
 Allow: /index.html
 Allow: /session-controller.html
 Allow: /viewer.html
 
-# Bingbot - поисковая система Microsoft
+# Yandex Images
+User-agent: YandexImages
+Allow: /
+Crawl-delay: 2
+
+# Bing - Microsoft
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 1
 
-# DuckDuckBot - приватный поиск
+# DuckDuckGo - приватный поиск
 User-agent: DuckDuckBot
 Allow: /
 Crawl-delay: 1
 
 # ==============================================================================
-# ПРАВИЛА ДЛЯ СОЦИАЛЬНЫХ СЕТЕЙ И СПЕЦИАЛИЗИРОВАННЫХ БОТОВ
+# СОЦИАЛЬНЫЕ СЕТИ И МЕССЕНДЖЕРЫ
 # ==============================================================================
 
-# Facebook (Meta)
+# Facebook / Meta
 User-agent: facebookexternalhit
 Allow: /
 Crawl-delay: 1
 
-# Twitter (X)
+# Twitter / X
 User-agent: Twitterbot
 Allow: /
 Crawl-delay: 1
@@ -137,33 +148,84 @@ User-agent: TelegramBot
 Allow: /
 Crawl-delay: 1
 
-# ==============================================================================
-# ПРАВИЛА ДЛЯ ПРОЧИХ БОТОВ
-# ==============================================================================
-
-# Baidu - китайская поисковая система
-User-agent: Baiduspider
+# VKontakte
+User-agent: vkShare
 Allow: /
-Crawl-delay: 2
+Crawl-delay: 1
 
-# Sogou - китайская поисковая система
-User-agent: Sogou web spider
+# ==============================================================================
+# АРХИВЫ И СПЕЦИАЛИЗИРОВАННЫЕ БОТЫ
+# ==============================================================================
+
+# Internet Archive
+User-agent: ia_archiver
 Allow: /
-Crawl-delay: 2
+Crawl-delay: 5
 
-# Applebot - для Siri и Spotlight
+# Archive-It
+User-agent: archive-it
+Allow: /
+Crawl-delay: 5
+
+# Apple - Siri и Spotlight
 User-agent: Applebot
 Allow: /
 Crawl-delay: 1
 
 # ==============================================================================
+# РЕГИОНАЛЬНЫЕ ПОИСКОВЫЕ СИСТЕМЫ
+# ==============================================================================
+
+# Baidu - Китай
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 3
+
+# Sogou - Китай
+User-agent: Sogou web spider
+Allow: /
+Crawl-delay: 3
+
+# Naver - Южная Корея
+User-agent: NaverBot
+Allow: /
+Crawl-delay: 2
+
+# ==============================================================================
+# СОВРЕМЕННЫЕ AI И LLM БОТЫ (2025)
+# ==============================================================================
+
+# OpenAI GPTBot
+User-agent: GPTBot
+Allow: /emdr-therapy/
+Disallow: /
+Crawl-delay: 2
+
+# Anthropic Claude
+User-agent: Claude-Web
+Allow: /emdr-therapy/
+Disallow: /
+Crawl-delay: 2
+
+# Google Bard/Gemini
+User-agent: Google-Extended
+Allow: /emdr-therapy/
+Disallow: /
+Crawl-delay: 2
+
+# Common Crawl
+User-agent: CCBot
+Allow: /
+Crawl-delay: 3
+
+# ==============================================================================
 # ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ
 # ==============================================================================
 
-# Указание предпочтительного домена для индексации
+# Предпочтительный домен (каноникал)
 Host: https://emdrbilateral.ru
 
-# Карты сайта для обоих доменов
+# Карты сайта
 Sitemap: https://emdrbilateral.ru/sitemap.xml
 Sitemap: https://emdrbilateral.online/sitemap.xml
 
