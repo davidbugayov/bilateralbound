@@ -215,7 +215,6 @@ class ThemeManager {
    */
   toggleTheme() {
     const body = document.body
-    const hasDarkClass = body.classList.contains('dark-theme')
     const hasLightClass = body.classList.contains('light-theme')
 
     // Очищаем классы

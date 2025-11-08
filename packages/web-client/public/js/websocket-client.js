@@ -1,5 +1,3 @@
-'use strict'
-/* global BBConfig */
 /**
  * WebSocketClient - Модернизированный клиент для WebSocket соединений
  * Использует современные возможности JavaScript для лучшей надежности
@@ -379,16 +377,7 @@ class WebSocketClient {
     } else {
       style = 'color: #3b82f6; font-weight: bold;'
     }
-    // eslint-disable-next-line no-console
     console[type === 'error' ? 'error' : 'log'](coloredMessage, style, timestamp)
-  }
-  // ===== ГЕТТЕРЫ =====
-  get isReady() {
-    return this.isConnected && this.ws?.readyState === WebSocket.OPEN
-  }
-
-  get stats() {
-    return { ...this._stats }
   }
 }
 // Export for module systems

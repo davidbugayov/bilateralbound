@@ -1,4 +1,37 @@
+# Robots.txt для сайта EMDR Bilateral Therapy
+# Данный файл управляет индексацией сайта поисковыми ботами.
+
 User-agent: *
-Host: https://emdrbilateral.ru
+# Разрешаем всем ботам индексацию всего сайта по умолчанию.
+# CSS, JS и изображения не блокируются, чтобы поисковые системы могли корректно отображать страницы.
+Allow: /
+
+# Запрещаем доступ к конфиденциальным и служебным директориям и файлам
+Disallow: /admin/
+Disallow: /private/
+Disallow: /config/
+Disallow: /scripts/
+Disallow: /test/
+Disallow: /tmp/
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /.github/
+Disallow: /package.json
+Disallow: /webpack.config.js
+Disallow: /.babelrc
+Disallow: /.prettierrc
+Disallow: /README.md
+Disallow: /todo_list.md
+Disallow: /sonar-project.properties
+Disallow: /qodana_results/
+
+# Задержка сканирования для определенных ботов, чтобы избежать перегрузки сервера
+User-agent: Yandex
+Crawl-delay: 1
+
+User-agent: Bingbot
+Crawl-delay: 1
+
+# Карты сайта для лучшей индексации
 Sitemap: https://emdrbilateral.ru/sitemap.xml
 Sitemap: https://emdrbilateral.online/sitemap.xml

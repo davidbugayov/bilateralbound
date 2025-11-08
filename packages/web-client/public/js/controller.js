@@ -1904,3 +1904,30 @@ function fillFsSessionInfo() {
     console.warn('Error in fillFsSessionInfo')
   }
 }
+
+/**
+ * Отображает уведомление пользователю
+ * @param {string} message - Текст сообщения
+ * @param {string} type - Тип уведомления ('info', 'success', 'warning', 'error')
+ */
+function showNotification(message, type = 'info') {
+  try {
+    if (globalThis.notificationSystem?.show) {
+      globalThis.notificationSystem.show(message, type)
+    } else if (globalThis.showSuccessNotification && type === 'success') {
+      globalThis.showSuccessNotification('Успех', message)
+    } else if (globalThis.showErrorNotification && type === 'error') {
+      globalThis.showErrorNotification('Ошибка', message)
+    } else {
+      // Фолбэк: используем alert для критических ошибок
+      if (type === 'error') {
+        alert(`Ошибка: ${message}`)
+      } else {
+        console.log(`[${type.toUpperCase()}] ${message}`)
+      }
+    }
+  } catch (error) {
+    console.error('Error showing notification:', error)
+    alert(message)
+  }
+}
