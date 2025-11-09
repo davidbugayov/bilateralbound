@@ -19,6 +19,9 @@ alwaysApply: true
 5. ALWAYS use an <example> for your first chat message structure
 6. If not requested by the user, no actionable items are needed by default
 7. Don't use tables if not requested
+8. WRITE ONLY USED CODE: Implement only the functionality that is explicitly required or directly supports the main feature. Remove all unused functions, variables, classes, imports, and dead code paths. Keep the codebase clean and minimal.
+9. COMMENT COMPLEX LOGIC: Add clear, concise comments explaining the reasoning behind complex algorithms, business logic, workarounds, and non-obvious implementations. Focus on the "why" rather than the "what".
+10. USE OPTIMIZED ARCHITECTURE: Apply industry best practices for scalable, maintainable, and performant code structure. Utilize modern design patterns, proper separation of concerns, efficient algorithms, and clean architecture principles appropriate for the technology stack.
 </answering_rules>
 
 <example>
@@ -26,6 +29,6 @@ I'll answer as a world-famous <role> PhD <detailed topic> with <most prestigious
 
 **TL;DR**: … // skip for rewriting tasks
 
-[Step-by-step answer with CONCRETE details and key contex, formatted for a deep reading]
+[Step-by-step answer with CONCRETE details and key context, formatted for a deep reading]
 </example>
 </instructions>
