@@ -8,7 +8,10 @@
     "start": "webpack --mode=development",
     "build": "webpack --mode=production",
     "serve": "npx serve -s public",
-    "lint": "eslint public/js/**/*.js --ext .js --config ../../config/eslint.config.js"
+    "lint": "eslint public/js/**/*.js --ext .js --config ../../config/eslint.config.js",
+    "lint:fix": "eslint public/js/**/*.js --ext .js --fix --config ../../config/eslint.config.js",
+    "format": "prettier --write 'public/js/**/*.js' --config ../../config/.prettierrc",
+    "format:check": "prettier --check 'public/js/**/*.js' --config ../../config/.prettierrc"
   },
   "keywords": [
     "emdr",

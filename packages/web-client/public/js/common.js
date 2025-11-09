@@ -79,14 +79,16 @@ const toggleFullscreen =
             }
 
             if (isFs()) {
-              const exitFullscreen = document.exitFullscreen ||
+              const exitFullscreen =
+                document.exitFullscreen ||
                 document.webkitExitFullscreen ||
                 document.msExitFullscreen ||
                 document.mozCancelFullScreen
               await exitFullscreen?.call(document)
             } else {
               const target = el || document.documentElement
-              const requestFullscreen = target.requestFullscreen ||
+              const requestFullscreen =
+                target.requestFullscreen ||
                 target.webkitRequestFullscreen ||
                 target.msRequestFullscreen ||
                 target.mozRequestFullScreen

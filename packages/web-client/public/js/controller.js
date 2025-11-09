@@ -90,14 +90,12 @@ const bbCounters = {
 
     const now = performance.now()
     // Удаляем старые записи старше 2 секунд
-    this._passesHistory = this._passesHistory.filter(
-      timestamp => now - timestamp < 2000
-    )
-    
+    this._passesHistory = this._passesHistory.filter(timestamp => now - timestamp < 2000)
+
     // Рассчитываем скорость пассов в секунду
     const passesInLast2Seconds = this._passesHistory.length / 2 // Делим на 2, т.к. считаем за 2 секунды
     this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10 // Округляем до 1 знака
-    
+
     this.renderSpeedInfo()
   },
   addPassMeasurement() {
@@ -1389,7 +1387,6 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     const directionDisplay = document.getElementById('currentDirection')
     let directionText = customText || 'Неизвестно'
     let directionIcon
-
 
     if (!customText) {
       // ОПРЕДЕЛЯЕМ НАПРАВЛЕНИЕ ТОЛЬКО ПО currentDirectionMode - игнорируем dirX/dirY

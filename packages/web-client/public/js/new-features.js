@@ -212,7 +212,7 @@ class FeatureManager {
    * Экспорт текущей сессии в JSON файл
    */
   exportSession() {
-    const sessionData = this._getCurrentSessionData();
+    const sessionData = this._getCurrentSessionData()
     const dataStr = JSON.stringify(sessionData, null, 2)
     const dataBlob = new Blob([dataStr], { type: 'application/json' })
     const url = URL.createObjectURL(dataBlob)
@@ -566,11 +566,11 @@ class FeatureManager {
   }
 
   buildCurrentSessionData() {
-    return this._getCurrentSessionData();
+    return this._getCurrentSessionData()
   }
 
   _getCurrentSessionData() {
-    const colorBtn = document.querySelector('.color-btn.active');
+    const colorBtn = document.querySelector('.color-btn.active')
     return {
       timestamp: new Date().toISOString(),
       sessionId: globalThis.__current?.sessionId ?? null,
@@ -589,7 +589,7 @@ class FeatureManager {
         passes: globalThis.bbCounters?.passes ?? 0,
         sets: globalThis.bbCounters?.sets ?? 0
       }
-    };
+    }
   }
 
   async applySessionData(sessionData) {
@@ -757,8 +757,6 @@ class FeatureManager {
   async sendUpdate(data) {
     await globalThis.wsClient?.send?.('WS_MSG.controllerUpdate', data)
   }
-
-
 }
 // Экспортируем функции для глобального использования
 globalThis.applyPreset = preset => globalThis.featureManager?.applyPreset?.(preset)

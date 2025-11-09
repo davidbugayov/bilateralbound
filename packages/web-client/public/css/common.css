@@ -1,125 +1,7 @@
 /* Common CSS styles for BilateralBound */
+/* NOTE: Most base styles have been moved to shared-components.css for consistency */
 
-/* === BASE STYLES === */
-body {
-  font-family:
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Arial,
-    sans-serif;
-  margin: 0;
-  padding: 20px;
-  background: #0f172a;
-  color: #e2e8f0;
-  overflow-x: hidden;
-  min-height: 100vh;
-}
-
-.wrap {
-  max-width: 900px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-
-.card {
-  background: #111827;
-  border: 1px solid #1f2937;
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow:
-    0 8px 32px -4px rgba(0, 0, 0, 0.2),
-    0 4px 16px -2px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-/* === BUTTONS === */
-button {
-  background: #2563eb;
-  color: white;
-  border: 0;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-button:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.btn.outline {
-  background: transparent;
-  border: 1px solid #374151;
-  color: #9ca3af;
-}
-
-.btn.outline:hover {
-  background: #374151;
-  color: white;
-}
-
-/* === INPUTS === */
-input {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #374151;
-  background: #0b1220;
-  color: #e2e8f0;
-  transition: border-color 0.2s ease;
-}
-
-input:focus {
-  outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
-}
-
-/* === STATUS INDICATOR === */
-.status-indicator {
-  position: fixed;
-  top: 12px;
-  right: 24px;
-  background: rgba(2, 6, 23, 0.8);
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #1f2937;
-  font-size: 12px;
-  z-index: 1000;
-}
-
-.status-indicator.connected {
-  border-color: #10b981;
-  color: #10b981;
-}
-
-.status-indicator.disconnected {
-  border-color: #ef4444;
-  color: #ef4444;
-}
-
-/* Стили для элемента viewerStatus */
-#viewerStatus.connected {
-  color: #10b981 !important;
-}
-
-#viewerStatus.disconnected {
-  color: #ef4444 !important;
-}
-
-/* === UTILITY CLASSES === */
+/* === UNIQUE UTILITY CLASSES === */
 .kbd {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   background: #1f2937;
@@ -129,27 +11,30 @@ input:focus {
   padding: 2px 6px;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-  body {
-    padding: 16px;
-  }
-
-  .wrap {
-    gap: 16px;
-  }
-
-  .card {
-    padding: 20px;
-  }
+/* === SPECIFIC COMPONENTS === */
+.preview-canvas-wrapper {
+  text-align: center;
+  position: relative;
+  padding-bottom: 35px;
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .wrap {
-    max-width: 900px;
-  }
+.viewer-info-popup {
+  margin-top: 8px;
+  font-size: 12px;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
 
-  .card {
-    padding: 24px;
-  }
+/* === SPECIFIC STATUS STYLES === */
+#viewerStatus.connected {
+  color: #10b981 !important;
+}
+
+#viewerStatus.disconnected {
+  color: #ef4444 !important;
 }

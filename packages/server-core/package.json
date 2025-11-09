@@ -9,7 +9,9 @@
     "dev": "nodemon server/index.js",
     "test": "echo 'No tests specified'",
     "lint": "eslint server/**/*.js --ext .js --config ../../config/eslint.config.js",
-    "lint:fix": "eslint server/**/*.js --ext .js --fix --config ../../config/eslint.config.js"
+    "lint:fix": "eslint server/**/*.js --ext .js --fix --config ../../config/eslint.config.js",
+    "format": "prettier --write 'server/**/*.js' --config ../../config/.prettierrc",
+    "format:check": "prettier --check 'server/**/*.js' --config ../../config/.prettierrc"
   },
   "keywords": [
     "emdr",

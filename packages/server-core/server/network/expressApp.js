@@ -55,7 +55,7 @@ const checkPortAvailability = port => {
  * Устанавливает заголовки для отключения кэширования
  * @param {Object} res - Express response объект
  */
-const setNoCacheHeaders = (res) => {
+const setNoCacheHeaders = res => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
   res.setHeader('Pragma', 'no-cache')
   res.setHeader('Expires', '0')
@@ -113,16 +113,27 @@ function setupExpressApp(sessionManager, apiCache) {
     helmet({
       contentSecurityPolicy: {
         directives: {
-          defaultSrc: ['\'self\''],
-          styleSrc: ['\'self\'', '\'unsafe-inline\''],
-          styleSrcAttr: ['\'self\'', '\'unsafe-inline\''],
-          styleSrcElem: ['\'self\'', '\'unsafe-inline\''],
-          scriptSrc: ['\'self\'', '\'unsafe-inline\''],
-          scriptSrcAttr: ['\'self\'', '\'unsafe-inline\''],
-          scriptSrcElem: ['\'self\'', '\'unsafe-inline\'', 'https://mc.yandex.ru', 'https://mc.yandex.com', 'https://yastatic.net'],
-          imgSrc: ['\'self\'', 'data:', 'https:', 'https://*.mc.yandex.ru'],
-          connectSrc: ['\'self\'', 'https://mc.yandex.ru', 'https://mc.yandex.com', 'wss://mc.yandex.com'],
-          frameSrc: ['\'self\'', 'https://mc.yandex.md']
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          styleSrcAttr: ["'self'", "'unsafe-inline'"],
+          styleSrcElem: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrcAttr: ["'self'", "'unsafe-inline'"],
+          scriptSrcElem: [
+            "'self'",
+            "'unsafe-inline'",
+            'https://mc.yandex.ru',
+            'https://mc.yandex.com',
+            'https://yastatic.net'
+          ],
+          imgSrc: ["'self'", 'data:', 'https:', 'https://*.mc.yandex.ru'],
+          connectSrc: [
+            "'self'",
+            'https://mc.yandex.ru',
+            'https://mc.yandex.com',
+            'wss://mc.yandex.com'
+          ],
+          frameSrc: ["'self'", 'https://mc.yandex.md']
         }
       },
       crossOriginResourcePolicy: { policy: 'same-site' },
@@ -228,18 +239,27 @@ function setupExpressApp(sessionManager, apiCache) {
 
   // Static files - only serve specific paths, not root using helper function
   const staticDirectories = ['css', 'js', 'emdr-therapy']
-  staticDirectories.forEach(dir => {
-    app.use(`/${dir}`, express.static(path.join(publicPath, dir), {
-      etag: false,
-      lastModified: false,
-      setHeaders: setNoCacheHeaders
-    }))
-  })
+  for (const dir of staticDirectories) {
+    app.use(
+      `/${dir}`,
+      express.static(path.join(publicPath, dir), {
+        etag: false,
+        lastModified: false,
+        setHeaders: setNoCacheHeaders
+      })
+    )
+  }
 
   // Catch-all for other static files (but not index.html)
   app.use((req, res, next) => {
     // Skip if it's a root request or index.html request
-    if (req.path === '/' || req.path === '/index.html' || req.path.startsWith('/css/') || req.path.startsWith('/js/') || req.path.startsWith('/emdr-therapy/')) {
+    if (
+      req.path === '/' ||
+      req.path === '/index.html' ||
+      req.path.startsWith('/css/') ||
+      req.path.startsWith('/js/') ||
+      req.path.startsWith('/emdr-therapy/')
+    ) {
       return next()
     }
 
@@ -351,42 +371,57 @@ function setupExpressApp(sessionManager, apiCache) {
     res.set('X-Cache-Status', 'MISS')
     res.json(responseData)
   })
-  app.post('/api/session/:sessionId/controller/connect', requireSession(sessionManager, apiCache), (req, res) => {
-    const { sessionId } = req.params
-    const session = req.session
-    sessionManager.updateBallState(sessionId, req.body)
-    sessionManager.sessionRepository.update(sessionId, { controllerConnected: true })
-    clearStateCache(apiCache, sessionId)
-    res.json({ success: true, message: 'Controller connected' })
-  })
-  app.post('/api/session/:sessionId/controller/update', requireSession(sessionManager, apiCache), (req, res) => {
-    const { sessionId } = req.params
-    sessionManager.updateBallState(sessionId, req.body)
-    res.json({ success: true, message: 'Controller update processed' })
-  })
-  app.post('/api/session/:sessionId/viewer/connect', requireSession(sessionManager, apiCache), (req, res) => {
-    const { sessionId } = req.params
-    const { screenSize } = req.body
-    sessionManager.sessionRepository.update(sessionId, { viewerConnected: true })
-    if (screenSize) {
-      sessionManager.setViewerScreenSize(sessionId, screenSize)
+  app.post(
+    '/api/session/:sessionId/controller/connect',
+    requireSession(sessionManager, apiCache),
+    (req, res) => {
+      const { sessionId } = req.params
+      sessionManager.updateBallState(sessionId, req.body)
+      sessionManager.sessionRepository.update(sessionId, { controllerConnected: true })
       clearStateCache(apiCache, sessionId)
+      res.json({ success: true, message: 'Controller connected' })
     }
-
-    res.json({ success: true, message: 'Viewer connected' })
-  })
-  app.post('/api/session/:sessionId/viewer/screen-size', requireSession(sessionManager, apiCache), (req, res) => {
-    const { sessionId } = req.params
-    const { width, height } = req.body || {}
-
-    if (typeof width === 'number' && typeof height === 'number') {
-      sessionManager.setViewerScreenSize(sessionId, { width, height })
-      clearStateCache(apiCache, sessionId)
-      return res.json({ success: true })
+  )
+  app.post(
+    '/api/session/:sessionId/controller/update',
+    requireSession(sessionManager, apiCache),
+    (req, res) => {
+      const { sessionId } = req.params
+      sessionManager.updateBallState(sessionId, req.body)
+      res.json({ success: true, message: 'Controller update processed' })
     }
+  )
+  app.post(
+    '/api/session/:sessionId/viewer/connect',
+    requireSession(sessionManager, apiCache),
+    (req, res) => {
+      const { sessionId } = req.params
+      const { screenSize } = req.body
+      sessionManager.sessionRepository.update(sessionId, { viewerConnected: true })
+      if (screenSize) {
+        sessionManager.setViewerScreenSize(sessionId, screenSize)
+        clearStateCache(apiCache, sessionId)
+      }
 
-    return res.status(400).json({ error: 'Invalid screen size', requestId: req.id })
-  })
+      res.json({ success: true, message: 'Viewer connected' })
+    }
+  )
+  app.post(
+    '/api/session/:sessionId/viewer/screen-size',
+    requireSession(sessionManager, apiCache),
+    (req, res) => {
+      const { sessionId } = req.params
+      const { width, height } = req.body || {}
+
+      if (typeof width === 'number' && typeof height === 'number') {
+        sessionManager.setViewerScreenSize(sessionId, { width, height })
+        clearStateCache(apiCache, sessionId)
+        return res.json({ success: true })
+      }
+
+      return res.status(400).json({ error: 'Invalid screen size', requestId: req.id })
+    }
+  )
   // Static routes
   app.get('/s/:sessionId', (req, res) => {
     res.sendFile(path.join(publicPath, 'viewer.html'))
