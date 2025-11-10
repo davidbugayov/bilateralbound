@@ -90,14 +90,12 @@ const bbCounters = {
 
     const now = performance.now()
     // Удаляем старые записи старше 2 секунд
-    this._passesHistory = this._passesHistory.filter(
-      timestamp => now - timestamp < 2000
-    )
-    
+    this._passesHistory = this._passesHistory.filter(timestamp => now - timestamp < 2000)
+
     // Рассчитываем скорость пассов в секунду
     const passesInLast2Seconds = this._passesHistory.length / 2 // Делим на 2, т.к. считаем за 2 секунды
     this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10 // Округляем до 1 знака
-    
+
     this.renderSpeedInfo()
   },
   addPassMeasurement() {
@@ -1390,7 +1388,6 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     let directionText = customText || 'Неизвестно'
     let directionIcon
 
-
     if (!customText) {
       // ОПРЕДЕЛЯЕМ НАПРАВЛЕНИЕ ТОЛЬКО ПО currentDirectionMode - игнорируем dirX/dirY
       const directionInfo = getDirectionInfo(currentDirectionMode)
@@ -1902,5 +1899,32 @@ function fillFsSessionInfo() {
     if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`
   } catch {
     console.warn('Error in fillFsSessionInfo')
+  }
+}
+
+/**
+ * Отображает уведомление пользователю
+ * @param {string} message - Текст сообщения
+ * @param {string} type - Тип уведомления ('info', 'success', 'warning', 'error')
+ */
+function showNotification(message, type = 'info') {
+  try {
+    if (globalThis.notificationSystem?.show) {
+      globalThis.notificationSystem.show(message, type)
+    } else if (globalThis.showSuccessNotification && type === 'success') {
+      globalThis.showSuccessNotification('Успех', message)
+    } else if (globalThis.showErrorNotification && type === 'error') {
+      globalThis.showErrorNotification('Ошибка', message)
+    } else {
+      // Фолбэк: используем alert для критических ошибок
+      if (type === 'error') {
+        alert(`Ошибка: ${message}`)
+      } else {
+        console.log(`[${type.toUpperCase()}] ${message}`)
+      }
+    }
+  } catch (error) {
+    console.error('Error showing notification:', error)
+    alert(message)
   }
 }

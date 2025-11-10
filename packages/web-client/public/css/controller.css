@@ -1,0 +1,270 @@
+/* Специфичные стили для контроллера EMDR терапии */
+
+/* Fullscreen overlay and panel theme support */
+#previewOverlay {
+  background: #0f172a !important;
+}
+
+#previewFullscreenCanvas {
+  background: #020617 !important;
+}
+
+#previewFsPanel {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border: 1px solid #475569 !important;
+  height: auto !important;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+#previewFsPanel input {
+  background: #1e293b !important;
+  border: 1px solid #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.light-theme #previewOverlay {
+  background: rgba(248, 250, 252, 0.98) !important;
+}
+
+.light-theme #previewFullscreenCanvas {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+}
+
+.light-theme #previewFsPanel {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.light-theme #previewFsPanel input {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #374151 !important;
+}
+
+.light-theme #previewFsPanel label {
+  color: #64748b !important;
+}
+
+.light-theme #fsCurSid {
+  color: #374151 !important;
+}
+
+/* bbCounters dark theme support */
+#bbCounters > div {
+  background: #334155 !important;
+  border: 1px solid #475569 !important;
+}
+
+#bbCounters > div > div > div:first-child {
+  color: #cbd5e1 !important;
+}
+
+#bbTimer {
+  background: #1e293b !important;
+  border: 1px solid #475569 !important;
+  color: #e2e8f0 !important;
+}
+
+#bbPasses,
+#bbSets {
+  color: #e2e8f0 !important;
+}
+
+.light-theme #bbCounters > div {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.light-theme #bbCounters > div > div > div:first-child {
+  color: #64748b !important;
+}
+
+.light-theme #bbTimer {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #374151 !important;
+}
+
+.light-theme #bbPasses,
+.light-theme #bbSets {
+  color: #374151 !important;
+}
+
+/* Preview canvas dark theme support */
+#preview {
+  border: 1px solid #475569 !important;
+  background: #020617 !important;
+}
+
+.light-theme #preview {
+  border: 1px solid #e2e8f0 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+}
+
+/* Viewer info dark theme support */
+#viewerInfo {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid #475569 !important;
+  color: #cbd5e1 !important;
+}
+
+.light-theme #viewerInfo {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+/* Text colors for session info */
+#sessionInfo {
+  color: #94a3b8 !important;
+}
+
+.light-theme #sessionInfo {
+  color: #64748b !important;
+}
+
+/* Control section headings */
+.control-section h3 {
+  color: #e2e8f0;
+}
+
+.light-theme .control-section h3 {
+  color: #1e293b;
+}
+
+.control-section p {
+  color: #94a3b8;
+}
+
+.light-theme .control-section p {
+  color: #64748b;
+}
+
+/* Fullscreen specific styles */
+.fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+
+.fullscreen-canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+.fullscreen-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 320px;
+  padding: 16px;
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  transition: opacity 0.25s ease;
+  opacity: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto auto auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.fs-panel-header {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.fs-session-id {
+  font-weight: 600;
+  font-size: 12px;
+  text-align: center;
+}
+
+.fs-link-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fs-link-input {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.fs-btn {
+  font-size: 12px;
+  padding: 8px;
+}
+
+.fs-btn-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.fs-seg-btn {
+  font-size: 11px;
+  padding: 6px;
+}
+
+.fs-slider-group {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fs-slider {
+  flex: 1;
+}
+
+.fs-control-group {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fs-control-group--colors {
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.fs-label {
+  font-size: 11px;
+  min-width: 50px;
+}
+
+.fs-size-btn {
+  font-size: 10px;
+  padding: 4px 6px;
+}
+
+.fs-color-btn {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.btn-full-width {
+  width: 100%;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .fullscreen-panel {
+    width: calc(100vw - 40px);
+    max-width: 320px;
+    right: 20px;
+    left: auto;
+  }
+}

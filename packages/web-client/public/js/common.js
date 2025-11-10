@@ -79,14 +79,16 @@ const toggleFullscreen =
             }
 
             if (isFs()) {
-              const exitFullscreen = document.exitFullscreen ||
+              const exitFullscreen =
+                document.exitFullscreen ||
                 document.webkitExitFullscreen ||
                 document.msExitFullscreen ||
                 document.mozCancelFullScreen
               await exitFullscreen?.call(document)
             } else {
               const target = el || document.documentElement
-              const requestFullscreen = target.requestFullscreen ||
+              const requestFullscreen =
+                target.requestFullscreen ||
                 target.webkitRequestFullscreen ||
                 target.msRequestFullscreen ||
                 target.mozRequestFullScreen
@@ -215,7 +217,6 @@ class ThemeManager {
    */
   toggleTheme() {
     const body = document.body
-    const hasDarkClass = body.classList.contains('dark-theme')
     const hasLightClass = body.classList.contains('light-theme')
 
     // Очищаем классы
@@ -257,11 +258,6 @@ class ThemeManager {
   }
 }
 
-/**
- * Копирует текст из элемента в буфер обмена.
- * @param {string} elementId - ID элемента, из которого нужно скопировать текст.
- * @param {string} successMessage - Сообщение, отображаемое при успешном копировании.
- */
 /**
  * Копирует текст из элемента в буфер обмена.
  * @param {string} elementId - ID элемента, из которого нужно скопировать текст.
