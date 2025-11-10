@@ -773,8 +773,8 @@ function _syncUIPause(ballState) {
 function _getDirectionMode(dirX, dirY) {
   if (Math.abs(dirX) > 0.9) return 'horizontal'
   if (Math.abs(dirY) > 0.9) return 'vertical'
-  if (dirX > 0 && dirY > 0) return 'diagRL'
-  if (dirX > 0 && dirY < 0) return 'diagRLL'
+  if (dirX > 0 && dirY > 0) return 'diagRL' // TL→BR (из верхнего левого в нижний правый)
+  if (dirX > 0 && dirY < 0) return 'diagRLL' // BL→TR (из нижнего левого в верхний правый)
   return null
 }
 
@@ -997,6 +997,64 @@ function showWaitingForViewer() {
   }
 }
 
+/**
+ * Проверяет, является ли текущий режим направления диагональным
+ * @returns {boolean} true если режим diagRL или diagRLL
+ */
+function isDiagonalMode() {
+  return currentDirectionMode === 'diagRL' || currentDirectionMode === 'diagRLL'
+}
+
+/**
+ * Пересчитывает и применяет диагональное направление при изменении размера экрана
+ * Центрирует мяч и возобновляет движение с новым направлением от центра
+ */
+function recalculateDiagonalDirectionIfNeeded() {
+  // Пересчитываем только если текущий режим диагональный
+  if (!isDiagonalMode()) {
+    return
+  }
+
+  // Получаем новый вектор направления с учетом обновленных размеров экрана
+  const directionVector = getDirectionVector(currentDirectionMode)
+  if (!directionVector) {
+    return
+  }
+
+  const { dirX, dirY } = directionVector
+  
+  // Обновляем внутреннее состояние направления
+  directionState = { dx: dirX, dy: dirY }
+
+  // Если сессия активна, центрируем мяч и возобновляем движение
+  if (isPlaying) {
+    // Шаг 1: Пауза и центрирование
+    safeSend(WS_MSG.controllerUpdate, {
+      paused: true,
+      returnToCenter: true
+    })
+    
+    // Шаг 2: Возобновление с новым направлением через короткую задержку
+    setTimeout(() => {
+      safeSend(WS_MSG.controllerUpdate, {
+        paused: false,
+        dirX,
+        dirY
+      })
+    }, 200)
+    
+    console.log(
+      `🔄 Диагональное направление пересчитано: мяч центрирован, новое направление ${currentDirectionMode} (${dirX.toFixed(4)}, ${dirY.toFixed(4)})`
+    )
+  } else {
+    // Если на паузе, просто обновляем направление без центрирования
+    safeSend(WS_MSG.controllerUpdate, {
+      dirX,
+      dirY
+    })
+  }
+}
+
 function updatePreviewSize(viewerScreenSize) {
   if (canUpdatePreview(viewerScreenSize)) {
     const canvas = document.getElementById('preview')
@@ -1005,6 +1063,7 @@ function updatePreviewSize(viewerScreenSize) {
     const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
     setCanvasDimensions(canvas, previewWidth, previewHeight)
     updatePhysicsEngineWorldSize(viewerScreenSize)
+    recalculateDiagonalDirectionIfNeeded()
     applyServerStateOrCenter()
     updateViewerInfo(viewerScreenSize)
   } else {
@@ -1086,10 +1145,22 @@ function getDirectionVector(directionMode) {
       return { dirX: 1, dirY: 0 }
     case 'vertical':
       return { dirX: 0, dirY: 1 }
-    case 'diagRL': // Диагональ вправо-вниз
-      return { dirX: 0.707, dirY: 0.707 }
-    case 'diagRLL': // Диагональ вправо-вверх
-      return { dirX: 0.707, dirY: -0.707 }
+    case 'diagRL': {
+      // Движение из верхнего левого угла в нижний правый (TL→BR)
+      // Вычисляем точный угол на основе размеров вьювера
+      const width = globalThis.__current?.viewerScreenSize?.width || 800
+      const height = globalThis.__current?.viewerScreenSize?.height || 600
+      const diagonal = Math.sqrt(width * width + height * height)
+      return { dirX: width / diagonal, dirY: height / diagonal }
+    }
+    case 'diagRLL': {
+      // Движение из нижнего левого угла в верхний правый (BL→TR)
+      // Вычисляем точный угол на основе размеров вьювера
+      const width = globalThis.__current?.viewerScreenSize?.width || 800
+      const height = globalThis.__current?.viewerScreenSize?.height || 600
+      const diagonal = Math.sqrt(width * width + height * height)
+      return { dirX: width / diagonal, dirY: -height / diagonal }
+    }
     case 'random': {
       // Случайное направление
       const angle = Math.random() * 2 * Math.PI
@@ -1364,9 +1435,9 @@ function getDirectionInfo(mode) {
     case 'vertical':
       return { text: 'Вертикальное', icon: '↕️' }
     case 'diagRL':
-      return { text: 'Диагональ (право-вниз)', icon: '↘️' }
+      return { text: 'Диагональ ↖️ → ↘️', icon: '↘️' }
     case 'diagRLL':
-      return { text: 'Диагональ (право-верх)', icon: '↗️' }
+      return { text: 'Диагональ ↙️ → ↗️', icon: '↗️' }
     case 'random':
       return { text: 'Случайное', icon: '🎲' }
     default:
