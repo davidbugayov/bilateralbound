@@ -718,11 +718,10 @@ function createLogger(moduleName) {
  * Кастомная ошибка приложения
  */
 class AppError extends Error {
-  constructor(code, message, details = {}) {
+  constructor(code, message) {
     super(message)
     this.name = 'AppError'
     this.code = code
-    this.details = details
     this.timestamp = new Date().toISOString()
   }
 }
@@ -1150,7 +1149,7 @@ function getDirectionVector(directionMode) {
       // Вычисляем точный угол на основе размеров вьювера
       const width = globalThis.__current?.viewerScreenSize?.width || 800
       const height = globalThis.__current?.viewerScreenSize?.height || 600
-      const diagonal = Math.sqrt(width * width + height * height)
+      const diagonal = Math.hypot(width, height)
       return { dirX: width / diagonal, dirY: height / diagonal }
     }
     case 'diagRLL': {
@@ -1158,7 +1157,7 @@ function getDirectionVector(directionMode) {
       // Вычисляем точный угол на основе размеров вьювера
       const width = globalThis.__current?.viewerScreenSize?.width || 800
       const height = globalThis.__current?.viewerScreenSize?.height || 600
-      const diagonal = Math.sqrt(width * width + height * height)
+      const diagonal = Math.hypot(width, height)
       return { dirX: width / diagonal, dirY: -height / diagonal }
     }
     case 'random': {
@@ -1269,141 +1268,15 @@ function setBackgroundColor(color) {
     safeSend(WS_MSG.controllerUpdate, { colorBg: color })
   }
   // Обновляем фон в превью
-  if (globalThis.previewRenderer) {
-    globalThis.previewRenderer.setBackgroundColor(color)
+  if (globalThis.__previewRenderer) {
+    globalThis.__previewRenderer.setBackgroundColor(color)
   }
   // Обновляем фон в полноэкранном превью
-  if (globalThis.fullscreenPreviewRenderer) {
-    globalThis.fullscreenPreviewRenderer.setBackgroundColor(color)
+  if (previewFsRenderer) {
+    previewFsRenderer.setBackgroundColor(color)
   }
 }
-/**
- * Обновляет состояние кнопок направления
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
+
 function updateDirectionButtons() {
   const directionButtons = document.querySelectorAll('[data-mode]')
   for (const button of directionButtons) {
@@ -1974,6 +1847,40 @@ function fillFsSessionInfo() {
 }
 
 /**
+ * Сбрасывает всю сессию: останавливает движение, сбрасывает счётчики, центрирует мяч
+ */
+function resetSession() {
+  try {
+    // Останавливаем движение если активно
+    if (isPlaying) {
+      _handlePause()
+      __ignoreServerPausedUntilTs = performance.now() + 800
+    }
+
+    // Сбрасываем все счётчики
+    bbCounters.resetAll()
+
+    // Центрируем мяч
+    safeSend(WS_MSG.controllerUpdate, {
+      returnToCenter: true,
+      paused: true
+    })
+
+    // Сбрасываем направление к горизонтальному по умолчанию
+    setDirection('horizontal')
+
+    // Обновляем UI
+    updatePlayPauseButton()
+    updateDirectionButtons()
+
+    console.log('🔄 Сессия сброшена')
+  } catch (error) {
+    console.error('Ошибка при сбросе сессии:', error)
+    showNotification('Ошибка при сбросе сессии', 'error')
+  }
+}
+
+/**
  * Отображает уведомление пользователю
  * @param {string} message - Текст сообщения
  * @param {string} type - Тип уведомления ('info', 'success', 'warning', 'error')
@@ -1981,7 +1888,7 @@ function fillFsSessionInfo() {
 function showNotification(message, type = 'info') {
   try {
     if (globalThis.notificationSystem?.show) {
-      globalThis.notificationSystem.show(message, type)
+      globalThis.notificationSystem.show({ message, type })
     } else if (globalThis.showSuccessNotification && type === 'success') {
       globalThis.showSuccessNotification('Успех', message)
     } else if (globalThis.showErrorNotification && type === 'error') {
@@ -1990,9 +1897,8 @@ function showNotification(message, type = 'info') {
       // Фолбэк: используем alert для критических ошибок
       if (type === 'error') {
         alert(`Ошибка: ${message}`)
-      } else {
-        console.log(`[${type.toUpperCase()}] ${message}`)
       }
+      console.log(`[${type.toUpperCase()}] ${message}`)
     }
   } catch (error) {
     console.error('Error showing notification:', error)

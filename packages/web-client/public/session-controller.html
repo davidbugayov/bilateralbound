@@ -194,6 +194,8 @@
             <button class="color-btn fs-color-btn" id="fsBallCol8" style="background: #84cc16" aria-labelledby="fsBallColorLabel"></button>
             <button class="color-btn fs-color-btn" id="fsBallCol9" style="background: #fb7185" aria-labelledby="fsBallColorLabel"></button>
             <button class="color-btn fs-color-btn" id="fsBallCol10" style="background: #ffffff" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol11" style="background: #a855f7" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol12" style="background: #f472b6" aria-labelledby="fsBallColorLabel"></button>
           </div>
 
           <div class="fs-control-group fs-control-group--colors">
@@ -208,6 +210,8 @@
             <button class="color-btn fs-color-btn" id="fsBg8" style="background: #032f2f" aria-labelledby="fsBgColorLabel"></button>
             <button class="color-btn fs-color-btn" id="fsBg9" style="background: #2a0e14" aria-labelledby="fsBgColorLabel"></button>
             <button class="color-btn fs-color-btn" id="fsBg10" style="background: #0f172a" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg11" style="background: #1a0b3d" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg12" style="background: #3d1a0b" aria-labelledby="fsBgColorLabel"></button>
           </div>
 
           <button class="btn outline fs-btn" id="exitPreviewFullscreenBtn" style="grid-column: 1 / -1; margin-top: 4px;">⤫ Закрыть</button>
@@ -225,13 +229,14 @@
             </div>
             <p class="controls-title" style="margin-top: 16px">Направление</p>
             <div class="direction-row">
-              <div class="segmented" id="directionSegmented" role="group" aria-label="Направление движения">
+              <fieldset class="segmented" id="directionSegmented">
+                <legend class="sr-only">Направление движения</legend>
                 <button class="seg-btn" data-mode="horizontal" onclick="setDirection('horizontal')" aria-label="Горизонтально" title="Горизонтальное движение"><strong>↔️</strong> Гориз.</button>
                 <button class="seg-btn" data-mode="vertical" onclick="setDirection('vertical')" aria-label="Вертикально" title="Вертикальное движение"><strong>↕️</strong> Вертик.</button>
                 <button class="seg-btn" data-mode="diagRL" onclick="setDirection('diagRL')" aria-label="Диагональ из верхнего левого в нижний правый" title="Диагональ ↖️→↘️"><strong>↖️→↘️</strong></button>
                 <button class="seg-btn" data-mode="diagRLL" onclick="setDirection('diagRLL')" aria-label="Диагональ из нижнего левого в верхний правый" title="Диагональ ↙️→↗️"><strong>↙️→↗️</strong></button>
                 <button class="seg-btn" data-mode="random" onclick="setDirection('random')" aria-label="Случайное направление" title="Случайное направление"><strong>🎲</strong> Случайное</button>
-              </div>
+              </fieldset>
             </div>
           </div>
           <div class="controls-card">
