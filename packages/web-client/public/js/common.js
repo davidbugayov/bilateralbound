@@ -263,11 +263,6 @@ class ThemeManager {
  * @param {string} elementId - ID элемента, из которого нужно скопировать текст.
  * @param {string} successMessage - Сообщение, отображаемое при успешном копировании.
  */
-/**
- * Копирует текст из элемента в буфер обмена.
- * @param {string} elementId - ID элемента, из которого нужно скопировать текст.
- * @param {string} successMessage - Сообщение, отображаемое при успешном копировании.
- */
 async function copy(elementId, successMessage) {
   const element = document.getElementById(elementId)
   if (!element?.value) {
