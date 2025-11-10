@@ -7,7 +7,6 @@ const os = require('node:os')
 const path = require('node:path')
 const net = require('node:net')
 const fs = require('node:fs')
-const { v4: uuidv4 } = require('uuid')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
 // Определяем доступные сетевые интерфейсы
@@ -96,10 +95,15 @@ function setupExpressApp(sessionManager, apiCache) {
   const networkInterfaces = getNetworkInterfaces()
   const app = express()
   // Request ID middleware for traceability
-  app.use((req, res, next) => {
-    req.id = req.headers['x-request-id'] || uuidv4()
-    res.setHeader('X-Request-Id', req.id)
-    next()
+  app.use(async (req, res, next) => {
+    try {
+      const { v4: uuidv4 } = await import('uuid')
+      req.id = req.headers['x-request-id'] || uuidv4()
+      res.setHeader('X-Request-Id', req.id)
+      next()
+    } catch (error) {
+      next(error)
+    }
   })
   // Улучшенная обработка безопасности с учетом сетевых интерфейсов
   app.use((req, res, next) => {
