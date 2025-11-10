@@ -1,19 +1,20 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v2.27.0
+## Текущая Версия: v2.28.0
 **Статус:** Активна
-**Дата релиза:** 10 ноября 2025 г. в 15:37
-**Коммит:** 2ff13b5
-### Основные Изменения v2.27.0:
-- ✨ Исправить цвета кнопки Старт/Стоп в светлой теме
+**Дата релиза:** 10 ноября 2025 г. в 15:56
+**Коммит:** 3770606
+### Основные Изменения v2.28.0:
+- ✨ fix: resolve resetSession function and improve code quality
 
-- Кнопка Старт/Стоп теперь зеленая в обычном состоянии
-- При воспроизведении кнопка становится желтой
-- Цвета соответствуют темной теме
-- Кнопки направления сохранены без изменений
+- Implement resetSession() function for session reset functionality
+- Replace Math.sqrt() with Math.hypot() for better numerical stability in diagonal calculations
+- Fix notification system API call to use proper options object
+- Resolve unresolved variable references (previewRenderer, fullscreenPreviewRenderer)
+- Fix linting issues with nested if-else structures
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v2.26.0** - Предыдущая версия
+- **v2.27.0** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -23,4 +24,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-10T12:37:21.348Z*
+*Автоматически сгенерировано: 2025-11-10T12:56:49.627Z*

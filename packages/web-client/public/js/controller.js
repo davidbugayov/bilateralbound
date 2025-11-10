@@ -828,7 +828,9 @@ function _initializeBallColorControl() {
         '#06b6d4',
         '#84cc16',
         '#fb7185',
-        '#ffffff'
+        '#ffffff',
+        '#a855f7',
+        '#14b8a6'
       ],
       defaultValue: '#60a5fa',
       title: '',
@@ -850,10 +852,12 @@ function _initializeBgColorControl() {
         '#0a2540',
         '#052e16',
         '#1a102a',
-        '#2b1b0e',
-        '#032f2f',
-        '#2a0e14',
-        '#0f172a'
+        '#fef3c7',
+        '#dbeafe',
+        '#fce7f3',
+        '#f3f4f6',
+        '#e5e7eb',
+        '#d1d5db'
       ],
       defaultValue: '#020617',
       title: '',
@@ -1804,10 +1808,12 @@ function setupFullscreenBallColorControls() {
     '#06b6d4',
     '#84cc16',
     '#fb7185',
-    '#ffffff'
+    '#ffffff',
+    '#a855f7',
+    '#14b8a6'
   ]
 
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 12; i++) {
     const btn = document.getElementById(`fsBallCol${i}`)
     if (btn) btn.onclick = () => setBallColor(ballColors[i - 1])
   }
@@ -1821,13 +1827,15 @@ function setupFullscreenBackgroundColorControls() {
     '#0a2540',
     '#052e16',
     '#1a102a',
-    '#2b1b0e',
-    '#032f2f',
-    '#2a0e14',
-    '#0f172a'
+    '#fef3c7',
+    '#dbeafe',
+    '#fce7f3',
+    '#f3f4f6',
+    '#e5e7eb',
+    '#d1d5db'
   ]
 
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 12; i++) {
     const btn = document.getElementById(`fsBg${i}`)
     if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1])
   }
