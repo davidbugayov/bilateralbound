@@ -41,13 +41,6 @@ body.light-theme .btn {
   transition: all 0.2s ease;
 }
 
-body.light-theme button,
-body.light-theme .btn:not(.outline):not(.danger) {
-  background: #2563eb;
-  color: white;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
-}
-
 body.light-theme button:hover,
 body.light-theme .btn:hover {
   transform: translateY(-2px);
@@ -66,7 +59,52 @@ body.light-theme .btn.outline:hover {
   border-color: #94a3af;
 }
 
+body.light-theme .btn.primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
 
+body.light-theme .btn.primary:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4) !important;
+}
+
+body.light-theme .btn.primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Специфичные стили для кнопки playPauseBtn - максимальный приоритет */
+body.light-theme #playPauseBtn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+body.light-theme #playPauseBtn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4) !important;
+}
+
+body.light-theme #playPauseBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Состояние «идёт воспроизведение» для кнопки Старт/Стоп */
+body.light-theme .btn.primary.playing,
+body.light-theme #playPauseBtn.playing {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: #111827 !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+  border: 1px solid rgba(245, 158, 11, 0.2) !important;
+  animation: pulse-glow 2s ease-in-out infinite alternate;
+}
 
 body.light-theme .btn.danger {
   background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -477,9 +515,9 @@ body.light-theme .actions-grid .btn:hover {
 }
 
 body.light-theme .actions-grid .btn.primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
   color: white !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
 }
 
 body.light-theme .actions-grid .btn.danger {
