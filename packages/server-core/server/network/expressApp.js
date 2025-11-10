@@ -303,9 +303,9 @@ function setupExpressApp(sessionManager, apiCache) {
     `.trim()
     res.type('application/xml').send(rss)
   })
-  app.post('/api/session', (req, res) => {
+  app.post('/api/session', async (req, res) => {
     try {
-      const session = sessionManager.createSession()
+      const session = await sessionManager.createSession()
       if (DEBUG_MODE) logger.info(`[${req.id}] New session created: ${session.id}`)
       res.json({ sessionId: session.id })
     } catch (error) {

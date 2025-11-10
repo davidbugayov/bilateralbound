@@ -29,10 +29,10 @@ class SessionManager {
   /**
    * Создает новую сессию с физическим движком
    * @param {Object} ballState - Начальное состояние мяча
-   * @returns {Object} Созданная сессия
+   * @returns {Promise<Object>} Созданная сессия
    */
-  createSession(ballState = {}) {
-    const session = this.sessionRepository.create({ ballState })
+  async createSession(ballState = {}) {
+    const session = await this.sessionRepository.create({ ballState })
     session.physicsEngine = new PhysicsEngine({
       ballRadius: session.ballState.radius || 20,
       maxSpeed: 5000
