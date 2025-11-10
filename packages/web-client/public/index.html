@@ -1,12 +1,14 @@
 <!doctype html>
 <html lang="ru">
   <head>
+    <!-- Централизованный head компонент -->
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
+    <!-- SEO Meta Tags -->
     <title>BilateralBound - EMDR терапия для пациентов</title>
     <meta
       name="description"
@@ -21,11 +23,26 @@
     <meta name="language" content="Russian" />
     <meta name="theme-color" content="#2563eb" />
 
-    <meta name="category" content="Health & Wellness, Mental Health" />
+    <!-- EMDR Specific Meta Tags -->
     <meta name="therapy-type" content="EMDR, Bilateral Stimulation" />
     <meta name="target-audience" content="Couples, Individuals, Therapists" />
     <link rel="canonical" href="https://emdrbilateral.ru/" />
 
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/js/common.js" as="script" />
+    <link rel="preload" href="/css/shared-components.css" as="style" />
+    <link rel="preload" href="/css/light-theme.css" as="style" />
+    <link rel="preload" href="/css/main-page.css" as="style" />
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="preconnect" href="https://emdrbilateral.ru" crossorigin />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202501031200" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=202501031200" />
+    <link rel="apple-touch-icon" href="/favicon.svg?v=202501031200" />
+    <link rel="shortcut icon" href="/favicon.ico?v=202501031200" />
+
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="BilateralBound - EMDR терапия для пациентов" />
     <meta
@@ -46,6 +63,7 @@
     <meta property="article:tag" content="психолог для пар" />
     <meta property="article:tag" content="биодинамическая стимуляция" />
 
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="BilateralBound - EMDR терапия для пациентов" />
     <meta
@@ -56,12 +74,7 @@
     <meta name="twitter:site" content="@bilateralbound" />
     <meta name="twitter:creator" content="@bilateralbound" />
 
-    <link rel="preload" href="./js/common.js" as="script" />
-    <link rel="preload" href="/css/shared-components.css" as="style" />
-    <link rel="preload" href="/css/light-theme.css" as="style" />
-    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-    <link rel="preconnect" href="https://emdrbilateral.ru" crossorigin />
-
+    <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -95,111 +108,28 @@
       }
     </script>
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202501031200" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=202501031200" />
-    <link rel="apple-touch-icon" href="/favicon.svg?v=202501031200" />
-    <link rel="shortcut icon" href="/favicon.ico?v=202501031200" />
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/css/shared-components.css" />
+    <link rel="stylesheet" href="/css/light-theme.css" />
+    <link rel="stylesheet" href="/css/main-page.css" />
 
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.81.0" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.81.0" />
-
-    <!-- Styles are now in shared-components.css -->
-    <style>
-      /* Специфичные стили для главной страницы */
-      .main-button {
-        background: linear-gradient(135deg, #2563eb, #7c3aed);
-        color: white;
-        border: 0;
-        padding: 18px 36px;
-        border-radius: 16px;
-        cursor: pointer;
-        font-size: 1.1rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
-      }
-
-      .main-button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-      }
-
-      .main-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px rgba(37, 99, 235, 0.4);
-      }
-
-      .main-button:hover::before {
-        left: 100%;
-      }
-
-      /* Light theme для постоянных ссылок */
-      .light-theme #customClientId {
-        background: rgba(255, 255, 255, 0.9) !important;
-        border-color: rgba(59, 130, 246, 0.4) !important;
-        color: #1e293b !important;
-      }
-
-      .light-theme #customClientId:focus {
-        background: rgba(255, 255, 255, 1) !important;
-        border-color: rgba(37, 99, 235, 0.6) !important;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-      }
-
-      .light-theme #existingSessionId {
-        background: rgba(255, 255, 255, 0.9) !important;
-        border-color: rgba(59, 130, 246, 0.4) !important;
-        color: #1e293b !important;
-      }
-
-      .light-theme #existingSessionId:focus {
-        background: rgba(255, 255, 255, 1) !important;
-        border-color: rgba(37, 99, 235, 0.6) !important;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-      }
-
-      .light-theme #generatedViewerUrl,
-      .light-theme #generatedControllerUrl {
-        background: rgba(248, 250, 252, 0.9) !important;
-        color: #1e293b !important;
-      }
-
-      .light-theme #generatedViewerUrl {
-        border-color: rgba(59, 130, 246, 0.5) !important;
-      }
-
-      .light-theme #generatedControllerUrl {
-        border-color: rgba(168, 85, 247, 0.5) !important;
-      }
-    </style>
-
-    <!-- Yandex.Metrika counter -->
+    <!-- Yandex.Metrika optimized counter -->
     <script type="text/javascript">
-        (function(m,e,t,r,i,k,a){
-            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-            m[i].l=1*new Date();
-            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=104698530', 'ym');
-
-        ym(104698530, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+      (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=104698530', 'ym');
+      ym(104698530, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/104698530" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
 
-    <script src="./js/common.js?v=2.81.0" defer></script>
-    <script src="./js/notification-system.js?v=2.81.0" defer></script>
-    <script src="./js/new-features.js?v=2.81.0" defer></script>
+    <!-- Common Scripts -->
+    <script src="/js/common.js" defer></script>
+    <script src="/js/notification-system.js" defer></script>
+    <script src="/js/new-features.js" defer></script>
   </head>
   <body>
     <header class="theme-toggle-container">
@@ -432,7 +362,7 @@
             </p>
           </section>
           <div class="page-footer-container">
-            <footer class="footer">⚡ BilateralBound v2.23.0</footer>
+            <footer class="footer">⚡ BilateralBound v2.24.0</footer>
           </div>
         </section>
       </article>

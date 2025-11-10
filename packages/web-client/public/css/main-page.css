@@ -1,0 +1,76 @@
+/* Основные стили для главной страницы BilateralBound */
+.main-button {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white;
+  border: 0;
+  padding: 18px 36px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+.main-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.main-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(37, 99, 235, 0.4);
+}
+
+.main-button:hover::before {
+  left: 100%;
+}
+
+/* Light theme для постоянных ссылок */
+.light-theme #customClientId {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  color: #1e293b !important;
+}
+
+.light-theme #customClientId:focus {
+  background: rgba(255, 255, 255, 1) !important;
+  border-color: rgba(37, 99, 235, 0.6) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.light-theme #existingSessionId {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  color: #1e293b !important;
+}
+
+.light-theme #existingSessionId:focus {
+  background: rgba(255, 255, 255, 1) !important;
+  border-color: rgba(37, 99, 235, 0.6) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.light-theme #generatedViewerUrl,
+.light-theme #generatedControllerUrl {
+  background: rgba(248, 250, 252, 0.9) !important;
+  color: #1e293b !important;
+}
+
+.light-theme #generatedViewerUrl {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+.light-theme #generatedControllerUrl {
+  border-color: rgba(168, 85, 247, 0.5) !important;
+}
