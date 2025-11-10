@@ -66,10 +66,7 @@ body.light-theme .btn.outline:hover {
   border-color: #94a3af;
 }
 
-body.light-theme .btn.primary {
-  background: linear-gradient(135deg, #10b981, #059669);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-}
+
 
 body.light-theme .btn.danger {
   background: linear-gradient(135deg, #ef4444, #dc2626);
