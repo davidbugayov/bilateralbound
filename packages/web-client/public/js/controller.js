@@ -1854,39 +1854,7 @@ function fillFsSessionInfo() {
   }
 }
 
-/**
- * Сбрасывает всю сессию: останавливает движение, сбрасывает счётчики, центрирует мяч
- */
-function resetSession() {
-  try {
-    // Останавливаем движение если активно
-    if (isPlaying) {
-      _handlePause()
-      __ignoreServerPausedUntilTs = performance.now() + 800
-    }
 
-    // Сбрасываем все счётчики
-    bbCounters.resetAll()
-
-    // Центрируем мяч
-    safeSend(WS_MSG.controllerUpdate, {
-      returnToCenter: true,
-      paused: true
-    })
-
-    // Сбрасываем направление к горизонтальному по умолчанию
-    setDirection('horizontal')
-
-    // Обновляем UI
-    updatePlayPauseButton()
-    updateDirectionButtons()
-
-    console.log('🔄 Сессия сброшена')
-  } catch (error) {
-    console.error('Ошибка при сбросе сессии:', error)
-    showNotification('Ошибка при сбросе сессии', 'error')
-  }
-}
 
 /**
  * Отображает уведомление пользователю

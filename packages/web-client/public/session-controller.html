@@ -74,17 +74,12 @@
     <!-- Yandex.Metrika optimized counter -->
     <noscript><div><img src="https://mc.yandex.ru/watch/104698530" style="position: absolute; left: -9999px" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
-
-    <!-- Common Scripts -->
-    <script src="/js/common.js" defer></script>
-    <script src="/js/notification-system.js" defer></script>
-    <script src="/js/new-features.js" defer></script>
   </head>
   <body>
     <header>
       <a class="back-btn" href="/" aria-label="Вернуться на главную страницу">← На главную</a>
       <div class="theme-toggle-container">
-        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Переключить тему оформления">🌓 Тема</button>
+        <button id="themeToggleBtn" class="theme-toggle-btn">🌓 Тема</button>
       </div>
     </header>
 
@@ -103,9 +98,8 @@
               readonly
               placeholder="Ссылка для зрителя будет здесь..."
               onclick="this.select()"
-              aria-label="Ссылка для зрителя"
             />
-            <button onclick="copy('view', 'Ссылка для клиента скопирована!')" class="copy-btn" aria-label="Копировать ссылку для зрителя">📋 Копировать</button>
+            <button onclick="copy('view', 'Ссылка для клиента скопирована!')" class="copy-btn">📋 Копировать</button>
           </div>
         </div>
         <div id="bbCounters" class="counters-container">
@@ -151,7 +145,6 @@
               <button
                 class="copy-btn fs-btn"
                 onclick="copy('fsViewLink', 'Ссылка для клиента скопирована!')"
-                aria-label="Копировать ссылку для зрителя"
               >
                 📋
               </button>
@@ -176,42 +169,42 @@
 
           <div class="fs-control-group">
             <span id="fsSizeLabel" class="fs-label">Размер</span>
-            <button class="size-btn fs-size-btn" id="fsSize1" aria-labelledby="fsSizeLabel">×1</button>
-            <button class="size-btn fs-size-btn" id="fsSize2" aria-labelledby="fsSizeLabel">×2</button>
-            <button class="size-btn fs-size-btn" id="fsSize3" aria-labelledby="fsSizeLabel">×3</button>
-            <button class="size-btn fs-size-btn" id="fsSize4" aria-labelledby="fsSizeLabel">×4</button>
+            <button class="size-btn fs-size-btn" id="fsSize1">×1</button>
+            <button class="size-btn fs-size-btn" id="fsSize2">×2</button>
+            <button class="size-btn fs-size-btn" id="fsSize3">×3</button>
+            <button class="size-btn fs-size-btn" id="fsSize4">×4</button>
           </div>
 
           <div class="fs-control-group fs-control-group--colors">
             <span id="fsBallColorLabel" class="fs-label">Мяч</span>
-            <button class="color-btn fs-color-btn" id="fsBallCol1" style="background: #60a5fa" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol2" style="background: #ef4444" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol3" style="background: #10b981" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol4" style="background: #f59e0b" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol5" style="background: #8b5cf6" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol6" style="background: #f97316" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol7" style="background: #06b6d4" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol8" style="background: #84cc16" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol9" style="background: #fb7185" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol10" style="background: #ffffff" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol11" style="background: #a855f7" aria-labelledby="fsBallColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBallCol12" style="background: #f472b6" aria-labelledby="fsBallColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol1" style="background: #60a5fa"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol2" style="background: #ef4444"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol3" style="background: #10b981"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol4" style="background: #f59e0b"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol5" style="background: #8b5cf6"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol6" style="background: #f97316"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol7" style="background: #06b6d4"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol8" style="background: #84cc16"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol9" style="background: #fb7185"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol10" style="background: #ffffff"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol11" style="background: #a855f7"></button>
+            <button class="color-btn fs-color-btn" id="fsBallCol12" style="background: #f472b6"></button>
           </div>
 
           <div class="fs-control-group fs-control-group--colors">
             <span id="fsBgColorLabel" class="fs-label">Фон</span>
-            <button class="color-btn fs-color-btn" id="fsBg1" style="background: #020617" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg2" style="background: #000000" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg3" style="background: #111827" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg4" style="background: #0a2540" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg5" style="background: #052e16" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg6" style="background: #1a102a" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg7" style="background: #2b1b0e" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg8" style="background: #032f2f" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg9" style="background: #2a0e14" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg10" style="background: #0f172a" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg11" style="background: #1a0b3d" aria-labelledby="fsBgColorLabel"></button>
-            <button class="color-btn fs-color-btn" id="fsBg12" style="background: #3d1a0b" aria-labelledby="fsBgColorLabel"></button>
+            <button class="color-btn fs-color-btn" id="fsBg1" style="background: #020617"></button>
+            <button class="color-btn fs-color-btn" id="fsBg2" style="background: #000000"></button>
+            <button class="color-btn fs-color-btn" id="fsBg3" style="background: #111827"></button>
+            <button class="color-btn fs-color-btn" id="fsBg4" style="background: #0a2540"></button>
+            <button class="color-btn fs-color-btn" id="fsBg5" style="background: #052e16"></button>
+            <button class="color-btn fs-color-btn" id="fsBg6" style="background: #1a102a"></button>
+            <button class="color-btn fs-color-btn" id="fsBg7" style="background: #2b1b0e"></button>
+            <button class="color-btn fs-color-btn" id="fsBg8" style="background: #032f2f"></button>
+            <button class="color-btn fs-color-btn" id="fsBg9" style="background: #2a0e14"></button>
+            <button class="color-btn fs-color-btn" id="fsBg10" style="background: #0f172a"></button>
+            <button class="color-btn fs-color-btn" id="fsBg11" style="background: #1a0b3d"></button>
+            <button class="color-btn fs-color-btn" id="fsBg12" style="background: #3d1a0b"></button>
           </div>
 
           <button class="btn outline fs-btn" id="exitPreviewFullscreenBtn" style="grid-column: 1 / -1; margin-top: 4px;">⤫ Закрыть</button>
@@ -231,11 +224,11 @@
             <div class="direction-row">
               <fieldset class="segmented" id="directionSegmented">
                 <legend class="sr-only">Направление движения</legend>
-                <button class="seg-btn" data-mode="horizontal" onclick="setDirection('horizontal')" aria-label="Горизонтально" title="Горизонтальное движение"><strong>↔️</strong> Гориз.</button>
-                <button class="seg-btn" data-mode="vertical" onclick="setDirection('vertical')" aria-label="Вертикально" title="Вертикальное движение"><strong>↕️</strong> Вертик.</button>
-                <button class="seg-btn" data-mode="diagRL" onclick="setDirection('diagRL')" aria-label="Диагональ из верхнего левого в нижний правый" title="Диагональ ↖️→↘️"><strong>↖️→↘️</strong></button>
-                <button class="seg-btn" data-mode="diagRLL" onclick="setDirection('diagRLL')" aria-label="Диагональ из нижнего левого в верхний правый" title="Диагональ ↙️→↗️"><strong>↙️→↗️</strong></button>
-                <button class="seg-btn" data-mode="random" onclick="setDirection('random')" aria-label="Случайное направление" title="Случайное направление"><strong>🎲</strong> Случайное</button>
+                <button class="seg-btn" data-mode="horizontal" onclick="setDirection('horizontal')" title="Горизонтальное движение"><strong>↔️</strong> Гориз.</button>
+                <button class="seg-btn" data-mode="vertical" onclick="setDirection('vertical')" title="Вертикальное движение"><strong>↕️</strong> Вертик.</button>
+                <button class="seg-btn" data-mode="diagRL" onclick="setDirection('diagRL')" title="Диагональ ↖️→↘️"><strong>↖️→↘️</strong></button>
+                <button class="seg-btn" data-mode="diagRLL" onclick="setDirection('diagRLL')" title="Диагональ ↙️→↗️"><strong>↙️→↗️</strong></button>
+                <button class="seg-btn" data-mode="random" onclick="setDirection('random')" title="Случайное направление"><strong>🎲</strong> Случайное</button>
               </fieldset>
             </div>
           </div>

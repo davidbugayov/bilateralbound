@@ -1,7 +1,7 @@
 'use strict'
 
-const js = require('@eslint/js')
 const globals = require('globals')
+const js = require('@eslint/js')
 
 module.exports = [
   // 1. Global ignores
@@ -28,15 +28,17 @@ module.exports = [
 
   // 3. Server-side code (Node.js)
   {
-    files: ['packages/server-core/**/*.js', 'scripts/**/*.js', '*.js'],
+    files: [
+      'packages/server-core/**/*.js', 
+      'scripts/**/*.js'
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',
-      globals: {
-        ...globals.node
-      }
+      globals: globals.node
     },
     rules: {
+      // Error rules - critical issues
       'no-undef': 'error',
       'no-redeclare': 'error',
       'no-const-assign': 'error',
@@ -45,23 +47,32 @@ module.exports = [
       'no-async-promise-executor': 'error',
       'no-await-in-loop': 'error',
       'require-atomic-updates': 'error',
-      'prefer-const': 'warn',
+      'no-constant-condition': 'error',
+      
+      // Warning rules - style and best practices
+      'prefer-const': 'error',
       'no-empty': 'warn',
-      'no-multiple-empty-lines': ['warn', { max: 2 }],
-      'no-trailing-spaces': 'warn',
-      'no-extra-semi': 'warn',
-      semi: ['warn', 'never'],
-      quotes: ['warn', 'single'],
-      'quote-props': ['warn', 'as-needed'],
-      'comma-dangle': ['warn', 'never'],
+      'no-multiple-empty-lines': ['error', { max: 2 }],
+      'no-trailing-spaces': 'error',
+      'no-extra-semi': 'error',
+      semi: ['error', 'never'],
+      quotes: ['error', 'single'],
+      'quote-props': ['error', 'as-needed'],
+      'comma-dangle': ['error', 'never'],
+      
+      // Disabled rules for this project
       'no-console': 'off',
       'no-debugger': 'off'
     }
   },
 
-  // 4. Webpack and build configs
+  // 3.1. Config files (ESLint, webpack, etc.)
   {
-    files: ['webpack.config.js', 'config/**/*.js'],
+    files: [
+      'eslint.config.js',
+      'webpack.config.js', 
+      'config/**/*.js'
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',
@@ -70,9 +81,68 @@ module.exports = [
       }
     },
     rules: {
+      // More lenient rules for config files
+      'no-undef': 'off', // Allow global Node.js features
+      'no-console': 'off',
+      'no-debugger': 'off',
+      'no-unused-vars': 'warn'
+    }
+  },
+
+  // 4. Client-side code (Browser) - Web Client source files
+  {
+    files: ['packages/web-client/src/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.browser
+      }
+    },
+    rules: {
+      // Error rules - critical issues
       'no-undef': 'error',
+      'no-redeclare': 'error',
+      'no-const-assign': 'error',
+      'no-var': 'error',
+      'no-unused-vars': ['error', { args: 'none' }],
+      'no-async-promise-executor': 'error',
+      'no-await-in-loop': 'error',
+      'require-atomic-updates': 'error',
+      'no-constant-condition': 'error',
+      
+      // Warning rules - style and best practices
+      'prefer-const': 'error',
+      'no-empty': 'warn',
+      'no-multiple-empty-lines': ['error', { max: 2 }],
+      'no-trailing-spaces': 'error',
+      'no-extra-semi': 'error',
+      semi: ['error', 'never'],
+      quotes: ['error', 'single'],
+      'quote-props': ['error', 'as-needed'],
+      'comma-dangle': ['error', 'never'],
+      
+      // Disabled rules for this project
       'no-console': 'off',
       'no-debugger': 'off'
+    }
+  },
+
+  // 5. Test files
+  {
+    files: ['test/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.jest
+      }
+    },
+    rules: {
+      'no-undef': 'error',
+      'no-unused-vars': 'warn' // More lenient for tests
     }
   }
 ]

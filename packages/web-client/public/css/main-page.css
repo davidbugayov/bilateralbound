@@ -36,41 +36,41 @@
 
 /* Light theme для постоянных ссылок */
 .light-theme #customClientId {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(59, 130, 246, 0.4) !important;
-  color: #1e293b !important;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #1e293b;
 }
 
 .light-theme #customClientId:focus {
-  background: rgba(255, 255, 255, 1) !important;
-  border-color: rgba(37, 99, 235, 0.6) !important;
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(37, 99, 235, 0.6);
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .light-theme #existingSessionId {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(59, 130, 246, 0.4) !important;
-  color: #1e293b !important;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #1e293b;
 }
 
 .light-theme #existingSessionId:focus {
-  background: rgba(255, 255, 255, 1) !important;
-  border-color: rgba(37, 99, 235, 0.6) !important;
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(37, 99, 235, 0.6);
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .light-theme #generatedViewerUrl,
 .light-theme #generatedControllerUrl {
-  background: rgba(248, 250, 252, 0.9) !important;
-  color: #1e293b !important;
+  background: rgba(248, 250, 252, 0.9);
+  color: #1e293b;
 }
 
 .light-theme #generatedViewerUrl {
-  border-color: rgba(59, 130, 246, 0.5) !important;
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 .light-theme #generatedControllerUrl {
-  border-color: rgba(168, 85, 247, 0.5) !important;
+  border-color: rgba(168, 85, 247, 0.5);
 }
