@@ -1,24 +1,18 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v2.30.0
+## Текущая Версия: v2.31.0
 **Статус:** Активна
-**Дата релиза:** 11 ноября 2025 г. в 10:49
-**Коммит:** 38e3158
-### Основные Изменения v2.30.0:
-- ✨ 🏗️ Clean up and optimize project configuration
+**Дата релиза:** 11 ноября 2025 г. в 11:44
+**Коммит:** 24bdf78
+### Основные Изменения v2.31.0:
+- ✨ 🔄 Restore VPS deployment commands
 
-- Remove unused commands from package.json files (VPS, lint, format, build, test)
-- Clean up dependencies in all package.json files
-- Remove non-essential devDependencies (eslint, prettier, globals, clean-webpack-plugin)
-- Set up ESLint 9+ with modern configuration
-- Auto-fix all linting issues
-- Add lint command to package.json
-- Streamline workspace structure
-
-Result: Minimal, clean project configuration with working ESLint
+- Re-add vps:pull, vps:install, vps:start commands
+- vps:deploy now combines all VPS deployment steps
+- Commands ready for server deployment workflow
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v2.29.0** - Предыдущая версия
+- **v2.30.0** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -28,4 +22,4 @@ Result: Minimal, clean project configuration with working ESLint
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-11T07:49:29.289Z*
+*Автоматически сгенерировано: 2025-11-11T08:44:53.689Z*
