@@ -180,7 +180,7 @@ class SessionRepository {
   /**
    * Очищает истекшие сессии
    * @param {number} maxAge - Максимальный возраст сессии в мс (по умолчанию 1 час)
-   * @returns {number} Количество очищенных сессий
+   * @returns {Array} Массив ID удаленных сессий
    */
   cleanupExpired(maxAge = 60 * 60 * 1000) {
     // 1 hour
@@ -200,7 +200,7 @@ class SessionRepository {
     }
     // Также очищаем устаревший кэш
     this.cleanupCache()
-    return expiredIds.length
+    return expiredIds
   }
 }
 
