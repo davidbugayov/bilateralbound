@@ -1,21 +1,24 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v2.33.0
+## Текущая Версия: v2.34.0
 **Статус:** Активна
-**Дата релиза:** 11 ноября 2025 г. в 15:11
-**Коммит:** 8f10017
-### Основные Изменения v2.33.0:
-- ✨ Update UI styles, controller functionality, and project configuration
+**Дата релиза:** 11 ноября 2025 г. в 15:39
+**Коммит:** 1d05371
+### Основные Изменения v2.34.0:
+- ✨ Исправление проблем в new-features.js
 
-- Refactored ESLint configuration (moved from config/ to root)
-- Updated CSS files with improved styling for controller, viewer, and themes
-- Enhanced controller JavaScript functionality
-- Updated HTML templates for better user experience
-- Updated package-lock.json dependencies
-- Updated TODO list tracking
+- Заменены вызовы неопределённой функции showNotification()
+  на корректные вызовы globalThis.notificationSystem
+- Удалены избыточные переменные (preset, presetConfig)
+- Улучшена обработка ошибок с try/catch блоками
+- Добавлена опциональная цепочка для безопасного доступа
+- Код оптимизирован и стал более читаемым
+
+Проверка: все предупреждения об избыточных переменных и
+неопределённых функциях устранены.
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v2.32.0** - Предыдущая версия
+- **v2.33.0** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -25,4 +28,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-11T12:11:58.073Z*
+*Автоматически сгенерировано: 2025-11-11T12:39:31.190Z*

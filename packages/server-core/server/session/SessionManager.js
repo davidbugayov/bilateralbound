@@ -1,4 +1,3 @@
-'use strict'
 const PhysicsEngine = require('../../../web-client/public/js/physics-engine.js')
 const SessionRepository = require('./SessionRepository.js')
 const WebSocketManager = require('./WebSocketManager.js')
@@ -15,7 +14,6 @@ class SessionManager {
     this.sessionRepository = new SessionRepository()
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
     this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
-    this.physicsInterval = 1000 / 60 // ~60 FPS для более плавного движения
     this.apiCache = apiCache // Получаем ссылку на кэш API
     this.logger = {
       ...logger,
@@ -33,18 +31,10 @@ class SessionManager {
    */
   createSession(ballState = {}) {
     const session = this.sessionRepository.create({ ballState })
-    session.physicsEngine = new PhysicsEngine({
-      ballRadius: session.ballState.radius || 20,
-      maxSpeed: 5000
-    })
-    this._initPhysicsCallbacks(session)
-    const engineState = session.physicsEngine.getState()
-    Object.assign(session.ballState, engineState)
-    session.ballState.paused = true
-    session.physicsEngine.setPaused(true)
-    this.startPhysics(session.id)
+    this._initializePhysicsEngine(session)
     return session
   }
+
   /**
    * Создание сессии с определенным ID (для постоянных ссылок)
    * @param {string} sessionId - ID сессии
@@ -55,16 +45,7 @@ class SessionManager {
     const session = this.sessionRepository.findOrCreateById(sessionId, { ballState })
     if (!session) return null
     if (!session.physicsEngine) {
-      session.physicsEngine = new PhysicsEngine({
-        ballRadius: session.ballState.radius || 20,
-        maxSpeed: 5000
-      })
-      this._initPhysicsCallbacks(session)
-      const engineState = session.physicsEngine.getState()
-      Object.assign(session.ballState, engineState)
-      session.ballState.paused = true
-      session.physicsEngine.setPaused(true)
-      this.startPhysics(session.id)
+      this._initializePhysicsEngine(session)
     }
 
     return session
@@ -84,6 +65,24 @@ class SessionManager {
         // ignore
       }
     }
+  }
+
+  /**
+   * Инициализирует физический движок для сессии
+   * @param {Object} session - Сессия
+   * @private
+   */
+  _initializePhysicsEngine(session) {
+    session.physicsEngine = new PhysicsEngine({
+      ballRadius: session.ballState.radius || 20,
+      maxSpeed: 5000
+    })
+    this._initPhysicsCallbacks(session)
+    const engineState = session.physicsEngine.getState()
+    Object.assign(session.ballState, engineState)
+    session.ballState.paused = true
+    session.physicsEngine.setPaused(true)
+    this.startPhysics(session.id)
   }
 
   /**
@@ -205,6 +204,7 @@ class SessionManager {
     this.apiCache.delete(`state_${session.id}`)
     this.stateBroadcaster.broadcastState(session.id)
   }
+
   /**
    * Определяет задержку throttling в зависимости от типа обновления
    */
@@ -325,6 +325,7 @@ class SessionManager {
       this.broadcastControllerConnection(sessionId, false)
     }
   }
+
   /**
    * Рассылает событие о подключении/отключении контроллера всем клиентам сессии
    * @param {string} sessionId - ID сессии
