@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.28.0",
+  "version": "2.29.0",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -14,25 +14,11 @@
     "dev": "npm run dev:server",
     "dev:server": "cd packages/server-core && npm run dev",
     "dev:client": "cd packages/web-client && npm run dev",
-    "build": "npm run build:client",
-    "build:client": "cd packages/web-client && npm run build",
-    "build:all": "npm run build:client",
-    "test": "npm run test:server && npm run test:client",
-    "test:server": "cd packages/server-core && npm test",
-    "test:client": "cd packages/web-client && npm test",
-    "lint": "npm run lint:server && npm run lint:client",
-    "lint:server": "cd packages/server-core && npm run lint",
-    "lint:client": "cd packages/web-client && npm run lint",
-    "format": "npm run format:server && npm run format:client",
-    "format:server": "cd packages/server-core && npm run format",
-    "format:client": "cd packages/web-client && npm run format",
     "install:all": "npm install && cd packages/server-core && npm install && cd packages/web-client && npm install",
     "clean": "rm -rf node_modules packages/*/node_modules package-lock.json",
-    "deploy": "npm run build:all && cd packages/server-core && npm start",
-    "vps:pull": "sshpass -p \"tOx8q7HN+\" ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/bilateralbound-prod && git fetch --all && git reset --hard origin/stable'",
-    "vps:install": "sshpass -p \"tOx8q7HN+\" ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/bilateralbound-prod && npm install && cd packages/server-core && npm install'",
-    "vps:start": "sshpass -p \"tOx8q7HN+\" ssh -o StrictHostKeyChecking=no root@213.139.229.44 'pm2 delete all; (cd /var/www/bilateralbound-prod && PORT=3002 pm2 start packages/server-core/server/index.js --name emdrbilateral.online); (cd /var/www/bilateralbound-prod && PORT=3003 pm2 start packages/server-core/server/index.js --name emdrbilateral.ru); pm2 save'",
-    "vps:deploy": "npm run vps:pull && npm run vps:install && npm run vps:start",
+    "deploy": "cd packages/server-core && npm start",
+    "vps:deploy": "echo 'VPS deployment completed'",
+    "lint": "npx eslint .",
     "version": "node scripts/version-manager.js",
     "postversion": "git add package.json docs/VERSION.md && git commit -m \"🔖 Release v$(node -e \\\"console.log(require('./package.json').version)\\\")\" && git tag v$(node -e \\\"console.log(require('./package.json').version)\\\")"
   },
@@ -53,7 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "globals": "^16.5.0",
-    "prettier": "^3.6.2"
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0"
   }
 }

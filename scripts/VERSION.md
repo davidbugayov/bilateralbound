@@ -1,20 +1,20 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v2.28.0
+## Текущая Версия: v2.29.0
 **Статус:** Активна
-**Дата релиза:** 10 ноября 2025 г. в 15:56
-**Коммит:** 3770606
-### Основные Изменения v2.28.0:
-- ✨ fix: resolve resetSession function and improve code quality
+**Дата релиза:** 11 ноября 2025 г. в 10:36
+**Коммит:** 2313a22
+### Основные Изменения v2.29.0:
+- ✨ feat: update color palettes - add 2 more colors to ball/background controls, restore 6 dark + 6 light background colors
 
-- Implement resetSession() function for session reset functionality
-- Replace Math.sqrt() with Math.hypot() for better numerical stability in diagonal calculations
-- Fix notification system API call to use proper options object
-- Resolve unresolved variable references (previewRenderer, fullscreenPreviewRenderer)
-- Fix linting issues with nested if-else structures
+- Add 2 additional colors to ball color control (12 total)
+- Add 2 additional colors to background color control (12 total)
+- Restore background color palette to 6 dark colors followed by 6 light colors
+- Update fullscreen color controls to match main controls
+- All color arrays now have consistent 12 colors across the application
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v2.27.0** - Предыдущая версия
+- **v2.28.0** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -24,4 +24,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-10T12:56:49.627Z*
+*Автоматически сгенерировано: 2025-11-11T07:36:52.407Z*
