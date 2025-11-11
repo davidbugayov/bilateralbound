@@ -1,20 +1,24 @@
 # BilateralBound - Система Версионирования
-## Текущая Версия: v2.29.0
+## Текущая Версия: v2.30.0
 **Статус:** Активна
-**Дата релиза:** 11 ноября 2025 г. в 10:36
-**Коммит:** 2313a22
-### Основные Изменения v2.29.0:
-- ✨ feat: update color palettes - add 2 more colors to ball/background controls, restore 6 dark + 6 light background colors
+**Дата релиза:** 11 ноября 2025 г. в 10:49
+**Коммит:** 38e3158
+### Основные Изменения v2.30.0:
+- ✨ 🏗️ Clean up and optimize project configuration
 
-- Add 2 additional colors to ball color control (12 total)
-- Add 2 additional colors to background color control (12 total)
-- Restore background color palette to 6 dark colors followed by 6 light colors
-- Update fullscreen color controls to match main controls
-- All color arrays now have consistent 12 colors across the application
+- Remove unused commands from package.json files (VPS, lint, format, build, test)
+- Clean up dependencies in all package.json files
+- Remove non-essential devDependencies (eslint, prettier, globals, clean-webpack-plugin)
+- Set up ESLint 9+ with modern configuration
+- Auto-fix all linting issues
+- Add lint command to package.json
+- Streamline workspace structure
+
+Result: Minimal, clean project configuration with working ESLint
 - 🔄 Автоматическое обновление версии
 - 🚀 Готов к развертыванию
 ### Предыдущие Версии:
-- **v2.28.0** - Предыдущая версия
+- **v2.29.0** - Предыдущая версия
 ### Правила Версионирования:
 1. **Major** (X.y.z) - Глобальные изменения архитектуры
 2. **Minor** (x.Y.z) - Новые функции и оптимизации
@@ -24,4 +28,4 @@
 - Деплой происходит автоматически через GitHub Actions
 - Мобильная версия скрывает индикатор версии
 ---
-*Автоматически сгенерировано: 2025-11-11T07:36:52.407Z*
+*Автоматически сгенерировано: 2025-11-11T07:49:29.289Z*
