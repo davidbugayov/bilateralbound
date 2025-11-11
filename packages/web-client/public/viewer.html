@@ -96,10 +96,10 @@
       let resizeTimeout = null;
       let lastScreenSizeUpdate = 0;
 
-      // Debug loggers
-      window.debugLog = window.debugLog || function () {};
-      window.debugError = window.debugError || function () {};
-      window.debugWarn = window.debugWarn || function () {};
+      // Debug loggers - исправлено для избежания ошибки const assignment
+      if (!window.debugLog) window.debugLog = function () {};
+      if (!window.debugError) window.debugError = function () {};
+      if (!window.debugWarn) window.debugWarn = function () {};
 
       // Initialize on DOM load
       document.addEventListener('DOMContentLoaded', async function () {
@@ -287,13 +287,17 @@
 
           if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText || 'Не удалось подключиться к сессии'}`);
+            // Исправлено: убрали throw из try-catch для избежания ошибки
+            const errorMessage = `HTTP ${response.status}: ${errorText || 'Не удалось подключиться к сессии'}`;
+            debugError('❌ Ошибка подключения к сессии:', errorMessage);
+            showError(errorMessage);
+            return;
           }
 
           debugLog('✅ Подключение к сессии успешно');
         } catch (error) {
           debugError('❌ Ошибка подключения к сессии:', error);
-          throw error;
+          showError('Ошибка подключения: ' + error.message);
         }
       }
 

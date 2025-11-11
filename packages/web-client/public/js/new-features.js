@@ -1,10 +1,3 @@
-'use strict'
-/**
- * Новые функциональные улучшения для BilateralBound
- * Добавлены в v1.2.0
- */
-/* exported applyPreset, createCustomPreset, exportSession, importSession */
-
 /**
  * Генерирует уникальный идентификатор сессии
  * @returns {string} Уникальный ID сессии
@@ -49,14 +42,14 @@ class FeatureManager {
    */
   loadPresets() {
     const defaultPresets = {
-      Релаксация: {
+      'Релаксация': {
         speed: 20,
         direction: 'horizontal',
         colorBall: '#60a5fa',
         colorBg: '#020617',
         size: 20
       },
-      Активация: {
+      'Активация': {
         speed: 80,
         direction: 'vertical',
         colorBall: '#ef4444',
@@ -70,7 +63,7 @@ class FeatureManager {
         colorBg: '#052e16',
         size: 25
       },
-      Динамическая: {
+      'Динамическая': {
         speed: 60,
         direction: 'diagRLL',
         colorBall: '#f59e0b',
@@ -122,8 +115,9 @@ class FeatureManager {
     try {
       await this._applyPresetSettings(preset)
       this._showPresetAppliedNotification(preset)
-    } catch {
-      this.showNotification('Ошибка применения пресета', 'error')
+    } catch (error) {
+      console.error('Apply preset error:', error)
+      globalThis.notificationSystem?.error('Ошибка', 'Ошибка применения пресета')
     }
   }
 
@@ -141,7 +135,7 @@ class FeatureManager {
    */
   _showPresetAppliedNotification(preset) {
     const presetName = Object.keys(this.presets).find(key => this.presets[key] === preset)
-    this.showNotification(`Пресет "${presetName}" применён`, 'success')
+    globalThis.notificationSystem?.success('', `Пресет "${presetName}" применён`)
   }
 
   /**
@@ -151,7 +145,8 @@ class FeatureManager {
     const name = prompt('Название нового пресета:')
     if (!name || name.trim() === '') return
     const colorBtn = document.querySelector('.color-btn.active')
-    const preset = {
+
+    this.presets[name.trim()] = {
       speed: globalThis.components?.speed?.getSpeed?.() ?? 40,
       colorBall: colorBtn?.style?.backgroundColor ?? '#60a5fa',
       colorBg: document.body.style.backgroundColor || '#020617',
@@ -159,10 +154,9 @@ class FeatureManager {
       direction: globalThis.currentDirectionMode || 'horizontal'
     }
 
-    this.presets[name.trim()] = preset
     this.savePresets()
     this.addPresetControls()
-    this.showNotification(`Пресет "${name}" сохранён`, 'success')
+    globalThis.notificationSystem?.success('', `Пресет "${name}" сохранён`)
   }
 
   savePresets() {
@@ -221,7 +215,7 @@ class FeatureManager {
     link.download = `bilateralbound-session-${new Date().toISOString().split('T')[0]}.json`
     link.click()
     URL.revokeObjectURL(url)
-    this.showNotification('Сессия экспортирована', 'success')
+    globalThis.notificationSystem?.success('', 'Сессия экспортирована')
   }
 
   /**
@@ -241,10 +235,10 @@ class FeatureManager {
         this.applyCounters(sessionData.counters)
       }
 
-      this.showNotification('Сессия импортирована', 'success')
+      globalThis.notificationSystem?.success('', 'Сессия импортирована')
     } catch (error) {
-      this.showNotification('Ошибка импорта сессии', 'error')
       console.error('Import error:', error)
+      globalThis.notificationSystem?.error('Ошибка', 'Ошибка импорта сессии')
     }
   }
 
@@ -393,7 +387,7 @@ class FeatureManager {
    */
   async undoLastChange() {
     if (this.sessionHistory.length < 2) {
-      this.showNotification('Нет изменений для отмены', 'warning')
+      globalThis.notificationSystem?.warning('', 'Нет изменений для отмены')
       return
     }
 
@@ -401,7 +395,7 @@ class FeatureManager {
     const previousState = this.sessionHistory.at(-1)
 
     await this.applyState(previousState)
-    this.showNotification('Изменение отменено', 'success')
+    globalThis.notificationSystem?.success('', 'Изменение отменено')
   }
 
   /**
@@ -598,7 +592,7 @@ class FeatureManager {
       this._applySessionCounters(sessionData?.counters)
     } catch (e) {
       console.error('applySessionData error', e)
-      this.showNotification('Ошибка применения сессии', 'error')
+      globalThis.notificationSystem?.error('Ошибка', 'Ошибка применения сессии')
     }
   }
 
@@ -649,29 +643,7 @@ class FeatureManager {
     this.saveSessions()
     this.renderSessionsList()
     this.updateHeaderSessionName()
-    this.showNotification(`Сессия "${name}" сохранена`, 'success')
-  }
-
-  updateCurrentSession(nameRaw) {
-    if (!this.currentSessionId) {
-      this.showNotification('Нет выбранной сессии для обновления', 'warning')
-      return
-    }
-
-    const session = this.sessions.find(s => s.id === this.currentSessionId)
-    if (!session) {
-      this.showNotification('Текущая сессия не найдена', 'error')
-      return
-    }
-
-    let name = (nameRaw || session.name || 'Сессия').trim()
-    session.name = name
-    session.data = this.buildCurrentSessionData()
-    session.updatedAt = new Date().toISOString()
-    this.saveSessions()
-    this.renderSessionsList()
-    this.updateHeaderSessionName()
-    this.showNotification('Сессия обновлена', 'success')
+    globalThis.notificationSystem?.success('', `Сессия "${name}" сохранена`)
   }
 
   async loadSessionById(id) {
@@ -683,7 +655,7 @@ class FeatureManager {
     if (input) input.value = session.name
     this.updateHeaderSessionName()
     this.renderSessionsList()
-    this.showNotification(`Загружена сессия "${session.name}"`, 'success')
+    globalThis.notificationSystem?.success('', `Загружена сессия "${session.name}"`)
   }
 
   renameSessionById(id) {
@@ -713,7 +685,7 @@ class FeatureManager {
     this.saveSessions()
     this.renderSessionsList()
     this.updateHeaderSessionName()
-    this.showNotification(`Сессия "${removed?.name || ''}" удалена`, 'success')
+    globalThis.notificationSystem?.success('', `Сессия "${removed?.name || ''}" удалена`)
   }
 
   _updateExistingSession(session) {
