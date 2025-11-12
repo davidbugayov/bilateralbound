@@ -1857,6 +1857,41 @@ function fillFsSessionInfo() {
 
 
 /**
+ * Сбрасывает состояние сессии (счётчики, позицию мяча)
+ */
+function resetSession() {
+  try {
+    console.log('🔄 Сброс сессии...')
+
+    // Сбрасываем счётчики
+    bbCounters.resetAll()
+
+    // Останавливаем игру если она активна
+    if (isPlaying) {
+      _handlePause()
+      updatePlayPauseButton()
+    }
+
+    // Возвращаем мяч в центр
+    safeSend(WS_MSG.controllerUpdate, {
+      paused: true,
+      returnToCenter: true
+    })
+
+    // Сбрасываем направление на горизонтальное
+    setDirection('horizontal')
+
+    // Показываем уведомление
+    showNotification('Сессия сброшена', 'info')
+
+    console.log('✅ Сессия сброшена')
+  } catch (error) {
+    console.error('❌ Ошибка при сбросе сессии:', error)
+    showNotification('Ошибка при сбросе сессии', 'error')
+  }
+}
+
+/**
  * Отображает уведомление пользователю
  * @param {string} message - Текст сообщения
  * @param {string} type - Тип уведомления ('info', 'success', 'warning', 'error')

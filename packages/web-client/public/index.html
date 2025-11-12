@@ -364,7 +364,7 @@
             </p>
           </section>
           <div class="page-footer-container">
-            <footer class="footer">⚡ BilateralBound v2.36.0</footer>
+            <footer class="footer">⚡ BilateralBound v2.37.0</footer>
           </div>
         </section>
       </article>
@@ -609,7 +609,7 @@
         const input = document.getElementById('customClientId')
         if (input) {
           input.addEventListener('input', e => {
-            const value = e.target.value.trim()
+            const value = e.target?.value?.trim() || ''
             if (!value) {
               updateValidationMessage('Примеры: anna_2025, client-ivan, session42', false)
             } else if (validateClientId(value)) {

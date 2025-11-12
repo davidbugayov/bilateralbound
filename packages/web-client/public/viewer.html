@@ -70,7 +70,7 @@
         <div id="statusContainer" aria-live="polite"></div>
         <button class="fullscreen-btn" onclick="toggleFullscreen()" aria-label="Переключить полноэкранный режим">⛶ Полноэкранный</button>
       </header>
-      <canvas id="viewerCanvas" class="viewer-canvas" role="img">
+      <canvas id="viewerCanvas" class="viewer-canvas">
         <p class="sr-only">
           Анимация движущегося шарика для EMDR-терапии.
         </p>
@@ -95,11 +95,6 @@
       const components = {};
       let resizeTimeout = null;
       let lastScreenSizeUpdate = 0;
-
-      // Debug loggers - исправлено для избежания ошибки const assignment
-      if (!window.debugLog) window.debugLog = function () {};
-      if (!window.debugError) window.debugError = function () {};
-      if (!window.debugWarn) window.debugWarn = function () {};
 
       // Initialize on DOM load
       document.addEventListener('DOMContentLoaded', async function () {
