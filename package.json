@@ -22,8 +22,19 @@
     "vps:start": "sshpass -p \"tOx8q7HN+\" ssh -o StrictHostKeyChecking=no root@213.139.229.44 'pm2 delete all; (cd /var/www/bilateralbound-prod && PORT=3002 pm2 start packages/server-core/server/index.js --name emdrbilateral.online); (cd /var/www/bilateralbound-prod && PORT=3003 pm2 start packages/server-core/server/index.js --name emdrbilateral.ru); pm2 save'",
     "vps:deploy": "npm run vps:pull && npm run vps:install && npm run vps:start",
     "lint": "npx eslint .",
+    "lint:css": "npx stylelint 'packages/web-client/public/css/**/*.css'",
+    "lint:html": "npx htmlhint 'packages/web-client/public/**/*.html'",
+    "lint:all": "npm run lint:css && npm run lint:html",
+    "lint:css:fix": "npx stylelint 'packages/web-client/public/css/**/*.css' --fix",
+    "lint:html:fix": "npx htmlhint 'packages/web-client/public/**/*.html' --fix",
+    "lint:fix": "npm run lint:css:fix && npm run lint:html:fix",
+    "format:css": "npx prettier --write 'packages/web-client/public/css/**/*.css'",
+    "format:html": "npx prettier --write 'packages/web-client/public/**/*.html'",
+    "format:all": "npm run format:css && npm run format:html",
+    "pre-commit": "npm run lint:all && npm run format:all",
     "version": "node scripts/version-manager.js",
-    "postversion": "git add package.json docs/VERSION.md && git commit -m \"🔖 Release v$(node -e \\\"console.log(require('./package.json').version)\\\")\" && git tag v$(node -e \\\"console.log(require('./package.json').version)\\\")"
+    "postversion": "git add package.json docs/VERSION.md && git commit -m \"🔖 Release v$(node -e \\\"console.log(require('./package.json').version)\\\")\" && git tag v$(node -e \\\"console.log(require('./package.json').version)\\\")",
+    "prepare": "husky"
   },
   "keywords": [
     "emdr",
@@ -42,7 +53,15 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@stylistic/eslint-plugin": "^5.5.0",
     "eslint": "^9.39.1",
-    "globals": "^16.5.0"
+    "globals": "^16.5.0",
+    "htmlhint": "^1.7.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2",
+    "stylelint": "^16.25.0",
+    "stylelint-config-prettier": "^9.0.5",
+    "stylelint-config-standard": "^39.0.1"
   }
 }

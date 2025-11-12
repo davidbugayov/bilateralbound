@@ -2,6 +2,7 @@
 
 const globals = require('globals')
 const js = require('@eslint/js')
+const stylistic = require('@stylistic/eslint-plugin')
 
 // Define common rules to be shared across configurations
 const commonRules = {
@@ -16,16 +17,18 @@ const commonRules = {
   'require-atomic-updates': 'error',
   'no-constant-condition': 'error',
 
-  // Warning rules - style and best practices
+  // Warning rules - style and best practices (migrated to @stylistic)
   'prefer-const': 'error',
   'no-empty': 'warn',
-  'no-multiple-empty-lines': ['error', { max: 2 }],
-  'no-trailing-spaces': 'error',
-  'no-extra-semi': 'error',
-  semi: ['error', 'never'],
-  quotes: ['error', 'single'],
-  'quote-props': ['error', 'as-needed'],
-  'comma-dangle': ['error', 'never'],
+  
+  // @stylistic rules (replaced deprecated core rules)
+  '@stylistic/no-multiple-empty-lines': ['error', { max: 2 }],
+  '@stylistic/no-trailing-spaces': 'error',
+  '@stylistic/no-extra-semi': 'error',
+  '@stylistic/semi': ['error', 'never'],
+  '@stylistic/quotes': ['error', 'single'],
+  '@stylistic/quote-props': ['error', 'as-needed'],
+  '@stylistic/comma-dangle': ['error', 'never'],
 
   // Disabled rules for this project
   'no-console': 'off',
@@ -33,6 +36,13 @@ const commonRules = {
 }
 
 module.exports = [
+  // 0. Import @stylistic plugin
+  {
+    plugins: {
+      '@stylistic': stylistic
+    }
+  },
+
   // 1. Global ignores
   {
     ignores: [

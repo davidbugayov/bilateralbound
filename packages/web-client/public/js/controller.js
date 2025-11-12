@@ -4,7 +4,7 @@
  * Современная модульная архитектура с улучшенной обработкой ошибок
  */
 // Экспортируем функции для использования в тестах
-/* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause */
+/* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 globalThis.__current = {
   sessionId: null,
@@ -1878,7 +1878,7 @@ function fillFsSessionInfo() {
 /**
  * Сбрасывает состояние сессии (счётчики, позицию мяча)
  */
-// eslint-disable-next-line no-unused-vars
+
 function resetSession() {
   try {
     console.log('🔄 Сброс сессии...')

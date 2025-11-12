@@ -8,7 +8,10 @@
     />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta
       name="description"
       content="EMDR терапия вьювер - наблюдение за биодинамической стимуляцией. Инструмент для пациентов при проведении EMDR терапии онлайн"
@@ -27,14 +30,25 @@
     <meta name="target-audience" content="EMDR Patients, Couples" />
 
     <!-- Favicon for Viewer (Eye Icon) -->
-    <link rel="icon" type="image/svg+xml" href="/favicon-viewer.svg?v=202509031200" />
-    <link rel="icon" type="image/x-icon" href="/favicon-viewer.ico?v=202509031200" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/favicon-viewer.svg?v=202509031200"
+    />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="/favicon-viewer.ico?v=202509031200"
+    />
     <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=202509031200" />
     <link rel="shortcut icon" href="/favicon-viewer.ico?v=202509031200" />
 
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="BilateralBound - EMDR терапия для пациентов" />
+    <meta
+      property="og:title"
+      content="BilateralBound - EMDR терапия для пациентов"
+    />
     <meta
       property="og:description"
       content="EMDR терапия вьювер для наблюдения за биодинамической стимуляцией в парной терапии"
@@ -68,12 +82,16 @@
     <main class="viewer-container">
       <header>
         <div id="statusContainer" aria-live="polite"></div>
-        <button class="fullscreen-btn" onclick="toggleFullscreen()" aria-label="Переключить полноэкранный режим">⛶ Полноэкранный</button>
+        <button
+          class="fullscreen-btn"
+          onclick="toggleFullscreen()"
+          aria-label="Переключить полноэкранный режим"
+        >
+          ⛶ Полноэкранный
+        </button>
       </header>
       <canvas id="viewerCanvas" class="viewer-canvas">
-        <p class="sr-only">
-          Анимация движущегося шарика для EMDR-терапии.
-        </p>
+        <p class="sr-only">Анимация движущегося шарика для EMDR-терапии.</p>
       </canvas>
       <div id="loading" class="loading" aria-live="polite">Загрузка...</div>
     </main>
@@ -85,7 +103,7 @@
     <script src="/js/shared-components.js" defer></script>
 
     <script>
-      'use strict';
+      "use strict";
 
       // Global variables
       let wsClient;
@@ -97,37 +115,37 @@
       let lastScreenSizeUpdate = 0;
 
       // Initialize on DOM load
-      document.addEventListener('DOMContentLoaded', async function () {
+      document.addEventListener("DOMContentLoaded", async function () {
         try {
           const sessionId = getSessionIdFromUrl();
           if (!sessionId) {
-            showError('Session ID не найден в URL');
+            showError("Session ID не найден в URL");
             return;
           }
 
-          debugLog('📱 Session ID получен:', sessionId);
+          debugLog("📱 Session ID получен:", sessionId);
           initializeComponents();
           await initializeViewer(sessionId);
         } catch (error) {
-          debugError('❌ Критическая ошибка инициализации:', error);
-          showError('Ошибка инициализации: ' + error.message);
+          debugError("❌ Критическая ошибка инициализации:", error);
+          showError("Ошибка инициализации: " + error.message);
         }
       });
 
       function initializeComponents() {
         components.status = sharedComponents.createStatusIndicator(
-          document.getElementById('statusContainer'),
+          document.getElementById("statusContainer"),
           {
-            title: 'Подключение...',
+            title: "Подключение...",
             showIcon: true,
-            autoHide: false
-          }
+            autoHide: false,
+          },
         );
       }
 
       async function initializeViewer(sessionId) {
         try {
-          debugLog('📱 Инициализация viewer для сессии:', sessionId);
+          debugLog("📱 Инициализация viewer для сессии:", sessionId);
           hideLoading();
 
           if (!window.__current) {
@@ -135,9 +153,9 @@
           }
           window.__current.sessionId = sessionId;
 
-          const canvas = document.getElementById('viewerCanvas');
+          const canvas = document.getElementById("viewerCanvas");
           if (!canvas) {
-            console.error('Canvas не найден');
+            console.error("Canvas не найден");
             return;
           }
 
@@ -147,22 +165,22 @@
             worldWidth: window.innerWidth,
             worldHeight: window.innerHeight,
             isViewer: true,
-            bounceCallback: null
+            bounceCallback: null,
           });
           window.physicsEngine = physicsEngine;
 
           ballRenderer = new BallRenderer(canvas, physicsEngine, {
             localPhysics: false,
-            bounceCallback: null
+            bounceCallback: null,
           });
 
           await connectToSession(sessionId);
 
-          wsClient = new WebSocketClient(sessionId, 'viewer');
+          wsClient = new WebSocketClient(sessionId, "viewer");
           window.wsClient = wsClient;
 
-          wsClient.on(WS_MSG.initialState, state => {
-            debugLog('✅ Получено начальное состояние', state);
+          wsClient.on(WS_MSG.initialState, (state) => {
+            debugLog("✅ Получено начальное состояние", state);
             physicsEngine.applyCommand(state);
             if (state && state.paused === false) {
               physicsEngine.setPaused(false);
@@ -170,7 +188,7 @@
             updateStatus(state);
           });
 
-          wsClient.on(WS_MSG.stateUpdate, command => {
+          wsClient.on(WS_MSG.stateUpdate, (command) => {
             physicsEngine.applyCommand(command);
             if (command && command.paused === false) {
               physicsEngine.setPaused(false);
@@ -180,45 +198,47 @@
           });
 
           // Обработчик для события подключения контроллера
-          wsClient.on('controller_connected', data => {
-            debugLog('🔌 Контроллер подключился:', data);
+          wsClient.on("controller_connected", (data) => {
+            debugLog("🔌 Контроллер подключился:", data);
             updateStatus(data);
           });
 
-          wsClient.on('controller_disconnected', data => {
-            debugLog('🔌 Контроллер отключился:', data);
+          wsClient.on("controller_disconnected", (data) => {
+            debugLog("🔌 Контроллер отключился:", data);
             updateStatus(data);
           });
 
-          wsClient.on('open', () => {
-            debugLog('✅ WebSocket connection established.');
-            components.status.setStatus('success', 'Соединение установлено');
+          wsClient.on("open", () => {
+            debugLog("✅ WebSocket connection established.");
+            components.status.setStatus("success", "Соединение установлено");
             // Запрашиваем текущее состояние подключения контроллера
             wsClient
-              .send('get_controller_status', {})
-              .catch(error => debugWarn('Не удалось запросить статус контроллера:', error));
+              .send("get_controller_status", {})
+              .catch((error) =>
+                debugWarn("Не удалось запросить статус контроллера:", error),
+              );
 
             // Уведомляем сервер о подключении вьювера
-            wsClient.send('viewer_connected', {
+            wsClient.send("viewer_connected", {
               timestamp: Date.now(),
               sessionId: sessionId,
-              role: 'viewer'
+              role: "viewer",
             });
           });
 
-          wsClient.on('close', () => {
-            debugWarn('🔌 WebSocket connection closed.');
-            showError('Соединение потеряно. Попытка переподключения...');
+          wsClient.on("close", () => {
+            debugWarn("🔌 WebSocket connection closed.");
+            showError("Соединение потеряно. Попытка переподключения...");
           });
 
-          wsClient.on('error', error => {
-            debugError('❌ WebSocket error:', error);
-            showError('Ошибка соединения.');
+          wsClient.on("error", (error) => {
+            debugError("❌ WebSocket error:", error);
+            showError("Ошибка соединения.");
           });
 
           // Обработчик для получения статуса контроллера
-          wsClient.on('controller_status', status => {
-            debugLog('📊 Статус контроллера:', status);
+          wsClient.on("controller_status", (status) => {
+            debugLog("📊 Статус контроллера:", status);
             updateStatus(status);
           });
 
@@ -243,7 +263,10 @@
             }
 
             const now = performance.now();
-            const alpha = Math.max(0, Math.min(1, (now - lastPhysicsUpdateTs) / PHYSICS_DT));
+            const alpha = Math.max(
+              0,
+              Math.min(1, (now - lastPhysicsUpdateTs) / PHYSICS_DT),
+            );
 
             const interpolatedState = physicsEngine.getInterpolatedBall(alpha);
             ballRenderer.drawFrame(interpolatedState);
@@ -254,50 +277,53 @@
           requestAnimationFrame(renderLoop);
           setupEventListeners();
 
-          debugLog('✅ Viewer успешно инициализирован');
+          debugLog("✅ Viewer успешно инициализирован");
         } catch (error) {
-          debugError('❌ Ошибка инициализации viewer:', error);
-          showError('Ошибка инициализации: ' + error.message);
+          debugError("❌ Ошибка инициализации viewer:", error);
+          showError("Ошибка инициализации: " + error.message);
         }
       }
 
       async function connectToSession(sessionId) {
         try {
-          const canvasElement = document.getElementById('viewerCanvas');
+          const canvasElement = document.getElementById("viewerCanvas");
           if (!canvasElement) {
-            console.error('Canvas не найден');
+            console.error("Canvas не найден");
             return;
           }
 
-          const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              screenSize: {
-                width: window.innerWidth,
-                height: window.innerHeight
-              }
-            })
-          });
+          const response = await fetch(
+            `/api/session/${sessionId}/viewer/connect`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                screenSize: {
+                  width: window.innerWidth,
+                  height: window.innerHeight,
+                },
+              }),
+            },
+          );
 
           if (!response.ok) {
             const errorText = await response.text();
             // Исправлено: убрали throw из try-catch для избежания ошибки
-            const errorMessage = `HTTP ${response.status}: ${errorText || 'Не удалось подключиться к сессии'}`;
-            debugError('❌ Ошибка подключения к сессии:', errorMessage);
+            const errorMessage = `HTTP ${response.status}: ${errorText || "Не удалось подключиться к сессии"}`;
+            debugError("❌ Ошибка подключения к сессии:", errorMessage);
             showError(errorMessage);
             return;
           }
 
-          debugLog('✅ Подключение к сессии успешно');
+          debugLog("✅ Подключение к сессии успешно");
         } catch (error) {
-          debugError('❌ Ошибка подключения к сессии:', error);
-          showError('Ошибка подключения: ' + error.message);
+          debugError("❌ Ошибка подключения к сессии:", error);
+          showError("Ошибка подключения: " + error.message);
         }
       }
 
       function resizeCanvas() {
-        const canvas = document.getElementById('viewerCanvas');
+        const canvas = document.getElementById("viewerCanvas");
         if (!canvas) return;
 
         canvas.width = window.innerWidth;
@@ -322,60 +348,68 @@
             return;
           }
 
-          const response = await fetch(`/api/session/${sessionId}/viewer/screen-size`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              width: window.innerWidth,
-              height: window.innerHeight
-            }),
-            signal: AbortSignal.timeout(5000)
-          });
+          const response = await fetch(
+            `/api/session/${sessionId}/viewer/screen-size`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                width: window.innerWidth,
+                height: window.innerHeight,
+              }),
+              signal: AbortSignal.timeout(5000),
+            },
+          );
 
           if (!response.ok) {
             const errorText = await response.text();
-            const errorMessage = `HTTP ${response.status}: ${errorText || 'Неизвестная ошибка'}`;
+            const errorMessage = `HTTP ${response.status}: ${errorText || "Неизвестная ошибка"}`;
             showWarning(`Не удалось обновить размер экрана: ${errorMessage}`);
             return;
           }
 
           lastScreenSizeUpdate = now;
           debugLog(
-            `✅ Размер экрана обновлен на сервере: ${window.innerWidth}×${window.innerHeight}`
+            `✅ Размер экрана обновлен на сервере: ${window.innerWidth}×${window.innerHeight}`,
           );
         } catch (error) {
-          if (error.name === 'AbortError') {
-            debugLog('⏰ Таймаут при обновлении размера экрана');
-          } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            debugLog('🌐 Сеть недоступна при обновлении размера экрана');
+          if (error.name === "AbortError") {
+            debugLog("⏰ Таймаут при обновлении размера экрана");
+          } else if (
+            error.name === "TypeError" &&
+            error.message.includes("fetch")
+          ) {
+            debugLog("🌐 Сеть недоступна при обновлении размера экрана");
           } else {
-            debugError('Ошибка при обновлении размера экрана:', error);
+            debugError("Ошибка при обновлении размера экрана:", error);
           }
         }
       }
 
       function updateStatus(sessionData) {
         if (components.status) {
-          debugLog('📊 Обновление статуса:', sessionData);
+          debugLog("📊 Обновление статуса:", sessionData);
 
           // Проверяем наличие данных о подключении контроллера
           if (sessionData.controllerConnected === true) {
-            components.status.setStatus('success', 'Контроллер подключен');
-            debugLog('✅ Статус обновлен: Контроллер подключен');
+            components.status.setStatus("success", "Контроллер подключен");
+            debugLog("✅ Статус обновлен: Контроллер подключен");
           } else if (sessionData.controllerConnected === false) {
-            components.status.setStatus('error', 'Контроллер отключен');
-            debugLog('❌ Статус обновлен: Контроллер отключен');
+            components.status.setStatus("error", "Контроллер отключен");
+            debugLog("❌ Статус обновлен: Контроллер отключен");
           } else {
             // Если данных о контроллере нет, используем статус WebSocket соединения
             if (wsClient && wsClient.isConnected) {
               components.status.setStatus(
-                'success',
-                'Соединение установлено, ожидание контроллера...'
+                "success",
+                "Соединение установлено, ожидание контроллера...",
               );
-              debugLog('⏳ Статус обновлен: Ожидание контроллера');
+              debugLog("⏳ Статус обновлен: Ожидание контроллера");
             } else {
-              components.status.setStatus('error', 'Контроллер отключен');
-              debugLog('❌ Статус обновлен: Контроллер отключен (нет WebSocket)');
+              components.status.setStatus("error", "Контроллер отключен");
+              debugLog(
+                "❌ Статус обновлен: Контроллер отключен (нет WebSocket)",
+              );
             }
           }
         }
@@ -383,18 +417,18 @@
 
       function showError(message) {
         if (components.status) {
-          components.status.setStatus('error', message);
+          components.status.setStatus("error", message);
         }
       }
 
       function showWarning(message) {
-        debugWarn('⚠️ Предупреждение viewer:', message);
+        debugWarn("⚠️ Предупреждение viewer:", message);
       }
 
       function hideLoading() {
-        const loading = document.getElementById('loading');
+        const loading = document.getElementById("loading");
         if (loading) {
-          loading.style.display = 'none';
+          loading.style.display = "none";
         }
       }
 
@@ -403,15 +437,18 @@
 
       async function requestScreenWakeLock() {
         try {
-          if ('wakeLock' in navigator && document.visibilityState === 'visible') {
-            screenWakeLock = await navigator.wakeLock.request('screen');
-            screenWakeLock.addEventListener('release', () => {
-              debugLog('🔓 Wake Lock released');
+          if (
+            "wakeLock" in navigator &&
+            document.visibilityState === "visible"
+          ) {
+            screenWakeLock = await navigator.wakeLock.request("screen");
+            screenWakeLock.addEventListener("release", () => {
+              debugLog("🔓 Wake Lock released");
             });
-            debugLog('🔒 Wake Lock acquired');
+            debugLog("🔒 Wake Lock acquired");
           }
         } catch (e) {
-          debugWarn('Wake Lock not available:', e?.message || e);
+          debugWarn("Wake Lock not available:", e?.message || e);
         }
       }
 
@@ -422,26 +459,26 @@
             screenWakeLock = null;
           }
         } catch (error) {
-          debugError('Could not release screen wake lock:', error);
+          debugError("Could not release screen wake lock:", error);
         }
       }
 
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && isFullscreen) {
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && isFullscreen) {
           requestScreenWakeLock();
         }
       });
 
-      document.addEventListener('fullscreenchange', () => {
+      document.addEventListener("fullscreenchange", () => {
         isFullscreen = !!(
           document.fullscreenElement ||
           document.webkitFullscreenElement ||
           document.msFullscreenElement ||
           document.mozFullScreenElement
         );
-        const btn = document.querySelector('.fullscreen-btn');
+        const btn = document.querySelector(".fullscreen-btn");
         if (btn) {
-          btn.textContent = isFullscreen ? '⛶ Выйти' : '⛶ Полноэкранный';
+          btn.textContent = isFullscreen ? "⛶ Выйти" : "⛶ Полноэкранный";
         }
         if (isFullscreen) {
           requestScreenWakeLock();
@@ -452,32 +489,40 @@
 
       // Double tap for fullscreen
       let lastTap = 0;
-      document.getElementById('viewerCanvas').addEventListener('touchend', function (event) {
-        const currentTime = new Date().getTime();
-        if (currentTime - lastTap < 300) {
-          event.preventDefault();
-          toggleFullscreen();
-        }
-        lastTap = currentTime;
-      });
+      document
+        .getElementById("viewerCanvas")
+        .addEventListener("touchend", function (event) {
+          const currentTime = new Date().getTime();
+          if (currentTime - lastTap < 300) {
+            event.preventDefault();
+            toggleFullscreen();
+          }
+          lastTap = currentTime;
+        });
 
       function setupEventListeners() {
         if (window) {
-          window.addEventListener('resize', () => {
+          window.addEventListener("resize", () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
               resizeCanvas();
               updateScreenSize().catch(() => {
-                debugLog('Размер экрана не обновлен (сеть недоступна)');
+                debugLog("Размер экрана не обновлен (сеть недоступна)");
               });
             }, 1500);
           });
         }
 
         if (document) {
-          document.addEventListener('gesturestart', event => event.preventDefault());
-          document.addEventListener('gesturechange', event => event.preventDefault());
-          document.addEventListener('gestureend', event => event.preventDefault());
+          document.addEventListener("gesturestart", (event) =>
+            event.preventDefault(),
+          );
+          document.addEventListener("gesturechange", (event) =>
+            event.preventDefault(),
+          );
+          document.addEventListener("gestureend", (event) =>
+            event.preventDefault(),
+          );
         }
       }
     </script>
