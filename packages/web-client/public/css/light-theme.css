@@ -28,7 +28,6 @@ body.light-theme .card h1 {
   background-size: 200% 200%;
   animation: gradientShift 3s ease-in-out infinite;
   background-clip: text;
-  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

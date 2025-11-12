@@ -10,7 +10,7 @@
 }
 
 #previewFsPanel {
-  background: rgba(30, 41, 59, 0.95);
+  background: rgb(30 41 59 / 95%);
   border: 1px solid #475569;
   height: auto;
   max-height: calc(100vh - 40px);
@@ -24,20 +24,20 @@
 }
 
 .light-theme #previewOverlay {
-  background: rgba(248, 250, 252, 0.98);
+  background: rgb(248 250 252 / 98%);
 }
 
 .light-theme #previewFullscreenCanvas {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
 }
 
 .light-theme #previewFsPanel {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgb(255 255 255 / 95%);
   border: 1px solid #e2e8f0;
 }
 
 .light-theme #previewFsPanel input {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #cbd5e1;
   color: #374151;
 }
@@ -81,7 +81,7 @@
 }
 
 .light-theme #bbTimer {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #e2e8f0;
   color: #374151;
 }
@@ -99,18 +99,18 @@
 
 .light-theme #preview {
   border: 1px solid #e2e8f0;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
 }
 
 /* Viewer info dark theme support */
 #viewerInfo {
-  background: rgba(30, 41, 59, 0.9);
+  background: rgb(30 41 59 / 90%);
   border: 1px solid #475569;
   color: #cbd5e1;
 }
 
 .light-theme #viewerInfo {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgb(255 255 255 / 90%);
   border: 1px solid #e2e8f0;
   color: #64748b;
 }
@@ -285,7 +285,7 @@
 
 
 /* Responsive improvements */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .fullscreen-panel {
     width: calc(100vw - 40px);
     max-width: 320px;
