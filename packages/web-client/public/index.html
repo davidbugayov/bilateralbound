@@ -3,10 +3,10 @@
   <head>
     <!-- Централизованный head компонент -->
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
 
     <!-- SEO Meta Tags -->
     <title>BilateralBound - EMDR терапия для пациентов</title>
@@ -34,7 +34,11 @@
     <link rel="preload" href="/css/light-theme.css" as="style" />
     <link rel="preload" href="/css/main-page.css" as="style" />
     <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-    <link rel="preconnect" href="https://emdrbilateral.ru" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://emdrbilateral.ru"
+      crossorigin="anonymous"
+    />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202501031200" />
@@ -44,12 +48,18 @@
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="BilateralBound - EMDR терапия для пациентов" />
+    <meta
+      property="og:title"
+      content="BilateralBound - EMDR терапия для пациентов"
+    />
     <meta
       property="og:description"
       content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний"
     />
-    <meta property="og:image" content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200" />
+    <meta
+      property="og:image"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200"
+    />
     <meta property="og:url" content="https://emdrbilateral.ru/" />
     <meta property="og:site_name" content="BilateralBound" />
     <meta property="og:locale" content="ru_RU" />
@@ -65,12 +75,18 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="BilateralBound - EMDR терапия для пациентов" />
+    <meta
+      name="twitter:title"
+      content="BilateralBound - EMDR терапия для пациентов"
+    />
     <meta
       name="twitter:description"
       content="Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний"
     />
-    <meta name="twitter:image" content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200" />
+    <meta
+      name="twitter:image"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=202501031200"
+    />
     <meta name="twitter:site" content="@bilateralbound" />
     <meta name="twitter:creator" content="@bilateralbound" />
 
@@ -115,25 +131,64 @@
 
     <!-- Yandex.Metrika optimized counter -->
     <script type="text/javascript">
-      (function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=104698530', 'ym');
-      ym(104698530, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+      (function (m, e, t, r, i, k, a) {
+        m[i] =
+          m[i] ||
+          function () {
+            (m[i].a = m[i].a || []).push(arguments);
+          };
+        m[i].l = 1 * new Date();
+        for (const script of document.scripts) {
+          if (script.src === r) {
+            return;
+          }
+        }
+        k = e.createElement(t);
+        a = e.getElementsByTagName(t)[0];
+        k.async = true;
+        k.src = r;
+        a.parentNode.insertBefore(k, a);
+      })(
+        window,
+        document,
+        "script",
+        "https://mc.yandex.ru/metrika/tag.js?id=104698530",
+        "ym",
+      );
+      // noinspection JSUnresolvedFunction
+      ym(104698530, "init", {
+        ssr: true,
+        webvisor: true,
+        clickmap: true,
+        ecommerce: "dataLayer",
+        accurateTrackBounce: true,
+        trackLinks: true,
+      });
     </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/104698530" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <noscript
+      ><div>
+        <img
+          src="https://mc.yandex.ru/watch/104698530"
+          style="position: absolute; left: -9999px"
+          alt=""
+        /></div
+    ></noscript>
     <!-- /Yandex.Metrika counter -->
 
     <!-- Common Scripts -->
-    <script src="/js/common.js" defer></script>
-    <script src="/js/notification-system.js" defer></script>
-    <script src="/js/new-features.js" defer></script>
+    <script src="/js/common.js" defer="defer"></script>
+    <script src="/js/notification-system.js" defer="defer"></script>
+    <script src="/js/new-features.js" defer="defer"></script>
   </head>
   <body>
     <header class="theme-toggle-container">
-      <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Переключить тему оформления">🌓 Тема</button>
+      <button
+        id="themeToggleBtn"
+        class="theme-toggle-btn"
+        aria-label="Переключить тему оформления"
+      >
+        🌓 Тема
+      </button>
     </header>
 
     <main class="wrap">
@@ -141,33 +196,44 @@
         <header>
           <h1>BilateralBound - EMDR Терапия</h1>
           <p class="subtitle">
-            Инновационная платформа для EMDR терапии с биодинамической стимуляцией
+            Инновационная платформа для EMDR терапии с биодинамической
+            стимуляцией
           </p>
         </header>
 
         <section class="info-card">
           <h3>🎯 Что такое EMDR терапия?</h3>
           <p class="text-block">
-            <strong>EMDR (Eye Movement Desensitization and Reprocessing)</strong> — это научно
-            обоснованный метод психотерапии для лечения посттравматического стрессового расстройства
-            (ПТСР), тревожных расстройств и психологических травм.
+            <strong
+              >EMDR (Eye Movement Desensitization and Reprocessing)</strong
+            >
+            — это научно обоснованный метод психотерапии для лечения
+            посттравматического стрессового расстройства (ПТСР), тревожных
+            расстройств и психологических травм.
           </p>
           <p class="text-block">
-            Наша платформа использует <strong>биодинамическую стимуляцию</strong> — движение шарика
-            создает двустороннюю стимуляцию мозга, помогая переработать травматические воспоминания.
+            Наша платформа использует
+            <strong>биодинамическую стимуляцию</strong> — движение шарика
+            создает двустороннюю стимуляцию мозга, помогая переработать
+            травматические воспоминания.
           </p>
         </section>
 
         <section id="createSection">
-          <button id="createSessionBtn" class="main-button" onclick="createSession()">
+          <button
+            id="createSessionBtn"
+            class="main-button"
+            onclick="createSession()"
+          >
             🚀 Начать EMDR сессию
           </button>
 
           <section class="info-card">
             <h3>🔗 Постоянные ссылки для клиентов</h3>
             <p class="text-block">
-              Создайте персональные ссылки для ваших клиентов. Вы сможете использовать их
-              многократно — ссылки остаются постоянными и не требуют генерации каждый раз заново.
+              Создайте персональные ссылки для ваших клиентов. Вы сможете
+              использовать их многократно — ссылки остаются постоянными и не
+              требуют генерации каждый раз заново.
             </p>
             <div class="form-group">
               <label for="customClientId" class="form-label">
@@ -190,13 +256,19 @@
                   🔗 Создать
                 </button>
               </div>
-              <p id="linkValidationMessage" class="validation-message" aria-live="polite">
+              <p
+                id="linkValidationMessage"
+                class="validation-message"
+                aria-live="polite"
+              >
                 Примеры: anna_2025, client-ivan, session42
               </p>
             </div>
 
             <div id="generatedLinksContainer" class="links-container">
-              <p class="links-container__title">✅ Постоянные ссылки созданы!</p>
+              <p class="links-container__title">
+                ✅ Постоянные ссылки созданы!
+              </p>
 
               <div class="link-group">
                 <label for="generatedViewerUrl" class="link-group__label">
@@ -207,7 +279,7 @@
                     type="text"
                     id="generatedViewerUrl"
                     class="link-group__input"
-                    readonly
+                    readonly="readonly"
                   />
                   <button
                     class="copy-btn"
@@ -220,7 +292,10 @@
               </div>
 
               <div class="link-group">
-                <label for="generatedControllerUrl" class="link-group__label link-group__label--controller">
+                <label
+                  for="generatedControllerUrl"
+                  class="link-group__label link-group__label--controller"
+                >
                   🎮 Ссылка для терапевта (Controller):
                 </label>
                 <div class="link-group__input-wrapper">
@@ -228,7 +303,7 @@
                     type="text"
                     id="generatedControllerUrl"
                     class="link-group__input link-group__input--controller"
-                    readonly
+                    readonly="readonly"
                   />
                   <button
                     class="copy-btn copy-btn--controller"
@@ -242,9 +317,9 @@
 
               <div class="tip-box">
                 <p class="tip-box__text">
-                  💡 <strong>Сохраните эти ссылки!</strong> Они постоянные и будут работать всегда.
-                  Отправьте ссылку viewer клиенту, а ссылку controller откройте сами для управления
-                  сессией.
+                  💡 <strong>Сохраните эти ссылки!</strong> Они постоянные и
+                  будут работать всегда. Отправьте ссылку viewer клиенту, а
+                  ссылку controller откройте сами для управления сессией.
                 </p>
               </div>
             </div>
@@ -253,8 +328,8 @@
           <section class="info-card">
             <h3>🔄 Восстановить сессию по ID</h3>
             <p class="text-block">
-              Если у вас есть ID сохраненной сессии, введите его, чтобы загрузить все настройки и
-              продолжить работу.
+              Если у вас есть ID сохраненной сессии, введите его, чтобы
+              загрузить все настройки и продолжить работу.
             </p>
             <div class="form-group">
               <label for="existingSessionId" class="form-label">
@@ -276,7 +351,11 @@
                   📥 Загрузить
                 </button>
               </div>
-              <p id="loadSessionMessage" class="validation-message" aria-live="polite"></p>
+              <p
+                id="loadSessionMessage"
+                class="validation-message"
+                aria-live="polite"
+              ></p>
             </div>
 
             <div id="restoredLinksContainer" class="links-container">
@@ -291,7 +370,7 @@
                     type="text"
                     id="restoredViewerUrl"
                     class="link-group__input"
-                    readonly
+                    readonly="readonly"
                   />
                   <button
                     class="copy-btn"
@@ -304,7 +383,10 @@
               </div>
 
               <div class="link-group">
-                <label for="restoredControllerUrl" class="link-group__label link-group__label--controller">
+                <label
+                  for="restoredControllerUrl"
+                  class="link-group__label link-group__label--controller"
+                >
                   🎮 Ссылка для терапевта (Controller):
                 </label>
                 <div class="link-group__input-wrapper">
@@ -312,7 +394,7 @@
                     type="text"
                     id="restoredControllerUrl"
                     class="link-group__input link-group__input--controller"
-                    readonly
+                    readonly="readonly"
                   />
                   <button
                     class="copy-btn copy-btn--controller"
@@ -333,11 +415,12 @@
                 <strong>Создайте сессию</strong> — нажмите "Начать EMDR сессию"
               </div>
               <div class="step">
-                <strong>Пригласите пациента</strong> — отправьте ссылку для просмотра
+                <strong>Пригласите пациента</strong> — отправьте ссылку для
+                просмотра
               </div>
               <div class="step">
-                <strong>Проведите терапию</strong> — управляйте движением шарика для биодинамической
-                стимуляции
+                <strong>Проведите терапию</strong> — управляйте движением шарика
+                для биодинамической стимуляции
               </div>
             </div>
           </section>
@@ -356,13 +439,13 @@
           <section class="warning-card">
             <h3>⚠️ Важно помнить:</h3>
             <p>
-              EMDR терапия должна проводиться только квалифицированными специалистами. Данная
-              платформа предназначена для использования в профессиональной психотерапевтической
-              практике.
+              EMDR терапия должна проводиться только квалифицированными
+              специалистами. Данная платформа предназначена для использования в
+              профессиональной психотерапевтической практике.
             </p>
           </section>
           <div class="page-footer-container">
-            <footer class="footer">⚡ BilateralBound v2.25.0</footer>
+            <footer class="footer">⚡ BilateralBound v2.38.0</footer>
           </div>
         </section>
       </article>
@@ -372,130 +455,141 @@
       async function loadSessionScripts() {
         return new Promise((resolve, reject) => {
           // Check if scripts are already loaded to avoid duplicate loading
-          if (typeof BallRenderer !== 'undefined' &&
-              typeof PhysicsEngine !== 'undefined' &&
-              typeof WebSocketClient !== 'undefined' &&
-              typeof SharedComponents !== 'undefined') {
-            console.log('✅ Скрипты сессии уже загружены')
-            resolve()
-            return
+          if (
+            typeof BallRenderer !== "undefined" &&
+            typeof PhysicsEngine !== "undefined" &&
+            typeof WebSocketClient !== "undefined" &&
+            typeof SharedComponents !== "undefined"
+          ) {
+            console.log("✅ Скрипты сессии уже загружены");
+            resolve();
+            return;
           }
 
           const scripts = [
-            '/js/physics-engine.js',
-            '/js/renderer.js',
-            '/js/websocket-client.js',
-            '/js/shared-components.js'
-          ]
+            "/js/physics-engine.js",
+            "/js/renderer.js",
+            "/js/websocket-client.js",
+            "/js/shared-components.js",
+          ];
 
-          let loadedCount = 0
-          const totalScripts = scripts.length
+          let loadedCount = 0;
+          const totalScripts = scripts.length;
 
-          scripts.forEach(src => {
-            const script = document.createElement('script')
-            script.src = src
-            script.defer = true
+          scripts.forEach((src) => {
+            const script = document.createElement("script");
+            script.src = src;
+            script.defer = true;
             script.onload = () => {
-              loadedCount++
+              loadedCount++;
               if (loadedCount === totalScripts) {
-                console.log('✅ Все скрипты сессии загружены')
-                resolve()
+                console.log("✅ Все скрипты сессии загружены");
+                resolve();
               }
-            }
+            };
             script.onerror = () => {
-              console.error('❌ Ошибка загрузки скрипта:', src)
-              reject(new Error(`Failed to load ${src}`))
-            }
-            document.head.appendChild(script)
-          })
-        })
+              console.error("❌ Ошибка загрузки скрипта:", src);
+              reject(new Error(`Failed to load ${src}`));
+            };
+            document.head.appendChild(script);
+          });
+        });
       }
 
       async function createSession() {
-        const btn = document.getElementById('createSessionBtn')
+        const btn = document.getElementById("createSessionBtn");
 
         if (btn.disabled) {
-          console.log('⚠️ Создание сессии уже в процессе...')
-          return
+          console.log("⚠️ Создание сессии уже в процессе...");
+          return;
         }
 
-        const originalText = btn.innerHTML
+        const originalText = btn.innerHTML;
 
         try {
-          btn.innerHTML = '⏳ Загрузка...'
-          btn.disabled = true
+          btn.innerHTML = "⏳ Загрузка...";
+          btn.disabled = true;
 
-          console.log('🔄 Загрузка скриптов сессии...')
-          await loadSessionScripts()
+          console.log("🔄 Загрузка скриптов сессии...");
+          await loadSessionScripts();
 
-          btn.innerHTML = '🔄 Создание сессии...'
-          console.log('🔄 Создание сессии...')
-          const response = await fetch('/api/session', { method: 'POST' })
+          btn.innerHTML = "🔄 Создание сессии...";
+          console.log("🔄 Создание сессии...");
+          const response = await fetch("/api/session", { method: "POST" });
 
-          console.log('📡 Ответ сервера:', response.status, response.statusText)
-          console.log('📡 Content-Type:', response.headers.get('content-type'))
+          console.log(
+            "📡 Ответ сервера:",
+            response.status,
+            response.statusText,
+          );
+          console.log("📡 Content-Type:", response.headers.get("content-type"));
 
           if (!response.ok) {
-            const errorText = await response.text()
-            console.error('❌ Ошибка ответа:', errorText)
-            alert(`HTTP ${response.status}: ${errorText || 'Не удалось создать сессию'}`)
-            return
+            const errorText = await response.text();
+            console.error("❌ Ошибка ответа:", errorText);
+            alert(
+              `HTTP ${response.status}: ${errorText || "Не удалось создать сессию"}`,
+            );
+            return;
           }
 
-          const contentType = response.headers.get('content-type')
-          if (!contentType || !contentType.includes('application/json')) {
-            const text = await response.text()
-            console.error('❌ Ответ не JSON:', text.substring(0, 200))
-            alert('Сервер вернул не JSON ответ. Проверьте логи сервера.')
-            return
+          const contentType = response.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            const text = await response.text();
+            console.error("❌ Ответ не JSON:", text.substring(0, 200));
+            alert("Сервер вернул не JSON ответ. Проверьте логи сервера.");
+            return;
           }
 
-          const data = await response.json()
-          console.log('✅ Данные сессии:', data)
+          const data = await response.json();
+          console.log("✅ Данные сессии:", data);
 
-          const sessionId = data.sessionId
+          const sessionId = data.sessionId;
           if (!sessionId) {
-            console.error('Сессия создана, но ID не получен')
-            alert('Сессия создана, но ID не получен')
-            return
+            console.error("Сессия создана, но ID не получен");
+            alert("Сессия создана, но ID не получен");
+            return;
           }
 
-          console.log('🔗 Подключение контроллера к сессии:', sessionId)
+          console.log("🔗 Подключение контроллера к сессии:", sessionId);
 
-          const connectResponse = await fetch(`/api/session/${sessionId}/controller/connect`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
-          })
+          const connectResponse = await fetch(
+            `/api/session/${sessionId}/controller/connect`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({}),
+            },
+          );
 
           if (!connectResponse.ok) {
-            const connectError = await connectResponse.text()
-            console.error(`Ошибка подключения контроллера: ${connectError}`)
-            alert(`Ошибка подключения контроллера: ${connectError}`)
-            return
+            const connectError = await connectResponse.text();
+            console.error(`Ошибка подключения контроллера: ${connectError}`);
+            alert(`Ошибка подключения контроллера: ${connectError}`);
+            return;
           }
 
-          console.log('✅ Контроллер подключен к сессии')
-          startStatusMonitoring(sessionId)
-          window.location.href = `/c/${sessionId}`
+          console.log("✅ Контроллер подключен к сессии");
+          startStatusMonitoring(sessionId);
+          window.location.href = `/c/${sessionId}`;
         } catch (error) {
-          console.error('❌ Полная ошибка:', error)
-          alert('Ошибка при создании сессии: ' + error.message)
+          console.error("❌ Полная ошибка:", error);
+          alert("Ошибка при создании сессии: " + error.message);
 
-          btn.innerHTML = originalText
-          btn.disabled = false
+          btn.innerHTML = originalText;
+          btn.disabled = false;
         }
       }
 
       function startStatusMonitoring() {
-        console.log('Status monitoring not needed on main page')
+        console.log("Status monitoring not needed on main page");
       }
 
       function resetCreateSessionButton() {
-        const btn = document.getElementById('createSessionBtn')
+        const btn = document.getElementById("createSessionBtn");
         if (btn) {
-          btn.innerHTML = '🚀 Начать EMDR сессию'
-          btn.disabled = false
+          btn.innerHTML = "🚀 Начать EMDR сессию";
+          btn.disabled = false;
         }
       }
 
@@ -505,236 +599,260 @@
        * Валидация ID клиента
        */
       function validateClientId(clientId) {
-        const pattern = /^[A-Za-z0-9_-]{3,32}$/
-        return pattern.test(clientId)
+        const pattern = /^[A-Za-z0-9_-]{3,32}$/;
+        return pattern.test(clientId);
       }
 
       /**
        * Обновление сообщения валидации
        */
       function updateValidationMessage(message, isError = false) {
-        const msgElement = document.getElementById('linkValidationMessage')
+        const msgElement = document.getElementById("linkValidationMessage");
         if (msgElement) {
-          msgElement.textContent = message
-          msgElement.style.color = isError ? '#ef4444' : '#94a3b8'
+          msgElement.textContent = message;
+          msgElement.style.color = isError ? "#ef4444" : "#94a3b8";
         }
       }
-
 
       /**
        * Генерация постоянных ссылок для клиента
        */
       async function generatePermanentLinks() {
-        const input = document.getElementById('customClientId')
-        const btn = document.getElementById('generateLinksBtn')
-        const container = document.getElementById('generatedLinksContainer')
-        const viewerUrlInput = document.getElementById('generatedViewerUrl')
-        const controllerUrlInput = document.getElementById('generatedControllerUrl')
+        const input = document.getElementById("customClientId");
+        const btn = document.getElementById("generateLinksBtn");
+        const container = document.getElementById("generatedLinksContainer");
+        const viewerUrlInput = document.getElementById("generatedViewerUrl");
+        const controllerUrlInput = document.getElementById(
+          "generatedControllerUrl",
+        );
 
-        if (!input || !btn) return
+        if (!input || !btn) return;
 
-        const clientId = input.value.trim()
+        const clientId = input.value.trim();
 
         // Валидация
         if (!clientId) {
-          updateValidationMessage('❌ Пожалуйста, введите ID клиента', true)
-          input.focus()
-          return
+          updateValidationMessage("❌ Пожалуйста, введите ID клиента", true);
+          input.focus();
+          return;
         }
 
         if (!validateClientId(clientId)) {
           updateValidationMessage(
-            '❌ Неверный формат. Используйте только латиницу, цифры, _ или - (3-32 символа)',
-            true
-          )
-          input.focus()
-          return
+            "❌ Неверный формат. Используйте только латиницу, цифры, _ или - (3-32 символа)",
+            true,
+          );
+          input.focus();
+          return;
         }
 
-        const originalBtnText = btn.innerHTML
+        const originalBtnText = btn.innerHTML;
 
         try {
-          btn.innerHTML = '⏳ Создание...'
-          btn.disabled = true
-          updateValidationMessage('Создание постоянных ссылок...', false)
+          btn.innerHTML = "⏳ Создание...";
+          btn.disabled = true;
+          updateValidationMessage("Создание постоянных ссылок...", false);
 
           // Отправляем запрос на резервирование сессии
           const response = await fetch(`/api/session/${clientId}/reserve`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          })
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
 
           if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }))
-            return Promise.reject(new Error(errorData.error || `HTTP ${response.status}`))
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Неизвестная ошибка" }));
+            return Promise.reject(
+              new Error(errorData.error || `HTTP ${response.status}`),
+            );
           }
 
-          const data = await response.json()
-          console.log('✅ Постоянные ссылки созданы:', data)
+          const data = await response.json();
+          console.log("✅ Постоянные ссылки созданы:", data);
 
           // Отображаем сгенерированные ссылки
-          if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl
-          if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl
-          if (container) container.style.display = 'block'
+          if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl;
+          if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl;
+          if (container) container.style.display = "block";
 
-          updateValidationMessage('✅ Ссылки успешно созданы!', false)
+          updateValidationMessage("✅ Ссылки успешно созданы!", false);
 
           if (window.showSuccessNotification) {
-            window.showSuccessNotification('🎉 Постоянные ссылки созданы!')
+            window.showSuccessNotification("🎉 Постоянные ссылки созданы!");
           }
 
           // Прокручиваем к результатам
           setTimeout(() => {
-            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-          }, 100)
+            container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }, 100);
         } catch (error) {
-          console.error('❌ Ошибка создания постоянных ссылок:', error)
-          updateValidationMessage(`❌ Ошибка: ${error.message}`, true)
+          console.error("❌ Ошибка создания постоянных ссылок:", error);
+          updateValidationMessage(`❌ Ошибка: ${error.message}`, true);
 
           if (window.showErrorNotification) {
-            window.showErrorNotification('Ошибка создания ссылок: ' + error.message)
+            window.showErrorNotification(
+              "Ошибка создания ссылок: " + error.message,
+            );
           } else {
-            alert('Ошибка создания ссылок: ' + error.message)
+            alert("Ошибка создания ссылок: " + error.message);
           }
         } finally {
-          btn.innerHTML = originalBtnText
-          btn.disabled = false
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
         }
       }
 
       // Добавляем валидацию в реальном времени при вводе
-      document.addEventListener('DOMContentLoaded', () => {
-        const input = document.getElementById('customClientId')
+      document.addEventListener("DOMContentLoaded", () => {
+        const input = document.getElementById("customClientId");
         if (input) {
-          input.addEventListener('input', e => {
-            const value = e.target.value.trim()
+          input.addEventListener("input", (e) => {
+            const value = e.target?.value?.trim() || "";
             if (!value) {
-              updateValidationMessage('Примеры: anna_2025, client-ivan, session42', false)
+              updateValidationMessage(
+                "Примеры: anna_2025, client-ivan, session42",
+                false,
+              );
             } else if (validateClientId(value)) {
-              updateValidationMessage('✅ ID клиента корректен', false)
+              updateValidationMessage("✅ ID клиента корректен", false);
             } else {
               updateValidationMessage(
-                '⚠️ Используйте латиницу, цифры, _ или - (3-32 символа)',
-                true
-              )
+                "⚠️ Используйте латиницу, цифры, _ или - (3-32 символа)",
+                true,
+              );
             }
-          })
+          });
 
           // Обработка Enter
-          input.addEventListener('keypress', e => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              generatePermanentLinks()
+          input.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              generatePermanentLinks();
             }
-          })
+          });
         }
-      })
+      });
 
-      document.addEventListener('visibilitychange', () => {
+      document.addEventListener("visibilitychange", () => {
         if (!document.hidden) {
-          resetCreateSessionButton()
+          resetCreateSessionButton();
         }
-      })
+      });
 
-      window.addEventListener('focus', resetCreateSessionButton)
+      window.addEventListener("focus", resetCreateSessionButton);
 
       async function loadSession() {
-        const input = document.getElementById('existingSessionId')
-        const btn = document.getElementById('loadSessionBtn')
-        const messageEl = document.getElementById('loadSessionMessage')
-        const container = document.getElementById('restoredLinksContainer')
-        const viewerUrlInput = document.getElementById('restoredViewerUrl')
-        const controllerUrlInput = document.getElementById('restoredControllerUrl')
+        const input = document.getElementById("existingSessionId");
+        const btn = document.getElementById("loadSessionBtn");
+        const messageEl = document.getElementById("loadSessionMessage");
+        const container = document.getElementById("restoredLinksContainer");
+        const viewerUrlInput = document.getElementById("restoredViewerUrl");
+        const controllerUrlInput = document.getElementById(
+          "restoredControllerUrl",
+        );
 
-        if (!input || !btn || !messageEl || !container || !viewerUrlInput || !controllerUrlInput) {
-          console.error('Один из элементов для восстановления сессии не найден')
-          return
+        if (
+          !input ||
+          !btn ||
+          !messageEl ||
+          !container ||
+          !viewerUrlInput ||
+          !controllerUrlInput
+        ) {
+          console.error(
+            "Один из элементов для восстановления сессии не найден",
+          );
+          return;
         }
 
-        const sessionId = input.value.trim()
+        const sessionId = input.value.trim();
 
         // Скрываем предыдущие результаты
-        container.style.display = 'none'
+        container.style.display = "none";
 
         if (!sessionId) {
-          messageEl.textContent = '❌ Пожалуйста, введите ID сессии.'
-          messageEl.style.color = '#ef4444'
-          input.focus()
-          return
+          messageEl.textContent = "❌ Пожалуйста, введите ID сессии.";
+          messageEl.style.color = "#ef4444";
+          input.focus();
+          return;
         }
 
-        const originalBtnText = btn.innerHTML
+        const originalBtnText = btn.innerHTML;
         try {
-          btn.innerHTML = '⏳ Загрузка...'
-          btn.disabled = true
-          messageEl.textContent = 'Проверка сессии...'
-          messageEl.style.color = '#94a3b8'
+          btn.innerHTML = "⏳ Загрузка...";
+          btn.disabled = true;
+          messageEl.textContent = "Проверка сессии...";
+          messageEl.style.color = "#94a3b8";
 
-          const response = await fetch(`/api/session/${sessionId}/state`)
+          const response = await fetch(`/api/session/${sessionId}/state`);
 
           if (!response.ok) {
             if (response.status === 404) {
-              return Promise.reject(new Error('Сессия с таким ID не найдена.'))
+              return Promise.reject(new Error("Сессия с таким ID не найдена."));
             }
-            return Promise.reject(new Error(`Ошибка сервера: ${response.status}`))
+            return Promise.reject(
+              new Error(`Ошибка сервера: ${response.status}`),
+            );
           }
 
-          const data = await response.json()
-          console.log('✅ Сессия найдена:', data)
-          messageEl.textContent = '' // Очищаем сообщение при успехе
+          const data = await response.json();
+          console.log("✅ Сессия найдена:", data);
+          messageEl.textContent = ""; // Очищаем сообщение при успехе
 
-          const baseUrl = `${window.location.protocol}//${window.location.host}`
-          viewerUrlInput.value = `${baseUrl}/s/${sessionId}`
-          controllerUrlInput.value = `${baseUrl}/c/${sessionId}`
-          container.style.display = 'block'
+          const baseUrl = `${window.location.protocol}//${window.location.host}`;
+          viewerUrlInput.value = `${baseUrl}/s/${sessionId}`;
+          controllerUrlInput.value = `${baseUrl}/c/${sessionId}`;
+          container.style.display = "block";
 
           if (window.showSuccessNotification) {
-            window.showSuccessNotification('🎉 Сессия найдена!')
+            window.showSuccessNotification("🎉 Сессия найдена!");
           }
 
           // Прокручиваем к результатам
           setTimeout(() => {
-            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-          }, 100)
+            container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }, 100);
         } catch (error) {
-          console.error('❌ Ошибка загрузки сессии:', error)
-          messageEl.textContent = `❌ ${error.message}`
-          messageEl.style.color = '#ef4444'
+          console.error("❌ Ошибка загрузки сессии:", error);
+          messageEl.textContent = `❌ ${error.message}`;
+          messageEl.style.color = "#ef4444";
         } finally {
-          btn.innerHTML = originalBtnText
-          btn.disabled = false
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
         }
       }
 
-
-      document.addEventListener('DOMContentLoaded', function () {
-        resetCreateSessionButton()
+      document.addEventListener("DOMContentLoaded", function () {
+        resetCreateSessionButton();
 
         // Инициализация кнопки темы - только один раз
-        let themeInitialized = false
+        let themeInitialized = false;
 
         const initThemeToggle = () => {
-          if (themeInitialized) return // Уже инициализировано
+          if (themeInitialized) return; // Уже инициализировано
 
-          const themeToggleBtn = document.getElementById('themeToggleBtn')
+          const themeToggleBtn = document.getElementById("themeToggleBtn");
           if (themeToggleBtn && window.themeManager) {
             // Удаляем все существующие обработчики клика
-            const newBtn = themeToggleBtn.cloneNode(true)
-            themeToggleBtn.parentNode.replaceChild(newBtn, themeToggleBtn)
+            const newBtn = themeToggleBtn.cloneNode(true);
+            themeToggleBtn.parentNode.replaceChild(newBtn, themeToggleBtn);
 
             // Добавляем обработчик только один раз
-            newBtn.addEventListener('click', () => window.themeManager.toggleTheme())
-            themeInitialized = true
-            console.log('✅ Кнопка темы инициализирована')
+            newBtn.addEventListener("click", () =>
+              window.themeManager.toggleTheme(),
+            );
+            themeInitialized = true;
+            console.log("✅ Кнопка темы инициализирована");
           } else if (!window.themeManager) {
             // Если themeManager еще не загружен, ждем его
-            setTimeout(initThemeToggle, 100)
+            setTimeout(initThemeToggle, 100);
           }
-        }
+        };
 
         // Запускаем инициализацию
-        initThemeToggle()
-      })
+        initThemeToggle();
+      });
     </script>
   </body>
 </html>

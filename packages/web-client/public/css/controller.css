@@ -2,126 +2,126 @@
 
 /* Fullscreen overlay and panel theme support */
 #previewOverlay {
-  background: #0f172a !important;
+  background: #0f172a;
 }
 
 #previewFullscreenCanvas {
-  background: #020617 !important;
+  background: #020617;
 }
 
 #previewFsPanel {
-  background: rgba(30, 41, 59, 0.95) !important;
-  border: 1px solid #475569 !important;
-  height: auto !important;
+  background: rgb(30 41 59 / 95%);
+  border: 1px solid #475569;
+  height: auto;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
 }
 
 #previewFsPanel input {
-  background: #1e293b !important;
-  border: 1px solid #334155 !important;
-  color: #e2e8f0 !important;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #e2e8f0;
 }
 
 .light-theme #previewOverlay {
-  background: rgba(248, 250, 252, 0.98) !important;
+  background: rgb(248 250 252 / 98%);
 }
 
 .light-theme #previewFullscreenCanvas {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
 }
 
 .light-theme #previewFsPanel {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid #e2e8f0 !important;
+  background: rgb(255 255 255 / 95%);
+  border: 1px solid #e2e8f0;
 }
 
 .light-theme #previewFsPanel input {
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #374151 !important;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #374151;
 }
 
 .light-theme #previewFsPanel label {
-  color: #64748b !important;
+  color: #64748b;
 }
 
 .light-theme #fsCurSid {
-  color: #374151 !important;
+  color: #374151;
 }
 
 /* bbCounters dark theme support */
 #bbCounters > div {
-  background: #334155 !important;
-  border: 1px solid #475569 !important;
+  background: #334155;
+  border: 1px solid #475569;
 }
 
 #bbCounters > div > div > div:first-child {
-  color: #cbd5e1 !important;
+  color: #cbd5e1;
 }
 
 #bbTimer {
-  background: #1e293b !important;
-  border: 1px solid #475569 !important;
-  color: #e2e8f0 !important;
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #e2e8f0;
 }
 
 #bbPasses,
 #bbSets {
-  color: #e2e8f0 !important;
+  color: #e2e8f0;
 }
 
 .light-theme #bbCounters > div {
-  background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .light-theme #bbCounters > div > div > div:first-child {
-  color: #64748b !important;
+  color: #64748b;
 }
 
 .light-theme #bbTimer {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #374151 !important;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #374151;
 }
 
 .light-theme #bbPasses,
 .light-theme #bbSets {
-  color: #374151 !important;
+  color: #374151;
 }
 
 /* Preview canvas dark theme support */
 #preview {
-  border: 1px solid #475569 !important;
-  background: #020617 !important;
+  border: 1px solid #475569;
+  background: #020617;
 }
 
 .light-theme #preview {
-  border: 1px solid #e2e8f0 !important;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
 }
 
 /* Viewer info dark theme support */
 #viewerInfo {
-  background: rgba(30, 41, 59, 0.9) !important;
-  border: 1px solid #475569 !important;
-  color: #cbd5e1 !important;
+  background: rgb(30 41 59 / 90%);
+  border: 1px solid #475569;
+  color: #cbd5e1;
 }
 
 .light-theme #viewerInfo {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #64748b !important;
+  background: rgb(255 255 255 / 90%);
+  border: 1px solid #e2e8f0;
+  color: #64748b;
 }
 
 /* Text colors for session info */
 #sessionInfo {
-  color: #94a3b8 !important;
+  color: #94a3b8;
 }
 
 .light-theme #sessionInfo {
-  color: #64748b !important;
+  color: #64748b;
 }
 
 /* Control section headings */
@@ -259,8 +259,33 @@
   width: 100%;
 }
 
+#openPreviewFullscreenBtn {
+  padding: 6px 10px;
+}
+
+#fsPlayPauseBtn {
+  grid-column: 1 / -1;
+}
+
+#exitPreviewFullscreenBtn {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+.controls-title {
+  margin-top: 16px;
+}
+
+#sessionControls + div {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+
 /* Responsive improvements */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .fullscreen-panel {
     width: calc(100vw - 40px);
     max-width: 320px;

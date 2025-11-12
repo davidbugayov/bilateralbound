@@ -206,24 +206,31 @@ if (typeof PhysicsEngine === 'undefined') {
           this.state.lastVy = 0
           this.state.smoothVx = 0
           this.state.smoothVy = 0
-          this.lastServerUpdate = performance.now()
           // Убедимся что мяч в допустимых границах
           this.clampBallWithinBounds()
         } else {
           // На сервере мгновенно ставим в центр (авторитетное состояние)
-          this.ball.x = this.centerX
-          this.ball.y = this.centerY
-          this.ball.vx = 0
-          this.ball.vy = 0
-          this.state.targetX = this.centerX
-          this.state.targetY = this.centerY
-          this.clampBallWithinBounds()
+          this._resetBallToCenter()
         }
       } else {
         // При снятии с паузы возвращаем обычное поведение
         this.state.allowInterpWhenPaused = false
       }
     }
+    /**
+     * Сбрасывает мяч в центр с нулевой скоростью
+     * @private
+     */
+    _resetBallToCenter() {
+      this.ball.x = this.centerX
+      this.ball.y = this.centerY
+      this.ball.vx = 0
+      this.ball.vy = 0
+      this.state.targetX = this.centerX
+      this.state.targetY = this.centerY
+      this.clampBallWithinBounds()
+    }
+
     /**
      * Инициирует плавный возврат мяча в центр
      */
@@ -245,19 +252,9 @@ if (typeof PhysicsEngine === 'undefined') {
         console.log(
           `[PHYSICS] Viewer mode: target set to (${this.state.targetX}, ${this.state.targetY})`
         )
-        this.logger.logSession?.(
-          this.options.sessionId || 'unknown',
-          '[RETURN_TO_CENTER] Initiating smooth return to center'
-        )
       } else {
         // Для серверного режима просто устанавливаем позицию в центр
-        this.ball.x = this.centerX
-        this.ball.y = this.centerY
-        this.ball.vx = 0
-        this.ball.vy = 0
-        this.state.targetX = this.centerX
-        this.state.targetY = this.centerY
-        this.clampBallWithinBounds()
+        this._resetBallToCenter()
         console.log(`[PHYSICS] Server mode: ball set to (${this.ball.x}, ${this.ball.y})`)
       }
     }
@@ -312,6 +309,10 @@ if (typeof PhysicsEngine === 'undefined') {
     }
 
     _interpolatePositionWithSteps(stepX, stepY) {
+      this._applyInterpolationSmoothing(stepX, stepY)
+    }
+
+    _applyInterpolationSmoothing(stepX, stepY) {
       const smoothingFactor = this.options?.smoothing?.smoothingFactor ?? 0.25
       const radius = this.ball.radius
       const w = this.options.worldWidth
@@ -461,34 +462,6 @@ if (typeof PhysicsEngine === 'undefined') {
       }
 
       return { stepX, stepY }
-    }
-
-    _interpolatePosition(deltaTime = 0.016) {
-      const { stepX, stepY } = this._limitStepSize(
-        this.state.targetX,
-        this.state.targetY,
-        deltaTime
-      )
-
-      const smoothingFactor = this.options?.smoothing?.smoothingFactor ?? 0.25
-      const radius = this.ball.radius
-      const w = this.options.worldWidth
-      const h = this.options.worldHeight
-
-      this._prevPos.x = this.ball.x
-      this._prevPos.y = this.ball.y
-
-      const newX = this.ball.x + stepX
-      const newY = this.ball.y + stepY
-
-      this.ball.x = this.ball.x * (1 - smoothingFactor) + newX * smoothingFactor
-      this.ball.y = this.ball.y * (1 - smoothingFactor) + newY * smoothingFactor
-
-      this.ball.x = Math.min(w - radius, Math.max(radius, this.ball.x))
-      this.ball.y = Math.min(h - radius, Math.max(radius, this.ball.y))
-
-      this._currPos.x = this.ball.x
-      this._currPos.y = this.ball.y
     }
 
     _autoSnapIfNeeded(clampedTargetX, clampedTargetY) {
@@ -917,7 +890,6 @@ if (typeof PhysicsEngine === 'undefined') {
       this._handleViewerPositionUpdate(command)
       this._handleViewerVelocityUpdate(command)
       this._handleViewerSpeedUpdate(command)
-      this.lastServerUpdate = performance?.now?.() ?? Date.now()
     }
 
     _handleViewerPositionUpdate(command) {

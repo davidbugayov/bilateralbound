@@ -62,11 +62,9 @@ const setNoCacheHeaders = res => {
 
 /**
  * Middleware для проверки существования сессии
- * @param {Object} req - Express request объект
- * @param {Object} res - Express response объект
- * @param {Function} next - Express next функция
+ * @param sessionManager
  */
-const requireSession = (sessionManager, apiCache) => (req, res, next) => {
+const requireSession = (sessionManager) => (req, res, next) => {
   const { sessionId } = req.params
   const session = sessionManager.getSession(sessionId)
   if (!session) {
@@ -337,7 +335,7 @@ function setupExpressApp(sessionManager, apiCache) {
       res.status(500).json({ error: error.message, requestId: req.id })
     }
   })
-  app.get('/api/session/:sessionId', requireSession(sessionManager, apiCache), (req, res) => {
+  app.get('/api/session/:sessionId', requireSession(sessionManager), (req, res) => {
     const session = req.session
     res.json({
       id: session.id,
@@ -347,7 +345,7 @@ function setupExpressApp(sessionManager, apiCache) {
       lastActivity: session.lastActivity
     })
   })
-  app.get('/api/session/:sessionId/state', requireSession(sessionManager, apiCache), (req, res) => {
+  app.get('/api/session/:sessionId/state', requireSession(sessionManager), (req, res) => {
     const { sessionId } = req.params
     const session = req.session
     const cacheKey = `state_${sessionId}`
@@ -377,7 +375,7 @@ function setupExpressApp(sessionManager, apiCache) {
   })
   app.post(
     '/api/session/:sessionId/controller/connect',
-    requireSession(sessionManager, apiCache),
+    requireSession(sessionManager),
     (req, res) => {
       const { sessionId } = req.params
       sessionManager.updateBallState(sessionId, req.body)
@@ -388,7 +386,7 @@ function setupExpressApp(sessionManager, apiCache) {
   )
   app.post(
     '/api/session/:sessionId/controller/update',
-    requireSession(sessionManager, apiCache),
+    requireSession(sessionManager),
     (req, res) => {
       const { sessionId } = req.params
       sessionManager.updateBallState(sessionId, req.body)
@@ -397,7 +395,7 @@ function setupExpressApp(sessionManager, apiCache) {
   )
   app.post(
     '/api/session/:sessionId/viewer/connect',
-    requireSession(sessionManager, apiCache),
+    requireSession(sessionManager),
     (req, res) => {
       const { sessionId } = req.params
       const { screenSize } = req.body
@@ -412,7 +410,7 @@ function setupExpressApp(sessionManager, apiCache) {
   )
   app.post(
     '/api/session/:sessionId/viewer/screen-size',
-    requireSession(sessionManager, apiCache),
+    requireSession(sessionManager),
     (req, res) => {
       const { sessionId } = req.params
       const { width, height } = req.body || {}

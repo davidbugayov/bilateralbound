@@ -4,7 +4,7 @@
  * Современная модульная архитектура с улучшенной обработкой ошибок
  */
 // Экспортируем функции для использования в тестах
-/* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause */
+/* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 globalThis.__current = {
   sessionId: null,
@@ -718,11 +718,10 @@ function createLogger(moduleName) {
  * Кастомная ошибка приложения
  */
 class AppError extends Error {
-  constructor(code, message, details = {}) {
+  constructor(code, message) {
     super(message)
     this.name = 'AppError'
     this.code = code
-    this.details = details
     this.timestamp = new Date().toISOString()
   }
 }
@@ -746,17 +745,23 @@ function _syncUISpeed(ballState) {
 }
 
 function _syncUISize(ballState) {
-  if (ballState.radius !== undefined) {
-    components.size?.setSize(ballState.radius)
+  if (ballState.radius !== undefined && components.size && typeof components.size.setSize === 'function') {
+    // Find the closest predefined size to the server radius
+    const sizes = [20, 40, 80, 100]
+    const closestSize = sizes.reduce((prev, curr) =>
+      Math.abs(curr - ballState.radius) < Math.abs(prev - ballState.radius) ? curr : prev,
+      sizes[0] // initial value
+    )
+    components.size.setSize(closestSize)
   }
 }
 
 function _syncUIColors(ballState) {
-  if (ballState.colorBall) {
-    components.ballColor?.setColor(ballState.colorBall)
+  if (ballState.colorBall && components.ballColor && typeof components.ballColor.setColor === 'function') {
+    components.ballColor.setColor(ballState.colorBall)
   }
-  if (ballState.colorBg) {
-    components.bgColor?.setColor(ballState.colorBg)
+  if (ballState.colorBg && components.bgColor && typeof components.bgColor.setColor === 'function') {
+    components.bgColor.setColor(ballState.colorBg)
   }
 }
 
@@ -773,8 +778,8 @@ function _syncUIPause(ballState) {
 function _getDirectionMode(dirX, dirY) {
   if (Math.abs(dirX) > 0.9) return 'horizontal'
   if (Math.abs(dirY) > 0.9) return 'vertical'
-  if (dirX > 0 && dirY > 0) return 'diagRL'
-  if (dirX > 0 && dirY < 0) return 'diagRLL'
+  if (dirX > 0 && dirY > 0) return 'diagRL' // TL→BR (из верхнего левого в нижний правый)
+  if (dirX > 0 && dirY < 0) return 'diagRLL' // BL→TR (из нижнего левого в верхний правый)
   return null
 }
 
@@ -808,7 +813,12 @@ function syncUIWithState(ballState) {
 }
 // ===== ИНИЦИАЛИЗАЦИЯ КОМПОНЕНТОВ =====
 function _initializeSpeedControl() {
-  components.speed = sharedComponents.createSpeedControl(document.getElementById('speedControl'), {
+  const container = document.getElementById('speedControl')
+  if (!container) {
+    console.warn('speedControl container not found')
+    return
+  }
+  components.speed = sharedComponents.createSpeedControl(container, {
     onSpeedChange: throttle(speed => {
       updateSpeed(speed)
     }, 100)
@@ -816,57 +826,70 @@ function _initializeSpeedControl() {
 }
 
 function _initializeBallColorControl() {
-  components.ballColor = sharedComponents.createColorControl(
-    document.getElementById('ballColorControl'),
-    {
-      colors: [
-        '#60a5fa',
-        '#ef4444',
-        '#10b981',
-        '#f59e0b',
-        '#8b5cf6',
-        '#f97316',
-        '#06b6d4',
-        '#84cc16',
-        '#fb7185',
-        '#ffffff'
-      ],
-      defaultValue: '#60a5fa',
-      title: '',
-      onColorChange: color => {
-        setBallColor(color)
-      }
+  const container = document.getElementById('ballColorControl')
+  if (!container) {
+    console.warn('ballColorControl container not found')
+    return
+  }
+  components.ballColor = sharedComponents.createColorControl(container, {
+    colors: [
+      '#60a5fa',
+      '#ef4444',
+      '#10b981',
+      '#f59e0b',
+      '#8b5cf6',
+      '#f97316',
+      '#06b6d4',
+      '#84cc16',
+      '#fb7185',
+      '#ffffff',
+      '#a855f7',
+      '#14b8a6'
+    ],
+    defaultValue: '#60a5fa',
+    title: '',
+    onColorChange: color => {
+      setBallColor(color)
     }
-  )
+  })
 }
 
 function _initializeBgColorControl() {
-  components.bgColor = sharedComponents.createColorControl(
-    document.getElementById('bgColorControl'),
-    {
-      colors: [
-        '#020617',
-        '#000000',
-        '#111827',
-        '#0a2540',
-        '#052e16',
-        '#1a102a',
-        '#2b1b0e',
-        '#032f2f',
-        '#2a0e14',
-        '#0f172a'
-      ],
-      defaultValue: '#020617',
-      title: '',
-      onColorChange: color => {
-        setBackgroundColor(color)
-      }
+  const container = document.getElementById('bgColorControl')
+  if (!container) {
+    console.warn('bgColorControl container not found')
+    return
+  }
+  components.bgColor = sharedComponents.createColorControl(container, {
+    colors: [
+      '#020617',
+      '#000000',
+      '#111827',
+      '#0a2540',
+      '#052e16',
+      '#1a102a',
+      '#fef3c7',
+      '#dbeafe',
+      '#fce7f3',
+      '#f3f4f6',
+      '#e5e7eb',
+      '#d1d5db'
+    ],
+    defaultValue: '#020617',
+    title: '',
+    onColorChange: color => {
+      setBackgroundColor(color)
     }
-  )
+  })
 }
 
 function _initializeSizeControl() {
-  components.size = sharedComponents.createSizeControl(document.getElementById('sizeControl'), {
+  const container = document.getElementById('sizeControl')
+  if (!container) {
+    console.warn('sizeControl container not found')
+    return
+  }
+  components.size = sharedComponents.createSizeControl(container, {
     sizes: [20, 40, 80, 100],
     defaultValue: 20,
     title: '',
@@ -997,6 +1020,64 @@ function showWaitingForViewer() {
   }
 }
 
+/**
+ * Проверяет, является ли текущий режим направления диагональным
+ * @returns {boolean} true если режим diagRL или diagRLL
+ */
+function isDiagonalMode() {
+  return currentDirectionMode === 'diagRL' || currentDirectionMode === 'diagRLL'
+}
+
+/**
+ * Пересчитывает и применяет диагональное направление при изменении размера экрана
+ * Центрирует мяч и возобновляет движение с новым направлением от центра
+ */
+function recalculateDiagonalDirectionIfNeeded() {
+  // Пересчитываем только если текущий режим диагональный
+  if (!isDiagonalMode()) {
+    return
+  }
+
+  // Получаем новый вектор направления с учетом обновленных размеров экрана
+  const directionVector = getDirectionVector(currentDirectionMode)
+  if (!directionVector) {
+    return
+  }
+
+  const { dirX, dirY } = directionVector
+
+  // Обновляем внутреннее состояние направления
+  directionState = { dx: dirX, dy: dirY }
+
+  // Если сессия активна, центрируем мяч и возобновляем движение
+  if (isPlaying) {
+    // Шаг 1: Пауза и центрирование
+    safeSend(WS_MSG.controllerUpdate, {
+      paused: true,
+      returnToCenter: true
+    })
+
+    // Шаг 2: Возобновление с новым направлением через короткую задержку
+    setTimeout(() => {
+      safeSend(WS_MSG.controllerUpdate, {
+        paused: false,
+        dirX,
+        dirY
+      })
+    }, 200)
+
+    console.log(
+      `🔄 Диагональное направление пересчитано: мяч центрирован, новое направление ${currentDirectionMode} (${dirX.toFixed(4)}, ${dirY.toFixed(4)})`
+    )
+  } else {
+    // Если на паузе, просто обновляем направление без центрирования
+    safeSend(WS_MSG.controllerUpdate, {
+      dirX,
+      dirY
+    })
+  }
+}
+
 function updatePreviewSize(viewerScreenSize) {
   if (canUpdatePreview(viewerScreenSize)) {
     const canvas = document.getElementById('preview')
@@ -1005,6 +1086,7 @@ function updatePreviewSize(viewerScreenSize) {
     const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
     setCanvasDimensions(canvas, previewWidth, previewHeight)
     updatePhysicsEngineWorldSize(viewerScreenSize)
+    recalculateDiagonalDirectionIfNeeded()
     applyServerStateOrCenter()
     updateViewerInfo(viewerScreenSize)
   } else {
@@ -1086,10 +1168,22 @@ function getDirectionVector(directionMode) {
       return { dirX: 1, dirY: 0 }
     case 'vertical':
       return { dirX: 0, dirY: 1 }
-    case 'diagRL': // Диагональ вправо-вниз
-      return { dirX: 0.707, dirY: 0.707 }
-    case 'diagRLL': // Диагональ вправо-вверх
-      return { dirX: 0.707, dirY: -0.707 }
+    case 'diagRL': {
+      // Движение из верхнего левого угла в нижний правый (TL→BR)
+      // Вычисляем точный угол на основе размеров вьювера
+      const width = globalThis.__current?.viewerScreenSize?.width || 800
+      const height = globalThis.__current?.viewerScreenSize?.height || 600
+      const diagonal = Math.hypot(width, height)
+      return { dirX: width / diagonal, dirY: height / diagonal }
+    }
+    case 'diagRLL': {
+      // Движение из нижнего левого угла в верхний правый (BL→TR)
+      // Вычисляем точный угол на основе размеров вьювера
+      const width = globalThis.__current?.viewerScreenSize?.width || 800
+      const height = globalThis.__current?.viewerScreenSize?.height || 600
+      const diagonal = Math.hypot(width, height)
+      return { dirX: width / diagonal, dirY: -height / diagonal }
+    }
     case 'random': {
       // Случайное направление
       const angle = Math.random() * 2 * Math.PI
@@ -1198,141 +1292,15 @@ function setBackgroundColor(color) {
     safeSend(WS_MSG.controllerUpdate, { colorBg: color })
   }
   // Обновляем фон в превью
-  if (globalThis.previewRenderer) {
-    globalThis.previewRenderer.setBackgroundColor(color)
+  if (globalThis.__previewRenderer) {
+    globalThis.__previewRenderer.setBackgroundColor(color)
   }
   // Обновляем фон в полноэкранном превью
-  if (globalThis.fullscreenPreviewRenderer) {
-    globalThis.fullscreenPreviewRenderer.setBackgroundColor(color)
+  if (previewFsRenderer) {
+    previewFsRenderer.setBackgroundColor(color)
   }
 }
-/**
- * Обновляет состояние кнопок направления
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
-/**
- * Обновляет состояние кнопок направления в UI.
- * Рефакторинг для снижения когнитивной сложности.
- */
+
 function updateDirectionButtons() {
   const directionButtons = document.querySelectorAll('[data-mode]')
   for (const button of directionButtons) {
@@ -1364,9 +1332,9 @@ function getDirectionInfo(mode) {
     case 'vertical':
       return { text: 'Вертикальное', icon: '↕️' }
     case 'diagRL':
-      return { text: 'Диагональ (право-вниз)', icon: '↘️' }
+      return { text: 'Диагональ ↖️ → ↘️', icon: '↘️' }
     case 'diagRLL':
-      return { text: 'Диагональ (право-верх)', icon: '↗️' }
+      return { text: 'Диагональ ↙️ → ↗️', icon: '↗️' }
     case 'random':
       return { text: 'Случайное', icon: '🎲' }
     default:
@@ -1860,10 +1828,12 @@ function setupFullscreenBallColorControls() {
     '#06b6d4',
     '#84cc16',
     '#fb7185',
-    '#ffffff'
+    '#ffffff',
+    '#a855f7',
+    '#14b8a6'
   ]
 
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 12; i++) {
     const btn = document.getElementById(`fsBallCol${i}`)
     if (btn) btn.onclick = () => setBallColor(ballColors[i - 1])
   }
@@ -1877,13 +1847,15 @@ function setupFullscreenBackgroundColorControls() {
     '#0a2540',
     '#052e16',
     '#1a102a',
-    '#2b1b0e',
-    '#032f2f',
-    '#2a0e14',
-    '#0f172a'
+    '#fef3c7',
+    '#dbeafe',
+    '#fce7f3',
+    '#f3f4f6',
+    '#e5e7eb',
+    '#d1d5db'
   ]
 
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 12; i++) {
     const btn = document.getElementById(`fsBg${i}`)
     if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1])
   }
@@ -1902,6 +1874,43 @@ function fillFsSessionInfo() {
   }
 }
 
+
+/**
+ * Сбрасывает состояние сессии (счётчики, позицию мяча)
+ */
+
+function resetSession() {
+  try {
+    console.log('🔄 Сброс сессии...')
+
+    // Сбрасываем счётчики
+    bbCounters.resetAll()
+
+    // Останавливаем игру если она активна
+    if (isPlaying) {
+      _handlePause()
+      updatePlayPauseButton()
+    }
+
+    // Возвращаем мяч в центр
+    safeSend(WS_MSG.controllerUpdate, {
+      paused: true,
+      returnToCenter: true
+    })
+
+    // Сбрасываем направление на горизонтальное
+    setDirection('horizontal')
+
+    // Показываем уведомление
+    showNotification('Сессия сброшена', 'info')
+
+    console.log('✅ Сессия сброшена')
+  } catch (error) {
+    console.error('❌ Ошибка при сбросе сессии:', error)
+    showNotification('Ошибка при сбросе сессии', 'error')
+  }
+}
+
 /**
  * Отображает уведомление пользователю
  * @param {string} message - Текст сообщения
@@ -1910,7 +1919,7 @@ function fillFsSessionInfo() {
 function showNotification(message, type = 'info') {
   try {
     if (globalThis.notificationSystem?.show) {
-      globalThis.notificationSystem.show(message, type)
+      globalThis.notificationSystem.show({ message, type })
     } else if (globalThis.showSuccessNotification && type === 'success') {
       globalThis.showSuccessNotification('Успех', message)
     } else if (globalThis.showErrorNotification && type === 'error') {
@@ -1919,9 +1928,8 @@ function showNotification(message, type = 'info') {
       // Фолбэк: используем alert для критических ошибок
       if (type === 'error') {
         alert(`Ошибка: ${message}`)
-      } else {
-        console.log(`[${type.toUpperCase()}] ${message}`)
       }
+      console.log(`[${type.toUpperCase()}] ${message}`)
     }
   } catch (error) {
     console.error('Error showing notification:', error)

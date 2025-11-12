@@ -326,15 +326,15 @@ const server = http.createServer(async (req, res) => {
     res.end('OK - deployment started')
     // Запускаем деплой асинхронно
     log(`Starting deployment for environments: ${environments.join(', ')}`)
-    /* eslint-disable no-await-in-loop */
-    for (const environment of environments) {
+    // Fixed: Using Promise.all for parallel deployment
+        // Deploy all environments in parallel
+    await Promise.all(environments.map(async (environment) => {
       try {
         await deploy(environment, ref)
       } catch (error) {
         log(`Deployment failed for ${environment}: ${error.message}`, 'ERROR')
       }
-    }
-    /* eslint-enable no-await-in-loop */
+    })) // End parallel deployment
     } catch (error) {
     log(`Error processing webhook: ${error.message}`, 'ERROR')
     res.writeHead(500, { 'Content-Type': 'text/plain' })

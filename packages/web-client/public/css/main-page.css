@@ -11,7 +11,7 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 8px 25px rgb(37 99 235 / 30%);
 }
 
 .main-button::before {
@@ -21,13 +21,13 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 20%), transparent);
   transition: left 0.5s;
 }
 
 .main-button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 12px 35px rgb(37 99 235 / 40%);
 }
 
 .main-button:hover::before {
@@ -36,41 +36,41 @@
 
 /* Light theme для постоянных ссылок */
 .light-theme #customClientId {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(59, 130, 246, 0.4) !important;
-  color: #1e293b !important;
+  background: rgb(255 255 255 / 90%);
+  border-color: rgb(59 130 246 / 40%);
+  color: #1e293b;
 }
 
 .light-theme #customClientId:focus {
-  background: rgba(255, 255, 255, 1) !important;
-  border-color: rgba(37, 99, 235, 0.6) !important;
+  background: rgb(255 255 255 / 100%);
+  border-color: rgb(37 99 235 / 60%);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 10%);
 }
 
 .light-theme #existingSessionId {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(59, 130, 246, 0.4) !important;
-  color: #1e293b !important;
+  background: rgb(255 255 255 / 90%);
+  border-color: rgb(59 130 246 / 40%);
+  color: #1e293b;
 }
 
 .light-theme #existingSessionId:focus {
-  background: rgba(255, 255, 255, 1) !important;
-  border-color: rgba(37, 99, 235, 0.6) !important;
+  background: rgb(255 255 255 / 100%);
+  border-color: rgb(37 99 235 / 60%);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 10%);
 }
 
 .light-theme #generatedViewerUrl,
 .light-theme #generatedControllerUrl {
-  background: rgba(248, 250, 252, 0.9) !important;
-  color: #1e293b !important;
+  background: rgb(248 250 252 / 90%);
+  color: #1e293b;
 }
 
 .light-theme #generatedViewerUrl {
-  border-color: rgba(59, 130, 246, 0.5) !important;
+  border-color: rgb(59 130 246 / 50%);
 }
 
 .light-theme #generatedControllerUrl {
-  border-color: rgba(168, 85, 247, 0.5) !important;
+  border-color: rgb(168 85 247 / 50%);
 }
