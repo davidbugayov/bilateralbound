@@ -2,6 +2,11 @@
  * SharedComponents - переиспользуемые компоненты для BilateralBound
  * Содержит общую логику для controller и viewer
  */
+
+/**
+ * @typedef {Object} StatusIndicatorComponent
+ * @property {function(string, string): void} setStatus - Устанавливает статус индикатора
+ */
 if (typeof SharedComponents === 'undefined') {
   class SharedComponents {
     constructor() {
@@ -335,6 +340,9 @@ if (typeof SharedComponents === 'undefined') {
     }
     /**
      * Создает переиспользуемый компонент статуса
+     * @param {HTMLElement} container - Контейнер для компонента
+     * @param {Object} options - Опции компонента
+     * @returns {StatusIndicatorComponent} Объект компонента с методом setStatus
      */
     createStatusIndicator(container, options = {}) {
       const defaultOptions = {
@@ -369,6 +377,43 @@ if (typeof SharedComponents === 'undefined') {
           this.elements.container = container.querySelector('.status-indicator')
           this.elements.icon = container.querySelector('.status-icon')
           this.elements.text = container.querySelector('.status-text')
+        },
+        /**
+         * Устанавливает статус индикатора
+         * @param {string} status - Тип статуса ('success', 'error', 'warning', 'loading', 'idle')
+         * @param {string} message - Текстовое сообщение статуса
+         */
+        setStatus(status, message) {
+          this.currentStatus = status
+          if (this.elements.text) {
+            this.elements.text.textContent = message
+          }
+          if (this.elements.icon) {
+            switch (status) {
+              case 'success':
+                this.elements.icon.textContent = '✅'
+                break
+              case 'error':
+                this.elements.icon.textContent = '❌'
+                break
+              case 'warning':
+                this.elements.icon.textContent = '⚠️'
+                break
+              case 'loading':
+                this.elements.icon.textContent = '⏳'
+                break
+              default:
+                this.elements.icon.textContent = '⏳'
+            }
+          }
+          // Автоматическое скрытие если включено
+          if (this.options.autoHide && status === 'success') {
+            setTimeout(() => {
+              if (this.elements.container) {
+                this.elements.container.style.display = 'none'
+              }
+            }, this.options.hideDelay)
+          }
         }
       }
 

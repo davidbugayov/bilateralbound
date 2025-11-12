@@ -130,6 +130,7 @@ module.exports = [
 
         // UI and components
         sharedComponents: 'readonly',
+        components: 'writable',
 
         // Physics and rendering
         PhysicsEngine: 'readonly',

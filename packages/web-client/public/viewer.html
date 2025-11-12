@@ -105,12 +105,19 @@
     <script>
       "use strict";
 
+      /**
+       * @typedef {Object} StatusIndicatorComponent
+       * @property {function(string, string): void} setStatus - Устанавливает статус индикатора
+       */
+
       // Global variables
       let wsClient;
       let physicsEngine;
       let ballRenderer;
       let isFullscreen = false;
+      /** @type {Object} */
       const components = {};
+      // components.status will be assigned in initializeComponents() and has setStatus method
       let resizeTimeout = null;
       let lastScreenSizeUpdate = 0;
 
@@ -141,6 +148,9 @@
             autoHide: false,
           },
         );
+        // JSDoc для IDE: components.status имеет метод setStatus
+        /** @type {StatusIndicatorComponent} */
+        components.status;
       }
 
       async function initializeViewer(sessionId) {
