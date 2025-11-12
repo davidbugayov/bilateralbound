@@ -164,9 +164,10 @@ function setupExpressApp(sessionManager, apiCache) {
       message: 'Too many requests from this IP, please try again later.',
       standardHeaders: true,
       legacyHeaders: false,
-      trustProxy: true,
-      keyGenerator: req =>
-        req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown'
+      keyGenerator: (req, res) => {
+        // Use the built-in IPv6-safe key generator
+        return req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown'
+      }
     })
     app.use('/api/', limiter)
   }
