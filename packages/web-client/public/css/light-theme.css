@@ -531,7 +531,7 @@ body.light-theme #viewerStatus {
   font-weight: 600;
 }
 
-body.light-theme #viewerStatus.connected { color: #059669; }
+body.light-theme #viewerStatus.connected { color: #16a34a; font-weight: bold; }
 body.light-theme #viewerStatus.disconnected { color: #ef4444; }
 
 /* Animation */
