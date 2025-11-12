@@ -7,8 +7,6 @@ class SessionRepository {
    */
   constructor() {
     this.sessions = new Map()
-    this.sessionCache = new Map() // Кэш для часто запрашиваемых сессий
-    this.cacheExpiration = 30000 // 30 секунд
   }
   /**
    * Валидация пользовательского ID сессии: латиница/цифры/подчеркивание/дефис, 3..32 символа
@@ -25,29 +23,7 @@ class SessionRepository {
    * @returns {Object} Созданная сессия
    */
   create(sessionData = {}) {
-    const session = this._createInternal(uuidv4().substring(0, 6), sessionData)
-    return session
-  }
-
-  /**
-   * Создает сессию с указанным ID или возвращает существующую
-   * @param {string} customId - Пользовательский ID сессии
-   * @param {Object} sessionData - Данные сессии
-   * @returns {Object} Сессия
-   * @throws {Error} Если ID невалиден
-   */
-  createWithId(customId, sessionData = {}) {
-    const id = String(customId)
-    if (!this.isValidCustomId(id)) {
-      throw new Error('Invalid session id format')
-    }
-
-    if (this.sessions.has(id)) {
-      // Возвращаем существующую сессию, делая операцию идемпотентной
-      return this.sessions.get(id)
-    }
-
-    return this._createInternal(id, sessionData)
+    return this._createInternal(uuidv4().substring(0, 6), sessionData)
   }
 
   /**
@@ -83,6 +59,9 @@ class SessionRepository {
       viewerScreenSize: null,
       createdAt: Date.now(),
       lastActivity: Date.now(),
+      /**
+       * @type {Map<WebSocket, {role: string, connectedAt: number, sessionId: string}>}
+       */
       clients: new Map(),
       mainLoop: null, // Единый цикл для физики и рассылки
       lastStateUpdate: 0, // Добавляем для отслеживания последнего обновления состояния
@@ -94,27 +73,12 @@ class SessionRepository {
   }
 
   /**
-   * Находит сессию по ID с кэшированием
+   * Находит сессию по ID
    * @param {string} sessionId - ID сессии
    * @returns {Object|null} Сессия или null если не найдена
    */
   findById(sessionId) {
-    // Проверяем кэш сначала
-    const cached = this.sessionCache.get(sessionId)
-    if (cached && Date.now() - cached.timestamp < this.cacheExpiration) {
-      return cached.session
-    }
-    // Ищем в основном хранилище
-    const session = this.sessions.get(sessionId) || null
-    // Кэшируем результат (даже если null)
-    if (session) {
-      this.sessionCache.set(sessionId, {
-        session,
-        timestamp: Date.now()
-      })
-    }
-
-    return session
+    return this.sessions.get(sessionId) || null
   }
 
   /**
@@ -128,8 +92,6 @@ class SessionRepository {
     if (!session) return false
     Object.assign(session, updates)
     session.lastActivity = Date.now()
-    // Инвалидируем кэш
-    this.sessionCache.delete(sessionId)
     return true
   }
 
@@ -143,8 +105,6 @@ class SessionRepository {
     const session = this.findById(sessionId)
     if (!session) return false
     Object.assign(session.ballState, ballUpdates)
-    // Инвалидируем кэш
-    this.sessionCache.delete(sessionId)
     return true
   }
 
@@ -154,19 +114,7 @@ class SessionRepository {
    * @returns {boolean} Успех удаления
    */
   delete(sessionId) {
-    this.sessionCache.delete(sessionId) // Очищаем кэш
     return this.sessions.delete(sessionId)
-  }
-  /**
-   * Очистка устаревшего кэша для оптимизации памяти
-   */
-  cleanupCache() {
-    const now = Date.now()
-    for (const [sessionId, cached] of this.sessionCache) {
-      if (now - cached.timestamp > this.cacheExpiration) {
-        this.sessionCache.delete(sessionId)
-      }
-    }
   }
 
   /**
@@ -198,8 +146,6 @@ class SessionRepository {
     for (const id of expiredIds) {
       this.delete(id)
     }
-    // Также очищаем устаревший кэш
-    this.cleanupCache()
     return expiredIds
   }
 }

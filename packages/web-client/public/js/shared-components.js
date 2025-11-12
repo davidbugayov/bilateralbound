@@ -1,4 +1,3 @@
-'use strict'
 /**
  * SharedComponents - переиспользуемые компоненты для BilateralBound
  * Содержит общую логику для controller и viewer
@@ -7,7 +6,6 @@ if (typeof SharedComponents === 'undefined') {
   class SharedComponents {
     constructor() {
       this.components = new Map()
-      this.eventListeners = new Map()
     }
     /**
      * Создает переиспользуемый компонент управления скоростью
@@ -75,7 +73,7 @@ if (typeof SharedComponents === 'undefined') {
     value="${defaultOptions.currentSpeed}"
     step="1">
     <div class="speed-marks">
-    <span class="mark" style="left: 0%">0</span>
+    <span class="mark" style="left: 0">0</span>
     <span class="mark" style="left: 25%">25</span>
     <span class="mark" style="left: 50%">50</span>
     <span class="mark" style="left: 75%">75</span>
@@ -263,10 +261,6 @@ if (typeof SharedComponents === 'undefined') {
           // Вызываем callback
           this.options.onColorChange?.(color)
         },
-        // Получает текущий цвет
-        getColor() {
-          return this.currentColor
-        }
       }
 
       return component.render()
@@ -335,10 +329,6 @@ if (typeof SharedComponents === 'undefined') {
           // Вызываем callback
           this.options.onSizeChange?.(size)
         },
-        // Получает текущий размер
-        getSize() {
-          return this.currentSize
-        }
       }
 
       return component.render()
@@ -380,46 +370,6 @@ if (typeof SharedComponents === 'undefined') {
           this.elements.icon = container.querySelector('.status-icon')
           this.elements.text = container.querySelector('.status-text')
         },
-        // Устанавливает статус
-        setStatus(status, message = '') {
-          this.currentStatus = status
-          const statusMap = {
-            idle: { icon: '⏳', class: 'idle' },
-            loading: { icon: '🔄', class: 'loading' },
-            success: { icon: '✅', class: 'success' },
-            error: { icon: '❌', class: 'error' },
-            warning: { icon: '⚠️', class: 'warning' }
-          }
-
-          const statusInfo = statusMap[status] || statusMap.idle
-          if (this.elements.icon) {
-            this.elements.icon.textContent = statusInfo.icon
-          }
-
-          if (this.elements.text) {
-            this.elements.text.textContent = message || status
-          }
-          // Обновляем CSS классы
-          this.elements.container.className = `status-indicator ${statusInfo.class}`
-          // Автоматически скрываем если включено
-          if (this.options.autoHide && status !== 'loading') {
-            setTimeout(() => {
-              this.hide()
-            }, this.options.hideDelay)
-          }
-        },
-        // Показывает индикатор
-        show() {
-          this.elements.container.style.display = 'block'
-        },
-        // Скрывает индикатор
-        hide() {
-          this.elements.container.style.display = 'none'
-        },
-        // Получает текущий статус
-        getStatus() {
-          return this.currentStatus
-        }
       }
 
       return component.render()
