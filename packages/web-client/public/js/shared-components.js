@@ -260,7 +260,7 @@ if (typeof SharedComponents === 'undefined') {
           }
           // Вызываем callback
           this.options.onColorChange?.(color)
-        },
+        }
       }
 
       return component.render()
@@ -328,7 +328,7 @@ if (typeof SharedComponents === 'undefined') {
           }
           // Вызываем callback
           this.options.onSizeChange?.(size)
-        },
+        }
       }
 
       return component.render()
@@ -369,7 +369,7 @@ if (typeof SharedComponents === 'undefined') {
           this.elements.container = container.querySelector('.status-indicator')
           this.elements.icon = container.querySelector('.status-icon')
           this.elements.text = container.querySelector('.status-text')
-        },
+        }
       }
 
       return component.render()

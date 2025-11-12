@@ -3,6 +3,35 @@
 const globals = require('globals')
 const js = require('@eslint/js')
 
+// Define common rules to be shared across configurations
+const commonRules = {
+  // Error rules - critical issues
+  'no-undef': 'error',
+  'no-redeclare': 'error',
+  'no-const-assign': 'error',
+  'no-var': 'error',
+  'no-unused-vars': ['error', { args: 'none' }],
+  'no-async-promise-executor': 'error',
+  'no-await-in-loop': 'error',
+  'require-atomic-updates': 'error',
+  'no-constant-condition': 'error',
+
+  // Warning rules - style and best practices
+  'prefer-const': 'error',
+  'no-empty': 'warn',
+  'no-multiple-empty-lines': ['error', { max: 2 }],
+  'no-trailing-spaces': 'error',
+  'no-extra-semi': 'error',
+  semi: ['error', 'never'],
+  quotes: ['error', 'single'],
+  'quote-props': ['error', 'as-needed'],
+  'comma-dangle': ['error', 'never'],
+
+  // Disabled rules for this project
+  'no-console': 'off',
+  'no-debugger': 'off'
+}
+
 module.exports = [
   // 1. Global ignores
   {
@@ -16,7 +45,6 @@ module.exports = [
       'lib/**',
       'public/emdr-therapy/**',
       'docs/**',
-      'packages/web-client/public/**',
       '.git/**',
       '.idea/**',
       '.vscode/**'
@@ -29,7 +57,7 @@ module.exports = [
   // 3. Server-side code (Node.js)
   {
     files: [
-      'packages/server-core/**/*.js', 
+      'packages/server-core/**/*.js',
       'scripts/**/*.js'
     ],
     languageOptions: {
@@ -37,40 +65,14 @@ module.exports = [
       sourceType: 'commonjs',
       globals: globals.node
     },
-    rules: {
-      // Error rules - critical issues
-      'no-undef': 'error',
-      'no-redeclare': 'error',
-      'no-const-assign': 'error',
-      'no-var': 'error',
-      'no-unused-vars': ['error', { args: 'none' }],
-      'no-async-promise-executor': 'error',
-      'no-await-in-loop': 'error',
-      'require-atomic-updates': 'error',
-      'no-constant-condition': 'error',
-      
-      // Warning rules - style and best practices
-      'prefer-const': 'error',
-      'no-empty': 'warn',
-      'no-multiple-empty-lines': ['error', { max: 2 }],
-      'no-trailing-spaces': 'error',
-      'no-extra-semi': 'error',
-      semi: ['error', 'never'],
-      quotes: ['error', 'single'],
-      'quote-props': ['error', 'as-needed'],
-      'comma-dangle': ['error', 'never'],
-      
-      // Disabled rules for this project
-      'no-console': 'off',
-      'no-debugger': 'off'
-    }
+    rules: commonRules
   },
 
   // 3.1. Config files (ESLint, webpack, etc.)
   {
     files: [
       'eslint.config.js',
-      'webpack.config.js', 
+      'webpack.config.js',
       'config/**/*.js'
     ],
     languageOptions: {
@@ -99,50 +101,46 @@ module.exports = [
         ...globals.browser
       }
     },
-    rules: {
-      // Error rules - critical issues
-      'no-undef': 'error',
-      'no-redeclare': 'error',
-      'no-const-assign': 'error',
-      'no-var': 'error',
-      'no-unused-vars': ['error', { args: 'none' }],
-      'no-async-promise-executor': 'error',
-      'no-await-in-loop': 'error',
-      'require-atomic-updates': 'error',
-      'no-constant-condition': 'error',
-      
-      // Warning rules - style and best practices
-      'prefer-const': 'error',
-      'no-empty': 'warn',
-      'no-multiple-empty-lines': ['error', { max: 2 }],
-      'no-trailing-spaces': 'error',
-      'no-extra-semi': 'error',
-      semi: ['error', 'never'],
-      quotes: ['error', 'single'],
-      'quote-props': ['error', 'as-needed'],
-      'comma-dangle': ['error', 'never'],
-      
-      // Disabled rules for this project
-      'no-console': 'off',
-      'no-debugger': 'off'
-    }
+    rules: commonRules
   },
 
-  // 5. Test files
+  // 4.1. Client-side code (Browser) - Web Client public files
   {
-    files: ['test/**/*.js'],
+    files: ['packages/web-client/public/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'module',
+      sourceType: 'script',
       globals: {
         ...globals.browser,
-        ...globals.node,
-        ...globals.jest
+        // WebSocket and session management
+        WebSocketClient: 'readonly',
+        WS_MSG: 'readonly',
+        getSessionIdFromUrl: 'readonly',
+        resetSession: 'readonly',
+
+        // UI and components
+        sharedComponents: 'readonly',
+
+        // Physics and rendering
+        PhysicsEngine: 'readonly',
+        BallRenderer: 'readonly',
+
+        // Utilities
+        throttle: 'readonly',
+
+        // Functions from new-features.js that might be used elsewhere
+        togglePlayPause: 'readonly',
+        setDirection: 'readonly',
+
+        // Other globals
+        module: 'readonly',
+        require: 'readonly'
       }
     },
     rules: {
-      'no-undef': 'error',
-      'no-unused-vars': 'warn' // More lenient for tests
+      ...commonRules,
+      // Allow redeclaration of globals that are defined in these files
+      'no-redeclare': 'off'
     }
   }
 ]

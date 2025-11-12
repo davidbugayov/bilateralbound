@@ -745,17 +745,23 @@ function _syncUISpeed(ballState) {
 }
 
 function _syncUISize(ballState) {
-  if (ballState.radius !== undefined) {
-    components.size?.setSize(ballState.radius)
+  if (ballState.radius !== undefined && components.size && typeof components.size.setSize === 'function') {
+    // Find the closest predefined size to the server radius
+    const sizes = [20, 40, 80, 100]
+    const closestSize = sizes.reduce((prev, curr) =>
+      Math.abs(curr - ballState.radius) < Math.abs(prev - ballState.radius) ? curr : prev,
+      sizes[0] // initial value
+    )
+    components.size.setSize(closestSize)
   }
 }
 
 function _syncUIColors(ballState) {
-  if (ballState.colorBall) {
-    components.ballColor?.setColor(ballState.colorBall)
+  if (ballState.colorBall && components.ballColor && typeof components.ballColor.setColor === 'function') {
+    components.ballColor.setColor(ballState.colorBall)
   }
-  if (ballState.colorBg) {
-    components.bgColor?.setColor(ballState.colorBg)
+  if (ballState.colorBg && components.bgColor && typeof components.bgColor.setColor === 'function') {
+    components.bgColor.setColor(ballState.colorBg)
   }
 }
 
@@ -807,7 +813,12 @@ function syncUIWithState(ballState) {
 }
 // ===== ИНИЦИАЛИЗАЦИЯ КОМПОНЕНТОВ =====
 function _initializeSpeedControl() {
-  components.speed = sharedComponents.createSpeedControl(document.getElementById('speedControl'), {
+  const container = document.getElementById('speedControl')
+  if (!container) {
+    console.warn('speedControl container not found')
+    return
+  }
+  components.speed = sharedComponents.createSpeedControl(container, {
     onSpeedChange: throttle(speed => {
       updateSpeed(speed)
     }, 100)
@@ -815,61 +826,70 @@ function _initializeSpeedControl() {
 }
 
 function _initializeBallColorControl() {
-  components.ballColor = sharedComponents.createColorControl(
-    document.getElementById('ballColorControl'),
-    {
-      colors: [
-        '#60a5fa',
-        '#ef4444',
-        '#10b981',
-        '#f59e0b',
-        '#8b5cf6',
-        '#f97316',
-        '#06b6d4',
-        '#84cc16',
-        '#fb7185',
-        '#ffffff',
-        '#a855f7',
-        '#14b8a6'
-      ],
-      defaultValue: '#60a5fa',
-      title: '',
-      onColorChange: color => {
-        setBallColor(color)
-      }
+  const container = document.getElementById('ballColorControl')
+  if (!container) {
+    console.warn('ballColorControl container not found')
+    return
+  }
+  components.ballColor = sharedComponents.createColorControl(container, {
+    colors: [
+      '#60a5fa',
+      '#ef4444',
+      '#10b981',
+      '#f59e0b',
+      '#8b5cf6',
+      '#f97316',
+      '#06b6d4',
+      '#84cc16',
+      '#fb7185',
+      '#ffffff',
+      '#a855f7',
+      '#14b8a6'
+    ],
+    defaultValue: '#60a5fa',
+    title: '',
+    onColorChange: color => {
+      setBallColor(color)
     }
-  )
+  })
 }
 
 function _initializeBgColorControl() {
-  components.bgColor = sharedComponents.createColorControl(
-    document.getElementById('bgColorControl'),
-    {
-      colors: [
-        '#020617',
-        '#000000',
-        '#111827',
-        '#0a2540',
-        '#052e16',
-        '#1a102a',
-        '#fef3c7',
-        '#dbeafe',
-        '#fce7f3',
-        '#f3f4f6',
-        '#e5e7eb',
-        '#d1d5db'
-      ],
-      defaultValue: '#020617',
-      title: '',
-      onColorChange: color => {
-        setBackgroundColor(color)
-      }
+  const container = document.getElementById('bgColorControl')
+  if (!container) {
+    console.warn('bgColorControl container not found')
+    return
+  }
+  components.bgColor = sharedComponents.createColorControl(container, {
+    colors: [
+      '#020617',
+      '#000000',
+      '#111827',
+      '#0a2540',
+      '#052e16',
+      '#1a102a',
+      '#fef3c7',
+      '#dbeafe',
+      '#fce7f3',
+      '#f3f4f6',
+      '#e5e7eb',
+      '#d1d5db'
+    ],
+    defaultValue: '#020617',
+    title: '',
+    onColorChange: color => {
+      setBackgroundColor(color)
     }
-  )
+  })
 }
 
 function _initializeSizeControl() {
-  components.size = sharedComponents.createSizeControl(document.getElementById('sizeControl'), {
+  const container = document.getElementById('sizeControl')
+  if (!container) {
+    console.warn('sizeControl container not found')
+    return
+  }
+  components.size = sharedComponents.createSizeControl(container, {
     sizes: [20, 40, 80, 100],
     defaultValue: 20,
     title: '',
@@ -1025,7 +1045,7 @@ function recalculateDiagonalDirectionIfNeeded() {
   }
 
   const { dirX, dirY } = directionVector
-  
+
   // Обновляем внутреннее состояние направления
   directionState = { dx: dirX, dy: dirY }
 
@@ -1036,7 +1056,7 @@ function recalculateDiagonalDirectionIfNeeded() {
       paused: true,
       returnToCenter: true
     })
-    
+
     // Шаг 2: Возобновление с новым направлением через короткую задержку
     setTimeout(() => {
       safeSend(WS_MSG.controllerUpdate, {
@@ -1045,7 +1065,7 @@ function recalculateDiagonalDirectionIfNeeded() {
         dirY
       })
     }, 200)
-    
+
     console.log(
       `🔄 Диагональное направление пересчитано: мяч центрирован, новое направление ${currentDirectionMode} (${dirX.toFixed(4)}, ${dirY.toFixed(4)})`
     )
@@ -1855,10 +1875,10 @@ function fillFsSessionInfo() {
 }
 
 
-
 /**
  * Сбрасывает состояние сессии (счётчики, позицию мяча)
  */
+// eslint-disable-next-line no-unused-vars
 function resetSession() {
   try {
     console.log('🔄 Сброс сессии...')
