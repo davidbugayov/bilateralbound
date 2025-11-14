@@ -572,34 +572,31 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
     applyServerStateToPreview(state)
   })
-  // АДАПТИВНАЯ адаптация сглаживания по сетевым метрикам (улучшенная версия)
+  // АДАПТИВНАЯ адаптация сглаживания по сетевым метрикам (упрощенная версия для стабильности)
   wsClient.on(WS_MSG.netMetrics, ({ rttMs, jitterMs }) => {
     if (!previewPhysicsEngine) return
     const base = globalThis.BBConfig?.smoothing || {}
-    // Адаптивное демпфирование на основе джиттера (улучшено)
+    // Адаптивное демпфирование на основе джиттера (упрощено)
     const adaptiveDamping = Math.min(
       25,
-      Math.max(10, (base.damping || 15) + jitterMs / 15 + rttMs / 50)
+      Math.max(15, (base.damping || 20) + jitterMs / 20)
     )
-    // Адаптивная жесткость на основе условий сети
+    // Адаптивная жесткость на основе условий сети (упрощена)
     const adaptiveStiffness = Math.min(
       35,
-      Math.max(20, (base.stiffness || 25) - jitterMs / 50 + (rttMs > 100 ? 5 : 0))
+      Math.max(25, (base.stiffness || 30) - jitterMs / 30)
     )
-    // Адаптивное время предикции на основе RTT
-    const adaptivePredictTime = Math.min(
-      0.15,
-      Math.max(0.08, (base.maxPredictSec || 0.1) + Math.max(0, (rttMs / 1000 - 0.05) * 0.3))
-    )
+    // Фиксированное время предикции для стабильности (не адаптируется по RTT)
+    const fixedPredictTime = base.maxPredictSec || 0.02
     // Адаптивная дистанция снапа на основе стабильности сети
     const adaptiveSnapDistance = Math.min(
       0.4,
-      Math.max(0.15, (base.snapDistance || 0.2) + (jitterMs > 20 ? 0.1 : 0))
+      Math.max(0.2, (base.snapDistance || 0.3) + (jitterMs > 15 ? 0.05 : 0))
     )
     previewPhysicsEngine.setSmoothingOptions({
       damping: adaptiveDamping,
       stiffness: adaptiveStiffness,
-      maxPredictSec: adaptivePredictTime,
+      maxPredictSec: fixedPredictTime, // Фиксированное значение для консистентности
       snapDistance: adaptiveSnapDistance,
       // Включаем продвинутые функции сглаживания
       exponentialSmoothing: base.exponentialSmoothing,

@@ -510,18 +510,49 @@ class SessionManager {
   _schedulePhysicsUpdate(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) return
-    // Always stop any existing server-side physics loop — movement is client-driven now
+
+    // Останавливаем существующий цикл если есть
     if (session.mainLoop) {
       clearInterval(session.mainLoop)
       session.mainLoop = null
     }
-    // Server no longer steps physics; it only synchronizes state on explicit updates.
-    // We still may broadcast a lightweight sync when commands arrive elsewhere.
-    this.logger.logSession(
-      sessionId,
-      'Server-side physics loop disabled (client-authoritative movement).',
-      'debug'
-    )
+
+    // Проверяем есть ли подключенные вьюверы
+    const clients = this.webSocketManager.getClients(sessionId)
+    const hasViewers = clients.some(({ info }) => info.role === 'viewer')
+
+    // Запускаем серверный цикл физики только если есть вьюверы
+    if (hasViewers && session.physicsEngine) {
+      const PHYSICS_TICK_RATE = 60 // Гц - фиксированная частота обновления
+      const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE // ~16.67 мс
+
+      session.mainLoop = setInterval(() => {
+        try {
+          // Обновляем физику на сервере
+          session.physicsEngine.update(PHYSICS_DT / 1000)
+
+          // Синхронизируем состояние сессии с движком
+          Object.assign(session.ballState, session.physicsEngine.getState())
+
+          // Рассылаем обновленное состояние всем клиентам
+          this.stateBroadcaster.broadcastState(sessionId)
+        } catch (error) {
+          this.logger.error(`Error in physics loop for session ${sessionId}: ${error.message}`)
+        }
+      }, PHYSICS_DT)
+
+      this.logger.logSession(
+        sessionId,
+        `Server-side physics loop started at ${PHYSICS_TICK_RATE}Hz`,
+        'debug'
+      )
+    } else {
+      this.logger.logSession(
+        sessionId,
+        'Server-side physics loop not started (no viewers connected)',
+        'debug'
+      )
+    }
   }
 
   /**
