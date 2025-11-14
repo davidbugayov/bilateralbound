@@ -1,5 +1,4 @@
 'use strict'
-const { v4: uuidv4 } = require('uuid')
 // Интерфейс для управления данными сессий
 class SessionRepository {
   /**
@@ -20,9 +19,10 @@ class SessionRepository {
   /**
    * Создает новую сессию с случайным ID
    * @param {Object} sessionData - Данные сессии
-   * @returns {Object} Созданная сессия
+   * @returns {Promise<Object>} Созданная сессия
    */
-  create(sessionData = {}) {
+  async create(sessionData = {}) {
+    const { v4: uuidv4 } = await import('uuid')
     return this._createInternal(uuidv4().substring(0, 6), sessionData)
   }
 

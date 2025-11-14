@@ -7,7 +7,6 @@ const os = require('node:os')
 const path = require('node:path')
 const net = require('node:net')
 const fs = require('node:fs')
-const { v4: uuidv4 } = require('uuid')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
 // Определяем доступные сетевые интерфейсы
@@ -94,10 +93,15 @@ function setupExpressApp(sessionManager, apiCache) {
   const networkInterfaces = getNetworkInterfaces()
   const app = express()
   // Request ID middleware for traceability
-  app.use((req, res, next) => {
-    req.id = req.headers['x-request-id'] || uuidv4()
-    res.setHeader('X-Request-Id', req.id)
-    next()
+  app.use(async (req, res, next) => {
+    try {
+      const { v4: uuidv4 } = await import('uuid')
+      req.id = req.headers['x-request-id'] || uuidv4()
+      res.setHeader('X-Request-Id', req.id)
+      next()
+    } catch (error) {
+      next(error)
+    }
   })
   // Улучшенная обработка безопасности с учетом сетевых интерфейсов
   app.use((req, res, next) => {
@@ -160,8 +164,10 @@ function setupExpressApp(sessionManager, apiCache) {
       message: 'Too many requests from this IP, please try again later.',
       standardHeaders: true,
       legacyHeaders: false,
-      keyGenerator: req =>
-        req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown'
+      keyGenerator: (req, res) => {
+        // Use the built-in IPv6-safe key generator
+        return req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown'
+      }
     })
     app.use('/api/', apiLimiter)
   }
@@ -300,9 +306,9 @@ function setupExpressApp(sessionManager, apiCache) {
     `.trim()
     res.type('application/xml').send(rss)
   })
-  app.post('/api/session', (req, res) => {
+  app.post('/api/session', async (req, res) => {
     try {
-      const session = sessionManager.createSession()
+      const session = await sessionManager.createSession()
       if (DEBUG_MODE) logger.info(`[${req.id}] New session created: ${session.id}`)
       res.json({ sessionId: session.id })
     } catch (error) {

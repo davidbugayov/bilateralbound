@@ -102,7 +102,7 @@ if (typeof BallRenderer === 'undefined') {
     _updatePhysics(clampedDeltaTime) {
       this.accumulatorMs += clampedDeltaTime
       if (this.onFrameCallback) {
-        this.onFrameCallback(clampedDeltaTime)
+        this.onFrameCallback(clampedDeltaTime / 1000)
       }
       if (this.options.localPhysics) {
         let substeps = 0

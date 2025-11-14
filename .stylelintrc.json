@@ -2,6 +2,9 @@
   "extends": [
     "stylelint-config-standard"
   ],
+  "plugins": [
+    "stylelint-prettier"
+  ],
   "rules": {
     "selector-id-pattern": null,
     "selector-class-pattern": null,
@@ -10,7 +13,8 @@
     "no-duplicate-selectors": null,
     "property-no-deprecated": null,
     "declaration-block-single-line-max-declarations": null,
-    "no-descending-specificity": null
+    "no-descending-specificity": null,
+    "prettier/prettier": true
   },
   "ignoreFiles": [
     "**/*.min.css",

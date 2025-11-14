@@ -15,11 +15,11 @@ if (typeof PhysicsEngine === 'undefined') {
         minSpeed: 50,
         maxSpeed: 5000,
         smoothing: {
-          // Оптимизированные параметры для плавного движения без рывков
-          stiffness: 12, // k - Увеличено для более быстрого отклика
-          damping: 10, // c - Оптимизировано для критического демпфирования без колебаний
-          maxPredictSec: 0.2, // максимум предикции - Минимум для стабильности
-          snapDistance: 0.5 // авто-снап к цели в пикселях для устранения микроколебаний
+          // Оптимизированные параметры для синхронизации с сервером
+          stiffness: 30, // k - Увеличено для быстрого следования за серверным состоянием
+          damping: 20, // c - Увеличено для устранения колебаний при получении обновлений
+          maxPredictSec: 0.02, // Уменьшено для более точной синхронизации (меньше предсказания)
+          snapDistance: 0.3 // авто-снап к цели в пикселях для устранения микроколебаний
         },
         bounceCallback: null,
         ...options
@@ -97,29 +97,29 @@ if (typeof PhysicsEngine === 'undefined') {
     applySmoothnessPreset(presetName) {
       const presets = {
         therapy: {
-          // Для терапевтических сессий - максимальная плавность
+          // Для терапевтических сессий - плавность с хорошей синхронизацией
           smoothing: {
-            stiffness: 15,
-            damping: 8,
-            maxPredictSec: 1,
+            stiffness: 20,
+            damping: 12,
+            maxPredictSec: 0.08,
             snapDistance: 0.8
           }
         },
         gaming: {
-          // Для динамичных сессий - более отзывчивое управление
+          // Для динамичных сессий - максимальная отзывчивость
           smoothing: {
             stiffness: 30,
-            damping: 15,
-            maxPredictSec: 0.5,
+            damping: 18,
+            maxPredictSec: 0.03,
             snapDistance: 1.5
           }
         },
         default: {
-          // Баланс между плавностью и отзывчивостью
+          // Баланс между плавностью и точной синхронизацией
           smoothing: {
-            stiffness: 20,
-            damping: 10,
-            maxPredictSec: 0.8,
+            stiffness: 25,
+            damping: 15,
+            maxPredictSec: 0.05,
             snapDistance: 1
           }
         }
@@ -372,44 +372,14 @@ if (typeof PhysicsEngine === 'undefined') {
     }
 
     _calculateAdaptiveClamping() {
-      const predictTime = this.options.smoothing.maxPredictSec || 0.03
       const radius = this.ball.radius
       const w = this.options.worldWidth
       const h = this.options.worldHeight
 
-      const predictedTargetX = this.state.targetX + this._smoothedVelocity.x * predictTime
-      const predictedTargetY = this.state.targetY + this._smoothedVelocity.y * predictTime
-
-      let clampedTargetX = predictedTargetX
-      let clampedTargetY = predictedTargetY
-
-      if (Math.abs(this._smoothedVelocity.x) > 0) {
-        const timeToBounceX = this._calculateTimeToBounce(
-          this.ball.x,
-          this._smoothedVelocity.x,
-          radius,
-          w
-        )
-        if (timeToBounceX < predictTime) {
-          clampedTargetX = predictedTargetX < w / 2 ? radius : w - radius
-        } else {
-          clampedTargetX = Math.min(w - radius, Math.max(radius, predictedTargetX))
-        }
-      }
-
-      if (Math.abs(this._smoothedVelocity.y) > 0) {
-        const timeToBounceY = this._calculateTimeToBounce(
-          this.ball.y,
-          this._smoothedVelocity.y,
-          radius,
-          h
-        )
-        if (timeToBounceY < predictTime) {
-          clampedTargetY = predictedTargetY < h / 2 ? radius : h - radius
-        } else {
-          clampedTargetY = Math.min(h - radius, Math.max(radius, predictedTargetY))
-        }
-      }
+      // Упрощенная логика: просто клампим целевую позицию без предсказания отскока
+      // Это предотвратит залипание на углах
+      const clampedTargetX = Math.min(w - radius, Math.max(radius, this.state.targetX))
+      const clampedTargetY = Math.min(h - radius, Math.max(radius, this.state.targetY))
 
       return { clampedTargetX, clampedTargetY }
     }
