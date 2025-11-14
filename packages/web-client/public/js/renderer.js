@@ -26,10 +26,7 @@ if (typeof BallRenderer === 'undefined') {
 
       this.animationFrameId = null
       this.lastTime = 0
-      this.targetFrameTime = 1000 / 60 // 60 FPS для стабильности
       this.frameCount = 0
-      this.fps = 60
-      this.actualFps = 60
       this.frameTimeHistory = [] // История времен кадров для расчета реального FPS
       this.adaptiveFrameRate = true // Адаптивная частота кадров
       this.maxFrameTime = 50 // Максимальное время кадра в ms
@@ -53,7 +50,6 @@ if (typeof BallRenderer === 'undefined') {
       this.pi2 = Math.PI * 2
       this.fillRect = this.ctx.fillRect.bind(this.ctx)
       this.beginPath = this.ctx.beginPath.bind(this.ctx)
-      this.arc = this.ctx.arc.bind(this.ctx)
       this.fill = this.ctx.fill.bind(this.ctx)
       // Предварительно создаем объекты для переиспользования
       this.ball = this.physics.ball
@@ -99,9 +95,6 @@ if (typeof BallRenderer === 'undefined') {
       if (this.adaptiveFrameRate) {
         this.frameTimeHistory.push(deltaTime)
         if (this.frameTimeHistory.length > 20) this.frameTimeHistory.shift()
-        const avgFrameTime =
-          this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
-        this.actualFps = 1000 / Math.max(1, avgFrameTime)
       }
       return Math.min(deltaTime, this.maxFrameTime)
     }
@@ -241,7 +234,7 @@ if (typeof BallRenderer === 'undefined') {
         }
 
         try {
-          // Кэшируем градиент и геометрию круга по (radius,color)
+          // Кэшируем градиент и геометрию круга по (radius, color)
           const col = ball.colorBall || this.colors.ball
           if (this._cached.radius !== ball.radius || this._cached.color !== col) {
             this._cached.radius = ball.radius
@@ -346,7 +339,6 @@ if (typeof BallRenderer === 'undefined') {
             // Переинициализируем кэшированные методы
             this.fillRect = this.ctx.fillRect.bind(this.ctx)
             this.beginPath = this.ctx.beginPath.bind(this.ctx)
-            this.arc = this.ctx.arc.bind(this.ctx)
             this.fill = this.ctx.fill.bind(this.ctx)
             // Тихо восстанавливаем контекст канваса
             return true
@@ -359,13 +351,6 @@ if (typeof BallRenderer === 'undefined') {
       }
 
       return true
-    }
-    // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ПЕРЕИСПОЛЬЗОВАНИЯ ===
-    /**
-     * Клонирует рендерер для нового canvas
-     */
-    clone(newCanvas) {
-      return new BallRenderer(newCanvas, this.physics)
     }
     /**
      * Устанавливает новый движок физики
@@ -383,26 +368,6 @@ if (typeof BallRenderer === 'undefined') {
       this.ball = this.physics.ball
       this.colors = this.physics.colors
       // Тихо обновляем рендерер
-    }
-    /**
-     * Рендерит сцену без обновления физики (для статичного рендеринга)
-     */
-    renderStatic() {
-      this.render(1)
-    }
-    /**
-     * Устанавливает FPS для рендеринга
-     */
-    setFPS(fps) {
-      const safeFps = Math.max(15, Math.min(240, fps || 60))
-      this.targetFrameTime = 1000 / safeFps
-      this.fixedStepMs = 1000 / safeFps
-    }
-    /**
-     * Получает текущий FPS
-     */
-    getFPS() {
-      return 1000 / this.targetFrameTime
     }
     /**
      * Рендерит один кадр с переданным состоянием.

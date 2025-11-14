@@ -150,7 +150,7 @@
         );
         // JSDoc для IDE: components.status имеет метод setStatus
         /** @type {StatusIndicatorComponent} */
-        components.status;
+        // components.status is now assigned above
       }
 
       async function initializeViewer(sessionId) {
@@ -158,10 +158,10 @@
           debugLog("📱 Инициализация viewer для сессии:", sessionId);
           hideLoading();
 
-          if (!window.__current) {
-            window.__current = {};
+          if (!globalThis.__current) {
+            globalThis.__current = {};
           }
-          window.__current.sessionId = sessionId;
+          globalThis.__current.sessionId = sessionId;
 
           const canvas = document.getElementById("viewerCanvas");
           if (!canvas) {
@@ -172,12 +172,12 @@
           resizeCanvas();
 
           physicsEngine = new PhysicsEngine({
-            worldWidth: window.innerWidth,
-            worldHeight: window.innerHeight,
+            worldWidth: globalThis.innerWidth,
+            worldHeight: globalThis.innerHeight,
             isViewer: true,
             bounceCallback: null,
           });
-          window.physicsEngine = physicsEngine;
+          globalThis.physicsEngine = physicsEngine;
 
           ballRenderer = new BallRenderer(canvas, physicsEngine, {
             localPhysics: false,
@@ -187,7 +187,7 @@
           await connectToSession(sessionId);
 
           wsClient = new WebSocketClient(sessionId, "viewer");
-          window.wsClient = wsClient;
+          globalThis.wsClient = wsClient;
 
           wsClient.on(WS_MSG.initialState, (state) => {
             debugLog("✅ Получено начальное состояние", state);
@@ -309,8 +309,8 @@
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 screenSize: {
-                  width: window.innerWidth,
-                  height: window.innerHeight,
+                  width: globalThis.innerWidth,
+                  height: globalThis.innerHeight,
                 },
               }),
             },
@@ -336,8 +336,8 @@
         const canvas = document.getElementById("viewerCanvas");
         if (!canvas) return;
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = globalThis.innerWidth;
+        canvas.height = globalThis.innerHeight;
 
         if (physicsEngine) {
           physicsEngine.setWorldSize(canvas.width, canvas.height);
@@ -364,8 +364,8 @@
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                width: window.innerWidth,
-                height: window.innerHeight,
+                width: globalThis.innerWidth,
+                height: globalThis.innerHeight,
               }),
               signal: AbortSignal.timeout(5000),
             },
@@ -380,7 +380,7 @@
 
           lastScreenSizeUpdate = now;
           debugLog(
-            `✅ Размер экрана обновлен на сервере: ${window.innerWidth}×${window.innerHeight}`,
+            `✅ Размер экрана обновлен на сервере: ${globalThis.innerWidth}×${globalThis.innerHeight}`,
           );
         } catch (error) {
           if (error.name === "AbortError") {
@@ -409,7 +409,8 @@
             debugLog("❌ Статус обновлен: Контроллер отключен");
           } else {
             // Если данных о контроллере нет, используем статус WebSocket соединения
-            if (wsClient && wsClient.isConnected) {
+            const isWebSocketConnected = wsClient && wsClient.isConnected;
+            if (isWebSocketConnected) {
               components.status.setStatus(
                 "success",
                 "Соединение установлено, ожидание контроллера...",
@@ -482,9 +483,9 @@
       document.addEventListener("fullscreenchange", () => {
         isFullscreen = !!(
           document.fullscreenElement ||
-          document.webkitFullscreenElement ||
-          document.msFullscreenElement ||
-          document.mozFullScreenElement
+          document["webkitFullscreenElement"] ||
+          document["msFullscreenElement"] ||
+          document["mozFullScreenElement"]
         );
         const btn = document.querySelector(".fullscreen-btn");
         if (btn) {
@@ -502,7 +503,7 @@
       document
         .getElementById("viewerCanvas")
         .addEventListener("touchend", function (event) {
-          const currentTime = new Date().getTime();
+          const currentTime = Date.now();
           if (currentTime - lastTap < 300) {
             event.preventDefault();
             toggleFullscreen();
@@ -511,8 +512,8 @@
         });
 
       function setupEventListeners() {
-        if (window) {
-          window.addEventListener("resize", () => {
+        if (globalThis) {
+          globalThis.addEventListener("resize", () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
               resizeCanvas();

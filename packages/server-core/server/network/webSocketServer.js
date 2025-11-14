@@ -5,7 +5,7 @@ function setupWebSocketServer(server, sessionManager) {
   const wss = new WebSocketServer({ server })
 
   wss.on('connection', (ws, req) => {
-    const url = new URL(req.url, `http://${req.headers.host}`)
+    const url = new URL(req.url, `https://${req.headers.host}`)
     const sessionId = url.searchParams.get('sessionId')
     const role = url.searchParams.get('role')
 

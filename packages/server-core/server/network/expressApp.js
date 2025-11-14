@@ -154,17 +154,16 @@ function setupExpressApp(sessionManager, apiCache) {
   // Rate limiting
   const isLocal = process.env.NODE_ENV !== 'production'
   if (!isLocal) {
-    const limiter = rateLimit({
+    const apiLimiter = rateLimit({
       windowMs: 60 * 1000,
       max: 100,
       message: 'Too many requests from this IP, please try again later.',
       standardHeaders: true,
       legacyHeaders: false,
-      trustProxy: true,
       keyGenerator: req =>
         req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown'
     })
-    app.use('/api/', limiter)
+    app.use('/api/', apiLimiter)
   }
   // CORS middleware
   app.use(

@@ -487,22 +487,6 @@ class NotificationSystem {
       message
     })
   }
-
-  /**
-   * Очищает все уведомления
-   */
-  clearAll() {
-    for (const notification of this.notifications) {
-      this.hide(notification)
-    }
-  }
-
-  /**
-   * Получает количество активных уведомлений
-   */
-  count() {
-    return this.notifications.length
-  }
 }
 
 // Создаем глобальный экземпляр
