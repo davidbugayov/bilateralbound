@@ -138,18 +138,21 @@
           Статус зрителя:
           <span id="viewerStatus" aria-live="polite">Ожидание...</span>
         </p>
-        <div class="viewer-link-container">
-          <label for="view" class="sr-only">Ссылка для зрителя</label>
-          <div class="link-input-group">
+        <div class="link-group">
+          <label for="view" class="link-group__label">
+            👁️ Ссылка для клиента (Viewer):
+          </label>
+          <div class="link-group__input-wrapper">
             <input
+              type="text"
               id="view"
-              readonly
-              placeholder="Ссылка для зрителя будет здесь..."
-              onclick="this.select()"
+              class="link-group__input"
+              readonly="readonly"
             />
             <button
-              onclick="copy('view', 'Ссылка для клиента скопирована!')"
               class="copy-btn"
+              onclick="copy('view', 'Ссылка для клиента скопирована!')"
+              aria-label="Копировать ссылку для клиента"
             >
               📋 Копировать
             </button>

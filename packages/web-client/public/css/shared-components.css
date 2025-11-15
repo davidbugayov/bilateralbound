@@ -1940,6 +1940,15 @@ button:hover {
     width: 100%;
   }
 
+  .link-group__input-wrapper {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .link-group__input {
+    width: 100%;
+  }
+
   .copy-btn {
     width: 100%;
     justify-content: center;
