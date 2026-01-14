@@ -94,9 +94,17 @@
         <p class="sr-only">Анимация движущегося шарика для EMDR-терапии.</p>
       </canvas>
       <div id="loading" class="loading" aria-live="polite">Загрузка...</div>
+
+      <!-- Unmute Overlay for Audio -->
+      <div id="unmuteOverlay" class="unmute-overlay hidden">
+        <button id="unmuteBtn" class="unmute-btn">
+          🔊 Включить звук
+        </button>
+      </div>
     </main>
 
     <script src="/js/common.js" defer></script>
+    <script src="/js/audio/audio-manager.js" defer></script>
     <script src="/js/physics-engine.js" defer></script>
     <script src="/js/renderer.js" defer></script>
     <script src="/js/websocket-client.js" defer></script>
@@ -115,6 +123,8 @@
       let physicsEngine;
       let ballRenderer;
       let isFullscreen = false;
+      let audioManager = null;
+      let audioActivated = false;
       /** @type {Object} */
       const components = {};
       // components.status will be assigned in initializeComponents() and has setStatus method
@@ -149,7 +159,73 @@
           },
         );
         // JSDoc для IDE: components.status имеет метод setStatus
-        /** @type {StatusIndicatorComponent} */
+
+        // Initialize Audio Manager
+        initAudioManager();
+      }
+
+      function initAudioManager() {
+        if (typeof AudioManager === 'undefined') {
+          debugWarn('AudioManager not loaded yet');
+          return;
+        }
+
+        audioManager = new AudioManager();
+
+        // Setup user gesture handlers for audio activation
+        const activateAudio = () => {
+          if (!audioActivated) {
+            audioManager.init();
+            audioActivated = true;
+            checkAudioOverlay();
+            debugLog('🔊 Audio activated by user gesture');
+          }
+        };
+
+        document.addEventListener('click', activateAudio, { once: true });
+        document.addEventListener('touchstart', activateAudio, { once: true });
+
+        const unmuteBtn = document.getElementById('unmuteBtn');
+        if (unmuteBtn) {
+          unmuteBtn.addEventListener('click', activateAudio);
+          unmuteBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            activateAudio();
+          });
+        }
+      }
+
+      function checkAudioOverlay() {
+        const overlay = document.getElementById('unmuteOverlay');
+        if (!overlay) return;
+
+        const shouldShow = audioManager && audioManager.enabled && !audioActivated;
+
+        if (shouldShow) {
+          overlay.classList.remove('hidden');
+        } else {
+          overlay.classList.add('hidden');
+        }
+      }
+
+      function onBounce(side, dirX, dirY) {
+        // Play audio tick on bounce
+        if (audioManager && audioManager.enabled && audioActivated) {
+          audioManager.playTick();
+        }
+
+        // Send bounce to server via WebSocket
+        if (wsClient) {
+          wsClient.send('bounce', {
+            side: side,
+            dirX: dirX || 0,
+            dirY: dirY || 0,
+            timestamp: Date.now()
+          }).catch(err => {
+            debugWarn('Failed to send bounce:', err);
+          });
+        }
+      }
         // components.status is now assigned above
       }
 
@@ -202,6 +278,16 @@
             physicsEngine.applyCommand(command);
             if (command && command.paused === false) {
               physicsEngine.setPaused(false);
+            }
+            // Handle audio settings
+            if (audioManager) {
+              if (typeof command.soundEnabled === 'boolean') {
+                audioManager.setEnabled(command.soundEnabled);
+                checkAudioOverlay();
+              }
+              if (command.soundType) {
+                audioManager.setSoundType(command.soundType);
+              }
             }
             // НЕ обновляем статус контроллера при обновлениях состояния мяча
             // updateStatus(command);

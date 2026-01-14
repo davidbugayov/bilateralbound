@@ -896,11 +896,58 @@ function _initializeSizeControl() {
   })
 }
 
+function _initializeSoundControls() {
+  const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox')
+  const soundTypeSelect = document.getElementById('soundTypeSelect')
+  const soundTypeControl = document.getElementById('soundTypeControl')
+
+  if (!soundEnabledCheckbox || !soundTypeSelect || !soundTypeControl) {
+    console.warn('Sound controls not found in DOM')
+    return
+  }
+
+  // Handle sound enabled toggle
+  soundEnabledCheckbox.addEventListener('change', (e) => {
+    const enabled = e.target.checked
+    setSoundEnabled(enabled)
+
+    // Enable/disable sound type selector
+    if (enabled) {
+      soundTypeControl.style.opacity = '1'
+      soundTypeControl.style.pointerEvents = 'auto'
+    } else {
+      soundTypeControl.style.opacity = '0.5'
+      soundTypeControl.style.pointerEvents = 'none'
+    }
+  })
+
+  // Handle sound type selection
+  soundTypeSelect.addEventListener('change', (e) => {
+    const soundType = e.target.value
+    setSoundType(soundType)
+  })
+
+  // Initialize from server state if available
+  if (lastServerState) {
+    if (typeof lastServerState.soundEnabled === 'boolean') {
+      soundEnabledCheckbox.checked = lastServerState.soundEnabled
+      if (lastServerState.soundEnabled) {
+        soundTypeControl.style.opacity = '1'
+        soundTypeControl.style.pointerEvents = 'auto'
+      }
+    }
+    if (lastServerState.soundType) {
+      soundTypeSelect.value = lastServerState.soundType
+    }
+  }
+}
+
 function initializeComponents() {
   _initializeSpeedControl()
   _initializeBallColorControl()
   _initializeBgColorControl()
   _initializeSizeControl()
+  _initializeSoundControls()
 }
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 function safeSend(type, payload) {
@@ -1271,6 +1318,20 @@ function setBallSize(size) {
   // Оптимизация: меньше обновлений когда нет вьювера
   if (globalThis.__current.viewerConnected) {
     safeSend(WS_MSG.controllerUpdate, { radius: size })
+  }
+}
+
+function setSoundEnabled(enabled) {
+  if (globalThis.__current?.viewerConnected) {
+    safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) })
+    console.log(`🔊 Sound ${enabled ? 'enabled' : 'disabled'}`)
+  }
+}
+
+function setSoundType(soundType) {
+  if (globalThis.__current?.viewerConnected) {
+    safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
+    console.log(`🎵 Sound type changed to: ${soundType}`)
   }
 }
 

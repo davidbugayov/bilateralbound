@@ -493,6 +493,41 @@
         </div>
       </section>
 
+      <section class="control-section" aria-labelledby="sound-heading">
+        <h3 id="sound-heading">🔊 Звуковые настройки</h3>
+        <div class="appearance-grid">
+          <div class="controls-card">
+            <p class="controls-title">Звук</p>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input
+                  type="checkbox"
+                  id="soundEnabledCheckbox"
+                  style="width: 20px; height: 20px; cursor: pointer;"
+                />
+                <span style="font-size: 0.95rem;">Включить звук</span>
+              </label>
+            </div>
+            <div id="soundTypeControl" style="opacity: 0.5; pointer-events: none;">
+              <label for="soundTypeSelect" style="display: block; margin-bottom: 8px; font-size: 0.9rem;">
+                Тип звука:
+              </label>
+              <select
+                id="soundTypeSelect"
+                style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.95rem;"
+              >
+                <option value="soft">🎵 Мягкий (EMDR)</option>
+                <option value="tick">⏱️ Тик</option>
+                <option value="tone">🎹 Тон</option>
+                <option value="click">🖱️ Клик</option>
+                <option value="bounce">🎾 Отскок</option>
+                <option value="beep">📢 Бип</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="control-section" aria-labelledby="tools-heading">
         <h3 id="tools-heading">🛠️ Инструменты и настройки</h3>
         <div class="appearance-grid">
@@ -534,6 +569,7 @@
     </main>
 
     <script src="/js/common.js" defer></script>
+    <script src="/js/audio/audio-manager.js" defer></script>
     <script src="/js/physics-engine.js" defer></script>
     <script src="/js/renderer.js" defer></script>
     <script src="/js/shared-components.js" defer></script>

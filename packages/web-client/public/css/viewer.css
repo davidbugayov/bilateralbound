@@ -226,3 +226,46 @@ body.light-theme .loading::after {
     opacity: 0.7;
   }
 }
+
+/* Unmute Overlay */
+.unmute-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(10px);
+}
+
+.unmute-overlay.hidden {
+  display: none;
+}
+
+.unmute-btn {
+  padding: 20px 40px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  background: #3b82f6;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+.unmute-btn:hover {
+  background: #2563eb;
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(59, 130, 246, 0.6);
+}
+
+.unmute-btn:active {
+  transform: scale(0.98);
+}
+
