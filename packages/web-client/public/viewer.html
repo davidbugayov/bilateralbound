@@ -132,8 +132,23 @@
       let resizeTimeout = null;
       let lastScreenSizeUpdate = 0;
 
+      // Expose to window for debugging
+      if (typeof window !== 'undefined') {
+        window.audioManager = audioManager;
+        window.audioActivated = audioActivated;
+      }
+
       // Initialize on DOM load
       document.addEventListener("DOMContentLoaded", async function () {
+        debugLog('🚀 DOMContentLoaded fired');
+        debugLog('🚀 Доступные глобальные объекты:', {
+          AudioManager: typeof AudioManager,
+          PhysicsEngine: typeof PhysicsEngine,
+          BallRenderer: typeof BallRenderer,
+          WebSocketClient: typeof WebSocketClient,
+          sharedComponents: typeof sharedComponents
+        });
+
         try {
           const sessionId = getSessionIdFromUrl();
           if (!sessionId) {
@@ -151,6 +166,8 @@
       });
 
       function initializeComponents() {
+        debugLog('📦 initializeComponents вызван');
+
         components.status = sharedComponents.createStatusIndicator(
           document.getElementById("statusContainer"),
           {
@@ -159,22 +176,36 @@
             autoHide: false,
           },
         );
-        // JSDoc для IDE: components.status имеет метод setStatus
+        debugLog('📦 Status indicator создан');
 
         // Initialize Audio Manager (с задержкой если еще не загружен)
+        debugLog('🔊 Проверка AudioManager:', typeof AudioManager);
+
         if (typeof AudioManager !== 'undefined') {
+          debugLog('🔊 AudioManager доступен, инициализируем сразу');
           initAudioManager();
         } else {
+          debugLog('🔊 AudioManager еще не загружен, ждем...');
+          let attempts = 0;
           // Ждем загрузки AudioManager
           const checkAudioManager = setInterval(() => {
+            attempts++;
+            debugLog(`🔊 Попытка ${attempts}/50 найти AudioManager:`, typeof AudioManager);
+
             if (typeof AudioManager !== 'undefined') {
               clearInterval(checkAudioManager);
+              debugLog('🔊 AudioManager загружен, инициализируем');
               initAudioManager();
-              debugLog('🔊 AudioManager loaded and initialized');
             }
           }, 100);
+
           // Таймаут на случай если AudioManager не загрузится
-          setTimeout(() => clearInterval(checkAudioManager), 5000);
+          setTimeout(() => {
+            clearInterval(checkAudioManager);
+            if (typeof AudioManager === 'undefined') {
+              debugError('❌ AudioManager не загрузился за 5 секунд!');
+            }
+          }, 5000);
         }
       }
 
@@ -185,47 +216,70 @@
         }
 
         audioManager = new AudioManager();
+        window.audioManager = audioManager; // Expose for debugging
+        debugLog('🔊 AudioManager создан');
 
         // Setup user gesture handlers for audio activation
         const activateAudio = () => {
           if (!audioActivated) {
             audioManager.init();
             audioActivated = true;
+            window.audioActivated = true; // Expose for debugging
             checkAudioOverlay();
             debugLog('🔊 Audio activated by user gesture');
           }
         };
 
-        document.addEventListener('click', activateAudio, { once: true });
-        document.addEventListener('touchstart', activateAudio, { once: true });
+        // НЕ добавляем глобальные обработчики, чтобы не скрывать overlay сразу
+        // document.addEventListener('click', activateAudio, { once: true });
+        // document.addEventListener('touchstart', activateAudio, { once: true });
 
         const unmuteBtn = document.getElementById('unmuteBtn');
         if (unmuteBtn) {
-          unmuteBtn.addEventListener('click', activateAudio);
-          unmuteBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
+          debugLog('🔊 Unmute button найдена, добавляем обработчики');
+          unmuteBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Предотвращаем всплытие
             activateAudio();
           });
+          unmuteBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            activateAudio();
+          });
+        } else {
+          debugWarn('🔊 Unmute button НЕ найдена!');
         }
+
+        // Проверяем overlay сразу после инициализации
+        checkAudioOverlay();
       }
 
       function checkAudioOverlay() {
         const overlay = document.getElementById('unmuteOverlay');
-        if (!overlay) return;
+        if (!overlay) {
+          debugWarn('🔊 checkAudioOverlay: overlay element НЕ найден!');
+          return;
+        }
 
         // Show overlay when sound is enabled from controller but not activated by user
         const shouldShow = audioManager && audioManager.enabled && !audioActivated;
 
         debugLog('🔊 checkAudioOverlay:', {
+          audioManagerExists: !!audioManager,
           enabled: audioManager?.enabled,
           activated: audioActivated,
-          shouldShow
+          shouldShow,
+          overlayClasses: overlay.className
         });
 
         if (shouldShow) {
           overlay.classList.remove('hidden');
+          debugLog('🔊 Показываем unmute overlay');
         } else {
           overlay.classList.add('hidden');
+          debugLog('🔊 Скрываем unmute overlay', {
+            reason: !audioManager ? 'нет audioManager' : !audioManager.enabled ? 'звук выключен' : 'уже активирован'
+          });
         }
       }
 
