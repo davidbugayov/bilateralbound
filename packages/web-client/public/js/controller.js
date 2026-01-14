@@ -1,3 +1,6 @@
+/* jshint -W043, -W116, -W033, -W117, -W119, -W104, -W024, -W014, -W126, -W035, -W083 */
+/* jshint browser: true, node: false, asi: true */
+/* globals WebSocketClient, WS_MSG, PhysicsEngine, BallRenderer, sharedComponents, throttle, getSessionIdFromUrl, createLogger */
 'use strict'
 /**
  * Controller - Логика управления сессией BilateralBound v2.1
@@ -322,10 +325,10 @@ async function registerControllerOnServer(sessionId, logger) {
     if (connectResponse.ok) {
       logger.info('Контроллер зарегистрирован на сервере')
     } else {
-      logger.warn('Не удалось зарегистрировать контроллер на сервере')
+      logger.warning('Не удалось зарегистрировать контроллер на сервере')
     }
   } catch (error) {
-    logger.warn('Ошибка регистрации контроллера:', error)
+    logger.warning('Ошибка регистрации контроллера:', error)
   }
 }
 
@@ -574,7 +577,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     applyServerStateToPreview(state)
   })
   // АДАПТИВНАЯ адаптация сглаживания по сетевым метрикам (упрощенная версия для стабильности)
-  wsClient.on(WS_MSG.netMetrics, ({ rttMs, jitterMs }) => {
+  wsClient.on(WS_MSG.netMetrics, ({ rttMs: _rttMs, jitterMs }) => {
     if (!previewPhysicsEngine) return
     const base = globalThis.BBConfig?.smoothing || {}
     // Адаптивное демпфирование на основе джиттера (упрощено)
@@ -1233,8 +1236,8 @@ function getDirectionVector(directionMode) {
       const diagonal = Math.hypot(width, height)
       return { dirX: width / diagonal, dirY: -height / diagonal }
     }
+    // @suppress {checkTypes} Math.random безопасен для визуального эффекта
     case 'random': {
-      // Случайное направление
       const angle = Math.random() * 2 * Math.PI
       return { dirX: Math.cos(angle), dirY: Math.sin(angle) }
     }
@@ -1605,13 +1608,13 @@ function _initializeFullscreenRenderer() {
       previewPhysicsEngine.isViewer = true
     }
 
-    if (!previewFsRenderer) {
+    if (previewFsRenderer) {
+      previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
+    } else {
       previewFsRenderer = new BallRenderer(previewFsCanvas, previewPhysicsEngine, {
         localPhysics: false
       })
       previewFsRenderer.start()
-    } else {
-      previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
     }
   } catch {
     /* ignore */

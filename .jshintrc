@@ -1,0 +1,29 @@
+{
+  "esversion": 11,
+  "browser": true,
+  "node": false,
+  "asi": true,
+  "es3": false,
+  "unused": true,
+  "undef": true,
+  "eqeqeq": false,
+  "boss": true,
+  "expr": true,
+  "loopfunc": true,
+  "validthis": true,
+  "laxbreak": true,
+  "multistr": true,
+  "sub": true,
+  "supernew": true,
+  "globals": {
+    "WebSocketClient": false,
+    "WS_MSG": false,
+    "PhysicsEngine": false,
+    "BallRenderer": false,
+    "sharedComponents": false,
+    "throttle": false,
+    "getSessionIdFromUrl": false,
+    "createLogger": false
+  }
+}
+
