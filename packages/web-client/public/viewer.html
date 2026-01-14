@@ -185,6 +185,7 @@
         }
 
         audioManager = new AudioManager();
+        debugLog('🔊 AudioManager создан');
 
         // Setup user gesture handlers for audio activation
         const activateAudio = () => {
@@ -196,36 +197,56 @@
           }
         };
 
-        document.addEventListener('click', activateAudio, { once: true });
-        document.addEventListener('touchstart', activateAudio, { once: true });
+        // НЕ добавляем глобальные обработчики, чтобы не скрывать overlay сразу
+        // document.addEventListener('click', activateAudio, { once: true });
+        // document.addEventListener('touchstart', activateAudio, { once: true });
 
         const unmuteBtn = document.getElementById('unmuteBtn');
         if (unmuteBtn) {
-          unmuteBtn.addEventListener('click', activateAudio);
-          unmuteBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
+          debugLog('🔊 Unmute button найдена, добавляем обработчики');
+          unmuteBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Предотвращаем всплытие
             activateAudio();
           });
+          unmuteBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            activateAudio();
+          });
+        } else {
+          debugWarn('🔊 Unmute button НЕ найдена!');
         }
+
+        // Проверяем overlay сразу после инициализации
+        checkAudioOverlay();
       }
 
       function checkAudioOverlay() {
         const overlay = document.getElementById('unmuteOverlay');
-        if (!overlay) return;
+        if (!overlay) {
+          debugWarn('🔊 checkAudioOverlay: overlay element НЕ найден!');
+          return;
+        }
 
         // Show overlay when sound is enabled from controller but not activated by user
         const shouldShow = audioManager && audioManager.enabled && !audioActivated;
 
         debugLog('🔊 checkAudioOverlay:', {
+          audioManagerExists: !!audioManager,
           enabled: audioManager?.enabled,
           activated: audioActivated,
-          shouldShow
+          shouldShow,
+          overlayClasses: overlay.className
         });
 
         if (shouldShow) {
           overlay.classList.remove('hidden');
+          debugLog('🔊 Показываем unmute overlay');
         } else {
           overlay.classList.add('hidden');
+          debugLog('🔊 Скрываем unmute overlay', {
+            reason: !audioManager ? 'нет audioManager' : !audioManager.enabled ? 'звук выключен' : 'уже активирован'
+          });
         }
       }
 
