@@ -19,7 +19,7 @@
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="language" content="Russian" />
-    <meta name="version" content="2.38.2-c746b32" />
+    <meta name="version" content="2.38.3-0af4b64" />
     <meta name="theme-color" content="#2563eb" />
 
     <!-- EMDR Specific Meta Tags -->
@@ -40,18 +40,18 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-controller.svg?v=2.38.2-c746b32"
+      href="/favicon-controller.svg?v=2.38.3-0af4b64"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-controller.ico?v=2.38.2-c746b32"
+      href="/favicon-controller.ico?v=2.38.3-0af4b64"
     />
     <link
       rel="apple-touch-icon"
-      href="/favicon-controller.svg?v=2.38.2-c746b32"
+      href="/favicon-controller.svg?v=2.38.3-0af4b64"
     />
-    <link rel="shortcut icon" href="/favicon-controller.ico?v=2.38.2-c746b32" />
+    <link rel="shortcut icon" href="/favicon-controller.ico?v=2.38.3-0af4b64" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -65,7 +65,7 @@
     />
     <meta
       property="og:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.38.2-c746b32"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.38.3-0af4b64"
     />
     <meta property="og:url" content="https://emdrbilateral.ru/" />
     <meta property="og:site_name" content="BilateralBound" />
@@ -83,7 +83,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.38.2-c746b32"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.38.3-0af4b64"
     />
     <meta name="twitter:site" content="@bilateralbound" />
 
@@ -494,11 +494,11 @@
         </div>
       </section>
 
-      <section class="control-section" aria-labelledby="sound-heading">
-        <h3 id="sound-heading">🔊 Звуковые настройки</h3>
+      <section class="control-section" aria-labelledby="settings-heading">
+        <h3 id="settings-heading">🛠️ Настройки</h3>
         <div class="appearance-grid">
           <div class="controls-card">
-            <p class="controls-title">Звук</p>
+            <p class="controls-title">🔊 Звук</p>
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <input
@@ -526,41 +526,10 @@
               </select>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section class="control-section" aria-labelledby="tools-heading">
-        <h3 id="tools-heading">🛠️ Инструменты и настройки</h3>
-        <div class="appearance-grid">
-          <div class="controls-card">
-            <p class="controls-title">💾 Управление сессией</p>
-            <div id="sessionControls"></div>
-            <div
-              style="
-                margin-top: 12px;
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 10px;
-              "
-            >
-              <button
-                class="btn primary btn-full-width"
-                onclick="createCustomPreset()"
-              >
-                ⭐ Создать пресет
-              </button>
-            </div>
-          </div>
-          <div class="controls-card">
-            <p class="controls-title">🎯 Пресеты</p>
-            <div id="presetControls"></div>
-          </div>
           <div class="controls-card">
             <p class="controls-title">⌨️ Горячие клавиши</p>
             <div class="hotkey-info">
               <div><kbd>Пробел</kbd> — Старт/Стоп</div>
-              <div><kbd>Ctrl+Z</kbd> — Отмена действия</div>
-              <div><kbd>Ctrl+S</kbd> — Сохранить пресет</div>
               <div><kbd>F</kbd> — Полноэкранное превью</div>
               <div><kbd>↑↓←→</kbd> — Управление направлением</div>
             </div>
@@ -569,15 +538,15 @@
       </section>
     </main>
 
-    <script src="/js/common.js?v=2.38.2-c746b32" defer></script>
-    <script src="/js/audio/audio-manager.js?v=2.38.2-c746b32" defer></script>
-    <script src="/js/physics-engine.js?v=2.38.2-c746b32" defer></script>
-    <script src="/js/renderer.js?v=2.38.2-c746b32" defer></script>
-    <script src="/js/shared-components.js?v=2.38.2-c746b32" defer></script>
-    <script src="/js/websocket-client.js?v=2.38.2-c746b32" defer></script>
-    <script src="/js/config.js?v=2.38.2-c746b32" defer></script>
-    <script src="/js/notification-system.js?v=2.38.2-c746b32" defer></script>
-    <script src="/js/new-features.js?v=2.38.2-c746b32" defer></script>
-    <script src="/js/controller.js?v=2.38.2-c746b32" defer></script>
+    <script src="/js/common.js?v=2.38.3-0af4b64" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.38.3-0af4b64" defer></script>
+    <script src="/js/physics-engine.js?v=2.38.3-0af4b64" defer></script>
+    <script src="/js/renderer.js?v=2.38.3-0af4b64" defer></script>
+    <script src="/js/shared-components.js?v=2.38.3-0af4b64" defer></script>
+    <script src="/js/websocket-client.js?v=2.38.3-0af4b64" defer></script>
+    <script src="/js/config.js?v=2.38.3-0af4b64" defer></script>
+    <script src="/js/notification-system.js?v=2.38.3-0af4b64" defer></script>
+    <script src="/js/new-features.js?v=2.38.3-0af4b64" defer></script>
+    <script src="/js/controller.js?v=2.38.3-0af4b64" defer></script>
   </body>
 </html>
