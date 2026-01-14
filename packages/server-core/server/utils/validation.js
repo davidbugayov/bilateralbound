@@ -19,6 +19,7 @@ class ValidationUtils {
     this._validatePause(updates, validated)
     this._validateDirection(updates, validated)
     this._validateColors(updates, validated)
+    this._validateSound(updates, validated)
     this._validateCommands(updates, validated)
 
     return validated
@@ -77,6 +78,19 @@ class ValidationUtils {
     }
     if (this._isValidColor(updates.colorBg)) {
       validated.colorBg = updates.colorBg
+    }
+  }
+
+  /**
+   * Валидирует звуковые настройки
+   * @private
+   */
+  static _validateSound(updates, validated) {
+    if (typeof updates.soundEnabled === 'boolean') {
+      validated.soundEnabled = updates.soundEnabled
+    }
+    if (updates.soundType && ['soft', 'tick', 'tone', 'click', 'bounce', 'beep'].includes(updates.soundType)) {
+      validated.soundType = updates.soundType
     }
   }
 
