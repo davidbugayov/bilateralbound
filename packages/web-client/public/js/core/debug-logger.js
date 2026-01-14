@@ -109,7 +109,9 @@ if (typeof globalThis !== 'undefined') {
   globalThis.logger = debugLogger
 
   // Экспортируем функции для обратной совместимости с common.js
+  // Логи работают ТОЛЬКО если ?debug=1 в URL
   globalThis.debugLog = (...args) => {
+    if (!debugLogger.enabled) return
     if (args.length === 1 && typeof args[0] === 'string') {
       console.log(args[0])
     } else if (args.length === 2) {
@@ -118,7 +120,13 @@ if (typeof globalThis !== 'undefined') {
       console.log(...args)
     }
   }
-  globalThis.debugError = (...args) => debugLogger.error(args[0], args[1])
-  globalThis.debugWarn = (...args) => debugLogger.warn(args[0], args[1])
+  globalThis.debugError = (...args) => {
+    if (!debugLogger.enabled) return
+    debugLogger.error(args[0], args[1])
+  }
+  globalThis.debugWarn = (...args) => {
+    if (!debugLogger.enabled) return
+    debugLogger.warn(args[0], args[1])
+  }
 }
 

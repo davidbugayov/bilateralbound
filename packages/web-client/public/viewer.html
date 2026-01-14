@@ -22,7 +22,7 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.38.7-72aaf94" />
+    <meta name="version" content="2.38.9-647c4f3" />
     <meta name="theme-color" content="#020617" />
     <title>BilateralBound - EMDR терапия вьювер</title>
 
@@ -34,15 +34,15 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.38.7-72aaf94"
+      href="/favicon-viewer.svg?v=2.38.9-647c4f3"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.38.7-72aaf94"
+      href="/favicon-viewer.ico?v=2.38.9-647c4f3"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.38.7-72aaf94" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.38.7-72aaf94" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.38.9-647c4f3" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.38.9-647c4f3" />
 
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
@@ -106,14 +106,14 @@
     </main>
 
     <!-- Debug Logger - Load first without defer -->
-    <script src="/js/core/debug-logger.js?v=2.38.7-72aaf94"></script>
+    <script src="/js/core/debug-logger.js?v=2.38.9-647c4f3"></script>
 
-    <script src="/js/common.js?v=2.38.7-72aaf94" defer></script>
-    <script src="/js/audio/audio-manager.js?v=2.38.7-72aaf94" defer></script>
-    <script src="/js/physics-engine.js?v=2.38.7-72aaf94" defer></script>
-    <script src="/js/renderer.js?v=2.38.7-72aaf94" defer></script>
-    <script src="/js/websocket-client.js?v=2.38.7-72aaf94" defer></script>
-    <script src="/js/shared-components.js?v=2.38.7-72aaf94" defer></script>
+    <script src="/js/common.js?v=2.38.9-647c4f3" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.38.9-647c4f3" defer></script>
+    <script src="/js/physics-engine.js?v=2.38.9-647c4f3" defer></script>
+    <script src="/js/renderer.js?v=2.38.9-647c4f3" defer></script>
+    <script src="/js/websocket-client.js?v=2.38.9-647c4f3" defer></script>
+    <script src="/js/shared-components.js?v=2.38.9-647c4f3" defer></script>
 
     <script>
       "use strict";
@@ -221,7 +221,9 @@
 
         audioManager = new AudioManager();
         window.audioManager = audioManager; // Expose for debugging
-        debugLog('🔊 AudioManager создан, enabled:', audioManager.enabled);
+        if (typeof logger !== 'undefined') {
+          logger.audio('AudioManager создан, enabled:', audioManager.enabled);
+        }
 
         // Setup user gesture handlers for audio activation
         const activateAudio = () => {
@@ -230,7 +232,9 @@
             audioActivated = true;
             window.audioActivated = true; // Expose for debugging
             checkAudioOverlay();
-            debugLog('🔊 Audio activated by user gesture');
+            if (typeof logger !== 'undefined') {
+              logger.audio('Audio activated by user gesture');
+            }
           }
         };
 
@@ -240,7 +244,9 @@
 
         const unmuteBtn = document.getElementById('unmuteBtn');
         if (unmuteBtn) {
-          debugLog('🔊 Unmute button найдена, добавляем обработчики');
+          if (typeof logger !== 'undefined') {
+            logger.audio('Unmute button найдена, добавляем обработчики');
+          }
           unmuteBtn.addEventListener('click', (e) => {
             e.stopPropagation(); // Предотвращаем всплытие
             activateAudio();
@@ -271,22 +277,28 @@
         // Show overlay when sound is enabled from controller but not activated by user
         const shouldShow = audioManager && audioManager.enabled && !audioActivated;
 
-        debugLog('🔊 checkAudioOverlay:', {
-          audioManagerExists: !!audioManager,
-          enabled: audioManager?.enabled,
-          activated: audioActivated,
-          shouldShow,
-          overlayClasses: overlay.className
-        });
+        if (typeof logger !== 'undefined') {
+          logger.audio('checkAudioOverlay:', {
+            audioManagerExists: !!audioManager,
+            enabled: audioManager?.enabled,
+            activated: audioActivated,
+            shouldShow,
+            overlayClasses: overlay.className
+          });
+        }
 
         if (shouldShow) {
           overlay.classList.remove('hidden');
-          debugLog('🔊 Показываем unmute overlay');
+          if (typeof logger !== 'undefined') {
+            logger.audio('Показываем unmute overlay');
+          }
         } else {
           overlay.classList.add('hidden');
-          debugLog('🔊 Скрываем unmute overlay', {
-            reason: !audioManager ? 'нет audioManager' : !audioManager.enabled ? 'звук выключен' : 'уже активирован'
-          });
+          if (typeof logger !== 'undefined') {
+            logger.audio('Скрываем unmute overlay', {
+              reason: !audioManager ? 'нет audioManager' : !audioManager.enabled ? 'звук выключен' : 'уже активирован'
+            });
+          }
         }
       }
 
@@ -350,14 +362,18 @@
           globalThis.wsClient = wsClient;
 
           wsClient.on(WS_MSG.initialState, (state) => {
-            debugLog("✅ Получено начальное состояние", state);
+            if (typeof logger !== 'undefined') {
+              logger.state("Получено начальное состояние", state);
+            }
             physicsEngine.applyCommand(state);
             if (state && state.paused === false) {
               physicsEngine.setPaused(false);
             }
             // Handle audio settings from initial state
             if (typeof state.soundEnabled === 'boolean') {
-              debugLog('🔊 Получен soundEnabled из initialState:', state.soundEnabled);
+              if (typeof logger !== 'undefined') {
+                logger.audio('Получен soundEnabled из initialState:', state.soundEnabled);
+              }
 
               if (audioManager) {
                 audioManager.setEnabled(state.soundEnabled);
@@ -367,7 +383,9 @@
                 debugWarn('🔊 AudioManager не готов, ждем инициализации...');
                 setTimeout(() => {
                   if (audioManager) {
-                    debugLog('🔊 AudioManager готов, устанавливаем soundEnabled:', state.soundEnabled);
+                    if (typeof logger !== 'undefined') {
+                      logger.audio('AudioManager готов, устанавливаем soundEnabled:', state.soundEnabled);
+                    }
                     audioManager.setEnabled(state.soundEnabled);
                     checkAudioOverlay();
                   } else {
@@ -390,7 +408,9 @@
             }
             // Handle audio settings
             if (typeof command.soundEnabled === 'boolean') {
-              debugLog('🔊 Получен soundEnabled из stateUpdate:', command.soundEnabled);
+              if (typeof logger !== 'undefined') {
+                logger.audio('Получен soundEnabled из stateUpdate:', command.soundEnabled);
+              }
 
               if (audioManager) {
                 audioManager.setEnabled(command.soundEnabled);
