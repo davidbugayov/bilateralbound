@@ -199,7 +199,14 @@
         const overlay = document.getElementById('unmuteOverlay');
         if (!overlay) return;
 
+        // Show overlay when sound is enabled from controller but not activated by user
         const shouldShow = audioManager && audioManager.enabled && !audioActivated;
+
+        debugLog('🔊 checkAudioOverlay:', {
+          enabled: audioManager?.enabled,
+          activated: audioActivated,
+          shouldShow
+        });
 
         if (shouldShow) {
           overlay.classList.remove('hidden');
@@ -245,17 +252,21 @@
 
           resizeCanvas();
 
+          // Create bounce callback for audio
+          const bounceCallback = (bounceData) => {
+            onBounce(bounceData.side, bounceData.dirX, bounceData.dirY);
+          };
+
           physicsEngine = new PhysicsEngine({
             worldWidth: globalThis.innerWidth,
             worldHeight: globalThis.innerHeight,
             isViewer: true,
-            bounceCallback: null,
+            bounceCallback: bounceCallback,
           });
           globalThis.physicsEngine = physicsEngine;
 
           ballRenderer = new BallRenderer(canvas, physicsEngine, {
             localPhysics: false,
-            bounceCallback: null,
           });
 
           await connectToSession(sessionId);
