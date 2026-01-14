@@ -257,6 +257,13 @@ body.light-theme .loading::after {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.unmute-btn span:first-child {
+  font-size: 1.5rem;
 }
 
 .unmute-btn:hover {
