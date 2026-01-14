@@ -22,7 +22,7 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.38.5-ff36256" />
+    <meta name="version" content="2.38.6-d953dcb" />
     <meta name="theme-color" content="#020617" />
     <title>BilateralBound - EMDR терапия вьювер</title>
 
@@ -34,15 +34,15 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.38.5-ff36256"
+      href="/favicon-viewer.svg?v=2.38.6-d953dcb"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.38.5-ff36256"
+      href="/favicon-viewer.ico?v=2.38.6-d953dcb"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.38.5-ff36256" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.38.5-ff36256" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.38.6-d953dcb" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.38.6-d953dcb" />
 
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
@@ -105,12 +105,12 @@
       </div>
     </main>
 
-    <script src="/js/common.js?v=2.38.5-ff36256" defer></script>
-    <script src="/js/audio/audio-manager.js?v=2.38.5-ff36256" defer></script>
-    <script src="/js/physics-engine.js?v=2.38.5-ff36256" defer></script>
-    <script src="/js/renderer.js?v=2.38.5-ff36256" defer></script>
-    <script src="/js/websocket-client.js?v=2.38.5-ff36256" defer></script>
-    <script src="/js/shared-components.js?v=2.38.5-ff36256" defer></script>
+    <script src="/js/common.js?v=2.38.6-d953dcb" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.38.6-d953dcb" defer></script>
+    <script src="/js/physics-engine.js?v=2.38.6-d953dcb" defer></script>
+    <script src="/js/renderer.js?v=2.38.6-d953dcb" defer></script>
+    <script src="/js/websocket-client.js?v=2.38.6-d953dcb" defer></script>
+    <script src="/js/shared-components.js?v=2.38.6-d953dcb" defer></script>
 
     <script>
       "use strict";
@@ -218,7 +218,7 @@
 
         audioManager = new AudioManager();
         window.audioManager = audioManager; // Expose for debugging
-        debugLog('🔊 AudioManager создан');
+        debugLog('🔊 AudioManager создан, enabled:', audioManager.enabled);
 
         // Setup user gesture handlers for audio activation
         const activateAudio = () => {
@@ -250,6 +250,9 @@
         } else {
           debugWarn('🔊 Unmute button НЕ найдена!');
         }
+
+        // Экспортируем checkAudioOverlay глобально для отладки
+        window.checkAudioOverlay = checkAudioOverlay;
 
         // Проверяем overlay сразу после инициализации
         checkAudioOverlay();
@@ -350,12 +353,27 @@
               physicsEngine.setPaused(false);
             }
             // Handle audio settings from initial state
-            if (audioManager) {
-              if (typeof state.soundEnabled === 'boolean') {
+            if (typeof state.soundEnabled === 'boolean') {
+              debugLog('🔊 Получен soundEnabled из initialState:', state.soundEnabled);
+
+              if (audioManager) {
                 audioManager.setEnabled(state.soundEnabled);
                 checkAudioOverlay();
+              } else {
+                // AudioManager еще не инициализирован, подождем и повторим
+                debugWarn('🔊 AudioManager не готов, ждем инициализации...');
+                setTimeout(() => {
+                  if (audioManager) {
+                    debugLog('🔊 AudioManager готов, устанавливаем soundEnabled:', state.soundEnabled);
+                    audioManager.setEnabled(state.soundEnabled);
+                    checkAudioOverlay();
+                  } else {
+                    debugError('❌ AudioManager не инициализирован после таймаута!');
+                  }
+                }, 500);
               }
-              if (state.soundType) {
+
+              if (state.soundType && audioManager) {
                 audioManager.setSoundType(state.soundType);
               }
             }
@@ -368,12 +386,17 @@
               physicsEngine.setPaused(false);
             }
             // Handle audio settings
-            if (audioManager) {
-              if (typeof command.soundEnabled === 'boolean') {
+            if (typeof command.soundEnabled === 'boolean') {
+              debugLog('🔊 Получен soundEnabled из stateUpdate:', command.soundEnabled);
+
+              if (audioManager) {
                 audioManager.setEnabled(command.soundEnabled);
                 checkAudioOverlay();
+              } else {
+                debugWarn('🔊 AudioManager не готов при stateUpdate');
               }
-              if (command.soundType) {
+
+              if (command.soundType && audioManager) {
                 audioManager.setSoundType(command.soundType);
               }
             }
