@@ -59,7 +59,13 @@ class SessionManager {
     // Немедленная рассылка состояния при отскоке, чтобы вьювер видел касание границ
     session.physicsEngine.bounceCallback = () => {
       try {
+        // Сохраняем звуковые настройки
+        const soundEnabled = session.ballState.soundEnabled
+        const soundType = session.ballState.soundType
         Object.assign(session.ballState, session.physicsEngine.getState())
+        // Восстанавливаем звуковые настройки
+        if (soundEnabled !== undefined) session.ballState.soundEnabled = soundEnabled
+        if (soundType !== undefined) session.ballState.soundType = soundType
         this.stateBroadcaster.broadcastState(session.id)
       } catch {
         // ignore
@@ -183,7 +189,19 @@ class SessionManager {
   _applyPhysicsUpdates(session, validatedUpdates) {
     if (session.physicsEngine) {
       session.physicsEngine.applyCommand(validatedUpdates)
+      // Сохраняем звуковые настройки перед обновлением от физического движка
+      const soundSettings = {}
+      if (session.ballState.soundEnabled !== undefined) {
+        soundSettings.soundEnabled = session.ballState.soundEnabled
+      }
+      if (session.ballState.soundType !== undefined) {
+        soundSettings.soundType = session.ballState.soundType
+      }
       Object.assign(session.ballState, session.physicsEngine.getState())
+      // Восстанавливаем звуковые настройки
+      if (Object.keys(soundSettings).length > 0) {
+        Object.assign(session.ballState, soundSettings)
+      }
       this._normalizeDirectionIfNeeded(session)
     } else {
       this.sessionRepository.updateBallState(session.id, validatedUpdates)
@@ -422,7 +440,13 @@ class SessionManager {
         this._scaleBallPosition(session, currentState, validatedSize, wasPlaying)
       }
 
+      // Сохраняем звуковые настройки перед обновлением от физического движка
+      const soundEnabled = session.ballState.soundEnabled
+      const soundType = session.ballState.soundType
       Object.assign(session.ballState, session.physicsEngine.getState())
+      // Восстанавливаем звуковые настройки
+      if (soundEnabled !== undefined) session.ballState.soundEnabled = soundEnabled
+      if (soundType !== undefined) session.ballState.soundType = soundType
     } else {
       this._setDefaultBallState(session, validatedSize)
     }
@@ -543,8 +567,16 @@ class SessionManager {
           // Обновляем физику на сервере
           session.physicsEngine.update(PHYSICS_DT / 1000)
 
+          // Сохраняем звуковые настройки перед синхронизацией
+          const soundEnabled = session.ballState.soundEnabled
+          const soundType = session.ballState.soundType
+
           // Синхронизируем состояние сессии с движком
           Object.assign(session.ballState, session.physicsEngine.getState())
+
+          // Восстанавливаем звуковые настройки
+          if (soundEnabled !== undefined) session.ballState.soundEnabled = soundEnabled
+          if (soundType !== undefined) session.ballState.soundType = soundType
 
           // Рассылаем обновленное состояние всем клиентам
           this.stateBroadcaster.broadcastState(sessionId)
