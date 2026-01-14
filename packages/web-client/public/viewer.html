@@ -110,6 +110,11 @@
     <script src="/js/websocket-client.js" defer></script>
     <script src="/js/shared-components.js" defer></script>
 
+    <!-- Viewer modules -->
+    <script src="/js/viewer/state.js" defer></script>
+    <script src="/js/viewer/audio.js" defer></script>
+    <script src="/js/viewer/index.js" defer></script>
+
     <script>
       "use strict";
 
@@ -160,8 +165,21 @@
         );
         // JSDoc для IDE: components.status имеет метод setStatus
 
-        // Initialize Audio Manager
-        initAudioManager();
+        // Initialize Audio Manager (с задержкой если еще не загружен)
+        if (typeof AudioManager !== 'undefined') {
+          initAudioManager();
+        } else {
+          // Ждем загрузки AudioManager
+          const checkAudioManager = setInterval(() => {
+            if (typeof AudioManager !== 'undefined') {
+              clearInterval(checkAudioManager);
+              initAudioManager();
+              debugLog('🔊 AudioManager loaded and initialized');
+            }
+          }, 100);
+          // Таймаут на случай если AudioManager не загрузится
+          setTimeout(() => clearInterval(checkAudioManager), 5000);
+        }
       }
 
       function initAudioManager() {
@@ -279,6 +297,16 @@
             physicsEngine.applyCommand(state);
             if (state && state.paused === false) {
               physicsEngine.setPaused(false);
+            }
+            // Handle audio settings from initial state
+            if (audioManager) {
+              if (typeof state.soundEnabled === 'boolean') {
+                audioManager.setEnabled(state.soundEnabled);
+                checkAudioOverlay();
+              }
+              if (state.soundType) {
+                audioManager.setSoundType(state.soundType);
+              }
             }
             updateStatus(state);
           });
