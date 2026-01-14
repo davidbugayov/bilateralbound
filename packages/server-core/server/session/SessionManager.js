@@ -80,13 +80,18 @@ class SessionManager {
     this._initPhysicsCallbacks(session)
     const engineState = session.physicsEngine.getState()
     // Сохраняем звуковые настройки перед обновлением от физического движка
-    const soundSettings = {
-      soundEnabled: session.ballState.soundEnabled,
-      soundType: session.ballState.soundType
+    const soundSettings = {}
+    if (session.ballState.soundEnabled !== undefined) {
+      soundSettings.soundEnabled = session.ballState.soundEnabled
+    }
+    if (session.ballState.soundType !== undefined) {
+      soundSettings.soundType = session.ballState.soundType
     }
     Object.assign(session.ballState, engineState)
-    // Восстанавливаем звуковые настройки
-    Object.assign(session.ballState, soundSettings)
+    // Восстанавливаем звуковые настройки только если они были определены
+    if (Object.keys(soundSettings).length > 0) {
+      Object.assign(session.ballState, soundSettings)
+    }
     session.ballState.paused = true
     session.physicsEngine.setPaused(true)
     this.startPhysics(session.id)
