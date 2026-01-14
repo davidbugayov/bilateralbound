@@ -305,8 +305,9 @@ async function initializeController() {
 
     await initializeWebSocketClient(sessionId)
     logger.info('🔌 WebSocket клиент инициализирован, ожидаем подключения вьювера...')
-  } catch {
-    console.warn('Error initializing controller')
+  } catch (error) {
+    console.error('Error initializing controller:', error)
+    showNotification('Ошибка инициализации контроллера: ' + (error?.message || error), 'error')
   }
 }
 
@@ -902,43 +903,47 @@ function _initializeSoundControls() {
   const soundTypeControl = document.getElementById('soundTypeControl')
 
   if (!soundEnabledCheckbox || !soundTypeSelect || !soundTypeControl) {
-    console.warn('Sound controls not found in DOM')
+    console.warn('Sound controls not found in DOM - skipping sound initialization')
     return
   }
 
-  // Handle sound enabled toggle
-  soundEnabledCheckbox.addEventListener('change', (e) => {
-    const enabled = e.target.checked
-    setSoundEnabled(enabled)
+  try {
+    // Handle sound enabled toggle
+    soundEnabledCheckbox.addEventListener('change', (e) => {
+      const enabled = e.target.checked
+      setSoundEnabled(enabled)
 
-    // Enable/disable sound type selector
-    if (enabled) {
-      soundTypeControl.style.opacity = '1'
-      soundTypeControl.style.pointerEvents = 'auto'
-    } else {
-      soundTypeControl.style.opacity = '0.5'
-      soundTypeControl.style.pointerEvents = 'none'
-    }
-  })
-
-  // Handle sound type selection
-  soundTypeSelect.addEventListener('change', (e) => {
-    const soundType = e.target.value
-    setSoundType(soundType)
-  })
-
-  // Initialize from server state if available
-  if (lastServerState) {
-    if (typeof lastServerState.soundEnabled === 'boolean') {
-      soundEnabledCheckbox.checked = lastServerState.soundEnabled
-      if (lastServerState.soundEnabled) {
+      // Enable/disable sound type selector
+      if (enabled) {
         soundTypeControl.style.opacity = '1'
         soundTypeControl.style.pointerEvents = 'auto'
+      } else {
+        soundTypeControl.style.opacity = '0.5'
+        soundTypeControl.style.pointerEvents = 'none'
+      }
+    })
+
+    // Handle sound type selection
+    soundTypeSelect.addEventListener('change', (e) => {
+      const soundType = e.target.value
+      setSoundType(soundType)
+    })
+
+    // Initialize from server state if available
+    if (lastServerState) {
+      if (typeof lastServerState.soundEnabled === 'boolean') {
+        soundEnabledCheckbox.checked = lastServerState.soundEnabled
+        if (lastServerState.soundEnabled) {
+          soundTypeControl.style.opacity = '1'
+          soundTypeControl.style.pointerEvents = 'auto'
+        }
+      }
+      if (lastServerState.soundType) {
+        soundTypeSelect.value = lastServerState.soundType
       }
     }
-    if (lastServerState.soundType) {
-      soundTypeSelect.value = lastServerState.soundType
-    }
+  } catch (error) {
+    console.error('Error initializing sound controls:', error)
   }
 }
 
