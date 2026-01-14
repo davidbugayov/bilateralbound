@@ -52,6 +52,8 @@ class SessionRepository {
         colorBall: '#60a5fa',
         colorBg: '#020617',
         paused: true,
+        soundEnabled: false,
+        soundType: 'soft',
         ...sessionData.ballState
       },
       controllerConnected: false,
