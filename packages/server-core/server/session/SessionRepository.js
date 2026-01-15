@@ -54,7 +54,8 @@ class SessionRepository {
         paused: true,
         soundEnabled: false,
         soundType: 'soft',
-        ...sessionData.ballState
+        // Применяем ballState из sessionData только если он не пустой
+        ...(sessionData.ballState && Object.keys(sessionData.ballState).length > 0 ? sessionData.ballState : {})
       },
       controllerConnected: false,
       viewerConnected: false,
