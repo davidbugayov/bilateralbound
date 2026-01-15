@@ -79,12 +79,20 @@ class SessionManager {
    * @private
    */
   _initializePhysicsEngine(session) {
+    console.log('[SessionManager] _initializePhysicsEngine BEFORE:', {
+      soundEnabled: session.ballState.soundEnabled,
+      soundType: session.ballState.soundType
+    })
+
     session.physicsEngine = new PhysicsEngine({
       ballRadius: session.ballState.radius || 20,
       maxSpeed: 5000
     })
     this._initPhysicsCallbacks(session)
     const engineState = session.physicsEngine.getState()
+
+    console.log('[SessionManager] engineState from getState():', Object.keys(engineState))
+
     // Сохраняем звуковые настройки перед обновлением от физического движка
     const soundSettings = {}
     if (session.ballState.soundEnabled !== undefined) {
@@ -93,11 +101,21 @@ class SessionManager {
     if (session.ballState.soundType !== undefined) {
       soundSettings.soundType = session.ballState.soundType
     }
+
+    console.log('[SessionManager] soundSettings to restore:', soundSettings)
+
     Object.assign(session.ballState, engineState)
     // Восстанавливаем звуковые настройки только если они были определены
     if (Object.keys(soundSettings).length > 0) {
       Object.assign(session.ballState, soundSettings)
     }
+
+    console.log('[SessionManager] _initializePhysicsEngine AFTER:', {
+      soundEnabled: session.ballState.soundEnabled,
+      soundType: session.ballState.soundType,
+      allKeys: Object.keys(session.ballState)
+    })
+
     session.ballState.paused = true
     session.physicsEngine.setPaused(true)
     this.startPhysics(session.id)
