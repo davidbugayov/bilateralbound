@@ -246,6 +246,37 @@
             if (typeof logger !== 'undefined') {
               logger.audio('Audio activated by user gesture');
             }
+
+            // Отправляем на сервер что зритель активировал звук
+            const sendActivationNotification = () => {
+              const sessionId = getSessionIdFromUrl();
+              if (sessionId && wsClient && wsClient.isConnected()) {
+                wsClient.send(WS_MSG.viewerAudioActivated, { activated: true });
+                if (typeof logger !== 'undefined') {
+                  logger.audio('Sent viewerAudioActivated to server');
+                }
+                return true;
+              }
+              return false;
+            };
+
+            // Пытаемся отправить сразу
+            if (!sendActivationNotification()) {
+              // Если wsClient еще не готов, ждем и повторяем
+              if (typeof logger !== 'undefined') {
+                logger.audio('wsClient not ready, will retry...');
+              }
+              const retryInterval = setInterval(() => {
+                if (sendActivationNotification()) {
+                  clearInterval(retryInterval);
+                  if (typeof logger !== 'undefined') {
+                    logger.audio('viewerAudioActivated sent after retry');
+                  }
+                }
+              }, 100);
+              // Таймаут 5 секунд
+              setTimeout(() => clearInterval(retryInterval), 5000);
+            }
           }
         };
 
