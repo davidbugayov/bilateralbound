@@ -1634,30 +1634,26 @@ function updateViewerAudioIndicators() {
   const soundEnabled = lastServerState?.soundEnabled ?? false
   const isPlaying = globalThis.__current?.isPlaying ?? false
 
-  // Показываем индикатор статуса звука только когда вьювер подключен
-  if (isViewerConnected) {
-    audioIndicator.classList.remove('hidden')
-
-    if (soundEnabled) {
+  // Показываем индикаторы только когда вьювер подключен И звук включен в контроллере
+  if (isViewerConnected && soundEnabled) {
+    // Показываем основной ин��икатор только когда звук реально играет
+    // Это означает что зритель нажал кнопку "Включить звук"
+    if (isPlaying) {
+      audioIndicator.classList.remove('hidden')
       audioIndicator.classList.add('ready')
       audioIndicator.classList.remove('warning')
       audioText.textContent = 'Звук у зрителя включен'
-    } else {
-      audioIndicator.classList.add('warning')
-      audioIndicator.classList.remove('ready')
-      audioText.textContent = 'Звук у зрителя выключен'
-    }
 
-    // Показываем индикатор воспроизведения только когда звук включен и идет воспроизведение
-    if (soundEnabled && isPlaying) {
+      // Также показываем индикатор воспроизведения
       soundPlayingIndicator.classList.remove('hidden')
       soundPlayingIndicator.classList.add('active')
     } else {
+      // Звук включен в контроллере, но зритель еще не активировал (или пауза)
+      audioIndicator.classList.add('hidden')
       soundPlayingIndicator.classList.add('hidden')
-      soundPlayingIndicator.classList.remove('active')
     }
   } else {
-    // Скрываем все индикаторы когда вьювер отключен
+    // Скрываем все индикаторы когда вьювер отключен или звук выключен
     audioIndicator.classList.add('hidden')
     soundPlayingIndicator.classList.add('hidden')
   }
