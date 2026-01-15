@@ -131,6 +131,7 @@ function setupExpressApp(sessionManager, apiCache) {
           imgSrc: ['\'self\'', 'data:', 'https:', 'https://*.mc.yandex.ru'],
           connectSrc: [
             '\'self\'',
+            'wss:',
             'https://mc.yandex.ru',
             'https://mc.yandex.com',
             'wss://mc.yandex.com'
