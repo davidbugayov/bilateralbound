@@ -1636,7 +1636,7 @@ function updateViewerAudioIndicators() {
 
   // Показываем индикаторы только когда вьювер подключен И звук включен в контроллере
   if (isViewerConnected && soundEnabled) {
-    // Показываем основной ин��икатор только когда звук реально играет
+    // Показываем основной индикатор когда звук реально играет
     // Это означает что зритель нажал кнопку "Включить звук"
     if (isPlaying) {
       audioIndicator.classList.remove('hidden')
@@ -1649,8 +1649,14 @@ function updateViewerAudioIndicators() {
       soundPlayingIndicator.classList.add('active')
     } else {
       // Звук включен в контроллере, но зритель еще не активировал (или пауза)
-      audioIndicator.classList.add('hidden')
+      // Показываем индикатор в режиме ожидания
+      audioIndicator.classList.remove('hidden')
+      audioIndicator.classList.remove('ready')
+      audioIndicator.classList.add('warning')
+      audioText.textContent = 'Ожидание активации звука зрителем'
+
       soundPlayingIndicator.classList.add('hidden')
+      soundPlayingIndicator.classList.remove('active')
     }
   } else {
     // Скрываем все индикаторы когда вьювер отключен или звук выключен
