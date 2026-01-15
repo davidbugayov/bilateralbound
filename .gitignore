@@ -13,9 +13,15 @@ yarn.lock
 # Build outputs
 build/
 dist/
-docs/
 *.tsbuildinfo
 build/Release/
+
+# Docs - игнорируем только автогенерируемые
+docs/jsdoc/
+docs/api-generated/
+!docs/*.md
+!docs/DEBUG_GUIDE.md
+!docs/VERSION_SYSTEM.md
 
 # Environment variables
 .env
