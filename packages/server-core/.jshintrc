@@ -1,0 +1,23 @@
+{
+  "esversion": 11,
+  "node": true,
+  "asi": true,
+  "boss": true,
+  "curly": false,
+  "eqeqeq": false,
+  "eqnull": true,
+  "expr": true,
+  "forin": true,
+  "immed": true,
+  "latedef": false,
+  "loopfunc": true,
+  "noarg": true,
+  "regexp": true,
+  "shadow": true,
+  "supernew": true,
+  "undef": true,
+  "unused": false,
+  "multistr": true,
+  "lastsemic": true
+}
+
