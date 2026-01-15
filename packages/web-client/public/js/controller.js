@@ -1030,6 +1030,10 @@ async function initializePreview() {
     }
     // Клиент теперь вычисляет физику локально (включая отскоки), сервер только синхронизирует
     previewPhysicsEngine.isViewer = true
+
+    // Явно устанавливаем паузу и центрируем мяч при загрузке
+    // Это гарантирует правильную позицию в preview
+    previewPhysicsEngine.setPaused(true)
     // Считаем пасы по локальным событиям отскока
     globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce())
     // Применяем глобальные настройки сглаживания, если есть
@@ -1668,6 +1672,8 @@ function _initializeFullscreenRenderer() {
     if (!previewPhysicsEngine) {
       previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
       previewPhysicsEngine.isViewer = true
+      // Явно центрируем мяч в fullscreen preview
+      previewPhysicsEngine.setPaused(true)
     }
 
     if (previewFsRenderer) {
