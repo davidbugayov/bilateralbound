@@ -283,6 +283,111 @@
   gap: 10px;
 }
 
+/* Viewer Audio Indicators */
+.viewer-audio-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin-top: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: rgb(234 179 8 / 15%);
+  border: 1px solid rgb(234 179 8 / 30%);
+  color: #fbbf24;
+}
+
+.viewer-audio-indicator.hidden {
+  display: none;
+}
+
+.viewer-audio-indicator.warning {
+  background: rgb(239 68 68 / 15%);
+  border-color: rgb(239 68 68 / 30%);
+  color: #f87171;
+}
+
+.viewer-audio-indicator.ready {
+  background: rgb(34 197 94 / 15%);
+  border-color: rgb(34 197 94 / 30%);
+  color: #4ade80;
+}
+
+.viewer-audio-indicator .icon {
+  font-size: 1rem;
+}
+
+/* Viewer Sound Playing Indicator */
+.viewer-sound-playing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin-top: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: rgb(100 100 100 / 10%);
+  border: 1px solid rgb(100 100 100 / 20%);
+  color: var(--text-secondary, #888);
+  transition: all 0.3s ease;
+}
+
+.viewer-sound-playing-indicator.hidden {
+  display: none;
+}
+
+.viewer-sound-playing-indicator.active {
+  background: rgb(59 130 246 / 20%);
+  border-color: rgb(59 130 246 / 40%);
+  color: #3b82f6;
+  animation: soundPulse 1.5s ease-in-out infinite;
+}
+
+.viewer-sound-playing-indicator .icon {
+  font-size: 1rem;
+}
+
+@keyframes soundPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.light-theme .viewer-audio-indicator {
+  background: rgb(234 179 8 / 10%);
+  border-color: rgb(234 179 8 / 25%);
+  color: #ca8a04;
+}
+
+.light-theme .viewer-audio-indicator.warning {
+  background: rgb(239 68 68 / 10%);
+  border-color: rgb(239 68 68 / 25%);
+  color: #dc2626;
+}
+
+.light-theme .viewer-audio-indicator.ready {
+  background: rgb(34 197 94 / 10%);
+  border-color: rgb(34 197 94 / 25%);
+  color: #16a34a;
+}
+
+.light-theme .viewer-sound-playing-indicator {
+  background: rgb(100 100 100 / 8%);
+  border-color: rgb(100 100 100 / 15%);
+  color: #64748b;
+}
+
+.light-theme .viewer-sound-playing-indicator.active {
+  background: rgb(59 130 246 / 15%);
+  border-color: rgb(59 130 246 / 30%);
+  color: #2563eb;
+}
+
 
 /* Responsive improvements */
 @media (width <= 768px) {

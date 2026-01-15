@@ -81,6 +81,7 @@ class DebugLogger {
 
   error(msg, err) { console.error(`%c[ERROR] ${msg}`, 'color: #F00; font-weight: bold;', err ?? '') }
   warn(msg, data) { console.warn(`%c[WARN] ${msg}`, 'color: #FA0; font-weight: bold;', data ?? '') }
+  info(msg, data) { console.info(`%cℹ️ ${msg}`, 'color: #4A9EFF; font-weight: bold;', data ?? '') }
   log(msg, data) { console.log(msg, data ?? '') }
 
   scope(moduleName) {
@@ -96,6 +97,7 @@ class DebugLogger {
       audio: (msg, data) => this.audio(`[${moduleName}] ${msg}`, data),
       error: (msg, err) => this.error(`[${moduleName}] ${msg}`, err),
       warn: (msg, data) => this.warn(`[${moduleName}] ${msg}`, data),
+      info: (msg, data) => this.info(`[${moduleName}] ${msg}`, data),
       log: (msg, data) => this.log(`[${moduleName}] ${msg}`, data)
     }
   }

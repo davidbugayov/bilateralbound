@@ -553,6 +553,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
     applyServerStateToPreview(state)
     syncUIWithState(state)
+    updateViewerAudioIndicators() // Обновляем индикаторы звука
   })
   // Включаем обратно: превью теперь "глупый" рендерер состояния сервера
   wsClient.on(WS_MSG.stateUpdate, state => {
@@ -575,6 +576,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
 
     applyServerStateToPreview(state)
+    updateViewerAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
   })
   // АДАПТИВНАЯ адаптация сглаживания по сетевым метрикам (упрощенная версия для стабильности)
   wsClient.on(WS_MSG.netMetrics, ({ rttMs: _rttMs, jitterMs }) => {
@@ -924,12 +926,23 @@ function _initializeSoundControls() {
         soundTypeControl.style.opacity = '0.5'
         soundTypeControl.style.pointerEvents = 'none'
       }
+
+      // Обновляем индикаторы звука
+      if (lastServerState) {
+        lastServerState.soundEnabled = enabled
+      }
+      updateViewerAudioIndicators()
     })
 
     // Handle sound type selection
     soundTypeSelect.addEventListener('change', (e) => {
       const soundType = e.target.value
       setSoundType(soundType)
+
+      // Обновляем состояние
+      if (lastServerState) {
+        lastServerState.soundType = soundType
+      }
     })
 
     // Initialize from server state if available
@@ -1597,6 +1610,52 @@ function updateViewerStatusUI() {
       viewerStatusEl.style.fontWeight = '400'
       showWaitingForViewer()
     }
+  }
+
+  // Обновляем индикаторы звука
+  updateViewerAudioIndicators()
+}
+
+/**
+ * Обновляет индикаторы звука зрителя на основе состояния
+ */
+function updateViewerAudioIndicators() {
+  const audioIndicator = document.getElementById('viewerAudioIndicator')
+  const audioText = document.getElementById('viewerAudioText')
+  const soundPlayingIndicator = document.getElementById('viewerSoundPlayingIndicator')
+
+  if (!audioIndicator || !audioText || !soundPlayingIndicator) return
+
+  const isViewerConnected = globalThis.__current?.viewerConnected
+  const soundEnabled = lastServerState?.soundEnabled ?? false
+  const isPlaying = globalThis.__current?.isPlaying ?? false
+
+  // Показываем индикатор статуса звука только когда вьювер подключен
+  if (isViewerConnected) {
+    audioIndicator.classList.remove('hidden')
+
+    if (soundEnabled) {
+      audioIndicator.classList.add('ready')
+      audioIndicator.classList.remove('warning')
+      audioText.textContent = 'Звук у зрителя включен'
+    } else {
+      audioIndicator.classList.add('warning')
+      audioIndicator.classList.remove('ready')
+      audioText.textContent = 'Звук у зрителя выключен'
+    }
+
+    // Показываем индикатор воспроизведения только когда звук включен и идет воспроизведение
+    if (soundEnabled && isPlaying) {
+      soundPlayingIndicator.classList.remove('hidden')
+      soundPlayingIndicator.classList.add('active')
+    } else {
+      soundPlayingIndicator.classList.add('hidden')
+      soundPlayingIndicator.classList.remove('active')
+    }
+  } else {
+    // Скрываем все индикаторы когда вьювер отключен
+    audioIndicator.classList.add('hidden')
+    soundPlayingIndicator.classList.add('hidden')
   }
 }
 

@@ -31,7 +31,6 @@
     <link rel="canonical" href="https://emdrbilateral.ru/" />
 
     <!-- Preload critical resources -->
-    <link rel="preload" href="/js/common.js" as="script" />
     <link rel="preload" href="/css/shared-components.css" as="style" />
     <link rel="preload" href="/css/light-theme.css" as="style" />
     <link rel="preload" href="/css/controller.css" as="style" />
@@ -139,6 +138,16 @@
           Статус зрителя:
           <span id="viewerStatus" aria-live="polite">Ожидание...</span>
         </p>
+        <!-- Viewer Audio Indicator -->
+        <div id="viewerAudioIndicator" class="viewer-audio-indicator hidden">
+          <span class="icon">🔊</span>
+          <span id="viewerAudioText">Звук у зрителя выключен</span>
+        </div>
+        <!-- Viewer Sound Playing Indicator -->
+        <div id="viewerSoundPlayingIndicator" class="viewer-sound-playing-indicator hidden">
+          <span class="icon">🎵</span>
+          <span>Зритель слышит звук</span>
+        </div>
         <div class="link-group">
           <label for="view" class="link-group__label">
             👁️ Ссылка для клиента (Viewer):
