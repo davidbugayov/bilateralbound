@@ -363,6 +363,10 @@
           });
           globalThis.physicsEngine = physicsEngine;
 
+          // Явно устанавливаем паузу и центрируем мяч при загрузке
+          // Это гарантирует правильную позицию даже если контроллер не подключен
+          physicsEngine.setPaused(true);
+
           ballRenderer = new BallRenderer(canvas, physicsEngine, {
             localPhysics: false,
           });
