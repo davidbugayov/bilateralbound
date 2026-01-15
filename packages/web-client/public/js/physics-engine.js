@@ -235,9 +235,6 @@ if (typeof PhysicsEngine === 'undefined') {
      * Инициирует плавный возврат мяча в центр
      */
     returnToCenter() {
-      console.log(
-        `[PHYSICS] returnToCenter called, isViewer: ${this.isViewer}, center: (${this.centerX}, ${this.centerY})`
-      )
       if (this.isViewer) {
         // Для режима вьювера устанавливаем целевую позицию в центр
         this.state.targetX = this.centerX
@@ -249,13 +246,9 @@ if (typeof PhysicsEngine === 'undefined') {
         this.state.smoothVy = 0
         this.state.lastVx = 0
         this.state.lastVy = 0
-        console.log(
-          `[PHYSICS] Viewer mode: target set to (${this.state.targetX}, ${this.state.targetY})`
-        )
       } else {
         // Для серверного режима просто устанавливаем позицию в центр
         this._resetBallToCenter()
-        console.log(`[PHYSICS] Server mode: ball set to (${this.ball.x}, ${this.ball.y})`)
       }
     }
     /**

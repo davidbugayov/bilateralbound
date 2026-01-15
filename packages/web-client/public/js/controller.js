@@ -1117,10 +1117,6 @@ function recalculateDiagonalDirectionIfNeeded() {
         dirY
       })
     }, 200)
-
-    console.log(
-      `🔄 Диагональное направление пересчитано: мяч центрирован, новое направление ${currentDirectionMode} (${dirX.toFixed(4)}, ${dirY.toFixed(4)})`
-    )
   } else {
     // Если на паузе, просто обновляем направление без центрирования
     safeSend(WS_MSG.controllerUpdate, {
@@ -1305,9 +1301,6 @@ function setDirection(directionMode) {
 
     updateDirectionButtons()
     updateDirectionDisplay(dirX, dirY)
-    console.log(
-      `🎯 Направление изменено: ${directionMode} (${dirX.toFixed(2)}, ${dirY.toFixed(2)}), isPlaying: ${isPlaying}`
-    )
   } catch (error) {
     console.error('Ошибка установки направления:', error)
   }
@@ -1332,14 +1325,12 @@ function setBallSize(size) {
 function setSoundEnabled(enabled) {
   if (globalThis.__current?.viewerConnected) {
     safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) })
-    console.log(`🔊 Sound ${enabled ? 'enabled' : 'disabled'}`)
   }
 }
 
 function setSoundType(soundType) {
   if (globalThis.__current?.viewerConnected) {
     safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
-    console.log(`🎵 Sound type changed to: ${soundType}`)
   }
 }
 
@@ -1947,8 +1938,6 @@ function fillFsSessionInfo() {
 
 function resetSession() {
   try {
-    console.log('🔄 Сброс сессии...')
-
     // Сбрасываем счётчики
     bbCounters.resetAll()
 
@@ -1969,8 +1958,6 @@ function resetSession() {
 
     // Показываем уведомление
     showNotification('Сессия сброшена', 'info')
-
-    console.log('✅ Сессия сброшена')
   } catch (error) {
     console.error('❌ Ошибка при сбросе сессии:', error)
     showNotification('Ошибка при сбросе сессии', 'error')

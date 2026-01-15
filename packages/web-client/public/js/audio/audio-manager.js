@@ -146,7 +146,6 @@ class AudioManager {
   setEnabled(enabled) {
     const wasEnabled = this.enabled
     this.enabled = !!enabled
-    console.log('[AudioManager] setEnabled:', { wasEnabled, newEnabled: this.enabled })
     if (this.enabled) {
       this.init()
     }
