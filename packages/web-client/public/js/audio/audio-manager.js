@@ -152,7 +152,6 @@ class AudioManager {
   }
 
   setEnabled(enabled) {
-    const wasEnabled = this.enabled
     this.enabled = !!enabled
     if (this.enabled) {
       this.init()
