@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Синхронизируем версии перед коммитом
+echo "🔄 Синхронизация версий..."
+node scripts/sync-versions.js
+

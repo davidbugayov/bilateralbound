@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.38.20",
+  "version": "2.38.20-15b24c8",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -37,6 +37,7 @@
     "pre-commit": "npm run lint:all && npm run format",
     "version:update": "node scripts/update-version.js",
     "version:check": "node scripts/check-production-version.js",
+    "version:sync": "node scripts/sync-versions.js",
     "version": "node scripts/version-manager.js",
     "postversion": "git add package.json docs/VERSION.md && git commit -m \"🔖 Release v$(node -e \\\"console.log(require('./package.json').version)\\\")\" && git tag v$(node -e \\\"console.log(require('./package.json').version)\\\")",
     "deploy": "cd packages/server-core && npm start",
