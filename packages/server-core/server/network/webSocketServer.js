@@ -77,6 +77,35 @@ function setupWebSocketServer(server, sessionManager) {
           }
         }
       },
+      viewer_audio_activated: (data, { sessionId, role }) => {
+        if (role === 'viewer') {
+          const session = sessionManager.sessionRepository.findById(sessionId)
+          if (session) {
+            // Сохраняем статус активации звука зрителем
+            session.viewerAudioActivated = data.payload?.activated ?? true
+
+            // Отправляем уведомление контроллеру
+            const controllers = sessionManager.webSocketManager.getClients(sessionId, 'controller')
+            const notificationMessage = JSON.stringify({
+              type: 'viewer_audio_activated',
+              payload: {
+                activated: session.viewerAudioActivated,
+                timestamp: Date.now()
+              }
+            })
+
+            for (const { client } of controllers) {
+              if (client.readyState === 1) {
+                try {
+                  client.send(notificationMessage)
+                } catch (error) {
+                  logger.error(`Error sending viewer_audio_activated: ${error.message}`)
+                }
+              }
+            }
+          }
+        }
+      },
       controller_update: (data, { sessionId, role }) => {
         if (role === 'controller') {
           sessionManager.updateBallState(sessionId, data.payload)

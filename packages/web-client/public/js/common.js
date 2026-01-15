@@ -156,6 +156,7 @@ if (typeof globalThis !== 'undefined') {
     initialState: 'initial_state',
     stateUpdate: 'state_update',
     viewerStatus: 'viewer_status',
+    viewerAudioActivated: 'viewer_audio_activated',
     netMetrics: 'net_metrics'
   })
 }
