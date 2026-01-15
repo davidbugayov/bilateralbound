@@ -134,20 +134,6 @@
       <section class="control-section" aria-labelledby="session-heading">
         <h3 id="session-heading">🎮 Сессия: <span id="curSid">...</span></h3>
         <p id="sessionInfo" class="session-info">Сессия: загрузка...</p>
-        <p class="viewer-status">
-          Статус зрителя:
-          <span id="viewerStatus" aria-live="polite">Ожидание...</span>
-        </p>
-        <!-- Viewer Audio Indicator -->
-        <div id="viewerAudioIndicator" class="viewer-audio-indicator hidden">
-          <span class="icon">🔊</span>
-          <span id="viewerAudioText">Звук у зрителя выключен</span>
-        </div>
-        <!-- Viewer Sound Playing Indicator -->
-        <div id="viewerSoundPlayingIndicator" class="viewer-sound-playing-indicator hidden">
-          <span class="icon">🎵</span>
-          <span>Зритель слышит звук</span>
-        </div>
         <div class="link-group">
           <label for="view" class="link-group__label">
             👁️ Ссылка для клиента (Viewer):
@@ -508,6 +494,17 @@
         <div class="appearance-grid">
           <div class="controls-card">
             <p class="controls-title">🔊 Звук</p>
+
+            <!-- Viewer Audio Status Indicators -->
+            <div id="viewerAudioIndicator" class="viewer-audio-indicator hidden" style="margin-bottom: 12px; padding: 8px 12px; background: #f1f5f9; border-radius: 8px; font-size: 0.9rem;">
+              <span class="icon">🔊</span>
+              <span id="viewerAudioText">Звук у зрителя выключен</span>
+            </div>
+            <div id="viewerSoundPlayingIndicator" class="viewer-sound-playing-indicator hidden" style="margin-bottom: 12px; padding: 8px 12px; background: #dbeafe; border-radius: 8px; font-size: 0.9rem;">
+              <span class="icon">🎵</span>
+              <span>Зритель слышит звук</span>
+            </div>
+
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <input
