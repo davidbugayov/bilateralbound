@@ -391,6 +391,10 @@ function setupExpressApp(sessionManager, apiCache) {
     (req, res) => {
       const { sessionId } = req.params
       sessionManager.updateBallState(sessionId, req.body)
+
+      // Рассылаем обновление всем WebSocket клиентам
+      sessionManager.stateBroadcaster.broadcastState(sessionId)
+
       res.json({ success: true, message: 'Controller update processed' })
     }
   )
