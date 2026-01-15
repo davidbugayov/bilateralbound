@@ -203,6 +203,15 @@ class SessionManager {
       if (Object.keys(soundSettings).length > 0) {
         Object.assign(session.ballState, soundSettings)
       }
+
+      // Применяем новые звуковые настройки из validatedUpdates (они имеют приоритет)
+      if (validatedUpdates.soundEnabled !== undefined) {
+        session.ballState.soundEnabled = validatedUpdates.soundEnabled
+      }
+      if (validatedUpdates.soundType !== undefined) {
+        session.ballState.soundType = validatedUpdates.soundType
+      }
+
       this._normalizeDirectionIfNeeded(session)
     } else {
       this.sessionRepository.updateBallState(session.id, validatedUpdates)
