@@ -44,19 +44,25 @@ class SessionRepository {
    * @returns {Object} Созданная сессия
    */
   _createInternal(id, sessionData = {}) {
+    // Создаем базовый ballState с дефолтными значениями
+    const defaultBallState = {
+      speed: 30,
+      radius: 20,
+      colorBall: '#60a5fa',
+      colorBg: '#020617',
+      paused: true,
+      soundEnabled: false,
+      soundType: 'soft'
+    }
+
+    // Применяем пользовательские значения только если они есть
+    const ballState = sessionData.ballState && Object.keys(sessionData.ballState).length > 0
+      ? { ...defaultBallState, ...sessionData.ballState }
+      : defaultBallState
+
     const session = {
       id,
-      ballState: {
-        speed: 30,
-        radius: 20,
-        colorBall: '#60a5fa',
-        colorBg: '#020617',
-        paused: true,
-        soundEnabled: false,
-        soundType: 'soft',
-        // Применяем ballState из sessionData только если он не пустой
-        ...(sessionData.ballState && Object.keys(sessionData.ballState).length > 0 ? sessionData.ballState : {})
-      },
+      ballState,
       controllerConnected: false,
       viewerConnected: false,
       viewerScreenSize: null,
