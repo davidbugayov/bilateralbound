@@ -1070,6 +1070,18 @@ function showWaitingForViewer() {
     viewerInfo.textContent = '⏳ Ожидание подключения вьювера'
     viewerInfo.style.display = 'block'
   }
+
+  // Останавливаем мяч в центре превью когда вьювер отключен
+  if (previewPhysicsEngine) {
+    const canvas = document.getElementById('preview')
+    if (canvas) {
+      const centerX = canvas.width / 2
+      const centerY = canvas.height / 2
+      previewPhysicsEngine.setPosition(centerX, centerY)
+      previewPhysicsEngine.setVelocity(0, 0)
+      previewPhysicsEngine.setPaused(true)
+    }
+  }
 }
 
 /**
