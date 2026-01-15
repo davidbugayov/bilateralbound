@@ -510,13 +510,36 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   })
   wsClient.on(WS_MSG.viewerStatus, data => {
     logger.info('Получен статус viewer', data)
+    const wasConnected = globalThis.__current.viewerConnected
     globalThis.__current.viewerConnected = data.connected
+
     if (data.screenSize) {
       globalThis.__current.viewerScreenSize = data.screenSize
     }
+
     // Если вьювер подключился, завершаем инициализацию
     if (data.connected) {
       completeInitialization().catch(console.error)
+    }
+
+    // Если вьювер отключился - сбрасываем состояние и останавливаем превью
+    if (wasConnected && !data.connected) {
+      logger.info('Viewer отключился, сбрасываем состояние')
+
+      // Сбрасываем флаги активации звука
+      globalThis.__current.viewerAudioActivated = false
+
+      // Останавливаем превью если оно запущено
+      if (globalThis.__current?.isPlaying) {
+        globalThis.__current.isPlaying = false
+        // Останавливаем физику превью
+        if (previewPhysicsEngine) {
+          previewPhysicsEngine.setPaused(true)
+        }
+      }
+
+      // Показываем режим ожидания
+      showWaitingForViewer()
     }
 
     updateViewerStatusUI()
