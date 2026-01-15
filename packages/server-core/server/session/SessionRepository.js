@@ -73,8 +73,7 @@ class SessionRepository {
        */
       clients: new Map(),
       mainLoop: null, // Единый цикл для физики и рассылки
-      lastStateUpdate: 0, // Добавляем для отслеживания последнего обновления состояния
-      ...sessionData
+      lastStateUpdate: 0 // Добавляем для отслеживания последнего обновления состояния
     }
 
     this.sessions.set(session.id, session)
