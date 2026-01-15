@@ -55,10 +55,25 @@ class SessionRepository {
       soundType: 'soft'
     }
 
+    // DEBUG: Логируем входные данные
+    console.log('[SessionRepository] _createInternal called with:', {
+      id,
+      sessionData: JSON.stringify(sessionData),
+      hasBallState: !!sessionData.ballState,
+      ballStateKeys: sessionData.ballState ? Object.keys(sessionData.ballState) : 'NO BALLSTATE'
+    })
+
     // Применяем пользовательские значения только если они есть
     const ballState = sessionData.ballState && Object.keys(sessionData.ballState).length > 0
       ? { ...defaultBallState, ...sessionData.ballState }
       : defaultBallState
+
+    // DEBUG: Логируем результат
+    console.log('[SessionRepository] Created ballState:', {
+      soundEnabled: ballState.soundEnabled,
+      soundType: ballState.soundType,
+      allKeys: Object.keys(ballState)
+    })
 
     const session = {
       id,
