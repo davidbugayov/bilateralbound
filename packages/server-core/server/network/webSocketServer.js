@@ -80,6 +80,33 @@ function setupWebSocketServer(server, sessionManager) {
       controller_update: (data, { sessionId, role }) => {
         if (role === 'controller') {
           sessionManager.updateBallState(sessionId, data.payload)
+
+          // Рассылаем обновление всем клиентам (включая вьювер)
+          const clients = sessionManager.webSocketManager.getClients(sessionId)
+          const session = sessionManager.sessionRepository.findById(sessionId)
+
+          if (session) {
+            const updateMessage = JSON.stringify({
+              type: 'state_update',
+              payload: {
+                ...session.ballState,
+                viewerConnected: session.viewerConnected,
+                controllerConnected: session.controllerConnected,
+                viewerScreenSize: session.viewerScreenSize
+              },
+              timestamp: Date.now()
+            })
+
+            for (const { client } of clients) {
+              if (client !== ws && client.readyState === 1) {
+                try {
+                  client.send(updateMessage)
+                } catch (error) {
+                  logger.error(`Error broadcasting controller_update: ${error.message}`)
+                }
+              }
+            }
+          }
         }
       }
     }
