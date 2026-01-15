@@ -31,6 +31,11 @@ class SessionManager {
    */
   async createSession(ballState = {}) {
     const session = await this.sessionRepository.create({ ballState })
+    console.log('[SessionManager] After sessionRepository.create:', {
+      soundEnabled: session.ballState.soundEnabled,
+      soundType: session.ballState.soundType,
+      allKeys: Object.keys(session.ballState)
+    })
     this._initializePhysicsEngine(session)
     return session
   }
