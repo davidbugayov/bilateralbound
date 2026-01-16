@@ -529,6 +529,9 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       // Сбрасываем флаги активации звука
       globalThis.__current.viewerAudioActivated = false
 
+      // Очищаем размер экрана viewer чтобы UI показывал ожидание
+      globalThis.__current.viewerScreenSize = null
+
       // Останавливаем превью если оно запущено
       if (globalThis.__current?.isPlaying) {
         globalThis.__current.isPlaying = false
