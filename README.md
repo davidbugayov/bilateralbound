@@ -16,64 +16,9 @@
 
 **🟢 Stable / Production Ready**
 
-**Последнее обновление:** 16.01.2026  
-**Версия:** 2.38.20-a65fb54
+**Последнее обновление:** 15.01.2026 - ✨ UX улучшение контроллера: статус звука перенесен в настройки
 
-**Ключевые возможности:**
-- ✅ **Управление из viewer** - Space для паузы/старта на viewer
-- ✅ **Таймауты сессий** - автоочистка (1ч макс, 15мин при отключении, 30мин неактивности)
-- ✅ **Двусторонняя синхронизация** - команды от viewer и controller синхронизируются через сервер
-- ✅ **Оптимизированная загрузка** - время загрузки < 1s
-- ✅ **Мультиязычность** - 8+ языков
-- ✅ **Звуковые тики** - аудиостимуляция для EMDR
-
----
-
-## 🌐 Деплой и Окружения
-
-### Production
-- **URL:** https://bilateralbound.onrender.com/
-- **Статус:** ✅ Stable
-- **Ветка:** `main`
-
-### Development  
-- **URL:** https://dev.emdrbilateral.online
-- **SSH:** `ssh root@213.139.229.44`
-- **Директория:** `/var/www/emdrbilateral-dev`
-- **Ветка:** `stable-enhanced`
-- **PM2 Process:** `dev.emdrbilateral.online`
-
-#### Быстрый деплой на dev:
-```bash
-ssh root@213.139.229.44
-
-# Обновить код
-cd /var/www/emdrbilateral-dev
-git fetch origin stable-enhanced
-git pull origin stable-enhanced
-
-# Перезапустить приложение
-pm2 restart dev.emdrbilateral.online
-
-# Проверить статус
-pm2 status
-pm2 logs dev.emdrbilateral.online --lines 30
-```
-
-#### Полный список PM2 процессов:
-- `emdrbilateral.online` - Production (prod)
-- `emdrbilateral.ru` - Production RU
-- `dev.emdrbilateral.online` - Development
-
----
-
-## ⚠️ Очистка Browser Cache
-
-**Если мяч не движется** - очистите кеш!  
-**Chrome/Edge:** DevTools (F12) → правый клик Reload → "Empty Cache and Hard Reload"  
-**Incognito:** `Ctrl+Shift+N` (Win) / `Cmd+Shift+N` (Mac)
-
----
+**🎉 ОПТИМИЗАЦИЯ ПРОИЗВОДИТЕЛЬНОСТИ И UX (15.01.2026)**:
 - ✅ **UX улучшение контроллера** - статус звука зрителя перенесен в секцию на��троек звука
 - ✅ **Убран визуальный шум** - удален блок "Статус зрителя: Ожидание..." из ��ерхней части
 - ✅ **Логичная группировка** - индикаторы звука (🔊/🎵) теперь в секции "🔊 Звук"
