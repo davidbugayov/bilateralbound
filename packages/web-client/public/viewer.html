@@ -278,7 +278,7 @@
             // Отправляем на сервер что зритель активировал звук
             const sendActivationNotification = () => {
               const sessionId = getSessionIdFromUrl();
-              if (sessionId && wsClient && wsClient.isConnected()) {
+              if (sessionId && wsClient && typeof wsClient.isConnected === 'function' && wsClient.isConnected()) {
                 wsClient.send(WS_MSG.viewerAudioActivated, { activated: true });
                 if (typeof logger !== 'undefined') {
                   logger.audio('Sent viewerAudioActivated to server');
@@ -711,7 +711,7 @@
             debugLog("❌ Статус обновлен: Контроллер отключен");
           } else {
             // Если данных о контроллере нет, используем статус WebSocket соединения
-            const isWebSocketConnected = wsClient && wsClient.isConnected;
+            const isWebSocketConnected = wsClient && typeof wsClient.isConnected === 'function' && wsClient.isConnected();
             if (isWebSocketConnected) {
               components.status.setStatus(
                 "success",
@@ -890,7 +890,16 @@
           timestamp: Date.now()
         };
 
-        // Применяем локально для мгновенного отклика
+        // КРИТИЧЕСКИ ВАЖНО: Применяем паузу ЯВНО для мгновенного отклика
+        physicsEngine.setPaused(newPaused);
+
+        // Если пауза - центрируем мяч
+        if (newPaused) {
+          physicsEngine.setPosition(physicsEngine.centerX, physicsEngine.centerY);
+          physicsEngine.setVelocity(0, 0);
+        }
+
+        // Также применяем через applyCommand для других настроек
         physicsEngine.applyCommand(payload);
 
         // Отправляем на сервер через WebSocket
@@ -904,7 +913,7 @@
           components.status.setStatus('success', statusText);
           // Автоматически скрываем через 2 секунды
           setTimeout(() => {
-            if (components.status && wsClient && wsClient.isConnected()) {
+            if (components.status && typeof wsClient.isConnected === 'function' && wsClient.isConnected()) {
               components.status.setStatus('success', 'Контроллер подключен');
             }
           }, 2000);
