@@ -624,3 +624,67 @@ controller.send.* - исходящие команды
 - **Разводите доменную логику и транспорт.** Транспорт (WebSocket) — в `network/`, правила валидации — в сервисах.
 - **В монорепо не дублируйте протокол.** Форматы сообщений, нормализация координат (Protocol v2) — в `packages/shared`.
 - **Тестируйте контракт, а не реализацию.** Корректная дедупликация по `seq`, поведение при server-side physics, нормализация координат.
+
+---
+
+## 🔐 VPN Сервер (Beget VPS)
+
+### 📚 Документация
+
+- **Быстрый старт:** [docs/BEGET_QUICK_START.md](docs/BEGET_QUICK_START.md)
+- **Полная документация:** [docs/BEGET_VPN_SETUP.md](docs/BEGET_VPN_SETUP.md)
+- **Автоматический скрипт:** [scripts/beget-vpn-auto-setup.sh](scripts/beget-vpn-auto-setup.sh)
+
+### ⚡ Быстрая установка
+
+```bash
+# 1. Доступ к серверу через панель Beget: https://cp.beget.com
+#    VPS → Управление → Консоль
+
+# 2. Скопировать скрипт на сервер
+scp scripts/beget-vpn-auto-setup.sh root@213.139.229.44:~/
+
+# 3. Запустить автоматическую настройку
+ssh root@213.139.229.44
+chmod +x ~/beget-vpn-auto-setup.sh
+sudo ~/beget-vpn-auto-setup.sh
+```
+
+### 🔐 VPN Пользователи
+
+Только эти 9 пользователей имеют доступ:
+
+| Пользователь | Пароль | Примечание |
+|---|---|---|
+| Swetlana | qs819GCAur | |
+| Sergey | 6jEA5K8m1b | |
+| Yulia | LmbPhkGd4q | |
+| David | c4RrhQu7xi | Телефон |
+| DavidMac1 | EmjXM4cttx | Mac 1 |
+| DavidMac2 | o3GCWWeq7r | Mac 2 |
+| Elena | EF8oHBnYBz | |
+| DavidDeck | c2KxINLtB5 | Desktop |
+| Bogdan | DKCFQHsgkP | |
+
+### 🆘 Решение проблем
+
+**SSH не работает:**
+```bash
+# Через консоль Beget (cp.beget.com → VPS → Консоль)
+fail2ban-client unban --all
+systemctl restart sshd
+```
+
+**VPN не подключается:**
+```bash
+systemctl restart strongswan-starter
+journalctl -u strongswan-starter -n 50
+```
+
+**Нет интернета через VPN:**
+```bash
+IFACE=$(ip route | grep default | awk '{print $5}')
+iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o $IFACE -j MASQUERADE
+netfilter-persistent save
+```
+

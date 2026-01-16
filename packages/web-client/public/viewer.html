@@ -105,6 +105,11 @@
       </canvas>
       <div id="loading" class="loading" aria-live="polite">Загрузка...</div>
 
+      <!-- Hotkeys Hint -->
+      <div id="hotkeysHint" class="hotkeys-hint">
+        <kbd>Space</kbd> — Пауза/Старт
+      </div>
+
       <!-- Unmute Overlay for Audio -->
       <div id="unmuteOverlay" class="unmute-overlay hidden">
         <button id="unmuteBtn" class="unmute-btn">
@@ -140,7 +145,8 @@
       let ballRenderer;
       let isFullscreen = false;
       let audioManager = null;
-      let audioActivated = false;
+      // Восстанавливаем audioActivated из localStorage
+      let audioActivated = localStorage.getItem('bb_audioActivated') === 'true';
       /** @type {Object} */
       const components = {};
       // components.status will be assigned in initializeComponents() and has setStatus method
@@ -151,11 +157,22 @@
       if (typeof window !== 'undefined') {
         window.audioManager = audioManager;
         window.audioActivated = audioActivated;
+        // Функция для сброса состояния активации аудио (для отладки)
+        window.resetAudioActivation = function() {
+          localStorage.removeItem('bb_audioActivated');
+          audioActivated = false;
+          window.audioActivated = false;
+          if (audioManager) {
+            checkAudioOverlay();
+          }
+          console.log('🔊 Audio activation state reset. Reload page to see unmute overlay again.');
+        };
       }
 
       // Initialize on DOM load
       document.addEventListener("DOMContentLoaded", async function () {
         debugLog('🚀 DOMContentLoaded fired');
+        debugLog('🔊 Audio activation state restored from localStorage:', audioActivated);
         debugLog('🚀 Доступные глобальные объекты:', {
           AudioManager: typeof AudioManager,
           PhysicsEngine: typeof PhysicsEngine,
@@ -236,12 +253,23 @@
           logger.audio('AudioManager создан, enabled:', audioManager.enabled);
         }
 
+        // Если звук был активирован ранее (из localStorage), инициализируем сразу
+        if (audioActivated) {
+          audioManager.init();
+          window.audioActivated = true;
+          if (typeof logger !== 'undefined') {
+            logger.audio('Audio auto-activated from localStorage');
+          }
+        }
+
         // Setup user gesture handlers for audio activation
         const activateAudio = () => {
           if (!audioActivated) {
             audioManager.init();
             audioActivated = true;
             window.audioActivated = true; // Expose for debugging
+            // Сохраняем состояние в localStorage
+            localStorage.setItem('bb_audioActivated', 'true');
             checkAudioOverlay();
             if (typeof logger !== 'undefined') {
               logger.audio('Audio activated by user gesture');
@@ -553,6 +581,14 @@
           requestAnimationFrame(renderLoop);
           setupEventListeners();
 
+          // Auto-hide hotkeys hint after 10 seconds
+          setTimeout(() => {
+            const hotkeysHint = document.getElementById('hotkeysHint');
+            if (hotkeysHint) {
+              hotkeysHint.classList.add('hidden');
+            }
+          }, 10000);
+
           debugLog("✅ Viewer успешно инициализирован");
         } catch (error) {
           debugError("❌ Ошибка инициализации viewer:", error);
@@ -800,8 +836,83 @@
           document.addEventListener("gestureend", (event) =>
             event.preventDefault(),
           );
+
+          // Hotkey handler - Space for pause/play
+          document.addEventListener("keydown", handleViewerHotkey);
         }
       }
+
+      /**
+       * Обработчик горячих клавиш для viewer
+       * @param {KeyboardEvent} event - Событие нажатия клавиши
+       */
+      function handleViewerHotkey(event) {
+        // Игнорируем, если фокус на input/textarea
+        if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+          return;
+        }
+
+        // Space - pause/play
+        if (event.code === 'Space' || event.key === ' ') {
+          event.preventDefault();
+          toggleViewerPlayPause();
+        }
+      }
+
+      /**
+       * Переключает паузу/старт во viewer
+       * Отправляет команду на сервер для синхронизации с controller
+       */
+      function toggleViewerPlayPause() {
+        if (!physicsEngine || !wsClient) {
+          debugWarn('⚠️ PhysicsEngine или WebSocket не инициализированы');
+          return;
+        }
+
+        const currentPaused = physicsEngine.state.paused;
+        const newPaused = !currentPaused;
+
+        debugLog(`🎮 Viewer hotkey: ${newPaused ? 'ПАУЗА' : 'СТАРТ'}`);
+
+        // Показываем подсказку на 2 секунды при использовании
+        const hotkeysHint = document.getElementById('hotkeysHint');
+        if (hotkeysHint) {
+          hotkeysHint.classList.remove('hidden');
+          setTimeout(() => {
+            hotkeysHint.classList.add('hidden');
+          }, 2000);
+        }
+
+        // Отправляем команду на сервер
+        const payload = {
+          paused: newPaused,
+          returnToCenter: newPaused, // При паузе возвращаем мяч в центр
+          timestamp: Date.now()
+        };
+
+        // Применяем локально для мгновенного отклика
+        physicsEngine.applyCommand(payload);
+
+        // Отправляем на сервер через WebSocket
+        wsClient.send('viewer_update', payload).catch(err => {
+          debugWarn('❌ Не удалось отправить viewer_update:', err);
+        });
+
+        // Показываем уведомление
+        if (components.status) {
+          const statusText = newPaused ? '⏸️ Пауза' : '▶️ Воспроизведение';
+          components.status.setStatus('success', statusText);
+          // Автоматически скрываем через 2 секунды
+          setTimeout(() => {
+            if (components.status && wsClient && wsClient.isConnected()) {
+              components.status.setStatus('success', 'Контроллер подключен');
+            }
+          }, 2000);
+        }
+      }
+
+      // Экспортируем функцию глобально для доступа из консоли
+      globalThis.toggleViewerPlayPause = toggleViewerPlayPause;
     </script>
   </body>
 </html>

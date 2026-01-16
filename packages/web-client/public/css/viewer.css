@@ -148,7 +148,55 @@ body.light-theme .loading::after {
   }
 }
 
-/* Responsive */
+/* Hotkeys hint */
+.hotkeys-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgb(0 0 0 / 80%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid rgb(255 255 255 / 20%);
+  font-size: 13px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  transition: opacity 0.3s ease;
+  text-align: center;
+  pointer-events: none;
+}
+
+.hotkeys-hint.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hotkeys-hint kbd {
+  display: inline-block;
+  padding: 3px 8px;
+  background: rgb(255 255 255 / 15%);
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  margin: 0 4px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+}
+
+body.light-theme .hotkeys-hint {
+  background: rgb(255 255 255 / 95%);
+  border-color: rgb(148 163 184 / 30%);
+  color: #1e293b;
+}
+
+body.light-theme .hotkeys-hint kbd {
+  background: rgb(226 232 240 / 80%);
+  border-color: rgb(148 163 184 / 40%);
+  color: #1e293b;
+}
+
+/* Unmute Overlay */
 @media (width <= 768px) {
   .status-overlay {
     top: 12px;
