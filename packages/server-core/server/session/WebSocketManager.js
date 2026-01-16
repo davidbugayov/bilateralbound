@@ -22,6 +22,12 @@ class WebSocketManager {
       session.viewerConnected = true
     }
 
+    // Сбрасываем таймер частичного отключения если оба снова подключены
+    if (session.controllerConnected && session.viewerConnected) {
+      session.partialDisconnectTime = null
+      this.logger.logSession(sessionId, 'Both participants reconnected - timeout cleared')
+    }
+
     this.logger.logSession(sessionId, `${role} connected via WebSocket`)
     return true
   }
@@ -34,6 +40,13 @@ class WebSocketManager {
         // Проверяем, остались ли клиенты этой роли
         this._updateConnectionStatus(session, clientInfo.role)
         this.logger.logSession(session.id, `${clientInfo.role} disconnected via WebSocket`)
+
+        // Устанавливаем таймаут на отключение если осталась только одна роль
+        if (!session.controllerConnected || !session.viewerConnected) {
+          session.partialDisconnectTime = Date.now()
+          this.logger.logSession(session.id, 'Partial disconnect detected - 15 min timeout started')
+        }
+
         // Возвращаем ID сессии для дальнейшей обработки (например, для остановки физики)
         return session.id
       }

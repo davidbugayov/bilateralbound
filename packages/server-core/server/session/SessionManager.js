@@ -626,15 +626,16 @@ class SessionManager {
    * @returns {number} Количество очищенных сессий
    */
   cleanupExpiredSessions() {
-    const expiredIds = this.sessionRepository.cleanupExpired()
-    if (expiredIds.length > 0) {
-      this.logger.info(`Cleaned up ${expiredIds.length} expired sessions.`)
-      for (const id of expiredIds) {
+    const expiredSessions = this.sessionRepository.cleanupExpired()
+    if (expiredSessions.length > 0) {
+      this.logger.info(`Cleaned up ${expiredSessions.length} expired sessions.`)
+      for (const { id, reason } of expiredSessions) {
         this.stopPhysics(id)
+        this.logger.logSession(id, `Session cleaned up: ${reason}`)
       }
     }
 
-    return expiredIds.length
+    return expiredSessions.length
   }
 
   /**

@@ -68,6 +68,7 @@ class SessionRepository {
       viewerScreenSize: null,
       createdAt: Date.now(),
       lastActivity: Date.now(),
+      partialDisconnectTime: null, // Время когда один из участников отключился
       /**
        * @type {Map<WebSocket, {role: string, connectedAt: number, sessionId: string}>}
        */
@@ -136,24 +137,44 @@ class SessionRepository {
   /**
    * Очищает истекшие сессии
    * @param {number} maxAge - Максимальный возраст сессии в мс (по умолчанию 1 час)
+   * @param {number} partialDisconnectTimeout - Таймаут после частичного отключения в мс (по умолчанию 15 минут)
    * @returns {Array} Массив ID удаленных сессий
    */
-  cleanupExpired(maxAge = 60 * 60 * 1000) {
-    // 1 hour
+  cleanupExpired(maxAge = 60 * 60 * 1000, partialDisconnectTimeout = 15 * 60 * 1000) {
     const now = Date.now()
     const expiredIds = []
 
     for (const [id, session] of this.sessions) {
-      // Удаляем сессии старше maxAge ИЛИ неактивные более 30 минут
+      const age = now - session.createdAt
       const inactiveTime = now - (session.lastActivity || session.createdAt)
-      if (now - session.createdAt > maxAge || inactiveTime > 30 * 60 * 1000) {
-        expiredIds.push(id)
+
+      // Причины удаления сессии:
+      // 1. Сессия старше 1 часа (maxAge)
+      if (age > maxAge) {
+        expiredIds.push({ id, reason: 'max_age_exceeded' })
+        continue
+      }
+
+      // 2. Один из участников отключился более 15 минут назад
+      if (session.partialDisconnectTime) {
+        const disconnectAge = now - session.partialDisconnectTime
+        if (disconnectAge > partialDisconnectTimeout) {
+          expiredIds.push({ id, reason: 'partial_disconnect_timeout' })
+          continue
+        }
+      }
+
+      // 3. Полная неактивность (никто не подключен) более 30 минут
+      if (!session.controllerConnected && !session.viewerConnected && inactiveTime > 30 * 60 * 1000) {
+        expiredIds.push({ id, reason: 'full_inactivity' })
+        continue
       }
     }
 
-    for (const id of expiredIds) {
+    for (const { id, reason } of expiredIds) {
       this.delete(id)
     }
+
     return expiredIds
   }
 }
