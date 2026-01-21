@@ -385,7 +385,7 @@ function setupExpressApp(sessionManager, apiCache) {
     }
   )
   app.post(
-    '/api/session/:sessionId/controller/update',
+    '/api/session/:sessionId/viewer/update',
     requireSession(sessionManager),
     (req, res) => {
       const { sessionId } = req.params
@@ -394,7 +394,7 @@ function setupExpressApp(sessionManager, apiCache) {
       // Рассылаем обновление всем WebSocket клиентам
       sessionManager.stateBroadcaster.broadcastState(sessionId)
 
-      res.json({ success: true, message: 'Controller update processed' })
+      res.json({ success: true, message: 'Viewer update processed' })
     }
   )
   app.post(

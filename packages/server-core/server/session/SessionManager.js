@@ -99,6 +99,11 @@ class SessionManager {
       Object.assign(session.ballState, soundSettings)
     }
 
+    // Устанавливаем начальное направление движения (горизонтальное)
+    session.physicsEngine.setVelocity(1, 0)
+    session.ballState.vx = 1
+    session.ballState.vy = 0
+
     session.ballState.paused = true
     session.physicsEngine.setPaused(true)
     this.startPhysics(session.id)
