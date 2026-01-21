@@ -402,51 +402,34 @@ async function completeInitialization() {
  */
 async function initializeDOMElements(sessionId) {
   // Функция разбита для снижения когнитивной сложности
-  const elements = {
-    curSid: 'curSid',
-    view: 'view',
-    sessionTimestamp: 'sessionTimestamp',
-    viewerSessionId: 'viewerSessionId',
-    viewerStatus: 'viewerStatus'
+
+  // Устанавливаем ID сессии
+  const curSidEl = document.getElementById('curSid')
+  if (curSidEl) {
+    curSidEl.textContent = sessionId
   }
 
-  const missingElements = []
-
-  const initializedElements = {}
-
-  for (const [key, id] of Object.entries(elements)) {
-    const element = document.getElementById(id)
-    if (element) {
-      initializedElements[key] = element
-    } else {
-      missingElements.push(id)
-    }
+  // Устанавливаем время создания сессии
+  const sessionTimestampEl = document.getElementById('sessionTimestamp')
+  if (sessionTimestampEl) {
+    sessionTimestampEl.textContent = `Создана: ${new Date().toLocaleString()}`
   }
 
-  if (missingElements.length > 0) {
-    console.warn(`Не найдены HTML элементы: ${missingElements.join(', ')}`)
-    // Не выбрасываем ошибку, если элементы не найдены - они могут быть необязательными
-  }
-  // Настройка элементов (проверяем существование перед использованием)
-  if (initializedElements.curSid) {
-    initializedElements.curSid.textContent = sessionId
+  // Устанавливаем ID сессии viewer'а
+  const viewerSessionIdEl = document.getElementById('viewerSessionId')
+  if (viewerSessionIdEl) {
+    viewerSessionIdEl.textContent = `[${sessionId}]`
   }
 
-  if (initializedElements.sessionTimestamp) {
-    initializedElements.sessionTimestamp.textContent = `Создана: ${new Date().toLocaleString()}`
+  // Устанавливаем статус viewer'а
+  const viewerStatusEl = document.getElementById('viewerStatus')
+  if (viewerStatusEl) {
+    viewerStatusEl.textContent = 'ожидание'
+    viewerStatusEl.classList.add('disconnected')
   }
 
-  if (initializedElements.viewerSessionId) {
-    initializedElements.viewerSessionId.textContent = `[${sessionId}]`
-  }
-
-  if (initializedElements.viewerStatus) {
-    initializedElements.viewerStatus.textContent = 'ожидание'
-    initializedElements.viewerStatus.classList.add('disconnected')
-  }
   // Обновляем ссылку для зрителя сразу после инициализации
   updateViewerLink(sessionId)
-  return initializedElements
 }
 
 function updateViewerLink(sessionId) {
@@ -532,20 +515,51 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     if (wasConnected && !data.connected) {
       logger.info('Viewer отключился, сбрасываем состояние')
 
+      // Сбрасываем ВСЕ состояние контроллера - забываем что viewer когда-то подключался
+
       // Сбрасываем флаги активации звука
       globalThis.__current.viewerAudioActivated = false
 
       // Очищаем размер экрана viewer чтобы UI показывал ожидание
       globalThis.__current.viewerScreenSize = null
 
+      // Сбрасываем состояние воспроизведения глобально
+      isPlaying = false
+      globalThis.__current.isPlaying = false
+
       // Останавливаем превью если оно запущено
-      if (globalThis.__current?.isPlaying) {
-        globalThis.__current.isPlaying = false
-        // Останавливаем физику превью
-        if (previewPhysicsEngine) {
-          previewPhysicsEngine.setPaused(true)
-        }
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setPaused(true)
       }
+
+      // Сбрасываем направление на горизонтальное (исходное состояние)
+      directionState = { dx: 1, dy: 0 }
+      currentDirectionMode = 'horizontal'
+      updateDirectionDisplay(1, 0)
+      updateDirectionButtons()
+
+      // Обновляем кнопку Play/Pause на исходное состояние
+      updatePlayPauseButton()
+
+      // Сбрасываем счётчики на исходное состояние
+      if (bbCounters && typeof bbCounters.resetAll === 'function') {
+        bbCounters.resetAll()
+      }
+
+      // Сбрасываем кэш состояния с сервера
+      lastServerState = null
+
+      // Явно обновляем элемент viewerStatus - устанавливаем красное состояние "ожидание"
+      const viewerStatusEl = document.getElementById('viewerStatus')
+      if (viewerStatusEl) {
+        viewerStatusEl.textContent = 'ожидание'
+        viewerStatusEl.classList.remove('connected')
+        viewerStatusEl.classList.add('disconnected')
+        viewerStatusEl.style.fontWeight = '400'
+      }
+
+      // Центрируем мяч в preview контроллера при отключении viewer'а
+      centerBallInViewer()
 
       // Показываем режим ожидания
       showWaitingForViewer()
@@ -1014,6 +1028,9 @@ function initializeComponents() {
   _initializeBgColorControl()
   _initializeSizeControl()
   _initializeSoundControls()
+
+  // Инициализируем отображение направления
+  updateDirectionDisplay(1, 0)
 }
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 function safeSend(type, payload) {
@@ -1483,7 +1500,7 @@ function getDirectionInfo(mode) {
 function updateDirectionDisplay(dirX, dirY, customText = null) {
   try {
     // Ищем элемент для отображения направления
-    const directionDisplay = document.getElementById('currentDirection')
+    const directionDisplay = document.getElementById('currentDirectionDisplay')
     let directionText = customText || 'Неизвестно'
     let directionIcon
 
@@ -1495,15 +1512,16 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     }
 
     if (directionDisplay) {
-      directionDisplay.innerHTML = `${directionIcon}`
+      directionDisplay.textContent = directionIcon || '❓'
+      directionDisplay.title = directionText
     }
 
     // Обновляем иконку направления в полноэкранном режиме
     const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
       fsDirectionDisplay.innerHTML = directionDisplay
-        ? directionDisplay.innerHTML
-        : `${directionIcon || '❓'} <span>${directionText || 'Неизвестно'}</span>`
+        ? directionDisplay.textContent
+        : `${directionIcon || '❓'}`
     }
   } catch (error) {
     console.error('Ошибка обновления отображения направления:', error)
@@ -1525,6 +1543,15 @@ function updatePlayPauseButton() {
 }
 
 function _handlePlay() {
+  // Проверяем подключение viewer'а перед запуском
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot start session: viewer is not connected')
+    showNotification('Невозможно начать сессию: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
+  }
+
   let currentDirection = directionState || { dx: 1, dy: 0 }
   if (currentDirection.dx === 0 && currentDirection.dy === 0) {
     currentDirection = { dx: 1, dy: 0 }
@@ -1537,7 +1564,10 @@ function _handlePlay() {
   }
   safeSend(WS_MSG.controllerUpdate, payload)
   isPlaying = true
-  bbCounters.start()
+  // Запускаем таймер только если viewer подключен
+  if (globalThis.__current?.viewerConnected) {
+    bbCounters.start()
+  }
   if (previewPhysicsEngine) {
     previewPhysicsEngine.applyCommand(payload)
   }
@@ -1554,6 +1584,8 @@ function _handlePause() {
   bbCounters.stop(true)
   if (previewPhysicsEngine) {
     previewPhysicsEngine.applyCommand(payload)
+    // Явно центрируем мяч при паузе
+    centerBallInViewer()
   }
 }
 
@@ -1578,6 +1610,15 @@ function _handlePauseTransition() {
 }
 
 function _handlePlayTransition() {
+  // Проверяем подключение viewer'а перед запуском
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot start session: viewer is not connected')
+    showNotification('Невозможно начать сессию: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
+  }
+
   _handlePlay()
   __ignoreServerPausedUntilTs = performance.now() + 800
 }
