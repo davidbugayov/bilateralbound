@@ -117,9 +117,7 @@ class AudioManager {
   async preloadSounds() {
     if (!this.audioContext) return
 
-    if (logger && logger.log) {
-      logger.log('🔊 Starting audio files preload...')
-    }
+    logger?.log('🔊 Starting audio files preload...')
 
     const loadPromises = Object.values(this.soundFiles).map((url) =>
       this.loadSound(url)
@@ -132,21 +130,15 @@ class AudioManager {
     this.filesLoaded = loadedCount > 0
 
     if (loadedCount === Object.keys(this.soundFiles).length) {
-      if (logger && logger.log) {
-        logger.log(
-          `✅ Audio files preloaded: ${loadedCount}/${Object.keys(this.soundFiles).length}`
-        )
-      }
+      logger?.log(
+        `✅ Audio files preloaded: ${loadedCount}/${Object.keys(this.soundFiles).length}`
+      )
     } else if (loadedCount > 0) {
-      if (logger && logger.warn) {
-        logger.warn(
-          `⚠️ Partially loaded: ${loadedCount}/${Object.keys(this.soundFiles).length} (using synthesis for missing)`
-        )
-      }
+      logger?.warn(
+        `⚠️ Partially loaded: ${loadedCount}/${Object.keys(this.soundFiles).length} (using synthesis for missing)`
+      )
     } else {
-      if (logger && logger.warn) {
-        logger.warn('⚠️ No audio files loaded, using synthesis fallback')
-      }
+      logger?.warn('⚠️ No audio files loaded, using synthesis fallback')
       this.useAudioFiles = false
     }
   }

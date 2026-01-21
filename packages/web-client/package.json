@@ -1,13 +1,17 @@
 {
   "name": "@emdr/web-client",
-  "version": "2.38.20-4c69d00",
+  "version": "2.38.20-ba1aa24",
   "description": "EMDR therapy web client",
   "main": "public/index.html",
   "type": "commonjs",
   "scripts": {
     "start": "webpack --mode=development",
     "build": "webpack --mode=production",
-    "serve": "npx serve -s public"
+    "serve": "npx serve -s public",
+    "lint": "eslint public/js --ext .js",
+    "lint:fix": "eslint public/js --ext .js --fix",
+    "lint:report": "eslint public/js --ext .js --format json > ../reports/eslint-web-client.json 2>&1 || true",
+    "lint:sonarqube": "node sonar-scanner.js"
   },
   "keywords": [
     "emdr",
@@ -27,8 +31,12 @@
     "babel-loader": "^9.2.1",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.11.0",
+    "eslint": "^9.39.2",
+    "eslint-formatter-sonarqube": "^1.0.0",
+    "eslint-plugin-sonarjs": "^3.0.5",
     "html-loader": "^5.1.0",
     "html-webpack-plugin": "^5.6.6",
+    "sonarqube-scanner": "^4.3.4",
     "style-loader": "^3.3.4",
     "webpack": "^5.104.1",
     "webpack-cli": "^5.1.4"

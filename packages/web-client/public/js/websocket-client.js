@@ -116,12 +116,12 @@ if (typeof WebSocketClient === 'undefined') {
       if (!this.isConnected) {
         throw new Error('WebSocket is not connected')
       }
-      // Приоритизация критически важных сообщений
-      const priorityTypes = ['controller_update', 'heartbeat']
 
+      const priorityTypes = ['controller_update', 'heartbeat']
       const isPriority = priorityTypes.includes(type)
-      // Для приоритетных сообщений отключаем коалесцирование
+
       if (isPriority) {
+        // Приоритетные сообщения отправляются сразу без коалесцирования
         const messageId = ++this.messageIdCounter
         const message = {
           id: messageId,
@@ -130,60 +130,55 @@ if (typeof WebSocketClient === 'undefined') {
           timestamp: Date.now(),
           priority: true
         }
-
-        if (options.expectResponse) {
-          return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              this.pendingMessages.delete(messageId)
-              reject(new Error(`Message timeout: ${type}`))
-            }, this.config.messageTimeout)
-            this.pendingMessages.set(messageId, { resolve, reject, timeout })
-            this._sendMessage(message)
-          })
-        } else {
-          this._sendMessage(message)
-        }
+        return this._sendWithResponse(message, type, options)
       } else if (this.config.coalesceTypes.includes(type) && !options.expectResponse) {
         // Коалесцирование для обычных сообщений
-        this._coalesceBuffers.set(type, payload)
-        if (!this._coalesceTimers.has(type)) {
-          const timerId = setTimeout(() => {
-            const latest = this._coalesceBuffers.get(type)
-            this._coalesceBuffers.delete(type)
-            this._coalesceTimers.delete(type)
-            const coalescedMessage = {
-              id: ++this.messageIdCounter,
-              type,
-              payload: latest,
-              timestamp: Date.now(),
-              batched: true
-            }
-
-            try {
-              this._sendMessage(coalescedMessage)
-            } catch (e) {
-              this.log(`Coalesced send failed: ${e.message}`, 'warning')
-            }
-          }, this.config.coalesceDelayMs)
-          this._coalesceTimers.set(type, timerId)
-        }
+        this._coalesceMessage(type, payload)
       } else {
         // Обычная отправка для остальных сообщений
         const messageId = ++this.messageIdCounter
         const message = { id: messageId, type, payload, timestamp: Date.now() }
+        return this._sendWithResponse(message, type, options)
+      }
+    }
 
-        if (options.expectResponse) {
-          return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              this.pendingMessages.delete(messageId)
-              reject(new Error(`Message timeout: ${type}`))
-            }, this.config.messageTimeout)
-            this.pendingMessages.set(messageId, { resolve, reject, timeout })
-            this._sendMessage(message)
-          })
-        } else {
+    _sendWithResponse(message, type, options) {
+      if (options.expectResponse) {
+        return new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            this.pendingMessages.delete(message.id)
+            reject(new Error(`Message timeout: ${type}`))
+          }, this.config.messageTimeout)
+          this.pendingMessages.set(message.id, { resolve, reject, timeout })
           this._sendMessage(message)
-        }
+        })
+      } else {
+        this._sendMessage(message)
+      }
+    }
+
+    _coalesceMessage(type, payload) {
+      this._coalesceBuffers.set(type, payload)
+      if (!this._coalesceTimers.has(type)) {
+        const timerId = setTimeout(() => {
+          const latest = this._coalesceBuffers.get(type)
+          this._coalesceBuffers.delete(type)
+          this._coalesceTimers.delete(type)
+          const coalescedMessage = {
+            id: ++this.messageIdCounter,
+            type,
+            payload: latest,
+            timestamp: Date.now(),
+            batched: true
+          }
+
+          try {
+            this._sendMessage(coalescedMessage)
+          } catch (e) {
+            this.log(`Coalesced send failed: ${e.message}`, 'warning')
+          }
+        }, this.config.coalesceDelayMs)
+        this._coalesceTimers.set(type, timerId)
       }
     }
     /**
@@ -254,36 +249,57 @@ if (typeof WebSocketClient === 'undefined') {
         const message = JSON.parse(event.data)
         this._stats.messagesReceived++
         this._stats.lastActivity = Date.now()
+
         // Обработка подтверждений
-        if (message.id && this.pendingMessages.has(message.id)) {
-          const pending = this.pendingMessages.get(message.id)
-          clearTimeout(pending.timeout)
-          this.pendingMessages.delete(message.id)
-          pending.resolve(message.payload)
-          return
-        }
+        if (this._handlePendingMessage(message)) return
+
         // Обработка обычных сообщений
         this._emit(message.type, message.payload)
         this._emit('message', message)
-        // Пробуем оценить сетевые метрики если есть timestamp
-        if (message && typeof message.timestamp === 'number') {
-          const now = performance.now()
-          const rtt = Math.max(0, now - message.timestamp)
-          this._stats._lastRttSamples.push(rtt)
-          if (this._stats._lastRttSamples.length > 20) this._stats._lastRttSamples.shift()
-          const n = this._stats._lastRttSamples.length
-          const avg = this._stats._lastRttSamples.reduce((a, b) => a + b, 0) / n
-          const varSum =
-            this._stats._lastRttSamples.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / n
-          const jitter = Math.sqrt(varSum)
-          this._stats.rttMs = Math.round(avg)
-          this._stats.jitterMs = Math.round(jitter)
-          this._emit('net_metrics', { rttMs: this._stats.rttMs, jitterMs: this._stats.jitterMs })
+
+        // Обновление сетевых метрик
+        if (message?.timestamp) {
+          this._updateNetworkMetrics(message.timestamp)
         }
       } catch (error) {
         this.log(`Failed to parse message: ${error.message}`, 'error')
         this._emit('error', { error, type: 'parse', rawData: event.data })
       }
+    }
+
+    _handlePendingMessage(message) {
+      if (!message.id || !this.pendingMessages.has(message.id)) return false
+
+      const pending = this.pendingMessages.get(message.id)
+      clearTimeout(pending.timeout)
+      this.pendingMessages.delete(message.id)
+      pending.resolve(message.payload)
+      return true
+    }
+
+    _updateNetworkMetrics(timestamp) {
+      const now = performance.now()
+      const rtt = Math.max(0, now - timestamp)
+      this._stats._lastRttSamples.push(rtt)
+
+      // Keep only last 20 samples
+      if (this._stats._lastRttSamples.length > 20) {
+        this._stats._lastRttSamples.shift()
+      }
+
+      const n = this._stats._lastRttSamples.length
+      const avg = this._stats._lastRttSamples.reduce((a, b) => a + b, 0) / n
+      const variance = this._stats._lastRttSamples.reduce(
+        (a, b) => a + Math.pow(b - avg, 2), 0
+      ) / n
+      const jitter = Math.sqrt(variance)
+
+      this._stats.rttMs = Math.round(avg)
+      this._stats.jitterMs = Math.round(jitter)
+      this._emit('net_metrics', {
+        rttMs: this._stats.rttMs,
+        jitterMs: this._stats.jitterMs
+      })
     }
 
     _handleClose(event) {
