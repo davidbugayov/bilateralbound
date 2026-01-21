@@ -1461,31 +1461,55 @@ function setDirection(directionMode) {
 }
 
 function setBallColor(color) {
-  // Функция разбита для снижения когнитивной сложности
-  // Оптимизация: меньше обновлений когда нет вьювера
-  if (globalThis.__current?.viewerConnected) {
-    safeSend(WS_MSG.controllerUpdate, { colorBall: color })
+  // Проверяем подключение viewer'а перед изменением цвета
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot change ball color: viewer is not connected')
+    showNotification('Невозможно изменить цвет мяча: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
   }
+
+  safeSend(WS_MSG.controllerUpdate, { colorBall: color })
 }
 
 function setBallSize(size) {
-  // Функция разбита для снижения когнитивной сложности
-  // Оптимизация: меньше обновлений когда нет вьювера
-  if (globalThis.__current.viewerConnected) {
-    safeSend(WS_MSG.controllerUpdate, { radius: size })
+  // Проверяем подключение viewer'а перед изменением размера
+  if (!globalThis.__current.viewerConnected) {
+    console.warn('Cannot change ball size: viewer is not connected')
+    showNotification('Невозможно изменить размер мяча: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
   }
+
+  safeSend(WS_MSG.controllerUpdate, { radius: size })
 }
 
 function setSoundEnabled(enabled) {
-  if (globalThis.__current?.viewerConnected) {
-    safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) })
+  // Проверяем подключение viewer'а перед изменением состояния звука
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot change sound enabled: viewer is not connected')
+    showNotification('Невозможно изменить состояние звука: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
   }
+
+  safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) })
 }
 
 function setSoundType(soundType) {
-  if (globalThis.__current?.viewerConnected) {
-    safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
+  // Проверяем подключение viewer'а перед изменением типа звука
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot change sound type: viewer is not connected')
+    showNotification('Невозможно изменить тип звука: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
   }
+
+  safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
 }
 
 function setBallSizeMultiplier(multiplier) {
