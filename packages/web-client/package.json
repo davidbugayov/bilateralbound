@@ -1,6 +1,6 @@
 {
   "name": "@emdr/web-client",
-  "version": "2.38.20-389b901",
+  "version": "2.38.20-892f40e",
   "description": "EMDR therapy web client",
   "main": "public/index.html",
   "type": "commonjs",
@@ -22,14 +22,15 @@
     "npm": ">=8.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.5",
-    "@babel/preset-env": "^7.28.5",
-    "babel-loader": "^10.0.0",
-    "css-loader": "^7.1.2",
+    "@babel/core": "^7.28.6",
+    "@babel/preset-env": "^7.28.6",
+    "babel-loader": "^9.2.1",
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.11.0",
     "html-loader": "^5.1.0",
-    "html-webpack-plugin": "^5.6.0",
-    "style-loader": "^4.0.0",
-    "webpack": "^5.101.3",
-    "webpack-cli": "^6.0.1"
+    "html-webpack-plugin": "^5.6.6",
+    "style-loader": "^3.3.4",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^5.1.4"
   }
 }
