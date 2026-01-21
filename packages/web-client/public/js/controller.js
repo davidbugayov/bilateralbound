@@ -1079,10 +1079,17 @@ function safeSend(type, payload) {
 }
 
 function updateSpeed(speed) {
-  // Функция разбита для снижения когнитивной сложности
+  // Проверяем подключение viewer'а перед изменением скорости
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot change speed: viewer is not connected')
+    showNotification('Невозможно изменить скорость: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
+  }
+
+  // Отправляем изменение скорости
   try {
-    // Отправляем изменение скорости всегда, даже если вьювер ещё не подключен
-    // (сервер сохранит значение и применит при старте)
     safeSend(WS_MSG.controllerUpdate, { speed })
   } catch {
     console.warn('Error updating speed')
@@ -1521,11 +1528,17 @@ function setBallSizeMultiplier(multiplier) {
 }
 
 function setBackgroundColor(color) {
-  // Функция разбита для снижения когнитивной сложности
-  // Отправляем изменение на сервер
-  if (globalThis.__current.viewerConnected) {
-    safeSend(WS_MSG.controllerUpdate, { colorBg: color })
+  // Проверяем подключение viewer'а перед изменением цвета фона
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot change background color: viewer is not connected')
+    showNotification('Невозможно изменить цвет фона: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
   }
+
+  // Отправляем изменение на сервер
+  safeSend(WS_MSG.controllerUpdate, { colorBg: color })
   // Обновляем фон в превью
   if (globalThis.__previewRenderer) {
     globalThis.__previewRenderer.setBackgroundColor(color)
