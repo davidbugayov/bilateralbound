@@ -1264,6 +1264,8 @@ function updatePreviewSize(viewerScreenSize) {
     updateViewerInfo(viewerScreenSize)
   } else {
     showWaitingForViewer()
+    // Явно центрируем мяч в preview при отключении viewer'а
+    centerBallInViewer()
   }
 }
 
@@ -1429,6 +1431,15 @@ function setDirection(directionMode) {
   if (!directionMode) return
 
   try {
+    // Проверяем подключение viewer'а перед изменением направления
+    if (!globalThis.__current?.viewerConnected) {
+      console.warn('Cannot change direction: viewer is not connected')
+      showNotification('Невозможно изменить направление: клиент не подключен', 'warning')
+      // Гарантируем что состояние всегда красное "ожидание"
+      updateViewerStatusUI()
+      return
+    }
+
     const directionVector = getDirectionVector(directionMode)
     if (!directionVector) return
 
