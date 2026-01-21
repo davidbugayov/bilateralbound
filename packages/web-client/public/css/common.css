@@ -31,17 +31,103 @@
   border-radius: 4px;
 }
 
-/* === SPECIFIC STATUS STYLES === */
+/* === SESSION INFO STYLING === */
+.session-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+  color: #64748b;
+  flex-wrap: wrap;
+}
+
+.session-info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.session-info-timestamp {
+  color: #64748b;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.session-info-timestamp::before {
+  content: "⏰";
+  font-size: 1.1em;
+}
+
+/* === VIEWER STATUS STYLES === */
+.link-group__label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+#viewerSessionId {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75em;
+  color: #94a3b8;
+  font-weight: 700;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 6px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.8px;
+  border: 1px solid #334155;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 50%);
+}
+
+.light-theme #viewerSessionId {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #475569;
+  border-color: #cbd5e1;
+  box-shadow: inset 0 1px 2px rgb(255 255 255 / 50%);
+}
+
 #viewerStatus {
-  font-weight: 600;
-  color: #ef4444;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
 }
 
 #viewerStatus.connected {
-  color: #22c55e !important;
-  font-weight: bold;
+  color: #15803d;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  font-weight: 700;
+  box-shadow:
+    0 0 12px rgb(34 197 94 / 40%),
+    inset 0 1px 2px rgb(255 255 255 / 80%);
+  border: 1px solid #86efac;
 }
 
 #viewerStatus.disconnected {
-  color: #ef4444 !important;
+  color: #b91c1c;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  font-weight: 700;
+  box-shadow:
+    0 0 12px rgb(239 68 68 / 30%),
+    inset 0 1px 2px rgb(255 255 255 / 80%);
+  border: 1px solid #fca5a5;
+}
+
+.light-theme #viewerStatus.connected {
+  color: #166534;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+}
+
+.light-theme #viewerStatus.disconnected {
+  color: #7f1d1d;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
 }

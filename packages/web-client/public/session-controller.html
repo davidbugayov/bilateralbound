@@ -133,10 +133,14 @@
     <main class="wrap">
       <section class="control-section" aria-labelledby="session-heading">
         <h3 id="session-heading">🎮 Сессия: <span id="curSid">...</span></h3>
-        <p id="sessionInfo" class="session-info">Сессия: загрузка...</p>
+        <p id="sessionInfo" class="session-info">
+          <span class="session-info-item">
+            <span class="session-info-timestamp" id="sessionTimestamp">Создана: загрузка...</span>
+          </span>
+        </p>
         <div class="link-group">
           <label for="view" class="link-group__label">
-            👁️ Ссылка для клиента (Viewer):
+            👁️ Ссылка для клиента (Viewer): <span id="viewerSessionId" class="viewer-session-id"></span> <span id="viewerStatus" class="disconnected">ожидание</span>
           </label>
           <div class="link-group__input-wrapper">
             <input
@@ -144,6 +148,7 @@
               id="view"
               class="link-group__input"
               readonly="readonly"
+              placeholder="Ожидание подключения вьювера..."
             />
             <button
               class="copy-btn"

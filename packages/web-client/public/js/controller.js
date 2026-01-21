@@ -405,7 +405,8 @@ async function initializeDOMElements(sessionId) {
   const elements = {
     curSid: 'curSid',
     view: 'view',
-    sessionInfo: 'sessionInfo',
+    sessionTimestamp: 'sessionTimestamp',
+    viewerSessionId: 'viewerSessionId',
     viewerStatus: 'viewerStatus'
   }
 
@@ -431,12 +432,17 @@ async function initializeDOMElements(sessionId) {
     initializedElements.curSid.textContent = sessionId
   }
 
-  if (initializedElements.sessionInfo) {
-    initializedElements.sessionInfo.textContent = `Создана: ${new Date().toLocaleString()}`
+  if (initializedElements.sessionTimestamp) {
+    initializedElements.sessionTimestamp.textContent = `Создана: ${new Date().toLocaleString()}`
+  }
+
+  if (initializedElements.viewerSessionId) {
+    initializedElements.viewerSessionId.textContent = `[${sessionId}]`
   }
 
   if (initializedElements.viewerStatus) {
-    initializedElements.viewerStatus.textContent = 'Ожидание...'
+    initializedElements.viewerStatus.textContent = 'ожидание'
+    initializedElements.viewerStatus.classList.add('disconnected')
   }
   // Обновляем ссылку для зрителя сразу после инициализации
   updateViewerLink(sessionId)
@@ -1639,7 +1645,7 @@ function updateViewerStatusUI() {
   const viewerStatusEl = document.getElementById('viewerStatus')
   if (viewerStatusEl) {
     if (globalThis.__current.viewerConnected) {
-      viewerStatusEl.textContent = 'Подключен'
+      viewerStatusEl.textContent = 'подключен'
       viewerStatusEl.classList.add('connected')
       viewerStatusEl.classList.remove('disconnected')
       viewerStatusEl.style.fontWeight = '600' // делаем текст жирным для лучшей видимости
@@ -1647,7 +1653,7 @@ function updateViewerStatusUI() {
         updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
     } else {
-      viewerStatusEl.textContent = 'Ожидание...'
+      viewerStatusEl.textContent = 'ожидание'
       viewerStatusEl.classList.add('disconnected')
       viewerStatusEl.classList.remove('connected')
       viewerStatusEl.style.fontWeight = '400'
@@ -1657,6 +1663,31 @@ function updateViewerStatusUI() {
 
   // Обновляем индикаторы звука
   updateViewerAudioIndicators()
+
+  // Обновляем визуальное выделение ссылки для клиента
+  updateViewerLinkVisualState()
+}
+
+/**
+ * Обновляет визуальное состояние ссылки для клиента в зависимости от подключения вьювера
+ */
+function updateViewerLinkVisualState() {
+  const viewInput = document.getElementById('view')
+  if (!viewInput) return
+
+  if (globalThis.__current.viewerConnected) {
+    // Вьювер подключен - обычная ссылка
+    viewInput.style.borderColor = '#94a3b8'
+    viewInput.style.backgroundColor = '#ffffff'
+    viewInput.style.color = '#1f2937'
+    viewInput.placeholder = ''
+  } else {
+    // Вьювер не подключен - выделяем красным и добавляем текст ожидания
+    viewInput.style.borderColor = '#ef4444'
+    viewInput.style.backgroundColor = '#fef2f2'
+    viewInput.style.color = '#ef4444'
+    viewInput.placeholder = 'Ожидание подключения вьювера...'
+  }
 }
 
 /**
