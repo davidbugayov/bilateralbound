@@ -475,9 +475,22 @@ async function initializeWebSocketClient(sessionId) {
  */
 function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   // Функция разбита для снижения когнитивной сложности
-  wsClient.on('open', () => {
+  wsClient.on('open', (event) => {
     logger.success('WebSocket соединение установлено')
     updateConnectionStatus(true)
+
+    // CRITICAL FIX: Upon reconnection, request full state sync to restore ball position
+    // When connection drops (code 1006), ball position becomes stale. We must request fresh state.
+    if (event?.isReconnection) {
+      logger.warning('Reconnected - requesting state sync to restore ball position')
+      // Request initial state which will trigger ball re-centering
+      safeSend('request_state_sync', {
+        timestamp: Date.now(),
+        sessionId: sessionId,
+        role: 'controller'
+      })
+    }
+
     // Уведомляем сервер о подключении контроллера
     safeSend('controller_connected', {
       timestamp: Date.now(),
@@ -488,7 +501,28 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   wsClient.on('close', event => {
     logger.warning(`WebSocket соединение закрыто (код: ${event.code})`)
     updateConnectionStatus(false)
-    globalThis.__current.viewerConnected = false
+
+    // CRITICAL FIX: Code 1006 is abnormal closure - forcibly reset ball position
+    // This prevents the ball from staying in wrong position after disconnect
+    if (event.code === 1006) {
+      logger.error('⚠️ ABNORMAL DISCONNECTION (code 1006) - resetting ball state')
+
+      // Force pause and center ball in preview
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setPaused(true)
+        const centerX = previewPhysicsEngine.centerX || (globalThis.__previewCanvas?.width || 500) / 2
+        const centerY = previewPhysicsEngine.centerY || (globalThis.__previewCanvas?.height || 375) / 2
+        previewPhysicsEngine.setPosition(centerX, centerY)
+        previewPhysicsEngine.setVelocity(0, 0)
+        logger.info(`✅ Ball reset to center: (${centerX}, ${centerY})`)
+      }
+
+      // Stop playback
+      isPlaying = false
+      globalThis.__current.viewerConnected = false
+      updatePlayPauseButton()
+    }
+
     updateViewerStatusUI()
   })
   wsClient.on('error', error => {
@@ -1342,6 +1376,15 @@ function getDirectionVector(directionMode) {
  * @param {number} dirY - The new Y direction component.
  */
 function _applyDirectionChangeWhenPlaying(dirX, dirY) {
+  // Проверяем подключение viewer'а перед отправкой команды
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot change direction: viewer is not connected')
+    showNotification('Невозможно изменить направление: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
+  }
+
   safeSend(WS_MSG.controllerUpdate, {
     paused: true,
     returnToCenter: true
@@ -1363,6 +1406,15 @@ function _applyDirectionChangeWhenPlaying(dirX, dirY) {
  * @param {number} dirY - The new Y direction component.
  */
 function _applyDirectionChangeWhenPaused(dirX, dirY) {
+  // Проверяем подключение viewer'а перед отправкой команды
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot change direction: viewer is not connected')
+    showNotification('Невозможно изменить направление: клиент не подключен', 'warning')
+    // Гарантируем что состояние всегда красное "ожидание"
+    updateViewerStatusUI()
+    return
+  }
+
   safeSend(WS_MSG.controllerUpdate, {
     dirX,
     dirY

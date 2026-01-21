@@ -512,9 +512,26 @@
             updateStatus(data);
           });
 
-          wsClient.on("open", () => {
+          wsClient.on("open", (event) => {
             debugLog("✅ WebSocket connection established.");
             components.status.setStatus("success", "Соединение установлено");
+
+            // CRITICAL FIX: Upon reconnection, request full state sync to restore ball position
+            // When connection drops (code 1006), ball position becomes stale. We must request fresh state.
+            if (event?.isReconnection) {
+              debugWarn("🔄 Reconnected - requesting state sync to restore ball position");
+              // Request initial state which will restore proper position
+              wsClient
+                .send("request_state_sync", {
+                  timestamp: Date.now(),
+                  sessionId: sessionId,
+                  role: "viewer"
+                })
+                .catch((error) =>
+                  debugWarn("Не удалось запросить синхронизацию состояния:", error),
+                );
+            }
+
             // Запрашиваем текущее состояние подключения контроллера
             wsClient
               .send("get_controller_status", {})
@@ -530,8 +547,25 @@
             });
           });
 
-          wsClient.on("close", () => {
+          wsClient.on("close", (event) => {
             debugWarn("🔌 WebSocket connection closed.");
+
+            // CRITICAL FIX: Code 1006 is abnormal closure - forcibly reset ball position
+            // This prevents the ball from staying in wrong position after disconnect
+            if (event.code === 1006) {
+              debugError("⚠️ ABNORMAL DISCONNECTION (code 1006) - resetting ball state");
+
+              // Force pause and center ball
+              if (physicsEngine) {
+                physicsEngine.setPaused(true);
+                const centerX = globalThis.innerWidth / 2;
+                const centerY = globalThis.innerHeight / 2;
+                physicsEngine.setPosition(centerX, centerY);
+                physicsEngine.setVelocity(0, 0);
+                debugLog(`✅ Ball reset to center: (${centerX}, ${centerY})`);
+              }
+            }
+
             showError("Соединение потеряно. Попытка переподключения...");
           });
 

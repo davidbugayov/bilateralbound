@@ -233,11 +233,15 @@ if (typeof WebSocketClient === 'undefined') {
     _handleConnectionSuccess() {
       this.isConnected = true
       this.isConnecting = false
+      const isReconnection = this._stats.reconnectCount > 0
       this._stats.reconnectCount = 0
       this._stats.lastActivity = Date.now()
       this._startHeartbeat()
-      this._emit('open', { sessionId: this.sessionId, role: this.role })
-      this.log('Connected successfully')
+
+      // Emit event with flag to indicate if this is a reconnection
+      this._emit('open', { sessionId: this.sessionId, role: this.role, isReconnection })
+
+      this.log('Connected successfully' + (isReconnection ? ' (reconnected)' : ''))
     }
 
     _handleConnectionError(error) {
