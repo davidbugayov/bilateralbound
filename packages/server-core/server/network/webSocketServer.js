@@ -29,6 +29,29 @@ function setupWebSocketServer(server, sessionManager) {
     sessionManager.handleWebSocketConnection(ws, sessionId, role)
 
     const messageHandlers = {
+      request_state_sync: (data, { sessionId, role }) => {
+        // CRITICAL FIX: Upon reconnection, send full state to restore ball position
+        // When WS connection drops (code 1006), client needs fresh state
+        const session = sessionManager.sessionRepository.findById(sessionId)
+        if (session) {
+          const initialState = {
+            type: 'initial_state',
+            timestamp: Date.now(),
+            payload: {
+              ...session.ballState,
+              viewerConnected: session.viewerConnected,
+              controllerConnected: session.controllerConnected,
+              viewerScreenSize: session.viewerScreenSize
+            }
+          }
+          try {
+            ws.send(JSON.stringify(initialState))
+            logger.info(`[${sessionId}] Sent state sync on reconnection`)
+          } catch (error) {
+            logger.error(`Error sending state sync: ${error.message}`)
+          }
+        }
+      },
       controller_connected: (data, { sessionId, role }) => {
         if (role === 'controller') {
           const clients = sessionManager.webSocketManager.getClients(sessionId)
