@@ -557,7 +557,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       // Очищаем размер экрана viewer чтобы UI показывал ожидание
       globalThis.__current.viewerScreenSize = null
 
-      // Сбрасываем состояние воспроизведения глобально
+      // Сбрасываем состояние воспроизведения ГЛОБАЛЬНО (ВТОРАЯ ГАРАНТИЯ)
       isPlaying = false
       globalThis.__current.isPlaying = false
 
@@ -571,9 +571,6 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       currentDirectionMode = 'horizontal'
       updateDirectionDisplay(1, 0)
       updateDirectionButtons()
-
-      // Обновляем кнопку Play/Pause на исходное состояние
-      updatePlayPauseButton()
 
       // Сбрасываем счётчики на исходное состояние
       if (bbCounters && typeof bbCounters.resetAll === 'function') {
@@ -597,9 +594,13 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
       // Показываем режим ожидания
       showWaitingForViewer()
-    }
 
-    updateViewerStatusUI()
+      // ← НОВОЕ: Обновляем кнопку Play/Pause чтобы показать что она отключена
+      updatePlayPauseButton()
+
+      // Синхронизируем UI (показывает красный статус "ожидание")
+      updateViewerStatusUI()
+    }
   })
   wsClient.on(WS_MSG.initialState, state => {
     logger.info('Получено начальное состояние', state)
@@ -1082,9 +1083,7 @@ function updateSpeed(speed) {
   // Проверяем подключение viewer'а перед изменением скорости
   if (!globalThis.__current?.viewerConnected) {
     console.warn('Cannot change speed: viewer is not connected')
-    showNotification('Невозможно изменить скорость: клиент не подключен', 'warning')
-    // Гарантируем что состояние всегда красное "ожидание"
-    updateViewerStatusUI()
+    // Не показываем уведомление при старте, только при попытке изменения
     return
   }
 
@@ -1441,9 +1440,7 @@ function setDirection(directionMode) {
     // Проверяем подключение viewer'а перед изменением направления
     if (!globalThis.__current?.viewerConnected) {
       console.warn('Cannot change direction: viewer is not connected')
-      showNotification('Невозможно изменить направление: клиент не подключен', 'warning')
-      // Гарантируем что состояние всегда красное "ожидание"
-      updateViewerStatusUI()
+      // Не показываем уведомление при старте, только при попытке изменения
       return
     }
 
@@ -1471,9 +1468,7 @@ function setBallColor(color) {
   // Проверяем подключение viewer'а перед изменением цвета
   if (!globalThis.__current?.viewerConnected) {
     console.warn('Cannot change ball color: viewer is not connected')
-    showNotification('Невозможно изменить цвет мяча: клиент не подключен', 'warning')
-    // Гарантируем что состояние всегда красное "ожидание"
-    updateViewerStatusUI()
+    // Не показываем уведомление при старте, только при попытке изменения
     return
   }
 
@@ -1484,9 +1479,7 @@ function setBallSize(size) {
   // Проверяем подключение viewer'а перед изменением размера
   if (!globalThis.__current.viewerConnected) {
     console.warn('Cannot change ball size: viewer is not connected')
-    showNotification('Невозможно изменить размер мяча: клиент не подключен', 'warning')
-    // Гарантируем что состояние всегда красное "ожидание"
-    updateViewerStatusUI()
+    // Не показываем уведомление при старте, только при попытке изменения
     return
   }
 
@@ -1497,9 +1490,7 @@ function setSoundEnabled(enabled) {
   // Проверяем подключение viewer'а перед изменением состояния звука
   if (!globalThis.__current?.viewerConnected) {
     console.warn('Cannot change sound enabled: viewer is not connected')
-    showNotification('Невозможно изменить состояние звука: клиент не подключен', 'warning')
-    // Гарантируем что состояние всегда красное "ожидание"
-    updateViewerStatusUI()
+    // Не показываем уведомление при старте, только при попытке изменения
     return
   }
 
@@ -1510,9 +1501,7 @@ function setSoundType(soundType) {
   // Проверяем подключение viewer'а перед изменением типа звука
   if (!globalThis.__current?.viewerConnected) {
     console.warn('Cannot change sound type: viewer is not connected')
-    showNotification('Невозможно изменить тип звука: клиент не подключен', 'warning')
-    // Гарантируем что состояние всегда красное "ожидание"
-    updateViewerStatusUI()
+    // Не показываем уведомление при старте, только при попытке изменения
     return
   }
 
@@ -1531,9 +1520,7 @@ function setBackgroundColor(color) {
   // Проверяем подключение viewer'а перед изменением цвета фона
   if (!globalThis.__current?.viewerConnected) {
     console.warn('Cannot change background color: viewer is not connected')
-    showNotification('Невозможно изменить цвет фона: клиент не подключен', 'warning')
-    // Гарантируем что состояние всегда красное "ожидание"
-    updateViewerStatusUI()
+    // Не показываем уведомление при старте, только при попытке изменения
     return
   }
 
@@ -1635,9 +1622,12 @@ function updatePlayPauseButton() {
     if (isPlaying) {
       button.textContent = '⏸ Стоп'
       button.classList.add('playing')
+      button.disabled = false  // Кнопка активна при воспроизведении
     } else {
       button.textContent = '▶️ Старт'
       button.classList.remove('playing')
+      // Отключаем кнопку если viewer не подключен
+      button.disabled = !globalThis.__current?.viewerConnected
     }
   }
 }
@@ -1647,8 +1637,10 @@ function _handlePlay() {
   if (!globalThis.__current?.viewerConnected) {
     console.warn('Cannot start session: viewer is not connected')
     showNotification('Невозможно начать сессию: клиент не подключен', 'warning')
+    // ВАЖНО: НЕ устанавливаем isPlaying = true!
     // Гарантируем что состояние всегда красное "ожидание"
     updateViewerStatusUI()
+    updatePlayPauseButton()  // ← Обновляем кнопку чтобы показать правильное состояние
     return
   }
 
@@ -1663,7 +1655,7 @@ function _handlePlay() {
     speed: components.speed?.getSpeed() ?? 40
   }
   safeSend(WS_MSG.controllerUpdate, payload)
-  isPlaying = true
+  isPlaying = true  // ← Устанавливаем ТОЛЬКО если viewer подключен
   // Запускаем таймер только если viewer подключен
   if (globalThis.__current?.viewerConnected) {
     bbCounters.start()
@@ -1694,6 +1686,18 @@ function _handlePause() {
  * Отправляет соответствующие команды на сервер и обновляет UI.
  */
 function togglePlayPause() {
+  // ПЕРВАЯ ПРОВЕРКА: viewer должен быть подключен
+  if (!globalThis.__current?.viewerConnected) {
+    console.warn('Cannot toggle play/pause: viewer is not connected')
+    showNotification('Невозможно начать сессию: клиент не подключен', 'warning')
+    // Гарантируем правильный статус
+    isPlaying = false
+    updateViewerStatusUI()
+    updatePlayPauseButton()
+    return
+  }
+
+  // Дальше обычная логика переключения
   if (isPlaying) {
     _handlePauseTransition()
   } else {
@@ -1710,13 +1714,15 @@ function _handlePauseTransition() {
 }
 
 function _handlePlayTransition() {
-  // Проверяем подключение viewer'а перед запуском
+  // Проверяем подключение viewer'а перед попыткой запуска
   if (!globalThis.__current?.viewerConnected) {
     console.warn('Cannot start session: viewer is not connected')
     showNotification('Невозможно начать сессию: клиент не подключен', 'warning')
     // Гарантируем что состояние всегда красное "ожидание"
     updateViewerStatusUI()
-    return
+    updatePlayPauseButton()
+    _schedulePlayPauseAnimations()  // Обновляем UI анимацию
+    return  // ← Выходим БЕЗ попытки запуска
   }
 
   _handlePlay()
