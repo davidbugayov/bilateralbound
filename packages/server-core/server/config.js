@@ -1,3 +1,7 @@
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* global globalThis, console, module, process */
+
+"use strict";
 const config = {
   getServerConfig: () => ({
     PORT: process.env.NODE_PORT || process.env.PORT || 3000
@@ -16,6 +20,6 @@ const config = {
       'https://emdrbilateral.online'
     ]
   })
-}
+};
 
-module.exports = config
+module.exports = config;

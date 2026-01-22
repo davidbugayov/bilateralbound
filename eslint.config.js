@@ -20,7 +20,7 @@ const commonRules = {
   // Warning rules - style and best practices (migrated to @stylistic)
   'prefer-const': 'error',
   'no-empty': 'warn',
-  
+
   // @stylistic rules (replaced deprecated core rules)
   '@stylistic/no-multiple-empty-lines': ['error', { max: 2 }],
   '@stylistic/no-trailing-spaces': 'error',
@@ -116,12 +116,45 @@ module.exports = [
 
   // 4.1. Client-side code (Browser) - Web Client public files
   {
-    files: ['packages/web-client/public/**/*.js'],
+    files: ['public/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'script',
       globals: {
-        ...globals.browser,
+        // Standard globals
+        globalThis: 'readonly',
+        Promise: 'readonly',
+        Map: 'readonly',
+        JSON: 'readonly',
+        console: 'readonly',
+        module: 'readonly',
+
+        // Browser globals
+        document: 'readonly',
+        window: 'readonly',
+        navigator: 'readonly',
+        history: 'readonly',
+        location: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        performance: 'readonly',
+        CustomEvent: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+        WebSocket: 'readonly',
+        fetch: 'readonly',
+        alert: 'readonly',
+        prompt: 'readonly',
+        confirm: 'readonly',
+        Blob: 'readonly',
+        Path2D: 'readonly',
+
         // WebSocket and session management
         WebSocketClient: 'readonly',
         WS_MSG: 'readonly',
@@ -143,9 +176,20 @@ module.exports = [
         togglePlayPause: 'readonly',
         setDirection: 'readonly',
 
-        // Other globals
-        module: 'readonly',
-        require: 'readonly'
+        // Additional globals for the current project structure
+        AudioManager: 'readonly',
+        notificationSystem: 'readonly',
+        showSuccessNotification: 'readonly',
+        showErrorNotification: 'readonly',
+        showWarningNotification: 'readonly',
+        showInfoNotification: 'readonly',
+        ThemeManager: 'readonly',
+        debugLog: 'readonly',
+        debugError: 'readonly',
+        debugWarn: 'readonly',
+        copy: 'readonly',
+        goBack: 'readonly',
+        toggleFullscreen: 'readonly'
       }
     },
     rules: {

@@ -1,4 +1,8 @@
-'use strict'
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* global globalThis, console, module */
+
+"use strict";
+
 /**
  * Common utilities and functions for BilateralBound
  * Упрощенная версия с использованием общих утилит
@@ -8,21 +12,21 @@
  * @param {...*} args - Аргументы для логирования.
  */
 const debugLog =
-  typeof globalThis !== 'undefined' && globalThis.debugLog ? globalThis.debugLog : () => {}
+  typeof globalThis !== 'undefined' && globalThis.debugLog ? globalThis.debugLog : () => {};
 
 /**
  * Логирует ошибки в режиме разработки.
  * @param {...*} args - Аргументы для логирования.
  */
 const debugError =
-  typeof globalThis !== 'undefined' && globalThis.debugError ? globalThis.debugError : () => {}
+  typeof globalThis !== 'undefined' && globalThis.debugError ? globalThis.debugError : () => {};
 
 /**
  * Логирует предупреждения в режиме разработки.
  * @param {...*} args - Аргументы для логирования.
  */
 const debugWarn =
-  typeof globalThis !== 'undefined' && globalThis.debugWarn ? globalThis.debugWarn : () => {}
+  typeof globalThis !== 'undefined' && globalThis.debugWarn ? globalThis.debugWarn : () => {};
 /**
  * Извлекает ID сессии из URL.
  * @returns {string|null} ID сессии или null, если не найден.
@@ -32,15 +36,15 @@ const getSessionIdFromUrl =
   typeof globalThis.CommonUtils.getSessionIdFromUrl === 'function'
     ? globalThis.CommonUtils.getSessionIdFromUrl
     : function () {
-        const path = globalThis.location.pathname
-        const parts = path.split('/')
+        const path = globalThis.location.pathname;
+        const parts = path.split('/');
         if ((parts[1] === 'c' || parts[1] === 's') && parts[2]) {
-          return parts[2]
+          return parts[2];
         }
 
-        const urlParams = new URLSearchParams(globalThis.location.search)
-        return urlParams.get('sessionId')
-      }
+        const urlParams = new URLSearchParams(globalThis.location.search);
+        return urlParams.get('sessionId');
+      };
 
 const toggleFullscreen =
   globalThis.CommonUtils?.toggleFullscreen &&
@@ -49,14 +53,14 @@ const toggleFullscreen =
     : (function () {
         // Robust fullscreen toggle fallback using the Fullscreen API
         const canFullscreen = () => {
-          const docEl = document.documentElement
+          const docEl = document.documentElement;
           return !!(
             docEl.requestFullscreen ||
             docEl.webkitRequestFullscreen ||
             docEl.msRequestFullscreen ||
             docEl.mozRequestFullScreen
-          )
-        }
+          );
+        };
 
         const isFs = () =>
           !!(
@@ -64,7 +68,7 @@ const toggleFullscreen =
             document.webkitFullscreenElement ||
             document.msFullscreenElement ||
             document.mozFullScreenElement
-          )
+          );
 
         /**
          * Toggles fullscreen mode for a given element or the entire page.
@@ -75,7 +79,7 @@ const toggleFullscreen =
         return async function toggleFullscreen(el) {
           try {
             if (!canFullscreen()) {
-              return false
+              return false;
             }
 
             if (isFs()) {
@@ -83,24 +87,24 @@ const toggleFullscreen =
                 document.exitFullscreen ||
                 document.webkitExitFullscreen ||
                 document.msExitFullscreen ||
-                document.mozCancelFullScreen
-              await exitFullscreen?.call(document)
+                document.mozCancelFullScreen;
+              await exitFullscreen?.call(document);
             } else {
-              const target = el || document.documentElement
+              const target = el || document.documentElement;
               const requestFullscreen =
                 target.requestFullscreen ||
                 target.webkitRequestFullscreen ||
                 target.msRequestFullscreen ||
-                target.mozRequestFullScreen
-              await requestFullscreen?.call(target)
+                target.mozRequestFullScreen;
+              await requestFullscreen?.call(target);
             }
-            return true
+            return true;
           } catch (err) {
-            debugError('Fullscreen API error:', err)
-            return false
+            debugError('Fullscreen API error:', err);
+            return false;
           }
-        }
-      })()
+        };
+      })();
 /**
  * Создает throttled-функцию, которая вызывает fn не чаще одного раза за указанный период.
  * @param {Function} fn - Функция для throttling.
@@ -111,44 +115,46 @@ const throttle =
   globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function'
     ? globalThis.CommonUtils.throttle
     : function throttleImplementation(fn, wait = 100) {
-        if (typeof fn !== 'function') return () => {}
+        if (typeof fn !== 'function') {
+          return () => {};
+        }
 
-        let last = 0
-        let timeoutId = null
-        let trailingArgs = null
+        let last = 0;
+        let timeoutId = null;
+        let trailingArgs = null;
 
         return function throttled(...args) {
-          const now = Date.now()
-          const remaining = wait - (now - last)
-          trailingArgs = args
+          const now = Date.now();
+          const remaining = wait - (now - last);
+          trailingArgs = args;
 
           if (remaining <= 0 || remaining > wait) {
             // Немедленное выполнение
             if (timeoutId) {
-              clearTimeout(timeoutId)
-              timeoutId = null
+              clearTimeout(timeoutId);
+              timeoutId = null;
             }
-            last = now
-            fn.apply(this, args)
+            last = now;
+            fn.apply(this, args);
           } else if (timeoutId === null) {
             // Отложенное выполнение
             timeoutId = setTimeout(() => {
-              last = Date.now()
-              timeoutId = null
-              fn.apply(this, trailingArgs)
-              trailingArgs = null
-            }, remaining)
+              last = Date.now();
+              timeoutId = null;
+              fn.apply(this, trailingArgs);
+              trailingArgs = null;
+            }, remaining);
           }
-        }
-      }
+        };
+      };
 // Экспортируем для использования
 if (typeof globalThis !== 'undefined') {
-  globalThis.debugLog = debugLog
-  globalThis.debugError = debugError
-  globalThis.debugWarn = debugWarn
-  globalThis.getSessionIdFromUrl = getSessionIdFromUrl
-  globalThis.toggleFullscreen = toggleFullscreen
-  globalThis.throttle = throttle
+  globalThis.debugLog = debugLog;
+  globalThis.debugError = debugError;
+  globalThis.debugWarn = debugWarn;
+  globalThis.getSessionIdFromUrl = getSessionIdFromUrl;
+  globalThis.toggleFullscreen = toggleFullscreen;
+  globalThis.throttle = throttle;
   // Единые типы WS-сообщений (без изменения логики)
   globalThis.WS_MSG = Object.freeze({
     controllerUpdate: 'controller_update',
@@ -158,7 +164,7 @@ if (typeof globalThis !== 'undefined') {
     viewerStatus: 'viewer_status',
     viewerAudioActivated: 'viewer_audio_activated',
     netMetrics: 'net_metrics'
-  })
+  });
 }
 
 /**
@@ -171,14 +177,9 @@ class ThemeManager {
    * @type {string}
    * @private
    */
-  themeKey = 'bb_theme'
-
-  /**
-   * Initializes the ThemeManager.
-   * @constructor
-   */
   constructor() {
-    this.init()
+    this.themeKey = 'bb_theme';
+    this.init();
   }
 
   /**
@@ -186,8 +187,8 @@ class ThemeManager {
    * @private
    */
   init() {
-    this.setupThemeToggle()
-    this.loadTheme()
+    this.setupThemeToggle();
+    this.loadTheme();
   }
 
   /**
@@ -195,21 +196,21 @@ class ThemeManager {
    * @private
    */
   loadTheme() {
-    const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
+    const savedTheme = localStorage.getItem(this.themeKey) || 'dark';
 
     // Сначала очищаем все классы тем
-    document.body.classList.remove('dark-theme', 'light-theme')
+    document.body.classList.remove('dark-theme', 'light-theme');
 
     if (savedTheme === 'dark') {
-      document.body.classList.add('dark-theme')
-      this.updateThemeButton('🌙')
+      document.body.classList.add('dark-theme');
+      this.updateThemeButton('🌙');
     } else if (savedTheme === 'light') {
-      document.body.classList.add('light-theme')
-      this.updateThemeButton('☀️')
+      document.body.classList.add('light-theme');
+      this.updateThemeButton('☀️');
     } else {
       // Fallback to dark theme
-      document.body.classList.add('dark-theme')
-      this.updateThemeButton('🌙')
+      document.body.classList.add('dark-theme');
+      this.updateThemeButton('🌙');
     }
   }
 
@@ -217,22 +218,22 @@ class ThemeManager {
    * Cycles through themes: dark -> light -> dark
    */
   toggleTheme() {
-    const body = document.body
-    const hasLightClass = body.classList.contains('light-theme')
+    const body = document.body;
+    const hasLightClass = body.classList.contains('light-theme');
 
     // Очищаем классы
-    body.classList.remove('dark-theme', 'light-theme')
+    body.classList.remove('dark-theme', 'light-theme');
 
     if (hasLightClass) {
       // Была светлая - переход на темную
-      body.classList.add('dark-theme')
-      localStorage.setItem(this.themeKey, 'dark')
-      this.updateThemeButton('🌙')
+      body.classList.add('dark-theme');
+      localStorage.setItem(this.themeKey, 'dark');
+      this.updateThemeButton('🌙');
     } else {
       // Была темная - переход на светлую
-      body.classList.add('light-theme')
-      localStorage.setItem(this.themeKey, 'light')
-      this.updateThemeButton('☀️')
+      body.classList.add('light-theme');
+      localStorage.setItem(this.themeKey, 'light');
+      this.updateThemeButton('☀️');
     }
   }
 
@@ -241,9 +242,9 @@ class ThemeManager {
    * @private
    */
   updateThemeButton(text) {
-    const btn = document.getElementById('themeToggleBtn')
+    const btn = document.getElementById('themeToggleBtn');
     if (btn) {
-      btn.textContent = text
+      btn.textContent = text;
     }
   }
 
@@ -252,9 +253,9 @@ class ThemeManager {
    * @private
    */
   setupThemeToggle() {
-    const toggleBtn = document.getElementById('themeToggleBtn')
+    const toggleBtn = document.getElementById('themeToggleBtn');
     if (toggleBtn) {
-      toggleBtn.addEventListener('click', () => this.toggleTheme())
+      toggleBtn.addEventListener('click', () => this.toggleTheme());
     }
   }
 }
@@ -265,25 +266,25 @@ class ThemeManager {
  * @param {string} successMessage - Сообщение, отображаемое при успешном копировании.
  */
 async function copy(elementId, successMessage) {
-  const element = document.getElementById(elementId)
+  const element = document.getElementById(elementId);
   if (!element?.value) {
     if (globalThis.showErrorNotification) {
-      globalThis.showErrorNotification('Ошибка', 'Элемент для копирования не найден.')
+      globalThis.showErrorNotification('Ошибка', 'Элемент для копирования не найден.');
     } else {
-      console.error('Элемент для копирования не найден:', elementId)
+      console.error('Элемент для копирования не найден:', elementId);
     }
-    return
+    return;
   }
 
   try {
-    await navigator.clipboard.writeText(element.value)
+    await navigator.clipboard.writeText(element.value);
     if (globalThis.showSuccessNotification) {
-      globalThis.showSuccessNotification(successMessage || 'Текст скопирован!')
+      globalThis.showSuccessNotification(successMessage || 'Текст скопирован!');
     }
   } catch (err) {
-    console.error('Ошибка копирования:', err)
+    console.error('Ошибка копирования:', err);
     if (globalThis.showErrorNotification) {
-      globalThis.showErrorNotification('Ошибка копирования', 'Не удалось скопировать текст.')
+      globalThis.showErrorNotification('Ошибка копирования', 'Не удалось скопировать текст.');
     }
   }
 }
@@ -292,14 +293,14 @@ async function copy(elementId, successMessage) {
  * Navigates the user to the main page.
  */
 function goBack() {
-  window.location.href = '/'
+  window.location.href = '/';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  globalThis.themeManager = new ThemeManager()
-})
+  globalThis.themeManager = new ThemeManager();
+});
 
 if (typeof globalThis !== 'undefined') {
-  globalThis.copy = copy
-  globalThis.goBack = goBack
+  globalThis.copy = copy;
+  globalThis.goBack = goBack;
 }

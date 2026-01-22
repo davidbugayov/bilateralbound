@@ -1,3 +1,6 @@
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* global globalThis, console, module, WebSocket */
+
 /**
  * WebSocketClient - Модернизированный клиент для WebSocket соединений
  * Использует современные возможности JavaScript для лучшей надежности
@@ -24,9 +27,9 @@ if (typeof WebSocketClient === 'undefined') {
         reconnectInterval: globalConfig.reconnectDelay || 3000,
         heartbeatInterval: globalConfig.heartbeatInterval || 25000,
         messageTimeout: globalConfig.messageTimeout || 5000,
-        // Коалесцирование/троттлинг исходящих сообщений
-        coalesceTypes: globalConfig.coalesceTypes || ['controller_update'],
-        coalesceDelayMs: globalConfig.coalesceDelayMs || 16, // ~60fps
+      // Коалесцирование/троттлинг исходящих сообщений
+      coalesceTypes: globalConfig.coalesceTypes || ['controller_update'],
+      coalesceDelayMs: globalConfig.coalesceDelayMs || 16, // ~60fps
         ...options
       }
       // Состояние клиента
@@ -61,12 +64,12 @@ if (typeof WebSocketClient === 'undefined') {
     }
 
     _generateWebSocketUrl() {
-      const protocol = this.config.isSecure ? 'wss:' : 'ws:'
-      const host = globalThis.location.host
-      const url = new URL(`${protocol}//${host}`)
-      url.searchParams.set('sessionId', this.sessionId)
-      url.searchParams.set('role', this.role)
-      return url.toString()
+      const protocol = this.config.isSecure ? 'wss:' : 'ws:';
+      const host = globalThis.location.host;
+      const url = new URL(`${protocol}//${host}`);
+      url.searchParams.set('sessionId', this.sessionId);
+      url.searchParams.set('role', this.role);
+      return url.toString();
     }
     // ===== ОСНОВНЫЕ МЕТОДЫ =====
     /**
@@ -74,40 +77,40 @@ if (typeof WebSocketClient === 'undefined') {
      */
     async connect() {
       if (this.isConnected || this.isConnecting) {
-        this.log('Connection already in progress or established')
-        return
+        this.log('Connection already in progress or established');
+        return;
       }
 
       return new Promise((resolve, reject) => {
-        this.isConnecting = true
-        this.log(`Connecting to ${this.url}`)
+        this.isConnecting = true;
+        this.log(`Connecting to ${this.url}`);
         try {
-          this.ws = new WebSocket(this.url)
-          this._setupEventHandlers()
+          this.ws = new WebSocket(this.url);
+          this._setupEventHandlers();
           const connectionTimeout = setTimeout(() => {
             if (this.isConnecting) {
-              this.isConnecting = false
-              this.ws?.close()
-              reject(new Error('Connection timeout'))
+              this.isConnecting = false;
+              this.ws?.close();
+              reject(new Error('Connection timeout'));
             }
-          }, 10000)
+          }, 10000);
           this.ws.onopen = () => {
-            clearTimeout(connectionTimeout)
-            this._handleConnectionSuccess()
-            resolve()
-          }
+            clearTimeout(connectionTimeout);
+            this._handleConnectionSuccess();
+            resolve();
+          };
 
           this.ws.onerror = error => {
-            clearTimeout(connectionTimeout)
-            this.isConnecting = false
-            this._handleConnectionError(error)
-            reject(new Error('WebSocket connection failed'))
-          }
+            clearTimeout(connectionTimeout);
+            this.isConnecting = false;
+            this._handleConnectionError(error);
+            reject(new Error('WebSocket connection failed'));
+          };
         } catch (error) {
-          this.isConnecting = false
-          reject(new Error(`WebSocket connection failed: ${error.message}`))
+          this.isConnecting = false;
+          reject(new Error(`WebSocket connection failed: ${error.message}`));
         }
-      })
+      });
     }
     /**
      * Улучшенная отправка с приоритетами и буферизацией
@@ -186,37 +189,10 @@ if (typeof WebSocketClient === 'undefined') {
      */
     on(eventType, handler) {
       if (!this.eventHandlers.has(eventType)) {
-        this.eventHandlers.set(eventType, [])
+        this.eventHandlers.set(eventType, []);
       }
 
-      this.eventHandlers.get(eventType).push(handler)
-    }
-    /**
-     * Отписка от события
-     */
-    off(eventType, handler = null) {
-      if (!this.eventHandlers.has(eventType)) return
-      if (handler) {
-        const handlers = this.eventHandlers.get(eventType)
-        const index = handlers.indexOf(handler)
-        if (index > -1) {
-          handlers.splice(index, 1)
-        }
-      } else {
-        this.eventHandlers.delete(eventType)
-      }
-    }
-    /**
-     * Отключение от сервера
-     */
-    disconnect(code = 1000, reason = 'Client disconnect') {
-      this._clearTimers()
-      this.isConnected = false
-      this.isConnecting = false
-      if (this.ws) {
-        this.ws.close(code, reason)
-        this.ws = null
-      }
+      this.eventHandlers.get(eventType).push(handler);
     }
     // ===== ВНУТРЕННИЕ МЕТОДЫ =====
     _setupEventHandlers() {

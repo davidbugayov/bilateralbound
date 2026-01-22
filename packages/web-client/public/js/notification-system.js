@@ -1,14 +1,16 @@
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* global globalThis, console, module */
+
 /**
  * Улучшенная система уведомлений для BilateralBound
  * Поддержка разных типов уведомлений с красивыми анимациями
  */
 
 class NotificationSystem {
-  autoHideTimeout = 5000
-  container = null
-  notifications = []
-
   constructor() {
+    this.autoHideTimeout = 5000
+    this.container = null
+    this.notifications = []
     this.init()
   }
 

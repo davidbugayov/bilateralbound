@@ -1,3 +1,6 @@
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* global globalThis, console, module, crypto */
+
 /**
  * Генерирует уникальный идентификатор сессии
  * @returns {string} Уникальный ID сессии

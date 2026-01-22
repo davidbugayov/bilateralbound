@@ -1,7 +1,7 @@
-/* jshint -W043, -W116, -W033, -W117, -W119, -W104, -W024, -W014, -W126, -W035, -W083 */
-/* jshint browser: true, node: false, asi: true */
-/* globals WebSocketClient, WS_MSG, PhysicsEngine, BallRenderer, sharedComponents, throttle, getSessionIdFromUrl, createLogger */
-'use strict'
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* global globalThis, console, module */
+
+'use strict';
 /**
  * Controller - Логика управления сессией BilateralBound v2.1
  * Современная модульная архитектура с улучшенной обработкой ошибок

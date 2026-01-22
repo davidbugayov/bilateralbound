@@ -1,11 +1,14 @@
-'use strict'
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* global globalThis, console, module, process */
+
+"use strict";
 // Интерфейс для управления данными сессий
 class SessionRepository {
   /**
    * Конструктор SessionRepository
    */
   constructor() {
-    this.sessions = new Map()
+    this.sessions = new Map();
   }
   /**
    * Валидация пользовательского ID сессии: латиница/цифры/подчеркивание/дефис, 3..32 символа
@@ -13,7 +16,7 @@ class SessionRepository {
    * @returns {boolean} Результат валидации
    */
   isValidCustomId(id) {
-    return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id)
+    return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id);
   }
 
   /**
@@ -22,8 +25,8 @@ class SessionRepository {
    * @returns {Promise<Object>} Созданная сессия
    */
   async create(sessionData = {}) {
-    const { v4: uuidv4 } = await import('uuid')
-    return this._createInternal(uuidv4().substring(0, 6), sessionData)
+    const { v4: uuidv4 } = await import('uuid');
+    return this._createInternal(uuidv4().substring(0, 6), sessionData);
   }
 
   /**
@@ -33,8 +36,10 @@ class SessionRepository {
    * @returns {Object|null} Сессия или null если ID невалиден
    */
   findOrCreateById(id, sessionData = {}) {
-    if (!this.isValidCustomId(id)) return null
-    return this.sessions.get(id) || this._createInternal(id, sessionData)
+    if (!this.isValidCustomId(id)) {
+      return null;
+    }
+    return this.sessions.get(id) || this._createInternal(id, sessionData);
   }
 
   /**
@@ -53,12 +58,12 @@ class SessionRepository {
       paused: true,
       soundEnabled: false,
       soundType: 'soft'
-    }
+    };
 
     // Применяем пользовательские значения только если они есть
     const ballState = sessionData.ballState && Object.keys(sessionData.ballState).length > 0
       ? { ...defaultBallState, ...sessionData.ballState }
-      : defaultBallState
+      : defaultBallState;
 
     const session = {
       id,
@@ -75,10 +80,10 @@ class SessionRepository {
       clients: new Map(),
       mainLoop: null, // Единый цикл для физики и рассылки
       lastStateUpdate: 0 // Добавляем для отслеживания последнего обновления состояния
-    }
+    };
 
-    this.sessions.set(session.id, session)
-    return session
+    this.sessions.set(session.id, session);
+    return session;
   }
 
   /**
@@ -87,7 +92,7 @@ class SessionRepository {
    * @returns {Object|null} Сессия или null если не найдена
    */
   findById(sessionId) {
-    return this.sessions.get(sessionId) || null
+    return this.sessions.get(sessionId) || null;
   }
 
   /**
@@ -97,11 +102,13 @@ class SessionRepository {
    * @returns {boolean} Успех обновления
    */
   update(sessionId, updates) {
-    const session = this.findById(sessionId)
-    if (!session) return false
-    Object.assign(session, updates)
-    session.lastActivity = Date.now()
-    return true
+    const session = this.findById(sessionId);
+    if (!session) {
+      return false;
+    }
+    Object.assign(session, updates);
+    session.lastActivity = Date.now();
+    return true;
   }
 
   /**
@@ -111,10 +118,12 @@ class SessionRepository {
    * @returns {boolean} Успех обновления
    */
   updateBallState(sessionId, ballUpdates) {
-    const session = this.findById(sessionId)
-    if (!session) return false
-    Object.assign(session.ballState, ballUpdates)
-    return true
+    const session = this.findById(sessionId);
+    if (!session) {
+      return false;
+    }
+    Object.assign(session.ballState, ballUpdates);
+    return true;
   }
 
   /**
@@ -123,7 +132,7 @@ class SessionRepository {
    * @returns {boolean} Успех удаления
    */
   delete(sessionId) {
-    return this.sessions.delete(sessionId)
+    return this.sessions.delete(sessionId);
   }
 
   /**
@@ -131,7 +140,7 @@ class SessionRepository {
    * @returns {Array} Массив сессий
    */
   getAll() {
-    return Array.from(this.sessions.values())
+    return Array.from(this.sessions.values());
   }
 
   /**
@@ -141,42 +150,42 @@ class SessionRepository {
    * @returns {Array} Массив ID удаленных сессий
    */
   cleanupExpired(maxAge = 60 * 60 * 1000, partialDisconnectTimeout = 15 * 60 * 1000) {
-    const now = Date.now()
-    const expiredIds = []
+    const now = Date.now();
+    const expiredIds = [];
 
     for (const [id, session] of this.sessions) {
-      const age = now - session.createdAt
-      const inactiveTime = now - (session.lastActivity || session.createdAt)
+      const age = now - session.createdAt;
+      const inactiveTime = now - (session.lastActivity || session.createdAt);
 
       // Причины удаления сессии:
       // 1. Сессия старше 1 часа (maxAge)
       if (age > maxAge) {
-        expiredIds.push({ id, reason: 'max_age_exceeded' })
-        continue
+        expiredIds.push({ id, reason: 'max_age_exceeded' });
+        continue;
       }
 
       // 2. Один из участников отключился более 15 минут назад
       if (session.partialDisconnectTime) {
-        const disconnectAge = now - session.partialDisconnectTime
+        const disconnectAge = now - session.partialDisconnectTime;
         if (disconnectAge > partialDisconnectTimeout) {
-          expiredIds.push({ id, reason: 'partial_disconnect_timeout' })
-          continue
+          expiredIds.push({ id, reason: 'partial_disconnect_timeout' });
+          continue;
         }
       }
 
       // 3. Полная неактивность (никто не подключен) более 30 минут
       if (!session.controllerConnected && !session.viewerConnected && inactiveTime > 30 * 60 * 1000) {
-        expiredIds.push({ id, reason: 'full_inactivity' })
-        continue
+        expiredIds.push({ id, reason: 'full_inactivity' });
+        continue;
       }
     }
 
     for (const { id, reason } of expiredIds) {
-      this.delete(id)
+      this.delete(id);
     }
 
-    return expiredIds
+    return expiredIds;
   }
 }
 
-module.exports = SessionRepository
+module.exports = SessionRepository;

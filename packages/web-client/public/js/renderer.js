@@ -1,4 +1,7 @@
-'use strict'
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* global globalThis, console, module, Path2D, cancelAnimationFrame, requestAnimationFrame, performance */
+
+'use strict';
 /**
  * BallRenderer - оптимизированный модуль рендеринга для BilateralBound
  * Отвечает за отрисовку шарика и фона
