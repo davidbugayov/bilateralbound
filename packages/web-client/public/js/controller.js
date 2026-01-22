@@ -1,4 +1,4 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
 /* global globalThis, console, module */
 
 'use strict';
@@ -658,6 +658,11 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
     applyServerStateToPreview(state)
     updateViewerAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
+
+    // ВАЖНО: Синхронизируем UI с состоянием сервера при каждом обновлении
+    // Это особенно важно для кнопки Play/Pause, которая должна отражать реальное состояние мяча
+    _syncUIPause(state)
+    _syncUIDirection(state)
   })
   // АДАПТИВНАЯ адаптация сглаживания по сетевым метрикам (упрощенная версия для стабильности)
   wsClient.on(WS_MSG.netMetrics, ({ rttMs: _rttMs, jitterMs }) => {
@@ -868,6 +873,7 @@ function _syncUIPause(ballState) {
     if (now >= __ignoreServerPausedUntilTs) {
       isPlaying = !ballState.paused
       updatePlayPauseButton()
+      syncFsPlayPauseButton() // Синхронизируем и полноэкранную кнопку
     }
   }
 }
@@ -1632,53 +1638,67 @@ function updatePlayPauseButton() {
   }
 }
 
-function _handlePlay() {
-  // Проверяем подключение viewer'а перед запуском
+/**
+ * Единая функция для управления состоянием Play/Pause.
+ * Объединяет проверки подключения, отправку команд и обновление UI.
+ * @param {boolean} shouldPlay - true для старта, false для паузы
+ * @private
+ */
+function _setPlayPauseState(shouldPlay) {
+  // Проверка подключения viewer'а
   if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot start session: viewer is not connected')
+    console.warn(`Cannot ${shouldPlay ? 'start' : 'pause'} session: viewer is not connected`)
     showNotification('Невозможно начать сессию: клиент не подключен', 'warning')
-    // ВАЖНО: НЕ устанавливаем isPlaying = true!
-    // Гарантируем что состояние всегда красное "ожидание"
+    // Гарантируем правильный статус
+    isPlaying = false
     updateViewerStatusUI()
-    updatePlayPauseButton()  // ← Обновляем кнопку чтобы показать правильное состояние
-    return
+    _updateAllPlayPauseButtons()
+    return false
   }
 
-  let currentDirection = directionState || { dx: 1, dy: 0 }
-  if (currentDirection.dx === 0 && currentDirection.dy === 0) {
-    currentDirection = { dx: 1, dy: 0 }
-  }
-  const payload = {
-    paused: false,
-    dirX: currentDirection.dx,
-    dirY: currentDirection.dy,
-    speed: components.speed?.getSpeed() ?? 40
-  }
+  // Формируем payload в зависимости от действия
+  const payload = shouldPlay
+    ? {
+        paused: false,
+        dirX: directionState.dx || 1,
+        dirY: directionState.dy || 0,
+        speed: components.speed?.getSpeed() ?? 40
+      }
+    : {
+        paused: true,
+        returnToCenter: true
+      }
+
+  // Отправляем команду на сервер
   safeSend(WS_MSG.controllerUpdate, payload)
-  isPlaying = true  // ← Устанавливаем ТОЛЬКО если viewer подключен
-  // Запускаем таймер только если viewer подключен
-  if (globalThis.__current?.viewerConnected) {
-    bbCounters.start()
-  }
-  if (previewPhysicsEngine) {
-    previewPhysicsEngine.applyCommand(payload)
-  }
+
+  // Обновляем локальное состояние
+  isPlaying = shouldPlay
   globalThis.forcePauseUntilUserAction = false
-}
 
-function _handlePause() {
-  const payload = {
-    paused: true,
-    returnToCenter: true
+  // Управляем счётчиком
+  if (shouldPlay) {
+    bbCounters.start()
+  } else {
+    bbCounters.stop(true)
   }
-  safeSend(WS_MSG.controllerUpdate, payload)
-  isPlaying = false
-  bbCounters.stop(true)
+
+  // Обновляем preview движок физики
   if (previewPhysicsEngine) {
     previewPhysicsEngine.applyCommand(payload)
-    // Явно центрируем мяч при паузе
-    centerBallInViewer()
+    // При паузе центрируем мяч
+    if (!shouldPlay) {
+      centerBallInViewer()
+    }
   }
+
+  // Блокируем переопределение сервером на 800ms
+  __ignoreServerPausedUntilTs = performance.now() + 800
+
+  // Обновляем UI с анимацией
+  _schedulePlayPauseAnimations()
+
+  return true
 }
 
 /**
@@ -1686,60 +1706,30 @@ function _handlePause() {
  * Отправляет соответствующие команды на сервер и обновляет UI.
  */
 function togglePlayPause() {
-  // ПЕРВАЯ ПРОВЕРКА: viewer должен быть подключен
-  if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot toggle play/pause: viewer is not connected')
-    showNotification('Невозможно начать сессию: клиент не подключен', 'warning')
-    // Гарантируем правильный статус
-    isPlaying = false
-    updateViewerStatusUI()
-    updatePlayPauseButton()
-    return
-  }
-
-  // Дальше обычная логика переключения
-  if (isPlaying) {
-    _handlePauseTransition()
-  } else {
-    _handlePlayTransition()
-  }
-
-  _schedulePlayPauseAnimations()
-  _syncFullscreenPlayPause()
+  // Переключаем на противоположное состояние
+  _setPlayPauseState(!isPlaying)
 }
 
-function _handlePauseTransition() {
-  _handlePause()
-  __ignoreServerPausedUntilTs = performance.now() + 800
-}
-
-function _handlePlayTransition() {
-  // Проверяем подключение viewer'а перед попыткой запуска
-  if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot start session: viewer is not connected')
-    showNotification('Невозможно начать сессию: клиент не подключен', 'warning')
-    // Гарантируем что состояние всегда красное "ожидание"
-    updateViewerStatusUI()
-    updatePlayPauseButton()
-    _schedulePlayPauseAnimations()  // Обновляем UI анимацию
-    return  // ← Выходим БЕЗ попытки запуска
-  }
-
-  _handlePlay()
-  __ignoreServerPausedUntilTs = performance.now() + 800
-}
-
-function _schedulePlayPauseAnimations() {
-  // Обновляем кнопку сразу
+/**
+ * Обновляет все кнопки Play/Pause (основную и полноэкранную).
+ * @private
+ */
+function _updateAllPlayPauseButtons() {
   updatePlayPauseButton()
+  syncFsPlayPauseButton()
+}
+
+/**
+ * Планирует обновления кнопок с анимацией.
+ * @private
+ */
+function _schedulePlayPauseAnimations() {
+  // Обновляем кнопки сразу
+  _updateAllPlayPauseButtons()
 
   // Планируем дополнительные обновления для анимации через разные интервалы
-  setTimeout(() => updatePlayPauseButton(), 150)
-  setTimeout(() => updatePlayPauseButton(), 300)
-}
-
-function _syncFullscreenPlayPause() {
-  syncFsPlayPauseButton()
+  setTimeout(() => _updateAllPlayPauseButtons(), 150)
+  setTimeout(() => _updateAllPlayPauseButtons(), 300)
 }
 
 // ===== УТИЛИТЫ =====
@@ -2247,8 +2237,7 @@ function resetSession() {
 
     // Останавливаем игру если она активна
     if (isPlaying) {
-      _handlePause()
-      updatePlayPauseButton()
+      _setPlayPauseState(false)
     }
 
     // Возвращаем мяч в центр

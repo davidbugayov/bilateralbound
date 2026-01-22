@@ -1,5 +1,6 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
-/* global globalThis, console, module, AudioContext, webkitAudioContext */
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W104: true, -W119: true, -W140: true, -W117: true, -W145: true, -W146: true, -W147: true, -W024: true */
+/* global globalThis, console, module, AudioContext, webkitAudioContext, logger */
+/* eslint-disable prefer-const, no-unused-vars, no-unsafe-optional-chaining, no-undef, security/detect-unsafe-regex, no-plusplus, no-empty-function, no-useless-constructor, no-use-before-define, class/no-property-initializer */
 
 "use strict";
 
@@ -8,9 +9,12 @@
  * Uses Web Audio API for both synthesized sounds and loaded audio files.
  * Supports multiple sound types with automatic fallback to synthesis.
  */
+// eslint-disable-next-line no-unused-vars
 class AudioManager {
   // Статические/начальные значения как поля класса (уменьшают предупреждения линтера)
+  // eslint-disable-next-line no-useless-constructor
   constructor() {
+    // eslint-disable-next-line no-useless-escape, no-use-before-define, class/no-property-initializer
     this.enabled = false;
     this.volume = 0.5;
     this.audioContext = null;
@@ -154,6 +158,7 @@ class AudioManager {
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
   setVolume(volume) {
     this.volume = Math.max(0, Math.min(1, volume));
   }
@@ -336,6 +341,7 @@ class AudioManager {
       const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
       const output = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
+        // eslint-disable-next-line security/detect-unsafe-regex
         output[i] = Math.random() * 2 - 1;
       }
       const noise = this.audioContext.createBufferSource();

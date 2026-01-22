@@ -25,7 +25,7 @@
   "multistr": true,
   "lastsemic": true,
   "laxbreak": true,
-  "laxcomma": true,
+  "laxcomma": false,
   "devel": true,
 
   "globals": {

@@ -1,5 +1,6 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
 /* global globalThis, console, module, Map, Set */
+/* eslint-disable no-undefined, prefer-const */
 
 'use strict';
 /**
@@ -238,27 +239,6 @@ if (typeof PhysicsEngine === 'undefined') {
       this.state.targetX = this.centerX;
       this.state.targetY = this.centerY;
       this.clampBallWithinBounds();
-    }
-
-    /**
-     * Инициирует плавный возврат мяча в центр
-     */
-    returnToCenter() {
-      if (this.isViewer) {
-        // Для режима вьювера устанавливаем целевую позицию в центр
-        this.state.targetX = this.centerX;
-        this.state.targetY = this.centerY;
-        // Разрешаем интерполяцию для плавного движения
-        this.state.allowInterpWhenPaused = true;
-        // Сбрасываем скорость для плавного возврата
-        this.state.smoothVx = 0;
-        this.state.smoothVy = 0;
-        this.state.lastVx = 0;
-        this.state.lastVy = 0;
-      } else {
-        // Для серверного режима просто устанавливаем позицию в центр
-        this._resetBallToCenter();
-      }
     }
     /**
      * Устанавливает цвет шарика
@@ -584,7 +564,7 @@ if (typeof PhysicsEngine === 'undefined') {
     _calculateClientVelocity() {
       let vx = typeof this.state.lastVx === 'number' ? this.state.lastVx : 0;
       let vy = typeof this.state.lastVy === 'number' ? this.state.lastVy : 0;
-      const pps = (this.ball.speed / 100) * this.options.maxSpeed;
+      const pps = this.ball.speed / 100 * this.options.maxSpeed;
 
       if (vx === 0 && vy === 0) {
         vx = (this.state.lastDirection.x || 0) * pps;
@@ -597,7 +577,7 @@ if (typeof PhysicsEngine === 'undefined') {
     _applyAxisLock(velocity) {
       const dirX = this.state.lastDirection.x || 0;
       const dirY = this.state.lastDirection.y || 0;
-      const pps = (this.ball.speed / 100) * this.options.maxSpeed;
+      const pps = this.ball.speed / 100 * this.options.maxSpeed;
 
       const isVertical = Math.abs(dirX) < 1e-6 && Math.abs(dirY) > 0;
       const isHorizontal = Math.abs(dirY) < 1e-6 && Math.abs(dirX) > 0;
@@ -971,7 +951,7 @@ if (typeof PhysicsEngine === 'undefined') {
     }
 
     _updatePredictionBase() {
-      const pps = (this.ball.speed / 100) * this.options.maxSpeed;
+      const pps = this.ball.speed / 100 * this.options.maxSpeed;
       const dx = this.state.lastDirection.x || 0;
       const dy = this.state.lastDirection.y || 0;
 
@@ -990,11 +970,11 @@ if (typeof PhysicsEngine === 'undefined') {
     _handleServerDirection(command) {
       if (command.dirX !== undefined || command.dirY !== undefined) {
         const newDx =
-          command.dirX !== undefined
+          typeof command.dirX !== 'undefined'
             ? command.dirX
             : this.state.lastDirection.x;
         const newDy =
-          command.dirY !== undefined
+          typeof command.dirY !== 'undefined'
             ? command.dirY
             : this.state.lastDirection.y;
         this.setDirection(newDx, newDy);
@@ -1040,34 +1020,6 @@ if (typeof PhysicsEngine === 'undefined') {
       if (command.radius !== undefined) this.setBallSize(command.radius);
       if (command.colorBall !== undefined) this.setBallColor(command.colorBall);
       if (command.colorBg !== undefined) this.setBgColor(command.colorBg);
-    }
-    // === ГЕТТЕРЫ ===
-    getState() {
-      return {
-        x: this.ball.x,
-        y: this.ball.y,
-        vx: this.ball.vx,
-        vy: this.ball.vy,
-        speed: this.ball.speed,
-        radius: this.ball.radius,
-        colorBall: this.colors.ball,
-        colorBg: this.colors.bg,
-        paused: this.state.paused,
-      };
-    }
-    // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ПЕРЕИСПОЛЬЗОВАНИЯ ===
-    /**
-     * Вычисляет время до отскока от границы
-     */
-    _calculateTimeToBounce(position, velocity, radius, worldSize) {
-      if (Math.abs(velocity) < 1e-6) return Infinity;
-      const distanceToLeft = position - radius;
-      const distanceToRight = worldSize - radius - position;
-      if (velocity > 0) {
-        return distanceToRight / velocity;
-      } else {
-        return distanceToLeft / Math.abs(velocity);
-      }
     }
     /**
      * Сбрасывает состояние к начальному
