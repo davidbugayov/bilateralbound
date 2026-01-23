@@ -90,6 +90,14 @@ if (typeof PhysicsEngine === 'undefined') {
     }
 
     /**
+     * Устанавливает рендерер для инвалидации кэша при изменении цвета
+     * @param {Object} renderer - Экземпляр BallRenderer
+     */
+    setRenderer(renderer) {
+      this.renderer = renderer;
+    }
+
+    /**
      * Устанавливает опции сглаживания для движка.
      * @param {object} [opts={}] - Объект с опциями сглаживания.
      */
@@ -246,6 +254,10 @@ if (typeof PhysicsEngine === 'undefined') {
     setBallColor(color) {
       if (typeof color === 'string' && color.length > 0) {
         this.colors.ball = color;
+        // Инвалидируем кэш рендерера для перерисовки с новым цветом
+        if (this.renderer && typeof this.renderer.invalidateBallCache === 'function') {
+          this.renderer.invalidateBallCache();
+        }
       }
     }
     /**
@@ -254,6 +266,10 @@ if (typeof PhysicsEngine === 'undefined') {
     setBgColor(color) {
       if (typeof color === 'string' && color.length > 0) {
         this.colors.bg = color;
+        // Инвалидируем кэш рендерера для перерисовки с новым фоном
+        if (this.renderer && typeof this.renderer.invalidateBallCache === 'function') {
+          this.renderer.invalidateBallCache();
+        }
       }
     }
 
@@ -1034,7 +1050,9 @@ if (typeof PhysicsEngine === 'undefined') {
         vy: this.ball.vy,
         speed: this.ball.speed,
         radius: this.ball.radius,
-        paused: this.state.paused
+        paused: this.state.paused,
+        colorBall: this.colors.ball,
+        colorBg: this.colors.bg
       };
     }
 

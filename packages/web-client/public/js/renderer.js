@@ -295,6 +295,16 @@ if (typeof BallRenderer === 'undefined') {
       const b = Math.max(0, Math.min(255, Number.parseInt(hex.slice(4, 6), 16) + amount))
       return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
     }
+
+    /**
+     * Инвалидирует кэш шарика (градиент и геометрию)
+     * Вызывается при изменении цвета или размера
+     */
+    invalidateBallCache() {
+      this.cachedBallGradient = null;
+      this.cachedBallGeometry = null;
+    }
+
     /**
      * Изменяет размеры canvas
      */

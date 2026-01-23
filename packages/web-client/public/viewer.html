@@ -482,6 +482,9 @@
             localPhysics: false,
           });
 
+          // Связываем рендерер с физикой для инвалидации кэша
+          physicsEngine.setRenderer(ballRenderer);
+
           await connectToSession(sessionId);
 
           wsClient = new WebSocketClient(sessionId, "viewer");
