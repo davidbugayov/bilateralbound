@@ -409,6 +409,13 @@ async function initializeDOMElements(sessionId) {
     curSidEl.textContent = sessionId
   }
 
+  // Устанавливаем информацию о сессии (название и время создания)
+  const sessionInfoEl = document.getElementById('sessionInfo')
+  if (sessionInfoEl) {
+    const timestamp = new Date().toLocaleString()
+    sessionInfoEl.textContent = `Название: — • Создана: ${timestamp}`
+  }
+
   // Устанавливаем время создания сессии
   const sessionTimestampEl = document.getElementById('sessionTimestamp')
   if (sessionTimestampEl) {
