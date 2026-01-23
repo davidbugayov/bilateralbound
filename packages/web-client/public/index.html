@@ -676,6 +676,10 @@
           if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl;
           if (container) container.style.display = "block";
 
+          // Добавляем обработчик для автоматического выделения текста при клике
+          setupUrlInputClick(viewerUrlInput);
+          setupUrlInputClick(controllerUrlInput);
+
           updateValidationMessage("✅ Ссылки успешно созданы!", false);
 
           if (window.showSuccessNotification) {
@@ -742,6 +746,18 @@
 
       window.addEventListener("focus", resetCreateSessionButton);
 
+      // Функция для настройки автоматического выделения текста в полях со ссылками
+      function setupUrlInputClick(input) {
+        if (input) {
+          input.addEventListener('click', () => {
+            input.select();
+          });
+          input.addEventListener('focus', () => {
+            input.select();
+          });
+        }
+      }
+
       async function loadSession() {
         const input = document.getElementById("existingSessionId");
         const btn = document.getElementById("loadSessionBtn");
@@ -804,6 +820,10 @@
           viewerUrlInput.value = `${baseUrl}/s/${sessionId}`;
           controllerUrlInput.value = `${baseUrl}/c/${sessionId}`;
           container.style.display = "block";
+
+          // Добавляем обработчик для автоматического выделения текста при клике
+          setupUrlInputClick(viewerUrlInput);
+          setupUrlInputClick(controllerUrlInput);
 
           if (window.showSuccessNotification) {
             window.showSuccessNotification("🎉 Сессия найдена!");

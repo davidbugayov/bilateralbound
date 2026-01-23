@@ -475,6 +475,7 @@ async function initializeWebSocketClient(sessionId) {
  */
 function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   // Функция разбита для снижения когнитивной сложности
+
   wsClient.on('open', (event) => {
     logger.success('WebSocket соединение установлено')
     updateConnectionStatus(true)
@@ -699,15 +700,19 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
   // Обработка активации звука зрителем
   wsClient.on(WS_MSG.viewerAudioActivated, data => {
-    if (typeof logger !== 'undefined') {
-      logger.audio('Viewer audio activated:', data.activated)
-    }
+    console.log('📡 [WS:controller] Получено viewer_audio_activated событие:', data);
+
     // Сохраняем статус активации
     if (globalThis.__current) {
-      globalThis.__current.viewerAudioActivated = data.activated
+      console.log('✅ Устанавливаем viewerAudioActivated = %s', data.activated);
+      globalThis.__current.viewerAudioActivated = data.activated;
+    } else {
+      console.warn('⚠️ globalThis.__current не существует!');
     }
+
     // Обновляем индикаторы
-    updateViewerAudioIndicators()
+    console.log('🔄 Вызываем updateViewerAudioIndicators()');
+    updateViewerAudioIndicators();
   })
   wsClient.on('maxReconnectAttemptsReached', () => {
     logger.error('Исчерпаны попытки переподключения')
@@ -1501,6 +1506,12 @@ function setSoundEnabled(enabled) {
   }
 
   safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) })
+
+  // Обновляем индикаторы звука при изменении состояния
+  if (lastServerState) {
+    lastServerState.soundEnabled = Boolean(enabled)
+  }
+  updateViewerAudioIndicators()
 }
 
 function setSoundType(soundType) {
@@ -1835,15 +1846,31 @@ function updateViewerAudioIndicators() {
   const audioText = document.getElementById('viewerAudioText')
   const soundPlayingIndicator = document.getElementById('viewerSoundPlayingIndicator')
 
-  if (!audioIndicator || !audioText || !soundPlayingIndicator) return
+  if (!audioIndicator || !audioText || !soundPlayingIndicator) {
+    console.warn('❌ updateViewerAudioIndicators: HTML элементы не найдены', {
+      audioIndicator: !!audioIndicator,
+      audioText: !!audioText,
+      soundPlayingIndicator: !!soundPlayingIndicator
+    })
+    return
+  }
 
   const isViewerConnected = globalThis.__current?.viewerConnected
   const soundEnabled = lastServerState?.soundEnabled ?? false
   const isPlaying = globalThis.__current?.isPlaying ?? false
   const viewerAudioActivated = globalThis.__current?.viewerAudioActivated ?? false
 
-  // Показываем индикаторы только когда вьювер подключен И звук включен в контроллере
-  if (isViewerConnected && soundEnabled) {
+  console.log('📊 updateViewerAudioIndicators:', {
+    isViewerConnected,
+    soundEnabled,
+    isPlaying,
+    viewerAudioActivated,
+    currentText: audioText?.textContent
+  })
+
+  // Показываем индикаторы когда звук включен в контроллере
+  // (не требуем viewerConnected так как оно может быть false временно)
+  if (soundEnabled) {
     // Если зритель еще не активировал звук - показываем предупреждение
     if (!viewerAudioActivated) {
       audioIndicator.classList.remove('hidden')
@@ -1852,31 +1879,30 @@ function updateViewerAudioIndicators() {
       audioText.textContent = 'Ожидание: зритель должен нажать "Включить звук"'
       soundPlayingIndicator.classList.add('hidden')
       soundPlayingIndicator.classList.remove('active')
+      console.log('🎯 Показываем: Ожидание активации')
     }
-    // Зритель активировал звук И звук играет
-    else if (isPlaying) {
+    // Зритель активировал звук - показываем что звук готов
+    else {
       audioIndicator.classList.remove('hidden')
       audioIndicator.classList.add('ready')
       audioIndicator.classList.remove('warning')
-      audioText.textContent = 'Звук у зрителя включен'
+      audioText.textContent = 'Звук активирован у зрителя'
+      console.log('✅ Показываем: Звук активирован!')
 
-      // Также показываем индикатор воспроизведения
-      soundPlayingIndicator.classList.remove('hidden')
-      soundPlayingIndicator.classList.add('active')
-    }
-    // Зритель активировал звук, но воспроизведение на паузе
-    else {
-      audioIndicator.classList.remove('hidden')
-      audioIndicator.classList.remove('ready')
-      audioIndicator.classList.add('warning')
-      audioText.textContent = 'Звук готов, ожидание воспроизведения'
-      soundPlayingIndicator.classList.add('hidden')
-      soundPlayingIndicator.classList.remove('active')
+      // Показываем индикатор воспроизведения если звук играет
+      if (isPlaying) {
+        soundPlayingIndicator.classList.remove('hidden')
+        soundPlayingIndicator.classList.add('active')
+      } else {
+        soundPlayingIndicator.classList.add('hidden')
+        soundPlayingIndicator.classList.remove('active')
+      }
     }
   } else {
-    // Скрываем все индикаторы когда вьювер отключен или звук выключен
+    // Скрываем все индикаторы когда звук выключен на контроллере
     audioIndicator.classList.add('hidden')
     soundPlayingIndicator.classList.add('hidden')
+    console.log('⚠️ Скрываем индикаторы: soundEnabled=%s', soundEnabled)
   }
 }
 

@@ -145,8 +145,10 @@
       let ballRenderer;
       let isFullscreen = false;
       let audioManager = null;
-      // Восстанавливаем audioActivated из localStorage
-      let audioActivated = localStorage.getItem('bb_audioActivated') === 'true';
+      // audioActivated начинается с false и обновляется только на основе контроллера
+      // НЕ восстанавливаем из localStorage при инициализации - это вызывает проблемы
+      // localStorage используется только для сохранения между сессиями пользователя
+      let audioActivated = false;
       /** @type {Object} */
       const components = {};
       // components.status will be assigned in initializeComponents() and has setStatus method
@@ -253,64 +255,101 @@
           logger.audio('AudioManager создан, enabled:', audioManager.enabled);
         }
 
-        // Если звук был активирован ранее (из localStorage), инициализируем сразу
-        if (audioActivated) {
-          audioManager.init();
-          window.audioActivated = true;
-          if (typeof logger !== 'undefined') {
-            logger.audio('Audio auto-activated from localStorage');
-          }
-        }
+        // НЕ инициализируем audio из localStorage автоматически
+        // Audio будет инициализирован только когда:
+        // 1. Контроллер включит звук (soundEnabled=true)
+        // 2. И пользователь сделает какой-то жест (клик/касание)
+        // Это гарантирует что audio не будет инициализирован если контроллер отключил звук
 
         // Setup user gesture handlers for audio activation
         const activateAudio = () => {
-          if (!audioActivated) {
-            audioManager.init();
-            audioActivated = true;
-            window.audioActivated = true; // Expose for debugging
-            // Сохраняем состояние в localStorage
-            localStorage.setItem('bb_audioActivated', 'true');
-            checkAudioOverlay();
-            if (typeof logger !== 'undefined') {
-              logger.audio('Audio activated by user gesture');
-            }
+          debugLog('🔘 [activateAudio] Функция вызвана');
+          debugLog('🔘 audioManager:', audioManager);
+          debugLog('🔘 audioActivated:', audioActivated);
 
-            // Отправляем на сервер что зритель активировал звук
-            const sendActivationNotification = () => {
-              const sessionId = getSessionIdFromUrl();
-              if (sessionId && wsClient && typeof wsClient.isConnected === 'function' && wsClient.isConnected()) {
-                wsClient.send(WS_MSG.viewerAudioActivated, { activated: true });
-                if (typeof logger !== 'undefined') {
-                  logger.audio('Sent viewerAudioActivated to server');
-                }
-                return true;
-              }
-              return false;
-            };
-
-            // Пытаемся отправить сразу
-            if (!sendActivationNotification()) {
-              // Если wsClient еще не готов, ждем и повторяем
-              if (typeof logger !== 'undefined') {
-                logger.audio('wsClient not ready, will retry...');
-              }
-              const retryInterval = setInterval(() => {
-                if (sendActivationNotification()) {
-                  clearInterval(retryInterval);
-                  if (typeof logger !== 'undefined') {
-                    logger.audio('viewerAudioActivated sent after retry');
-                  }
-                }
-              }, 100);
-              // Таймаут 5 секунд
-              setTimeout(() => clearInterval(retryInterval), 5000);
-            }
+          // Проверяем что audioManager существует
+          if (!audioManager) {
+            debugWarn('❌ [activateAudio] audioManager не инициализирован!');
+            return;
           }
+
+          debugLog('🔘 [activateAudio] audioManager существует, инициализируем...');
+
+          // Инициализируем AudioContext
+          audioManager.init();
+          debugLog('✅ [activateAudio] audioManager.init() вызван');
+
+          // Устанавливаем флаг активации
+          audioActivated = true;
+          window.audioActivated = true;
+          localStorage.setItem('bb_audioActivated', 'true');
+          debugLog('✅ [activateAudio] audioActivated установлен на true');
+
+          // Обновляем UI - скрываем кнопку
+          debugLog('🔘 [activateAudio] Вызываем checkAudioOverlay()...');
+          checkAudioOverlay();
+          debugLog('✅ [activateAudio] checkAudioOverlay() вызван');
+
+          if (typeof logger !== 'undefined') {
+            logger.audio('✅ Audio activated by user gesture - кнопка нажата!');
+          }
+
+          // Отправляем на сервер что зритель активировал звук
+          const sendActivationNotification = () => {
+            const sessionId = getSessionIdFromUrl();
+            debugLog('📤 [sendActivationNotification] sessionId:', sessionId);
+            debugLog('📤 [sendActivationNotification] wsClient:', !!wsClient);
+            debugLog('📤 [sendActivationNotification] wsClient.send:', typeof wsClient?.send);
+            debugLog('📤 [sendActivationNotification] WS_MSG.viewerAudioActivated:', WS_MSG?.viewerAudioActivated);
+
+            if (sessionId && wsClient) {
+              debugLog('📤 [activateAudio] Отправляем viewerAudioActivated на сервер');
+              // Отправляем сообщение БЕЗ задержки - WebSocket сам разберется если не подключен
+              const result = wsClient.send(WS_MSG.viewerAudioActivated, { activated: true });
+              debugLog('📤 [activateAudio] Результат отправки:', result);
+
+              if (typeof logger !== 'undefined') {
+                logger.audio('📤 Sent viewerAudioActivated to server');
+              }
+              return true;
+            } else {
+              debugLog('⚠️ [activateAudio] wsClient не готов:', {
+                sessionId: !!sessionId,
+                wsClient: !!wsClient
+              });
+            }
+            return false;
+          };
+
+          // Отправляем сообщение сразу, без задержек
+          const notificationResult = sendActivationNotification();
+          debugLog('✅ [activateAudio] Уведомление отправлено:', notificationResult);
         };
 
         // НЕ добавляем глобальные обработчики, чтобы не скрывать overlay сразу
         // document.addEventListener('click', activateAudio, { once: true });
         // document.addEventListener('touchstart', activateAudio, { once: true });
+
+        // ДОБАВЛЯЕМ: Обработчик для инициализации audio context при первом клике
+        // Это необходимо для обхода браузерного ограничения на воспроизведение звука
+        // Даже если оверлей скрыт (звук включен на контроллере), нужно инициализировать контекст
+        const initAudioContextOnFirstUserGesture = () => {
+          if (!audioActivated && audioManager && audioManager.enabled) {
+            audioManager.init();
+            audioActivated = true;
+            window.audioActivated = true;
+            localStorage.setItem('bb_audioActivated', 'true');
+            if (typeof logger !== 'undefined') {
+              logger.audio('🖱️ Audio context initialized on user gesture (implicit click) - кнопка скрыта');
+            }
+          }
+          // Удаляем обработчик после первого срабатывания
+          document.removeEventListener('click', initAudioContextOnFirstUserGesture);
+          document.removeEventListener('touchstart', initAudioContextOnFirstUserGesture);
+        };
+
+        document.addEventListener('click', initAudioContextOnFirstUserGesture, { once: true });
+        document.addEventListener('touchstart', initAudioContextOnFirstUserGesture, { once: true });
 
         const unmuteBtn = document.getElementById('unmuteBtn');
         if (unmuteBtn) {
@@ -319,11 +358,21 @@
           }
           unmuteBtn.addEventListener('click', (e) => {
             e.stopPropagation(); // Предотвращаем всплытие
+
+            // ВАЖНО: Удаляем глобальные обработчики чтобы избежать конфликтов
+            document.removeEventListener('click', initAudioContextOnFirstUserGesture);
+            document.removeEventListener('touchstart', initAudioContextOnFirstUserGesture);
+
             activateAudio();
           });
           unmuteBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
+
+            // ВАЖНО: Удаляем глобальные обработчики чтобы избежать конфликтов
+            document.removeEventListener('click', initAudioContextOnFirstUserGesture);
+            document.removeEventListener('touchstart', initAudioContextOnFirstUserGesture);
+
             activateAudio();
           });
         } else {
@@ -344,7 +393,10 @@
           return;
         }
 
-        // Show overlay when sound is enabled from controller but not activated by user
+        // Show overlay ONLY if:
+        // 1. Sound is ENABLED on controller (!audioManager means not initialized yet, so hide)
+        // 2. AND user hasn't activated audio yet
+        // If sound is DISABLED on controller - hide overlay completely (button should not appear)
         const shouldShow = audioManager && audioManager.enabled && !audioActivated;
 
         if (typeof logger !== 'undefined') {
@@ -360,13 +412,13 @@
         if (shouldShow) {
           overlay.classList.remove('hidden');
           if (typeof logger !== 'undefined') {
-            logger.audio('Показываем unmute overlay');
+            logger.audio('Показываем unmute overlay - звук включен на контроллере, но не активирован');
           }
         } else {
           overlay.classList.add('hidden');
           if (typeof logger !== 'undefined') {
             logger.audio('Скрываем unmute overlay', {
-              reason: !audioManager ? 'нет audioManager' : !audioManager.enabled ? 'звук выключен' : 'уже активирован'
+              reason: !audioManager ? 'audioManager не инициализирован' : !audioManager.enabled ? 'звук отключен на контроллере' : 'уже активирован'
             });
           }
         }
@@ -439,6 +491,14 @@
             if (typeof logger !== 'undefined') {
               logger.state("Получено начальное состояние", state);
             }
+
+            // Явно центрируем мяч перед применением команды
+            const centerX = globalThis.innerWidth / 2;
+            const centerY = globalThis.innerHeight / 2;
+            physicsEngine.setPosition(centerX, centerY);
+            physicsEngine.setVelocity(0, 0);
+
+            // Применяем команду из состояния
             physicsEngine.applyCommand(state);
             if (state && state.paused === false) {
               physicsEngine.setPaused(false);
@@ -451,6 +511,23 @@
 
               if (audioManager) {
                 audioManager.setEnabled(state.soundEnabled);
+
+                // Управляем audioActivated на основе контроллера
+                // ВАЖНО: Сбрасываем audioActivated ТОЛЬКО если контроллер ОТКЛЮЧИЛ звук
+                // Если soundEnabled=true - НЕ сбрасываем, чтобы кнопка осталась скрытой
+                if (state.soundEnabled === false) {
+                  // Контроллер отключил звук - сбрасываем всё
+                  audioActivated = false;
+                  window.audioActivated = false;
+                  localStorage.removeItem('bb_audioActivated');
+                  if (typeof logger !== 'undefined') {
+                    logger.audio('Контроллер отключил звук, сбрасываем audioActivated');
+                  }
+                }
+                // Если soundEnabled=true - НЕ трогаем audioActivated!
+                // Если пользователь уже активировал (audioActivated=true), кнопка остается скрытой
+                // Если пользователь еще не активировал (audioActivated=false), кнопка будет показана
+
                 checkAudioOverlay();
               } else {
                 // AudioManager еще не инициализирован, подождем и повторим
@@ -461,6 +538,15 @@
                       logger.audio('AudioManager готов, устанавливаем soundEnabled:', state.soundEnabled);
                     }
                     audioManager.setEnabled(state.soundEnabled);
+
+                    // Управляем audioActivated - сбрасываем только если soundEnabled=false
+                    if (state.soundEnabled === false) {
+                      audioActivated = false;
+                      window.audioActivated = false;
+                      localStorage.removeItem('bb_audioActivated');
+                    }
+                    // Если soundEnabled=true - НЕ сбрасываем audioActivated!
+
                     checkAudioOverlay();
                   } else {
                     debugError('❌ AudioManager не инициализирован после таймаута!');
@@ -488,6 +574,22 @@
 
               if (audioManager) {
                 audioManager.setEnabled(command.soundEnabled);
+
+                // Управляем audioActivated на основе контроллера
+                // ВАЖНО: Сбрасываем audioActivated ТОЛЬКО если контроллер ОТКЛЮЧИЛ звук
+                // Если soundEnabled=true - НЕ сбрасываем, чтобы кнопка осталась скрытой
+                if (command.soundEnabled === false) {
+                  // Контроллер отключил звук - сбрасываем всё
+                  audioActivated = false;
+                  window.audioActivated = false;
+                  localStorage.removeItem('bb_audioActivated');
+                  if (typeof logger !== 'undefined') {
+                    logger.audio('Контроллер отключил звук, сбрасываем audioActivated');
+                  }
+                }
+                // Если soundEnabled=true - НЕ трогаем audioActivated!
+                // Если пользователь уже активировал (audioActivated=true), кнопка остается скрытой
+
                 checkAudioOverlay();
               } else {
                 debugWarn('🔊 AudioManager не готов при stateUpdate');

@@ -1,4 +1,4 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false */
+/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
 /* global globalThis, console, module, process */
 
 "use strict";

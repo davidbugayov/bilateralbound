@@ -51,23 +51,31 @@ class AudioManager {
       if (AudioContext) {
         this.audioContext = new AudioContext();
       } else {
-        logger.warn('Web Audio API is not supported in this browser.');
+        if (typeof logger !== 'undefined') {
+          logger.warn('Web Audio API is not supported in this browser.');
+        }
       }
     }
 
     if (this.audioContext?.state === 'suspended') {
       this.audioContext
         .resume()
-        .catch((err) => logger.warn('Failed to resume AudioContext:', err));
+        .catch((err) => {
+          if (typeof logger !== 'undefined') {
+            logger.warn('Failed to resume AudioContext:', err);
+          }
+        });
     }
 
     // Начинаем загрузку звуковых файлов
     if (this.useAudioFiles && !this.filesLoaded) {
       this.preloadSounds().catch((err) => {
-        logger.warn(
-          'Failed to load audio files, falling back to synthesis:',
-          err
-        );
+        if (typeof logger !== 'undefined') {
+          logger.warn(
+            'Failed to load audio files, falling back to synthesis:',
+            err
+          );
+        }
         this.useAudioFiles = false;
       });
     }
@@ -153,9 +161,10 @@ class AudioManager {
 
   setEnabled(enabled) {
     this.enabled = !!enabled;
-    if (this.enabled) {
-      this.init();
-    }
+    // НЕ инициализируем audio context здесь!
+    // AudioContext должен инициализироваться ТОЛЬКО при пользовательском жесте (клик/касание)
+    // Браузер требует жест для инициализации по политике безопасности
+    // setEnabled() только меняет флаг enabled, инициализация происходит в init()
   }
 
   // eslint-disable-next-line no-unused-vars
@@ -255,7 +264,9 @@ class AudioManager {
 
       source.start();
     } catch (error) {
-      logger.error('Error playing buffered sound:', error);
+      if (typeof logger !== 'undefined') {
+        logger.error('Error playing buffered sound:', error);
+      }
       this.playSynthesizedSound();
     }
   }
@@ -297,7 +308,9 @@ class AudioManager {
       oscillator.start();
       oscillator.stop(this.audioContext.currentTime + this.duration);
     } catch (error) {
-      logger.error('Error playing synthesized sound:', error);
+      if (typeof logger !== 'undefined') {
+        logger.error('Error playing synthesized sound:', error);
+      }
     }
   }
 
@@ -357,7 +370,9 @@ class AudioManager {
       noiseGain.connect(this.audioContext.destination);
       noise.start(now);
     } catch (error) {
-      logger.error('Error playing soft wooden sound:', error);
+      if (typeof logger !== 'undefined') {
+        logger.error('Error playing soft wooden sound:', error);
+      }
     }
   }
 }

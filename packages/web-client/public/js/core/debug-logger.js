@@ -174,9 +174,12 @@ class DebugLogger {
 
 const debugLogger = new DebugLogger();
 
-if (module?.exports) {
+// Экспортируем для Node.js (если module доступен)
+if (typeof module !== 'undefined' && module?.exports) {
   module.exports = debugLogger;
 }
+
+// Экспортируем для браузера (globalThis всегда доступен)
 if (globalThis !== undefined) {
   globalThis.debugLogger = debugLogger;
   globalThis.logger = debugLogger;

@@ -1021,6 +1021,23 @@ if (typeof PhysicsEngine === 'undefined') {
       if (command.colorBall !== undefined) this.setBallColor(command.colorBall);
       if (command.colorBg !== undefined) this.setBgColor(command.colorBg);
     }
+
+    /**
+     * Получает текущее состояние физического движка
+     * @returns {Object} Состояние мяча и движка
+     */
+    getState() {
+      return {
+        x: this.ball.x,
+        y: this.ball.y,
+        vx: this.ball.vx,
+        vy: this.ball.vy,
+        speed: this.ball.speed,
+        radius: this.ball.radius,
+        paused: this.state.paused
+      };
+    }
+
     /**
      * Сбрасывает состояние к начальному
      */
