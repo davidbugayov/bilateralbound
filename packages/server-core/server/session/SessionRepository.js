@@ -73,13 +73,13 @@ class SessionRepository {
       viewerScreenSize: null,
       createdAt: Date.now(),
       lastActivity: Date.now(),
+      lastStateUpdate: Date.now(), // Время последнего обновления состояния (для детекции неактивности)
       partialDisconnectTime: null, // Время когда один из участников отключился
       /**
        * @type {Map<WebSocket, {role: string, connectedAt: number, sessionId: string}>}
        */
       clients: new Map(),
-      mainLoop: null, // Единый цикл для физики и рассылки
-      lastStateUpdate: 0 // Добавляем для отслеживания последнего обновления состояния
+      mainLoop: null // Единый цикл для физики и рассылки
     };
 
     this.sessions.set(session.id, session);
@@ -147,15 +147,17 @@ class SessionRepository {
    * Очищает истекшие сессии
    * @param {number} maxAge - Максимальный возраст сессии в мс (по умолчанию 1 час)
    * @param {number} partialDisconnectTimeout - Таймаут после частичного отключения в мс (по умолчанию 15 минут)
+   * @param {number} inactivityTimeout - Таймаут при отсутствии обновлений состояния в мс (по умолчанию 30 минут)
    * @returns {Array} Массив ID удаленных сессий
    */
-  cleanupExpired(maxAge = 60 * 60 * 1000, partialDisconnectTimeout = 15 * 60 * 1000) {
+  cleanupExpired(maxAge = 60 * 60 * 1000, partialDisconnectTimeout = 15 * 60 * 1000, inactivityTimeout = 30 * 60 * 1000) {
     const now = Date.now();
     const expiredIds = [];
 
     for (const [id, session] of this.sessions) {
       const age = now - session.createdAt;
       const inactiveTime = now - (session.lastActivity || session.createdAt);
+      const noUpdatesTime = now - (session.lastStateUpdate || session.createdAt);
 
       // Причины удаления сессии:
       // 1. Сессия старше 1 часа (maxAge)
@@ -176,6 +178,13 @@ class SessionRepository {
       // 3. Полная неактивность (никто не подключен) более 30 минут
       if (!session.controllerConnected && !session.viewerConnected && inactiveTime > 30 * 60 * 1000) {
         expiredIds.push({ id, reason: 'full_inactivity' });
+        continue;
+      }
+
+      // 4. Нет обновлений состояния более 30 минут (свернутая вкладка/неактивная сессия)
+      // Проверяем только если хотя бы один клиент подключен
+      if ((session.controllerConnected || session.viewerConnected) && noUpdatesTime > inactivityTimeout) {
+        expiredIds.push({ id, reason: 'no_state_updates' });
         continue;
       }
     }

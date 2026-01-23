@@ -495,11 +495,17 @@
               logger.state("Получено начальное состояние", state);
             }
 
-            // Явно центрируем мяч перед применением команды
-            const centerX = globalThis.innerWidth / 2;
-            const centerY = globalThis.innerHeight / 2;
-            physicsEngine.setPosition(centerX, centerY);
-            physicsEngine.setVelocity(0, 0);
+            // КРИТИЧЕСКИ ВАЖНО: Центрируем мяч ТОЛЬКО если сессия на паузе
+            // При реконнекте во время активной сессии мяч должен оставаться в текущей позиции
+            if (state && state.paused === true) {
+              const centerX = globalThis.innerWidth / 2;
+              const centerY = globalThis.innerHeight / 2;
+              physicsEngine.setPosition(centerX, centerY);
+              physicsEngine.setVelocity(0, 0);
+              if (typeof logger !== 'undefined') {
+                logger.state(`🎯 Мяч центрирован при паузе: (${centerX}, ${centerY})`);
+              }
+            }
 
             // Применяем команду из состояния
             physicsEngine.applyCommand(state);
