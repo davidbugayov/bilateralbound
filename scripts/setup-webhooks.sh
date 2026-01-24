@@ -17,7 +17,7 @@ NC='\033[0m'
 # Конфигурация
 SERVER="213.139.229.44"
 USER="root"
-PASSWORD='tOx8q7HN+'
+PASSWORD='9Ddc0BYKqrJZm6a9'
 
 log() { echo -e "${BLUE}[$(date +'%H:%M:%S')]${NC} $1"; }
 log_success() { echo -e "${GREEN}[$(date +'%H:%M:%S')] ✅ $1${NC}"; }

@@ -5,7 +5,7 @@
 
 SERVER="213.139.229.44"
 USER="root"
-PASSWORD='tOx8q7HN+'
+PASSWORD='9Ddc0BYKqrJZm6a9'
 
 echo "🚀 ПОЛНОЕ РАЗВЕРТЫВАНИЕ EMDR BILATERAL ИНФРАСТРУКТУРЫ"
 echo "=================================================="

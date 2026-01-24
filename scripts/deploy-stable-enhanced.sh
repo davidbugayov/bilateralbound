@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Конфигурация
 SERVER="213.139.229.44"
 USER="root"
-PASSWORD='tOx8q7HN+'
+PASSWORD='9Ddc0BYKqrJZm6a9'
 DEV_PATH="/var/www/dev"
 BRANCH="stable-enhanced"
 DOMAIN="dev.emdrbilateral.online"

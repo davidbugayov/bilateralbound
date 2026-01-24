@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 # Конфигурация
 SERVER="213.139.229.44"
 USER="root"
-PASSWORD='tOx8q7HN+'
+PASSWORD='9Ddc0BYKqrJZm6a9'
 SOURCE_DIR="/var/www/emdrbilateral.online"
 DEST_DIR="/var/www/emdrbilateral.ru"
 BRANCH="stable"
@@ -110,5 +110,5 @@ log "  curl -I https://emdrbilateral.ru"
 log ""
 
 log "📋 Логи приложения:"
-log "  sshpass -p 'tOx8q7HN+' ssh root@213.139.229.44 'pm2 logs bilateralbound-prod-ru'"
+log "  sshpass -p '9Ddc0BYKqrJZm6a9' ssh root@213.139.229.44 'pm2 logs bilateralbound-prod-ru'"
 log ""
