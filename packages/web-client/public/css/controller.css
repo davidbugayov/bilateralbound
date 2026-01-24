@@ -125,19 +125,15 @@
 }
 
 /* Control section headings */
-/* stylelint-disable property-no-vendor-prefix */
 .control-section h3 {
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
-  background-clip: text;
-  -webkit-background-clip: text; /* stylelint-disable-line */
-  -webkit-text-fill-color: transparent; /* stylelint-disable-line */
+  color: #e2e8f0;
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 12px;
   letter-spacing: -0.02em;
-  filter: drop-shadow(0 2px 4px rgb(59 130 246 / 20%));
 }
 
+/* stylelint-disable property-no-vendor-prefix */
 .control-section h3 #curSid {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;
@@ -150,11 +146,7 @@
 }
 
 .light-theme .control-section h3 {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1e40af 100%);
-  background-clip: text;
-  -webkit-background-clip: text; /* stylelint-disable-line */
-  -webkit-text-fill-color: transparent; /* stylelint-disable-line */
-  filter: drop-shadow(0 2px 4px rgb(37 99 235 / 15%));
+  color: #1e293b;
 }
 
 .light-theme .control-section h3 #curSid {
