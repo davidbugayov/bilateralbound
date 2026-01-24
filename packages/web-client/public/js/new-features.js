@@ -716,9 +716,9 @@ class FeatureManager {
       const el = document.getElementById('sessionInfo')
       if (!el) return
       const current = this.sessions.find(s => s.id === this.currentSessionId)
-      const nameTxt = current?.name ? `Название: ${current.name}` : 'Название: —'
+      const nameTxt = current?.name ? `Название: ${current.name}` : ''
       const createdTxt = current?.createdAt
-        ? ` • Создана: ${new Date(current.createdAt).toLocaleString()}`
+        ? `${nameTxt ? ' • ' : ''}Создана: ${new Date(current.createdAt).toLocaleString()}`
         : ''
       el.textContent = `${nameTxt}${createdTxt}`
     } catch {
