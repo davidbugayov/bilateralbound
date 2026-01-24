@@ -859,8 +859,8 @@
             const isWebSocketConnected = wsClient && typeof wsClient.isConnected === 'function' && wsClient.isConnected();
             if (isWebSocketConnected) {
               components.status.setStatus(
-                "success",
-                "Соединение установлено, ожидание контроллера...",
+                "waiting",
+                "Ожидание контроллера...",
               );
               debugLog("⏳ Статус обновлен: Ожидание контроллера");
             } else {

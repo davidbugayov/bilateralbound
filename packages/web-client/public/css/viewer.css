@@ -243,8 +243,20 @@ body.light-theme .hotkeys-hint kbd {
   color: #1e293b;
 }
 
-/* Unmute Overlay */
+/* Hide hotkeys hint on mobile and tablet devices (touch devices) */
+@media (hover: none) and (pointer: coarse) {
+  .hotkeys-hint {
+    display: none;
+  }
+}
+
+/* Also hide on small screens */
 @media (width <= 768px) {
+  .hotkeys-hint {
+    display: none;
+  }
+
+  /* Mobile optimizations */
   .status-overlay {
     top: 12px;
     left: 12px;

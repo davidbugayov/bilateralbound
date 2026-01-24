@@ -396,7 +396,7 @@ if (typeof SharedComponents === 'undefined') {
         },
         /**
          * Устанавливает статус индикатора
-         * @param {string} status - Тип статуса ('success', 'error', 'warning', 'loading', 'idle')
+         * @param {string} status - Тип статуса ('success', 'error', 'warning', 'loading', 'waiting', 'idle')
          * @param {string} message - Текстовое сообщение статуса
          */
         setStatus(status, message) {
@@ -418,10 +418,20 @@ if (typeof SharedComponents === 'undefined') {
               case 'loading':
                 this.elements.icon.textContent = '⏳';
                 break;
+              case 'waiting':
+                this.elements.icon.textContent = '⏳';
+                break;
               default:
                 this.elements.icon.textContent = '⏳';
             }
           }
+
+          // Обновляем CSS классы для статуса
+          if (this.elements.container) {
+            this.elements.container.classList.remove('status-success', 'status-error', 'status-warning', 'status-loading', 'status-waiting', 'status-idle');
+            this.elements.container.classList.add(`status-${status}`);
+          }
+
           // Автоматическое скрытие если включено
           if (this.options.autoHide && status === 'success') {
             setTimeout(() => {
