@@ -6,6 +6,7 @@
  */
 // Экспортируем функции для использования в тестах
 /* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession */
+/* global debugWarn, debugError */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 globalThis.__current = {
   sessionId: null,
@@ -261,13 +262,13 @@ function detectAndCountBounceFromServer(prev, curr) {
       __lastVySign = currSignY
     }
   } catch {
-    console.warn('Error in detectAndCountBounceFromServer')
+    debugWarn('Error in detectAndCountBounceFromServer')
   }
 }
 // 4. Остальная логика выполняется после полной загрузки страницы
 document.addEventListener('DOMContentLoaded', () => {
   // Тихая инициализация
-  initializeController().catch(console.error)
+  initializeController().catch(debugError)
   // Инициализируем DOM для счётчиков
   bbCounters.initDom()
   // При изменении размера окна контроллера — пересчитать превью по текущим размерам вьювера
@@ -287,7 +288,7 @@ async function initializeController() {
     logger.info('Начинаем инициализацию контроллера')
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
-      console.error('ID сессии не найден в URL')
+      debugError('ID сессии не найден в URL')
       showNotification('ID сессии не найден в URL', 'error')
       return
     }
@@ -307,7 +308,7 @@ async function initializeController() {
     await initializeWebSocketClient(sessionId)
     logger.info('🔌 WebSocket клиент инициализирован, ожидаем подключения вьювера...')
   } catch (error) {
-    console.error('Error initializing controller:', error)
+    debugError('Error initializing controller:', error)
     showNotification('Ошибка инициализации контроллера: ' + (error?.message || error), 'error')
   }
 }
@@ -548,7 +549,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
     // Если вьювер подключился, завершаем инициализацию
     if (data.connected) {
-      completeInitialization().catch(console.error)
+      completeInitialization().catch(debugError)
     }
 
     // Если вьювер отключился - сбрасываем состояние и останавливаем превью
@@ -635,7 +636,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
         }
       }
     } catch (error) {
-      console.warn('Canvas not ready during initial state setup', error)
+      debugWarn('Canvas not ready during initial state setup', error)
     }
 
     applyServerStateToPreview(state)
@@ -709,14 +710,10 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
     // Сохраняем статус активации
     if (globalThis.__current) {
-      console.log('✅ Устанавливаем viewerAudioActivated = %s', data.activated)
       globalThis.__current.viewerAudioActivated = data.activated
-    } else {
-      console.warn('⚠️ globalThis.__current не существует!')
     }
 
     // Обновляем индикаторы
-    console.log('🔄 Вызываем updateViewerAudioIndicators()')
     updateViewerAudioIndicators()
   })
   wsClient.on('maxReconnectAttemptsReached', () => {

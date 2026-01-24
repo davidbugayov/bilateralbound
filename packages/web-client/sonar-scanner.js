@@ -1,6 +1,6 @@
-const scanner = require('sonarqube-scanner').default;
-const path = require('path');
-const fs = require('fs');
+const scanner = require('sonarqube-scanner').default
+const path = require('path')
+const fs = require('fs')
 
 const webClientDir = __dirname;
 
@@ -13,11 +13,11 @@ function validateEnvironment() {
 
 const scannerOptions = {
   serverUrl: process.env.SONARQUBE_HOST || 'http://localhost:9000',
-  token: process.env.SONARQUBE_TOKEN || 'squ_9c7c8ed0bc68279e95afd66dad6cfbfb999994cd',
+  token: process.env.SONARQUBE_TOKEN || 'squ_4c5f0fafcba46d0827a22d5ba95dc50cae7eb9d2',
   options: {
     'sonar.projectKey': 'bilateral-bound-web-client',
     'sonar.projectName': 'Bilateral Bound - Web Client',
-    'sonar.projectVersion': '2.38.20',
+    'sonar.projectVersion': '2.39.5',
     'sonar.projectBaseDir': webClientDir,
     'sonar.sources': 'public/js',
     'sonar.exclusions': '**/node_modules/**,**/dist/**,**/coverage/**,**/.scannerwork/**,**/*.test.js,**/spec/**',

@@ -3,6 +3,9 @@
  * Генерирует уникальный идентификатор сессии
  * @returns {string} Уникальный ID сессии
  */
+
+/* global debugWarn, debugError */
+
 function _generateId() {
   // Используем криптографически стойкий метод генерации случайных чисел
   if (crypto?.randomUUID) {
@@ -82,7 +85,7 @@ class FeatureManager {
         }
       }
     } catch {
-      console.warn('Не удалось загрузить сохранённые пресеты')
+      debugWarn('Не удалось загрузить сохранённые пресеты')
     }
 
     return defaultPresets
@@ -117,7 +120,7 @@ class FeatureManager {
       await this._applyPresetSettings(preset)
       this._showPresetAppliedNotification(preset)
     } catch (error) {
-      console.error('Apply preset error:', error)
+      debugError('Apply preset error:', error)
       globalThis.notificationSystem?.error('Ошибка', 'Ошибка применения пресета')
     }
   }
@@ -164,7 +167,7 @@ class FeatureManager {
     try {
       localStorage.setItem('bb_presets', JSON.stringify(this.presets))
     } catch {
-      console.warn('Не удалось сохранить пресеты')
+      debugWarn('Не удалось сохранить пресеты')
     }
   }
 
@@ -238,7 +241,7 @@ class FeatureManager {
 
       globalThis.notificationSystem?.success('', 'Сессия импортирована')
     } catch (error) {
-      console.error('Import error:', error)
+      debugError('Import error:', error)
       globalThis.notificationSystem?.error('Ошибка', 'Ошибка импорта сессии')
     }
   }
@@ -343,7 +346,7 @@ class FeatureManager {
       switch (event.key) {
         case 'z':
           event.preventDefault()
-          this.undoLastChange().catch(console.error)
+          this.undoLastChange().catch(debugError)
           break
         case 's':
           event.preventDefault()
@@ -430,7 +433,7 @@ class FeatureManager {
         return parsed.sessions
       }
     } catch {
-      console.warn('Не удалось загрузить сохранённые сессии')
+      debugWarn('Не удалось загрузить сохранённые сессии')
     }
 
     return []
@@ -440,7 +443,7 @@ class FeatureManager {
     try {
       localStorage.setItem('bb_sessions', JSON.stringify(this.sessions))
     } catch {
-      console.warn('Не удалось сохранить сессии')
+      debugWarn('Не удалось сохранить сессии')
     }
   }
 
@@ -592,7 +595,7 @@ class FeatureManager {
       await this._applySessionSettings(sessionData?.settings || {})
       this._applySessionCounters(sessionData?.counters)
     } catch (e) {
-      console.error('applySessionData error', e)
+      debugError('applySessionData error', e)
       globalThis.notificationSystem?.error('Ошибка', 'Ошибка применения сессии')
     }
   }

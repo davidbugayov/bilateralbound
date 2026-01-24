@@ -59,7 +59,16 @@ module.exports = [
       '.idea/**',
       '.vscode/**',
       'test-results/**',
-      'packages/web-client/dist/**'
+      'packages/web-client/dist/**',
+      'eslint.config.js',
+      'webpack.config.js',
+      'packages/web-client/.eslintrc.js',
+      'packages/web-client/sonar-scanner.js',
+      'packages/web-client/webpack.config.js',
+      'scripts/update-version.js',
+      'jsconfig.json',
+      '.scannerwork/**',
+      'reports/**'
     ]
   },
 

@@ -269,7 +269,7 @@ async function copy(elementId, successMessage) {
     if (globalThis.showErrorNotification) {
       globalThis.showErrorNotification('Ошибка', 'Элемент для копирования не найден.')
     } else {
-      console.error('Элемент для копирования не найден:', elementId)
+      debugError('Элемент для копирования не найден:', elementId)
     }
     return
   }
@@ -280,7 +280,7 @@ async function copy(elementId, successMessage) {
       globalThis.showSuccessNotification(successMessage || 'Текст скопирован!')
     }
   } catch (err) {
-    console.error('Ошибка копирования:', err)
+    debugError('Ошибка копирования:', err)
     if (globalThis.showErrorNotification) {
       globalThis.showErrorNotification('Ошибка копирования', 'Не удалось скопировать текст.')
     }

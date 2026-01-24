@@ -1,12 +1,13 @@
 {
   "name": "@emdr/server-core",
-  "version": "2.39.5",
+  "version": "2.39.6",
   "description": "EMDR therapy server core components",
   "main": "server/index.js",
   "type": "commonjs",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js"
+    "dev": "nodemon server/index.js",
+    "lint:sonarqube": "node sonar-scanner.js"
   },
   "keywords": [
     "emdr",
@@ -30,6 +31,7 @@
     "ws": "^8.13.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "sonarqube-scanner": "^4.3.4"
   }
 }

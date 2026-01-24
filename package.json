@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.5",
+  "version": "2.39.6",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -29,6 +29,8 @@
     "format": "npx prettier --write '**/*.{js,json,css,html,md}'",
     "format:check": "npx prettier --check '**/*.{js,json,css,html,md}'",
     "version:update": "node scripts/update-version.js",
+    "lint:report": "npx eslint . --format=json --output-file=reports/eslint-report.json --ignore-pattern='eslint.config.js' --ignore-pattern='webpack.config.js' --ignore-pattern='packages/web-client/.eslintrc.js' --ignore-pattern='packages/web-client/sonar-scanner.js' --ignore-pattern='packages/web-client/webpack.config.js' --ignore-pattern='scripts/update-version.js'",
+    "sonar:report": "npm run lint:report && sonar-scanner",
     "sonar": "sonar-scanner",
     "deploy": "cd packages/server-core && npm start",
     "deploy:dev": "npm run deploy:dev:pull && npm run deploy:dev:restart",
@@ -41,12 +43,6 @@
     "deploy:prod:restart": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl restart emdrbilateral-online && systemctl restart emdrbilateral-ru'",
     "deploy:prod:logs": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'journalctl -u emdrbilateral-online -n 50 --no-pager'",
     "deploy:prod:status": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl status emdrbilateral-online emdrbilateral-ru --no-pager'",
-    "vps:pull": "sshpass -p \"9Ddc0BYKqrJZm6a9\" ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/emdrbilateral.online && git fetch --all && git reset --hard origin/stable && cd /var/www/emdrbilateral.ru && git fetch --all && git reset --hard origin/stable'",
-    "vps:install": "sshpass -p \"9Ddc0BYKqrJZm6a9\" ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/emdrbilateral.online && npm install && cd /var/www/emdrbilateral.ru && npm install'",
-    "vps:start": "sshpass -p \"9Ddc0BYKqrJZm6a9\" ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl restart emdrbilateral-online && systemctl restart emdrbilateral-ru'",
-    "vps:deploy": "npm run vps:pull && npm run vps:install && npm run vps:start",
-    "vps:logs": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'journalctl -u emdrbilateral-online -u emdrbilateral-ru -n 100 --no-pager'",
-    "vps:ssh": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44",
     "git:stable": "git checkout stable-enhanced && git pull origin stable-enhanced",
     "git:main": "git checkout main && git pull origin main",
     "git:status": "git status && git log --oneline -5",
@@ -77,7 +73,7 @@
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
     "puppeteer": "^24.35.0",
-    "sonarqube-scanner": "^4.2.3",
+    "sonarqube-scanner": "^4.3.4",
     "stylelint": "^16.25.0",
     "stylelint-config-standard": "^39.0.1",
     "stylelint-prettier": "^5.0.3"

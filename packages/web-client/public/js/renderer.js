@@ -219,7 +219,9 @@ if (typeof BallRenderer === 'undefined') {
         }
       } catch (e) {
         // Log the error for debugging but don't stop the render loop
-        console.error('Error during render:', e)
+        if (typeof debugError === 'function') {
+          debugError('Error during render:', e)
+        }
       }
     }
     /**
