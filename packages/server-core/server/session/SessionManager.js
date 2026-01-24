@@ -1,6 +1,3 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
-/* global globalThis, console, module, process */
-
 'use strict'
 const PhysicsEngine = require('../../../web-client/public/js/physics-engine.js')
 const SessionRepository = require('./SessionRepository.js')
@@ -79,7 +76,7 @@ class SessionManager {
           session.ballState.soundType = soundType
         }
         this.stateBroadcaster.broadcastState(session.id)
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
@@ -328,7 +325,7 @@ class SessionManager {
   _handleControllerInitialState(sessionId, ws, role, session) {
     try {
       ws.initialStateSent = false
-    } catch (e) {
+    } catch {
       /* ignore */
     }
 

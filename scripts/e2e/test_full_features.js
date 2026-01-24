@@ -457,29 +457,32 @@ class E2ETestRunner {
 
     const page = await this.browser.newPage()
     try {
-      for (const sessionId of this.createdSessions) {
-        try {
-          // Пытаемся удалить сессию через API
-          const result = await page.evaluate(async (baseUrl, sid) => {
+      // Используем Promise.all вместо for loop с await
+      const cleanupPromises = this.createdSessions.map(sessionId =>
+        page
+          .evaluate(async (baseUrl, sid) => {
             try {
               const res = await fetch(`${baseUrl}/api/session/${sid}`, {
                 method: 'DELETE'
               })
-              return { ok: res.ok, status: res.status }
+              return { sessionId: sid, ok: res.ok, status: res.status }
             } catch (e) {
-              return { ok: false, error: e.message }
+              return { sessionId: sid, ok: false, error: e.message }
             }
           }, BASE_URL, sessionId)
+          .then(result => {
+            if (result.ok) {
+              this.log(`Сессия ${result.sessionId} удалена`, 'pass')
+            } else {
+              this.log(`Не удалось удалить сессию ${result.sessionId}: ${result.status || result.error}`, 'warn')
+            }
+          })
+          .catch(err => {
+            this.log(`Ошибка при удалении сессии ${sessionId}: ${err.message}`, 'warn')
+          })
+      )
 
-          if (result.ok) {
-            this.log(`Сессия ${sessionId} удалена`, 'pass')
-          } else {
-            this.log(`Не удалось удалить сессию ${sessionId}: ${result.status || result.error}`, 'warn')
-          }
-        } catch (err) {
-          this.log(`Ошибка при удалении сессии ${sessionId}: ${err.message}`, 'warn')
-        }
-      }
+      await Promise.all(cleanupPromises)
     } finally {
       await page.close()
     }

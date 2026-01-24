@@ -233,7 +233,7 @@ body:not(.light-theme) .session-info-timestamp {
 }
 
 .light-theme .direction-display {
-  background: #ffffff;
+  background: #fff;
   border-color: #e5e7eb;
 }
 
@@ -243,5 +243,3 @@ body:not(.light-theme) .session-info-timestamp {
   border-color: #374151;
   color: #f3f4f6;
 }
-
-

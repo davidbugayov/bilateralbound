@@ -1,4 +1,4 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
+
 /**
  * @fileoverview Debug Logger - Unified debug logging with query toggle
  * @module utils/debug-logger
@@ -14,7 +14,7 @@
 /* jshint esversion: 11, browser: true, node: true, boss: true, laxbreak: true, laxcomma: true, unused: false */
 /* global globalThis, console, module, Map, Set */
 
-'use strict';
+'use strict'
 
 // Category color mappings for console styling
 const CATEGORY_COLORS = {
@@ -27,122 +27,122 @@ const CATEGORY_COLORS = {
   movement: '#06FFA5',
   bounce: '#C77DFF',
   audio: '#FFD700'
-};
+}
 
 class DebugLogger {
   constructor() {
-    this.enabled = this._checkDebugMode();
-    this.categories = this._getEnabledCategories();
-    this.throttles = new Map();
+    this.enabled = this._checkDebugMode()
+    this.categories = this._getEnabledCategories()
+    this.throttles = new Map()
     if (this.enabled) {
-      this._logStats();
+      this._logStats()
     }
   }
 
   _checkDebugMode() {
     if (globalThis.window === undefined) {
-      return false;
+      return false
     }
-    const params = new URLSearchParams(globalThis.location.search);
-    return params.get('debug') === '1' || params.get('bbdebug') === '1';
+    const params = new URLSearchParams(globalThis.location.search)
+    return params.get('debug') === '1' || params.get('bbdebug') === '1'
   }
 
   _getEnabledCategories() {
     if (!this.enabled) {
-      return new Set();
+      return new Set()
     }
-    const params = new URLSearchParams(globalThis.location.search);
-    const categories = params.get('debug-cat') || params.get('categories');
+    const params = new URLSearchParams(globalThis.location.search)
+    const categories = params.get('debug-cat') || params.get('categories')
     return categories
       ? new Set(categories.split(',').map(c => c.trim()))
-      : new Set(Object.keys(CATEGORY_COLORS));
+      : new Set(Object.keys(CATEGORY_COLORS))
   }
 
   _logStats() {
     console.log(
       '%c[DEBUG MODE ENABLED]',
       'background: #0A0; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;'
-    );
-    console.log('📊 Enabled categories:', Array.from(this.categories).join(', '));
+    )
+    console.log('📊 Enabled categories:', Array.from(this.categories).join(', '))
   }
 
   _isEnabled(category) {
-    return this.enabled && this.categories.has(category);
+    return this.enabled && this.categories.has(category)
   }
 
   _log(category, message, data) {
     if (!this._isEnabled(category)) {
-      return;
+      return
     }
-    const color = CATEGORY_COLORS[category] || '#999';
-    const time = new Date().toISOString().split('T')[1].slice(0, -1);
+    const color = CATEGORY_COLORS[category] || '#999'
+    const time = new Date().toISOString().split('T')[1].slice(0, -1)
     console.log(
       `%c[${category.toUpperCase()}] ${time} - ${message}`,
       `color: ${color}; font-weight: bold;`,
       data ?? ''
-    );
+    )
   }
 
   sync(msg, data) {
-    this._log('sync', msg, data);
+    this._log('sync', msg, data)
   }
 
   sse(msg, data) {
-    this._log('sse', msg, data);
+    this._log('sse', msg, data)
   }
 
   physics(msg, data) {
-    this._log('physics', msg, data);
+    this._log('physics', msg, data)
   }
 
   network(msg, data) {
-    this._log('network', msg, data);
+    this._log('network', msg, data)
   }
 
   state(msg, data) {
-    this._log('state', msg, data);
+    this._log('state', msg, data)
   }
 
   command(msg, data) {
-    this._log('command', msg, data);
+    this._log('command', msg, data)
   }
 
   movement(msg, data) {
-    this._log('movement', msg, data);
+    this._log('movement', msg, data)
   }
 
   bounce(msg, data) {
-    this._log('bounce', msg, data);
+    this._log('bounce', msg, data)
   }
 
   audio(msg, data) {
-    this._log('audio', msg, data);
+    this._log('audio', msg, data)
   }
 
   throttle(key, intervalMs, category, message, data) {
-    const now = Date.now();
-    const last = this.throttles.get(key);
+    const now = Date.now()
+    const last = this.throttles.get(key)
     if (last && now - last < intervalMs) {
-      return;
+      return
     }
-    this.throttles.set(key, now);
-    this._log(category, message, data);
+    this.throttles.set(key, now)
+    this._log(category, message, data)
   }
 
   error(msg, err) {
-    console.error(`%c[ERROR] ${msg}`, 'color: #F00; font-weight: bold;', err ?? '');
+    console.error(`%c[ERROR] ${msg}`, 'color: #F00; font-weight: bold;', err ?? '')
   }
 
   warn(msg, data) {
-    console.warn(`%c[WARN] ${msg}`, 'color: #FA0; font-weight: bold;', data ?? '');
+    console.warn(`%c[WARN] ${msg}`, 'color: #FA0; font-weight: bold;', data ?? '')
   }
 
   info(msg, data) {
-    console.info(`%cℹ️ ${msg}`, 'color: #4A9EFF; font-weight: bold;', data ?? '');
+    console.info(`%cℹ️ ${msg}`, 'color: #4A9EFF; font-weight: bold;', data ?? '')
   }
 
   log(msg, data) {
-    console.log(msg, data ?? '');
+    console.log(msg, data ?? '')
   }
 
   /**
@@ -168,48 +168,48 @@ class DebugLogger {
       warn: (msg, data) => this.warn(`[${moduleName}] ${msg}`, data),
       info: (msg, data) => this.info(`[${moduleName}] ${msg}`, data),
       log: (msg, data) => this.log(`[${moduleName}] ${msg}`, data)
-    };
+    }
   }
 }
 
-const debugLogger = new DebugLogger();
+const debugLogger = new DebugLogger()
 
 // Экспортируем для Node.js (если module доступен)
 if (typeof module !== 'undefined' && module?.exports) {
-  module.exports = debugLogger;
+  module.exports = debugLogger
 }
 
 // Экспортируем для браузера (globalThis всегда доступен)
 if (globalThis !== undefined) {
-  globalThis.debugLogger = debugLogger;
-  globalThis.logger = debugLogger;
+  globalThis.debugLogger = debugLogger
+  globalThis.logger = debugLogger
 
   // Export scope method for external usage
-  globalThis.createScopedLogger = (moduleName) => debugLogger.scope(moduleName);
+  globalThis.createScopedLogger = (moduleName) => debugLogger.scope(moduleName)
 
   globalThis.debugLog = (...args) => {
     if (!debugLogger.enabled) {
-      return;
+      return
     }
     if (args.length === 1 && typeof args[0] === 'string') {
-      console.log(args[0]);
+      console.log(args[0])
     } else if (args.length === 2) {
-      console.log(args[0], args[1]);
+      console.log(args[0], args[1])
     } else {
-      console.log(...args);
+      console.log(...args)
     }
-  };
+  }
   globalThis.debugError = (...args) => {
     if (!debugLogger.enabled) {
-      return;
+      return
     }
-    debugLogger.error(args[0], args[1]);
-  };
+    debugLogger.error(args[0], args[1])
+  }
   globalThis.debugWarn = (...args) => {
     if (!debugLogger.enabled) {
-      return;
+      return
     }
-    debugLogger.warn(args[0], args[1]);
-  };
+    debugLogger.warn(args[0], args[1])
+  }
 }
 

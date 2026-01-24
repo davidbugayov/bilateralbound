@@ -1,7 +1,5 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
-/* global globalThis, console, module */
 
-'use strict';
+'use strict'
 /**
  * Controller - Логика управления сессией BilateralBound v2.1
  * Современная модульная архитектура с улучшенной обработкой ошибок
@@ -673,7 +671,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     _syncUIDirection(state)
   })
   // АДАПТИВНАЯ адаптация сглаживания по сетевым метрикам (упрощенная версия для стабильности)
-  wsClient.on(WS_MSG.netMetrics, ({ rttMs: _rttMs, jitterMs }) => {
+  wsClient.on(WS_MSG.netMetrics, ({ jitterMs }) => {
     if (!previewPhysicsEngine) return
     const base = globalThis.BBConfig?.smoothing || {}
     // Адаптивное демпфирование на основе джиттера (упрощено)
@@ -707,19 +705,19 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
   // Обработка активации звука зрителем
   wsClient.on(WS_MSG.viewerAudioActivated, data => {
-    console.log('📡 [WS:controller] Получено viewer_audio_activated событие:', data);
+    console.log('📡 [WS:controller] Получено viewer_audio_activated событие:', data)
 
     // Сохраняем статус активации
     if (globalThis.__current) {
-      console.log('✅ Устанавливаем viewerAudioActivated = %s', data.activated);
-      globalThis.__current.viewerAudioActivated = data.activated;
+      console.log('✅ Устанавливаем viewerAudioActivated = %s', data.activated)
+      globalThis.__current.viewerAudioActivated = data.activated
     } else {
-      console.warn('⚠️ globalThis.__current не существует!');
+      console.warn('⚠️ globalThis.__current не существует!')
     }
 
     // Обновляем индикаторы
-    console.log('🔄 Вызываем updateViewerAudioIndicators()');
-    updateViewerAudioIndicators();
+    console.log('🔄 Вызываем updateViewerAudioIndicators()')
+    updateViewerAudioIndicators()
   })
   wsClient.on('maxReconnectAttemptsReached', () => {
     logger.error('Исчерпаны попытки переподключения')

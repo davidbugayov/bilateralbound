@@ -1,9 +1,7 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
-/* global globalThis, console, module */
 
 (function () {
-  "use strict";
-  if (typeof globalThis === 'undefined') return;
+  'use strict'
+  if (typeof globalThis === 'undefined') return
   globalThis.BBConfig = globalThis.BBConfig || {
     // Оптимизированные настройки рендеринга для плавного движения
     rendering: {
@@ -58,5 +56,5 @@
       worldHeight: 600, // Высота мира по умолчанию
       maxAcceleration: 5000 // Максимальное ускорение для предотвращения рывков
     }
-  };
-})();
+  }
+})()

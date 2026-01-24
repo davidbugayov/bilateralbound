@@ -1,7 +1,5 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
-/* global globalThis, console, module */
 
-'use strict';
+'use strict'
 /**
  * SharedComponents - переиспользуемые компоненты для BilateralBound
  * Содержит общую логику для controller и viewer
@@ -14,7 +12,7 @@
 if (typeof SharedComponents === 'undefined') {
   class SharedComponents {
     constructor() {
-      this.components = new Map();
+      this.components = new Map()
     }
     /**
      * Создает переиспользуемый компонент управления скоростью
@@ -29,7 +27,7 @@ if (typeof SharedComponents === 'undefined') {
         showLabels: true,
         simple: true,
         ...options
-      };
+      }
 
       const component = {
         container,
@@ -38,8 +36,8 @@ if (typeof SharedComponents === 'undefined') {
         elements: {},
         // Создает HTML для контроля скорости
         render() {
-          const speedControl = document.createElement('div');
-          speedControl.className = 'speed-control';
+          const speedControl = document.createElement('div')
+          speedControl.className = 'speed-control'
           if (defaultOptions.simple) {
             speedControl.innerHTML = `
     <div class="speed-info">
@@ -53,7 +51,7 @@ if (typeof SharedComponents === 'undefined') {
     value="${defaultOptions.currentSpeed}"
     step="1">
     </div>
-    `;
+    `
           } else {
             speedControl.innerHTML = `
     <div class="speed-header">
@@ -91,132 +89,132 @@ if (typeof SharedComponents === 'undefined') {
     </div>
     </div>
     </div>
-    `;
+    `
           }
 
-          container.appendChild(speedControl);
-          this.setupElements();
-          this.setupEventListeners();
-          return this;
+          container.appendChild(speedControl)
+          this.setupElements()
+          this.setupEventListeners()
+          return this
         },
         // Настраивает ссылки на элементы
         setupElements() {
-          this.elements.range = container.querySelector('.speed-range');
-          this.elements.value = container.querySelector('.speed-value');
-          this.elements.display = container.querySelector('.speed-display');
-          this.elements.fill = container.querySelector('.speed-fill');
-          this.elements.presets = container.querySelectorAll('.speed-preset');
+          this.elements.range = container.querySelector('.speed-range')
+          this.elements.value = container.querySelector('.speed-value')
+          this.elements.display = container.querySelector('.speed-display')
+          this.elements.fill = container.querySelector('.speed-fill')
+          this.elements.presets = container.querySelectorAll('.speed-preset')
         },
         // Настраивает обработчики событий
         setupEventListeners() {
           if (this.elements.range) {
             this.elements.range.addEventListener('input', e => {
-              this.setSpeed(Number.parseInt(e.target.value, 10));
-            });
+              this.setSpeed(Number.parseInt(e.target.value, 10))
+            })
           }
           // Обработчики для пресетов скорости (в простом режиме отсутствуют)
           if (this.elements?.presets?.length) {
             for (const preset of this.elements.presets) {
               preset.addEventListener('click', () => {
-                const speed = Number.parseInt(preset.dataset.speed, 10);
-                this.setSpeed(speed);
-                this.updateActivePreset(speed);
-              });
+                const speed = Number.parseInt(preset.dataset.speed, 10)
+                this.setSpeed(speed)
+                this.updateActivePreset(speed)
+              })
             }
           }
         },
         // Обновляет активный пресет
         updateActivePreset(speed) {
           if (this.elements?.presets?.length === 0) {
-            return;
+            return
           }
           // Снимаем активное состояние со всех
           for (const preset of this.elements.presets) {
-            preset.classList.remove('active');
+            preset.classList.remove('active')
           }
           // Определяем активный пресет на основе скорости
-          let activePreset = null;
+          let activePreset = null
           if (speed <= 30) {
-            activePreset = 'slow';
+            activePreset = 'slow'
           } else if (speed <= 60) {
-            activePreset = 'normal';
+            activePreset = 'normal'
           } else {
-            activePreset = 'fast';
+            activePreset = 'fast'
           }
           // Устанавливаем активное состояние
-          const activeElement = container.querySelector(`.speed-preset.${activePreset}`);
+          const activeElement = container.querySelector(`.speed-preset.${activePreset}`)
           if (activeElement) {
-            activeElement.classList.add('active');
+            activeElement.classList.add('active')
           }
         },
         // Устанавливает скорость
         setSpeed(speed) {
-          this.currentSpeed = Math.max(this.options.min, Math.min(this.options.max, speed));
+          this.currentSpeed = Math.max(this.options.min, Math.min(this.options.max, speed))
           if (this.elements.range) {
-            this.elements.range.value = this.currentSpeed;
+            this.elements.range.value = this.currentSpeed
           }
 
           // Определяем категорию скорости вместо процента
-          let speedCategory = '';
-          let speedColor = '';
+          let speedCategory = ''
+          let speedColor = ''
 
           if (this.currentSpeed <= 15) {
-            speedCategory = 'Очень медленно';
-            speedColor = '#22c55e'; // зеленый
+            speedCategory = 'Очень медленно'
+            speedColor = '#22c55e' // зеленый
           } else if (this.currentSpeed <= 25) {
-            speedCategory = 'Медленно';
-            speedColor = '#3b82f6'; // синий
+            speedCategory = 'Медленно'
+            speedColor = '#3b82f6' // синий
           } else if (this.currentSpeed <= 35) {
-            speedCategory = 'Средне';
-            speedColor = '#8b5cf6'; // фиолетовый
+            speedCategory = 'Средне'
+            speedColor = '#8b5cf6' // фиолетовый
           } else if (this.currentSpeed <= 50) {
-            speedCategory = 'Быстро';
-            speedColor = '#f59e0b'; // оранжевый
+            speedCategory = 'Быстро'
+            speedColor = '#f59e0b' // оранжевый
           } else {
-            speedCategory = 'Очень быстро';
-            speedColor = '#ef4444'; // красный
+            speedCategory = 'Очень быстро'
+            speedColor = '#ef4444' // красный
           }
 
           if (this.elements.value) {
-            this.elements.value.textContent = speedCategory;
-            this.elements.value.style.color = speedColor;
+            this.elements.value.textContent = speedCategory
+            this.elements.value.style.color = speedColor
           }
           // Обновляем индикатор заполнения с цветом категории
           if (this.elements.fill) {
-            this.elements.fill.style.width = `${this.currentSpeed}%`;
+            this.elements.fill.style.width = `${this.currentSpeed}%`
             // Определяем цвет для индикатора на основе категории
-            let fillColor = '';
+            let fillColor = ''
             if (this.currentSpeed <= 15) {
-              fillColor = '#22c55e';
+              fillColor = '#22c55e'
             } else if (this.currentSpeed <= 25) {
-              fillColor = '#3b82f6';
+              fillColor = '#3b82f6'
             } else if (this.currentSpeed <= 35) {
-              fillColor = '#8b5cf6';
+              fillColor = '#8b5cf6'
             } else if (this.currentSpeed <= 50) {
-              fillColor = '#f59e0b';
+              fillColor = '#f59e0b'
             } else {
-              fillColor = '#ef4444';
+              fillColor = '#ef4444'
             }
-            this.elements.fill.style.background = fillColor;
+            this.elements.fill.style.background = fillColor
           }
           // Обновляем активный пресет
-          this.updateActivePreset(this.currentSpeed);
+          this.updateActivePreset(this.currentSpeed)
           // Вызываем callback
           if (this.options.onSpeedChange) {
-            this.options.onSpeedChange(this.currentSpeed);
+            this.options.onSpeedChange(this.currentSpeed)
           }
         },
         // Получает текущую скорость
         getSpeed() {
-          return this.currentSpeed;
+          return this.currentSpeed
         },
         // Сбрасывает скорость
         reset() {
-          this.setSpeed(this.options.defaultValue);
+          this.setSpeed(this.options.defaultValue)
         }
-      };
+      }
 
-      return component.render();
+      return component.render()
     }
     /**
      * Создает переиспользуемый компонент управления цветом
@@ -228,7 +226,7 @@ if (typeof SharedComponents === 'undefined') {
         onColorChange: null,
         title: '🎨 Цвет',
         ...options
-      };
+      }
 
       const component = {
         container,
@@ -237,8 +235,8 @@ if (typeof SharedComponents === 'undefined') {
         elements: {},
         // Создает HTML для контроля цвета
         render() {
-          const colorControl = document.createElement('div');
-          colorControl.className = 'color-control';
+          const colorControl = document.createElement('div')
+          colorControl.className = 'color-control'
           colorControl.innerHTML = `
     <h3>${defaultOptions.title}</h3>
     <div class="color-palette">
@@ -254,37 +252,37 @@ if (typeof SharedComponents === 'undefined') {
       )
       .join('')}
     </div>
-    `;
-          container.appendChild(colorControl);
-          this.setupEventListeners();
+    `
+          container.appendChild(colorControl)
+          this.setupEventListeners()
           // Устанавливаем дефолтный цвет как активный
-          this.setColor(this.currentColor);
-          return this;
+          this.setColor(this.currentColor)
+          return this
         },
         // Настраивает обработчики событий
         setupEventListeners() {
-          const buttons = container.querySelectorAll('.color-btn');
+          const buttons = container.querySelectorAll('.color-btn')
           for (const button of buttons) {
             button.addEventListener('click', () => {
-              const color = button.dataset.color;
-              this.setColor(color);
-            });
+              const color = button.dataset.color
+              this.setColor(color)
+            })
           }
         },
         // Устанавливает цвет
         setColor(color) {
-          this.currentColor = color;
+          this.currentColor = color
           // Обновляем активную кнопку
-          const buttons = container.querySelectorAll('.color-btn');
+          const buttons = container.querySelectorAll('.color-btn')
           for (const btn of buttons) {
-            btn.classList.toggle('active', btn.dataset.color === color);
+            btn.classList.toggle('active', btn.dataset.color === color)
           }
           // Вызываем callback
-          this.options.onColorChange?.(color);
+          this.options.onColorChange?.(color)
         }
-      };
+      }
 
-      return component.render();
+      return component.render()
     }
     /**
      * Создает переиспользуемый компонент управления размером
@@ -296,7 +294,7 @@ if (typeof SharedComponents === 'undefined') {
         onSizeChange: null,
         title: '📏 Размер',
         ...options
-      };
+      }
 
       const component = {
         container,
@@ -305,8 +303,8 @@ if (typeof SharedComponents === 'undefined') {
         elements: {},
         // Создает HTML для контроля размера
         render() {
-          const sizeControl = document.createElement('div');
-          sizeControl.className = 'size-control';
+          const sizeControl = document.createElement('div')
+          sizeControl.className = 'size-control'
           sizeControl.innerHTML = `
     <h3>${defaultOptions.title}</h3>
     <div class="size-palette">
@@ -322,37 +320,37 @@ if (typeof SharedComponents === 'undefined') {
       )
       .join('')}
     </div>
-    `;
-          container.appendChild(sizeControl);
-          this.setupEventListeners();
+    `
+          container.appendChild(sizeControl)
+          this.setupEventListeners()
           // Устанавливаем дефолтный размер как активный
-          this.setSize(this.currentSize);
-          return this;
+          this.setSize(this.currentSize)
+          return this
         },
         // Настраивает обработчики событий
         setupEventListeners() {
-          const buttons = container.querySelectorAll('.size-btn');
+          const buttons = container.querySelectorAll('.size-btn')
           for (const button of buttons) {
             button.addEventListener('click', () => {
-              const size = Number.parseInt(button.dataset.size, 10);
-              this.setSize(size);
-            });
+              const size = Number.parseInt(button.dataset.size, 10)
+              this.setSize(size)
+            })
           }
         },
         // Устанавливает размер
         setSize(size) {
-          this.currentSize = size;
+          this.currentSize = size
           // Обновляем активную кнопку
-          const buttons = container.querySelectorAll('.size-btn');
+          const buttons = container.querySelectorAll('.size-btn')
           for (const btn of buttons) {
-            btn.classList.toggle('active', Number.parseInt(btn.dataset.size, 10) === size);
+            btn.classList.toggle('active', Number.parseInt(btn.dataset.size, 10) === size)
           }
           // Вызываем callback
-          this.options.onSizeChange?.(size);
+          this.options.onSizeChange?.(size)
         }
-      };
+      }
 
-      return component.render();
+      return component.render()
     }
     /**
      * Создает переиспользуемый компонент статуса
@@ -367,7 +365,7 @@ if (typeof SharedComponents === 'undefined') {
         autoHide: false,
         hideDelay: 3000,
         ...options
-      };
+      }
 
       const component = {
         container,
@@ -376,23 +374,23 @@ if (typeof SharedComponents === 'undefined') {
         elements: {},
         // Создает HTML для индикатора статуса
         render() {
-          const statusIndicator = document.createElement('div');
-          statusIndicator.className = 'status-indicator';
+          const statusIndicator = document.createElement('div')
+          statusIndicator.className = 'status-indicator'
           statusIndicator.innerHTML = `
     <div class="status-content">
     ${defaultOptions.showIcon ? '<span class="status-icon">⏳</span>' : ''}
     <span class="status-text">${defaultOptions.title}</span>
     </div>
-    `;
-          container.appendChild(statusIndicator);
-          this.setupElements();
-          return this;
+    `
+          container.appendChild(statusIndicator)
+          this.setupElements()
+          return this
         },
         // Настраивает ссылки на элементы
         setupElements() {
-          this.elements.container = container.querySelector('.status-indicator');
-          this.elements.icon = container.querySelector('.status-icon');
-          this.elements.text = container.querySelector('.status-text');
+          this.elements.container = container.querySelector('.status-indicator')
+          this.elements.icon = container.querySelector('.status-icon')
+          this.elements.text = container.querySelector('.status-text')
         },
         /**
          * Устанавливает статус индикатора
@@ -400,61 +398,61 @@ if (typeof SharedComponents === 'undefined') {
          * @param {string} message - Текстовое сообщение статуса
          */
         setStatus(status, message) {
-          this.currentStatus = status;
+          this.currentStatus = status
           if (this.elements.text) {
-            this.elements.text.textContent = message;
+            this.elements.text.textContent = message
           }
           if (this.elements.icon) {
             switch (status) {
               case 'success':
-                this.elements.icon.textContent = '✅';
-                break;
+                this.elements.icon.textContent = '✅'
+                break
               case 'error':
-                this.elements.icon.textContent = '❌';
-                break;
+                this.elements.icon.textContent = '❌'
+                break
               case 'warning':
-                this.elements.icon.textContent = '⚠️';
-                break;
+                this.elements.icon.textContent = '⚠️'
+                break
               case 'loading':
-                this.elements.icon.textContent = '⏳';
-                break;
+                this.elements.icon.textContent = '⏳'
+                break
               case 'waiting':
-                this.elements.icon.textContent = '⏳';
-                break;
+                this.elements.icon.textContent = '⏳'
+                break
               default:
-                this.elements.icon.textContent = '⏳';
+                this.elements.icon.textContent = '⏳'
             }
           }
 
           // Обновляем CSS классы для статуса
           if (this.elements.container) {
-            this.elements.container.classList.remove('status-success', 'status-error', 'status-warning', 'status-loading', 'status-waiting', 'status-idle');
-            this.elements.container.classList.add(`status-${status}`);
+            this.elements.container.classList.remove('status-success', 'status-error', 'status-warning', 'status-loading', 'status-waiting', 'status-idle')
+            this.elements.container.classList.add(`status-${status}`)
           }
 
           // Автоматическое скрытие если включено
           if (this.options.autoHide && status === 'success') {
             setTimeout(() => {
               if (this.elements.container) {
-                this.elements.container.style.display = 'none';
+                this.elements.container.style.display = 'none'
               }
-            }, this.options.hideDelay);
+            }, this.options.hideDelay)
           }
         }
-      };
+      }
 
-      return component.render();
+      return component.render()
     }
   }
   // Создаем глобальный экземпляр
-  const sharedComponents = new SharedComponents();
+  const sharedComponents = new SharedComponents()
   // Экспортируем для использования
   if (typeof globalThis !== 'undefined') {
-    globalThis.SharedComponents = SharedComponents;
-    globalThis.sharedComponents = sharedComponents;
+    globalThis.SharedComponents = SharedComponents
+    globalThis.sharedComponents = sharedComponents
   }
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { SharedComponents, sharedComponents };
+    module.exports = { SharedComponents, sharedComponents }
   }
 }

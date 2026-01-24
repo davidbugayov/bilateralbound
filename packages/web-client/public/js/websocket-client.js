@@ -1,5 +1,3 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
-/* global globalThis, console, module, WebSocket */
 
 /**
  * WebSocketClient - Модернизированный клиент для WebSocket соединений
@@ -64,12 +62,12 @@ if (typeof WebSocketClient === 'undefined') {
     }
 
     _generateWebSocketUrl() {
-      const protocol = this.config.isSecure ? 'wss:' : 'ws:';
-      const host = globalThis.location.host;
-      const url = new URL(`${protocol}//${host}`);
-      url.searchParams.set('sessionId', this.sessionId);
-      url.searchParams.set('role', this.role);
-      return url.toString();
+      const protocol = this.config.isSecure ? 'wss:' : 'ws:'
+      const host = globalThis.location.host
+      const url = new URL(`${protocol}//${host}`)
+      url.searchParams.set('sessionId', this.sessionId)
+      url.searchParams.set('role', this.role)
+      return url.toString()
     }
     // ===== ОСНОВНЫЕ МЕТОДЫ =====
     /**
@@ -77,40 +75,40 @@ if (typeof WebSocketClient === 'undefined') {
      */
     async connect() {
       if (this.isConnected || this.isConnecting) {
-        this.log('Connection already in progress or established');
-        return;
+        this.log('Connection already in progress or established')
+        return
       }
 
       return new Promise((resolve, reject) => {
-        this.isConnecting = true;
-        this.log(`Connecting to ${this.url}`);
+        this.isConnecting = true
+        this.log(`Connecting to ${this.url}`)
         try {
-          this.ws = new WebSocket(this.url);
-          this._setupEventHandlers();
+          this.ws = new WebSocket(this.url)
+          this._setupEventHandlers()
           const connectionTimeout = setTimeout(() => {
             if (this.isConnecting) {
-              this.isConnecting = false;
-              this.ws?.close();
-              reject(new Error('Connection timeout'));
+              this.isConnecting = false
+              this.ws?.close()
+              reject(new Error('Connection timeout'))
             }
-          }, 10000);
+          }, 10000)
           this.ws.onopen = () => {
-            clearTimeout(connectionTimeout);
-            this._handleConnectionSuccess();
-            resolve();
-          };
+            clearTimeout(connectionTimeout)
+            this._handleConnectionSuccess()
+            resolve()
+          }
 
           this.ws.onerror = error => {
-            clearTimeout(connectionTimeout);
-            this.isConnecting = false;
-            this._handleConnectionError(error);
-            reject(new Error('WebSocket connection failed'));
-          };
+            clearTimeout(connectionTimeout)
+            this.isConnecting = false
+            this._handleConnectionError(error)
+            reject(new Error('WebSocket connection failed'))
+          }
         } catch (error) {
-          this.isConnecting = false;
-          reject(new Error(`WebSocket connection failed: ${error.message}`));
+          this.isConnecting = false
+          reject(new Error(`WebSocket connection failed: ${error.message}`))
         }
-      });
+      })
     }
     /**
      * Улучшенная отправка с приоритетами и буферизацией
@@ -189,10 +187,10 @@ if (typeof WebSocketClient === 'undefined') {
      */
     on(eventType, handler) {
       if (!this.eventHandlers.has(eventType)) {
-        this.eventHandlers.set(eventType, []);
+        this.eventHandlers.set(eventType, [])
       }
 
-      this.eventHandlers.get(eventType).push(handler);
+      this.eventHandlers.get(eventType).push(handler)
     }
     // ===== ВНУТРЕННИЕ МЕТОДЫ =====
     _setupEventHandlers() {

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 module.exports = {
   env: {
     browser: true,
@@ -78,7 +79,6 @@ module.exports = {
         setDirection: 'readonly',
         updateDirectionButtons: 'readonly',
         updateDirectionDisplay: 'readonly',
-        updateViewerStatusUI: 'readonly',
         resizePreviewFullscreen: 'readonly',
         setBallColor: 'readonly',
         setBallSize: 'readonly',

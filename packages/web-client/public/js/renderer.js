@@ -1,7 +1,5 @@
-/* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
-/* global globalThis, console, module, Path2D, cancelAnimationFrame, requestAnimationFrame, performance */
 
-'use strict';
+'use strict'
 /**
  * BallRenderer - оптимизированный модуль рендеринга для BilateralBound
  * Отвечает за отрисовку шарика и фона
@@ -301,8 +299,8 @@ if (typeof BallRenderer === 'undefined') {
      * Вызывается при изменении цвета или размера
      */
     invalidateBallCache() {
-      this.cachedBallGradient = null;
-      this.cachedBallGeometry = null;
+      this.cachedBallGradient = null
+      this.cachedBallGeometry = null
     }
 
     /**
