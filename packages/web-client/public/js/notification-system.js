@@ -1,12 +1,12 @@
 /* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, unused: false, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
 /* global globalThis, console, module */
-/* eslint-disable no-useless-escape, prefer-const, jsdoc/no-defaults, no-unused-vars, no-useless-constructor, no-undef */
+/* eslint-disable jsdoc/no-defaults, no-undef */
 
 /**
  * Улучшенная система уведомлений для BilateralBound
  * Поддержка разных типов уведомлений с красивыми анимациями
  */
-// eslint-disable-next-line no-unused-vars
+ 
 class NotificationSystem {
   constructor() {
     this.autoHideTimeout = 5000

@@ -26,21 +26,21 @@ log_error() {
 deploy_prod() {
     log "Deploying Production (emdrbilateral.online)..."
     sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
-        "cd /var/www/bilateralbound-prod && git fetch --all && git checkout stable && git reset --hard origin/stable && npm ci --production --legacy-peer-deps && systemctl restart bilateralbound-prod && systemctl status bilateralbound-prod --no-pager"
+        "cd /var/www/emdrbilateral.online && git fetch --all && git checkout stable && git reset --hard origin/stable && systemctl restart emdrbilateral-online.service && systemctl status emdrbilateral-online.service --no-pager"
     log_success "Production deployed successfully"
 }
 
 deploy_prod_ru() {
     log "Deploying Production RU (emdrbilateral.ru)..."
     sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
-        "cd /var/www/bilateralbound-prod-ru && git fetch --all && git checkout stable && git reset --hard origin/stable && npm ci --production --legacy-peer-deps && systemctl restart bilateralbound-prod-ru && systemctl status bilateralbound-prod-ru --no-pager"
+        "cd /var/www/emdrbilateral.ru && git fetch --all && git checkout stable && git reset --hard origin/stable && systemctl restart emdrbilateral-ru.service && systemctl status emdrbilateral-ru.service --no-pager"
     log_success "Production RU deployed successfully"
 }
 
 deploy_dev() {
     log "Deploying Dev (dev.emdrbilateral.online)..."
     sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
-        "cd /var/www/bilateralbound-dev && git fetch --all && git checkout main && git reset --hard origin/main && npm ci --production --legacy-peer-deps && systemctl restart bilateralbound-dev && systemctl status bilateralbound-dev --no-pager"
+        "cd /var/www/dev.emdrbilateral.online && git fetch --all && git checkout stable-enhanced && git reset --hard origin/stable-enhanced && systemctl restart emdrbilateral-dev.service && systemctl status emdrbilateral-dev.service --no-pager"
     log_success "Dev deployed successfully"
 }
 
@@ -96,7 +96,7 @@ fi
 while true; do
     show_menu
     read -r option
-    
+
     case $option in
         1)
             deploy_prod
@@ -118,7 +118,7 @@ while true; do
             log_error "Invalid option!"
             ;;
     esac
-    
+
     echo ""
     echo -n "Press Enter to continue..."
     read -r

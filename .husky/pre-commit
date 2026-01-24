@@ -1,7 +1,11 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Синхронизируем версии перед коммитом
-echo "🔄 Синхронизация версий..."
-node scripts/sync-versions.js
+# Автообновление версии перед коммитом
+echo "🔄 Обновление версии..."
+node scripts/update-version.js
 
+# Добавляем обновленные файлы
+git add package.json packages/*/package.json packages/web-client/public/*.html
+
+echo "✅ Версия обновлена"

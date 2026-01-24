@@ -16,9 +16,10 @@ NC='\033[0m' # No Color
 SERVER="213.139.229.44"
 USER="root"
 PASSWORD='9Ddc0BYKqrJZm6a9'
-DEV_PATH="/var/www/dev"
+DEV_PATH="/var/www/dev.emdrbilateral.online"
 BRANCH="stable-enhanced"
 DOMAIN="dev.emdrbilateral.online"
+SERVICE_NAME="emdrbilateral-dev"
 RETRY_ATTEMPTS=3
 RETRY_DELAY=5
 
@@ -79,15 +80,15 @@ deploy_dev_stable_enhanced() {
     log "📝 Информация о последних коммитах:"
     ssh_exec "cd $DEV_PATH && git log --oneline -3"
 
-    log "🔄 Перезапуск сервиса bilateralbound-dev..."
-    ssh_exec "systemctl restart bilateralbound-dev"
+    log "🔄 Перезапуск сервиса ${SERVICE_NAME}..."
+    ssh_exec "systemctl restart ${SERVICE_NAME}"
     log_success "Команда перезагрузки отправлена"
 
     # Ждем пару секунд перед проверкой статуса
     sleep 2
 
     log "🔍 Проверка статуса сервиса..."
-    ssh_exec "systemctl is-active bilateralbound-dev || systemctl status bilateralbound-dev"
+    ssh_exec "systemctl is-active ${SERVICE_NAME} || systemctl status ${SERVICE_NAME}"
 
     log_success "✨ Развертывание завершено успешно!"
     log_success "📱 Приложение должно быть доступно на: https://$DOMAIN"
@@ -108,7 +109,7 @@ check_server() {
 # Функция для отката на предыдущую версию в случае ошибки
 rollback() {
     log_error "Ошибка при развертывании! Выполняю откат..."
-    ssh_exec "cd $DEV_PATH && git revert --no-commit HEAD && systemctl restart bilateralbound-dev"
+    ssh_exec "cd $DEV_PATH && git revert --no-commit HEAD && systemctl restart ${SERVICE_NAME}"
     log_error "Откат выполнен"
 }
 
@@ -137,14 +138,14 @@ show_help() {
 
 # Функция для проверки статуса сервиса
 check_service_status() {
-    log "🔍 Проверка статуса сервиса bilateralbound-dev..."
-    ssh_exec "systemctl status bilateralbound-dev --no-pager || true"
+    log "🔍 Проверка статуса сервиса ${SERVICE_NAME}..."
+    ssh_exec "systemctl status ${SERVICE_NAME} --no-pager || true"
 }
 
 # Функция для просмотра логов
 show_logs() {
-    log "📋 Последние 50 строк логов сервиса bilateralbound-dev:"
-    ssh_exec "journalctl -u bilateralbound-dev -n 50 --no-pager"
+    log "📋 Последние 50 строк логов сервиса ${SERVICE_NAME}:"
+    ssh_exec "journalctl -u ${SERVICE_NAME} -n 50 --no-pager"
 }
 
 # Обработка аргументов командной строки

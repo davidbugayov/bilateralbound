@@ -39,6 +39,7 @@ function getGitHash() {
 // Update version in package.json
 function updatePackageJson(filePath, version) {
   const content = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+  // Храним только чистую семантическую версию без хешей
   content.version = version
   fs.writeFileSync(filePath, JSON.stringify(content, null, 2) + '\n')
   console.log(`✅ Updated ${path.relative(ROOT, filePath)}: ${version}`)

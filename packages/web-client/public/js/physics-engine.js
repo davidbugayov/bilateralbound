@@ -1,6 +1,6 @@
 /* jshint boss: true, laxbreak: true, laxcomma: true, asi: true, esversion: 11, es3: false, es5: false, eqeqeq: false, immed: false, nonbsp: true, strict: false, curly: false, forin: false, -W140: true */
 /* global globalThis, console, module, Map, Set */
-/* eslint-disable no-undefined, prefer-const */
+ 
 
 'use strict';
 /**

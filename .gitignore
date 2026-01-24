@@ -70,11 +70,27 @@ temp/
 
 # IDE files
 .vscode/
-.idea/
+.idea/*
+!.idea/vcs.xml
+!.idea/modules.xml
 *.iml
 *.ipr
 *.iws
 .vscode-test
+
+# IntelliJ IDEA caches and indexes (улучшает индексацию)
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries
+.idea/shelf
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
 
 # OS generated files
 .DS_Store
@@ -144,8 +160,8 @@ qodana_results/
 scanner-report/
 scannerwork/
 
-# SonarQube related files
-sonar-project.properties
+# SonarQube temporary files (но не конфиг!)
+.scannerwork/
 sonar-open-issues.json
 sonarqube-results.sarif
 
