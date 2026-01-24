@@ -633,31 +633,52 @@ if (typeof PhysicsEngine === 'undefined') {
       const worldWidth = this.options.worldWidth;
       const worldHeight = this.options.worldHeight;
       let bounced = false;
+
+      const dirX = this.state.lastDirection.x || 0;
+      const dirY = this.state.lastDirection.y || 0;
+
       // Проверяем левую и правую границы
+      // Отскок происходит только если мяч реально движется горизонтально
       if (ball.x < radius) {
         ball.x = radius; // Клампим позицию
-        // Сохраняем осевой замок: не вводим горизонталь, если она была 0
-        const dx = this.state.lastDirection.x || 0;
-        this.state.lastDirection.x = Math.abs(dx) < 1e-6 ? 0 : Math.abs(dx);
-        bounced = true;
+        // Отражаем направление только если было горизонтальное движение
+        if (Math.abs(dirX) > 1e-6) {
+          this.state.lastDirection.x = Math.abs(dirX);
+          bounced = true;
+        } else {
+          // Вертикальное движение - просто удерживаем мяч на границе
+          this.state.lastDirection.x = 0;
+        }
       } else if (ball.x > worldWidth - radius) {
         ball.x = worldWidth - radius; // Клампим позицию
-        const dx = this.state.lastDirection.x || 0;
-        this.state.lastDirection.x = Math.abs(dx) < 1e-6 ? 0 : -Math.abs(dx);
-        bounced = true;
+        if (Math.abs(dirX) > 1e-6) {
+          this.state.lastDirection.x = -Math.abs(dirX);
+          bounced = true;
+        } else {
+          this.state.lastDirection.x = 0;
+        }
       }
+
       // Проверяем верхнюю и нижнюю границы
+      // Отскок происходит только если мяч реально движется вертикально
       if (ball.y < radius) {
         ball.y = radius; // Клампим позицию
-        const dy = this.state.lastDirection.y || 0;
-        this.state.lastDirection.y = Math.abs(dy) < 1e-6 ? 0 : Math.abs(dy);
-        bounced = true;
+        if (Math.abs(dirY) > 1e-6) {
+          this.state.lastDirection.y = Math.abs(dirY);
+          bounced = true;
+        } else {
+          this.state.lastDirection.y = 0;
+        }
       } else if (ball.y > worldHeight - radius) {
         ball.y = worldHeight - radius; // Клампим позицию
-        const dy = this.state.lastDirection.y || 0;
-        this.state.lastDirection.y = Math.abs(dy) < 1e-6 ? 0 : -Math.abs(dy);
-        bounced = true;
+        if (Math.abs(dirY) > 1e-6) {
+          this.state.lastDirection.y = -Math.abs(dirY);
+          bounced = true;
+        } else {
+          this.state.lastDirection.y = 0;
+        }
       }
+
       // Вызываем callback при отскоке
       if (bounced) {
         this.handleBounce();
@@ -710,11 +731,29 @@ if (typeof PhysicsEngine === 'undefined') {
         this.ball.vx *= scale;
         this.ball.vy *= scale;
       } else if (currentSpeed === 0) {
-        // Устанавливаем минимальную скорость в направлении от центра
-        const dirX = this.ball.x < this.centerX ? 1 : -1;
-        const dirY = this.ball.y < this.centerY ? 1 : -1;
-        this.ball.vx = dirX * this.options.minSpeed;
-        this.ball.vy = dirY * this.options.minSpeed;
+        // Проверяем заданное направление движения
+        const dirX = this.state.lastDirection.x || 0;
+        const dirY = this.state.lastDirection.y || 0;
+
+        // Определяем, было ли движение строго вертикальным или горизонтальным
+        const isVertical = Math.abs(dirX) < 1e-6 && Math.abs(dirY) > 0;
+        const isHorizontal = Math.abs(dirY) < 1e-6 && Math.abs(dirX) > 0;
+
+        if (isVertical) {
+          // Для вертикального движения сохраняем только вертикальную скорость
+          this.ball.vx = 0;
+          this.ball.vy = Math.sign(dirY) * this.options.minSpeed;
+        } else if (isHorizontal) {
+          // Для горизонтального движения сохраняем только горизонтальную скорость
+          this.ball.vx = Math.sign(dirX) * this.options.minSpeed;
+          this.ball.vy = 0;
+        } else {
+          // Для диагонального или неопределенного движения используем направление от центра
+          const fallbackDirX = this.ball.x < this.centerX ? 1 : -1;
+          const fallbackDirY = this.ball.y < this.centerY ? 1 : -1;
+          this.ball.vx = fallbackDirX * this.options.minSpeed;
+          this.ball.vy = fallbackDirY * this.options.minSpeed;
+        }
       }
     }
     /**

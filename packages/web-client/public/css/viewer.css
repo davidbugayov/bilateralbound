@@ -84,6 +84,7 @@ body.light-theme .loading::after {
   z-index: 1000;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
 }
 
 .status-online {
@@ -94,6 +95,52 @@ body.light-theme .loading::after {
 .status-offline {
   border-color: #ef4444;
   color: #ef4444;
+}
+
+/* Waiting status with pulse animation */
+.status-overlay.status-waiting {
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+.status-overlay.status-waiting::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.status-overlay.status-waiting {
+  padding-left: 35px;
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgb(59 130 246 / 20%);
+  }
+  50% {
+    border-color: #60a5fa;
+    box-shadow: 0 4px 20px rgb(59 130 246 / 40%);
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.2);
+  }
 }
 
 /* Controls */
