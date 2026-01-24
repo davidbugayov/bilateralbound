@@ -36,10 +36,15 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   font-size: 0.95rem;
   color: #64748b;
   flex-wrap: wrap;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 5%);
 }
 
 .session-info-item {
@@ -49,16 +54,29 @@
 }
 
 .session-info-timestamp {
-  color: #64748b;
+  color: #475569;
   font-size: 0.9rem;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  font-weight: 500;
 }
 
 .session-info-timestamp::before {
   content: "⏰";
-  font-size: 1.1em;
+  font-size: 1.2em;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 10%));
+}
+
+/* Dark theme session info */
+body:not(.light-theme) .session-info {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-color: #334155;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+}
+
+body:not(.light-theme) .session-info-timestamp {
+  color: #94a3b8;
 }
 
 /* === VIEWER STATUS STYLES === */
@@ -67,29 +85,59 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.light-theme .link-group__label {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 #viewerSessionId {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.75em;
-  color: #94a3b8;
+  font-size: 0.8em;
+  color: #22d3ee;
   font-weight: 700;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  padding: 6px 10px;
-  border-radius: 6px;
-  letter-spacing: 0.8px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  letter-spacing: 1px;
   border: 1px solid #334155;
-  box-shadow: inset 0 1px 2px rgb(0 0 0 / 50%);
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 50%),
+    0 0 0 1px rgb(34 211 238 / 10%);
+  transition: all 0.3s ease;
+}
+
+#viewerSessionId:hover {
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 50%),
+    0 0 12px rgb(34 211 238 / 30%);
+  transform: translateY(-1px);
 }
 
 .light-theme #viewerSessionId {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  color: #475569;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  color: #0891b2;
   border-color: #cbd5e1;
-  box-shadow: inset 0 1px 2px rgb(255 255 255 / 50%);
+  box-shadow:
+    inset 0 1px 2px rgb(255 255 255 / 50%),
+    0 2px 4px rgb(0 0 0 / 5%);
+}
+
+.light-theme #viewerSessionId:hover {
+  box-shadow:
+    inset 0 1px 2px rgb(255 255 255 / 50%),
+    0 4px 8px rgb(8 145 178 / 15%);
+  transform: translateY(-1px);
 }
 
 #viewerStatus {
@@ -125,7 +173,7 @@
 }
 
 #viewerStatus.disconnected::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 8px;
   top: 50%;
@@ -142,11 +190,13 @@
 }
 
 @keyframes pulse-waiting {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow:
       0 0 12px rgb(59 130 246 / 30%),
       inset 0 1px 2px rgb(255 255 255 / 80%);
   }
+
   50% {
     box-shadow:
       0 0 20px rgb(59 130 246 / 50%),
@@ -155,10 +205,12 @@
 }
 
 @keyframes pulse-dot-waiting {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
     transform: translateY(-50%) scale(1);
   }
+
   50% {
     opacity: 1;
     transform: translateY(-50%) scale(1.3);

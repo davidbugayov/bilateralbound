@@ -14,6 +14,12 @@
     "property-no-deprecated": null,
     "declaration-block-single-line-max-declarations": null,
     "no-descending-specificity": null,
+    "property-no-vendor-prefix": [
+      true,
+      {
+        "ignoreProperties": ["-webkit-background-clip", "-webkit-text-fill-color"]
+      }
+    ],
     "prettier/prettier": true
   },
   "ignoreFiles": [

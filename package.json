@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.38.20-8b87a7a",
+  "version": "2.38.20-bf20b85",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [

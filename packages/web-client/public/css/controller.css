@@ -125,13 +125,45 @@
 }
 
 /* Control section headings */
+/* stylelint-disable property-no-vendor-prefix */
 .control-section h3 {
-  color: #e2e8f0;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+  background-clip: text;
+  -webkit-background-clip: text; /* stylelint-disable-line */
+  -webkit-text-fill-color: transparent; /* stylelint-disable-line */
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+  filter: drop-shadow(0 2px 4px rgb(59 130 246 / 20%));
+}
+
+.control-section h3 #curSid {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  background-clip: text;
+  -webkit-background-clip: text; /* stylelint-disable-line */
+  -webkit-text-fill-color: transparent; /* stylelint-disable-line */
+  font-weight: 800;
+  letter-spacing: 0.05em;
 }
 
 .light-theme .control-section h3 {
-  color: #1e293b;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1e40af 100%);
+  background-clip: text;
+  -webkit-background-clip: text; /* stylelint-disable-line */
+  -webkit-text-fill-color: transparent; /* stylelint-disable-line */
+  filter: drop-shadow(0 2px 4px rgb(37 99 235 / 15%));
 }
+
+.light-theme .control-section h3 #curSid {
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  background-clip: text;
+  -webkit-background-clip: text; /* stylelint-disable-line */
+  -webkit-text-fill-color: transparent; /* stylelint-disable-line */
+}
+/* stylelint-enable property-no-vendor-prefix */
 
 .control-section p {
   color: #94a3b8;
@@ -328,7 +360,7 @@
   font-size: 0.85rem;
   background: rgb(100 100 100 / 10%);
   border: 1px solid rgb(100 100 100 / 20%);
-  color: var(--text-secondary, #888);
+  color: #888;
   transition: all 0.3s ease;
 }
 
@@ -348,10 +380,12 @@
 }
 
 @keyframes soundPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.7;
     transform: scale(1.05);
