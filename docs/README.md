@@ -11,7 +11,6 @@
 - **[NPM_COMMANDS.md](NPM_COMMANDS.md)** - NPM команды и скрипты разработки
 - **[SERVER_STRUCTURE.md](SERVER_STRUCTURE.md)** - Архитектура серверной части
 - **[OPTIMIZATION_REPORT.md](OPTIMIZATION_REPORT.md)** - Отчет по оптимизации проекта
-- **[JSHINT_CONFIGURATION.md](JSHINT_CONFIGURATION.md)** - Конфигурация линтеров и качества кода
 
 ---
 
@@ -45,7 +44,6 @@ npm run deploy:prod  # Деплой на продакшн
 2. **[NPM_COMMANDS.md](NPM_COMMANDS.md)** - изучите доступные команды
 3. **[SERVER_STRUCTURE.md](SERVER_STRUCTURE.md)** - разберитесь в архитектуре
 4. **[OPTIMIZATION_REPORT.md](OPTIMIZATION_REPORT.md)** - узнайте о производительности
-5. **[JSHINT_CONFIGURATION.md](JSHINT_CONFIGURATION.md)** - настройте среду разработки
 
 ---
 
