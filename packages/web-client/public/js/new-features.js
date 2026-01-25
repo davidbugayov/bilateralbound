@@ -338,11 +338,11 @@ class FeatureManager {
   }
 
   handleKeyPress(event) {
-    // Игнорируем если фокус в input
-    if (event.target.tagName === 'INPUT') return
+    // Игнорируем если фокус в input или textarea
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return
 
     // Обработка комбинаций Ctrl
-    if (event.ctrlKey) {
+    if (event.ctrlKey || event.metaKey) {
       switch (event.key) {
         case 'z':
           event.preventDefault()
@@ -360,7 +360,9 @@ class FeatureManager {
     switch (event.key) {
       case ' ':
         event.preventDefault()
-        togglePlayPause()
+        if (typeof togglePlayPause === 'function') {
+          togglePlayPause()
+        }
         break
       case 'ArrowUp':
       case 'ArrowDown':
@@ -369,6 +371,8 @@ class FeatureManager {
         event.preventDefault()
         this.handleArrowKeys(event.key)
         break
+      // Клавиша F обрабатывается в controller.js для полноэкранного режима
+      // не обрабатываем её здесь
     }
   }
 

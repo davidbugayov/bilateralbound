@@ -31,7 +31,9 @@ body {
     )
     fixed;
   color: #374151;
-  overflow-x: hidden;
+  /* Разрешаем скролл в обоих направлениях для адаптивности */
+  overflow-x: auto;
+  overflow-y: auto;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   min-height: 100vh;

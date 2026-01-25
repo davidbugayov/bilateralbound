@@ -344,28 +344,45 @@ function setupFullscreenListeners() {
   const overlay = document.getElementById('previewOverlay')
   previewFsCanvas = document.getElementById('previewFullscreenCanvas')
 
-  if (openFsBtn && exitFsBtn && overlay && previewFsCanvas) {
-    openFsBtn.addEventListener('click', openPreviewFullscreen)
-    exitFsBtn.addEventListener('click', closePreviewFullscreen)
+  // Регистрируем обработчики клавиш всегда
+  document.addEventListener('keydown', handleFullscreenKeydown)
+  globalThis.addEventListener('popstate', handlePopState)
 
-    globalThis.addEventListener('resize', () => {
-      if (isPreviewFullscreen) resizePreviewFullscreen()
+  // Регистрируем обработчик открытия независимо
+  if (openFsBtn) {
+    openFsBtn.addEventListener('click', () => {
+      console.log('🎬 Клик по кнопке полноэкранного режима')
+      openPreviewFullscreen()
     })
-
-    document.addEventListener('keydown', handleFullscreenKeydown)
-    globalThis.addEventListener('popstate', handlePopState)
   }
+
+  // Регистрируем обработчик закрытия независимо
+  if (exitFsBtn) {
+    exitFsBtn.addEventListener('click', closePreviewFullscreen)
+  }
+
+  // Регистрируем resize
+  globalThis.addEventListener('resize', () => {
+    if (isPreviewFullscreen) resizePreviewFullscreen()
+  })
 }
 
 function handleFullscreenKeydown(e) {
+  // Игнорируем если фокус в input или textarea
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+    return
+  }
+
   const key = e?.key?.toLowerCase()
   if (key === 'f') {
+    e.preventDefault()
     if (isPreviewFullscreen) {
       closePreviewFullscreen()
     } else {
       openPreviewFullscreen()
     }
   } else if (key === 'escape' && isPreviewFullscreen) {
+    e.preventDefault()
     closePreviewFullscreen()
   }
 }
@@ -658,6 +675,10 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       if (sizeChanged) {
         updatePreviewSize(nextSize)
         updateViewerStatusUI()
+        // Обновляем статус в полноэкранном режиме если он открыт
+        if (isPreviewFullscreen) {
+          updateFullscreenViewerStatus()
+        }
         // При изменении размеров обновляем превью, но не останавливаем игру
         // Игра должна продолжать работать
       }
@@ -1335,10 +1356,27 @@ function applyServerStateOrCenter() {
 }
 
 function centerBallInViewer() {
-  if (globalThis.__current.viewerScreenSize?.width > 0) {
+  if (!previewPhysicsEngine) return
+
+  // Пытаемся использовать размеры вьювера если они известны
+  if (globalThis.__current?.viewerScreenSize?.width > 0) {
     const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
     const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
     previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
+    previewPhysicsEngine.setVelocity(0, 0)
+  }
+  // Fallback: используем размеры canvas превью
+  else if (isPreviewFullscreen && previewFsCanvas) {
+    const centerX = previewFsCanvas.width / 2
+    const centerY = previewFsCanvas.height / 2
+    previewPhysicsEngine.setPosition(centerX, centerY)
+    previewPhysicsEngine.setVelocity(0, 0)
+  }
+  // Fallback: используем размеры обычного canvas превью
+  else if (globalThis.__previewCanvas) {
+    const centerX = globalThis.__previewCanvas.width / 2
+    const centerY = globalThis.__previewCanvas.height / 2
+    previewPhysicsEngine.setPosition(centerX, centerY)
     previewPhysicsEngine.setVelocity(0, 0)
   }
 }
@@ -1849,11 +1887,6 @@ function updateViewerAudioIndicators() {
   const soundPlayingIndicator = document.getElementById('viewerSoundPlayingIndicator')
 
   if (!audioIndicator || !audioText || !soundPlayingIndicator) {
-    console.warn('❌ updateViewerAudioIndicators: HTML элементы не найдены', {
-      audioIndicator: !!audioIndicator,
-      audioText: !!audioText,
-      soundPlayingIndicator: !!soundPlayingIndicator
-    })
     return
   }
 
@@ -1862,16 +1895,14 @@ function updateViewerAudioIndicators() {
   const isPlaying = globalThis.__current?.isPlaying ?? false
   const viewerAudioActivated = globalThis.__current?.viewerAudioActivated ?? false
 
-  console.log('📊 updateViewerAudioIndicators:', {
-    isViewerConnected,
-    soundEnabled,
-    isPlaying,
-    viewerAudioActivated,
-    currentText: audioText?.textContent
-  })
+  // Кэшируем предыдущее состояние для предотвращения лишних обновлений
+  const currentState = `${soundEnabled}-${viewerAudioActivated}-${isPlaying}`
+  if (updateViewerAudioIndicators._lastState === currentState) {
+    return // Состояние не изменилось, не обновляем
+  }
+  updateViewerAudioIndicators._lastState = currentState
 
   // Показываем индикаторы когда звук включен в контроллере
-  // (не требуем viewerConnected так как оно может быть false временно)
   if (soundEnabled) {
     // Если зритель еще не активировал звук - показываем предупреждение
     if (!viewerAudioActivated) {
@@ -1881,7 +1912,6 @@ function updateViewerAudioIndicators() {
       audioText.textContent = 'Ожидание: зритель должен нажать "Включить звук"'
       soundPlayingIndicator.classList.add('hidden')
       soundPlayingIndicator.classList.remove('active')
-      console.log('🎯 Показываем: Ожидание активации')
     }
     // Зритель активировал звук - показываем что звук готов
     else {
@@ -1889,7 +1919,6 @@ function updateViewerAudioIndicators() {
       audioIndicator.classList.add('ready')
       audioIndicator.classList.remove('warning')
       audioText.textContent = 'Звук активирован у зрителя'
-      console.log('✅ Показываем: Звук активирован!')
 
       // Показываем индикатор воспроизведения если звук играет
       if (isPlaying) {
@@ -1904,7 +1933,6 @@ function updateViewerAudioIndicators() {
     // Скрываем все индикаторы когда звук выключен на контроллере
     audioIndicator.classList.add('hidden')
     soundPlayingIndicator.classList.add('hidden')
-    console.log('⚠️ Скрываем индикаторы: soundEnabled=%s', soundEnabled)
   }
 }
 
@@ -1949,6 +1977,9 @@ function openPreviewFullscreen() {
   overlay.style.display = 'block'
   isPreviewFullscreen = true
 
+  // Добавляем класс к body для скрытия кнопки "На главную"
+  document.body.classList.add('fullscreen-active')
+
   _initializeFullscreenRenderer()
 
   resizePreviewFullscreen()
@@ -1958,6 +1989,11 @@ function openPreviewFullscreen() {
   syncFsPlayPauseButton()
   wireFullscreenControls()
   fillFsSessionInfo()
+
+  // Центрируем мяч если вьювер не подключен
+  if (!globalThis.__current?.viewerConnected && previewPhysicsEngine) {
+    centerBallInViewer()
+  }
 }
 
 function closePreviewFullscreen() {
@@ -1971,6 +2007,9 @@ function closePreviewFullscreen() {
   history.replaceState(null, '', baseUrl)
   overlay.style.display = 'none'
   isPreviewFullscreen = false
+
+  // Убираем класс от body
+  document.body.classList.remove('fullscreen-active')
 }
 
 function resizePreviewFullscreen() {
@@ -1985,6 +2024,10 @@ function resizePreviewFullscreen() {
     } else {
       // Фолбэк на размеры окна, если размеры вьювера ещё неизвестны
       previewPhysicsEngine.setWorldSize(globalThis.innerWidth, globalThis.innerHeight)
+      // Центрируем мяч после установки размеров
+      if (!globalThis.__current?.viewerConnected) {
+        centerBallInViewer()
+      }
     }
   }
 }
@@ -2248,8 +2291,30 @@ function fillFsSessionInfo() {
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')
     if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`
+
+    // Обновляем статус вьювера в полноэкранном режиме
+    updateFullscreenViewerStatus()
   } catch {
     console.warn('Error in fillFsSessionInfo')
+  }
+}
+
+/**
+ * Обновляет индикатор статуса вьювера в полноэкранном режиме
+ */
+function updateFullscreenViewerStatus() {
+  const fsViewerStatus = document.getElementById('fsViewerStatus')
+  if (!fsViewerStatus) return
+
+  const statusText = fsViewerStatus.querySelector('.fs-status-text')
+  if (!statusText) return
+
+  if (globalThis.__current?.viewerConnected) {
+    fsViewerStatus.classList.add('connected')
+    statusText.textContent = 'Подключен'
+  } else {
+    fsViewerStatus.classList.remove('connected')
+    statusText.textContent = 'Ожидание...'
   }
 }
 
