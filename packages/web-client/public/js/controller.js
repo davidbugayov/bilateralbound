@@ -31,6 +31,7 @@ let currentDirectionMode = 'horizontal'
 let wsClient
 let isInitialized = false // Флаг для предотвращения повторной инициализации
 let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
+let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
@@ -916,6 +917,12 @@ function _getDirectionMode(dirX, dirY) {
 
 function _syncUIDirection(ballState) {
   if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
+    // Не перезаписываем направление, если недавно изменили его локально
+    const now = performance.now()
+    if (now < __ignoreServerDirectionUntilTs) {
+      return
+    }
+
     directionState = { dx: ballState.dirX, dy: ballState.dirY }
     const mode = _getDirectionMode(ballState.dirX, ballState.dirY)
     if (mode) currentDirectionMode = mode
@@ -1476,6 +1483,9 @@ function setDirection(directionMode) {
     const { dirX, dirY } = directionVector
     directionState = { dx: dirX, dy: dirY }
     currentDirectionMode = directionMode
+
+    // Блокируем переопределение сервером на 800ms
+    __ignoreServerDirectionUntilTs = performance.now() + 800
 
     // Всегда обновляем локальное превью
     if (previewPhysicsEngine) {
