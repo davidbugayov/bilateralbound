@@ -208,7 +208,7 @@ class SessionManager {
   _applyPhysicsUpdates(session, validatedUpdates) {
     if (session.physicsEngine) {
       session.physicsEngine.applyCommand(validatedUpdates)
-      // Сохраняем звуковые настройки перед обновлением от физического движка
+      // Сохраняем настройки которые НЕ должны перезаписываться физикой
       const soundSettings = {}
       if (session.ballState.soundEnabled !== undefined) {
         soundSettings.soundEnabled = session.ballState.soundEnabled
@@ -216,10 +216,23 @@ class SessionManager {
       if (session.ballState.soundType !== undefined) {
         soundSettings.soundType = session.ballState.soundType
       }
+
+      // Сохраняем направление если оно не меняется этим обновлением
+      const preserveDirection = validatedUpdates.dirX === undefined && validatedUpdates.dirY === undefined
+      const userDirX = preserveDirection ? session.ballState.dirX : undefined
+      const userDirY = preserveDirection ? session.ballState.dirY : undefined
+
       Object.assign(session.ballState, session.physicsEngine.getState())
+
       // Восстанавливаем звуковые настройки
       if (Object.keys(soundSettings).length > 0) {
         Object.assign(session.ballState, soundSettings)
+      }
+
+      // Восстанавливаем направление если оно не обновлялось
+      if (preserveDirection && userDirX !== undefined && userDirY !== undefined) {
+        session.ballState.dirX = userDirX
+        session.ballState.dirY = userDirY
       }
 
       // Применяем новые звуковые настройки из validatedUpdates (они имеют приоритет)
@@ -484,16 +497,24 @@ class SessionManager {
         this._scaleBallPosition(session, currentState, validatedSize, wasPlaying)
       }
 
-      // Сохраняем звуковые настройки перед обновлением от физического движка
+      // Сохраняем настройки которые НЕ должны перезаписываться
       const soundEnabled = session.ballState.soundEnabled
       const soundType = session.ballState.soundType
+      const userDirX = session.ballState.dirX
+      const userDirY = session.ballState.dirY
+
       Object.assign(session.ballState, session.physicsEngine.getState())
-      // Восстанавливаем звуковые настройки
+
+      // Восстанавливаем сохраненные настройки
       if (soundEnabled !== undefined) {
         session.ballState.soundEnabled = soundEnabled
       }
       if (soundType !== undefined) {
         session.ballState.soundType = soundType
+      }
+      if (userDirX !== undefined && userDirY !== undefined) {
+        session.ballState.dirX = userDirX
+        session.ballState.dirY = userDirY
       }
     } else {
       this._setDefaultBallState(session, validatedSize)
@@ -619,9 +640,11 @@ class SessionManager {
           // Обновляем физику на сервере
           session.physicsEngine.update(PHYSICS_DT / 1000)
 
-          // Сохраняем звуковые настройки перед синхронизацией
+          // Сохраняем настройки которые НЕ должны перезаписываться физикой
           const soundEnabled = session.ballState.soundEnabled
           const soundType = session.ballState.soundType
+          const userDirX = session.ballState.dirX
+          const userDirY = session.ballState.dirY
 
           // Синхронизируем состояние сессии с движком
           Object.assign(session.ballState, session.physicsEngine.getState())
@@ -632,6 +655,14 @@ class SessionManager {
           }
           if (soundType !== undefined) {
             session.ballState.soundType = soundType
+          }
+
+          // КРИТИЧЕСКИ ВАЖНО: Восстанавливаем направление выбранное пользователем
+          // Физический движок меняет direction при отскоках, но мы не должны
+          // транслировать это клиентам - они ожидают сохранения выбранного режима
+          if (userDirX !== undefined && userDirY !== undefined) {
+            session.ballState.dirX = userDirX
+            session.ballState.dirY = userDirY
           }
 
           // Рассылаем обновленное состояние всем клиентам
