@@ -109,9 +109,11 @@ class SessionManager {
     }
 
     // Устанавливаем начальное направление движения (горизонтальное)
-    session.physicsEngine.setVelocity(1, 0)
-    session.ballState.vx = 1
-    session.ballState.vy = 0
+    // ВАЖНО: не устанавливаем скорость напрямую, только направление
+    session.physicsEngine.setDirection(1, 0)
+    session.ballState.dirX = 1
+    session.ballState.dirY = 0
+    // Скорость будет пересчитана при старте на основе направления
 
     session.ballState.paused = true
     session.physicsEngine.setPaused(true)
