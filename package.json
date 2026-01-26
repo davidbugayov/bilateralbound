@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.20",
+  "version": "2.39.21",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -34,10 +34,10 @@
     "sonar": "sonar-scanner",
     "deploy": "cd packages/server-core && npm start",
     "deploy:dev": "npm run deploy:dev:pull && npm run deploy:dev:restart",
-    "deploy:dev:pull": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/stable-enhanced'",
-    "deploy:dev:restart": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl restart emdrbilateral-dev'",
-    "deploy:dev:logs": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'journalctl -u emdrbilateral-dev -n 50 --no-pager'",
-    "deploy:dev:status": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl status emdrbilateral-dev --no-pager'",
+    "deploy:dev:pull": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/stable-enhanced'",
+    "deploy:dev:restart": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl restart emdrbilateral-dev'",
+    "deploy:dev:logs": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'journalctl -u emdrbilateral-dev -n 50 --no-pager'",
+    "deploy:dev:status": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl status emdrbilateral-dev --no-pager'",
     "deploy:prod": "npm run deploy:prod:pull && npm run deploy:prod:restart",
     "deploy:prod:pull": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/emdrbilateral.online && git fetch --all && git reset --hard origin/stable && cd /var/www/emdrbilateral.ru && git fetch --all && git reset --hard origin/stable'",
     "deploy:prod:restart": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl restart emdrbilateral-online && systemctl restart emdrbilateral-ru'",
