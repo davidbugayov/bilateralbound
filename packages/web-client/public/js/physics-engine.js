@@ -254,6 +254,12 @@ if (typeof PhysicsEngine === 'undefined') {
       this.clampBallWithinBounds()
     }
     /**
+     * Публичный метод для возврата в центр (используется сервером)
+     */
+    returnToCenter() {
+      this._resetBallToCenter()
+    }
+    /**
      * Устанавливает цвет шарика
      */
     setBallColor(color) {
