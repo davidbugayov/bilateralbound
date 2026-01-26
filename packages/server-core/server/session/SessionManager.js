@@ -637,17 +637,25 @@ class SessionManager {
 
       session.mainLoop = setInterval(() => {
         try {
+          // КРИТИЧЕСКИ ВАЖНО: Сохраняем направление выбранное пользователем ДО обновления физики
+          // Физический движок меняет direction при отскоках, но мы не должны
+          // транслировать это клиентам - они ожидают сохранения выбранного режима
+          const userDirX = session.ballState.dirX
+          const userDirY = session.ballState.dirY
+          const soundEnabled = session.ballState.soundEnabled
+          const soundType = session.ballState.soundType
+
           // Обновляем физику на сервере
           session.physicsEngine.update(PHYSICS_DT / 1000)
 
-          // Сохраняем настройки которые НЕ должны перезаписываться физикой
-          const soundEnabled = session.ballState.soundEnabled
-          const soundType = session.ballState.soundType
-          const userDirX = session.ballState.dirX
-          const userDirY = session.ballState.dirY
-
-          // Синхронизируем состояние сессии с движком
+          // Синхронизируем состояние сессии с движком (получаем x, y, vx, vy, paused и т.д.)
           Object.assign(session.ballState, session.physicsEngine.getState())
+
+          // Восстанавливаем направление выбранное пользователем (НЕ от физики!)
+          if (userDirX !== undefined && userDirY !== undefined) {
+            session.ballState.dirX = userDirX
+            session.ballState.dirY = userDirY
+          }
 
           // Восстанавливаем звуковые настройки
           if (soundEnabled !== undefined) {
@@ -657,13 +665,6 @@ class SessionManager {
             session.ballState.soundType = soundType
           }
 
-          // КРИТИЧЕСКИ ВАЖНО: Восстанавливаем направление выбранное пользователем
-          // Физический движок меняет direction при отскоках, но мы не должны
-          // транслировать это клиентам - они ожидают сохранения выбранного режима
-          if (userDirX !== undefined && userDirY !== undefined) {
-            session.ballState.dirX = userDirX
-            session.ballState.dirY = userDirY
-          }
 
           // Рассылаем обновленное состояние всем клиентам
           this.stateBroadcaster.broadcastState(sessionId)

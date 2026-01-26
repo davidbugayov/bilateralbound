@@ -118,6 +118,11 @@ git push origin stable-enhanced
 npm run deploy:dev
 ```
 
+### Быстрое обновление DEV (без коммита)
+```bash
+npm run deploy:dev  # Pull latest + restart
+```
+
 ### Проверка статуса после деплоя
 ```bash
 npm run deploy:dev:status
