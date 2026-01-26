@@ -923,11 +923,22 @@ function _syncUIDirection(ballState) {
       return
     }
 
-    directionState = { dx: ballState.dirX, dy: ballState.dirY }
     const mode = _getDirectionMode(ballState.dirX, ballState.dirY)
-    if (mode) currentDirectionMode = mode
-    updateDirectionButtons()
-    updateDirectionDisplay(ballState.dirX, ballState.dirY)
+
+    // Обновляем UI только если режим действительно изменился
+    if (mode && mode !== currentDirectionMode) {
+       console.log('[DEBUG_DIR] Direction changed from server', {
+          from: currentDirectionMode,
+          to: mode,
+          dirX: ballState.dirX,
+          dirY: ballState.dirY
+       })
+
+       directionState = { dx: ballState.dirX, dy: ballState.dirY }
+       currentDirectionMode = mode
+       updateDirectionButtons()
+       updateDirectionDisplay(ballState.dirX, ballState.dirY)
+    }
   }
 }
 
@@ -949,7 +960,7 @@ function syncUIWithState(ballState) {
     console.warn('Error in syncUIWithState')
   }
 }
-// ===== ИНИЦИАЛИЗАЦИЯ КОМПОНЕНТОВ =====
+// ===== ИНИЦИАЛИЗИРОВАНИЕ КОМПОНЕНТОВ =====
 function _initializeSpeedControl() {
   const container = document.getElementById('speedControl')
   if (!container) {
@@ -1484,8 +1495,8 @@ function setDirection(directionMode) {
     directionState = { dx: dirX, dy: dirY }
     currentDirectionMode = directionMode
 
-    // Блокируем переопределение сервером на 800ms
-    __ignoreServerDirectionUntilTs = performance.now() + 800
+    // Блокируем переопределение сервером на 1500ms (увеличено для стабильности)
+    __ignoreServerDirectionUntilTs = performance.now() + 1500
 
     // Всегда обновляем локальное превью
     if (previewPhysicsEngine) {
@@ -1913,7 +1924,7 @@ function updateViewerAudioIndicators() {
       audioText.textContent = 'Звук активирован у зрителя'
 
       // Показываем индикатор воспроизведения если звук играет
-      if (isPlaying) {
+      if ( isPlaying) {
         soundPlayingIndicator.classList.remove('hidden')
         soundPlayingIndicator.classList.add('active')
       } else {
