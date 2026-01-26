@@ -441,7 +441,7 @@ async function initializeDOMElements(sessionId) {
   // Устанавливаем ID сессии viewer'а
   const viewerSessionIdEl = document.getElementById('viewerSessionId')
   if (viewerSessionIdEl) {
-    viewerSessionIdEl.textContent = `[${sessionId}]`
+    viewerSessionIdEl.textContent = sessionId
   }
 
   // Устанавливаем статус viewer'а
