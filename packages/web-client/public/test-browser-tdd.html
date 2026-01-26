@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 TDD Тест скролла в браузере</title>
+
+    <!-- Подключаем те же CSS что и на основных страницах -->
+    <link rel="stylesheet" href="/css/shared-components.css?nocache=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/css/light-theme.css?nocache=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/css/main-page.css?nocache=<?php echo time(); ?>">
+
+    <style>
+        .test-results {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            max-width: 400px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .test-pass { color: #22c55e; font-weight: bold; }
+        .test-fail { color: #ef4444; font-weight: bold; }
+        .test-item { margin: 5px 0; }
+        .content-block {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 40px;
+            margin: 30px auto;
+            max-width: 800px;
+            min-height: 250px;
+        }
+        h1 {
+            text-align: center;
+            color: #1e40af;
+            margin: 40px 0;
+        }
+        .diagnostic {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 800px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .diagnostic div {
+            margin: 8px 0;
+        }
+        .success-box {
+            background: #dcfce7;
+            border: 2px solid #22c55e;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px auto;
+            max-width: 800px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-results" id="testResults">
+        <div style="font-weight: bold; margin-bottom: 10px;">🔬 TDD Тесты скролла</div>
+        <div id="testOutput">Загрузка...</div>
+    </div>
+
+    <h1>🔬 TDD Браузерный тест вертикального скролла</h1>
+
+    <div class="diagnostic" id="diagnosticInfo">
+        <div><strong>📊 Диагностическая информация:</strong></div>
+        <div id="diagData">Загрузка...</div>
+    </div>
+
+    <div class="content-block"><h2>📦 Блок 1</h2><p>Начало тестирования скролла...</p></div>
+    <div class="content-block"><h2>📦 Блок 2</h2><p>Продолжайте прокручивать...</p></div>
+    <div class="content-block"><h2>📦 Блок 3</h2><p>Треть пути...</p></div>
+    <div class="content-block"><h2>📦 Блок 4</h2><p>Почти там...</p></div>
+    <div class="content-block"><h2>📦 Блок 5</h2><p>Половина пути!</p></div>
+    <div class="content-block"><h2>📦 Блок 6</h2><p>Продолжайте...</p></div>
+    <div class="content-block"><h2>📦 Блок 7</h2><p>Почти...</p></div>
+    <div class="content-block"><h2>📦 Блок 8</h2><p>Совсем рядом...</p></div>
+    <div class="content-block"><h2>📦 Блок 9</h2><p>Последний рывок...</p></div>
+    <div class="success-box">
+        <h2>✅ Блок 10 - ФИНИШ!</h2>
+        <p><strong>Если вы видите этот блок, прокрутив страницу - скролл работает!</strong></p>
+    </div>
+
+    <script>
+        // TDD Тесты в браузере
+        const tests = [];
+        let passed = 0;
+        let failed = 0;
+
+        function test(name, fn) {
+            tests.push({ name, fn });
+        }
+
+        function assert(condition, message) {
+            if (!condition) {
+                throw new Error(message);
+            }
+        }
+
+        function assertEqual(actual, expected, message) {
+            if (actual !== expected) {
+                throw new Error(`${message}\nОжидалось: "${expected}"\nПолучено: "${actual}"`);
+            }
+        }
+
+        // === ТЕСТЫ ===
+
+        test('Body должен иметь overflow-y: scroll', () => {
+            const overflowY = getComputedStyle(document.body).overflowY;
+            assertEqual(overflowY, 'scroll', 'overflow-y должен быть scroll');
+        });
+
+        test('Body НЕ должен иметь overflow-y: hidden', () => {
+            const overflowY = getComputedStyle(document.body).overflowY;
+            assert(overflowY !== 'hidden', 'overflow-y не должен быть hidden');
+        });
+
+        test('HTML должен позволять скролл', () => {
+            const htmlOverflow = getComputedStyle(document.documentElement).overflowY;
+            assert(htmlOverflow === 'scroll' || htmlOverflow === 'auto' || htmlOverflow === 'visible',
+                'HTML должен разрешать скролл');
+        });
+
+        test('Контент должен превышать высоту viewport', () => {
+            const contentHeight = document.body.scrollHeight;
+            const viewportHeight = window.innerHeight;
+            assert(contentHeight > viewportHeight,
+                `Контент (${contentHeight}px) должен быть больше viewport (${viewportHeight}px)`);
+        });
+
+        test('Body не должен иметь фиксированную высоту', () => {
+            const height = getComputedStyle(document.body).height;
+            assert(!height.includes('100vh') && !height.match(/^\d+px$/),
+                'Body не должен иметь фиксированную высоту');
+        });
+
+        test('Body должен иметь position: relative или static', () => {
+            const position = getComputedStyle(document.body).position;
+            assert(position === 'relative' || position === 'static',
+                'position должен быть relative или static');
+        });
+
+        test('Скролл должен быть возможен программно', () => {
+            const canScroll = document.body.scrollHeight > window.innerHeight;
+            assert(canScroll, 'Программный скролл должен быть возможен');
+        });
+
+        test('Touch-action не должен блокировать скролл', () => {
+            const touchAction = getComputedStyle(document.body).touchAction;
+            assert(touchAction !== 'none', 'touch-action не должен быть none');
+        });
+
+        test('Body должен иметь min-height: 100vh', () => {
+            const minHeight = getComputedStyle(document.body).minHeight;
+            assert(minHeight.includes('100vh') || parseInt(minHeight) >= window.innerHeight,
+                'min-height должен быть 100vh или больше viewport');
+        });
+
+        // Запуск тестов
+        function runTests() {
+            const output = [];
+
+            tests.forEach(({ name, fn }) => {
+                try {
+                    fn();
+                    passed++;
+                    output.push(`<div class="test-item test-pass">✓ ${name}</div>`);
+                } catch (error) {
+                    failed++;
+                    output.push(`<div class="test-item test-fail">✗ ${name}</div>`);
+                    output.push(`<div style="color: #dc2626; font-size: 11px; margin-left: 15px;">${error.message}</div>`);
+                }
+            });
+
+            const summary = `
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ccc;">
+                    <strong>Результат:</strong><br>
+                    <span class="test-pass">Пройдено: ${passed}</span><br>
+                    <span class="test-fail">Провалено: ${failed}</span><br>
+                    Всего: ${tests.length}
+                </div>
+            `;
+
+            document.getElementById('testOutput').innerHTML = output.join('') + summary;
+
+            // Диагностика
+            const body = document.body;
+            const html = document.documentElement;
+            const diagnostics = {
+                'Body overflow-y': getComputedStyle(body).overflowY,
+                'Body overflow-x': getComputedStyle(body).overflowX,
+                'HTML overflow-y': getComputedStyle(html).overflowY,
+                'Body height': getComputedStyle(body).height,
+                'Body min-height': getComputedStyle(body).minHeight,
+                'Body scrollHeight': `${body.scrollHeight}px`,
+                'Window innerHeight': `${window.innerHeight}px`,
+                'Требуется скролл': body.scrollHeight > window.innerHeight ? '✅ ДА' : '❌ НЕТ',
+                'Ширина экрана': `${window.innerWidth}px`,
+                'Position body': getComputedStyle(body).position,
+                'Touch-action': getComputedStyle(body).touchAction
+            };
+
+            const diagHtml = Object.entries(diagnostics)
+                .map(([key, value]) => `<div><strong>${key}:</strong> ${value}</div>`)
+                .join('');
+
+            document.getElementById('diagData').innerHTML = diagHtml;
+
+            // Лог в консоль
+            console.log('=== TDD ТЕСТЫ СКРОЛЛА ===');
+            console.log(`Пройдено: ${passed}, Провалено: ${failed}`);
+            console.log('=== ДИАГНОСТИКА ===');
+            Object.entries(diagnostics).forEach(([key, value]) => {
+                console.log(`${key}: ${value}`);
+            });
+        }
+
+        // Запуск после загрузки DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runTests);
+        } else {
+            runTests();
+        }
+    </script>
+</body>
+</html>

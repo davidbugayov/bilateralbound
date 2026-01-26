@@ -33,10 +33,11 @@ body {
   color: #374151;
   /* Разрешаем скролл в обоих направлениях для адаптивности */
   overflow-x: auto;
-  overflow-y: auto;
-  overscroll-behavior: none;
+  overflow-y: scroll; /* Принудительно показываем скроллбар */
+  /* overscroll-behavior: none; - УДАЛЕНО: может блокировать скролл */
   -webkit-overflow-scrolling: touch;
   min-height: 100vh;
+  height: auto; /* Разрешаем расти по контенту */
   position: relative;
 }
 
@@ -1959,7 +1960,9 @@ button:hover {
     padding: 0;
     margin: 0;
     width: 100%;
-    overflow-x: hidden;
+    height: auto !important; /* Принудительно разрешаем расти */
+    overflow-x: hidden !important;
+    overflow-y: scroll !important; /* Принудительно показываем вертикальный скролл */
   }
 
   .wrap {
@@ -1968,6 +1971,7 @@ button:hover {
     max-width: 100vw;
     width: 100%;
     overflow-x: hidden;
+    overflow-y: visible; /* Разрешаем вертикальный overflow для контента */
     margin: 0;
   }
 

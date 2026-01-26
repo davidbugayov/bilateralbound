@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест скролла</title>
+    <link rel="stylesheet" href="packages/web-client/public/css/shared-components.css">
+    <link rel="stylesheet" href="packages/web-client/public/css/light-theme.css">
+    <style>
+        .test-content {
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 800px;
+        }
+        .test-box {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-content">
+        <h1>Тест вертикального скролла</h1>
+        <p>Если вы видите эту страницу и можете прокручивать её вниз, значит скролл работает!</p>
+
+        <div class="test-box">
+            <h2>Блок 1</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        </div>
+
+        <div class="test-box">
+            <h2>Блок 2</h2>
+            <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        </div>
+
+        <div class="test-box">
+            <h2>Блок 3</h2>
+            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+        </div>
+
+        <div class="test-box">
+            <h2>Блок 4</h2>
+            <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </div>
+
+        <div class="test-box">
+            <h2>Блок 5</h2>
+            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
+        </div>
+
+        <div class="test-box">
+            <h2>Блок 6</h2>
+            <p>Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+        </div>
+
+        <div class="test-box">
+            <h2>Блок 7</h2>
+            <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</p>
+        </div>
+
+        <div class="test-box">
+            <h2>Блок 8</h2>
+            <p>Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+        </div>
+
+        <div class="test-box">
+            <h2>Блок 9</h2>
+            <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.</p>
+        </div>
+
+        <div class="test-box">
+            <h2>Блок 10 - КОНЕЦ</h2>
+            <p>Если вы видите этот блок, значит вы успешно прокрутили страницу до конца! ✅</p>
+        </div>
+    </div>
+
+    <script>
+        // Проверяем computed styles
+        window.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const html = document.documentElement;
+            const styles = window.getComputedStyle(body);
+            const htmlStyles = window.getComputedStyle(html);
+
+            console.log('=== ПРОВЕРКА OVERFLOW ===');
+            console.log('Body overflow-x:', styles.overflowX);
+            console.log('Body overflow-y:', styles.overflowY);
+            console.log('Body height:', styles.height);
+            console.log('HTML overflow-x:', htmlStyles.overflowX);
+            console.log('HTML overflow-y:', htmlStyles.overflowY);
+            console.log('HTML height:', htmlStyles.height);
+            console.log('======================');
+
+            // Проверяем, превышает ли контент высоту viewport
+            const contentHeight = document.body.scrollHeight;
+            const viewportHeight = window.innerHeight;
+            console.log('Высота контента:', contentHeight);
+            console.log('Высота viewport:', viewportHeight);
+            console.log('Требуется скролл:', contentHeight > viewportHeight);
+        });
+    </script>
+</body>
+</html>

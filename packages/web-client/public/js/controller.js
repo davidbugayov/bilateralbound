@@ -2168,7 +2168,7 @@ function setupFullscreenGestures() {
   }
 
   overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
-  overlay.addEventListener('touchmove', e => e.preventDefault(), { passive: false })
+  // overlay.addEventListener('touchmove', e => e.preventDefault(), { passive: false })
   overlay.addEventListener('touchend', handleTouchEnd, { passive: true })
 }
 
