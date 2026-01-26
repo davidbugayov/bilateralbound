@@ -1435,15 +1435,6 @@ function getDirectionVector(directionMode) {
  * @param {number} dirY - The new Y direction component.
  */
 function _applyDirectionChangeWhenPlaying(dirX, dirY) {
-  // Проверяем подключение viewer'а перед отправкой команды
-  if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot change direction: viewer is not connected')
-    showNotification('Невозможно изменить направление: клиент не подключен', 'warning')
-    // Гарантируем что состояние всегда красное "ожидание"
-    updateViewerStatusUI()
-    return
-  }
-
   safeSend(WS_MSG.controllerUpdate, {
     paused: true,
     returnToCenter: true
@@ -1465,15 +1456,6 @@ function _applyDirectionChangeWhenPlaying(dirX, dirY) {
  * @param {number} dirY - The new Y direction component.
  */
 function _applyDirectionChangeWhenPaused(dirX, dirY) {
-  // Проверяем подключение viewer'а перед отправкой команды
-  if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot change direction: viewer is not connected')
-    showNotification('Невозможно изменить направление: клиент не подключен', 'warning')
-    // Гарантируем что состояние всегда красное "ожидание"
-    updateViewerStatusUI()
-    return
-  }
-
   safeSend(WS_MSG.controllerUpdate, {
     dirX,
     dirY
@@ -1488,13 +1470,6 @@ function setDirection(directionMode) {
   if (!directionMode) return
 
   try {
-    // Проверяем подключение viewer'а перед изменением направления
-    if (!globalThis.__current?.viewerConnected) {
-      console.warn('Cannot change direction: viewer is not connected')
-      // Не показываем уведомление при старте, только при попытке изменения
-      return
-    }
-
     const directionVector = getDirectionVector(directionMode)
     if (!directionVector) return
 
@@ -1502,10 +1477,18 @@ function setDirection(directionMode) {
     directionState = { dx: dirX, dy: dirY }
     currentDirectionMode = directionMode
 
-    if (isPlaying) {
-      _applyDirectionChangeWhenPlaying(dirX, dirY)
-    } else {
-      _applyDirectionChangeWhenPaused(dirX, dirY)
+    // Всегда обновляем локальное превью
+    if (previewPhysicsEngine) {
+      previewPhysicsEngine.setDirection(dirX, dirY)
+    }
+
+    // Отправляем на сервер только если viewer подключен
+    if (globalThis.__current?.viewerConnected) {
+      if (isPlaying) {
+        _applyDirectionChangeWhenPlaying(dirX, dirY)
+      } else {
+        _applyDirectionChangeWhenPaused(dirX, dirY)
+      }
     }
 
     updateDirectionButtons()
