@@ -1,0 +1,2 @@
+c12a675 fix(controller): allow sending direction updates without connected viewer
+36a7821 fix(server): correct property access in direction normalization

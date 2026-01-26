@@ -73,6 +73,11 @@ npm run deploy:dev:logs    # Показать логи
 npm run deploy:dev:status  # Статус PM2
 ```
 
+### Ручной запуск (если npm не работает)
+```bash
+sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/stable-enhanced && systemctl restart emdrbilateral-dev'
+```
+
 ## 🌐 Деплой на PROD (emdrbilateral.online / .ru)
 
 ```bash
@@ -185,4 +190,3 @@ git checkout v2.38.17-stable
 npm run deploy:dev
 npm run deploy:dev:status
 ```
-
