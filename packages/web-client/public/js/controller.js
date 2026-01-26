@@ -1492,13 +1492,12 @@ function setDirection(directionMode) {
       previewPhysicsEngine.setDirection(dirX, dirY)
     }
 
-    // Отправляем на сервер только если viewer подключен
-    if (globalThis.__current?.viewerConnected) {
-      if (isPlaying) {
-        _applyDirectionChangeWhenPlaying(dirX, dirY)
-      } else {
-        _applyDirectionChangeWhenPaused(dirX, dirY)
-      }
+    // Отправляем на сервер всегда, чтобы сохранить состояние сессии
+    // даже если вьювер пока не подключен
+    if (isPlaying) {
+      _applyDirectionChangeWhenPlaying(dirX, dirY)
+    } else {
+      _applyDirectionChangeWhenPaused(dirX, dirY)
     }
 
     updateDirectionButtons()
