@@ -1,4 +1,3 @@
-
 'use strict'
 /**
  * Controller - Логика управления сессией BilateralBound v2.1
@@ -207,7 +206,7 @@ const bbCounters = {
     }
   }
 }
-// Детектор отскоков по серверным state_update (для подсчёта пасов)
+// Детектор отскоков по серверным state_update (для подсчёта пассов)
 let __lastBounceTs = 0
 let __lastVxSign = 0
 let __lastVySign = 0
@@ -908,10 +907,22 @@ function _syncUIPause(ballState) {
 }
 
 function _getDirectionMode(dirX, dirY) {
-  if (Math.abs(dirX) > 0.9) return 'horizontal'
-  if (Math.abs(dirY) > 0.9) return 'vertical'
-  if (dirX > 0 && dirY > 0) return 'diagRL' // TL→BR (из верхнего левого в нижний правый)
-  if (dirX > 0 && dirY < 0) return 'diagRLL' // BL→TR (из нижнего левого в верхний правый)
+  // Нормализуем шум/погрешность: сервер может присылать неидеальные значения (например 0.904/0.426)
+  // Мы хотим маппить их на ближайший режим, иначе UI будет "скакать".
+  const ax = Math.abs(dirX)
+  const ay = Math.abs(dirY)
+
+  // Явно вертикально/горизонтально (с запасом)
+  if (ax > 0.9 && ay < 0.2) return 'horizontal'
+  if (ay > 0.9 && ax < 0.2) return 'vertical'
+
+  // Если это не чистая ось, но доминирование сильное — считаем осевым режимом
+  if (ax > ay * 2) return 'horizontal'
+  if (ay > ax * 2) return 'vertical'
+
+  // Диагонали (примерно равные компоненты)
+  if (dirX > 0 && dirY > 0) return 'diagRL' // TL→BR
+  if (dirX > 0 && dirY < 0) return 'diagRLL' // BL→TR
   return null
 }
 
@@ -1714,8 +1725,9 @@ function _setPlayPauseState(shouldPlay) {
   const payload = shouldPlay
     ? {
         paused: false,
-        dirX: directionState.dx || 1,
-        dirY: directionState.dy || 0,
+        // ВАЖНО: всегда отправляем КАНОНИЧЕСКИЙ вектор выбранного режима.
+        // Это исключает накопление погрешности и "уход" в диагональ после паузы.
+        ...(getDirectionVector(currentDirectionMode) || { dirX: 1, dirY: 0 }),
         speed: components.speed?.getSpeed() ?? 40
       }
     : {
