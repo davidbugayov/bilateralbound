@@ -277,8 +277,8 @@ class SessionManager {
       return 100
     }
     if (updates.dirX !== undefined || updates.dirY !== undefined) {
-      return 8
-    } // Уменьшено для более отзывчивого управления
+      return 0 // Отключаем троттл для направления, чтобы не терять клики
+    }
     if (updates.paused !== undefined || updates.resume === true) {
       return 0
     }
