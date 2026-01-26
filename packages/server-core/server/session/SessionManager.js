@@ -244,7 +244,7 @@ class SessionManager {
     if (
       session.normalizeDirectionUntilTs &&
       Date.now() < session.normalizeDirectionUntilTs &&
-      session?.physicsEngine?.physicsEngine?.state
+      session?.physicsEngine?.state
     ) {
       const dx = session.physicsEngine.state.lastDirection.x || 0
       const dy = session.physicsEngine.state.lastDirection.y || 0
