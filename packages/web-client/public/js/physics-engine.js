@@ -1091,6 +1091,9 @@ if (typeof PhysicsEngine === 'undefined') {
         y: this.ball.y,
         vx: this.ball.vx,
         vy: this.ball.vy,
+        // Добавляем текущее направление, чтобы клиенты получали актуальное состояние
+        dirX: this.state.lastDirection.x,
+        dirY: this.state.lastDirection.y,
         speed: this.ball.speed,
         radius: this.ball.radius,
         paused: this.state.paused,
