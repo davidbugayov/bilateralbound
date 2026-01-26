@@ -1,5 +1,3 @@
-
-
 'use strict'
 /**
  * PhysicsEngine - оптимизированный движок физики для BilateralBound
@@ -187,6 +185,15 @@ if (typeof PhysicsEngine === 'undefined') {
     setDirection(dirX, dirY) {
       this.state.lastDirection.x = dirX
       this.state.lastDirection.y = dirY
+
+      // Если мы не в режиме вьювера (сервер или превью), сразу обновляем скорость
+      // Это исправляет баг с диагональным движением при смене направления на паузе
+      if (!this.isViewer) {
+        const speedPercent = this.ball.speed / 100
+        const pixelsPerSecond = speedPercent * this.options.maxSpeed
+        this.ball.vx = dirX * pixelsPerSecond
+        this.ball.vy = dirY * pixelsPerSecond
+      }
     }
     /**
      * Устанавливает скорость движения (vx, vy)
