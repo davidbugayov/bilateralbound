@@ -351,7 +351,6 @@ function setupFullscreenListeners() {
   // Регистрируем обработчик открытия независимо
   if (openFsBtn) {
     openFsBtn.addEventListener('click', () => {
-      console.log('🎬 Клик по кнопке полноэкранного режима')
       openPreviewFullscreen()
     })
   }
@@ -727,14 +726,10 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
   // Обработка активации звука зрителем
   wsClient.on(WS_MSG.viewerAudioActivated, data => {
-    console.log('📡 [WS:controller] Получено viewer_audio_activated событие:', data)
-
     // Сохраняем статус активации
     if (globalThis.__current) {
       globalThis.__current.viewerAudioActivated = data.activated
     }
-
-    // Обновляем индикаторы
     updateViewerAudioIndicators()
   })
   wsClient.on('maxReconnectAttemptsReached', () => {
@@ -938,17 +933,10 @@ function _syncUIDirection(ballState) {
 
     // Обновляем UI только если режим действительно изменился
     if (mode && mode !== currentDirectionMode) {
-       console.log('[DEBUG_DIR] Direction changed from server', {
-          from: currentDirectionMode,
-          to: mode,
-          dirX: ballState.dirX,
-          dirY: ballState.dirY
-       })
-
-       directionState = { dx: ballState.dirX, dy: ballState.dirY }
-       currentDirectionMode = mode
-       updateDirectionButtons()
-       updateDirectionDisplay(ballState.dirX, ballState.dirY)
+      directionState = { dx: ballState.dirX, dy: ballState.dirY }
+      currentDirectionMode = mode
+      updateDirectionButtons()
+      updateDirectionDisplay(ballState.dirX, ballState.dirY)
     }
   }
 }
@@ -2379,11 +2367,10 @@ function showNotification(message, type = 'info') {
     } else if (globalThis.showErrorNotification && type === 'error') {
       globalThis.showErrorNotification('Ошибка', message)
     } else {
-      // Фолбэк: используем alert для критических ошибок
+      // Фолбэк: используем alert только для критических ошибок
       if (type === 'error') {
         alert(`Ошибка: ${message}`)
       }
-      console.log(`[${type.toUpperCase()}] ${message}`)
     }
   } catch (error) {
     console.error('Error showing notification:', error)
