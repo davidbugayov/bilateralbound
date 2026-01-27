@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.33",
+  "version": "2.39.34",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -22,6 +22,10 @@
     "check:outdated": "npm outdated && cd packages/server-core && npm outdated && cd ../web-client && npm outdated",
     "test": "node scripts/e2e/master_e2e_test.js",
     "test:session": "curl -s -X POST 'https://dev.emdrbilateral.online/api/session'",
+    "test:load:sse": "node scripts/load-test-sse.js",
+    "test:load:sse:10": "NUM_SESSIONS=10 DURATION_SEC=60 node scripts/load-test-sse.js",
+    "test:load:sse:50": "NUM_SESSIONS=50 DURATION_SEC=60 node scripts/load-test-sse.js",
+    "test:load:sse:100": "NUM_SESSIONS=100 DURATION_SEC=60 node scripts/load-test-sse.js",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
     "lint:css": "npx stylelint 'packages/web-client/public/css/**/*.css'",
@@ -68,6 +72,7 @@
     "@eslint/js": "^9.39.1",
     "@stylistic/eslint-plugin": "^5.5.0",
     "eslint": "^9.39.1",
+    "eventsource": "^4.1.0",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",

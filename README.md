@@ -2,14 +2,28 @@
 
 Профессиональная платформа для EMDR-терапии с билатеральной стимуляцией в реальном времени.
 
-[![Version](https://img.shields.io/badge/version-2.39.0-blue.svg)](https://github.com/davidbugaev/bilateral_bound)
+[![Version](https://img.shields.io/badge/version-2.40.0-blue.svg)](https://github.com/davidbugaev/bilateral_bound)
 [![License](https://img.shields.io/badge/license-ISC-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
+
+## 🚀 Новое в версии 2.40.0
+
+### ⚡ Миграция на SSE - Снижение нагрузки на 40-60%
+
+Проект успешно мигрирован с WebSocket на **Server-Sent Events (SSE)** с сохранением всей функциональности:
+
+- **📉 Снижение нагрузки на сервер**: 40-60%
+- **💾 Экономия памяти**: 73% (40 KB vs 150 KB на соединение)
+- **🚀 Упрощенное масштабирование**: Обычный HTTP, легче балансировать
+- **🔄 Автоматический reconnect**: Встроен в браузер
+- **✅ Обратная совместимость**: WebSocket продолжает работать
+
+📖 **[Полная документация миграции](docs/MIGRATION_COMPLETE.md)**
 
 ## 🌟 Возможности
 
 - **Билатеральная стимуляция**: Визуальная, аудиальная и тактильная стимуляция
-- **Режим реального времени**: WebSocket соединение для синхронизации
+- **Режим реального времени**: SSE (по умолчанию) + WebSocket fallback
 - **Раздельные интерфейсы**: Контроллер для терапевта, вьювер для клиента
 - **Адаптивный дизайн**: Работает на десктопах, планшетах и смартфонах
 - **PWA поддержка**: Установка как приложение на устройство
@@ -43,11 +57,14 @@ npm run dev
 ```
 bilateral_bound/
 ├── packages/
-│   ├── server-core/          # Backend сервер (Node.js + WebSocket)
+│   ├── server-core/          # Backend сервер (Node.js + SSE + WebSocket)
 │   │   └── server/
 │   │       ├── index.js      # Точка входа
-│   │       ├── network/      # WebSocket и Express
+│   │       ├── network/      # SSE, WebSocket и Express
 │   │       ├── session/      # Управление сессиями
+│   │       │   ├── SSEManager.js        # NEW: SSE менеджер
+│   │       │   ├── WebSocketManager.js  # WebSocket менеджер
+│   │       │   └── StateBroadcaster.js  # Unified broadcaster
 │   │       └── utils/        # Утилиты
 │   └── web-client/           # Frontend клиент
 │       └── public/
@@ -55,9 +72,16 @@ bilateral_bound/
 │           ├── session-controller.html  # Интерфейс терапевта
 │           ├── viewer.html           # Интерфейс клиента
 │           ├── js/           # JavaScript модули
+│           │   ├── sse-client.js        # NEW: SSE клиент
+│           │   ├── realtime-client.js   # NEW: Universal adapter
+│           │   └── websocket-client.js  # WebSocket клиент (fallback)
 │           └── css/          # Стили
 ├── scripts/                  # Скрипты деплоя и тестирования
+│   └── load-test-sse.js      # NEW: Тест нагрузки SSE
 └── docs/                     # Документация
+    ├── SSE_MIGRATION_GUIDE.md     # NEW: Руководство по SSE
+    ├── SSE_MIGRATION_ANALYSIS.md  # NEW: Анализ производительности
+    └── MIGRATION_COMPLETE.md      # NEW: Итоги миграции
 ```
 
 ## 🛠 Доступные команды
@@ -65,9 +89,17 @@ bilateral_bound/
 ### Разработка
 
 ```bash
-npm run dev          # Запуск dev сервера
+npm run dev          # Запуск dev сервера (SSE + WebSocket)
 npm start            # Запуск production сервера
 npm test             # Запуск E2E тестов
+```
+
+### Тестирование нагрузки
+
+```bash
+npm run test:load:sse:10     # Тест с 10 сессиями (20 клиентов)
+npm run test:load:sse:50     # Тест с 50 сессиями (100 клиентов)
+npm run test:load:sse:100    # Тест с 100 сессиями (200 клиентов)
 ```
 
 ### Качество кода

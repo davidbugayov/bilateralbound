@@ -22,7 +22,7 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.33-af275cb" />
+    <meta name="version" content="2.39.34-ac0564d" />
     <meta name="theme-color" content="#020617" />
     <title>BilateralBound - EMDR терапия вьювер</title>
 
@@ -34,15 +34,15 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.33-af275cb"
+      href="/favicon-viewer.svg?v=2.39.34-ac0564d"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.33-af275cb"
+      href="/favicon-viewer.ico?v=2.39.34-ac0564d"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.33-af275cb" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.33-af275cb" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.34-ac0564d" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.34-ac0564d" />
 
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
@@ -67,15 +67,15 @@
     <link rel="preload" href="/css/viewer.css" as="style" />
 
     <!-- Preload critical JS -->
-    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.33-af275cb" as="script" />
-    <link rel="preload" href="/js/common.js?v=2.39.33-af275cb" as="script" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.33-af275cb" as="script" />
-    <link rel="preload" href="/js/renderer.js?v=2.39.33-af275cb" as="script" />
+    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.34-ac0564d" as="script" />
+    <link rel="preload" href="/js/common.js?v=2.39.34-ac0564d" as="script" />
+    <link rel="preload" href="/js/physics-engine.js?v=2.39.34-ac0564d" as="script" />
+    <link rel="preload" href="/js/renderer.js?v=2.39.34-ac0564d" as="script" />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.33-af275cb" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.33-af275cb" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.33-af275cb" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.34-ac0564d" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.34-ac0564d" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.34-ac0564d" />
 
     <!-- Yandex.Metrika optimized counter -->
     <noscript
@@ -120,16 +120,18 @@
     </main>
 
     <!-- Debug Logger - Load first without defer -->
-    <script src="/js/core/debug-logger.js?v=2.39.33-af275cb"></script>
+    <script src="/js/core/debug-logger.js?v=2.39.34-ac0564d"></script>
 
     <!-- Common utilities - Required for getSessionIdFromUrl -->
-    <script src="/js/common.js?v=2.39.33-af275cb"></script>
+    <script src="/js/common.js?v=2.39.34-ac0564d"></script>
 
-    <script src="/js/audio/audio-manager.js?v=2.39.33-af275cb" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.33-af275cb" defer></script>
-    <script src="/js/renderer.js?v=2.39.33-af275cb" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.33-af275cb" defer></script>
-    <script src="/js/shared-components.js?v=2.39.33-af275cb" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.34-ac0564d" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.34-ac0564d" defer></script>
+    <script src="/js/renderer.js?v=2.39.34-ac0564d" defer></script>
+    <script src="/js/sse-client.js?v=2.39.34-ac0564d" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.34-ac0564d" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.34-ac0564d" defer></script>
+    <script src="/js/shared-components.js?v=2.39.34-ac0564d" defer></script>
 
     <script>
       "use strict";
@@ -146,9 +148,10 @@
       let isFullscreen = false;
       let audioManager = null;
       // audioActivated начинается с false и обновляется только на основе контроллера
-      // НЕ восстанавливаем из localStorage при инициализации - это вызывает проблемы
+      // НЕ восстанавлием из localStorage при инициализации - это вызывает проблемы
       // localStorage используется только для сохранения между сессиями пользователя
       let audioActivated = false;
+      let pendingSoundEnabled = false; // если звук включили до инициализации AudioManager
       /** @type {Object} */
       const components = {};
       // components.status will be assigned in initializeComponents() and has setStatus method
@@ -180,6 +183,8 @@
           PhysicsEngine: typeof PhysicsEngine,
           BallRenderer: typeof BallRenderer,
           WebSocketClient: typeof WebSocketClient,
+          SSEClient: typeof SSEClient,
+          RealtimeClient: typeof RealtimeClient,
           sharedComponents: typeof sharedComponents
         });
 
@@ -382,6 +387,13 @@
         // Экспортируем checkAudioOverlay глобально для отладки
         window.checkAudioOverlay = checkAudioOverlay;
 
+        // ВАЖНО: Применяем отложенный soundEnabled если он был получен до готовности AudioManager
+        if (pendingSoundEnabled !== false) {
+          debugLog('🔊 Применяем отложенный soundEnabled:', pendingSoundEnabled);
+          audioManager.setEnabled(pendingSoundEnabled);
+          pendingSoundEnabled = false;
+        }
+
         // Проверяем overlay сразу после инициализации
         checkAudioOverlay();
       }
@@ -487,151 +499,45 @@
 
           await connectToSession(sessionId);
 
-          wsClient = new WebSocketClient(sessionId, "viewer");
+          // Инициализация RealtimeClient (по умолчанию SSE, fallback на WebSocket)
+          wsClient = new RealtimeClient(sessionId, "viewer");
           globalThis.wsClient = wsClient;
+          debugLog("✅ RealtimeClient создан, транспорт:", wsClient.getTransportType());
 
-          wsClient.on(WS_MSG.initialState, (state) => {
-            if (typeof logger !== 'undefined') {
-              logger.state("Получено начальное состояние", state);
+          const transport = typeof wsClient.getTransportType === 'function'
+            ? wsClient.getTransportType()
+            : 'websocket'
+          const isSSE = transport === 'sse'
+
+          // Утилита: запрос состояния через REST для SSE (на случай реконнекта)
+          async function fetchAndApplyState() {
+            try {
+              const resp = await fetch(`/api/session/${sessionId}/state`)
+              if (!resp.ok) return
+              const state = await resp.json()
+              physicsEngine.applyCommand(state)
+              if (state && state.paused === false) {
+                physicsEngine.setPaused(false)
+              }
+              updateStatus(state)
+            } catch (e) {
+              debugWarn('Не удалось получить состояние через REST', e)
             }
-
-            // КРИТИЧЕСКИ ВАЖНО: Центрируем мяч ТОЛЬКО если сессия на паузе
-            // При реконнекте во время активной сессии мяч должен оставаться в текущей позиции
-            if (state && state.paused === true) {
-              const centerX = globalThis.innerWidth / 2;
-              const centerY = globalThis.innerHeight / 2;
-              physicsEngine.setPosition(centerX, centerY);
-              physicsEngine.setVelocity(0, 0);
-              if (typeof logger !== 'undefined') {
-                logger.state(`🎯 Мяч центрирован при паузе: (${centerX}, ${centerY})`);
-              }
-            }
-
-            // Применяем команду из состояния
-            physicsEngine.applyCommand(state);
-            if (state && state.paused === false) {
-              physicsEngine.setPaused(false);
-            }
-            // Handle audio settings from initial state
-            if (typeof state.soundEnabled === 'boolean') {
-              if (typeof logger !== 'undefined') {
-                logger.audio('Получен soundEnabled из initialState:', state.soundEnabled);
-              }
-
-              if (audioManager) {
-                audioManager.setEnabled(state.soundEnabled);
-
-                // Управляем audioActivated на основе контроллера
-                // ВАЖНО: Сбрасываем audioActivated ТОЛЬКО если контроллер ОТКЛЮЧИЛ звук
-                // Если soundEnabled=true - НЕ сбрасываем, чтобы кнопка осталась скрытой
-                if (state.soundEnabled === false) {
-                  // Контроллер отключил звук - сбрасываем всё
-                  audioActivated = false;
-                  window.audioActivated = false;
-                  localStorage.removeItem('bb_audioActivated');
-                  if (typeof logger !== 'undefined') {
-                    logger.audio('Контроллер отключил звук, сбрасываем audioActivated');
-                  }
-                }
-                // Если soundEnabled=true - НЕ трогаем audioActivated!
-                // Если пользователь уже активировал (audioActivated=true), кнопка остается скрытой
-                // Если пользователь еще не активировал (audioActivated=false), кнопка будет показана
-
-                checkAudioOverlay();
-              } else {
-                // AudioManager еще не инициализирован, подождем и повторим
-                debugWarn('🔊 AudioManager не готов, ждем инициализации...');
-                setTimeout(() => {
-                  if (audioManager) {
-                    if (typeof logger !== 'undefined') {
-                      logger.audio('AudioManager готов, устанавливаем soundEnabled:', state.soundEnabled);
-                    }
-                    audioManager.setEnabled(state.soundEnabled);
-
-                    // Управляем audioActivated - сбрасываем только если soundEnabled=false
-                    if (state.soundEnabled === false) {
-                      audioActivated = false;
-                      window.audioActivated = false;
-                      localStorage.removeItem('bb_audioActivated');
-                    }
-                    // Если soundEnabled=true - НЕ сбрасываем audioActivated!
-
-                    checkAudioOverlay();
-                  } else {
-                    debugError('❌ AudioManager не инициализирован после таймаута!');
-                  }
-                }, 500);
-              }
-
-              if (state.soundType && audioManager) {
-                audioManager.setSoundType(state.soundType);
-              }
-            }
-            updateStatus(state);
-          });
-
-          wsClient.on(WS_MSG.stateUpdate, (command) => {
-            physicsEngine.applyCommand(command);
-            if (command && command.paused === false) {
-              physicsEngine.setPaused(false);
-            }
-            // Handle audio settings
-            if (typeof command.soundEnabled === 'boolean') {
-              if (typeof logger !== 'undefined') {
-                logger.audio('Получен soundEnabled из stateUpdate:', command.soundEnabled);
-              }
-
-              if (audioManager) {
-                audioManager.setEnabled(command.soundEnabled);
-
-                // Управляем audioActivated на основе контроллера
-                // ВАЖНО: Сбрасываем audioActivated ТОЛЬКО если контроллер ОТКЛЮЧИЛ звук
-                // Если soundEnabled=true - НЕ сбрасываем, чтобы кнопка осталась скрытой
-                if (command.soundEnabled === false) {
-                  // Контроллер отключил звук - сбрасываем всё
-                  audioActivated = false;
-                  window.audioActivated = false;
-                  localStorage.removeItem('bb_audioActivated');
-                  if (typeof logger !== 'undefined') {
-                    logger.audio('Контроллер отключил звук, сбрасываем audioActivated');
-                  }
-                }
-                // Если soundEnabled=true - НЕ трогаем audioActivated!
-                // Если пользователь уже активировал (audioActivated=true), кнопка остается скрытой
-
-                checkAudioOverlay();
-              } else {
-                debugWarn('🔊 AudioManager не готов при stateUpdate');
-              }
-
-              if (command.soundType && audioManager) {
-                audioManager.setSoundType(command.soundType);
-              }
-            }
-            // НЕ обновляем статус контроллера при обновлениях состояния мяча
-            // updateStatus(command);
-          });
-
-          // Обработчик для события подключения контроллера
-          wsClient.on("controller_connected", (data) => {
-            debugLog("🔌 Контроллер подключился:", data);
-            updateStatus(data);
-          });
-
-          wsClient.on("controller_disconnected", (data) => {
-            debugLog("🔌 Контроллер отключился:", data);
-            updateStatus(data);
-          });
+          }
 
           wsClient.on("open", (event) => {
-            debugLog("✅ WebSocket connection established.");
-            components.status.setStatus("success", "Соединение установлено");
+            debugLog(`✅ Realtime connection established (transport=${transport}).`)
+            components.status.setStatus("success", "Соединение установлено")
 
-            // CRITICAL FIX: Upon reconnection, request full state sync to restore ball position
-            // When connection drops (code 1006), ball position becomes stale. We must request fresh state.
-            if (event?.isReconnection) {
-              debugWarn("🔄 Reconnected - requesting state sync to restore ball position");
-              // Request initial state which will restore proper position
+            // При реконнекте на SSE тянем состояние через REST
+            if (event?.isReconnection && isSSE) {
+              debugWarn("🔄 Reconnected via SSE - fetching state via REST")
+              fetchAndApplyState()
+            }
+
+            // WebSocket: просим полную синхронизацию
+            if (event?.isReconnection && !isSSE) {
+              debugWarn("🔄 Reconnected - requesting state sync to restore ball position")
               wsClient
                 .send("request_state_sync", {
                   timestamp: Date.now(),
@@ -640,26 +546,28 @@
                 })
                 .catch((error) =>
                   debugWarn("Не удалось запросить синхронизацию состояния:", error),
-                );
+                )
             }
 
-            // Запрашиваем текущее состояние подключения контроллера
-            wsClient
-              .send("get_controller_status", {})
-              .catch((error) =>
-                debugWarn("Не удалось запросить статус контроллера:", error),
-              );
+            // Запрашиваем статус контроллера только для WebSocket (на SSE он придет сам по events)
+            if (!isSSE) {
+              wsClient
+                .send("get_controller_status", {})
+                .catch((error) =>
+                  debugWarn("Не удалось запросить статус контроллера:", error),
+                )
+            }
 
-            // Уведомляем сервер о подключении вьювера
+            // Уведомляем сервер о подключении вьювера (для SSE — POST внутри send)
             wsClient.send("viewer_connected", {
               timestamp: Date.now(),
               sessionId: sessionId,
               role: "viewer",
-            });
-          });
+            })
+          })
 
           wsClient.on("close", (event) => {
-            debugWarn("🔌 WebSocket connection closed.");
+            debugWarn("🔌 Realtime connection closed.");
 
             // CRITICAL FIX: Code 1006 is abnormal closure - forcibly reset ball position
             // This prevents the ball from staying in wrong position after disconnect
@@ -690,6 +598,30 @@
             debugLog("📊 Статус контроллера:", status);
             updateStatus(status);
           });
+
+          // FIX: Add listeners for specific controller connection events which SSE emits
+          wsClient.on("controller_connected", (data) => {
+            console.log("📊 [VIEWER] Controller connected event received:", JSON.stringify(data));
+            debugLog("📊 Controller connected event:", data);
+            // SSE sends payload directly, ensure we have controllerConnected property
+            const statusData = data.controllerConnected !== undefined
+              ? data
+              : { controllerConnected: true };
+            updateStatus(statusData);
+          });
+          wsClient.on("controller_disconnected", (data) => {
+            console.log("📊 [VIEWER] Controller disconnected event received:", JSON.stringify(data));
+            debugLog("📊 Controller disconnected event:", data);
+            // SSE sends payload directly, ensure we have controllerConnected property
+            const statusData = data.controllerConnected !== undefined
+              ? data
+              : { controllerConnected: false };
+            updateStatus(statusData);
+          });
+
+          wsClient.on('state_update', onStateUpdate)
+          wsClient.on('initial_state', onStateUpdate)
+          wsClient.on('viewer_status', updateStatus)
 
           await wsClient.connect();
 
@@ -843,18 +775,28 @@
         }
       }
 
-      function updateStatus(sessionData) {
+      function updateStatus(data) {
+        console.log("📊 [VIEWER] updateStatus called with:", JSON.stringify(data));
+
         if (components.status) {
+          // SSE события приходят в формате {type, timestamp, payload}
+          const sessionData = data.payload || data;
+
+          console.log("📊 [VIEWER] sessionData extracted:", JSON.stringify(sessionData));
+          console.log("📊 [VIEWER] controllerConnected value:", sessionData.controllerConnected);
           debugLog("📊 Обновление статуса:", sessionData);
 
           // Проверяем наличие данных о подключении контроллера
           if (sessionData.controllerConnected === true) {
+            console.log("✅ [VIEWER] Setting status: Controller connected");
             components.status.setStatus("success", "Контроллер подключен");
             debugLog("✅ Статус обновлен: Контроллер подключен");
           } else if (sessionData.controllerConnected === false) {
+            console.log("❌ [VIEWER] Setting status: Controller disconnected");
             components.status.setStatus("error", "Контроллер отключен");
             debugLog("❌ Статус обновлен: Контроллер отключен");
           } else {
+            console.log("⚠️ [VIEWER] controllerConnected is undefined, checking connection status");
             // Если данных о контроллере нет, используем статус WebSocket соединения
             const isWebSocketConnected = wsClient && typeof wsClient.isConnected === 'function' && wsClient.isConnected();
             if (isWebSocketConnected) {
@@ -1010,63 +952,133 @@
        */
       function toggleViewerPlayPause() {
         if (!physicsEngine || !wsClient) {
-          debugWarn('⚠️ PhysicsEngine или WebSocket не инициализированы');
-          return;
+          debugWarn('⚠️ PhysicsEngine или WebSocket не инициализированы')
+          return
         }
 
-        const currentPaused = physicsEngine.state.paused;
-        const newPaused = !currentPaused;
+        const currentState = physicsEngine.state || {}
+        const currentPaused = currentState.paused
+        const newPaused = !currentPaused
 
-        debugLog(`🎮 Viewer hotkey: ${newPaused ? 'ПАУЗА' : 'СТАРТ'}`);
+        debugLog(`🎮 Viewer hotkey: ${newPaused ? 'ПАУЗА' : 'СТАРТ'}`)
 
         // Показываем подсказку на 2 секунды при использовании
-        const hotkeysHint = document.getElementById('hotkeysHint');
+        const hotkeysHint = document.getElementById('hotkeysHint')
         if (hotkeysHint) {
-          hotkeysHint.classList.remove('hidden');
+          hotkeysHint.classList.remove('hidden')
           setTimeout(() => {
-            hotkeysHint.classList.add('hidden');
-          }, 2000);
+            hotkeysHint.classList.add('hidden')
+          }, 2000)
         }
 
-        // Отправляем команду на сервер
+        // Формируем полезную нагрузку: для старта явно передаём resume+dirX/dirY/speed
         const payload = {
           paused: newPaused,
-          returnToCenter: newPaused, // При паузе возвращаем мяч в центр
-          timestamp: Date.now()
-        };
-
-        // КРИТИЧЕСКИ ВАЖНО: Применяем паузу ЯВНО для мгновенного отклика
-        physicsEngine.setPaused(newPaused);
-
-        // Если пауза - центрируем мяч
-        if (newPaused) {
-          physicsEngine.setPosition(physicsEngine.centerX, physicsEngine.centerY);
-          physicsEngine.setVelocity(0, 0);
+          returnToCenter: newPaused,
+          resume: !newPaused
         }
 
-        // Также применяем через applyCommand для других настроек
-        physicsEngine.applyCommand(payload);
+        if (!newPaused) {
+          // Явно прокидываем направление и скорость, чтобы сервер и клиент сняли паузу корректно
+          payload.dirX = typeof currentState.dirX === 'number' ? currentState.dirX : 1
+          payload.dirY = typeof currentState.dirY === 'number' ? currentState.dirY : 0
+          payload.speed = typeof currentState.speed === 'number' ? currentState.speed : 30
+        }
 
-        // Отправляем на сервер через WebSocket
+        // КРИТИЧЕСКИ ВАЖНО: Мгновенно применяем локально для отзывчивости
+        physicsEngine.applyCommand(payload)
+
+        // Если пауза - центрируем мяч и останавливаем скорость локально
+        if (newPaused) {
+          physicsEngine.setPaused(true)
+          physicsEngine.setPosition(physicsEngine.centerX, physicsEngine.centerY)
+          physicsEngine.setVelocity(0, 0)
+        } else {
+          physicsEngine.setPaused(false)
+        }
+
+        // Отправляем на сервер
         wsClient.send('viewer_update', payload).catch(err => {
-          debugWarn('❌ Не удалось отправить viewer_update:', err);
-        });
+          debugWarn('❌ Не удалось отправить viewer_update:', err)
+        })
 
-        // Показываем уведомление
+        // Обновляем UI
         if (components.status) {
-          const statusText = newPaused ? '⏸️ Пауза' : '▶️ Воспроизведение';
-          components.status.setStatus('success', statusText);
-          // Автоматически скрываем через 2 секунды
+          const statusText = newPaused ? '⏸️ Пауза' : '▶️ Воспроизведение'
+          components.status.setStatus('success', statusText)
           setTimeout(() => {
             if (components.status && typeof wsClient.isConnected === 'function' && wsClient.isConnected()) {
-              components.status.setStatus('success', 'Контроллер подключен');
+              components.status.setStatus('success', 'Контроллер подключен')
             }
-          }, 2000);
+          }, 2000)
         }
       }
 
       // Экспортируем функцию глобально для доступа из консоли
       globalThis.toggleViewerPlayPause = toggleViewerPlayPause;
+
+      // Обработчик состояния из WebSocket/SSE
+      function onStateUpdate(data) {
+        console.log('📦 [VIEWER] onStateUpdate received:', JSON.stringify(data));
+        debugLog('📦 Получено состояние от сервера:', data);
+
+        // SSE события приходят в формате {type, timestamp, payload}
+        // WebSocket может приходить напрямую или в payload
+        const command = data.payload || data;
+
+        console.log('📦 [VIEWER] command extracted:', JSON.stringify(command));
+        console.log('📦 [VIEWER] command.controllerConnected:', command.controllerConnected);
+        debugLog('📦 Обработка команды:', command);
+
+        // Применяем команды к физическому движку
+        if (physicsEngine) {
+          physicsEngine.applyCommand(command);
+        }
+
+        // CRITICAL: Always update controller status from initial_state or state_update
+        // This ensures viewer shows correct controller status on first connection
+        if (command.controllerConnected !== undefined) {
+          console.log('📦 [VIEWER] Calling updateStatus with controllerConnected:', command.controllerConnected);
+          updateStatus(command);
+        } else if (command.controllerStatus) {
+          console.log('📦 [VIEWER] Calling updateStatus with controllerStatus');
+          updateStatus(command.controllerStatus);
+        }
+
+        // Обработка soundEnabled и soundType
+        if (typeof command.soundEnabled === 'boolean') {
+          debugLog('🔊 Получен soundEnabled:', command.soundEnabled);
+          if (typeof logger !== 'undefined') {
+            logger.audio('Получен soundEnabled из события:', command.soundEnabled);
+          }
+
+          if (audioManager) {
+            audioManager.setEnabled(command.soundEnabled);
+
+            if (command.soundEnabled === false) {
+              audioActivated = false;
+              window.audioActivated = false;
+              localStorage.removeItem('bb_audioActivated');
+              if (typeof logger !== 'undefined') {
+                logger.audio('Контроллер отключил звук, сбрасываем audioActivated');
+              }
+            }
+
+            checkAudioOverlay();
+          } else {
+            // AudioManager ещё не готов — запоминаем требование включить звук
+            pendingSoundEnabled = command.soundEnabled;
+            debugLog('🔊 AudioManager не готов, сохраняем pendingSoundEnabled:', command.soundEnabled);
+          }
+
+          if (command.soundType && audioManager) {
+            audioManager.setSoundType(command.soundType);
+          }
+        }
+      }
+
+      // Экспортируем функцию для отладки
+      window.onStateUpdate = onStateUpdate;
     </script>
   </body>
 </html>

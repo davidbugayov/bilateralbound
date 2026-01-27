@@ -994,9 +994,63 @@ if (typeof PhysicsEngine === 'undefined') {
     }
 
     _handleViewerVelocityUpdate(command) {
-      if (command.vx !== undefined) this.state.lastVx = command.vx
-      if (command.vy !== undefined) this.state.lastVy = command.vy
+      // Предлагаемое решение проблемы "залипания" мяча при SSE:
+      // Если мы находимся очень близко к границе и локально уже отскочили (скорость направлена от стены),
+      // а сервер присылает скорость, направленную В стену (из-за лага),
+      // мы должны ИГНОРИРОВАТЬ обновление скорости от сервера.
 
+      let newVx = command.vx
+      let newVy = command.vy
+
+      // 1. Проверка конфликта по X (Левая/Правая стены)
+      if (newVx !== undefined) {
+        const wallMargin = this.ball.radius + 10 // допуск в пикселях
+        const worldW = this.options.worldWidth
+
+        const nearLeftWall = this.ball.x <= wallMargin
+        const nearRightWall = this.ball.x >= worldW - wallMargin
+
+        const serverMovingLeft = newVx < 0
+        const serverMovingRight = newVx > 0
+        const localMovingLeft = this.ball.vx < 0
+        const localMovingRight = this.ball.vx > 0
+
+        // Если мы у левой стены, сервер говорит "влево", а мы уже движемся "вправо" (отскочили) -> игнорируем
+        if (nearLeftWall && serverMovingLeft && localMovingRight) {
+          // Игнорируем серверный VX, оставляем текущий локальный
+          newVx = undefined
+        }
+        // Если мы у правой стены, сервер говорит "вправо", а мы уже движемся "влево" -> игнорируем
+        else if (nearRightWall && serverMovingRight && localMovingLeft) {
+          newVx = undefined
+        }
+      }
+
+      // 2. Проверка конфликта по Y (Верхняя/Нижняя стены)
+      if (newVy !== undefined) {
+        const wallMargin = this.ball.radius + 10
+        const worldH = this.options.worldHeight
+
+        const nearTopWall = this.ball.y <= wallMargin
+        const nearBottomWall = this.ball.y >= worldH - wallMargin
+
+        const serverMovingUp = newVy < 0
+        const serverMovingDown = newVy > 0
+        const localMovingUp = this.ball.vy < 0
+        const localMovingDown = this.ball.vy > 0
+
+        if (nearTopWall && serverMovingUp && localMovingDown) {
+          newVy = undefined
+        } else if (nearBottomWall && serverMovingDown && localMovingUp) {
+          newVy = undefined
+        }
+      }
+
+      // Применяем, если не отфильтровано
+      if (newVx !== undefined) this.state.lastVx = newVx
+      if (newVy !== undefined) this.state.lastVy = newVy
+
+      // Пересчитываем направление только если обновили скорость и она валидна
       const lvx = typeof this.state.lastVx === 'number' ? this.state.lastVx : 0
       const lvy = typeof this.state.lastVy === 'number' ? this.state.lastVy : 0
       const sp = Math.hypot(lvx, lvy)

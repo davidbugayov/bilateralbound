@@ -57,7 +57,13 @@ const cleanupIntervals = [
       }
     },
     2 * 60 * 1000
-  )
+  ),
+  // SSE heartbeat для поддержания соединений
+  setInterval(() => {
+    if (sessionManager.sseManager) {
+      sessionManager.sseManager.sendHeartbeat()
+    }
+  }, 30000) // Каждые 30 секунд
 ]
 // 6. Graceful shutdown
 /**

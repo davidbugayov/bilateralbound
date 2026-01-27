@@ -2,6 +2,7 @@
 const PhysicsEngine = require('../../../web-client/public/js/physics-engine.js')
 const SessionRepository = require('./SessionRepository.js')
 const WebSocketManager = require('./WebSocketManager.js')
+const SSEManager = require('./SSEManager.js')
 const StateBroadcaster = require('./StateBroadcaster.js')
 const ValidationUtils = require('../utils/validation.js')
 const { logger, DEBUG_MODE } = require('../logger.js')
@@ -14,7 +15,12 @@ class SessionManager {
   constructor(apiCache) {
     this.sessionRepository = new SessionRepository()
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
-    this.stateBroadcaster = new StateBroadcaster(this.sessionRepository, this.webSocketManager)
+    this.sseManager = new SSEManager(this.sessionRepository)
+    this.stateBroadcaster = new StateBroadcaster(
+      this.sessionRepository,
+      this.webSocketManager,
+      this.sseManager
+    )
     this.apiCache = apiCache // Получаем ссылку на кэш API
     this.logger = {
       ...logger,
@@ -322,6 +328,99 @@ class SessionManager {
   }
 
   /**
+   * Обрабатывает подключение SSE клиента
+   * @param {Object} res - Express response объект
+   * @param {string} sessionId - ID сессии
+   * @param {string} role - Роль клиента (viewer или controller)
+   */
+  handleSSEConnection(res, sessionId, role) {
+    const session = this.sessionRepository.findOrCreateById(sessionId)
+    if (!session) {
+      res.status(400).json({ error: 'Invalid session id' })
+      return false
+    }
+
+    if (!session.physicsEngine) {
+      this._initializePhysicsEngine(session)
+    }
+
+    if (!this.sseManager.addClient(sessionId, res, role)) {
+      res.status(500).json({ error: 'Failed to add SSE client' })
+      return false
+    }
+
+    session.lastActivity = Date.now()
+    this._schedulePhysicsUpdate(sessionId)
+
+    // Отправляем начальное состояние
+    if (role === 'viewer') {
+      this.stateBroadcaster.broadcastInitialState(sessionId, res, session.ballState)
+
+      // CRITICAL FIX: Explicitly send controller connection status to viewer
+      // When viewer connects AFTER controller, the controller_connected event was already sent
+      // So we need to explicitly notify the viewer about current controller status
+      // Add small delay to ensure browser is ready to receive SSE events
+      if (session.controllerConnected) {
+        setImmediate(() => {
+          // Send controller_connected event directly to this viewer
+          const controllerStatusEvent = {
+            type: 'controller_connected',
+            timestamp: Date.now(),
+            payload: { controllerConnected: true }
+          }
+          this.sseManager.sendEvent(res, 'controller_connected', controllerStatusEvent)
+          this.logger.logSession(sessionId, 'Sent controller_connected to newly connected viewer')
+        })
+      }
+    } else {
+      this._handleSSEControllerInitialState(sessionId, res, session)
+    }
+
+    this.stateBroadcaster.broadcastViewerStatus(sessionId)
+    this._broadcastControllerConnectionIfNeeded(sessionId, role)
+
+    this.logger.logSession(sessionId, `SSE ${role} connected`)
+    return true
+  }
+
+  /**
+   * Обрабатывает начальное состояние для SSE контроллера
+   * @private
+   */
+  _handleSSEControllerInitialState(sessionId, res, session) {
+    if (this._isViewerScreenSizeSet(session)) {
+      const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
+      this.stateBroadcaster.broadcastInitialState(sessionId, res, finalState)
+      this.logger.logSession(
+        sessionId,
+        'Sent initial_state to SSE controller (viewer screen size already set)'
+      )
+    } else {
+      this.logger.logSession(
+        sessionId,
+        'SSE Controller connected, deferring initial_state until viewer screen size is set.'
+      )
+    }
+  }
+
+  /**
+   * Обрабатывает отключение SSE клиента
+   * @param {Object} res - Express response объект
+   */
+  handleSSEDisconnection(res) {
+    const sessionId = this.sseManager.removeClient(res)
+    if (sessionId) {
+      this._schedulePhysicsUpdate(sessionId)
+      this.stateBroadcaster.broadcastViewerStatus(sessionId)
+
+      const session = this.sessionRepository.findById(sessionId)
+      if (session && !session.controllerConnected) {
+        this.broadcastControllerConnection(sessionId, false)
+      }
+    }
+  }
+
+  /**
    * Обрабатывает начальную рассылку состояния для клиента
    * @private
    */
@@ -417,26 +516,22 @@ class SessionManager {
     if (!session) {
       return
     }
-    const clients = this.webSocketManager.getClients(sessionId)
-    const message = JSON.stringify({
-      type: isConnected ? 'controller_connected' : 'controller_disconnected',
-      payload: { controllerConnected: isConnected },
-      timestamp: Date.now()
-    })
-    for (const { client } of clients) {
-      if (client.readyState === 1) {
-        // WebSocket.OPEN
-        try {
-          client.send(message)
-          this.logger.logSession(
-            sessionId,
-            `Broadcasted controller ${isConnected ? 'connected' : 'disconnected'} to client`
-          )
-        } catch (error) {
-          this.logger.error(`Error broadcasting controller connection status: ${error.message}`)
-        }
-      }
-    }
+
+    const payload = { controllerConnected: isConnected }
+
+    // TEMPORARY DEBUG LOG
+    this.logger.logSession(
+      sessionId,
+      `Broadcasting controller_${isConnected ? 'connected' : 'disconnected'} event`,
+      'debug'
+    )
+
+    // Рассылаем через StateBroadcaster (поддерживает SSE и WebSocket)
+    this.stateBroadcaster.broadcastState(
+      sessionId,
+      isConnected ? 'controller_connected' : 'controller_disconnected',
+      payload
+    )
   }
 
   /**
@@ -626,9 +721,11 @@ class SessionManager {
       session.mainLoop = null
     }
 
-    // Проверяем есть ли подключенные вьюверы
-    const clients = this.webSocketManager.getClients(sessionId)
-    const hasViewers = clients.some(({ info }) => info.role === 'viewer')
+    // Проверяем есть ли подключенные вьюверы (WebSocket или SSE)
+    const wsClients = this.webSocketManager.getClients(sessionId)
+    const sseClients = this.sseManager.getClients(sessionId)
+    const hasViewers = wsClients.some(({ info }) => info.role === 'viewer') ||
+                       sseClients.some(c => c.role === 'viewer')
 
     // Запускаем серверный цикл физики только если есть вьюверы
     if (hasViewers && session.physicsEngine) {
@@ -638,8 +735,6 @@ class SessionManager {
       session.mainLoop = setInterval(() => {
         try {
           // КРИТИЧЕСКИ ВАЖНО: Сохраняем направление выбранное пользователем ДО обновления физики
-          // Физический движок меняет direction при отскоках, но мы не должны
-          // транслировать это клиентам - они ожидают сохранения выбранного режима
           const userDirX = session.ballState.dirX
           const userDirY = session.ballState.dirY
           const soundEnabled = session.ballState.soundEnabled
@@ -648,10 +743,10 @@ class SessionManager {
           // Обновляем физику на сервере
           session.physicsEngine.update(PHYSICS_DT / 1000)
 
-          // Синхронизируем состояние сессии с движком (получаем x, y, vx, vy, paused и т.д.)
+          // Синхронизируем состояние сессии с движком
           Object.assign(session.ballState, session.physicsEngine.getState())
 
-          // Восстанавливаем направление выбранное пользователем (НЕ от физики!)
+          // Восстанавливаем направление выбранное пользователем
           if (userDirX !== undefined && userDirY !== undefined) {
             session.ballState.dirX = userDirX
             session.ballState.dirY = userDirY
@@ -665,8 +760,7 @@ class SessionManager {
             session.ballState.soundType = soundType
           }
 
-
-          // Рассылаем обновленное состояние всем клиентам
+          // Рассылаем обновленное состояние всем клиентам (SSE + WebSocket)
           this.stateBroadcaster.broadcastState(sessionId)
         } catch (error) {
           this.logger.error(`Error in physics loop for session ${sessionId}: ${error.message}`)

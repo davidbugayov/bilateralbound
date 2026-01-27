@@ -242,6 +242,51 @@ function setupExpressApp(sessionManager, apiCache) {
     })
   })
 
+  // SSE endpoint для стриминга состояния сессии
+  app.get('/api/session/:sessionId/stream', requireSession(sessionManager), (req, res) => {
+    const { sessionId } = req.params
+    const role = req.query.role || 'viewer'
+
+    // Валидация роли
+    if (!['viewer', 'controller'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role. Must be viewer or controller' })
+    }
+
+    // Настраиваем SSE заголовки
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('X-Accel-Buffering', 'no') // Отключаем буферизацию для nginx
+
+    // Разрешаем CORS для SSE
+    const origin = req.headers.origin
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin)
+      res.setHeader('Access-Control-Allow-Credentials', 'true')
+    }
+
+    // Отправляем начальный комментарий для установки соединения
+    res.write(': SSE connection established\n\n')
+
+    // Регистрируем SSE-клиента
+    const connected = sessionManager.handleSSEConnection(res, sessionId, role)
+    if (!connected) {
+      return res.end()
+    }
+
+    if (DEBUG_MODE) {
+      logger.info(`[${req.id}] SSE stream opened for session ${sessionId}, role: ${role}`)
+    }
+
+    // Обработка закрытия соединения
+    req.on('close', () => {
+      sessionManager.handleSSEDisconnection(res)
+      if (DEBUG_MODE) {
+        logger.info(`[${req.id}] SSE stream closed for session ${sessionId}`)
+      }
+    })
+  })
+
   // Static files - only serve specific paths, not root using helper function
   const staticDirectories = ['css', 'js', 'emdr-therapy']
   for (const dir of staticDirectories) {
@@ -393,6 +438,27 @@ function setupExpressApp(sessionManager, apiCache) {
       res.json({ success: true, message: 'Controller connected' })
     }
   )
+
+  // Новый эндпоинт для обновлений от контроллера (замена WebSocket controller_update)
+  app.post(
+    '/api/session/:sessionId/controller/update',
+    requireSession(sessionManager),
+    (req, res) => {
+      const { sessionId } = req.params
+      const updates = req.body
+
+      // Обновляем состояние шара
+      const success = sessionManager.updateBallState(sessionId, updates)
+
+      if (success) {
+        clearStateCache(apiCache, sessionId)
+        // Состояние автоматически рассылается через StateBroadcaster в updateBallState
+        res.json({ success: true })
+      } else {
+        res.status(400).json({ error: 'Failed to update ball state' })
+      }
+    }
+  )
   app.post(
     '/api/session/:sessionId/viewer/update',
     requireSession(sessionManager),
@@ -404,6 +470,30 @@ function setupExpressApp(sessionManager, apiCache) {
       sessionManager.stateBroadcaster.broadcastState(sessionId)
 
       res.json({ success: true, message: 'Viewer update processed' })
+    }
+  )
+
+  // Новый эндпоинт для уведомления об активации звука
+  app.post(
+    '/api/session/:sessionId/viewer/audio-activated',
+    requireSession(sessionManager),
+    (req, res) => {
+      const { sessionId } = req.params
+      const session = req.session
+
+      session.viewerAudioActivated = req.body?.activated ?? true
+
+      // Рассылаем уведомление контроллерам через SSE и WebSocket
+      sessionManager.stateBroadcaster.broadcastState(
+        sessionId,
+        'viewer_audio_activated',
+        {
+          activated: session.viewerAudioActivated,
+          timestamp: Date.now()
+        }
+      )
+
+      res.json({ success: true })
     }
   )
   app.post(

@@ -462,20 +462,27 @@ function updateViewerLink(sessionId) {
   }
 }
 /**
- * Современная инициализация WebSocket клиента
+ * Современная инициализация RealtimeClient (SSE по умолчанию)
  */
 async function initializeWebSocketClient(sessionId) {
   // Функция разбита для снижения когнитивной сложности
-  const logger = createLogger('WebSocket')
+  const logger = createLogger('RealtimeClient')
+
   // Создаем клиента с улучшенной конфигурацией
-  wsClient = new WebSocketClient(sessionId, 'controller', {
+  // По умолчанию использует SSE для снижения нагрузки на сервер
+  // Для принудительного использования WebSocket: { transport: 'websocket' }
+  wsClient = new RealtimeClient(sessionId, 'controller', {
     maxReconnectAttempts: 10,
     reconnectInterval: 2000,
     heartbeatInterval: 25000,
     coalesceDelayMs: 8 // Уменьшаем задержку для большей плавности
   })
+
+  logger.info(`🔌 Используется транспорт: ${wsClient.getTransportType().toUpperCase()}`)
+
   // Настраиваем обработчики событий
   setupWebSocketEventHandlers(wsClient, logger, sessionId)
+
   // Подключаемся с таймаутом
   await Promise.race([
     (async () => {
@@ -483,30 +490,28 @@ async function initializeWebSocketClient(sessionId) {
         await wsClient.connect()
       } catch (error) {
         // Пробрасываем ошибку, чтобы Promise.race ее поймал
-        throw new Error(`WebSocket connection failed: ${error.message}`)
+        throw new Error(`Realtime connection failed: ${error.message}`)
       }
     })(),
     new Promise((_resolve, reject) =>
-      setTimeout(() => reject(new Error('WebSocket connection timeout')), 15000)
+      setTimeout(() => reject(new Error('Realtime connection timeout')), 15000)
     )
   ])
-  logger.success('WebSocket клиент успешно инициализирован')
+  logger.success('RealtimeClient успешно инициализирован')
 }
 /**
- * Настройка обработчиков WebSocket событий
+ * Настройка обработчиков RealtimeClient событий
  */
 function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   // Функция разбита для снижения когнитивной сложности
 
   wsClient.on('open', (event) => {
-    logger.success('WebSocket соединение установлено')
+    logger.success('Realtime соединение установлено')
     updateConnectionStatus(true)
 
     // CRITICAL FIX: Upon reconnection, request full state sync to restore ball position
-    // When connection drops (code 1006), ball position becomes stale. We must request fresh state.
     if (event?.isReconnection) {
       logger.warning('Reconnected - requesting state sync to restore ball position')
-      // Request initial state which will trigger ball re-centering
       safeSend('request_state_sync', {
         timestamp: Date.now(),
         sessionId: sessionId,
@@ -522,7 +527,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     })
   })
   wsClient.on('close', event => {
-    logger.warning(`WebSocket соединение закрыто (код: ${event.code})`)
+    logger.warning(`Realtime соединение закрыто (код: ${event.code || 'N/A'})`)
     updateConnectionStatus(false)
 
     // CRITICAL FIX: Code 1006 is abnormal closure - forcibly reset ball position
@@ -549,7 +554,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     updateViewerStatusUI()
   })
   wsClient.on('error', error => {
-    logger.error(`WebSocket ошибка: ${error?.type}`, error)
+    logger.error(`Realtime ошибка: ${error?.type}`, error)
     if (error?.type === 'connection') {
       showNotification('Потеряно соединение с сервером', 'error')
     }
@@ -1126,7 +1131,7 @@ function safeSend(type, payload) {
       wsClient.send(type, payload)
     }
   } catch {
-    console.warn('Failed to send WebSocket message')
+    console.warn('Failed to send Realtime message')
   }
 }
 
