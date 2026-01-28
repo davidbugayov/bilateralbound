@@ -653,11 +653,18 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   wsClient.on(WS_MSG.initialState, state => {
     logger.info('Получено начальное состояние', state)
     lastServerState = state // Кэшируем состояние
+
+    // CRITICAL: Update viewer connection status from initial_state
+    if (typeof state.viewerConnected === 'boolean') {
+      globalThis.__current.viewerConnected = state.viewerConnected
+    }
+
     // ВАЖНО: Сначала обновляем размер превью, если есть данные,
     // и только потом применяем состояние. Это решает проблему гонки состояний.
     if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
       globalThis.__current.viewerScreenSize = state.viewerScreenSize
       updatePreviewSize(state.viewerScreenSize)
+      updateViewerInfo(state.viewerScreenSize)
     }
     // Мгновенно выравниваем позицию в превью по центру из initial_state (без интерполяции),
     // всегда центрируем мяч в превью относительно центра вьювера (в координатах вьювера)
@@ -683,11 +690,24 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     applyServerStateToPreview(state)
     syncUIWithState(state)
     updateViewerAudioIndicators() // Обновляем индикаторы звука
+    updateViewerStatusUI() // Update status UI with connection info
   })
   // Включаем обратно: превью теперь "глупый" рендерер состояния сервера
   wsClient.on(WS_MSG.stateUpdate, state => {
     // Тихая обработка обновлений состояния
     lastServerState = state // Кэшируем состояние
+
+    // CRITICAL: Update viewer connection status from state_update
+    if (typeof state.viewerConnected === 'boolean') {
+      const wasConnected = globalThis.__current.viewerConnected
+      globalThis.__current.viewerConnected = state.viewerConnected
+
+      // Update UI if connection status changed
+      if (wasConnected !== state.viewerConnected) {
+        updateViewerStatusUI()
+      }
+    }
+
     // Если пришли новые размеры экрана вьювера — обновим превью
     if (state.viewerScreenSize?.width > 0) {
       const prevSize = globalThis.__current?.viewerScreenSize || { width: 0, height: 0 }
@@ -698,6 +718,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       globalThis.__current.viewerScreenSize = nextSize
       if (sizeChanged) {
         updatePreviewSize(nextSize)
+        updateViewerInfo(nextSize)
         updateViewerStatusUI()
         // Обновляем статус в полноэкранном режиме если он открыт
         if (isPreviewFullscreen) {
