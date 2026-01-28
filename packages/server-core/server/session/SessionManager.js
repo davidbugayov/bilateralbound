@@ -760,8 +760,14 @@ class SessionManager {
             session.ballState.soundType = soundType
           }
 
-          // Рассылаем обновленное состояние всем клиентам (SSE + WebSocket)
-          this.stateBroadcaster.broadcastState(sessionId)
+          // Рассылаем обновленное состояние (drift correction) только раз в секунду
+          // Bounces (отскоки) и Start/Stop рассылаются мгновенно через events/callbacks
+          if (!session.ticks) session.ticks = 0
+          session.ticks++
+
+          if (session.ticks % 60 === 0) {
+             this.stateBroadcaster.broadcastState(sessionId)
+          }
         } catch (error) {
           this.logger.error(`Error in physics loop for session ${sessionId}: ${error.message}`)
         }

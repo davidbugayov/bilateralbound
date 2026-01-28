@@ -22,7 +22,7 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.38-55c1de7" />
+    <meta name="version" content="2.39.39-2dca1c7" />
     <meta name="theme-color" content="#020617" />
     <title>BilateralBound - EMDR терапия вьювер</title>
 
@@ -34,15 +34,15 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.38-55c1de7"
+      href="/favicon-viewer.svg?v=2.39.39-2dca1c7"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.38-55c1de7"
+      href="/favicon-viewer.ico?v=2.39.39-2dca1c7"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.38-55c1de7" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.38-55c1de7" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.39-2dca1c7" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.39-2dca1c7" />
 
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
@@ -67,15 +67,15 @@
     <link rel="preload" href="/css/viewer.css" as="style" />
 
     <!-- Preload critical JS -->
-    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.38-55c1de7" as="script" />
-    <link rel="preload" href="/js/common.js?v=2.39.38-55c1de7" as="script" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.38-55c1de7" as="script" />
-    <link rel="preload" href="/js/renderer.js?v=2.39.38-55c1de7" as="script" />
+    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.39-2dca1c7" as="script" />
+    <link rel="preload" href="/js/common.js?v=2.39.39-2dca1c7" as="script" />
+    <link rel="preload" href="/js/physics-engine.js?v=2.39.39-2dca1c7" as="script" />
+    <link rel="preload" href="/js/renderer.js?v=2.39.39-2dca1c7" as="script" />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.38-55c1de7" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.38-55c1de7" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.38-55c1de7" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.39-2dca1c7" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.39-2dca1c7" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.39-2dca1c7" />
 
     <!-- Yandex.Metrika optimized counter -->
     <noscript
@@ -120,18 +120,18 @@
     </main>
 
     <!-- Debug Logger - Load first without defer -->
-    <script src="/js/core/debug-logger.js?v=2.39.38-55c1de7"></script>
+    <script src="/js/core/debug-logger.js?v=2.39.39-2dca1c7"></script>
 
     <!-- Common utilities - Required for getSessionIdFromUrl -->
-    <script src="/js/common.js?v=2.39.38-55c1de7"></script>
+    <script src="/js/common.js?v=2.39.39-2dca1c7"></script>
 
-    <script src="/js/audio/audio-manager.js?v=2.39.38-55c1de7" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.38-55c1de7" defer></script>
-    <script src="/js/renderer.js?v=2.39.38-55c1de7" defer></script>
-    <script src="/js/sse-client.js?v=2.39.38-55c1de7" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.38-55c1de7" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.38-55c1de7" defer></script>
-    <script src="/js/shared-components.js?v=2.39.38-55c1de7" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.39-2dca1c7" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.39-2dca1c7" defer></script>
+    <script src="/js/renderer.js?v=2.39.39-2dca1c7" defer></script>
+    <script src="/js/sse-client.js?v=2.39.39-2dca1c7" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.39-2dca1c7" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.39-2dca1c7" defer></script>
+    <script src="/js/shared-components.js?v=2.39.39-2dca1c7" defer></script>
 
     <script>
       "use strict";
@@ -628,37 +628,11 @@
 
           await wsClient.connect();
 
-          // Physics and render loops
-          const PHYSICS_TICK_RATE = 60;
-          const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE;
-          let lastPhysicsUpdateTs = performance.now();
-
-          function physicsLoop() {
-            if (physicsEngine) {
-              physicsEngine.update(PHYSICS_DT / 1000);
-              lastPhysicsUpdateTs = performance.now();
-            }
+          // Use BallRenderer's built-in optimized loop
+          if (ballRenderer) {
+             ballRenderer.start();
           }
 
-          function renderLoop() {
-            if (!physicsEngine || !ballRenderer) {
-              requestAnimationFrame(renderLoop);
-              return;
-            }
-
-            const now = performance.now();
-            const alpha = Math.max(
-              0,
-              Math.min(1, (now - lastPhysicsUpdateTs) / PHYSICS_DT),
-            );
-
-            const interpolatedState = physicsEngine.getInterpolatedBall(alpha);
-            ballRenderer.drawFrame(interpolatedState);
-            requestAnimationFrame(renderLoop);
-          }
-
-          setInterval(physicsLoop, PHYSICS_DT);
-          requestAnimationFrame(renderLoop);
           setupEventListeners();
 
           // Auto-hide hotkeys hint after 10 seconds
@@ -1059,6 +1033,24 @@
         // Применяем команды к физическому движку
         if (physicsEngine) {
           physicsEngine.applyCommand(command);
+
+          // Manual Drift Correction (since we run local simulation)
+          if (typeof command.x === 'number' && typeof command.y === 'number') {
+             const dx = command.x - physicsEngine.ball.x;
+             const dy = command.y - physicsEngine.ball.y;
+             const dist = Math.hypot(dx, dy);
+
+             // Only snap if drift is significant (>50px) to avoid jitter
+             // Small drifts are ignored or naturally corrected by direction updates
+             if (dist > 50) {
+               physicsEngine.setPosition(command.x, command.y);
+               debugLog('📍 Corrected large drift:', Math.round(dist));
+             } else if (dist > 5 && !physicsEngine.state.paused) {
+                // Soft nudge for medium drift
+                physicsEngine.ball.x += dx * 0.1;
+                physicsEngine.ball.y += dy * 0.1;
+             }
+          }
         }
 
         // CRITICAL: Always update controller status from initial_state or state_update
