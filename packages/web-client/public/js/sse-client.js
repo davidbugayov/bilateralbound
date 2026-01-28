@@ -124,38 +124,55 @@ if (typeof SSEClient === 'undefined') {
      * Настройка слушателей событий
      */
     _setupEventListeners() {
+      // CRITICAL: Сбрасываем heartbeat при ЛЮБОМ событии SSE, включая комментарии
+      // EventSource автоматически поддерживает соединение живым при получении любых данных
+      // Поэтому мы сбрасываем таймер при каждом событии
+
+      const resetHeartbeatOnEvent = () => {
+        this._stats.lastActivity = Date.now()
+        this._resetHeartbeatMonitor()
+      }
+
       // Обработчик для initial_state
       this.eventSource.addEventListener('initial_state', (e) => {
+        resetHeartbeatOnEvent()
         this._handleMessage('initial_state', e.data)
       })
 
       // Обработчик для state_update
       this.eventSource.addEventListener('state_update', (e) => {
+        resetHeartbeatOnEvent()
         this._handleMessage('state_update', e.data)
       })
 
       // Обработчик для viewer_status
       this.eventSource.addEventListener('viewer_status', (e) => {
+        resetHeartbeatOnEvent()
         this._handleMessage('viewer_status', e.data)
       })
 
       // Обработчик для viewer_audio_activated
       this.eventSource.addEventListener('viewer_audio_activated', (e) => {
+        resetHeartbeatOnEvent()
         this._handleMessage('viewer_audio_activated', e.data)
       })
 
       // Обработчик для controller_connected
       this.eventSource.addEventListener('controller_connected', (e) => {
+        resetHeartbeatOnEvent()
         this._handleMessage('controller_connected', e.data)
       })
 
       // Обработчик для controller_disconnected
       this.eventSource.addEventListener('controller_disconnected', (e) => {
+        resetHeartbeatOnEvent()
         this._handleMessage('controller_disconnected', e.data)
       })
 
       // Общий обработчик для message (если тип не указан)
+      // Это также ловит heartbeat комментарии от сервера
       this.eventSource.onmessage = (e) => {
+        resetHeartbeatOnEvent()
         this._handleMessage('message', e.data)
       }
     }
@@ -167,8 +184,6 @@ if (typeof SSEClient === 'undefined') {
       try {
         const message = JSON.parse(data)
         this._stats.messagesReceived++
-        this._stats.lastActivity = Date.now()
-        this._resetHeartbeatMonitor()
 
         // Эмитим событие с типом из сообщения
         // CRITICAL FIX: For events that need full context (like initial_state with controllerConnected),
