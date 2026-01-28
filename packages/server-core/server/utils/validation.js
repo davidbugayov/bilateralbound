@@ -109,6 +109,9 @@ class ValidationUtils {
     if (updates.pause === true) {
       validated.paused = true
     }
+    if (updates.returnToCenter === true) {
+      validated.returnToCenter = true
+    }
   }
 
   /**

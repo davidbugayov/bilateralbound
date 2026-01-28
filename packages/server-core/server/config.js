@@ -4,7 +4,8 @@ const config = {
     PORT: process.env.NODE_PORT || process.env.PORT || 3000
   }),
   getRuntimeTuning: () => ({
-    DEAD_RECKON_EPS: Math.max(0, Number.parseFloat(process.env.DEAD_RECKON_EPS || '1.5') || 1.5) // Увеличиваем до 1.5px для снижения сетевой нагрузки
+    DEAD_RECKON_EPS: Math.max(0, Number.parseFloat(process.env.DEAD_RECKON_EPS || '1.5') || 1.5),
+    CLIENT_SIM_ONLY: String(process.env.CLIENT_SIM_ONLY || 'true').toLowerCase() === 'true'
   }),
   getCorsConfig: () => ({
     origins: [

@@ -2,11 +2,38 @@
 const { logger, DEBUG_MODE } = require('../logger.js')
 // Интерфейс для рассылки состояния клиентам (поддержка SSE и WebSocket)
 class StateBroadcaster {
-  constructor(sessionRepository, webSocketManager, sseManager = null) {
+  constructor(sessionRepository, webSocketManager, sseManager = null, options = {}) {
     this.sessionRepository = sessionRepository
     this.webSocketManager = webSocketManager
     this.sseManager = sseManager
     this.logger = logger
+    this.clientSimulationOnly = options.clientSimulationOnly === true
+  }
+
+  _buildStatePayload(session, stateType, payloadOverride = null) {
+    if (payloadOverride) {
+      return {
+        ...payloadOverride,
+        viewerScreenSize: session.viewerScreenSize,
+        clientSimulationOnly: this.clientSimulationOnly
+      }
+    }
+
+    const basePayload = { ...session.ballState, viewerScreenSize: session.viewerScreenSize }
+
+    if (this.clientSimulationOnly && stateType === 'state_update') {
+      // Remove position/velocity to avoid corrupting client-side simulation
+      delete basePayload.x
+      delete basePayload.y
+      delete basePayload.vx
+      delete basePayload.vy
+    }
+
+    if (this.clientSimulationOnly) {
+      basePayload.clientSimulationOnly = true
+    }
+
+    return basePayload
   }
 
   broadcastState(sessionId, stateType = 'state_update', payload = null) {
@@ -18,7 +45,7 @@ class StateBroadcaster {
     const eventData = {
       type: stateType,
       timestamp: Date.now(),
-      payload: payload || { ...session.ballState, viewerScreenSize: session.viewerScreenSize }
+      payload: this._buildStatePayload(session, stateType, payload)
     }
 
     let sentCount = 0
@@ -75,7 +102,8 @@ class StateBroadcaster {
         ...ballState,
         viewerConnected: session.viewerConnected,
         controllerConnected: session.controllerConnected,
-        viewerScreenSize: session.viewerScreenSize
+        viewerScreenSize: session.viewerScreenSize,
+        clientSimulationOnly: this.clientSimulationOnly
       }
     }
 

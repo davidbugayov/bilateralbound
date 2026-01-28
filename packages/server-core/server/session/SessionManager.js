@@ -6,6 +6,7 @@ const SSEManager = require('./SSEManager.js')
 const StateBroadcaster = require('./StateBroadcaster.js')
 const ValidationUtils = require('../utils/validation.js')
 const { logger, DEBUG_MODE } = require('../logger.js')
+const config = require('../config.js')
 // Основной оркестратор сессий
 class SessionManager {
   /**
@@ -16,10 +17,12 @@ class SessionManager {
     this.sessionRepository = new SessionRepository()
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
     this.sseManager = new SSEManager(this.sessionRepository)
+    this.clientSimulationOnly = config.getRuntimeTuning().CLIENT_SIM_ONLY
     this.stateBroadcaster = new StateBroadcaster(
       this.sessionRepository,
       this.webSocketManager,
-      this.sseManager
+      this.sseManager,
+      { clientSimulationOnly: this.clientSimulationOnly }
     )
     this.apiCache = apiCache // Получаем ссылку на кэш API
     this.logger = {
@@ -185,100 +188,19 @@ class SessionManager {
   _applyValidatedUpdates(session, validatedUpdates) {
     this._handleReturnToCenter(session, validatedUpdates)
     this._applyPhysicsUpdates(session, validatedUpdates)
-    this._postUpdateActions(session)
+    this._postUpdateActions(session, validatedUpdates)
     return true
   }
 
-  /**
-   * Обрабатывает возврат в центр при необходимости
-   * @private
-   */
-  _handleReturnToCenter(session, validatedUpdates) {
-    if (validatedUpdates.returnToCenter && session.physicsEngine) {
-      session.physicsEngine.returnToCenter()
-      if (validatedUpdates.paused) {
-        session.physicsEngine.setPaused(true)
-      }
-      this.logger.logSession(
-        session.id,
-        '[RETURN_TO_CENTER] Initiating smooth return to center',
-        'debug'
-      )
-    }
-  }
-
-  /**
-   * Применяет физические обновления к сессии
-   * @private
-   */
-  _applyPhysicsUpdates(session, validatedUpdates) {
-    if (session.physicsEngine) {
-      session.physicsEngine.applyCommand(validatedUpdates)
-      // Сохраняем настройки которые НЕ должны перезаписываться физикой
-      const soundSettings = {}
-      if (session.ballState.soundEnabled !== undefined) {
-        soundSettings.soundEnabled = session.ballState.soundEnabled
-      }
-      if (session.ballState.soundType !== undefined) {
-        soundSettings.soundType = session.ballState.soundType
-      }
-
-      // Сохраняем направление если оно не меняется этим обновлением
-      const preserveDirection = validatedUpdates.dirX === undefined && validatedUpdates.dirY === undefined
-      const userDirX = preserveDirection ? session.ballState.dirX : undefined
-      const userDirY = preserveDirection ? session.ballState.dirY : undefined
-
-      Object.assign(session.ballState, session.physicsEngine.getState())
-
-      // Восстанавливаем звуковые настройки
-      if (Object.keys(soundSettings).length > 0) {
-        Object.assign(session.ballState, soundSettings)
-      }
-
-      // Восстанавливаем направление если оно не обновлялось
-      if (preserveDirection && userDirX !== undefined && userDirY !== undefined) {
-        session.ballState.dirX = userDirX
-        session.ballState.dirY = userDirY
-      }
-
-      // Применяем новые звуковые настройки из validatedUpdates (они имеют приоритет)
-      if (validatedUpdates.soundEnabled !== undefined) {
-        session.ballState.soundEnabled = validatedUpdates.soundEnabled
-      }
-      if (validatedUpdates.soundType !== undefined) {
-        session.ballState.soundType = validatedUpdates.soundType
-      }
-
-      this._normalizeDirectionIfNeeded(session)
-    } else {
-      this.sessionRepository.updateBallState(session.id, validatedUpdates)
-    }
-  }
-
-  /**
-   * Нормализует направление при необходимости
-   * @private
-   */
-  _normalizeDirectionIfNeeded(session) {
-    if (
-      session.normalizeDirectionUntilTs &&
-      Date.now() < session.normalizeDirectionUntilTs &&
-      session?.physicsEngine?.state
-    ) {
-      const dx = session.physicsEngine.state.lastDirection.x || 0
-      const dy = session.physicsEngine.state.lastDirection.y || 0
-      session.ballState.vx = Math.max(-1, Math.min(1, dx))
-      session.ballState.vy = Math.max(-1, Math.min(1, dy))
-    }
-  }
-
-  /**
-   * Выполняет действия после обновления
-   * @private
-   */
-  _postUpdateActions(session) {
+  _postUpdateActions(session, validatedUpdates) {
     this._schedulePhysicsUpdate(session.id)
     this.apiCache.delete(`state_${session.id}`)
+
+    if (this.clientSimulationOnly) {
+      this.stateBroadcaster.broadcastState(session.id, 'state_update', validatedUpdates)
+      return
+    }
+
     this.stateBroadcaster.broadcastState(session.id)
   }
 
@@ -719,6 +641,11 @@ class SessionManager {
     if (session.mainLoop) {
       clearInterval(session.mainLoop)
       session.mainLoop = null
+    }
+
+    if (this.clientSimulationOnly) {
+      this.logger.logSession(sessionId, 'Server-side physics loop disabled (client simulation)', 'debug')
+      return
     }
 
     // Проверяем есть ли подключенные вьюверы (WebSocket или SSE)

@@ -1156,12 +1156,6 @@ function safeSend(type, payload) {
 }
 
 function updateSpeed(speed) {
-  // Проверяем подключение viewer'а перед изменением скорости
-  if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot change speed: viewer is not connected')
-    // Не показываем уведомление при старте, только при попытке изменения
-    return
-  }
 
   // Отправляем изменение скорости
   try {
@@ -1723,15 +1717,12 @@ function updatePlayPauseButton() {
  * @private
  */
 function _setPlayPauseState(shouldPlay) {
-  // Проверка подключения viewer'а
+  // Если viewer'а нет, просто предупреждаем, но не блокируем
   if (!globalThis.__current?.viewerConnected) {
-    console.warn(`Cannot ${shouldPlay ? 'start' : 'pause'} session: viewer is not connected`)
-    showNotification('Невозможно начать сессию: клиент не подключен', 'warning')
-    // Гарантируем правильный статус
-    isPlaying = false
-    updateViewerStatusUI()
-    _updateAllPlayPauseButtons()
-    return false
+    console.warn(`Attempting to ${shouldPlay ? 'start' : 'pause'} session without confirmed viewer connection`)
+    if (shouldPlay) {
+       showNotification('Внимание: клиент не подключен, анимация может не работать', 'warning')
+    }
   }
 
   // Формируем payload в зависимости от действия
