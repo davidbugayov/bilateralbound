@@ -52,7 +52,7 @@ if (typeof SSEClient === 'undefined') {
     _generateSSEUrl() {
       const protocol = globalThis.location.protocol
       const host = globalThis.location.host
-      return `${protocol}//${host}/api/session/${this.sessionId}/stream?role=${this.role}`
+      return `${protocol}//${host}/api/session/${this.sessionId}/events?role=${this.role}`
     }
 
     /**
