@@ -344,13 +344,14 @@ function setupFullscreenListeners() {
   const overlay = document.getElementById('previewOverlay')
   previewFsCanvas = document.getElementById('previewFullscreenCanvas')
 
-  // Регистрируем обработчики клавиш всегда
-  document.addEventListener('keydown', handleFullscreenKeydown)
+  // Регистрируем обработчики клавиш всегда с capture для надежности
+  document.addEventListener('keydown', handleFullscreenKeydown, true)
   globalThis.addEventListener('popstate', handlePopState)
 
   // Регистрируем обработчик открытия независимо
   if (openFsBtn) {
     openFsBtn.addEventListener('click', () => {
+      console.log('🖱️ Open fullscreen button clicked')
       openPreviewFullscreen()
     })
   }
@@ -373,8 +374,12 @@ function handleFullscreenKeydown(e) {
   }
 
   const key = e?.key?.toLowerCase()
+
+  // Обрабатываем клавишу F для полноэкранного режима
   if (key === 'f') {
     e.preventDefault()
+    e.stopPropagation()
+    console.log('🔑 F key pressed, isPreviewFullscreen:', isPreviewFullscreen)
     if (isPreviewFullscreen) {
       closePreviewFullscreen()
     } else {
@@ -382,6 +387,7 @@ function handleFullscreenKeydown(e) {
     }
   } else if (key === 'escape' && isPreviewFullscreen) {
     e.preventDefault()
+    e.stopPropagation()
     closePreviewFullscreen()
   }
 }
@@ -554,7 +560,21 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     updateViewerStatusUI()
   })
   wsClient.on('error', error => {
+    // Не показываем ошибку connection_closed если это первая попытка подключения
+    // или если вьювер еще не подключался (это нормально)
+    const isConnectionClosed = error?.type === 'connection_closed'
+    const isFirstAttempt = error?.isFirstAttempt === true
+    const viewerNeverConnected = !globalThis.__current?.viewerConnected
+
+    if (isConnectionClosed && (isFirstAttempt || viewerNeverConnected)) {
+      // Это нормальная ситуация - не логируем как ошибку
+      logger.info(`Realtime: ${error?.type} (${isFirstAttempt ? 'first attempt' : 'viewer not connected yet'})`)
+      return
+    }
+
+    // Критическая ошибка - показываем
     logger.error(`Realtime ошибка: ${error?.type}`, error)
+
     if (error?.type === 'connection') {
       showNotification('Потеряно соединение с сервером', 'error')
     }
@@ -1975,8 +1995,12 @@ function _initializeFullscreenRenderer() {
  * Рефакторинг для снижения когнитивной сложности.
  */
 function openPreviewFullscreen() {
+  console.log('🖥️ Opening fullscreen preview...')
   const overlay = document.getElementById('previewOverlay')
-  if (!overlay || !previewFsCanvas) return
+  if (!overlay || !previewFsCanvas) {
+    console.warn('⚠️ Cannot open fullscreen: overlay or canvas missing', { overlay: !!overlay, canvas: !!previewFsCanvas })
+    return
+  }
 
   const currentUrl = globalThis.location.href
   const fullscreenUrl = currentUrl.split('#')[0] + '#fullscreen-preview'
@@ -1984,6 +2008,7 @@ function openPreviewFullscreen() {
 
   overlay.style.display = 'block'
   isPreviewFullscreen = true
+  console.log('✅ Fullscreen preview opened')
 
   // Добавляем класс к body для скрытия кнопки "На главную"
   document.body.classList.add('fullscreen-active')
@@ -2006,6 +2031,7 @@ function openPreviewFullscreen() {
 
 function closePreviewFullscreen() {
   // Функция разбита для снижения когнитивной сложности
+  console.log('🚪 Closing fullscreen preview...')
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
   // Убираем хэш из URL без изменения истории
@@ -2015,6 +2041,7 @@ function closePreviewFullscreen() {
   history.replaceState(null, '', baseUrl)
   overlay.style.display = 'none'
   isPreviewFullscreen = false
+  console.log('✅ Fullscreen preview closed')
 
   // Убираем класс от body
   document.body.classList.remove('fullscreen-active')

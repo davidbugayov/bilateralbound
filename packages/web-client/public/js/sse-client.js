@@ -29,6 +29,7 @@ if (typeof SSEClient === 'undefined') {
       this.eventSource = null
       this.isConnected = false
       this.reconnectAttempts = 0
+      this.hasEverConnected = false // Флаг успешного первого подключения
 
       // Обработчики событий
       this.eventHandlers = new Map()
@@ -74,6 +75,7 @@ if (typeof SSEClient === 'undefined') {
           // Обработчик успешного открытия
           this.eventSource.onopen = () => {
             this.isConnected = true
+            this.hasEverConnected = true // Отмечаем, что хотя бы раз успешно подключились
             this.reconnectAttempts = 0
             this._stats.lastActivity = Date.now()
             this._startHeartbeatMonitor()
@@ -84,11 +86,23 @@ if (typeof SSEClient === 'undefined') {
 
           // Обработчик ошибок
           this.eventSource.onerror = (error) => {
+            const wasConnected = this.isConnected
             this.isConnected = false
 
             if (this.eventSource.readyState === EventSource.CLOSED) {
-              this.log('SSE connection closed', 'error')
-              this._emit('error', { error, type: 'connection_closed' })
+              // Если это первое подключение и оно не удалось - не паникуем
+              // Это может быть нормально, если сессия еще не создана или сервер перезагружается
+              const isFirstConnectionAttempt = !this.hasEverConnected && this.reconnectAttempts === 0
+
+              if (isFirstConnectionAttempt) {
+                this.log('SSE connection failed on first attempt, will retry...', 'warn')
+              } else if (wasConnected) {
+                this.log('SSE connection closed (was connected)', 'warn')
+              } else {
+                this.log('SSE connection closed', 'warn')
+              }
+
+              this._emit('error', { error, type: 'connection_closed', wasConnected, isFirstAttempt: isFirstConnectionAttempt })
               this._scheduleReconnect()
               reject(new Error('SSE connection failed'))
             } else {
@@ -313,13 +327,19 @@ if (typeof SSEClient === 'undefined') {
       this.reconnectAttempts++
       const delay = this.config.reconnectInterval * this.reconnectAttempts
 
-      this.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`)
+      const isFirstAttempt = this.reconnectAttempts === 1 && !this.hasEverConnected
+      const logLevel = isFirstAttempt ? 'info' : 'warn'
+
+      this.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.config.maxReconnectAttempts})`, logLevel)
 
       this.reconnectTimer = setTimeout(() => {
         this.close()
         this._stats.reconnectCount++
         this.connect().catch((error) => {
-          this.log(`Reconnection failed: ${error.message}`, 'error')
+          const shouldLogError = this.hasEverConnected || this.reconnectAttempts > 2
+          if (shouldLogError) {
+            this.log(`Reconnection failed: ${error.message}`, 'warn')
+          }
         })
       }, delay)
     }
