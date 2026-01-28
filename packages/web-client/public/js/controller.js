@@ -1201,7 +1201,7 @@ async function initializePreview() {
       /* ignore */
     }
     // Клиент теперь вычисляет физику локально (включая отскоки), сервер только синхронизирует
-    previewPhysicsEngine.isViewer = true
+    previewPhysicsEngine.isViewer = false
 
     // Явно устанавливаем паузу и центрируем мяч при загрузке
     // Это гарантирует правильную позицию в preview
@@ -1270,6 +1270,13 @@ function showWaitingForViewer() {
       previewPhysicsEngine.setVelocity(0, 0)
       previewPhysicsEngine.setPaused(true)
     }
+  }
+}
+
+function hideWaitingForViewer() {
+  const viewerInfo = document.getElementById('viewerInfo')
+  if (viewerInfo) {
+    viewerInfo.style.display = 'none'
   }
 }
 
@@ -1856,6 +1863,7 @@ function updateViewerStatusUI() {
       viewerStatusEl.classList.add('connected')
       viewerStatusEl.classList.remove('disconnected')
       viewerStatusEl.style.fontWeight = '600' // делаем текст жирным для лучшей видимости
+      hideWaitingForViewer()
       if (globalThis.__current.viewerScreenSize?.width > 0) {
         updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
@@ -1955,15 +1963,11 @@ function updateViewerAudioIndicators() {
   }
 }
 
-/**
- * Инициализирует движок физики и рендерер для полноэкранного предпросмотра.
- * @private
- */
 function _initializeFullscreenRenderer() {
   try {
     if (!previewPhysicsEngine) {
       previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
-      previewPhysicsEngine.isViewer = true
+      previewPhysicsEngine.isViewer = false
       // Явно центрируем мяч в fullscreen preview
       previewPhysicsEngine.setPaused(true)
     }

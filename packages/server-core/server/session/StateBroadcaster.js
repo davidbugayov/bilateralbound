@@ -19,7 +19,12 @@ class StateBroadcaster {
       }
     }
 
-    const basePayload = { ...session.ballState, viewerScreenSize: session.viewerScreenSize }
+    const basePayload = {
+      ...session.ballState,
+      viewerScreenSize: session.viewerScreenSize,
+      viewerConnected: session.viewerConnected,
+      controllerConnected: session.controllerConnected
+    }
 
     if (this.clientSimulationOnly && stateType === 'state_update') {
       // Remove position/velocity to avoid corrupting client-side simulation
