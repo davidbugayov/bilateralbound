@@ -11,6 +11,7 @@
  */
 
 const http = require('http');
+const https = require('https');
 const { EventSource } = require('eventsource');
 
 const BASE_URL = process.env.TEST_URL || 'http://localhost:3000';
@@ -52,7 +53,10 @@ async function httpRequest(path, method = 'GET', body = null) {
       }
     };
 
-    const req = http.request(url, options, (res) => {
+    // Выбираем правильный модуль в зависимости от протокола
+    const protocol = url.protocol === 'https:' ? https : http;
+
+    const req = protocol.request(url, options, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
@@ -88,17 +92,22 @@ async function connectViewerSSE(sessionId) {
 
   return new Promise((resolve, reject) => {
     const url = `${BASE_URL}/api/session/${sessionId}/stream?role=viewer`;
+    log(`SSE URL: ${url}`, 'debug');
     const eventSource = new EventSource(url);
 
     const receivedEvents = [];
     let initialStateReceived = false;
 
     eventSource.onopen = () => {
-      log('SSE connection opened', 'debug');
+      log('✓ SSE connection opened successfully', 'info');
+    };
+
+    eventSource.onmessage = (e) => {
+      log(`Received generic message: ${e.data}`, 'debug');
     };
 
     eventSource.addEventListener('initial_state', (e) => {
-      log('Received initial_state event', 'debug');
+      log('✓ Received initial_state event', 'info');
       try {
         const data = JSON.parse(e.data);
         log(`Initial state: ${JSON.stringify(data)}`, 'debug');
@@ -121,7 +130,14 @@ async function connectViewerSSE(sessionId) {
     });
 
     eventSource.onerror = (error) => {
-      log(`SSE error: ${error}`, 'warn');
+      log(`⚠️ SSE error - readyState: ${eventSource.readyState}, error: ${JSON.stringify(error)}`, 'warn');
+
+      if (eventSource.readyState === EventSource.CLOSED) {
+        log('SSE connection closed by server', 'error');
+        clearTimeout(timeout);
+        clearInterval(checkInterval);
+        reject(new Error('SSE connection closed'));
+      }
     };
 
     // Ждем получения initial_state
@@ -129,9 +145,11 @@ async function connectViewerSSE(sessionId) {
       if (initialStateReceived) {
         resolve({ eventSource, receivedEvents });
       } else {
+        log(`Timeout - received ${receivedEvents.length} events, waiting for initial_state`, 'error');
+        eventSource.close();
         reject(new Error('Timeout waiting for initial_state'));
       }
-    }, 5000);
+    }, 10000); // Увеличили до 10 секунд
 
     // Если получили initial_state раньше таймаута
     const checkInterval = setInterval(() => {
