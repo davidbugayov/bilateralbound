@@ -5,8 +5,9 @@
 
 SERVER="213.139.229.44"
 USER="root"
-PROJECT_DIR="/var/www/bilateral_bound"
+PROJECT_DIR="/var/www/dev.emdrbilateral.online"
 BRANCH="stable-enhanced"
+SERVICE="emdrbilateral-dev"
 
 echo "🚀 Starting deployment to dev.emdrbilateral.online..."
 
@@ -23,16 +24,14 @@ ENDSSH
 echo "📦 Installing dependencies..."
 ssh -T ${USER}@${SERVER} bash << ENDSSH
 cd ${PROJECT_DIR} || exit 1
-npm install
+npm ci --omit=dev
 echo "✅ Dependencies installed"
 ENDSSH
 
-# Restart PM2 process
-echo "🔄 Restarting PM2 process..."
+# Restart systemd service
+echo "🔄 Restarting systemd service..."
 ssh -T ${USER}@${SERVER} bash << ENDSSH
-pm2 restart bilateral-bound
-pm2 save
-echo "✅ PM2 restarted"
+systemctl restart ${SERVICE}
 ENDSSH
 
 # Check status
@@ -41,8 +40,8 @@ ssh -T ${USER}@${SERVER} bash << ENDSSH
 echo "Current commit:"
 cd ${PROJECT_DIR} && git log --oneline -1
 echo ""
-echo "PM2 status:"
-pm2 list | grep bilateral-bound
+echo "Service status:"
+systemctl status ${SERVICE} --no-pager
 ENDSSH
 
 echo ""
