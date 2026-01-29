@@ -31,6 +31,7 @@ let wsClient
 let isInitialized = false // Флаг для предотвращения повторной инициализации
 let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
 let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
+let isInitializing = true; // Flag to prevent sending updates during initialization
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
@@ -285,11 +286,13 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initializeController() {
   const logger = createLogger('Controller')
   try {
+    isInitializing = true; // Start initialization
     logger.info('Начинаем инициализацию контроллера')
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
       debugError('ID сессии не найден в URL')
       showNotification('ID сессии не найден в URL', 'error')
+      isInitializing = false;
       return
     }
 
@@ -305,10 +308,13 @@ async function initializeController() {
     await initializePreview()
     setupFullscreenListeners()
 
-    // Подключаемся к Realtime сразу, viewer_status событие обновит UI когда viewer подключится
+    // Подключаемся к Realtime сразу
     await initializeWebSocketClient(sessionId)
     logger.info('🔌 WebSocket клиент инициализирован')
+
+    isInitializing = false; // End initialization
   } catch (error) {
+    isInitializing = false;
     debugError('Error initializing controller:', error)
     showNotification('Ошибка инициализации контроллера: ' + (error?.message || error), 'error')
   }
@@ -1584,22 +1590,46 @@ function setDirection(directionMode) {
 }
 
 function setBallColor(color) {
+  // Update local preview immediately
+  if (globalThis.__previewRenderer) {
+    // This might need a method on renderer, but usually color comes from state
+  }
+
+  // If initializing, just save state but don't warn or send
+  if (isInitializing) {
+    if (lastServerState) {
+        lastServerState.colorBall = color;
+    }
+    return;
+  }
+
   // Проверяем подключение viewer'а перед изменением цвета
   if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot change ball color: viewer is not connected')
-    // Не показываем уведомление при старте, только при попытке изменения
-    return
+    // Silently update local state or preview if needed, but don't warn during normal operation if just disconnected momentarily
+     if (lastServerState) {
+        lastServerState.colorBall = color;
+    }
+    // Only warn if user explicitly interacted, but here we can just return
+    return;
   }
 
   safeSend(WS_MSG.controllerUpdate, { colorBall: color })
 }
 
 function setBallSize(size) {
+  if (isInitializing) {
+     if (lastServerState) {
+        lastServerState.radius = size;
+    }
+    return;
+  }
+
   // Проверяем подключение viewer'а перед изменением размера
   if (!globalThis.__current.viewerConnected) {
-    console.warn('Cannot change ball size: viewer is not connected')
-    // Не показываем уведомление при старте, только при попытке изменения
-    return
+    if (lastServerState) {
+        lastServerState.radius = size;
+    }
+    return;
   }
 
   safeSend(WS_MSG.controllerUpdate, { radius: size })
@@ -1642,23 +1672,31 @@ function setBallSizeMultiplier(multiplier) {
 }
 
 function setBackgroundColor(color) {
+  // Обновляем фон в превью всегда
+  if (globalThis.__previewRenderer) {
+    globalThis.__previewRenderer.setBackgroundColor(color)
+  }
+  if (previewFsRenderer) {
+    previewFsRenderer.setBackgroundColor(color)
+  }
+
+  if (isInitializing) {
+     if (lastServerState) {
+        lastServerState.colorBg = color;
+    }
+    return;
+  }
+
   // Проверяем подключение viewer'а перед изменением цвета фона
   if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot change background color: viewer is not connected')
-    // Не показываем уведомление при старте, только при попытке изменения
-    return
+    if (lastServerState) {
+        lastServerState.colorBg = color;
+    }
+    return;
   }
 
   // Отправляем изменение на сервер
   safeSend(WS_MSG.controllerUpdate, { colorBg: color })
-  // Обновляем фон в превью
-  if (globalThis.__previewRenderer) {
-    globalThis.__previewRenderer.setBackgroundColor(color)
-  }
-  // Обновляем фон в полноэкранном превью
-  if (previewFsRenderer) {
-    previewFsRenderer.setBackgroundColor(color)
-  }
 }
 
 function updateDirectionButtons() {
