@@ -22,7 +22,7 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.58-f8f7944" />
+    <meta name="version" content="2.39.59-100f089" />
     <meta name="theme-color" content="#020617" />
     <title>BilateralBound - EMDR терапия вьювер</title>
 
@@ -34,15 +34,15 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.58-f8f7944"
+      href="/favicon-viewer.svg?v=2.39.59-100f089"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.58-f8f7944"
+      href="/favicon-viewer.ico?v=2.39.59-100f089"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.58-f8f7944" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.58-f8f7944" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.59-100f089" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.59-100f089" />
 
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
@@ -67,15 +67,15 @@
     <link rel="preload" href="/css/viewer.css" as="style" />
 
     <!-- Preload critical JS -->
-    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.58-f8f7944" as="script" />
-    <link rel="preload" href="/js/common.js?v=2.39.58-f8f7944" as="script" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.58-f8f7944" as="script" />
-    <link rel="preload" href="/js/renderer.js?v=2.39.58-f8f7944" as="script" />
+    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.59-100f089" as="script" />
+    <link rel="preload" href="/js/common.js?v=2.39.59-100f089" as="script" />
+    <link rel="preload" href="/js/physics-engine.js?v=2.39.59-100f089" as="script" />
+    <link rel="preload" href="/js/renderer.js?v=2.39.59-100f089" as="script" />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.58-f8f7944" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.58-f8f7944" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.58-f8f7944" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.59-100f089" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.59-100f089" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.59-100f089" />
 
     <!-- Yandex.Metrika optimized counter -->
     <noscript
@@ -120,18 +120,18 @@
     </main>
 
     <!-- Debug Logger - Load first without defer -->
-    <script src="/js/core/debug-logger.js?v=2.39.58-f8f7944"></script>
+    <script src="/js/core/debug-logger.js?v=2.39.59-100f089"></script>
 
     <!-- Common utilities - Required for getSessionIdFromUrl -->
-    <script src="/js/common.js?v=2.39.58-f8f7944"></script>
+    <script src="/js/common.js?v=2.39.59-100f089"></script>
 
-    <script src="/js/audio/audio-manager.js?v=2.39.58-f8f7944" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.58-f8f7944" defer></script>
-    <script src="/js/renderer.js?v=2.39.58-f8f7944" defer></script>
-    <script src="/js/sse-client.js?v=2.39.58-f8f7944" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.58-f8f7944" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.58-f8f7944" defer></script>
-    <script src="/js/shared-components.js?v=2.39.58-f8f7944" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.59-100f089" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.59-100f089" defer></script>
+    <script src="/js/renderer.js?v=2.39.59-100f089" defer></script>
+    <script src="/js/sse-client.js?v=2.39.59-100f089" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.59-100f089" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.59-100f089" defer></script>
+    <script src="/js/shared-components.js?v=2.39.59-100f089" defer></script>
 
     <script>
       "use strict";
@@ -184,6 +184,12 @@
       }
 
       function updateStatus(data) {
+        // Трекаем состояние подключения контроллера
+        if (typeof data.controllerConnected === 'boolean') {
+          if (!globalThis.__current) globalThis.__current = {};
+          globalThis.__current.controllerConnected = data.controllerConnected;
+        }
+
         if (components.status) {
           if (data.controllerConnected) {
             components.status.setStatus('success', 'Controller connected');
@@ -682,8 +688,23 @@
           });
 
           wsClient.on("error", (error) => {
+            // Не показываем ошибку connection_closed если это первая попытка подключения
+            // или если контроллер еще не подключался (это нормально)
+            const isConnectionClosed = error?.type === 'connection_closed'
+            const isFirstAttempt = error?.isFirstAttempt === true
+            const controllerNeverConnected = !globalThis.__current?.controllerConnected
+
+            if (isConnectionClosed && (isFirstAttempt || controllerNeverConnected)) {
+              // Это нормальная ситуация - не показываем ошибку пользователю
+              debugLog(`ℹ️ Realtime: ${error?.type} (${isFirstAttempt ? 'first attempt' : 'controller not connected yet'})`)
+              return
+            }
+
+            // Критическая ошибка - показываем
             debugError("❌ WebSocket error:", error);
-            showError("Ошибка соединения.");
+            if (error?.type === 'connection') {
+              showError("Ошибка соединения с сервером.");
+            }
           });
 
           // Обработчик для получения статуса контроллера
@@ -716,7 +737,16 @@
           wsClient.on('initial_state', onStateUpdate)
           wsClient.on('viewer_status', updateStatus)
 
-          await wsClient.connect();
+          // Подключаемся к SSE/WebSocket
+          // Не пробрасываем ошибку наверх если это первая попытка подключения
+          try {
+            await wsClient.connect();
+          } catch (error) {
+            // SSE может не подключиться с первой попытки если controller ещё не создал сессию
+            // Это нормально - RealtimeClient автоматически переподключится
+            debugWarn("⚠️ First connection attempt failed, will retry:", error.message);
+            // Не показываем ошибку пользователю - автоматический реконнект обработает это
+          }
 
           // Use BallRenderer's built-in optimized loop
           if (ballRenderer) {
