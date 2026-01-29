@@ -22,7 +22,7 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.49-328d86a" />
+    <meta name="version" content="2.39.50-f6c5a2c" />
     <meta name="theme-color" content="#020617" />
     <title>BilateralBound - EMDR терапия вьювер</title>
 
@@ -34,15 +34,15 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.49-328d86a"
+      href="/favicon-viewer.svg?v=2.39.50-f6c5a2c"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.49-328d86a"
+      href="/favicon-viewer.ico?v=2.39.50-f6c5a2c"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.49-328d86a" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.49-328d86a" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.50-f6c5a2c" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.50-f6c5a2c" />
 
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
@@ -67,15 +67,15 @@
     <link rel="preload" href="/css/viewer.css" as="style" />
 
     <!-- Preload critical JS -->
-    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.49-328d86a" as="script" />
-    <link rel="preload" href="/js/common.js?v=2.39.49-328d86a" as="script" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.49-328d86a" as="script" />
-    <link rel="preload" href="/js/renderer.js?v=2.39.49-328d86a" as="script" />
+    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.50-f6c5a2c" as="script" />
+    <link rel="preload" href="/js/common.js?v=2.39.50-f6c5a2c" as="script" />
+    <link rel="preload" href="/js/physics-engine.js?v=2.39.50-f6c5a2c" as="script" />
+    <link rel="preload" href="/js/renderer.js?v=2.39.50-f6c5a2c" as="script" />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.49-328d86a" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.49-328d86a" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.49-328d86a" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.50-f6c5a2c" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.50-f6c5a2c" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.50-f6c5a2c" />
 
     <!-- Yandex.Metrika optimized counter -->
     <noscript
@@ -120,18 +120,18 @@
     </main>
 
     <!-- Debug Logger - Load first without defer -->
-    <script src="/js/core/debug-logger.js?v=2.39.49-328d86a"></script>
+    <script src="/js/core/debug-logger.js?v=2.39.50-f6c5a2c"></script>
 
     <!-- Common utilities - Required for getSessionIdFromUrl -->
-    <script src="/js/common.js?v=2.39.49-328d86a"></script>
+    <script src="/js/common.js?v=2.39.50-f6c5a2c"></script>
 
-    <script src="/js/audio/audio-manager.js?v=2.39.49-328d86a" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.49-328d86a" defer></script>
-    <script src="/js/renderer.js?v=2.39.49-328d86a" defer></script>
-    <script src="/js/sse-client.js?v=2.39.49-328d86a" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.49-328d86a" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.49-328d86a" defer></script>
-    <script src="/js/shared-components.js?v=2.39.49-328d86a" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.50-f6c5a2c" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.50-f6c5a2c" defer></script>
+    <script src="/js/renderer.js?v=2.39.50-f6c5a2c" defer></script>
+    <script src="/js/sse-client.js?v=2.39.50-f6c5a2c" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.50-f6c5a2c" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.50-f6c5a2c" defer></script>
+    <script src="/js/shared-components.js?v=2.39.50-f6c5a2c" defer></script>
 
     <script>
       "use strict";
@@ -502,8 +502,10 @@
 
           await connectToSession(sessionId);
 
-          // Инициализация RealtimeClient (по умолчанию SSE, fallback на WebSocket)
-          wsClient = new RealtimeClient(sessionId, "viewer");
+          await waitForControllerBeforeRealtime(sessionId)
+
+           // Инициализация RealtimeClient (по умолчанию SSE, fallback на WebSocket)
+           wsClient = new RealtimeClient(sessionId, "viewer");
           globalThis.wsClient = wsClient;
           debugLog("✅ RealtimeClient создан, транспорт:", wsClient.getTransportType());
 
@@ -649,454 +651,36 @@
           showError("Ошибка инициализации: " + error.message);
         }
       }
-
-      async function connectToSession(sessionId) {
-        try {
-          const canvasElement = document.getElementById("viewerCanvas");
-          if (!canvasElement) {
-            console.error("Canvas не найден");
-            return;
-          }
-
-          const response = await fetch(
-            `/api/session/${sessionId}/viewer/connect`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                screenSize: {
-                  width: globalThis.innerWidth,
-                  height: globalThis.innerHeight,
-                },
-              }),
-            },
-          );
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            // Исправлено: убрали throw из try-catch для избежания ошибки
-            const errorMessage = `HTTP ${response.status}: ${errorText || "Не удалось подключиться к сессии"}`;
-            debugError("❌ Ошибка подключения к сессии:", errorMessage);
-            showError(errorMessage);
-            return;
-          }
-
-          debugLog("✅ Подключение к сессии успешно");
-        } catch (error) {
-          debugError("❌ Ошибка подключения к сессии:", error);
-          showError("Ошибка подключения: " + error.message);
-        }
-      }
-
-      function resizeCanvas() {
-        const canvas = document.getElementById("viewerCanvas");
-        if (!canvas) return;
-
-        canvas.width = globalThis.innerWidth;
-        canvas.height = globalThis.innerHeight;
-
-        if (physicsEngine) {
-          physicsEngine.setWorldSize(canvas.width, canvas.height);
-        }
-
-        if (ballRenderer) {
-          ballRenderer.resize(canvas.width, canvas.height);
-        }
-      }
-
-      async function updateScreenSize() {
-        const sessionId = getSessionIdFromUrl();
-        if (!sessionId) return;
-
-        try {
-          const now = Date.now();
-          if (now - lastScreenSizeUpdate < 2000) {
-            return;
-          }
-
-          const response = await fetch(
-            `/api/session/${sessionId}/viewer/screen-size`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                width: globalThis.innerWidth,
-                height: globalThis.innerHeight,
-              }),
-              signal: AbortSignal.timeout(5000),
-            },
-          );
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            const errorMessage = `HTTP ${response.status}: ${errorText || "Неизвестная ошибка"}`;
-            showWarning(`Не удалось обновить размер экрана: ${errorMessage}`);
-            return;
-          }
-
-          lastScreenSizeUpdate = now;
-          debugLog(
-            `✅ Размер экрана обновлен на сервере: ${globalThis.innerWidth}×${globalThis.innerHeight}`,
-          );
-        } catch (error) {
-          if (error.name === "AbortError") {
-            debugLog("⏰ Таймаут при обновлении размера экрана");
-          } else if (
-            error.name === "TypeError" &&
-            error.message.includes("fetch")
-          ) {
-            debugLog("🌐 Сеть недоступна при обновлении размера экрана");
-          } else {
-            debugError("Ошибка при обновлении размера экрана:", error);
-          }
-        }
-      }
-
-      function updateStatus(data) {
-        console.log("📊 [VIEWER] updateStatus called with:", JSON.stringify(data));
-
-        if (components.status) {
-          // SSE события приходят в формате {type, timestamp, payload}
-          const sessionData = data.payload || data;
-
-          console.log("📊 [VIEWER] sessionData extracted:", JSON.stringify(sessionData));
-          console.log("📊 [VIEWER] controllerConnected value:", sessionData.controllerConnected);
-          debugLog("📊 Обновление статуса:", sessionData);
-
-          // Определяем новый статус
-          let newStatus = null;
-
-          if (sessionData.controllerConnected === true) {
-            newStatus = 'connected';
-          } else if (sessionData.controllerConnected === false) {
-            newStatus = 'disconnected';
-          }
-
-          // CRITICAL FIX: Update UI only if status actually changed
-          // This prevents "jumping" between states when multiple events arrive
-          if (newStatus && newStatus !== lastKnownControllerStatus) {
-            lastKnownControllerStatus = newStatus;
-
-            if (newStatus === 'connected') {
-              console.log("✅ [VIEWER] Setting status: Controller connected");
-              components.status.setStatus("success", "Контроллер подключен");
-              debugLog("✅ Статус обновлен: Контроллер подключен");
-            } else if (newStatus === 'disconnected') {
-              console.log("❌ [VIEWER] Setting status: Controller disconnected");
-              components.status.setStatus("error", "Контроллер отключен");
-              debugLog("❌ Статус обновлен: Контроллер отключен");
-            }
-          } else if (!newStatus && !lastKnownControllerStatus) {
-            // Only show "waiting" if we never received any status yet
-            console.log("⚠️ [VIEWER] controllerConnected is undefined, checking connection status");
-            const isWebSocketConnected = wsClient && typeof wsClient.isConnected === 'function' && wsClient.isConnected();
-            if (isWebSocketConnected) {
-              components.status.setStatus(
-                "waiting",
-                "Ожидание контроллера...",
-              );
-              debugLog("⏳ Статус обновлен: Ожидание контроллера");
-            } else {
-              components.status.setStatus("error", "Контроллер отключен");
-              debugLog(
-                "❌ Статус обновлен: Контроллер отключен (нет WebSocket)",
-              );
-            }
-          } else {
-            console.log("⏭️ [VIEWER] Status unchanged, skipping update");
-          }
-        }
-      }
-
-      function showError(message) {
-        if (components.status) {
-          components.status.setStatus("error", message);
-        }
-      }
-
-      function showWarning(message) {
-        debugWarn("⚠️ Предупреждение viewer:", message);
-      }
-
-      function hideLoading() {
-        const loading = document.getElementById("loading");
-        if (loading) {
-          loading.style.display = "none";
-        }
-      }
-
-      // Fullscreen & Mobile
-      let screenWakeLock = null;
-
-      async function requestScreenWakeLock() {
-        try {
-          if (
-            "wakeLock" in navigator &&
-            document.visibilityState === "visible"
-          ) {
-            screenWakeLock = await navigator.wakeLock.request("screen");
-            screenWakeLock.addEventListener("release", () => {
-              debugLog("🔓 Wake Lock released");
-            });
-            debugLog("🔒 Wake Lock acquired");
-          }
-        } catch (e) {
-          debugWarn("Wake Lock not available:", e?.message || e);
-        }
-      }
-
-      async function releaseScreenWakeLock() {
-        try {
-          if (screenWakeLock) {
-            await screenWakeLock.release();
-            screenWakeLock = null;
-          }
-        } catch (error) {
-          debugError("Could not release screen wake lock:", error);
-        }
-      }
-
-      document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible" && isFullscreen) {
-          requestScreenWakeLock();
-        }
-      });
-
-      document.addEventListener("fullscreenchange", () => {
-        isFullscreen = !!(
-          document.fullscreenElement ||
-          document["webkitFullscreenElement"] ||
-          document["msFullscreenElement"] ||
-          document["mozFullScreenElement"]
-        );
-        const btn = document.querySelector(".fullscreen-btn");
-        if (btn) {
-          btn.textContent = isFullscreen ? "⛶ Выйти" : "⛶ Полноэкранный";
-        }
-        if (isFullscreen) {
-          requestScreenWakeLock();
-        } else {
-          releaseScreenWakeLock();
-        }
-      });
-
-      // Double tap for fullscreen
-      let lastTap = 0;
-      document
-        .getElementById("viewerCanvas")
-        .addEventListener("touchend", function (event) {
-          const currentTime = Date.now();
-          if (currentTime - lastTap < 300) {
-            event.preventDefault();
-            toggleFullscreen();
-          }
-          lastTap = currentTime;
-        });
-
-      function setupEventListeners() {
-        if (globalThis) {
-          globalThis.addEventListener("resize", () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-              resizeCanvas();
-              updateScreenSize().catch(() => {
-                debugLog("Размер экрана не обновлен (сеть недоступна)");
-              });
-            }, 1500);
-          });
-        }
-
-        if (document) {
-          document.addEventListener("gesturestart", (event) =>
-            event.preventDefault(),
-          );
-          document.addEventListener("gesturechange", (event) =>
-            event.preventDefault(),
-          );
-          document.addEventListener("gestureend", (event) =>
-            event.preventDefault(),
-          );
-
-          // Hotkey handler - Space for pause/play
-          document.addEventListener("keydown", handleViewerHotkey);
-        }
-      }
-
-      /**
-       * Обработчик горячих клавиш для viewer
-       * @param {KeyboardEvent} event - Событие нажатия клавиши
-       */
-      function handleViewerHotkey(event) {
-        // Игнорируем, если фокус на input/textarea
-        if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-          return;
-        }
-
-        // Space - pause/play
-        if (event.code === 'Space' || event.key === ' ') {
-          event.preventDefault();
-          toggleViewerPlayPause();
-        }
-      }
-
-      /**
-       * Переключает паузу/старт во viewer
-       * Отправляет команду на сервер для синхронизации с controller
-       */
-      function toggleViewerPlayPause() {
-        if (!physicsEngine || !wsClient) {
-          debugWarn('⚠️ PhysicsEngine или WebSocket не инициализированы')
-          return
-        }
-
-        const currentState = physicsEngine.state || {}
-        const currentPaused = currentState.paused
-        const newPaused = !currentPaused
-
-        debugLog(`🎮 Viewer hotkey: ${newPaused ? 'ПАУЗА' : 'СТАРТ'}`)
-
-        // Показываем подсказку на 2 секунды при использовании
-        const hotkeysHint = document.getElementById('hotkeysHint')
-        if (hotkeysHint) {
-          hotkeysHint.classList.remove('hidden')
-          setTimeout(() => {
-            hotkeysHint.classList.add('hidden')
-          }, 2000)
-        }
-
-        // Формируем полезную нагрузку: для старта явно передаём resume+dirX/dirY/speed
-        const payload = {
-          paused: newPaused,
-          returnToCenter: newPaused,
-          resume: !newPaused
-        }
-
-        if (!newPaused) {
-          // Явно прокидываем направление и скорость, чтобы сервер и клиент сняли паузу корректно
-          payload.dirX = typeof currentState.dirX === 'number' ? currentState.dirX : 1
-          payload.dirY = typeof currentState.dirY === 'number' ? currentState.dirY : 0
-          payload.speed = typeof currentState.speed === 'number' ? currentState.speed : 30
-        }
-
-        // КРИТИЧЕСКИ ВАЖНО: Мгновенно применяем локально для отзывчивости
-        physicsEngine.applyCommand(payload)
-
-        // Если пауза - центрируем мяч и останавливаем скорость локально
-        if (newPaused) {
-          physicsEngine.setPaused(true)
-          physicsEngine.setPosition(physicsEngine.centerX, physicsEngine.centerY)
-          physicsEngine.setVelocity(0, 0)
-        } else {
-          physicsEngine.setPaused(false)
-        }
-
-        // Отправляем на сервер
-        wsClient.send('viewer_update', payload).catch(err => {
-          debugWarn('❌ Не удалось отправить viewer_update:', err)
-        })
-
-        // Обновляем UI
-        if (components.status) {
-          const statusText = newPaused ? '⏸️ Пауза' : '▶️ Воспроизведение'
-          components.status.setStatus('success', statusText)
-          setTimeout(() => {
-            // Restore status based on last known controller state
-            if (components.status && typeof wsClient.isConnected === 'function' && wsClient.isConnected()) {
-              if (lastKnownControllerStatus === 'connected') {
-                components.status.setStatus('success', 'Контроллер подключен')
-              } else if (lastKnownControllerStatus === 'disconnected') {
-                components.status.setStatus('error', 'Контроллер отключен')
-              } else {
-                components.status.setStatus('waiting', 'Ожидание контроллера...')
-              }
-            }
-          }, 2000)
-        }
-      }
-
-      // Экспортируем функцию глобально для доступа из консоли
-      globalThis.toggleViewerPlayPause = toggleViewerPlayPause;
-
-      // Обработчик состояния из WebSocket/SSE
-      function onStateUpdate(data) {
-        console.log('📦 [VIEWER] onStateUpdate received:', JSON.stringify(data));
-        debugLog('📦 Получено состояние от сервера:', data);
-
-        // SSE события приходят в формате {type, timestamp, payload}
-        // WebSocket может приходить напрямую или в payload
-        const command = data.payload || data;
-
-        console.log('📦 [VIEWER] command extracted:', JSON.stringify(command));
-        console.log('📦 [VIEWER] command.controllerConnected:', command.controllerConnected);
-        debugLog('📦 Обработка команды:', command);
-
-        // Применяем команды к физическому движку
-        if (physicsEngine) {
-          physicsEngine.applyCommand(command);
-
-          // Manual Drift Correction (since we run local simulation)
-          if (typeof command.x === 'number' && typeof command.y === 'number') {
-             const dx = command.x - physicsEngine.ball.x;
-             const dy = command.y - physicsEngine.ball.y;
-             const dist = Math.hypot(dx, dy);
-
-             // Only snap if drift is significant (>50px) to avoid jitter
-             // Small drifts are ignored or naturally corrected by direction updates
-             if (dist > 50) {
-               physicsEngine.setPosition(command.x, command.y);
-               debugLog('📍 Corrected large drift:', Math.round(dist));
-             } else if (dist > 5 && !physicsEngine.state.paused) {
-                // Soft nudge for medium drift
-                physicsEngine.ball.x += dx * 0.1;
-                physicsEngine.ball.y += dy * 0.1;
-             }
-          }
-        }
-
-        // CRITICAL: Always update controller status from initial_state or state_update
-        // This ensures viewer shows correct controller status on first connection
-        if (command.controllerConnected !== undefined) {
-          console.log('📦 [VIEWER] Calling updateStatus with controllerConnected:', command.controllerConnected);
-          updateStatus(command);
-        } else if (command.controllerStatus) {
-          console.log('📦 [VIEWER] Calling updateStatus with controllerStatus');
-          updateStatus(command.controllerStatus);
-        }
-
-        // Обработка soundEnabled и soundType
-        if (typeof command.soundEnabled === 'boolean') {
-          debugLog('🔊 Получен soundEnabled:', command.soundEnabled);
-          if (typeof logger !== 'undefined') {
-            logger.audio('Получен soundEnabled из события:', command.soundEnabled);
-          }
-
-          if (audioManager) {
-            audioManager.setEnabled(command.soundEnabled);
-
-            if (command.soundEnabled === false) {
-              audioActivated = false;
-              window.audioActivated = false;
-              localStorage.removeItem('bb_audioActivated');
-              if (typeof logger !== 'undefined') {
-                logger.audio('Контроллер отключил звук, сбрасываем audioActivated');
-              }
-            }
-
-            checkAudioOverlay();
-          } else {
-            // AudioManager ещё не готов — запоминаем требование включить звук
-            pendingSoundEnabled = command.soundEnabled;
-            debugLog('🔊 AudioManager не готов, сохраняем pendingSoundEnabled:', command.soundEnabled);
-          }
-
-          if (command.soundType && audioManager) {
-            audioManager.setSoundType(command.soundType);
-          }
-        }
-      }
-
-      // Экспортируем функцию для отладки
-      window.onStateUpdate = onStateUpdate;
-    </script>
-  </body>
-</html>
++
++      async function waitForControllerBeforeRealtime(sessionId) {
++        debugLog("⏳ Ждем подключения контроллера перед запуском realtime...")
++        const pollIntervalMs = 2000
++        while (true) {
++          try {
++            const resp = await fetch(`/api/session/${sessionId}/state`, {
++              headers: { Accept: 'application/json' },
++              signal: AbortSignal.timeout(5000)
++            })
++            if (resp.ok) {
++              const state = await resp.json()
++              if (state?.controllerConnected) {
++                debugLog("👀 Контроллер подключен, запускаем realtime")
++                updateStatus(state)
++                // Применяем серверное состояние, если уже есть
++                if (state && physicsEngine) {
++                  physicsEngine.applyCommand(state)
++                  if (state.paused === false) {
++                    physicsEngine.setPaused(false)
++                  }
++                }
++                return
++              }
++            } else if (resp.status >= 500) {
++              debugWarn(`REST state unavailable (HTTP ${resp.status}), повторяем...`)
++            }
++          } catch (error) {
++            debugWarn('Не удалось получить состояние контроллера, повторяем...', error)
++          }
++          await new Promise(resolve => setTimeout(resolve, pollIntervalMs))
++        }
++      }
