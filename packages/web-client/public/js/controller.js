@@ -334,17 +334,18 @@ async function registerControllerOnServer(sessionId, logger) {
 
 async function waitForViewerBeforeRealtime(sessionId, logger) {
   logger.info('⏳ Ожидаем подключения viewer перед запуском realtime...')
-  const pollIntervalMs = 2000
-  // Ждем первого подключения зрителя, чтобы не спамить ошибками SSE
-  // Ждем столько, сколько потребуется; UI уже проинициализировано
-  // и пользователь может поделиться ссылкой, пока нет соединения.
-  // Используем REST состояние, чтобы узнать, подключился ли viewer.
-  // Если REST временно недоступен — продолжаем ретраить.
+  const pollIntervalMs = 1000
+  const maxWaitMs = 2000 // ждём максимум 2 секунды, затем идём дальше
+  const startedAt = Date.now()
   while (true) {
+    if (Date.now() - startedAt >= maxWaitMs) {
+      logger.info('▶️ Продолжаем без подтверждения viewer (таймаут 2s)')
+      return
+    }
     try {
       const resp = await fetch(`/api/session/${sessionId}/state`, {
         headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(3000)
       })
       if (resp.ok) {
         const state = await resp.json()
@@ -356,15 +357,12 @@ async function waitForViewerBeforeRealtime(sessionId, logger) {
             updatePreviewSize(state.viewerScreenSize)
             updateViewerInfo(state.viewerScreenSize)
           }
-          // Первичное выравнивание превью, если сервер уже дал координаты
           if (typeof state.x === 'number' && typeof state.y === 'number' && previewPhysicsEngine) {
             previewPhysicsEngine.setPosition(state.x, state.y)
             previewPhysicsEngine.setVelocity(0, 0)
           }
           return
         }
-      } else if (resp.status >= 500) {
-        logger.warning(`REST state unavailable (HTTP ${resp.status}), повторяем...`)
       }
     } catch (error) {
       logger.warning('Не удалось получить состояние для проверки viewer, повторяем...', error)
