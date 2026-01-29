@@ -335,13 +335,7 @@ async function registerControllerOnServer(sessionId, logger) {
 async function waitForViewerBeforeRealtime(sessionId, logger) {
   logger.info('⏳ Ожидаем подключения viewer перед запуском realtime...')
   const pollIntervalMs = 1000
-  const maxWaitMs = 2000 // ждём максимум 2 секунды, затем идём дальше
-  const startedAt = Date.now()
   while (true) {
-    if (Date.now() - startedAt >= maxWaitMs) {
-      logger.info('▶️ Продолжаем без подтверждения viewer (таймаут 2s)')
-      return
-    }
     try {
       const resp = await fetch(`/api/session/${sessionId}/state`, {
         headers: { Accept: 'application/json' },
@@ -1201,8 +1195,26 @@ function initializeComponents() {
   _initializeSizeControl()
   _initializeSoundControls()
 
+  setControlsEnabled(Boolean(globalThis.__current.viewerConnected))
+
   // Инициализируем отображение направления
   updateDirectionDisplay(1, 0)
+}
+
+function setControlsEnabled(enabled) {
+  const toggle = id => {
+    const el = document.getElementById(id)
+    if (!el) return
+    el.style.pointerEvents = enabled ? '' : 'none'
+    el.style.opacity = enabled ? '1' : '0.5'
+    el.querySelectorAll('button,input,select').forEach(node => {
+      node.disabled = !enabled
+    })
+  }
+  toggle('ballColorControl')
+  toggle('bgColorControl')
+  toggle('sizeControl')
+  toggle('speedControl')
 }
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 function safeSend(type, payload) {
@@ -1928,12 +1940,14 @@ function updateViewerStatusUI() {
       if (globalThis.__current.viewerScreenSize?.width > 0) {
         updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
+      setControlsEnabled(true)
     } else {
       viewerStatusEl.textContent = 'ожидание'
       viewerStatusEl.classList.add('disconnected')
       viewerStatusEl.classList.remove('connected')
       viewerStatusEl.style.fontWeight = '400'
       showWaitingForViewer()
+      setControlsEnabled(false)
     }
   }
 
