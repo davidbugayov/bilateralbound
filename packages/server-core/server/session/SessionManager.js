@@ -147,16 +147,21 @@ class SessionManager {
   updateBallState(sessionId, updates) {
     const session = this.sessionRepository.findById(sessionId)
     if (!session) {
+      console.log(`[SessionManager] ❌ Session not found: ${sessionId}`)
       return false
     }
 
     if (!this._shouldUpdateState(session, updates)) {
+      console.log(`[SessionManager] ⏭️  Throttled update for session ${sessionId}`)
       return false
     }
 
     const validatedUpdates = ValidationUtils.validateBallStateUpdates(updates)
+    console.log(`[SessionManager] 📝 Validated updates for ${sessionId}:`, JSON.stringify(validatedUpdates))
+
     if (Object.keys(validatedUpdates).length === 0) {
       this.logger.logSession(sessionId, '[VALIDATION] No valid fields in update, ignoring')
+      console.log(`[SessionManager] ❌ No valid fields after validation for ${sessionId}`)
       return false
     }
 

@@ -11,6 +11,11 @@ class SSEManager {
     this.logger = logger
     // Храним SSE-клиенты: Map<sessionId, Set<{res, role, connectedAt}>>
     this.sseClients = new Map()
+
+    // Запускаем heartbeat интервал для поддержания SSE соединений
+    this.heartbeatInterval = setInterval(() => {
+      this.sendHeartbeat()
+    }, 30000) // Каждые 30 секунд
   }
 
   /**
