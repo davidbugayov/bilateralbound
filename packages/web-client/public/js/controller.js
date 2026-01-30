@@ -10,7 +10,8 @@
 globalThis.__current = {
   sessionId: null,
   viewerConnected: false,
-  viewerScreenSize: { width: 0, height: 0 }
+  viewerScreenSize: { width: 0, height: 0 },
+  isInitializing: true // Глобальный флаг инициализации
 }
 // 2. Рендерер для превью
 globalThis.__previewRenderer = null
@@ -286,13 +287,13 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initializeController() {
   const logger = createLogger('Controller')
   try {
-    isInitializing = true; // Start initialization
+    if (globalThis.__current) globalThis.__current.isInitializing = true;
     logger.info('Начинаем инициализацию контроллера')
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
       debugError('ID сессии не найден в URL')
       showNotification('ID сессии не найден в URL', 'error')
-      isInitializing = false;
+      if (globalThis.__current) globalThis.__current.isInitializing = false;
       return
     }
 
@@ -312,9 +313,9 @@ async function initializeController() {
     await initializeWebSocketClient(sessionId)
     logger.info('🔌 WebSocket клиент инициализирован')
 
-    isInitializing = false; // End initialization
+    if (globalThis.__current) globalThis.__current.isInitializing = false;
   } catch (error) {
-    isInitializing = false;
+    if (globalThis.__current) globalThis.__current.isInitializing = false;
     debugError('Error initializing controller:', error)
     showNotification('Ошибка инициализации контроллера: ' + (error?.message || error), 'error')
   }
@@ -1596,7 +1597,7 @@ function setBallColor(color) {
   }
 
   // If initializing, just save state but don't warn or send
-  if (isInitializing) {
+  if (globalThis.__current?.isInitializing) {
     if (lastServerState) {
         lastServerState.colorBall = color;
     }
@@ -1617,7 +1618,7 @@ function setBallColor(color) {
 }
 
 function setBallSize(size) {
-  if (isInitializing) {
+  if (globalThis.__current?.isInitializing) {
      if (lastServerState) {
         lastServerState.radius = size;
     }
@@ -1680,7 +1681,7 @@ function setBackgroundColor(color) {
     previewFsRenderer.setBackgroundColor(color)
   }
 
-  if (isInitializing) {
+  if (globalThis.__current?.isInitializing) {
      if (lastServerState) {
         lastServerState.colorBg = color;
     }
