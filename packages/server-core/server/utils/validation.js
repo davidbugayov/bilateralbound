@@ -31,6 +31,7 @@ class ValidationUtils {
    * @private
    */
   static _validateSpeed(updates, validated) {
+    if (updates.speed !== undefined) console.log('[ValidationUtils] _validateSpeed input:', updates.speed)
     if (this._isValidSpeed(updates.speed)) {
       validated.speed = updates.speed
     }
@@ -51,6 +52,7 @@ class ValidationUtils {
    * @private
    */
   static _validatePause(updates, validated) {
+    if (updates.paused !== undefined) console.log('[ValidationUtils] _validatePause input:', updates.paused)
     if (typeof updates.paused === 'boolean') {
       validated.paused = updates.paused
     }
@@ -61,6 +63,8 @@ class ValidationUtils {
    * @private
    */
   static _validateDirection(updates, validated) {
+    if (updates.dirX !== undefined || updates.dirY !== undefined) console.log('[ValidationUtils] _validateDirection input:', updates.dirX, updates.dirY)
+
     if (this._isValidDirectionValue(updates.dirX)) {
       validated.dirX = updates.dirX
     }

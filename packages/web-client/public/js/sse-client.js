@@ -15,11 +15,11 @@ if (typeof SSEClient === 'undefined') {
         throw new Error('Valid role ("controller" or "viewer") is required for SSE connection')
       }
 
-      // Конфигурация
+      // Конфигурация по умолчанию
       this.config = {
-        maxReconnectAttempts: options.maxReconnectAttempts || 5,
-        reconnectInterval: options.reconnectInterval || 3000,
-        heartbeatTimeout: options.heartbeatTimeout || 60000,
+        reconnectInterval: options.reconnectInterval || 2000,
+        maxReconnectAttempts: options.maxReconnectAttempts || 1000, // Бесконечные попытки по умолчанию
+        heartbeatTimeout: options.heartbeatTimeout || 120000, // Увеличиваем до 120 сек
         ...options
       }
 

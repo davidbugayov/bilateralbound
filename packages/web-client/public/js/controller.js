@@ -1193,12 +1193,15 @@ function setControlsEnabled(enabled) {
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 function safeSend(type, payload) {
   // Функция разбита для снижения когнитивной сложности
+  console.log(`[Controller] safeSend type="${type}", payload=`, JSON.stringify(payload))
   try {
     if (typeof wsClient?.send === 'function') {
       wsClient.send(type, payload)
+    } else {
+      console.warn('[Controller] wsClient.send is not available')
     }
-  } catch {
-    console.warn('Failed to send Realtime message')
+  } catch (e) {
+    console.warn('Failed to send Realtime message:', e.message)
   }
 }
 
@@ -1818,7 +1821,7 @@ function _setPlayPauseState(shouldPlay) {
         // ВАЖНО: всегда отправляем КАНОНИЧЕСКИЙ вектор выбранного режима.
         // Это исключает накопление погрешности и "уход" в диагональ после паузы.
         ...(getDirectionVector(currentDirectionMode) || { dirX: 1, dirY: 0 }),
-        speed: components.speed?.getSpeed() ?? 40
+        speed: Number(components.speed?.getSpeed() ?? 40)
       }
     : {
         paused: true,

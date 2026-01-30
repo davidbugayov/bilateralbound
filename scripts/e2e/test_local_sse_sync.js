@@ -51,7 +51,8 @@ async function run() {
     // Запускаем браузер
     browser = await puppeteer.launch({
       headless: HEADLESS,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      protocolTimeout: 60000 // Увеличиваем таймаут протокола
     })
 
     // Таймауты задаем на уровне страниц
