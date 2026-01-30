@@ -179,8 +179,29 @@ async function run() {
 
     // Проверяем синхронизацию: нажимаем Start на controller
     console.log('\n▶️  Starting playback...')
+
+    // Ждём чтобы обработчики событий установились
+    await wait(500)
+
+    // Слушаем console.log в controller для подтверждения отправки
+    let playSent = false
+    const playListener = (msg) => {
+      const text = msg.text()
+      if (text.includes('safeSend') && text.includes('paused') && text.includes('false')) {
+        playSent = true
+        console.log('[CONTROLLER] Play command sent:', text)
+      }
+    }
+    controllerPage.on('console', playListener)
+
     await playButton.click()
-    await wait(300)
+    await wait(1000) // Даём время на отправку команды
+
+    if (!playSent) {
+      console.log('⚠️  Play command was NOT sent (checking server state anyway)')
+    } else {
+      console.log('✅ Play command confirmed sent to server')
+    }
 
     // Проверяем что на viewer canvas обновляется
     const viewerCanvasUpdating = await viewerPage.evaluate(() => {

@@ -19,7 +19,7 @@ if (typeof SSEClient === 'undefined') {
       this.config = {
         reconnectInterval: options.reconnectInterval || 2000,
         maxReconnectAttempts: options.maxReconnectAttempts || 1000, // Бесконечные попытки по умолчанию
-        heartbeatTimeout: options.heartbeatTimeout || 120000, // Увеличиваем до 120 сек
+        heartbeatTimeout: options.heartbeatTimeout || 0, // Отключаем heartbeat timeout (0 = бесконечно)
         ...options
       }
 
@@ -369,6 +369,11 @@ if (typeof SSEClient === 'undefined') {
     _resetHeartbeatMonitor() {
       if (this.heartbeatTimer) {
         clearTimeout(this.heartbeatTimer)
+      }
+
+      // Если heartbeatTimeout = 0, не запускаем таймер (отключено)
+      if (this.config.heartbeatTimeout === 0) {
+        return
       }
 
       this.heartbeatTimer = setTimeout(() => {
