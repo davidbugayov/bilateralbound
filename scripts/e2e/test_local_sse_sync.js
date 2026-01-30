@@ -15,7 +15,7 @@ async function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-async function waitForSessionState(sessionId, predicate, timeoutMs = 15000) {
+async function waitForSessionState(sessionId, predicate, timeoutMs = 5000) {
   const startedAt = Date.now()
   while (Date.now() - startedAt < timeoutMs) {
     try {
@@ -29,12 +29,12 @@ async function waitForSessionState(sessionId, predicate, timeoutMs = 15000) {
     } catch {
       // ignore transient errors
     }
-    await wait(500)
+    await wait(200)
   }
   return null
 }
 
-async function ensureElementEnabled(page, selector, timeoutMs = 10000) {
+async function ensureElementEnabled(page, selector, timeoutMs = 5000) {
   await page.waitForSelector(selector, { timeout: timeoutMs })
   const isDisabled = await page.$eval(selector, el => el.disabled)
   if (isDisabled) {
@@ -65,7 +65,7 @@ async function run() {
     // Открываем controller
     console.log('🎮 Opening controller...')
     controllerPage = await browser.newPage()
-    controllerPage.setDefaultTimeout(60000)
+    controllerPage.setDefaultTimeout(15000)
 
     // Собираем логи controller
     const controllerLogs = []
@@ -79,10 +79,10 @@ async function run() {
 
     await controllerPage.goto(`${BASE_URL}/c/${sessionId}`, {
       waitUntil: 'domcontentloaded',
-      timeout: 60000
+      timeout: 15000
     })
-    await controllerPage.waitForSelector('#viewerStatus', { timeout: 60000 })
-    await wait(3000) // Даём время на инициализацию SSE
+    await controllerPage.waitForSelector('#viewerStatus', { timeout: 10000 })
+    await wait(500) // Даём время на инициализацию SSE
 
     // Проверяем что controller показывает "ожидание"
     const controllerStatus1 = await controllerPage.$eval('#viewerStatus', el => el.textContent).catch(() => null)
@@ -107,7 +107,7 @@ async function run() {
     // Открываем viewer
     console.log('\n👁️  Opening viewer...')
     viewerPage = await browser.newPage()
-    viewerPage.setDefaultTimeout(60000)
+    viewerPage.setDefaultTimeout(15000)
 
     // Собираем логи viewer
     const viewerLogs = []
@@ -121,10 +121,10 @@ async function run() {
 
     await viewerPage.goto(`${BASE_URL}/s/${sessionId}`, {
       waitUntil: 'domcontentloaded',
-      timeout: 60000
+      timeout: 15000
     })
-    await viewerPage.waitForSelector('#viewerCanvas', { timeout: 60000 })
-    await wait(3000) // Даём время на инициализацию SSE
+    await viewerPage.waitForSelector('#viewerCanvas', { timeout: 10000 })
+    await wait(500) // Даём время на инициализацию SSE
 
     // Проверяем что viewer получил controller_connected событие
     const viewerGotControllerEvent = viewerLogs.some(log =>
@@ -179,14 +179,12 @@ async function run() {
     // Проверяем синхронизацию: нажимаем Start на controller
     console.log('\n▶️  Starting playback...')
     await playButton.click()
-    await wait(1000)
+    await wait(300)
 
     // Проверяем что на viewer canvas обновляется
     const viewerCanvasUpdating = await viewerPage.evaluate(() => {
       const canvas = document.getElementById('viewerCanvas')
       if (!canvas) return false
-
-      // Проверяем что canvas существует и имеет размеры
       return canvas.width > 0 && canvas.height > 0
     })
 
@@ -213,7 +211,7 @@ async function run() {
 
     // Останавливаем воспроизведение перед тестами параметров
     await playButton.click()
-    await wait(500)
+    await wait(200)
 
     // Тест 1: Изменение цвета мяча
     console.log('\n🎨 Testing ball color sync...')
@@ -221,7 +219,7 @@ async function run() {
     if (ballColorButtons.length > 1) {
       const initialColor = await ballColorButtons[1].evaluate(el => el.dataset.color)
       await ballColorButtons[1].click()
-      await wait(1500)
+      await wait(500)
 
       const viewerBallColor = await viewerPage.evaluate(() => {
         return globalThis.physicsEngine?.state?.colorBall || null
@@ -242,7 +240,7 @@ async function run() {
     if (bgColorButtons.length > 1) {
       const bgColor = await bgColorButtons[1].evaluate(el => el.dataset.color)
       await bgColorButtons[1].click()
-      await wait(1500)
+      await wait(500)
 
       const viewerBgColor = await viewerPage.evaluate(() => {
         return globalThis.physicsEngine?.state?.colorBg || null
@@ -262,7 +260,7 @@ async function run() {
     const sizeButtons = await controllerPage.$$('#sizeControl button')
     if (sizeButtons.length > 1) {
       await sizeButtons[1].click()
-      await wait(1500)
+      await wait(500)
 
       const viewerBallSize = await viewerPage.evaluate(() => {
         return globalThis.physicsEngine?.state?.radius || null
@@ -283,7 +281,7 @@ async function run() {
     if (speedSlider) {
       await speedSlider.evaluate(el => el.value = 60)
       await speedSlider.evaluate(el => el.dispatchEvent(new Event('input', { bubbles: true })))
-      await wait(1500)
+      await wait(500)
 
       const viewerSpeed = await viewerPage.evaluate(() => {
         return globalThis.physicsEngine?.state?.speed || null
@@ -306,7 +304,7 @@ async function run() {
       const mode = await btn.evaluate(el => el.dataset.mode)
       if (mode === 'vertical') {
         await btn.click()
-        await wait(1500)
+        await wait(500)
 
         const viewerDirection = await viewerPage.evaluate(() => {
           const dx = globalThis.physicsEngine?.state?.dirX
@@ -331,7 +329,7 @@ async function run() {
     if (soundCheckbox) {
       const wasChecked = await soundCheckbox.evaluate(el => el.checked)
       await soundCheckbox.click()
-      await wait(1500)
+      await wait(500)
 
       const viewerSoundEnabled = await viewerPage.evaluate(() => {
         return globalThis.physicsEngine?.state?.soundEnabled || false
@@ -348,7 +346,7 @@ async function run() {
         const soundTypeSelect = await controllerPage.$('#soundTypeSelect')
         if (soundTypeSelect) {
           await soundTypeSelect.select('beep')
-          await wait(1000)
+          await wait(300)
 
           const viewerSoundType = await viewerPage.evaluate(() => {
             return globalThis.physicsEngine?.state?.soundType || null
@@ -368,7 +366,7 @@ async function run() {
     // Тест 7: Проверка движения шарика при воспроизведении
     console.log('\n▶️  Testing ball movement sync...')
     await playButton.click()
-    await wait(1000)
+    await wait(300)
 
     const pos1 = await viewerPage.evaluate(() => {
       return {
@@ -379,7 +377,7 @@ async function run() {
       }
     })
 
-    await wait(500)
+    await wait(200)
 
     const pos2 = await viewerPage.evaluate(() => {
       return {

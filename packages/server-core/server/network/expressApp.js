@@ -447,6 +447,8 @@ function setupExpressApp(sessionManager, apiCache) {
       const { sessionId } = req.params
       const updates = req.body
 
+      console.log(`[EXPRESS] 📥 Controller update payload for ${sessionId}:`, JSON.stringify(updates))
+
       // Обновляем состояние шара
       const success = sessionManager.updateBallState(sessionId, updates)
 

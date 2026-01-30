@@ -74,11 +74,20 @@ class ValidationUtils {
    * @private
    */
   static _validateColors(updates, validated) {
+    console.log('[ValidationUtils] _validateColors input:', JSON.stringify({ colorBall: updates.colorBall, colorBg: updates.colorBg }))
+
     if (this._isValidColor(updates.colorBall)) {
       validated.colorBall = updates.colorBall
+      console.log('[ValidationUtils] colorBall is valid:', updates.colorBall)
+    } else if (updates.colorBall !== undefined) {
+      console.log('[ValidationUtils] colorBall is INVALID:', updates.colorBall, typeof updates.colorBall)
     }
+
     if (this._isValidColor(updates.colorBg)) {
       validated.colorBg = updates.colorBg
+      console.log('[ValidationUtils] colorBg is valid:', updates.colorBg)
+    } else if (updates.colorBg !== undefined) {
+      console.log('[ValidationUtils] colorBg is INVALID:', updates.colorBg, typeof updates.colorBg)
     }
   }
 
