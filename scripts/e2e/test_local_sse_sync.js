@@ -15,6 +15,33 @@ async function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+async function waitForSessionState(sessionId, predicate, timeoutMs = 15000) {
+  const startedAt = Date.now()
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      const resp = await fetch(`${BASE_URL}/api/session/${sessionId}/state`, {
+        headers: { Accept: 'application/json' }
+      })
+      if (resp.ok) {
+        const state = await resp.json()
+        if (predicate(state)) return state
+      }
+    } catch {
+      // ignore transient errors
+    }
+    await wait(500)
+  }
+  return null
+}
+
+async function ensureElementEnabled(page, selector, timeoutMs = 10000) {
+  await page.waitForSelector(selector, { timeout: timeoutMs })
+  const isDisabled = await page.$eval(selector, el => el.disabled)
+  if (isDisabled) {
+    throw new Error(`Element is disabled: ${selector}`)
+  }
+}
+
 async function run() {
   let browser
   let controllerPage
@@ -27,6 +54,8 @@ async function run() {
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     })
 
+    // Таймауты задаем на уровне страниц
+
     // Создаём сессию через API
     console.log('📝 Creating session...')
     const sessionResp = await fetch(`${BASE_URL}/api/session`, { method: 'POST' })
@@ -36,6 +65,7 @@ async function run() {
     // Открываем controller
     console.log('🎮 Opening controller...')
     controllerPage = await browser.newPage()
+    controllerPage.setDefaultTimeout(60000)
 
     // Собираем логи controller
     const controllerLogs = []
@@ -51,6 +81,7 @@ async function run() {
       waitUntil: 'domcontentloaded',
       timeout: 60000
     })
+    await controllerPage.waitForSelector('#viewerStatus', { timeout: 60000 })
     await wait(3000) // Даём время на инициализацию SSE
 
     // Проверяем что controller показывает "ожидание"
@@ -76,6 +107,7 @@ async function run() {
     // Открываем viewer
     console.log('\n👁️  Opening viewer...')
     viewerPage = await browser.newPage()
+    viewerPage.setDefaultTimeout(60000)
 
     // Собираем логи viewer
     const viewerLogs = []
@@ -91,6 +123,7 @@ async function run() {
       waitUntil: 'domcontentloaded',
       timeout: 60000
     })
+    await viewerPage.waitForSelector('#viewerCanvas', { timeout: 60000 })
     await wait(3000) // Даём время на инициализацию SSE
 
     // Проверяем что viewer получил controller_connected событие
@@ -105,9 +138,18 @@ async function run() {
       console.log('✅ Viewer received controller_connected event')
     }
 
-    // Ждём обновления статуса на controller
-    console.log('\n⏳ Waiting for controller to update status...')
-    await wait(3000)
+    // Ждём подтверждения viewerConnected через REST state
+    console.log('\n⏳ Waiting for viewerConnected state...')
+    const connectedState = await waitForSessionState(
+      sessionId,
+      state => state?.viewerConnected === true,
+      20000
+    )
+
+    if (!connectedState) {
+      console.log('\n❌ TEST FAILED: viewerConnected state did not become true')
+      process.exit(1)
+    }
 
     // Проверяем что controller обновил статус на "подключен"
     const controllerStatus2 = await controllerPage.$eval('#viewerStatus', el => el.textContent).catch(() => null)
@@ -129,13 +171,8 @@ async function run() {
     console.log('✅ Controller correctly shows viewer as connected!')
 
     // Проверяем что UI разблокирован
+    await ensureElementEnabled(controllerPage, '#playPauseBtn')
     const playButton = await controllerPage.$('#playPauseBtn')
-    const playButtonDisabled = await playButton.evaluate(el => el.disabled)
-
-    if (playButtonDisabled) {
-      console.log('❌ Play button still disabled after viewer connected!')
-      process.exit(1)
-    }
 
     console.log('✅ Play button is enabled')
 
@@ -193,8 +230,10 @@ async function run() {
       if (viewerBallColor === initialColor) {
         console.log(`✅ Ball color synced to viewer: ${viewerBallColor}`)
       } else {
-        console.log(`⚠️  Ball color NOT synced. Expected: ${initialColor}, Got: ${viewerBallColor}`)
+        throw new Error(`Ball color not synced. Expected ${initialColor}, got ${viewerBallColor}`)
       }
+    } else {
+      throw new Error('Ball color controls not found')
     }
 
     // Тест 2: Изменение цвета фона
@@ -212,15 +251,16 @@ async function run() {
       if (viewerBgColor === bgColor) {
         console.log(`✅ Background color synced to viewer: ${viewerBgColor}`)
       } else {
-        console.log(`⚠️  Background color NOT synced. Expected: ${bgColor}, Got: ${viewerBgColor}`)
+        throw new Error(`Background color not synced. Expected ${bgColor}, got ${viewerBgColor}`)
       }
+    } else {
+      throw new Error('Background color controls not found')
     }
 
     // Тест 3: Изменение размера мяча
     console.log('\n📏 Testing ball size sync...')
     const sizeButtons = await controllerPage.$$('#sizeControl button')
     if (sizeButtons.length > 1) {
-      // Кликаем на второй размер (обычно 40)
       await sizeButtons[1].click()
       await wait(1500)
 
@@ -231,8 +271,10 @@ async function run() {
       if (viewerBallSize && viewerBallSize >= 35 && viewerBallSize <= 45) {
         console.log(`✅ Ball size synced to viewer: ${viewerBallSize}`)
       } else {
-        console.log(`⚠️  Ball size NOT synced properly. Got: ${viewerBallSize}`)
+        throw new Error(`Ball size not synced. Got ${viewerBallSize}`)
       }
+    } else {
+      throw new Error('Size controls not found')
     }
 
     // Тест 4: Изменение скорости
@@ -250,35 +292,37 @@ async function run() {
       if (viewerSpeed && viewerSpeed >= 58 && viewerSpeed <= 62) {
         console.log(`✅ Speed synced to viewer: ${viewerSpeed}`)
       } else {
-        console.log(`⚠️  Speed NOT synced properly. Expected: ~60, Got: ${viewerSpeed}`)
+        throw new Error(`Speed not synced. Expected ~60, got ${viewerSpeed}`)
       }
+    } else {
+      throw new Error('Speed slider not found')
     }
 
     // Тест 5: Изменение направления
     console.log('\n🧭 Testing direction sync...')
     const directionButtons = await controllerPage.$$('[data-mode]')
-    if (directionButtons.length > 1) {
-      // Кликаем на вертикальное направление
-      for (const btn of directionButtons) {
-        const mode = await btn.evaluate(el => el.dataset.mode)
-        if (mode === 'vertical') {
-          await btn.click()
-          await wait(1500)
+    let directionMatched = false
+    for (const btn of directionButtons) {
+      const mode = await btn.evaluate(el => el.dataset.mode)
+      if (mode === 'vertical') {
+        await btn.click()
+        await wait(1500)
 
-          const viewerDirection = await viewerPage.evaluate(() => {
-            const dx = globalThis.physicsEngine?.state?.dirX
-            const dy = globalThis.physicsEngine?.state?.dirY
-            return { dx, dy }
-          })
+        const viewerDirection = await viewerPage.evaluate(() => {
+          const dx = globalThis.physicsEngine?.state?.dirX
+          const dy = globalThis.physicsEngine?.state?.dirY
+          return { dx, dy }
+        })
 
-          if (viewerDirection && Math.abs(viewerDirection.dy) > 0.8) {
-            console.log(`✅ Direction synced to viewer: dx=${viewerDirection.dx?.toFixed(2)}, dy=${viewerDirection.dy?.toFixed(2)}`)
-          } else {
-            console.log(`⚠️  Direction NOT synced properly. Got: dx=${viewerDirection?.dx}, dy=${viewerDirection?.dy}`)
-          }
-          break
+        if (viewerDirection && Math.abs(viewerDirection.dy) > 0.8) {
+          console.log(`✅ Direction synced to viewer: dx=${viewerDirection.dx?.toFixed(2)}, dy=${viewerDirection.dy?.toFixed(2)}`)
+          directionMatched = true
         }
+        break
       }
+    }
+    if (!directionMatched) {
+      throw new Error('Direction not synced')
     }
 
     // Тест 6: Включение звука
@@ -296,7 +340,7 @@ async function run() {
       if (viewerSoundEnabled === !wasChecked) {
         console.log(`✅ Sound enabled synced to viewer: ${viewerSoundEnabled}`)
       } else {
-        console.log(`⚠️  Sound NOT synced. Expected: ${!wasChecked}, Got: ${viewerSoundEnabled}`)
+        throw new Error(`Sound not synced. Expected ${!wasChecked}, got ${viewerSoundEnabled}`)
       }
 
       // Тест типа звука
@@ -313,18 +357,19 @@ async function run() {
           if (viewerSoundType === 'beep') {
             console.log(`✅ Sound type synced to viewer: ${viewerSoundType}`)
           } else {
-            console.log(`⚠️  Sound type NOT synced. Expected: beep, Got: ${viewerSoundType}`)
+            throw new Error(`Sound type not synced. Expected beep, got ${viewerSoundType}`)
           }
         }
       }
+    } else {
+      throw new Error('Sound checkbox not found')
     }
 
     // Тест 7: Проверка движения шарика при воспроизведении
     console.log('\n▶️  Testing ball movement sync...')
-    await playButton.click() // Запускаем снова
+    await playButton.click()
     await wait(1000)
 
-    // Получаем позиции мяча в двух точках времени
     const pos1 = await viewerPage.evaluate(() => {
       return {
         x: globalThis.physicsEngine?.state?.x,
@@ -351,11 +396,9 @@ async function run() {
       console.log(`   Position: (${pos1.x?.toFixed(1)}, ${pos1.y?.toFixed(1)}) → (${pos2.x?.toFixed(1)}, ${pos2.y?.toFixed(1)})`)
       console.log(`   Velocity: vx=${pos2.vx?.toFixed(1)}, vy=${pos2.vy?.toFixed(1)}`)
     } else {
-      console.log('⚠️  Ball position not changing on viewer')
-      console.log(`   Position: (${pos1.x}, ${pos1.y}) → (${pos2.x}, ${pos2.y})`)
+      throw new Error('Ball position not changing on viewer')
     }
 
-    // Проверяем синхронизацию между controller preview и viewer
     const controllerPos = await controllerPage.evaluate(() => {
       return {
         x: globalThis.__previewPhysics?.state?.x,
@@ -368,7 +411,7 @@ async function run() {
       if (posDiff < 50) {
         console.log(`✅ Controller and viewer positions synchronized (diff: ${posDiff.toFixed(1)}px)`)
       } else {
-        console.log(`⚠️  Large position difference between controller and viewer: ${posDiff.toFixed(1)}px`)
+        throw new Error(`Position diff too large: ${posDiff.toFixed(1)}px`)
       }
     }
 

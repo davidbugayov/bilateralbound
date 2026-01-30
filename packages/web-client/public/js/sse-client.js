@@ -189,9 +189,9 @@ if (typeof SSEClient === 'undefined') {
         // CRITICAL FIX: For events that need full context (like initial_state with controllerConnected),
         // we emit the entire message structure so payload fields are accessible
         if (message.type) {
-          // For initial_state and state_update, emit the full message so payload is accessible
-          if (message.type === 'initial_state' || message.type === 'state_update') {
-            this._emit(message.type, message)
+          // For initial_state, state_update, and viewer_status emit the full message so payload is accessible
+          if (message.type === 'initial_state' || message.type === 'state_update' || message.type === 'viewer_status') {
+            this._emit(message.type, message.payload || message)
           } else {
             // For other events, emit payload or message
             this._emit(message.type, message.payload || message)

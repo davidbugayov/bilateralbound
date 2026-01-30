@@ -186,7 +186,7 @@ class SessionManager {
    * @private
    */
   _applyValidatedUpdates(session, validatedUpdates) {
-    this._handleReturnToCenter(session, validatedUpdates)
+    // this._handleReturnToCenter(session, validatedUpdates) // TODO: implement if needed
     this._applyPhysicsUpdates(session, validatedUpdates)
     this._postUpdateActions(session, validatedUpdates)
     return true
@@ -271,6 +271,17 @@ class SessionManager {
       return false
     }
 
+    // Устанавливаем флаги подключения
+    if (role === 'viewer') {
+      session.viewerConnected = true
+      console.log(`[SessionManager] ✅ Viewer connected via SSE to session ${sessionId}`)
+      this.logger.logSession(sessionId, 'Viewer connected via SSE')
+    } else if (role === 'controller') {
+      session.controllerConnected = true
+      console.log(`[SessionManager] ✅ Controller connected via SSE to session ${sessionId}`)
+      this.logger.logSession(sessionId, 'Controller connected via SSE')
+    }
+
     session.lastActivity = Date.now()
     this._schedulePhysicsUpdate(sessionId)
 
@@ -294,6 +305,31 @@ class SessionManager {
           this.logger.logSession(sessionId, 'Sent controller_connected to newly connected viewer')
         })
       }
+
+      // CRITICAL FIX: When viewer connects, notify controller about viewer connection
+      // This ensures controller UI updates immediately when viewer connects via SSE
+      setImmediate(() => {
+        const controllers = this.sseManager.getClients(sessionId, 'controller')
+        console.log(`[SessionManager] 📡 Found ${controllers.length} controller(s) to notify about viewer connection for session ${sessionId}`)
+        this.logger.logSession(sessionId, `Found ${controllers.length} controller(s) to notify about viewer connection`)
+
+        for (const controllerClient of controllers) {
+          const viewerConnectedEvent = {
+            type: 'viewer_status',
+            timestamp: Date.now(),
+            payload: {
+              connected: true,
+              viewerConnected: true,
+              screenSize: session.viewerScreenSize
+            }
+          }
+          const sent = this.sseManager.sendEvent(controllerClient.res, 'viewer_status', viewerConnectedEvent)
+          console.log(`[SessionManager] 📤 Sent viewer_status to controller for session ${sessionId}: ${sent}`)
+          this.logger.logSession(sessionId, `Sent viewer_status to controller: ${sent}`)
+        }
+        console.log(`[SessionManager] ✅ Completed sending viewer_status to controller(s) for session ${sessionId}`)
+        this.logger.logSession(sessionId, 'Sent viewer_status to controller(s) when viewer connected')
+      })
     } else {
       this._handleSSEControllerInitialState(sessionId, res, session)
     }
