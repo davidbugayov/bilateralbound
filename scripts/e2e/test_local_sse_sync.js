@@ -36,7 +36,11 @@ async function waitForSessionState(sessionId, predicate, timeoutMs = 5000) {
 
 async function ensureElementEnabled(page, selector, timeoutMs = 5000) {
   await page.waitForSelector(selector, { timeout: timeoutMs })
-  const isDisabled = await page.$eval(selector, el => el.disabled)
+  // Use evaluate instead of $eval to avoid protocol timeout
+  const isDisabled = await page.evaluate((sel) => {
+    const el = document.querySelector(sel)
+    return el ? el.disabled : true
+  }, selector)
   if (isDisabled) {
     throw new Error(`Element is disabled: ${selector}`)
   }
@@ -52,7 +56,7 @@ async function run() {
     browser = await puppeteer.launch({
       headless: HEADLESS,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      protocolTimeout: 60000 // Увеличиваем таймаут протокола
+      protocolTimeout: 120000 // Увеличиваем таймаут протокола до 2 минут
     })
 
     // Таймауты задаем на уровне страниц
@@ -115,7 +119,7 @@ async function run() {
     viewerPage.on('console', msg => {
       const text = msg.text()
       viewerLogs.push(text)
-      if (text.includes('SSE') || text.includes('viewer') || text.includes('controller')) {
+      if (text.includes('SSE') || text.includes('viewer') || text.includes('controller') || text.includes('PhysicsEngine') || text.includes('direction')) {
         console.log(`[VIEWER] ${text}`)
       }
     })
@@ -173,7 +177,6 @@ async function run() {
 
     // Проверяем что UI разблокирован
     await ensureElementEnabled(controllerPage, '#playPauseBtn')
-    const playButton = await controllerPage.$('#playPauseBtn')
 
     console.log('✅ Play button is enabled')
 
@@ -183,25 +186,32 @@ async function run() {
     // Ждём чтобы обработчики событий установились
     await wait(500)
 
-    // Слушаем console.log в controller для подтверждения отправки
-    let playSent = false
-    const playListener = (msg) => {
-      const text = msg.text()
-      if (text.includes('safeSend') && text.includes('paused') && text.includes('false')) {
-        playSent = true
-        console.log('[CONTROLLER] Play command sent:', text)
+    // Используем evaluate для клика, чтобы избежать таймаутов протокола
+    const playClicked = await controllerPage.evaluate(() => {
+      const playBtn = document.getElementById('playPauseBtn')
+      if (!playBtn) return false
+
+      // Вызываем функцию напрямую, если доступна
+      if (typeof window.togglePlayPause === 'function') {
+        window.togglePlayPause()
+        return true
       }
-    }
-    controllerPage.on('console', playListener)
 
-    await playButton.click()
-    await wait(1000) // Даём время на отправку команды
+      // Иначе кликаем на кнопку
+      playBtn.click()
+      return true
+    }).catch(err => {
+      console.error('❌ Error clicking play button:', err.message)
+      return false
+    })
 
-    if (!playSent) {
-      console.log('⚠️  Play command was NOT sent (checking server state anyway)')
-    } else {
-      console.log('✅ Play command confirmed sent to server')
+    if (!playClicked) {
+      console.log('❌ Failed to click play button')
+      process.exit(1)
     }
+
+    console.log('✅ Play button clicked')
+    await wait(1000) // Даём время на отправку команды и применение
 
     // Проверяем что на viewer canvas обновляется
     const viewerCanvasUpdating = await viewerPage.evaluate(() => {
@@ -232,25 +242,47 @@ async function run() {
     console.log('✅ Controller preview is ready')
 
     // Останавливаем воспроизведение перед тестами параметров
-    await playButton.click()
-    await wait(200)
+    const pauseClicked = await controllerPage.evaluate(() => {
+      if (typeof window.togglePlayPause === 'function') {
+        window.togglePlayPause()
+        return true
+      }
+      const playBtn = document.getElementById('playPauseBtn')
+      if (playBtn) {
+        playBtn.click()
+        return true
+      }
+      return false
+    }).catch(() => false)
+
+    if (pauseClicked) {
+      console.log('✅ Paused playback')
+      await wait(300)
+    }
 
     // Тест 1: Изменение цвета мяча
     console.log('\n🎨 Testing ball color sync...')
-    const ballColorButtons = await controllerPage.$$('#ballColorControl [data-color]')
-    if (ballColorButtons.length > 1) {
-      const initialColor = await ballColorButtons[1].evaluate(el => el.dataset.color)
-      await ballColorButtons[1].click()
+    const ballColorResult = await controllerPage.evaluate(() => {
+      const buttons = document.querySelectorAll('#ballColorControl [data-color]')
+      if (buttons.length > 1) {
+        const color = buttons[1].dataset.color
+        buttons[1].click()
+        return color
+      }
+      return null
+    })
+
+    if (ballColorResult) {
       await wait(500)
 
       const viewerBallColor = await viewerPage.evaluate(() => {
-        return globalThis.physicsEngine?.state?.colorBall || null
+        return globalThis.physicsEngine?.colors?.ball || null
       })
 
-      if (viewerBallColor === initialColor) {
+      if (viewerBallColor === ballColorResult) {
         console.log(`✅ Ball color synced to viewer: ${viewerBallColor}`)
       } else {
-        throw new Error(`Ball color not synced. Expected ${initialColor}, got ${viewerBallColor}`)
+        throw new Error(`Ball color not synced. Expected ${ballColorResult}, got ${viewerBallColor}`)
       }
     } else {
       throw new Error('Ball color controls not found')
@@ -258,20 +290,27 @@ async function run() {
 
     // Тест 2: Изменение цвета фона
     console.log('\n🌈 Testing background color sync...')
-    const bgColorButtons = await controllerPage.$$('#bgColorControl [data-color]')
-    if (bgColorButtons.length > 1) {
-      const bgColor = await bgColorButtons[1].evaluate(el => el.dataset.color)
-      await bgColorButtons[1].click()
+    const bgColorResult = await controllerPage.evaluate(() => {
+      const buttons = document.querySelectorAll('#bgColorControl [data-color]')
+      if (buttons.length > 1) {
+        const color = buttons[1].dataset.color
+        buttons[1].click()
+        return color
+      }
+      return null
+    })
+
+    if (bgColorResult) {
       await wait(500)
 
       const viewerBgColor = await viewerPage.evaluate(() => {
-        return globalThis.physicsEngine?.state?.colorBg || null
+        return globalThis.physicsEngine?.colors?.bg || null
       })
 
-      if (viewerBgColor === bgColor) {
+      if (viewerBgColor === bgColorResult) {
         console.log(`✅ Background color synced to viewer: ${viewerBgColor}`)
       } else {
-        throw new Error(`Background color not synced. Expected ${bgColor}, got ${viewerBgColor}`)
+        throw new Error(`Background color not synced. Expected ${bgColorResult}, got ${viewerBgColor}`)
       }
     } else {
       throw new Error('Background color controls not found')
@@ -279,13 +318,20 @@ async function run() {
 
     // Тест 3: Изменение размера мяча
     console.log('\n📏 Testing ball size sync...')
-    const sizeButtons = await controllerPage.$$('#sizeControl button')
-    if (sizeButtons.length > 1) {
-      await sizeButtons[1].click()
+    const sizeResult = await controllerPage.evaluate(() => {
+      const buttons = document.querySelectorAll('#sizeControl button')
+      if (buttons.length > 1) {
+        buttons[1].click()
+        return true
+      }
+      return false
+    })
+
+    if (sizeResult) {
       await wait(500)
 
       const viewerBallSize = await viewerPage.evaluate(() => {
-        return globalThis.physicsEngine?.state?.radius || null
+        return globalThis.physicsEngine?.ball?.radius || null
       })
 
       if (viewerBallSize && viewerBallSize >= 35 && viewerBallSize <= 45) {
@@ -299,14 +345,21 @@ async function run() {
 
     // Тест 4: Изменение скорости
     console.log('\n⚡ Testing speed sync...')
-    const speedSlider = await controllerPage.$('#speedControl input[type="range"]')
-    if (speedSlider) {
-      await speedSlider.evaluate(el => el.value = 60)
-      await speedSlider.evaluate(el => el.dispatchEvent(new Event('input', { bubbles: true })))
+    const speedChanged = await controllerPage.evaluate(() => {
+      const slider = document.querySelector('#speedControl input[type="range"]')
+      if (slider) {
+        slider.value = 60
+        slider.dispatchEvent(new Event('input', { bubbles: true }))
+        return true
+      }
+      return false
+    })
+
+    if (speedChanged) {
       await wait(500)
 
       const viewerSpeed = await viewerPage.evaluate(() => {
-        return globalThis.physicsEngine?.state?.speed || null
+        return globalThis.physicsEngine?.ball?.speed || null
       })
 
       if (viewerSpeed && viewerSpeed >= 58 && viewerSpeed <= 62) {
@@ -320,54 +373,74 @@ async function run() {
 
     // Тест 5: Изменение направления
     console.log('\n🧭 Testing direction sync...')
-    const directionButtons = await controllerPage.$$('[data-mode]')
-    let directionMatched = false
-    for (const btn of directionButtons) {
-      const mode = await btn.evaluate(el => el.dataset.mode)
-      if (mode === 'vertical') {
-        await btn.click()
-        await wait(500)
-
-        const viewerDirection = await viewerPage.evaluate(() => {
-          const dx = globalThis.physicsEngine?.state?.dirX
-          const dy = globalThis.physicsEngine?.state?.dirY
-          return { dx, dy }
-        })
-
-        if (viewerDirection && Math.abs(viewerDirection.dy) > 0.8) {
-          console.log(`✅ Direction synced to viewer: dx=${viewerDirection.dx?.toFixed(2)}, dy=${viewerDirection.dy?.toFixed(2)}`)
-          directionMatched = true
+    const directionChanged = await controllerPage.evaluate(() => {
+      const buttons = document.querySelectorAll('[data-mode]')
+      for (const btn of buttons) {
+        if (btn.dataset.mode === 'vertical') {
+          btn.click()
+          return true
         }
-        break
       }
-    }
-    if (!directionMatched) {
-      throw new Error('Direction not synced')
+      return false
+    })
+
+    if (directionChanged) {
+      await wait(1000) // Увеличиваем время ожидания
+
+      const viewerDirection = await viewerPage.evaluate(() => {
+        const dx = globalThis.physicsEngine?.state?.lastDirection?.x
+        const dy = globalThis.physicsEngine?.state?.lastDirection?.y
+        console.log('[TEST] Viewer direction:', { dx, dy })
+        return { dx, dy }
+      })
+
+      console.log(`   Viewer direction: dx=${viewerDirection.dx?.toFixed(2)}, dy=${viewerDirection.dy?.toFixed(2)}`)
+
+      if (viewerDirection && Math.abs(viewerDirection.dy) > 0.8) {
+        console.log(`✅ Direction synced to viewer: dx=${viewerDirection.dx?.toFixed(2)}, dy=${viewerDirection.dy?.toFixed(2)}`)
+      } else {
+        throw new Error(`Direction not synced. Got dx=${viewerDirection?.dx}, dy=${viewerDirection?.dy}`)
+      }
+    } else {
+      throw new Error('Direction controls not found')
     }
 
     // Тест 6: Включение звука
     console.log('\n🔊 Testing sound sync...')
-    const soundCheckbox = await controllerPage.$('#soundEnabledCheckbox')
-    if (soundCheckbox) {
-      const wasChecked = await soundCheckbox.evaluate(el => el.checked)
-      await soundCheckbox.click()
+    const soundResult = await controllerPage.evaluate(() => {
+      const checkbox = document.getElementById('soundEnabledCheckbox')
+      if (!checkbox) return null
+      const wasChecked = checkbox.checked
+      checkbox.click()
+      return { wasChecked, newState: !wasChecked }
+    })
+
+    if (soundResult) {
       await wait(500)
 
       const viewerSoundEnabled = await viewerPage.evaluate(() => {
         return globalThis.physicsEngine?.state?.soundEnabled || false
       })
 
-      if (viewerSoundEnabled === !wasChecked) {
+      if (viewerSoundEnabled === soundResult.newState) {
         console.log(`✅ Sound enabled synced to viewer: ${viewerSoundEnabled}`)
       } else {
-        throw new Error(`Sound not synced. Expected ${!wasChecked}, got ${viewerSoundEnabled}`)
+        throw new Error(`Sound not synced. Expected ${soundResult.newState}, got ${viewerSoundEnabled}`)
       }
 
       // Тест типа звука
       if (viewerSoundEnabled) {
-        const soundTypeSelect = await controllerPage.$('#soundTypeSelect')
-        if (soundTypeSelect) {
-          await soundTypeSelect.select('beep')
+        const soundTypeChanged = await controllerPage.evaluate(() => {
+          const select = document.getElementById('soundTypeSelect')
+          if (select) {
+            select.value = 'beep'
+            select.dispatchEvent(new Event('change', { bubbles: true }))
+            return true
+          }
+          return false
+        })
+
+        if (soundTypeChanged) {
           await wait(300)
 
           const viewerSoundType = await viewerPage.evaluate(() => {
@@ -387,7 +460,24 @@ async function run() {
 
     // Тест 7: Проверка движения шарика при воспроизведении
     console.log('\n▶️  Testing ball movement sync...')
-    await playButton.click()
+
+    const playStarted = await controllerPage.evaluate(() => {
+      if (typeof window.togglePlayPause === 'function') {
+        window.togglePlayPause()
+        return true
+      }
+      const playBtn = document.getElementById('playPauseBtn')
+      if (playBtn) {
+        playBtn.click()
+        return true
+      }
+      return false
+    }).catch(() => false)
+
+    if (!playStarted) {
+      throw new Error('Failed to start playback')
+    }
+
     await wait(300)
 
     const pos1 = await viewerPage.evaluate(() => {
@@ -395,7 +485,8 @@ async function run() {
         x: globalThis.physicsEngine?.state?.x,
         y: globalThis.physicsEngine?.state?.y,
         vx: globalThis.physicsEngine?.state?.vx,
-        vy: globalThis.physicsEngine?.state?.vy
+        vy: globalThis.physicsEngine?.state?.vy,
+        paused: globalThis.physicsEngine?.state?.paused
       }
     })
 
@@ -406,9 +497,13 @@ async function run() {
         x: globalThis.physicsEngine?.state?.x,
         y: globalThis.physicsEngine?.state?.y,
         vx: globalThis.physicsEngine?.state?.vx,
-        vy: globalThis.physicsEngine?.state?.vy
+        vy: globalThis.physicsEngine?.state?.vy,
+        paused: globalThis.physicsEngine?.state?.paused
       }
     })
+
+    console.log(`   Viewer position 1: x=${pos1.x?.toFixed(1)}, y=${pos1.y?.toFixed(1)}, vx=${pos1.vx?.toFixed(1)}, vy=${pos1.vy?.toFixed(1)}, paused=${pos1.paused}`)
+    console.log(`   Viewer position 2: x=${pos2.x?.toFixed(1)}, y=${pos2.y?.toFixed(1)}, vx=${pos2.vx?.toFixed(1)}, vy=${pos2.vy?.toFixed(1)}, paused=${pos2.paused}`)
 
     const moved = Math.abs(pos1.x - pos2.x) > 1 || Math.abs(pos1.y - pos2.y) > 1
     if (moved) {
@@ -421,18 +516,23 @@ async function run() {
 
     const controllerPos = await controllerPage.evaluate(() => {
       return {
-        x: globalThis.__previewPhysics?.state?.x,
-        y: globalThis.__previewPhysics?.state?.y
+        x: globalThis.__previewPhysics?.state?.x || globalThis.previewPhysicsEngine?.state?.x,
+        y: globalThis.__previewPhysics?.state?.y || globalThis.previewPhysicsEngine?.state?.y
       }
     })
 
-    if (controllerPos.x && viewerPage) {
+    if (controllerPos.x && controllerPos.y) {
       const posDiff = Math.sqrt(Math.pow(controllerPos.x - pos2.x, 2) + Math.pow(controllerPos.y - pos2.y, 2))
+      console.log(`   Controller position: x=${controllerPos.x.toFixed(1)}, y=${controllerPos.y.toFixed(1)}`)
+      console.log(`   Position difference: ${posDiff.toFixed(1)}px`)
+
       if (posDiff < 50) {
         console.log(`✅ Controller and viewer positions synchronized (diff: ${posDiff.toFixed(1)}px)`)
       } else {
         throw new Error(`Position diff too large: ${posDiff.toFixed(1)}px`)
       }
+    } else {
+      console.log('⚠️  Could not get controller position for comparison')
     }
 
     console.log('\n🎉 ALL TESTS PASSED!')
