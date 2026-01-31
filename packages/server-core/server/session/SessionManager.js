@@ -199,8 +199,10 @@ class SessionManager {
    * @private
    */
   _applyValidatedUpdates(session, validatedUpdates) {
+    console.log(`[SessionManager] 🔧 _applyValidatedUpdates called for session ${session.id}`)
     // this._handleReturnToCenter(session, validatedUpdates) // TODO: implement if needed
     this._applyPhysicsUpdates(session, validatedUpdates)
+    console.log(`[SessionManager] 📢 Calling broadcastState for session ${session.id}`)
     this._postUpdateActions(session, validatedUpdates)
     return true
   }
@@ -213,6 +215,8 @@ class SessionManager {
     if (!session.ballState) {
       session.ballState = {}
     }
+
+    console.log(`[SessionManager] 🔍 PhysicsEngine exists: ${!!session.physicsEngine}`)
 
     // Применяем все валидные обновления к ballState
     Object.assign(session.ballState, updates)
@@ -227,6 +231,8 @@ class SessionManager {
 
       // Sync back immediately to ensure consistency
       Object.assign(session.ballState, session.physicsEngine.getState())
+    } else {
+      console.log(`[SessionManager] ⚠️  No PhysicsEngine - updates applied only to ballState`)
     }
 
     // Обновляем timestamp
