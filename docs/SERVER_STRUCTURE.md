@@ -2,52 +2,38 @@
 
 ## Окружения
 
-Проект развернут на VPS **213.139.229.44** в трех окружениях:
+Проект развернут на VPS **213.139.229.44** в двух окружениях:
 
 ### 1. Development
 - **URL**: https://dev.emdrbilateral.online
 - **Директория**: `/var/www/dev.emdrbilateral.online`
 - **Ветка Git**: `stable-enhanced`
-- **Service**: `emdrbilateral-dev.service`
-- **Порт**: 3001
+- **Порт**: 3000
 - **NODE_ENV**: development
+- **Назначение**: Тестирование новых функций
 
-### 2. Production Online
-- **URL**: https://emdrbilateral.online
+### 2. Production
+- **URL**: https://emdrbilateral.online (основной) или https://emdrbilateral.ru (альтернативный)
 - **Директория**: `/var/www/emdrbilateral.online`
 - **Ветка Git**: `stable`
-- **Service**: `emdrbilateral-online.service`
-- **Порт**: 8080
+- **Порт**: 3000
 - **NODE_ENV**: production
+- **Назначение**: Основной рабочий сайт
+- **Примечание**: Оба домена указывают на одну директорию и один процесс Node.js
 
-### 3. Production RU
-- **URL**: https://emdrbilateral.ru
-- **Директория**: `/var/www/emdrbilateral.ru`
-- **Ветка Git**: `stable`
-- **Service**: `emdrbilateral-ru.service`
-- **Порт**: 8081
-- **NODE_ENV**: production
+## Node.js процессы
 
-## Systemd сервисы
-
-Все окружения управляются через systemd:
+Каждое окружение запускает отдельный Node.js процесс:
 
 ```bash
-# Проверка статуса
-systemctl status emdrbilateral-dev
-systemctl status emdrbilateral-online
-systemctl status emdrbilateral-ru
+# Development
+node /var/www/dev.emdrbilateral.online/packages/server-core/server/index.js
 
-# Перезапуск
-systemctl restart emdrbilateral-dev
-systemctl restart emdrbilateral-online
-systemctl restart emdrbilateral-ru
-
-# Логи
-journalctl -u emdrbilateral-dev -f
-journalctl -u emdrbilateral-online -f
-journalctl -u emdrbilateral-ru -f
+# Production
+node /var/www/emdrbilateral.online/packages/server-core/server/index.js
 ```
+
+Процессы запускаются вручную или автоматически при перезагрузке через systemd/pm2.
 
 ## Команды деплоя
 
@@ -62,130 +48,117 @@ npm run deploy:dev:logs         # Показать логи
 # Production (оба окружения)
 npm run deploy:prod             # Pull + restart для обоих
 npm run deploy:prod:status      # Проверить статус
-npm run deploy:prod:logs        # Показать логи
-
-# VPS команды
-npm run vps:pull                # Обновить код на обоих prod
-npm run vps:deploy              # Полный деплой (pull + install + restart)
-npm run vps:logs                # Логи обоих prod окружений
-npm run vps:ssh                 # Подключиться к серверу
-```
-
-### Через скрипты
-
-```bash
-# Быстрый деплой всех окружений
-./scripts/deploy-quick.sh all
-
-# Отдельные окружения
-./scripts/deploy-quick.sh dev
-./scripts/deploy-quick.sh prod
-./scripts/deploy-quick.sh prod-ru
-
-# Деплой stable-enhanced на dev
-./scripts/deploy-stable-enhanced.sh deploy
-./scripts/deploy-stable-enhanced.sh status
-./scripts/deploy-stable-enhanced.sh logs
-```
-
-## Установка сервисов с нуля
-
-Если нужно пересоздать systemd сервисы:
-
-```bash
-./scripts/setup-services.sh
-```
-
-Этот скрипт:
-1. Создаст файлы сервисов в `/etc/systemd/system/`
-2. Перезагрузит systemd daemon
-3. Включит и запустит все сервисы
-4. Покажет их статус
-
-## Структура директорий на VPS
-
-```
-/var/www/
-├── dev.emdrbilateral.online/       # Dev окружение (stable-enhanced)
-│   └── packages/server-core/
-│       └── server/index.js
-├── emdrbilateral.online/           # Prod Online (stable)
-│   └── packages/server-core/
-│       └── server/index.js
-└── emdrbilateral.ru/               # Prod RU (stable)
-    └── packages/server-core/
-        └── server/index.js
-```
-
 ## Nginx конфигурация
 
 Nginx проксирует запросы на соответствующие порты:
-- `dev.emdrbilateral.online` → `localhost:3001`
-- `emdrbilateral.online` → `localhost:8080`
-- `emdrbilateral.ru` → `localhost:8081`
+- `dev.emdrbilateral.online` → `localhost:3000`
+- `emdrbilateral.online` → `localhost:3000`
+- `emdrbilateral.ru` → `localhost:3000` (тот же процесс что и .online)
 
-## Мониторинг
+Два продакшн домена (emdrbilateral.online и emdrbilateral.ru) обслуживаются одним Node.js процессом.
 
-```bash
-# Все bilateral сервисы
-systemctl list-units | grep bilateral
+## Деплой через Git Push
 
-# Статус всех трех сервисов
-systemctl status emdrbilateral-*
-
-# Логи всех трех сервисов в реальном времени
-journalctl -u emdrbilateral-dev -u emdrbilateral-online -u emdrbilateral-ru -f
-```
-
-## Troubleshooting
-
-### Сервис не запускается
+Оба окружения могут быть обновлены через Git:
 
 ```bash
-# Проверить логи
-journalctl -u emdrbilateral-dev -n 100 --no-pager
+# Development: push в stable-enhanced
+git push origin stable-enhanced
 
-# Проверить конфигурацию
-systemctl cat emdrbilateral-dev
-
-# Перезагрузить daemon и перезапустить
-systemctl daemon-reload
-systemctl restart emdrbilateral-dev
+# Production: push в stable
+git push origin stable
 ```
 
-### Обновить код вручную
+После push нужно вручную обновить на сервере:
 
 ```bash
 # Подключиться к серверу
 ssh root@213.139.229.44
 
-# Обновить dev
+# Development обновление
 cd /var/www/dev.emdrbilateral.online
-git fetch --all
-git reset --hard origin/stable-enhanced
-systemctl restart emdrbilateral-dev
+git pull origin stable-enhanced
+npm install --production
+pkill -f 'node.*packages/server-core'
+sleep 2
+nohup node packages/server-core/server/index.js > /tmp/server-dev.log 2>&1 &
 
-# Обновить prod
+# Production обновление
 cd /var/www/emdrbilateral.online
-git fetch --all
-git reset --hard origin/stable
-systemctl restart emdrbilateral-online
-
-cd /var/www/emdrbilateral.ru
-git fetch --all
-git reset --hard origin/stable
-systemctl restart emdrbilateral-ru
+git pull origin stable
+npm install --production
+pkill -f 'node.*packages/server-core'
+sleep 2
+nohup node packages/server-core/server/index.js > /tmp/server-prod.log 2>&1 &
 ```
 
-## Автозапуск
+## Мониторинг
 
-Все сервисы настроены на автозапуск при перезагрузке сервера через `WantedBy=multi-user.target`.
-
-Проверить:
 ```bash
-systemctl is-enabled emdrbilateral-dev
-systemctl is-enabled emdrbilateral-online
-systemctl is-enabled emdrbilateral-ru
+# Проверить запущенные Node.js процессы
+ps aux | grep 'node.*packages/server-core'
+
+# Проверить статус dev сервера
+curl https://dev.emdrbilateral.online/api/health
+
+# Проверить статус prod сервера (оба домена)
+curl https://emdrbilateral.online/api/health
+curl https://emdrbilateral.ru/api/health
+
+# Показать логи dev
+tail -f /tmp/server-dev.log
+
+# Показать логи prod
+tail -f /tmp/server-prod.log
 ```
 
-Все должны показывать `enabled`.
+## Troubleshooting
+
+### Сервер не отвечает
+
+```bash
+# Подключиться к серверу
+ssh root@213.139.229.44
+
+# Проверить процессы
+ps aux | grep node
+
+# Убить старые процессы
+pkill -9 -f 'node.*packages/server-core'
+
+# Проверить логи последние 50 строк
+tail -50 /tmp/server-dev.log
+tail -50 /tmp/server-prod.log
+
+# Запустить вручную для debug
+cd /var/www/dev.emdrbilateral.online
+PORT=3000 node packages/server-core/server/index.js
+```
+
+### Высокое использование памяти
+
+```bash
+# Проверить процессы
+ps aux --sort=-%mem | head -10
+
+# Перезапустить конкретное окружение
+pkill -f '/var/www/dev.emdrbilateral.online'
+cd /var/www/dev.emdrbilateral.online
+nohup node packages/server-core/server/index.js > /tmp/server-dev.log 2>&1 &
+```
+
+## Структура директорий на VPS
+
+```
+/var/www/
+├── dev.emdrbilateral.online/     # Development (ветка: stable-enhanced)
+│   ├── packages/server-core/
+│   ├── packages/web-client/
+│   ├── package.json
+│   └── ...
+└── emdrbilateral.online/         # Production (ветка: stable)
+    ├── packages/server-core/
+    ├── packages/web-client/
+    ├── package.json
+    └── ...
+```

@@ -1,53 +1,50 @@
 # 📦 NPM Commands Reference
 
-Справочник всех доступных команд в проекте.
+Справочник всех доступных команд в проекте BilateralBound v2.39.75.
 
-## 🚀 Запуск и разработка
-
-### Локальный запуск
-```bash
-npm start              # Запуск сервера
-npm run dev            # Режим разработки с hot-reload
-npm run start:server   # Только сервер
-npm run start:client   # Только клиент
-npm run dev:server     # Сервер в dev режиме
-npm run dev:client     # Клиент в dev режиме
-```
-
-## 📦 Управление зависимостями
+## 🚀 Основные команды
 
 ```bash
-npm run install:all     # Установка всех зависимостей (root + workspaces)
-npm run clean           # Удаление node_modules и lock файлов
-npm run clean:cache     # Очистка npm кеша
-npm run reinstall       # Полная переустановка (clean + install:all)
-npm run update:deps     # Обновление всех зависимостей
-npm run check:outdated  # Проверка устаревших пакетов
+npm start              # Запуск сервера (production mode)
+npm run dev            # Запуск в режиме разработки
+npm test               # Запуск E2E тестов
+npm run test:prod      # Тестирование на production URL
 ```
 
 ## 🧪 Тестирование
 
+### E2E тесты
 ```bash
-npm test                # Запуск E2E тестов
-npm run test:api        # Тестирование API
-npm run test:session    # Быстрый тест создания сессии
+npm test               # Локальное тестирование на http://localhost:3000
+npm run test:prod      # Тестирование на production
+npm run test:api       # API тестирование
+
+# Конкретные тесты
+BASE_URL=http://localhost:3001 npm test
+BASE_URL=https://dev.emdrbilateral.online npm test
 ```
 
-## 🎨 Код качество
+## 🎨 Качество кода
 
-### Линтинг
+### Линтинг и форматирование
 ```bash
-npm run lint            # ESLint для JS
-npm run lint:css        # Stylelint для CSS
-npm run lint:html       # HTMLHint для HTML
-npm run lint:all        # Все линтеры
-npm run lint:fix        # Автофикс ESLint
-npm run lint:css:fix    # Автофикс Stylelint
-npm run lint:html:fix   # Автофикс HTMLHint
+npm run lint           # ESLint проверка JavaScript
+npm run lint:fix       # Автоматическое исправление ESLint ошибок
+npm run format         # Prettier форматирование кода
 ```
 
-### Форматирование
+## 📖 Документация
+
 ```bash
+npm run docs           # Открыть документацию
+```
+
+## 🔧 Утилиты
+
+```bash
+npm run clean          # Очистить node_modules и lock файлы
+npm run update:version # Автоматическое обновление версии
+```
 npm run format          # Prettier для всех файлов
 npm run format:css      # Только CSS
 npm run format:html     # Только HTML

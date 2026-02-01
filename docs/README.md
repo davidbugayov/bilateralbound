@@ -8,9 +8,10 @@
 
 ### 📖 Основная документация
 - **[README.md](../README.md)** - Главная страница проекта, быстрый старт
-- **[NPM_COMMANDS.md](NPM_COMMANDS.md)** - NPM команды и скрипты разработки
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Руководство по деплою на VPS
 - **[SERVER_STRUCTURE.md](SERVER_STRUCTURE.md)** - Архитектура серверной части
-- **[OPTIMIZATION_REPORT.md](OPTIMIZATION_REPORT.md)** - Отчет по оптимизации проекта
+- **[NPM_COMMANDS.md](NPM_COMMANDS.md)** - NPM команды и скрипты разработки
+- **[MIGRATION_COMPLETE.md](MIGRATION_COMPLETE.md)** - Миграция с WebSocket на SSE
 
 ---
 
@@ -43,7 +44,8 @@ npm run deploy:prod  # Деплой на продакшн
 1. **[README.md](../README.md)** - начните здесь для общего понимания проекта
 2. **[NPM_COMMANDS.md](NPM_COMMANDS.md)** - изучите доступные команды
 3. **[SERVER_STRUCTURE.md](SERVER_STRUCTURE.md)** - разберитесь в архитектуре
-4. **[OPTIMIZATION_REPORT.md](OPTIMIZATION_REPORT.md)** - узнайте о производительности
+4. **[DEPLOYMENT.md](DEPLOYMENT.md)** - научитесь разворачивать на сервере
+5. **[MIGRATION_COMPLETE.md](MIGRATION_COMPLETE.md)** - узнайте о технических улучшениях
 
 ---
 
@@ -51,8 +53,7 @@ npm run deploy:prod  # Деплой на продакшн
 
 ### Окружения
 - **Dev:** https://dev.emdrbilateral.online/
-- **Production (international):** https://emdrbilateral.online/
-- **Production (russian):** https://emdrbilateral.ru/
+- **Production:** https://emdrbilateral.online/ или https://emdrbilateral.ru/ (оба домена указывают на один сервер)
 
 ### Инструменты
 - **Репозиторий:** https://github.com/davidbugaev/bilateral_bound
@@ -60,5 +61,5 @@ npm run deploy:prod  # Деплой на продакшн
 
 ---
 
-**Последнее обновление:** 25 января 2026  
-**Версия документации:** 2.0
+**Последнее обновление:** 1 февраля 2026  
+**Версия документации:** 2.39.75

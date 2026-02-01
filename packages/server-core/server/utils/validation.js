@@ -235,7 +235,8 @@ class ValidationUtils {
    * @private
    */
   static _isValidColor(value) {
-    return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)
+    // Поддержка форматов: #RRGGBB и #RGB
+    return typeof value === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
   }
 
   /**

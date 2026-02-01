@@ -2,11 +2,22 @@
 
 Профессиональная платформа для EMDR-терапии с билатеральной стимуляцией в реальном времени.
 
-[![Version](https://img.shields.io/badge/version-2.40.0-blue.svg)](https://github.com/davidbugaev/bilateral_bound)
+[![Version](https://img.shields.io/badge/version-2.39.75-blue.svg)](https://github.com/davidbugaev/bilateral_bound)
 [![License](https://img.shields.io/badge/license-ISC-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 
-## 🚀 Новое в версии 2.40.0
+## 🚀 Новое в версии 2.39.75
+
+### ✅ Полная синхронизация всех свойств
+
+Реализована 100% синхронизация между контроллером и вьювером:
+
+- **🎨 Цвета**: Синхронизация цвета мяча и фона в реальном времени
+- **📏 Размер мяча**: Изменение радиуса синхронизируется между устройствами
+- **🎯 Направления**: Поддержка всех направлений (горизонтальное, вертикальное, диагональное)
+- **⚡ Скорость**: Синхронизация скорости движения
+- **🔊 Звук**: Управление звуком синхронизируется между приложениями
+- **✅ Полное тестирование**: Все функции протестированы через E2E тесты
 
 ### ⚡ Миграция на SSE - Снижение нагрузки на 40-60%
 
@@ -125,20 +136,26 @@ npm run vps:ssh              # SSH на сервер
 ### Development
 - **URL**: https://dev.emdrbilateral.online
 - **Ветка**: `stable-enhanced`
+- **Путь на VPS**: `/var/www/dev.emdrbilateral.online`
+- **Порт**: 3000
+- **Процесс**: Node.js (node packages/server-core/server/index.js)
 - **Автообновление** при push
 
 ### Production
-- **URL**: https://emdrbilateral.online (международная версия)
-- **URL**: https://emdrbilateral.ru (российская версия)
+- **URL**: https://emdrbilateral.online (основной) или https://emdrbilateral.ru (альтернативный)
 - **Ветка**: `stable`
+- **Путь на VPS**: `/var/www/emdrbilateral.online`
+- **Порт**: 3000
+- **Процесс**: Node.js (node packages/server-core/server/index.js)
+- **Примечание**: Оба домена обслуживаются одним процессом
 
 ## 📖 Документация
 
 Полная документация доступна в папке [`docs/`](docs/):
 
 - [Структура серверов](docs/SERVER_STRUCTURE.md) - Конфигурация окружений и деплой
-- [VPN и подключение](docs/VPN_TROUBLESHOOTING.md) - Настройка VPN доступа
 - [NPM команды](docs/NPM_COMMANDS.md) - Справочник по командам
+- [Миграция SSE](docs/MIGRATION_COMPLETE.md) - Детали миграции с WebSocket на SSE
 
 ## 🧪 Тестирование
 
@@ -217,7 +234,7 @@ open http://localhost:9000
 
 <div align="center">
 
-⚡ **BilateralBound v2.39.0**
+⚡ **BilateralBound v2.39.75**
 
 Made with ❤️ for EMDR therapists
 
