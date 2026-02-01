@@ -623,6 +623,17 @@ if (typeof PhysicsEngine === 'undefined') {
     }
 
     _updateBallPosition(velocity, deltaTime) {
+      // Временное логирование для отладки
+      if (this.isViewer && !this.state.paused) {
+        console.log('[PHYSICS DEBUG] _updateBallPosition called:', {
+          velocityVx: velocity.vx,
+          velocityVy: velocity.vy,
+          deltaTime,
+          beforeVx: this.ball.vx,
+          beforeVy: this.ball.vy
+        })
+      }
+
       this.ball.vx = velocity.vx
       this.ball.vy = velocity.vy
       this._prevPos.x = this.ball.x
@@ -831,6 +842,21 @@ if (typeof PhysicsEngine === 'undefined') {
         validated.vx = command.vx
       if (typeof command.vy === 'number' && Number.isFinite(command.vy))
         validated.vy = command.vy
+      // ИСПРАВЛЕНИЕ: viewer должен принимать dirX/dirY для установки направления
+      if (
+        typeof command.dirX === 'number' &&
+        Math.abs(command.dirX) <= 1 &&
+        Number.isFinite(command.dirX)
+      ) {
+        validated.dirX = command.dirX
+      }
+      if (
+        typeof command.dirY === 'number' &&
+        Math.abs(command.dirY) <= 1 &&
+        Number.isFinite(command.dirY)
+      ) {
+        validated.dirY = command.dirY
+      }
       if (
         typeof command.speed === 'number' &&
         command.speed >= 0 &&
@@ -943,19 +969,23 @@ if (typeof PhysicsEngine === 'undefined') {
 
       command = validatedCommand
 
+      // ИСПРАВЛЕНИЕ: сначала обрабатываем общие команды (включая paused),
+      // чтобы специфичные обработчики могли корректно реагировать на состояние паузы
+      this._handleCommonCommands(command)
+
       if (this.isViewer) {
         this._handleViewerCommand(command)
       } else {
         this._handleServerCommand(command)
       }
-
-      this._handleCommonCommands(command)
     }
 
     _handleViewerCommand(command) {
       this._handleViewerPositionUpdate(command)
       this._handleViewerVelocityUpdate(command)
       this._handleViewerSpeedUpdate(command)
+      // ИСПРАВЛЕНИЕ: обрабатываем направление для viewer (важно для старта движения)
+      this._handleViewerDirectionUpdate(command)
     }
 
     _handleViewerPositionUpdate(command) {
@@ -1070,6 +1100,28 @@ if (typeof PhysicsEngine === 'undefined') {
       }
     }
 
+    _handleViewerDirectionUpdate(command) {
+      if (command.dirX !== undefined || command.dirY !== undefined) {
+        const newDx =
+          typeof command.dirX !== 'undefined'
+            ? command.dirX
+            : this.state.lastDirection.x
+        const newDy =
+          typeof command.dirY !== 'undefined'
+            ? command.dirY
+            : this.state.lastDirection.y
+
+        // Устанавливаем направление
+        this.state.lastDirection.x = newDx
+        this.state.lastDirection.y = newDy
+
+        // Обновляем скорость на основе нового направления
+        if (this.state.paused === false) {
+          this._updatePredictionBase()
+        }
+      }
+    }
+
     _updatePredictionBase() {
       const pps = this.ball.speed / 100 * this.options.maxSpeed
       const dx = this.state.lastDirection.x || 0
@@ -1134,7 +1186,17 @@ if (typeof PhysicsEngine === 'undefined') {
     }
 
     _handleCommonCommands(command) {
-      if (command.paused !== undefined) this.setPaused(command.paused)
+      // Обработка паузы с восстановлением скорости для viewer
+      if (command.paused !== undefined) {
+        const wasPaused = this.state.paused
+        this.setPaused(command.paused)
+
+        // ИСПРАВЛЕНИЕ: для viewer при снятии паузы восстанавливаем скорость на основе направления
+        if (this.isViewer && wasPaused && command.paused === false) {
+          this._updatePredictionBase()
+        }
+      }
+
       if (command.reset) this.reset()
       if (command.radius !== undefined) this.setBallSize(command.radius)
       if (command.colorBall !== undefined) this.setBallColor(command.colorBall)

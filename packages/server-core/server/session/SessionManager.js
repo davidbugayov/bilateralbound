@@ -230,13 +230,33 @@ class SessionManager {
       session.physicsEngine.applyCommand(updates)
 
       // Sync back immediately to ensure consistency
-      Object.assign(session.ballState, session.physicsEngine.getState())
+      // Use efficient merge that prefers the NEW updates if they are valid
+      const engineState = session.physicsEngine.getState()
+
+      // Preserve updates that might not be reflected in engineState yet or are meta-properties
+      // This solves the issue where getting state immediately might revert a property if engine didn't process it same way
+      Object.assign(session.ballState, engineState, updates)
     } else {
       console.log(`[SessionManager] ⚠️  No PhysicsEngine - updates applied only to ballState`)
     }
 
     // Обновляем timestamp
     session.lastStateUpdate = Date.now()
+
+    if (updates.dirX !== undefined || updates.dirY !== undefined) {
+      // ИСПРАВЛЕНИЕ: при изменении направления, если сессия активна, нужно обновить скорость в ballState
+      // PhysicsEngine делает это внутри applyCommand -> setDirection, но нужно убедиться что getState() вернет правильные vx/vy
+      // Если PhysicsEngine не обновил vx/vy (например из-за того что считал что стоит на паузе в этот тик), форсируем обновление
+
+      // ВАЖНО: Если мы форсируем направление, мы должны быть уверены что скорость не 0
+      const activeSpeed = session.ballState.speed || session.physicsEngine.ball.speed || 30
+      // Используем helper PhysicsEngine для расчета скорости
+      if (session.physicsEngine && !session.ballState.paused) {
+         // Force update instruction? No, engine does it.
+         // Just ensure synchronization logic is logging correctly
+         console.log(`[SessionManager] Check velocities after dir update: vx=${session.physicsEngine.ball.vx}, vy=${session.physicsEngine.ball.vy}`)
+      }
+    }
   }
 
   _postUpdateActions(session, validatedUpdates) {
