@@ -589,14 +589,10 @@ if (typeof PhysicsEngine === 'undefined') {
     }
 
     _calculateClientVelocity() {
-      let vx = typeof this.state.lastVx === 'number' ? this.state.lastVx : 0
-      let vy = typeof this.state.lastVy === 'number' ? this.state.lastVy : 0
+      // ВСЕГДА рассчитываем скорость из направления для корректных отскоков
       const pps = this.ball.speed / 100 * this.options.maxSpeed
-
-      if (vx === 0 && vy === 0) {
-        vx = (this.state.lastDirection.x || 0) * pps
-        vy = (this.state.lastDirection.y || 0) * pps
-      }
+      const vx = (this.state.lastDirection.x || 0) * pps
+      const vy = (this.state.lastDirection.y || 0) * pps
 
       return { vx, vy }
     }
@@ -611,29 +607,22 @@ if (typeof PhysicsEngine === 'undefined') {
 
       if (isVertical) {
         velocity.vx = 0
-        velocity.vy = Math.sign(dirY || 1) * pps
+        velocity.vy = dirY * pps  // Используем dirY напрямую (может быть -1 или 1)
         this.state.smoothVx = 0
       } else if (isHorizontal) {
         velocity.vy = 0
-        velocity.vx = Math.sign(dirX || 1) * pps
+        velocity.vx = dirX * pps  // Используем dirX напрямую (может быть -1 или 1)
         this.state.smoothVy = 0
+      } else if (Math.abs(dirX) > 0 || Math.abs(dirY) > 0) {
+        // Diagonal movement
+        velocity.vx = dirX * pps
+        velocity.vy = dirY * pps
       }
 
       return velocity
     }
 
     _updateBallPosition(velocity, deltaTime) {
-      // Временное логирование для отладки
-      if (this.isViewer && !this.state.paused) {
-        console.log('[PHYSICS DEBUG] _updateBallPosition called:', {
-          velocityVx: velocity.vx,
-          velocityVy: velocity.vy,
-          deltaTime,
-          beforeVx: this.ball.vx,
-          beforeVy: this.ball.vy
-        })
-      }
-
       this.ball.vx = velocity.vx
       this.ball.vy = velocity.vy
       this._prevPos.x = this.ball.x
@@ -648,92 +637,98 @@ if (typeof PhysicsEngine === 'undefined') {
     }
     /**
      * Обрабатывает коллизии с границами мира
+     * Мяч должен отскакивать от края и продолжать движение в обратном направлении
      */
     handleBoundaryCollisions() {
       const ball = this.ball
       const radius = ball.radius
       const worldWidth = this.options.worldWidth
       const worldHeight = this.options.worldHeight
-      let bounced = false
+      let bounceSide = null
 
       const dirX = this.state.lastDirection.x || 0
       const dirY = this.state.lastDirection.y || 0
 
       // Проверяем левую и правую границы
-      // Отскок происходит только если мяч реально движется горизонтально
-      if (ball.x < radius) {
+      if (ball.x <= radius) {
         ball.x = radius // Клампим позицию
-        // Отражаем направление только если было горизонтальное движение
-        if (Math.abs(dirX) > 1e-6) {
+        // Отражаем направление - мяч должен двигаться вправо
+        if (dirX < 0) {
           this.state.lastDirection.x = Math.abs(dirX)
-          bounced = true
-        } else {
-          // Вертикальное движение - просто удерживаем мяч на границе
-          this.state.lastDirection.x = 0
+          bounceSide = 'left'
         }
-      } else if (ball.x > worldWidth - radius) {
+      } else if (ball.x >= worldWidth - radius) {
         ball.x = worldWidth - radius // Клампим позицию
-        if (Math.abs(dirX) > 1e-6) {
+        // Отражаем направление - мяч должен двигаться влево
+        if (dirX > 0) {
           this.state.lastDirection.x = -Math.abs(dirX)
-          bounced = true
-        } else {
-          this.state.lastDirection.x = 0
+          bounceSide = 'right'
         }
       }
 
       // Проверяем верхнюю и нижнюю границы
-      // Отскок происходит только если мяч реально движется вертикально
-      if (ball.y < radius) {
+      if (ball.y <= radius) {
         ball.y = radius // Клампим позицию
-        if (Math.abs(dirY) > 1e-6) {
+        // Отражаем направление - мяч должен двигаться вниз
+        if (dirY < 0) {
           this.state.lastDirection.y = Math.abs(dirY)
-          bounced = true
-        } else {
-          this.state.lastDirection.y = 0
+          bounceSide = bounceSide || 'top'
         }
-      } else if (ball.y > worldHeight - radius) {
+      } else if (ball.y >= worldHeight - radius) {
         ball.y = worldHeight - radius // Клампим позицию
-        if (Math.abs(dirY) > 1e-6) {
+        // Отражаем направление - мяч должен двигаться вверх
+        if (dirY > 0) {
           this.state.lastDirection.y = -Math.abs(dirY)
-          bounced = true
-        } else {
-          this.state.lastDirection.y = 0
+          bounceSide = bounceSide || 'bottom'
         }
       }
 
       // Вызываем callback при отскоке
-      if (bounced) {
-        this.handleBounce()
+      if (bounceSide) {
+        this.handleBounce(bounceSide)
       }
     }
     /**
      * Обрабатывает отскок от границы
+     * @param {string} side - Сторона отскока: 'left', 'right', 'top', 'bottom'
      */
-    handleBounce() {
+    handleBounce(side) {
       // Мгновенно переназначаем скорость по новому направлению, сохраняя величину
       const speedPercent = this.ball.speed / 100
       const pixelsPerSecond = speedPercent * this.options.maxSpeed
+
       this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
       this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
-      // Обеспечиваем минимальную скорость после отскока (на случай близких к нулю значений)
+
+      // Обеспечиваем минимальную скорость после отскока
       this.ensureMinimumSpeed()
-      // ВАЖНО: Обновляем lastVx/lastVy, чтобы клиентская физика не залипала на границе
+
+      // ВАЖНО: Обновляем lastVx/lastVy для клиентской физики
       this.state.lastVx = this.ball.vx
       this.state.lastVy = this.ball.vy
+
       // Вызываем callback если установлен
       if (this.bounceCallback) {
         this.bounceCallback({
+          side: side,
           x: this.ball.x,
           y: this.ball.y,
           vx: this.ball.vx,
-          vy: this.ball.vy
+          vy: this.ball.vy,
+          dirX: this.state.lastDirection.x,
+          dirY: this.state.lastDirection.y
         })
       }
+
       // Дополнительно инициируем DOM-событие для счётчика пасов на стороне контроллера
       try {
         if (typeof globalThis !== 'undefined') {
           const ev = new CustomEvent('bb_bounce', {
-            detail: { x: this.ball.x, y: this.ball.y }
+            detail: {
+              side: side,
+              x: this.ball.x,
+              y: this.ball.y
+            }
           })
           globalThis.dispatchEvent(ev)
         }
