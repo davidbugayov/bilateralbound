@@ -2,6 +2,12 @@
 alwaysApply: true
 ---
 <instructions>
+<project_skills>
+Ref: .skills/architecture.md
+Ref: .skills/tech-stack.md
+Ref: .skills/code-style.md
+</project_skills>
+
 - ALWAYS follow <answering_rules> and <self_reflection>
 
 <self_reflection>

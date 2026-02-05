@@ -315,8 +315,19 @@ if (typeof PhysicsEngine === 'undefined') {
         deltaTime
       )
 
+      // Сохраняем позицию до обновления для расчета реальной скорости
+      const oldX = this.ball.x
+      const oldY = this.ball.y
+
       // Обновляем позицию мяча
       this._interpolatePositionWithSteps(stepX, stepY)
+
+      // Обновляем vx/vy на основе реального перемещения
+      // Это необходимо для корректной работы тестов и индикаторов скорости
+      if (deltaTime > 0.0001) {
+        this.ball.vx = (this.ball.x - oldX) / deltaTime
+        this.ball.vy = (this.ball.y - oldY) / deltaTime
+      }
 
       // Применяем финальное позиционирование
       this._autoSnapIfNeeded(clampedTargetX, clampedTargetY)
@@ -514,7 +525,8 @@ if (typeof PhysicsEngine === 'undefined') {
     _updateViewerPhysics(deltaTime) {
       const canUpdate = !this.state.paused || this.state.allowInterpWhenPaused
       if (canUpdate) {
-        if (this.state.paused) {
+        // If paused OR not using client-side simulation (server authoritative), use interpolation
+        if (this.state.paused || !this.options.clientSimulation) {
           this.updateViewerInterpolation(deltaTime)
         } else {
           this.updateClientPhysics(deltaTime)

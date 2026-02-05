@@ -445,17 +445,33 @@ async function run() {
       while (Date.now() - started < timeoutMs) {
         try {
           const state = await viewerPage.evaluate(() => {
-            // Возвращаем минимальную сериализуемую форму состояния
-            const s = globalThis.physicsEngine?.state
-            if (!s) return null
+            const eng = globalThis.physicsEngine
+            if (!eng) return null
+
+            // Если есть метод getState - используем его (предпочтительно)
+            if (typeof eng.getState === 'function') {
+               return eng.getState()
+            }
+
+            // Fallback
             return {
-              x: s.x ?? null,
-              y: s.y ?? null,
-              vx: s.vx ?? 0,
-              vy: s.vy ?? 0,
-              paused: typeof s.paused === 'boolean' ? s.paused : null
+               x: eng.ball?.x,
+               y: eng.ball?.y,
+               vx: eng.ball?.vx,
+               vy: eng.ball?.vy,
+               paused: eng.state?.paused
             }
           })
+
+          if (state) {
+             // DEBUG LOGGING
+             const vx = state.vx ?? 0
+             const vy = state.vx ?? 0
+             // Only log occasionally to avoid spamming, or if non-zero
+             if (Math.abs(vx) > 0.1 || Math.abs(vy) > 0.1) {
+                // console.log(`[POLL] Motion detected: vx=${vx}, vy=${vy}`)
+             }
+          }
 
           if (state && predicate(state)) return state
         } catch (e) {
@@ -528,23 +544,38 @@ async function run() {
 
     // Снимем две позиции с небольшим интервалом, чтобы убедиться в движении
     const pos1 = await viewerPage.evaluate(() => {
-      const s = globalThis.physicsEngine?.state
-      return s ? { x: s.x, y: s.y, vx: s.vx, vy: s.vy, paused: s.paused } : null
+      const eng = globalThis.physicsEngine
+      if (!eng) return null
+      return typeof eng.getState === 'function' ? eng.getState() : { ...eng.ball, paused: eng.state.paused }
     })
 
     await wait(200)
 
     const pos2 = await viewerPage.evaluate(() => {
-      const s = globalThis.physicsEngine?.state
-      return s ? { x: s.x, y: s.y, vx: s.vx, vy: s.vy, paused: s.paused } : null
+      const eng = globalThis.physicsEngine
+      if (!eng) return null
+      return typeof eng.getState === 'function' ? eng.getState() : { ...eng.ball, paused: eng.state.paused }
     })
 
     if (!pos1 || !pos2) {
       throw new Error('Could not read viewer positions for movement check')
     }
 
-    console.log(`   Viewer position 1: x=${(pos1.x ?? 0).toFixed(1)}, y=${(pos1.y ?? 0).toFixed(1)}, vx=${(pos1.vx ?? 0).toFixed(1)}, vy=${(pos1.vy ?? 0).toFixed(1)}, paused=${pos1.paused}`)
-    console.log(`   Viewer position 2: x=${(pos2.x ?? 0).toFixed(1)}, y=${(pos2.y ?? 0).toFixed(1)}, vx=${(pos2.vx ?? 0).toFixed(1)}, vy=${(pos2.vy ?? 0).toFixed(1)}, paused=${pos2.paused}`)
+    console.log(`   Viewer position 1 raw:`, JSON.stringify(pos1))
+    console.log(`   Viewer position 2 raw:`, JSON.stringify(pos2))
+
+    // DEBUG: Check physicsEngine object structure
+    const debugEng = await viewerPage.evaluate(() => {
+        const eng = globalThis.physicsEngine;
+        if (!eng) return 'physicsEngine is null';
+        return {
+            hasGetState: typeof eng.getState === 'function',
+            ballKeys: eng.ball ? Object.keys(eng.ball) : 'ball is missing',
+            stateKeys: eng.state ? Object.keys(eng.state) : 'state is missing',
+            isViewer: eng.isViewer
+        }
+    });
+    console.log('   PhysicsEngine Debug:', JSON.stringify(debugEng));
 
     const moved = (typeof pos1.x === 'number' && typeof pos2.x === 'number' && (Math.abs(pos1.x - pos2.x) > 1 || Math.abs(pos1.y - pos2.y) > 1)) || (Math.abs((pos2.vx || 0)) > 0.5 || Math.abs((pos2.vy || 0)) > 0.5)
 
@@ -556,10 +587,10 @@ async function run() {
 
     // Сравнение с контроллером (как было)
     const controllerPos = await controllerPage.evaluate(() => {
-      return {
-        x: globalThis.__previewPhysics?.state?.x || globalThis.previewPhysicsEngine?.state?.x,
-        y: globalThis.__previewPhysics?.state?.y || globalThis.previewPhysicsEngine?.state?.y
-      }
+      const eng = globalThis.previewPhysicsEngine || globalThis.__previewPhysics
+      if (!eng) return {}
+      if (typeof eng.getState === 'function') return eng.getState()
+      return { x: eng.ball?.x, y: eng.ball?.y }
     })
 
     if (controllerPos.x && controllerPos.y) {

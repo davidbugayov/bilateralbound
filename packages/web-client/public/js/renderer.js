@@ -45,8 +45,8 @@ if (typeof BallRenderer === 'undefined') {
       this.adaptiveFrameRate =
         globalThis.BBConfig?.rendering?.adaptiveFrameRate ?? this.adaptiveFrameRate
       this.maxFrameTime = globalThis.BBConfig?.rendering?.maxFrameTime ?? this.maxFrameTime
-      // Устанавливаем режим движка в зависимости от опции
-      this.physics.isViewer = !this.options.localPhysics
+      // Removed forced isViewer override to allow external configuration
+      // this.physics.isViewer = !this.options.localPhysics
       // Кэшируем часто используемые значения
       this.pi2 = Math.PI * 2
       this.fillRect = this.ctx.fillRect.bind(this.ctx)

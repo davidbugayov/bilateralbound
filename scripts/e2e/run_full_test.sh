@@ -25,7 +25,7 @@ fi
 echo ""
 echo "🧪 Running E2E test..."
 cd /Users/davidbugayov/StudioProject/bilateral_bound
-BASE_URL=http://localhost:3000 HEADLESS=false node scripts/e2e/test_local_sse_sync.js
+BASE_URL=http://localhost:3000 HEADLESS=true node scripts/e2e/test_local_sse_sync.js
 
 TEST_EXIT_CODE=$?
 

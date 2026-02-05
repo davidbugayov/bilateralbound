@@ -790,12 +790,11 @@ class SessionManager {
             session.ballState.soundType = soundType
           }
 
-          // Рассылаем обновленное состояние (drift correction) только раз в секунду
-          // Bounces (отскоки) и Start/Stop рассылаются мгновенно через events/callbacks
+          // Рассылаем обновленное состояние (drift correction) чаще для плавности (15 раз в секунду)
           if (!session.ticks) session.ticks = 0
           session.ticks++
 
-          if (session.ticks % 60 === 0) {
+          if (session.ticks % 4 === 0) {
              this.stateBroadcaster.broadcastState(sessionId)
           }
         } catch (error) {
