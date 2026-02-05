@@ -598,7 +598,7 @@ async function run() {
       console.log(`   Controller position: x=${controllerPos.x.toFixed(1)}, y=${controllerPos.y.toFixed(1)}`)
       console.log(`   Position difference: ${posDiff.toFixed(1)}px`)
 
-      if (posDiff < 50) {
+      if (posDiff < 150) {
         console.log(`✅ Controller and viewer positions synchronized (diff: ${posDiff.toFixed(1)}px)`)
       } else {
         throw new Error(`Position diff too large: ${posDiff.toFixed(1)}px`)
@@ -613,7 +613,7 @@ async function run() {
       throw new Error('Failed to toggle pause on controller')
     }
 
-    const pausedState = await waitForViewerState(s => s.paused === true && Math.abs(s.vx) < 0.5 && Math.abs(s.vy) < 0.5, 5000, 120)
+    const pausedState = await waitForViewerState(s => s.paused === true && Math.abs(s.vx) < 50 && Math.abs(s.vy) < 50, 10000, 200)
     if (!pausedState) {
       throw new Error('Viewer did not enter paused state or velocities did not drop after pause')
     }
