@@ -38,13 +38,6 @@ class StateBroadcaster {
       basePayload.clientSimulationOnly = true
     }
 
-    // DEBUG: Log payload coordinates periodically
-    if (Math.random() < 0.05) {
-       // logger.info is not directly available as a method on this.logger?
-       // this.logger is imported from ../logger.js but constructor assigns it
-       // Let's use console.log for safety in debug
-       console.log(`[StateBroadcaster] Building payload for ${session.id}: x=${basePayload.x?.toFixed(1)}, y=${basePayload.y?.toFixed(1)}, vx=${basePayload.vx}, vy=${basePayload.vy}, simOnly=${this.clientSimulationOnly}`)
-    }
 
     return basePayload
   }
