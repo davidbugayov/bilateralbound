@@ -31,7 +31,9 @@ function generateVersion() {
 function getGitHash() {
   try {
     return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
-  } catch {
+  } catch (err) {
+    // Fallback to 'dev' if git is not available or command fails
+    console.warn('Unable to get git hash:', err.message)
     return 'dev'
   }
 }

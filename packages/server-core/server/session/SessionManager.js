@@ -85,8 +85,9 @@ class SessionManager {
           session.ballState.soundType = soundType
         }
         this.stateBroadcaster.broadcastState(session.id)
-      } catch {
-        // ignore
+      } catch (err) {
+        // Gracefully handle errors during bounce state broadcast to avoid disrupting physics
+        logger.error(`Bounce state broadcast error for session ${session.id}:`, err)
       }
     }
   }
@@ -226,7 +227,7 @@ class SessionManager {
     if (session.physicsEngine) {
       // PhysicsEngine expects commands like { paused: true, speed: 50, ... }
       // It has its own internal validation, so passing updates is safe
-      console.log('[SessionManager] 🎯 Applying command to PhysicsEngine:', JSON.stringify(updates))
+      console.log(`[SessionManager] 🎯 Applying command to PhysicsEngine:`, JSON.stringify(updates))
       session.physicsEngine.applyCommand(updates)
 
       // Sync back immediately to ensure consistency
@@ -237,7 +238,7 @@ class SessionManager {
       // This solves the issue where getting state immediately might revert a property if engine didn't process it same way
       Object.assign(session.ballState, engineState, updates)
     } else {
-      console.log('[SessionManager] ⚠️  No PhysicsEngine - updates applied only to ballState')
+      console.log(`[SessionManager] ⚠️  No PhysicsEngine - updates applied only to ballState`)
     }
 
     // Обновляем timestamp

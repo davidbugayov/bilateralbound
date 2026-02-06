@@ -84,8 +84,8 @@ class FeatureManager {
           return { ...defaultPresets, ...saved }
         }
       }
-    } catch {
-      debugWarn('Не удалось загрузить сохранённые пресеты')
+    } catch (err) {
+      debugWarn('Не удалось загрузить сохранённые пресеты:', err)
     }
 
     return defaultPresets
@@ -166,8 +166,8 @@ class FeatureManager {
   savePresets() {
     try {
       localStorage.setItem('bb_presets', JSON.stringify(this.presets))
-    } catch {
-      debugWarn('Не удалось сохранить пресеты')
+    } catch (err) {
+      debugWarn('Не удалось сохранить пресеты:', err)
     }
   }
 
@@ -436,8 +436,8 @@ class FeatureManager {
       ) {
         return parsed.sessions
       }
-    } catch {
-      debugWarn('Не удалось загрузить сохранённые сессии')
+    } catch (err) {
+      debugWarn('Не удалось загрузить сохранённые сессии:', err)
     }
 
     return []
@@ -446,15 +446,16 @@ class FeatureManager {
   saveSessions() {
     try {
       localStorage.setItem('bb_sessions', JSON.stringify(this.sessions))
-    } catch {
-      debugWarn('Не удалось сохранить сессии')
+    } catch (err) {
+      debugWarn('Не удалось сохранить сессии:', err)
     }
   }
 
   loadCurrentSessionId() {
     try {
       return localStorage.getItem('bb_current_session') || null
-    } catch {
+    } catch (err) {
+      debugWarn('Error loading current session ID:', err)
       return null
     }
   }
@@ -466,8 +467,9 @@ class FeatureManager {
       } else {
         localStorage.removeItem('bb_current_session')
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      // Silently handle localStorage errors as they are not critical
+      debugWarn('Error persisting session ID:', err)
     }
 
     this.currentSessionId = id || null
@@ -726,8 +728,9 @@ class FeatureManager {
         ? `${nameTxt ? ' • ' : ''}Создана: ${new Date(current.createdAt).toLocaleString()}`
         : ''
       el.textContent = `${nameTxt}${createdTxt}`
-    } catch {
-      // ignore
+    } catch (err) {
+      // Silently handle DOM update errors
+      debugWarn('Error updating session display:', err)
     }
   }
 

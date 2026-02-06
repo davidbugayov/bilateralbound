@@ -45,10 +45,11 @@ const cleanupIntervals = [
       const now = Date.now()
       let removedCount = 0
       for (const [key, cached] of apiCache) {
-        const adaptiveTTL = (cached.type === 'ball_state' ? 50 : 1000) * 3 // Simplified TTL logic
+        // Simplified TTL logic: 150ms for ball_state, 3s for others
+        const adaptiveTTL = (cached.type === 'ball_state' ? 50 : 1000) * 3
         if (now - cached.timestamp > adaptiveTTL) {
           apiCache.delete(key)
-          removedCount++
+          removedCount += 1
         }
       }
 

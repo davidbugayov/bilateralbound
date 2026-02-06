@@ -133,8 +133,9 @@ async function main() {
         globalThis.wsClient.on('state_update', evt => {
           try {
             globalThis.__sseEvents.push(evt)
-          } catch {
-            // ignore
+          } catch (err) {
+            // Silently handle event collection errors
+            console.warn('Error collecting SSE event:', err)
           }
         })
       }

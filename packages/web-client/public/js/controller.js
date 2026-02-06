@@ -263,8 +263,8 @@ function detectAndCountBounceFromServer(prev, curr) {
     if (currSignY !== 0) {
       __lastVySign = currSignY
     }
-  } catch {
-    debugWarn('Error in detectAndCountBounceFromServer')
+  } catch (err) {
+    debugWarn('Error in detectAndCountBounceFromServer:', err)
   }
 }
 // 4. Остальная логика выполняется после полной загрузки страницы
@@ -1009,8 +1009,8 @@ function syncUIWithState(ballState) {
     _syncUIColors(ballState)
     _syncUIPause(ballState)
     _syncUIDirection(ballState)
-  } catch {
-    console.warn('Error in syncUIWithState')
+  } catch (err) {
+    debugWarn('Error in syncUIWithState:', err)
   }
 }
 // ===== ИНИЦИАЛИЗИРОВАНИЕ КОМПОНЕНТОВ =====
@@ -1210,8 +1210,8 @@ function updateSpeed(speed) {
   // Отправляем изменение скорости
   try {
     safeSend(WS_MSG.controllerUpdate, { speed })
-  } catch {
-    console.warn('Error updating speed')
+  } catch (err) {
+    debugWarn('Error updating speed:', err)
   }
 }
 
@@ -1247,8 +1247,9 @@ async function initializePreview() {
     // Экспортируем для UI‑тестов
     try {
       globalThis.__previewPhysics = previewPhysicsEngine
-    } catch {
-      /* ignore */
+    } catch (err) {
+      // Silently handle case where globalThis is not writable
+      debugWarn('Unable to export preview physics engine:', err)
     }
     // Клиент теперь вычисляет физику локально (включая отскоки), сервер только синхронизирует
     previewPhysicsEngine.isViewer = false
@@ -2064,8 +2065,9 @@ function _initializeFullscreenRenderer() {
       })
       previewFsRenderer.start()
     }
-  } catch {
-    /* ignore */
+  } catch (err) {
+    // Gracefully handle fullscreen preview errors
+    debugError('Error initializing fullscreen preview:', err)
   }
 }
 
@@ -2408,8 +2410,8 @@ function fillFsSessionInfo() {
 
     // Обновляем статус вьювера в полноэкранном режиме
     updateFullscreenViewerStatus()
-  } catch {
-    console.warn('Error in fillFsSessionInfo')
+  } catch (err) {
+    debugWarn('Error in fillFsSessionInfo:', err)
   }
 }
 

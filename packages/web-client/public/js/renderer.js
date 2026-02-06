@@ -150,7 +150,11 @@ if (typeof BallRenderer === 'undefined') {
           this._updatePhysics(clampedDeltaTime)
           this._renderFrame(currentTime)
           this.lastTime = currentTime
-        } catch {
+        } catch (err) {
+          // Catch render loop errors and stop gracefully to prevent infinite errors
+          if (typeof globalThis?.logger?.error === 'function') {
+            globalThis.logger.error('Render loop error:', err)
+          }
           this.stop()
           return
         }
@@ -217,10 +221,10 @@ if (typeof BallRenderer === 'undefined') {
         } else {
           this._renderFull(alpha)
         }
-      } catch (e) {
+      } catch (err) {
         // Log the error for debugging but don't stop the render loop
         if (typeof debugError === 'function') {
-          debugError('Error during render:', e)
+          debugError('Error during render:', err)
         }
       }
     }
@@ -280,8 +284,11 @@ if (typeof BallRenderer === 'undefined') {
           this.ctx.shadowBlur = 0
           this.ctx.shadowOffsetX = 0
           this.ctx.shadowOffsetY = 0
-        } catch {
-          // ignore
+        } catch (err) {
+          // Gracefully handle rendering errors for individual ball to continue animation
+          if (typeof globalThis?.logger?.warn === 'function') {
+            globalThis.logger.warn('Error rendering ball:', err)
+          }
         }
       }
     }
@@ -329,8 +336,11 @@ if (typeof BallRenderer === 'undefined') {
         this._cached.color = null
         this._cached.gradient = null
         this._cached.path = null
-      } catch {
-        // ignore
+      } catch (err) {
+        // Log canvas resize error but continue operation
+        if (typeof globalThis?.logger?.error === 'function') {
+          globalThis.logger.error('Canvas resize error:', err)
+        }
       }
     }
     /**
@@ -356,8 +366,11 @@ if (typeof BallRenderer === 'undefined') {
             // Тихо восстанавливаем контекст канваса
             return true
           }
-        } catch {
-          // ignore
+        } catch (err) {
+          // Log error recovering canvas context
+          if (typeof globalThis?.logger?.warn === 'function') {
+            globalThis.logger.warn('Failed to recover canvas context:', err)
+          }
         }
 
         return false
@@ -398,8 +411,11 @@ if (typeof BallRenderer === 'undefined') {
         this.fillRect(0, 0, this.canvas.width, this.canvas.height)
         // Рисуем шарик
         this.renderBall(state)
-      } catch {
-        // ignore
+      } catch (err) {
+        // Log frame draw error but continue
+        if (typeof globalThis?.logger?.warn === 'function') {
+          globalThis.logger.warn('Error drawing frame:', err)
+        }
       }
     }
     /**
