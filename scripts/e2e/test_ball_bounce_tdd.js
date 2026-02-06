@@ -16,7 +16,6 @@ const puppeteer = require('puppeteer')
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000'
 const HEADLESS = process.env.HEADLESS !== 'false'
-const TIMEOUT = 30000
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -134,7 +133,7 @@ async function run() {
     })
 
     if (bounceResult && bounceResult.side === 'right') {
-      console.log(`✅ PASSED: Ball reached right edge`)
+      console.log('✅ PASSED: Ball reached right edge')
       testsPassed++
 
       // After bouncing from right edge, vx should be negative (moving left)
@@ -148,7 +147,7 @@ async function run() {
         testsFailed++
       }
     } else {
-      console.error(`❌ FAILED: Did not receive right bounce event. Result:`, bounceResult)
+      console.error('❌ FAILED: Did not receive right bounce event. Result:', bounceResult)
       testsFailed += 2
     }
 
@@ -179,7 +178,7 @@ async function run() {
     })
 
     if (leftBounceResult && leftBounceResult.side === 'left') {
-      console.log(`✅ PASSED: Ball reached left edge`)
+      console.log('✅ PASSED: Ball reached left edge')
       testsPassed++
 
       // After bouncing from left edge, vx should be positive (moving right)
@@ -191,7 +190,7 @@ async function run() {
         testsFailed++
       }
     } else {
-      console.error(`❌ FAILED: Did not receive left bounce event within timeout`)
+      console.error('❌ FAILED: Did not receive left bounce event within timeout')
       testsFailed += 2
     }
 
@@ -245,7 +244,7 @@ async function run() {
       console.log(`✅ PASSED: Ball moving vertically (vx=${verticalState.vx}, vy=${verticalState.vy})`)
       testsPassed++
     } else {
-      console.error(`❌ FAILED: Ball not moving vertically properly`)
+      console.error('❌ FAILED: Ball not moving vertically properly')
       testsFailed++
     }
 
@@ -266,7 +265,7 @@ async function run() {
       console.log(`✅ PASSED: Vertical bounces working (${verticalBounces} bounces)`)
       testsPassed++
     } else {
-      console.error(`❌ FAILED: No vertical bounces detected`)
+      console.error('❌ FAILED: No vertical bounces detected')
       testsFailed++
     }
 

@@ -449,7 +449,7 @@ function setupExpressApp(sessionManager, apiCache) {
 
       console.log(`[EXPRESS] 📥 Controller update payload for ${sessionId}:`, JSON.stringify(updates))
       if (Object.keys(updates).length === 0) {
-        console.log(`[EXPRESS] ⚠️  Received EMPTY payload from controller! Headers:`, JSON.stringify(req.headers))
+        console.log('[EXPRESS] ⚠️  Received EMPTY payload from controller! Headers:', JSON.stringify(req.headers))
       }
 
       // Обновляем состояние шара

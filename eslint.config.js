@@ -285,7 +285,7 @@ module.exports = [
       }
     },
     rules: {
-      'no-await-in-loop': 'warn', // Allow in test scripts where it's useful for sequencing
+      'no-await-in-loop': 'off', // Disable in test scripts where sequential awaiting is often necessary
       'no-unused-vars': 'warn'
     }
   }

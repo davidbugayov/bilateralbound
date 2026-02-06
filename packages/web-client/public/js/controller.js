@@ -5,7 +5,7 @@
  */
 // Экспортируем функции для использования в тестах
 /* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession */
-/* global debugWarn, debugError */
+/* global debugWarn, debugError, RealtimeClient */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 globalThis.__current = {
   sessionId: null,
@@ -32,7 +32,7 @@ let wsClient
 let isInitialized = false // Флаг для предотвращения повторной инициализации
 let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
 let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
-let isInitializing = true; // Flag to prevent sending updates during initialization
+const isInitializing = true // Flag to prevent sending updates during initialization
 // --- State ---
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
@@ -287,13 +287,13 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initializeController() {
   const logger = createLogger('Controller')
   try {
-    if (globalThis.__current) globalThis.__current.isInitializing = true;
+    if (globalThis.__current) globalThis.__current.isInitializing = true
     logger.info('Начинаем инициализацию контроллера')
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
       debugError('ID сессии не найден в URL')
       showNotification('ID сессии не найден в URL', 'error')
-      if (globalThis.__current) globalThis.__current.isInitializing = false;
+      if (globalThis.__current) globalThis.__current.isInitializing = false
       return
     }
 
@@ -313,9 +313,9 @@ async function initializeController() {
     await initializeWebSocketClient(sessionId)
     logger.info('🔌 WebSocket клиент инициализирован')
 
-    if (globalThis.__current) globalThis.__current.isInitializing = false;
+    if (globalThis.__current) globalThis.__current.isInitializing = false
   } catch (error) {
-    if (globalThis.__current) globalThis.__current.isInitializing = false;
+    if (globalThis.__current) globalThis.__current.isInitializing = false
     debugError('Error initializing controller:', error)
     showNotification('Ошибка инициализации контроллера: ' + (error?.message || error), 'error')
   }
@@ -1602,19 +1602,19 @@ function setBallColor(color) {
   // If initializing, just save state but don't warn or send
   if (globalThis.__current?.isInitializing) {
     if (lastServerState) {
-        lastServerState.colorBall = color;
+        lastServerState.colorBall = color
     }
-    return;
+    return
   }
 
   // Проверяем подключение viewer'а перед изменением цвета
   if (!globalThis.__current?.viewerConnected) {
     // Silently update local state or preview if needed, but don't warn during normal operation if just disconnected momentarily
      if (lastServerState) {
-        lastServerState.colorBall = color;
+        lastServerState.colorBall = color
     }
     // Only warn if user explicitly interacted, but here we can just return
-    return;
+    return
   }
 
   safeSend(WS_MSG.controllerUpdate, { colorBall: color })
@@ -1623,17 +1623,17 @@ function setBallColor(color) {
 function setBallSize(size) {
   if (globalThis.__current?.isInitializing) {
      if (lastServerState) {
-        lastServerState.radius = size;
+        lastServerState.radius = size
     }
-    return;
+    return
   }
 
   // Проверяем подключение viewer'а перед изменением размера
   if (!globalThis.__current.viewerConnected) {
     if (lastServerState) {
-        lastServerState.radius = size;
+        lastServerState.radius = size
     }
-    return;
+    return
   }
 
   safeSend(WS_MSG.controllerUpdate, { radius: size })
@@ -1686,17 +1686,17 @@ function setBackgroundColor(color) {
 
   if (globalThis.__current?.isInitializing) {
      if (lastServerState) {
-        lastServerState.colorBg = color;
+        lastServerState.colorBg = color
     }
-    return;
+    return
   }
 
   // Проверяем подключение viewer'а перед изменением цвета фона
   if (!globalThis.__current?.viewerConnected) {
     if (lastServerState) {
-        lastServerState.colorBg = color;
+        lastServerState.colorBg = color
     }
-    return;
+    return
   }
 
   // Отправляем изменение на сервер

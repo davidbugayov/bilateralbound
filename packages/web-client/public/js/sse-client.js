@@ -3,6 +3,7 @@
  * Легковесная замена WebSocket для односторонней передачи данных сервер → клиент
  * Снижает нагрузку на сервер на 40-60% по сравнению с WebSocket
  */
+/* global EventSource */
 if (typeof SSEClient === 'undefined') {
   class SSEClient {
     constructor(sessionId, role, options = {}) {
@@ -249,11 +250,11 @@ if (typeof SSEClient === 'undefined') {
 
       // Маппинг типов команд на эндпоинты
       const endpoints = {
-        'controller_update': `/api/session/${this.sessionId}/controller/update`,
-        'viewer_update': `/api/session/${this.sessionId}/viewer/update`,
-        'viewer_audio_activated': `/api/session/${this.sessionId}/viewer/audio-activated`,
-        'controller_connected': `/api/session/${this.sessionId}/controller/connect`,
-        'viewer_connected': `/api/session/${this.sessionId}/viewer/connect`
+        controller_update: `/api/session/${this.sessionId}/controller/update`,
+        viewer_update: `/api/session/${this.sessionId}/viewer/update`,
+        viewer_audio_activated: `/api/session/${this.sessionId}/viewer/audio-activated`,
+        controller_connected: `/api/session/${this.sessionId}/controller/connect`,
+        viewer_connected: `/api/session/${this.sessionId}/viewer/connect`
       }
 
       const endpoint = endpoints[type]

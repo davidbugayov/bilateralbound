@@ -12,7 +12,7 @@ console.log(`✅ Node.js: ${process.version}`)
 try {
   require.resolve('puppeteer')
   console.log('✅ Puppeteer: installed')
-} catch (err) {
+} catch {
   console.log('❌ Puppeteer: NOT installed')
   console.log('   Run: npm install')
   process.exit(1)
@@ -28,7 +28,7 @@ async function checkServer() {
       console.log(`✅ Server: running on ${BASE_URL}`)
       return true
     }
-  } catch (err) {
+  } catch {
     console.log(`❌ Server: NOT running on ${BASE_URL}`)
     console.log('   Start: cd packages/server-core && PORT=3000 node server/index.js')
     process.exit(1)

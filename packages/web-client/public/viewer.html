@@ -22,7 +22,7 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.82-0449423" />
+    <meta name="version" content="2.39.84-ea9ab5d" />
     <meta name="theme-color" content="#020617" />
     <title>BilateralBound - EMDR терапия вьювер</title>
 
@@ -34,15 +34,15 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.82-0449423"
+      href="/favicon-viewer.svg?v=2.39.84-ea9ab5d"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.82-0449423"
+      href="/favicon-viewer.ico?v=2.39.84-ea9ab5d"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.82-0449423" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.82-0449423" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.84-ea9ab5d" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.84-ea9ab5d" />
 
     <!-- Open Graph for Viewer -->
     <meta property="og:type" content="website" />
@@ -67,15 +67,15 @@
     <link rel="preload" href="/css/viewer.css" as="style" />
 
     <!-- Preload critical JS -->
-    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.82-0449423" as="script" />
-    <link rel="preload" href="/js/common.js?v=2.39.82-0449423" as="script" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.82-0449423" as="script" />
-    <link rel="preload" href="/js/renderer.js?v=2.39.82-0449423" as="script" />
+    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.84-ea9ab5d" as="script" />
+    <link rel="preload" href="/js/common.js?v=2.39.84-ea9ab5d" as="script" />
+    <link rel="preload" href="/js/physics-engine.js?v=2.39.84-ea9ab5d" as="script" />
+    <link rel="preload" href="/js/renderer.js?v=2.39.84-ea9ab5d" as="script" />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.82-0449423" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.82-0449423" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.82-0449423" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.84-ea9ab5d" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.84-ea9ab5d" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.84-ea9ab5d" />
 
     <!-- Yandex.Metrika optimized counter -->
     <noscript
@@ -120,18 +120,18 @@
     </main>
 
     <!-- Debug Logger - Load first without defer -->
-    <script src="/js/core/debug-logger.js?v=2.39.82-0449423"></script>
+    <script src="/js/core/debug-logger.js?v=2.39.84-ea9ab5d"></script>
 
     <!-- Common utilities - Required for getSessionIdFromUrl -->
-    <script src="/js/common.js?v=2.39.82-0449423"></script>
+    <script src="/js/common.js?v=2.39.84-ea9ab5d"></script>
 
-    <script src="/js/audio/audio-manager.js?v=2.39.82-0449423" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.82-0449423" defer></script>
-    <script src="/js/renderer.js?v=2.39.82-0449423" defer></script>
-    <script src="/js/sse-client.js?v=2.39.82-0449423" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.82-0449423" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.82-0449423" defer></script>
-    <script src="/js/shared-components.js?v=2.39.82-0449423" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.84-ea9ab5d" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.84-ea9ab5d" defer></script>
+    <script src="/js/renderer.js?v=2.39.84-ea9ab5d" defer></script>
+    <script src="/js/sse-client.js?v=2.39.84-ea9ab5d" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.84-ea9ab5d" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.84-ea9ab5d" defer></script>
+    <script src="/js/shared-components.js?v=2.39.84-ea9ab5d" defer></script>
 
     <script>
       "use strict";
@@ -202,10 +202,28 @@
       function onStateUpdate(state) {
         if (physicsEngine && state) {
           debugLog('📥 [VIEWER] Received state update:', state);
+          debugLog('📥 [VIEWER] Current engine state before update:', {
+            paused: physicsEngine.state.paused,
+            dirX: physicsEngine.state.lastDirection.x,
+            dirY: physicsEngine.state.lastDirection.y,
+            speed: physicsEngine.ball.speed
+          });
+
           physicsEngine.applyCommand(state);
+
           if (typeof state.paused === 'boolean') {
             physicsEngine.setPaused(state.paused);
           }
+
+          debugLog('📥 [VIEWER] Engine state after update:', {
+            paused: physicsEngine.state.paused,
+            dirX: physicsEngine.state.lastDirection.x,
+            dirY: physicsEngine.state.lastDirection.y,
+            speed: physicsEngine.ball.speed,
+            vx: physicsEngine.ball.vx,
+            vy: physicsEngine.ball.vy
+          });
+
           // Log current colors after update
           debugLog('🎨 Current colors:', {
              ball: physicsEngine.colors.ball,

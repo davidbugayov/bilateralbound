@@ -3,6 +3,7 @@
  * Автоматически выбирает оптимальный транспорт в зависимости от настроек
  * По умолчанию использует SSE (меньше нагрузка на сервер)
  */
+/* global SSEClient, WebSocketClient */
 if (typeof RealtimeClient === 'undefined') {
   class RealtimeClient {
     constructor(sessionId, role, options = {}) {

@@ -18,7 +18,7 @@ async function run() {
   try {
     // Create session
     const { execSync } = require('child_process')
-    const cmd = `curl -s -X POST "http://localhost:3000/api/session"`
+    const cmd = 'curl -s -X POST "http://localhost:3000/api/session"'
     const output = execSync(cmd).toString()
     const data = JSON.parse(output)
     const sessionId = data.sessionId

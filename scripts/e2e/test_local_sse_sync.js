@@ -474,7 +474,7 @@ async function run() {
           }
 
           if (state && predicate(state)) return state
-        } catch (e) {
+        } catch {
           // Игнорируем transient ошибки при доступе к странице
         }
         await wait(pollMs)
@@ -496,7 +496,7 @@ async function run() {
             return true
           }
           return false
-        } catch (e) {
+        } catch {
           return false
         }
       }).catch(() => false)
@@ -561,21 +561,21 @@ async function run() {
       throw new Error('Could not read viewer positions for movement check')
     }
 
-    console.log(`   Viewer position 1 raw:`, JSON.stringify(pos1))
-    console.log(`   Viewer position 2 raw:`, JSON.stringify(pos2))
+    console.log('   Viewer position 1 raw:', JSON.stringify(pos1))
+    console.log('   Viewer position 2 raw:', JSON.stringify(pos2))
 
     // DEBUG: Check physicsEngine object structure
     const debugEng = await viewerPage.evaluate(() => {
-        const eng = globalThis.physicsEngine;
-        if (!eng) return 'physicsEngine is null';
+        const eng = globalThis.physicsEngine
+        if (!eng) return 'physicsEngine is null'
         return {
             hasGetState: typeof eng.getState === 'function',
             ballKeys: eng.ball ? Object.keys(eng.ball) : 'ball is missing',
             stateKeys: eng.state ? Object.keys(eng.state) : 'state is missing',
             isViewer: eng.isViewer
         }
-    });
-    console.log('   PhysicsEngine Debug:', JSON.stringify(debugEng));
+    })
+    console.log('   PhysicsEngine Debug:', JSON.stringify(debugEng))
 
     const moved = (typeof pos1.x === 'number' && typeof pos2.x === 'number' && (Math.abs(pos1.x - pos2.x) > 1 || Math.abs(pos1.y - pos2.y) > 1)) || (Math.abs((pos2.vx || 0)) > 0.5 || Math.abs((pos2.vy || 0)) > 0.5)
 

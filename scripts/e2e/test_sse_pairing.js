@@ -133,7 +133,7 @@ async function main() {
         globalThis.wsClient.on('state_update', evt => {
           try {
             globalThis.__sseEvents.push(evt)
-          } catch (e) {
+          } catch {
             // ignore
           }
         })

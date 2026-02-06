@@ -226,7 +226,7 @@ class SessionManager {
     if (session.physicsEngine) {
       // PhysicsEngine expects commands like { paused: true, speed: 50, ... }
       // It has its own internal validation, so passing updates is safe
-      console.log(`[SessionManager] 🎯 Applying command to PhysicsEngine:`, JSON.stringify(updates))
+      console.log('[SessionManager] 🎯 Applying command to PhysicsEngine:', JSON.stringify(updates))
       session.physicsEngine.applyCommand(updates)
 
       // Sync back immediately to ensure consistency
@@ -237,7 +237,7 @@ class SessionManager {
       // This solves the issue where getting state immediately might revert a property if engine didn't process it same way
       Object.assign(session.ballState, engineState, updates)
     } else {
-      console.log(`[SessionManager] ⚠️  No PhysicsEngine - updates applied only to ballState`)
+      console.log('[SessionManager] ⚠️  No PhysicsEngine - updates applied only to ballState')
     }
 
     // Обновляем timestamp
@@ -249,12 +249,11 @@ class SessionManager {
       // Если PhysicsEngine не обновил vx/vy (например из-за того что считал что стоит на паузе в этот тик), форсируем обновление
 
       // ВАЖНО: Если мы форсируем направление, мы должны быть уверены что скорость не 0
-      const activeSpeed = session.ballState.speed || session.physicsEngine.ball.speed || 30
       // Используем helper PhysicsEngine для расчета скорости
       if (session.physicsEngine && !session.ballState.paused) {
-         // Force update instruction? No, engine does it.
-         // Just ensure synchronization logic is logging correctly
-         console.log(`[SessionManager] Check velocities after dir update: vx=${session.physicsEngine.ball.vx}, vy=${session.physicsEngine.ball.vy}`)
+        // Force update instruction? No, engine does it.
+        // Just ensure synchronization logic is logging correctly
+        console.log(`[SessionManager] Check velocities after dir update: vx=${session.physicsEngine.ball.vx}, vy=${session.physicsEngine.ball.vy}`)
       }
     }
   }
