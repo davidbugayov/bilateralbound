@@ -4,7 +4,7 @@
  * Современная модульная архитектура с улучшенной обработкой ошибок
  */
 // Экспортируем функции для использования в тестах
-/* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession */
+/* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession, setSoundEnabled, setSoundType */
 /* global debugWarn, debugError, RealtimeClient */
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 globalThis.__current = {
@@ -1009,6 +1009,31 @@ function syncUIWithState(ballState) {
     _syncUIColors(ballState)
     _syncUIPause(ballState)
     _syncUIDirection(ballState)
+
+    // Синхронизируем параметры звука с UI
+    if (ballState.soundEnabled !== undefined) {
+      const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox')
+      if (soundEnabledCheckbox) {
+        soundEnabledCheckbox.checked = Boolean(ballState.soundEnabled)
+        // Обновляем состояние контрола типа звука
+        const soundTypeControl = document.getElementById('soundTypeControl')
+        if (soundTypeControl) {
+          if (ballState.soundEnabled) {
+            soundTypeControl.style.opacity = '1'
+            soundTypeControl.style.pointerEvents = 'auto'
+          } else {
+            soundTypeControl.style.opacity = '0.5'
+            soundTypeControl.style.pointerEvents = 'none'
+          }
+        }
+      }
+    }
+    if (ballState.soundType) {
+      const soundTypeSelect = document.getElementById('soundTypeSelect')
+      if (soundTypeSelect) {
+        soundTypeSelect.value = ballState.soundType
+      }
+    }
   } catch (err) {
     debugWarn('Error in syncUIWithState:', err)
   }
