@@ -81,6 +81,11 @@ class SSEManager {
           this._updateConnectionStatus(sessionId, clientInfo.role)
           this.logger.logSession(sessionId, `${clientInfo.role} disconnected via SSE`)
 
+          // CRITICAL: Уведомляем контроллер о disconnected viewer
+          if (clientInfo.role === 'viewer') {
+            this._notifyViewerDisconnected(sessionId)
+          }
+
           // Устанавливаем таймаут на отключение если осталась только одна роль
           const session = this.sessionRepository.findById(sessionId)
           if (session && (!session.controllerConnected || !session.viewerConnected)) {
@@ -116,6 +121,26 @@ class SSEManager {
       session.controllerConnected = hasController
     } else if (disconnectedRole === 'viewer') {
       session.viewerConnected = hasViewer
+    }
+  }
+
+  /**
+   * Уведомляет контроллер об отключении viewer
+   * @private
+   */
+  _notifyViewerDisconnected(sessionId) {
+    const controllers = this.getClients(sessionId, 'controller')
+    const viewerStatusEvent = {
+      type: 'viewer_status',
+      timestamp: Date.now(),
+      payload: {
+        connected: false,
+        viewerConnected: false,
+        screenSize: null
+      }
+    }
+    for (const controller of controllers) {
+      this.sendEvent(controller.res, 'viewer_status', viewerStatusEvent)
     }
   }
 

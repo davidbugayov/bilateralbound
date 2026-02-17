@@ -146,31 +146,31 @@ class SessionManager {
    * @returns {boolean} Успех обновления
    */
   updateBallState(sessionId, updates) {
-    console.log(`[SessionManager] 📥 Received updates for ${sessionId} from unknown source:`, JSON.stringify(updates))
+    // console.log(`[SessionManager] 📥 Received updates for ${sessionId} from unknown source:`, JSON.stringify(updates))
 
     const session = this.sessionRepository.findById(sessionId)
     if (!session) {
-      console.log(`[SessionManager] ❌ Session not found: ${sessionId}`)
+      // console.log(`[SessionManager] ❌ Session not found: ${sessionId}`)
       return false
     }
 
     if (!this._shouldUpdateState(session, updates)) {
-      console.log(`[SessionManager] ⏭️  Throttled update for session ${sessionId}`)
+      // console.log(`[SessionManager] ⏭️  Throttled update for session ${sessionId}`)
       return true // Возвращаем true, так как это не ошибка клиента, а защита сервера
     }
 
     const validatedUpdates = ValidationUtils.validateBallStateUpdates(updates)
-    console.log(`[SessionManager] 📝 Validated updates for ${sessionId}:`, JSON.stringify(validatedUpdates))
+    // console.log(`[SessionManager] 📝 Validated updates for ${sessionId}:`, JSON.stringify(validatedUpdates))
 
     // TEMPORARY BYPASS VALIDATION
     if (Object.keys(validatedUpdates).length === 0 && Object.keys(updates).length > 0) {
-       console.log('[SessionManager] ⚠️ VALIDATION FAILED but bypassing for debug. Applying raw updates:', JSON.stringify(updates))
+       // console.log('[SessionManager] ⚠️ VALIDATION FAILED but bypassing for debug. Applying raw updates:', JSON.stringify(updates))
        return this._applyValidatedUpdates(session, updates)
     }
 
     if (Object.keys(validatedUpdates).length === 0) {
       this.logger.logSession(sessionId, '[VALIDATION] No valid fields in update, ignoring')
-      console.log(`[SessionManager] ❌ No valid fields after validation for ${sessionId}`)
+      // console.log(`[SessionManager] ❌ No valid fields after validation for ${sessionId}`)
       return false
     }
 
@@ -200,10 +200,10 @@ class SessionManager {
    * @private
    */
   _applyValidatedUpdates(session, validatedUpdates) {
-    console.log(`[SessionManager] 🔧 _applyValidatedUpdates called for session ${session.id}`)
+    // console.log(`[SessionManager] 🔧 _applyValidatedUpdates called for session ${session.id}`)
     // this._handleReturnToCenter(session, validatedUpdates) // TODO: implement if needed
     this._applyPhysicsUpdates(session, validatedUpdates)
-    console.log(`[SessionManager] 📢 Calling broadcastState for session ${session.id}`)
+    // console.log(`[SessionManager] 📢 Calling broadcastState for session ${session.id}`)
     this._postUpdateActions(session, validatedUpdates)
     return true
   }
@@ -217,7 +217,7 @@ class SessionManager {
       session.ballState = {}
     }
 
-    console.log(`[SessionManager] 🔍 PhysicsEngine exists: ${!!session.physicsEngine}`)
+    // console.log(`[SessionManager] 🔍 PhysicsEngine exists: ${!!session.physicsEngine}`)
 
     // Применяем все валидные обновления к ballState
     Object.assign(session.ballState, updates)
@@ -227,7 +227,7 @@ class SessionManager {
     if (session.physicsEngine) {
       // PhysicsEngine expects commands like { paused: true, speed: 50, ... }
       // It has its own internal validation, so passing updates is safe
-      console.log(`[SessionManager] 🎯 Applying command to PhysicsEngine:`, JSON.stringify(updates))
+      // console.log(`[SessionManager] 🎯 Applying command to PhysicsEngine:`, JSON.stringify(updates))
       session.physicsEngine.applyCommand(updates)
 
       // Sync back immediately to ensure consistency
@@ -238,7 +238,7 @@ class SessionManager {
       // This solves the issue where getting state immediately might revert a property if engine didn't process it same way
       Object.assign(session.ballState, engineState, updates)
     } else {
-      console.log(`[SessionManager] ⚠️  No PhysicsEngine - updates applied only to ballState`)
+      // console.log(`[SessionManager] ⚠️  No PhysicsEngine - updates applied only to ballState`)
     }
 
     // Обновляем timestamp
@@ -254,7 +254,7 @@ class SessionManager {
       if (session.physicsEngine && !session.ballState.paused) {
         // Force update instruction? No, engine does it.
         // Just ensure synchronization logic is logging correctly
-        console.log(`[SessionManager] Check velocities after dir update: vx=${session.physicsEngine.ball.vx}, vy=${session.physicsEngine.ball.vy}`)
+        // console.log(`[SessionManager] Check velocities after dir update: vx=${session.physicsEngine.ball.vx}, vy=${session.physicsEngine.ball.vy}`)
       }
     }
   }
@@ -339,11 +339,11 @@ class SessionManager {
     // Устанавливаем флаги подключения
     if (role === 'viewer') {
       session.viewerConnected = true
-      console.log(`[SessionManager] ✅ Viewer connected via SSE to session ${sessionId}`)
+      // console.log(`[SessionManager] ✅ Viewer connected via SSE to session ${sessionId}`)
       this.logger.logSession(sessionId, 'Viewer connected via SSE')
     } else if (role === 'controller') {
       session.controllerConnected = true
-      console.log(`[SessionManager] ✅ Controller connected via SSE to session ${sessionId}`)
+      // console.log(`[SessionManager] ✅ Controller connected via SSE to session ${sessionId}`)
       this.logger.logSession(sessionId, 'Controller connected via SSE')
     }
 
@@ -375,7 +375,7 @@ class SessionManager {
       // This ensures controller UI updates immediately when viewer connects via SSE
       setImmediate(() => {
         const controllers = this.sseManager.getClients(sessionId, 'controller')
-        console.log(`[SessionManager] 📡 Found ${controllers.length} controller(s) to notify about viewer connection for session ${sessionId}`)
+        // console.log(`[SessionManager] 📡 Found ${controllers.length} controller(s) to notify about viewer connection for session ${sessionId}`)
         this.logger.logSession(sessionId, `Found ${controllers.length} controller(s) to notify about viewer connection`)
 
         for (const controllerClient of controllers) {
@@ -389,10 +389,10 @@ class SessionManager {
             }
           }
           const sent = this.sseManager.sendEvent(controllerClient.res, 'viewer_status', viewerConnectedEvent)
-          console.log(`[SessionManager] 📤 Sent viewer_status to controller for session ${sessionId}: ${sent}`)
+          // console.log(`[SessionManager] 📤 Sent viewer_status to controller for session ${sessionId}: ${sent}`)
           this.logger.logSession(sessionId, `Sent viewer_status to controller: ${sent}`)
         }
-        console.log(`[SessionManager] ✅ Completed sending viewer_status to controller(s) for session ${sessionId}`)
+        // console.log(`[SessionManager] ✅ Completed sending viewer_status to controller(s) for session ${sessionId}`)
         this.logger.logSession(sessionId, 'Sent viewer_status to controller(s) when viewer connected')
       })
     } else {

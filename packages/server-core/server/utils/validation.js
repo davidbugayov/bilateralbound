@@ -31,7 +31,7 @@ class ValidationUtils {
    * @private
    */
   static _validateSpeed(updates, validated) {
-    if (updates.speed !== undefined) console.log('[ValidationUtils] _validateSpeed input:', updates.speed)
+    if (updates.speed !== undefined) // console.log('[ValidationUtils] _validateSpeed input:', updates.speed)
     if (this._isValidSpeed(updates.speed)) {
       validated.speed = updates.speed
     }
@@ -52,7 +52,7 @@ class ValidationUtils {
    * @private
    */
   static _validatePause(updates, validated) {
-    if (updates.paused !== undefined) console.log('[ValidationUtils] _validatePause input:', updates.paused)
+    if (updates.paused !== undefined) // console.log('[ValidationUtils] _validatePause input:', updates.paused)
     if (typeof updates.paused === 'boolean') {
       validated.paused = updates.paused
     }
@@ -63,7 +63,7 @@ class ValidationUtils {
    * @private
    */
   static _validateDirection(updates, validated) {
-    if (updates.dirX !== undefined || updates.dirY !== undefined) console.log('[ValidationUtils] _validateDirection input:', updates.dirX, updates.dirY)
+    if (updates.dirX !== undefined || updates.dirY !== undefined) // console.log('[ValidationUtils] _validateDirection input:', updates.dirX, updates.dirY)
 
     if (this._isValidDirectionValue(updates.dirX)) {
       validated.dirX = updates.dirX
@@ -78,20 +78,20 @@ class ValidationUtils {
    * @private
    */
   static _validateColors(updates, validated) {
-    console.log('[ValidationUtils] _validateColors input:', JSON.stringify({ colorBall: updates.colorBall, colorBg: updates.colorBg }))
+    // console.log('[ValidationUtils] _validateColors input:', JSON.stringify({ colorBall: updates.colorBall, colorBg: updates.colorBg }))
 
     if (this._isValidColor(updates.colorBall)) {
       validated.colorBall = updates.colorBall
-      console.log('[ValidationUtils] colorBall is valid:', updates.colorBall)
+      // console.log('[ValidationUtils] colorBall is valid:', updates.colorBall)
     } else if (updates.colorBall !== undefined) {
-      console.log('[ValidationUtils] colorBall is INVALID:', updates.colorBall, typeof updates.colorBall)
+      // console.log('[ValidationUtils] colorBall is INVALID:', updates.colorBall, typeof updates.colorBall)
     }
 
     if (this._isValidColor(updates.colorBg)) {
       validated.colorBg = updates.colorBg
-      console.log('[ValidationUtils] colorBg is valid:', updates.colorBg)
+      // console.log('[ValidationUtils] colorBg is valid:', updates.colorBg)
     } else if (updates.colorBg !== undefined) {
-      console.log('[ValidationUtils] colorBg is INVALID:', updates.colorBg, typeof updates.colorBg)
+      // console.log('[ValidationUtils] colorBg is INVALID:', updates.colorBg, typeof updates.colorBg)
     }
   }
 
