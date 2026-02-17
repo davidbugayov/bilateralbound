@@ -362,7 +362,6 @@ function setupFullscreenListeners() {
   // Регистрируем обработчик открытия независимо
   if (openFsBtn) {
     openFsBtn.addEventListener('click', () => {
-      // console.log('🖱️ Open fullscreen button clicked')
       openPreviewFullscreen()
     })
   }
@@ -390,7 +389,6 @@ function handleFullscreenKeydown(e) {
   if (key === 'f') {
     e.preventDefault()
     e.stopPropagation()
-    // console.log('🔑 F key pressed, isPreviewFullscreen:', isPreviewFullscreen)
     if (isPreviewFullscreen) {
       closePreviewFullscreen()
     } else {
@@ -1079,7 +1077,6 @@ function syncUIWithState(ballState) {
 function _initializeSpeedControl() {
   const container = document.getElementById('speedControl')
   if (!container) {
-    // console.warn('speedControl container not found')
     return
   }
   components.speed = sharedComponents.createSpeedControl(container, {
@@ -1092,7 +1089,6 @@ function _initializeSpeedControl() {
 function _initializeBallColorControl() {
   const container = document.getElementById('ballColorControl')
   if (!container) {
-    // console.warn('ballColorControl container not found')
     return
   }
   components.ballColor = sharedComponents.createColorControl(container, {
@@ -1121,7 +1117,6 @@ function _initializeBallColorControl() {
 function _initializeBgColorControl() {
   const container = document.getElementById('bgColorControl')
   if (!container) {
-    // console.warn('bgColorControl container not found')
     return
   }
   components.bgColor = sharedComponents.createColorControl(container, {
@@ -1150,7 +1145,6 @@ function _initializeBgColorControl() {
 function _initializeSizeControl() {
   const container = document.getElementById('sizeControl')
   if (!container) {
-    // console.warn('sizeControl container not found')
     return
   }
   components.size = sharedComponents.createSizeControl(container, {
@@ -1169,7 +1163,6 @@ function _initializeSoundControls() {
   const soundTypeControl = document.getElementById('soundTypeControl')
 
   if (!soundEnabledCheckbox || !soundTypeSelect || !soundTypeControl) {
-    // console.warn('Sound controls not found in DOM - skipping sound initialization')
     return
   }
 
@@ -1256,15 +1249,12 @@ function setControlsEnabled(enabled) {
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 function safeSend(type, payload) {
   // Функция разбита для снижения когнитивной сложности
-  // console.log(`[Controller] safeSend type="${type}", payload=`, JSON.stringify(payload))
   try {
     if (typeof wsClient?.send === 'function') {
       wsClient.send(type, payload)
     } else {
-      // console.warn('[Controller] wsClient.send is not available')
     }
   } catch (e) {
-    // console.warn('Failed to send Realtime message:', e.message)
   }
 }
 
@@ -1363,7 +1353,6 @@ async function initializePreview() {
       previewPhysicsEngine.setVelocity(0, 0)
     }
   } catch (error) {
-    // console.warn('Error initializing preview:', error)
   }
 }
 
@@ -1580,7 +1569,6 @@ function getDirectionVector(directionMode) {
       return { dirX: Math.cos(angle), dirY: Math.sin(angle) }
     }
     default:
-      // console.warn('Неизвестный режим направления:', directionMode)
       return null
   }
 }
@@ -1721,7 +1709,6 @@ function setBallSize(size) {
 function setSoundEnabled(enabled) {
   // Проверяем подключение viewer'а перед изменением состояния звука
   if (!globalThis.__current?.viewerConnected) {
-    // console.warn('Cannot change sound enabled: viewer is not connected')
     // Не показываем уведомление при старте, только при попытке изменения
     return
   }
@@ -1738,7 +1725,6 @@ function setSoundEnabled(enabled) {
 function setSoundType(soundType) {
   // Проверяем подключение viewer'а перед изменением типа звука
   if (!globalThis.__current?.viewerConnected) {
-    // console.warn('Cannot change sound type: viewer is not connected')
     // Не показываем уведомление при старте, только при попытке изменения
     return
   }
@@ -1819,7 +1805,6 @@ function getDirectionInfo(mode) {
     case 'random':
       return { text: 'Случайное', icon: '🎲' }
     default:
-      // console.warn(`Неизвестный режим направления: ${mode}`)
       return { text: 'Неизвестное направление', icon: '❓' }
   }
 }
@@ -1887,7 +1872,6 @@ function updatePlayPauseButton() {
 function _setPlayPauseState(shouldPlay) {
   // Если viewer'а нет, просто предупреждаем, но не блокируем
   if (!globalThis.__current?.viewerConnected) {
-    // console.warn(`Attempting to ${shouldPlay ? 'start' : 'pause'} session without confirmed viewer connection`)
     if (shouldPlay) {
        showNotification('Внимание: клиент не подключен, анимация может не работать', 'warning')
     }
@@ -2153,10 +2137,8 @@ function _initializeFullscreenRenderer() {
  * Рефакторинг для снижения когнитивной сложности.
  */
 function openPreviewFullscreen() {
-  // console.log('🖥️ Opening fullscreen preview...')
   const overlay = document.getElementById('previewOverlay')
   if (!overlay || !previewFsCanvas) {
-    // console.warn('⚠️ Cannot open fullscreen: overlay or canvas missing', { overlay: !!overlay, canvas: !!previewFsCanvas })
     return
   }
 
@@ -2166,7 +2148,6 @@ function openPreviewFullscreen() {
 
   overlay.style.display = 'block'
   isPreviewFullscreen = true
-  // console.log('✅ Fullscreen preview opened')
 
   // Добавляем класс к body для скрытия кнопки "На главную"
   document.body.classList.add('fullscreen-active')
@@ -2189,7 +2170,6 @@ function openPreviewFullscreen() {
 
 function closePreviewFullscreen() {
   // Функция разбита для снижения когнитивной сложности
-  // console.log('🚪 Closing fullscreen preview...')
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
   // Убираем хэш из URL без изменения истории
@@ -2199,7 +2179,6 @@ function closePreviewFullscreen() {
   history.replaceState(null, '', baseUrl)
   overlay.style.display = 'none'
   isPreviewFullscreen = false
-  // console.log('✅ Fullscreen preview closed')
 
   // Убираем класс от body
   document.body.classList.remove('fullscreen-active')
