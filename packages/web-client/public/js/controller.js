@@ -291,7 +291,7 @@ async function initializeController() {
   const logger = createLogger('Controller')
   try {
     if (globalThis.__current) globalThis.__current.isInitializing = true
-    logger.info('Начинаем инициализацию контроллера')
+    // logger.info('Начинаем инициализацию контроллера')
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
       debugError('ID сессии не найден в URL')
@@ -301,7 +301,7 @@ async function initializeController() {
     }
 
     globalThis.__current.sessionId = sessionId
-    logger.info(`Работаем с сессией: ${sessionId}`)
+    // logger.info(`Работаем с сессией: ${sessionId}`)
 
     await registerControllerOnServer(sessionId, logger)
     await initializeDOMElements(sessionId)
@@ -314,7 +314,7 @@ async function initializeController() {
 
     // Подключаемся к Realtime сразу
     await initializeWebSocketClient(sessionId)
-    logger.info('🔌 WebSocket клиент инициализирован')
+    // logger.info('🔌 WebSocket клиент инициализирован')
 
     if (globalThis.__current) globalThis.__current.isInitializing = false
   } catch (error) {
@@ -333,12 +333,12 @@ async function registerControllerOnServer(sessionId, logger) {
       body: JSON.stringify({})
     })
     if (connectResponse.ok) {
-      logger.info('Контроллер зарегистрирован на сервере')
+      // logger.info('Контроллер зарегистрирован на сервере')
     } else {
-      logger.warning('Не удалось зарегистрировать контроллер на сервере')
+      // logger.warning('Не удалось зарегистрировать контроллер на сервере')
     }
   } catch (error) {
-    logger.warning('Ошибка регистрации контроллера:', error)
+    // logger.warning('Ошибка регистрации контроллера:', error)
   }
 }
 
@@ -421,10 +421,10 @@ async function completeInitialization() {
 
   isInitialized = true
   const logger = createLogger('Controller')
-  logger.success('✅ Вьювер подключен! Завершаем инициализацию...')
+  // logger.success('✅ Вьювер подключен! Завершаем инициализацию...')
   try {
     // Раньше здесь был initializePreview, теперь он вызывается сразу
-    logger.success('🎉 Контроллер полностью готов к работе!')
+    // logger.success('🎉 Контроллер полностью готов к работе!')
   } catch (error) {
     await handleInitializationError(error, logger)
   }
@@ -496,7 +496,7 @@ async function initializeWebSocketClient(sessionId) {
   })
   globalThis.wsClient = wsClient
 
-  logger.info(`🔌 Используется транспорт: ${wsClient.getTransportType().toUpperCase()}`)
+  // logger.info(`🔌 Используется транспорт: ${wsClient.getTransportType().toUpperCase()}`)
 
   // Настраиваем обработчики событий
   setupWebSocketEventHandlers(wsClient, logger, sessionId)
@@ -515,26 +515,37 @@ async function initializeWebSocketClient(sessionId) {
       setTimeout(() => reject(new Error('Realtime connection timeout')), 15000)
     )
   ])
-  logger.success('RealtimeClient успешно инициализирован')
+  // logger.success('RealtimeClient успешно инициализирован')
 }
 /**
  * Настройка обработчиков RealtimeClient событий
  */
 function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
-  // Функция разбита для снижения когнитивной сложности
-
+  // Сохраняем состояние для восстановления после reconnect
+  let lastPlayingState = false
+  
   wsClient.on('open', (event) => {
-    logger.success('Realtime соединение установлено')
     updateConnectionStatus(true)
 
-    // CRITICAL FIX: Upon reconnection, request full state sync to restore ball position
+    // При reconnect запрашиваем синхронизацию и восстанавливаем состояние
     if (event?.isReconnection) {
-      logger.warning('Reconnected - requesting state sync to restore ball position')
       safeSend('request_state_sync', {
         timestamp: Date.now(),
         sessionId: sessionId,
         role: 'controller'
       })
+      
+      // Восстанавливаем воспроизведение если было активно
+      if (lastPlayingState && globalThis.__current?.viewerConnected) {
+        setTimeout(() => {
+          if (previewPhysicsEngine) {
+            previewPhysicsEngine.setPaused(false)
+          }
+          isPlaying = true
+          globalThis.__current.isPlaying = true
+          updatePlayPauseButton()
+        }, 500)
+      }
     }
 
     // Уведомляем сервер о подключении контроллера
@@ -545,25 +556,20 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     })
   })
   wsClient.on('close', event => {
-    logger.warning(`Realtime соединение закрыто (код: ${event.code || 'N/A'})`)
     updateConnectionStatus(false)
+    
+    // Сохраняем состояние перед отключением
+    lastPlayingState = isPlaying
 
-    // CRITICAL FIX: Code 1006 is abnormal closure - forcibly reset ball position
-    // This prevents the ball from staying in wrong position after disconnect
+    // Code 1006 - abnormal closure
     if (event.code === 1006) {
-      logger.error('⚠️ ABNORMAL DISCONNECTION (code 1006) - resetting ball state')
-
-      // Force pause and center ball in preview
       if (previewPhysicsEngine) {
         previewPhysicsEngine.setPaused(true)
         const centerX = previewPhysicsEngine.centerX || (globalThis.__previewCanvas?.width || 500) / 2
         const centerY = previewPhysicsEngine.centerY || (globalThis.__previewCanvas?.height || 375) / 2
         previewPhysicsEngine.setPosition(centerX, centerY)
         previewPhysicsEngine.setVelocity(0, 0)
-        logger.info(`✅ Ball reset to center: (${centerX}, ${centerY})`)
       }
-
-      // Stop playback
       isPlaying = false
       globalThis.__current.viewerConnected = false
       updatePlayPauseButton()
@@ -571,28 +577,10 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
     updateViewerStatusUI()
   })
-  wsClient.on('error', error => {
-    // Не показываем ошибку connection_closed если это первая попытка подключения
-    // или если вьювер еще не подключался (это нормально)
-    const isConnectionClosed = error?.type === 'connection_closed'
-    const isFirstAttempt = error?.isFirstAttempt === true
-    const viewerNeverConnected = !globalThis.__current?.viewerConnected
-
-    if (isConnectionClosed && (isFirstAttempt || viewerNeverConnected)) {
-      // Это нормальная ситуация - не логируем как ошибку
-      logger.info(`Realtime: ${error?.type} (${isFirstAttempt ? 'first attempt' : 'viewer not connected yet'})`)
-      return
-    }
-
-    // Критическая ошибка - показываем
-    logger.error(`Realtime ошибка: ${error?.type}`, error)
-
-    if (error?.type === 'connection') {
-      showNotification('Потеряно соединение с сервером', 'error')
-    }
+  wsClient.on('error', () => {
+    // Ошибки соединения обрабатываются тихо - reconnect автоматический
   })
   wsClient.on(WS_MSG.viewerStatus, data => {
-    logger.info('Получен статус viewer', data)
     const wasConnected = globalThis.__current.viewerConnected
     globalThis.__current.viewerConnected = data.connected
 
@@ -607,7 +595,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 
     // Если вьювер отключился - сбрасываем состояние и останавливаем превью
     if (wasConnected && !data.connected) {
-      logger.info('Viewer отключился, сбрасываем состояние')
+      // logger.info('Viewer отключился, сбрасываем состояние')
 
       // Сбрасываем ВСЕ состояние контроллера - забываем что viewer когда-то подключался
 
@@ -663,7 +651,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
   })
   wsClient.on(WS_MSG.initialState, state => {
-    logger.info('Получено начальное состояние', state)
+    // logger.info('Получено начальное состояние', state)
     lastServerState = state // Кэшируем состояние
 
     // CRITICAL: Update viewer connection status from initial_state
@@ -933,16 +921,12 @@ function createLogger(moduleName) {
     info: () => {
       // Параметры не используются
     },
-    success: () => {
-      // Неиспользуемая переменная timestamp удалена
-    },
-    warning: (message, data) => {
-      const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
-      console.warn(`[${timestamp}s] ⚠️ ${moduleName}: ${message}`, data || '')
-    },
+    success: () => {},
+    warning: () => {},
     error: (message, data) => {
-      const timestamp = ((performance.now() - startTime) / 1000).toFixed(2)
-      console.error(`[${timestamp}s] ❌ ${moduleName}: ${message}`, data || '')
+      // Только критические ошибки в production
+      if (data?.type === 'connection_closed' || message.includes('соединение')) return
+      console.error(`[${moduleName}] ${message}`, data || '')
     }
   }
 }
@@ -1095,7 +1079,7 @@ function syncUIWithState(ballState) {
 function _initializeSpeedControl() {
   const container = document.getElementById('speedControl')
   if (!container) {
-    console.warn('speedControl container not found')
+    // console.warn('speedControl container not found')
     return
   }
   components.speed = sharedComponents.createSpeedControl(container, {
@@ -1108,7 +1092,7 @@ function _initializeSpeedControl() {
 function _initializeBallColorControl() {
   const container = document.getElementById('ballColorControl')
   if (!container) {
-    console.warn('ballColorControl container not found')
+    // console.warn('ballColorControl container not found')
     return
   }
   components.ballColor = sharedComponents.createColorControl(container, {
@@ -1137,7 +1121,7 @@ function _initializeBallColorControl() {
 function _initializeBgColorControl() {
   const container = document.getElementById('bgColorControl')
   if (!container) {
-    console.warn('bgColorControl container not found')
+    // console.warn('bgColorControl container not found')
     return
   }
   components.bgColor = sharedComponents.createColorControl(container, {
@@ -1166,7 +1150,7 @@ function _initializeBgColorControl() {
 function _initializeSizeControl() {
   const container = document.getElementById('sizeControl')
   if (!container) {
-    console.warn('sizeControl container not found')
+    // console.warn('sizeControl container not found')
     return
   }
   components.size = sharedComponents.createSizeControl(container, {
@@ -1185,7 +1169,7 @@ function _initializeSoundControls() {
   const soundTypeControl = document.getElementById('soundTypeControl')
 
   if (!soundEnabledCheckbox || !soundTypeSelect || !soundTypeControl) {
-    console.warn('Sound controls not found in DOM - skipping sound initialization')
+    // console.warn('Sound controls not found in DOM - skipping sound initialization')
     return
   }
 
@@ -1277,10 +1261,10 @@ function safeSend(type, payload) {
     if (typeof wsClient?.send === 'function') {
       wsClient.send(type, payload)
     } else {
-      console.warn('[Controller] wsClient.send is not available')
+      // console.warn('[Controller] wsClient.send is not available')
     }
   } catch (e) {
-    console.warn('Failed to send Realtime message:', e.message)
+    // console.warn('Failed to send Realtime message:', e.message)
   }
 }
 
@@ -1379,7 +1363,7 @@ async function initializePreview() {
       previewPhysicsEngine.setVelocity(0, 0)
     }
   } catch (error) {
-    console.warn('Error initializing preview:', error)
+    // console.warn('Error initializing preview:', error)
   }
 }
 
@@ -1596,7 +1580,7 @@ function getDirectionVector(directionMode) {
       return { dirX: Math.cos(angle), dirY: Math.sin(angle) }
     }
     default:
-      console.warn('Неизвестный режим направления:', directionMode)
+      // console.warn('Неизвестный режим направления:', directionMode)
       return null
   }
 }
@@ -1737,7 +1721,7 @@ function setBallSize(size) {
 function setSoundEnabled(enabled) {
   // Проверяем подключение viewer'а перед изменением состояния звука
   if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot change sound enabled: viewer is not connected')
+    // console.warn('Cannot change sound enabled: viewer is not connected')
     // Не показываем уведомление при старте, только при попытке изменения
     return
   }
@@ -1754,7 +1738,7 @@ function setSoundEnabled(enabled) {
 function setSoundType(soundType) {
   // Проверяем подключение viewer'а перед изменением типа звука
   if (!globalThis.__current?.viewerConnected) {
-    console.warn('Cannot change sound type: viewer is not connected')
+    // console.warn('Cannot change sound type: viewer is not connected')
     // Не показываем уведомление при старте, только при попытке изменения
     return
   }
@@ -1835,7 +1819,7 @@ function getDirectionInfo(mode) {
     case 'random':
       return { text: 'Случайное', icon: '🎲' }
     default:
-      console.warn(`Неизвестный режим направления: ${mode}`)
+      // console.warn(`Неизвестный режим направления: ${mode}`)
       return { text: 'Неизвестное направление', icon: '❓' }
   }
 }
@@ -1903,7 +1887,7 @@ function updatePlayPauseButton() {
 function _setPlayPauseState(shouldPlay) {
   // Если viewer'а нет, просто предупреждаем, но не блокируем
   if (!globalThis.__current?.viewerConnected) {
-    console.warn(`Attempting to ${shouldPlay ? 'start' : 'pause'} session without confirmed viewer connection`)
+    // console.warn(`Attempting to ${shouldPlay ? 'start' : 'pause'} session without confirmed viewer connection`)
     if (shouldPlay) {
        showNotification('Внимание: клиент не подключен, анимация может не работать', 'warning')
     }
@@ -2172,7 +2156,7 @@ function openPreviewFullscreen() {
   // console.log('🖥️ Opening fullscreen preview...')
   const overlay = document.getElementById('previewOverlay')
   if (!overlay || !previewFsCanvas) {
-    console.warn('⚠️ Cannot open fullscreen: overlay or canvas missing', { overlay: !!overlay, canvas: !!previewFsCanvas })
+    // console.warn('⚠️ Cannot open fullscreen: overlay or canvas missing', { overlay: !!overlay, canvas: !!previewFsCanvas })
     return
   }
 
