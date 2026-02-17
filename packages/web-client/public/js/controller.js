@@ -494,6 +494,7 @@ async function initializeWebSocketClient(sessionId) {
     heartbeatInterval: 25000,
     coalesceDelayMs: 8 // Уменьшаем задержку для большей плавности
   })
+  globalThis.wsClient = wsClient
 
   logger.info(`🔌 Используется транспорт: ${wsClient.getTransportType().toUpperCase()}`)
 
@@ -701,10 +702,15 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       }
 
       // DYNAMIC MODE SWITCHING:
-      // If viewer is connected -> Follow viewer (clientSimulation: false)
-      // If viewer NOT connected -> Run local physics (clientSimulation: true)
+      // If server runs physics (clientSimulationOnly: false) AND viewer connected -> Follow viewer position
+      // Otherwise -> Run local physics (clientSimulation: true)
+      // 
+      // CRITICAL FIX: When server has clientSimulationOnly=true, the server does NOT send x/y positions,
+      // so preview must ALWAYS run local physics regardless of viewer connection status.
       if (previewPhysicsEngine) {
-        previewPhysicsEngine.options.clientSimulation = !state.viewerConnected
+        const serverSendsPositions = state.clientSimulationOnly === false
+        const shouldFollowViewer = serverSendsPositions && state.viewerConnected
+        previewPhysicsEngine.options.clientSimulation = !shouldFollowViewer
       }
     }
 

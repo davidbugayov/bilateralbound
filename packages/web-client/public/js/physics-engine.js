@@ -1022,11 +1022,6 @@ if (typeof PhysicsEngine === 'undefined') {
 
       command = validatedCommand
 
-      // DIAGNOSTIC LOG (TEMPORARY)
-      if (typeof console !== 'undefined' && this.options.clientSimulation) {
-         console.log('[Physics] applyCommand:', JSON.stringify(command));
-      }
-
       // ИСПРАВЛЕНИЕ: сначала обрабатываем общие команды (включая paused),
       // чтобы специфичные обработчики могли корректно реагировать на состояние паузы
       this._handleCommonCommands(command)
@@ -1212,10 +1207,6 @@ if (typeof PhysicsEngine === 'undefined') {
           const pixelsPerSecond = speedPercent * this.options.maxSpeed
           this.ball.vx = newDx * pixelsPerSecond
           this.ball.vy = newDy * pixelsPerSecond
-
-          if (typeof console !== 'undefined') {
-             console.log(`[Physics] Updated VX/VY in DirectionUpdate: vx=${this.ball.vx}, vy=${this.ball.vy}, dir=(${newDx},${newDy}), speed=${this.ball.speed}`);
-          }
         }
 
         // Обновляем скорость на основе нового направления
@@ -1303,7 +1294,15 @@ if (typeof PhysicsEngine === 'undefined') {
 
         // ИСПРАВЛЕНИЕ: для viewer при снятии паузы восстанавливаем скорость на основе направления
         if (this.isViewer && wasPaused && command.paused === false) {
-          // Если направление не задано (0,0), устанавлием дефолтное горизонтальное
+          // CRITICAL FIX: Сначала применяем direction из команды, ПОТОМ обновляем скорость
+          // Иначе _updatePredictionBase() использует старое направление (0,0)
+          if (command.dirX !== undefined || command.dirY !== undefined) {
+            const newDx = command.dirX ?? this.state.lastDirection.x ?? 1
+            const newDy = command.dirY ?? this.state.lastDirection.y ?? 0
+            this.state.lastDirection.x = newDx
+            this.state.lastDirection.y = newDy
+          }
+          // Если направление не задано (0,0), устанавливаем дефолтное горизонтальное
           // Это критично для старта движения в локальном режиме (clientSimulation)
           if (
             Math.abs(this.state.lastDirection.x || 0) < 1e-6 &&
