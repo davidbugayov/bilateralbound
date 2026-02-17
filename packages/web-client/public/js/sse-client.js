@@ -396,17 +396,15 @@ if (typeof SSEClient === 'undefined') {
     }
 
     /**
-     * Логирование
+     * Логирование (отключено в production)
      */
     log(message, level = 'info') {
-      const prefix = `[SSEClient ${this.role}]`
+      // Логирование отключено для production
       if (level === 'error') {
+        const prefix = `[SSEClient ${this.role}]`
         console.error(prefix, message)
-      } else if (level === 'warn') {
-        console.warn(prefix, message)
-      } else {
-        console.log(prefix, message)
       }
+      // info и warn логи отключены
     }
   }
 

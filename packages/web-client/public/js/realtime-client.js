@@ -25,7 +25,7 @@ if (typeof RealtimeClient === 'undefined') {
         throw new Error('No realtime transport available (SSEClient or WebSocketClient)')
       }
 
-      console.log(`[RealtimeClient] Using ${this.transportType.toUpperCase()} transport for ${role}`)
+      // console.log(`[RealtimeClient] Using ${this.transportType.toUpperCase()} transport for ${role}`)
     }
 
     /**

@@ -281,9 +281,10 @@ if (typeof PhysicsEngine === 'undefined') {
         this.state.lastVx = this.ball.vx
         this.state.lastVy = this.ball.vy
 
-        if (typeof console !== 'undefined') {
-            console.log(`[Physics] Unpaused & Restored Velocity: vx=${this.ball.vx}, vy=${this.ball.vy}, dir=(${this.state.lastDirection.x},${this.state.lastDirection.y})`);
-        }
+        // Debug log disabled in production
+        // if (typeof console !== 'undefined') {
+        //     console.log(`[Physics] Unpaused & Restored Velocity: vx=${this.ball.vx}, vy=${this.ball.vy}, dir=(${this.state.lastDirection.x},${this.state.lastDirection.y})`);
+        // }
     }
 
     /**

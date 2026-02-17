@@ -7,7 +7,7 @@
 /* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession, setSoundEnabled, setSoundType */
 /* global debugWarn, debugError, RealtimeClient */
 if (typeof globalThis.BBDebug === 'undefined') {
-  globalThis.BBDebug = { isEnabled: false, log: console.log }
+  globalThis.BBDebug = { isEnabled: false, log: () => {} }
 }
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 globalThis.__current = {
@@ -362,7 +362,7 @@ function setupFullscreenListeners() {
   // Регистрируем обработчик открытия независимо
   if (openFsBtn) {
     openFsBtn.addEventListener('click', () => {
-      console.log('🖱️ Open fullscreen button clicked')
+      // console.log('🖱️ Open fullscreen button clicked')
       openPreviewFullscreen()
     })
   }
@@ -390,7 +390,7 @@ function handleFullscreenKeydown(e) {
   if (key === 'f') {
     e.preventDefault()
     e.stopPropagation()
-    console.log('🔑 F key pressed, isPreviewFullscreen:', isPreviewFullscreen)
+    // console.log('🔑 F key pressed, isPreviewFullscreen:', isPreviewFullscreen)
     if (isPreviewFullscreen) {
       closePreviewFullscreen()
     } else {
@@ -1272,7 +1272,7 @@ function setControlsEnabled(enabled) {
 // ===== ФУНКЦИИ УПРАВЛЕНИЯ =====
 function safeSend(type, payload) {
   // Функция разбита для снижения когнитивной сложности
-  console.log(`[Controller] safeSend type="${type}", payload=`, JSON.stringify(payload))
+  // console.log(`[Controller] safeSend type="${type}", payload=`, JSON.stringify(payload))
   try {
     if (typeof wsClient?.send === 'function') {
       wsClient.send(type, payload)
@@ -2169,7 +2169,7 @@ function _initializeFullscreenRenderer() {
  * Рефакторинг для снижения когнитивной сложности.
  */
 function openPreviewFullscreen() {
-  console.log('🖥️ Opening fullscreen preview...')
+  // console.log('🖥️ Opening fullscreen preview...')
   const overlay = document.getElementById('previewOverlay')
   if (!overlay || !previewFsCanvas) {
     console.warn('⚠️ Cannot open fullscreen: overlay or canvas missing', { overlay: !!overlay, canvas: !!previewFsCanvas })
@@ -2182,7 +2182,7 @@ function openPreviewFullscreen() {
 
   overlay.style.display = 'block'
   isPreviewFullscreen = true
-  console.log('✅ Fullscreen preview opened')
+  // console.log('✅ Fullscreen preview opened')
 
   // Добавляем класс к body для скрытия кнопки "На главную"
   document.body.classList.add('fullscreen-active')
@@ -2205,7 +2205,7 @@ function openPreviewFullscreen() {
 
 function closePreviewFullscreen() {
   // Функция разбита для снижения когнитивной сложности
-  console.log('🚪 Closing fullscreen preview...')
+  // console.log('🚪 Closing fullscreen preview...')
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
   // Убираем хэш из URL без изменения истории
@@ -2215,7 +2215,7 @@ function closePreviewFullscreen() {
   history.replaceState(null, '', baseUrl)
   overlay.style.display = 'none'
   isPreviewFullscreen = false
-  console.log('✅ Fullscreen preview closed')
+  // console.log('✅ Fullscreen preview closed')
 
   // Убираем класс от body
   document.body.classList.remove('fullscreen-active')
