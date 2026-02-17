@@ -1170,6 +1170,18 @@ if (typeof PhysicsEngine === 'undefined') {
 
     _handleViewerDirectionUpdate(command) {
       if (command.dirX !== undefined || command.dirY !== undefined) {
+        // В режиме clientSimulation мяч сам управляет отскоками.
+        // Принимаем direction из команды только когда на паузе или мяч в центре.
+        // Иначе игнорируем — локальная физика уже обработала отскоки.
+        if (this.options.clientSimulation && !this.state.paused) {
+          const atCenter = Math.abs(this.ball.x - this.centerX) < 10 && 
+                           Math.abs(this.ball.y - this.centerY) < 10
+          if (!atCenter) {
+            // Мяч в движении — игнорируем внешнее направление
+            return
+          }
+        }
+
         let newDx =
           typeof command.dirX !== 'undefined'
             ? command.dirX
