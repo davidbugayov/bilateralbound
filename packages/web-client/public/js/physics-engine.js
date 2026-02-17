@@ -166,11 +166,20 @@ if (typeof PhysicsEngine === 'undefined') {
       this.ball.y = y
       // Гарантируем, что позиция не выходит за границы экрана
       this.clampBallWithinBounds()
+      // Синхронизируем буферы интерполяции
+      this._prevPos.x = this.ball.x
+      this._prevPos.y = this.ball.y
+      this._currPos.x = this.ball.x
+      this._currPos.y = this.ball.y
       // Для режима "зрителя" (вьювер/превью) также обновляем цель интерполяции
-      // и используем уже откорректированные координаты, чтобы избежать рывков
+      // и сбрасываем скорости сглаживания для мгновенного позиционирования
       if (this.isViewer) {
         this.state.targetX = this.ball.x
         this.state.targetY = this.ball.y
+        this.state.smoothVx = 0
+        this.state.smoothVy = 0
+        this.state.lastVx = 0
+        this.state.lastVy = 0
       }
     }
     /**
@@ -186,9 +195,10 @@ if (typeof PhysicsEngine === 'undefined') {
       this.state.lastDirection.x = dirX
       this.state.lastDirection.y = dirY
 
-      // Если мы не в режиме вьювера (сервер или превью), сразу обновляем скорость
-      // Это исправляет баг с диагональным движением при смене направления на паузе
-      if (!this.isViewer) {
+      // Если мы не в режиме вьювера (сервер) или мы в локальной симуляции (превью контроллера),
+      // сразу обновляем скорость. Это гарантирует немедленный старт движения.
+      // isViewer=true только для чисто удаленного вьювера (Follower mode)
+      if (!this.isViewer || this.options.clientSimulation) {
         const speedPercent = this.ball.speed / 100
         const pixelsPerSecond = speedPercent * this.options.maxSpeed
         this.ball.vx = dirX * pixelsPerSecond
@@ -238,8 +248,44 @@ if (typeof PhysicsEngine === 'undefined') {
       } else {
         // При снятии с паузы возвращаем обычное поведение
         this.state.allowInterpWhenPaused = false
+
+        // CRITICAL FIX: В локальном режиме симуляции нужно восстановить скорость
+        // Иначе мяч останется на месте после снятия с паузы
+        if (this.options.clientSimulation) {
+           this._restoreLocalVelocity();
+        }
       }
     }
+
+    /**
+     * Восстанавливает скорость для локальной симуляции (clientSimulation)
+     * Если направление нулевое, устанавливает дефолтное горизонтальное.
+     * @private
+     */
+    _restoreLocalVelocity() {
+        // Если направление не задано или нулевое, ставим дефолтное (вправо)
+        if (Math.abs(this.state.lastDirection.x || 0) < 1e-6 &&
+            Math.abs(this.state.lastDirection.y || 0) < 1e-6) {
+            this.state.lastDirection.x = 1;
+            this.state.lastDirection.y = 0;
+        }
+
+        // Пересчитываем скорость на основе направления и speed%
+        const speedPercent = this.ball.speed / 100
+        const pixelsPerSecond = speedPercent * this.options.maxSpeed
+
+        this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
+        this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
+
+        // Обновляем переменные предсказания
+        this.state.lastVx = this.ball.vx
+        this.state.lastVy = this.ball.vy
+
+        if (typeof console !== 'undefined') {
+            console.log(`[Physics] Unpaused & Restored Velocity: vx=${this.ball.vx}, vy=${this.ball.vy}, dir=(${this.state.lastDirection.x},${this.state.lastDirection.y})`);
+        }
+    }
+
     /**
      * Сбрасывает мяч в центр с нулевой скоростью
      * @private
@@ -852,14 +898,14 @@ if (typeof PhysicsEngine === 'undefined') {
       // ИСПРАВЛЕНИЕ: viewer должен принимать dirX/dirY для установки направления
       if (
         typeof command.dirX === 'number' &&
-        Math.abs(command.dirX) <= 1 &&
+        Math.abs(command.dirX) <= 1.001 &&
         Number.isFinite(command.dirX)
       ) {
         validated.dirX = command.dirX
       }
       if (
         typeof command.dirY === 'number' &&
-        Math.abs(command.dirY) <= 1 &&
+        Math.abs(command.dirY) <= 1.001 &&
         Number.isFinite(command.dirY)
       ) {
         validated.dirY = command.dirY
@@ -885,14 +931,14 @@ if (typeof PhysicsEngine === 'undefined') {
       const validated = {}
       if (
         typeof command.dirX === 'number' &&
-        Math.abs(command.dirX) <= 1 &&
+        Math.abs(command.dirX) <= 1.001 &&
         Number.isFinite(command.dirX)
       ) {
         validated.dirX = command.dirX
       }
       if (
         typeof command.dirY === 'number' &&
-        Math.abs(command.dirY) <= 1 &&
+        Math.abs(command.dirY) <= 1.001 &&
         Number.isFinite(command.dirY)
       ) {
         validated.dirY = command.dirY
@@ -976,6 +1022,11 @@ if (typeof PhysicsEngine === 'undefined') {
 
       command = validatedCommand
 
+      // DIAGNOSTIC LOG (TEMPORARY)
+      if (typeof console !== 'undefined' && this.options.clientSimulation) {
+         console.log('[Physics] applyCommand:', JSON.stringify(command));
+      }
+
       // ИСПРАВЛЕНИЕ: сначала обрабатываем общие команды (включая paused),
       // чтобы специфичные обработчики могли корректно реагировать на состояние паузы
       this._handleCommonCommands(command)
@@ -1011,6 +1062,15 @@ if (typeof PhysicsEngine === 'undefined') {
 
         if (command.paused === true) {
           this._handleViewerPositionPause(cx, cy)
+        } else if (command.paused === false) {
+          // КРИТИЧНО: Когда игра активна, устанавливаем lastVx/lastVy из команды
+          // иначе интерполяция не будет работать (нет скорости для предсказания)
+          if (command.vx !== undefined) {
+            this.state.lastVx = command.vx
+          }
+          if (command.vy !== undefined) {
+            this.state.lastVy = command.vy
+          }
         }
       }
     }
@@ -1032,9 +1092,15 @@ if (typeof PhysicsEngine === 'undefined') {
 
     _handleViewerVelocityUpdate(command) {
       // Предлагаемое решение проблемы "залипания" мяча при SSE:
-      // Если мы находимся очень близко к границе и локально уже отскочили (скорость направлена от стены),
-      // а сервер присылает скорость, направленную В стену (из-за лага),
-      // мы должны ИГНОРИРОВАТЬ обновление скорости от сервера.
+      // Если мы находимся очень близко к границе и локально уже отскочили...
+
+      // NEW FIX: If we are the Viewer (clientSimulation: true), we are the SOURCE of truth for physics.
+      // We should NOT accept velocity updates from the server, because the server doesn't calculate physics
+      // and sends back old/zero velocity, which overwrites our calculated velocity.
+      // Controller Preview (clientSimulation: false), however, needs these updates.
+      if (this.options.clientSimulation) {
+        return
+      }
 
       let newVx = command.vx
       let newVy = command.vy
@@ -1109,18 +1175,48 @@ if (typeof PhysicsEngine === 'undefined') {
 
     _handleViewerDirectionUpdate(command) {
       if (command.dirX !== undefined || command.dirY !== undefined) {
-        const newDx =
+        let newDx =
           typeof command.dirX !== 'undefined'
             ? command.dirX
             : this.state.lastDirection.x
-        const newDy =
+        let newDy =
           typeof command.dirY !== 'undefined'
             ? command.dirY
             : this.state.lastDirection.y
 
+        // ИСПРАВЛЕНИЕ: Защита от установки нулевого вектора направления
+        if (Math.abs(newDx) < 1e-6 && Math.abs(newDy) < 1e-6) {
+          // Если текущее направление валидное, оставляем его
+          if (
+            Math.abs(this.state.lastDirection.x) > 1e-6 ||
+            Math.abs(this.state.lastDirection.y) > 1e-6
+          ) {
+            newDx = this.state.lastDirection.x
+            newDy = this.state.lastDirection.y
+          } else {
+            // Иначе форсируем горизонтальное
+            newDx = 1
+            newDy = 0
+          }
+        }
+
         // Устанавливаем направление
         this.state.lastDirection.x = newDx
         this.state.lastDirection.y = newDy
+
+        // CRITICAL FIX: Update velocity immediately for local simulation mode.
+        // This ensures that when direction is changed via external command (like Play/Pause),
+        // the ball immediately picks up the new velocity.
+        if (this.options.clientSimulation) {
+          const speedPercent = this.ball.speed / 100
+          const pixelsPerSecond = speedPercent * this.options.maxSpeed
+          this.ball.vx = newDx * pixelsPerSecond
+          this.ball.vy = newDy * pixelsPerSecond
+
+          if (typeof console !== 'undefined') {
+             console.log(`[Physics] Updated VX/VY in DirectionUpdate: vx=${this.ball.vx}, vy=${this.ball.vy}, dir=(${newDx},${newDy}), speed=${this.ball.speed}`);
+          }
+        }
 
         // Обновляем скорость на основе нового направления
         if (this.state.paused === false) {
@@ -1137,6 +1233,13 @@ if (typeof PhysicsEngine === 'undefined') {
       if (dx !== 0 || dy !== 0) {
         this.state.lastVx = dx * pps
         this.state.lastVy = dy * pps
+
+        // CRITICAL FIX: Also update ball velocity for clientSimulation mode
+        // Without this, the ball won't move in local preview even though direction is set
+        if (this.options.clientSimulation) {
+          this.ball.vx = dx * pps
+          this.ball.vy = dy * pps
+        }
       }
     }
 
@@ -1200,6 +1303,16 @@ if (typeof PhysicsEngine === 'undefined') {
 
         // ИСПРАВЛЕНИЕ: для viewer при снятии паузы восстанавливаем скорость на основе направления
         if (this.isViewer && wasPaused && command.paused === false) {
+          // Если направление не задано (0,0), устанавлием дефолтное горизонтальное
+          // Это критично для старта движения в локальном режиме (clientSimulation)
+          if (
+            Math.abs(this.state.lastDirection.x || 0) < 1e-6 &&
+            Math.abs(this.state.lastDirection.y || 0) < 1e-6
+          ) {
+            this.setDirection(1, 0)
+          }
+          // CRITICAL FIX: Always update velocity base when unpausing, not just when direction is zero
+          // This ensures ball.vx/vy are set correctly for clientSimulation mode
           this._updatePredictionBase()
         }
       }

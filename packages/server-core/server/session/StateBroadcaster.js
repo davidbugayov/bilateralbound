@@ -26,13 +26,6 @@ class StateBroadcaster {
       controllerConnected: session.controllerConnected
     }
 
-    if (this.clientSimulationOnly && stateType === 'state_update') {
-      // Remove position/velocity to avoid corrupting client-side simulation
-      delete basePayload.x
-      delete basePayload.y
-      delete basePayload.vx
-      delete basePayload.vy
-    }
 
     if (this.clientSimulationOnly) {
       basePayload.clientSimulationOnly = true

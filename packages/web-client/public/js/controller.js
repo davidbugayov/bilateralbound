@@ -6,6 +6,9 @@
 // Экспортируем функции для использования в тестах
 /* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession, setSoundEnabled, setSoundType */
 /* global debugWarn, debugError, RealtimeClient */
+if (typeof globalThis.BBDebug === 'undefined') {
+  globalThis.BBDebug = { isEnabled: false, log: console.log }
+}
 // 1. Глобальное состояние определяется в первую очередь, до загрузки DOM
 globalThis.__current = {
   sessionId: null,
@@ -674,27 +677,9 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       updatePreviewSize(state.viewerScreenSize)
       updateViewerInfo(state.viewerScreenSize)
     }
-    // Мгновенно выравниваем позицию в превью по центру из initial_state (без интерполяции),
-    // всегда центрируем мяч в превью относительно центра вьювера (в координатах вьювера)
-    try {
-      if (previewPhysicsEngine) {
-        // Всегда центрируем мяч в превью относительно центра вьювера (в координатах вьювера)
-        if (globalThis.__current?.viewerScreenSize?.width > 0) {
-          const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
-          const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
-          previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
-          previewPhysicsEngine.setVelocity(0, 0)
-          // Принудительно устанавливаем центр в state, чтобы applyServerStateToPreview использовал его
-          if (typeof state.x === 'number' || typeof state.y === 'number') {
-            state.x = viewerCenterX
-            state.y = viewerCenterY
-          }
-        }
-      }
-    } catch (error) {
-      debugWarn('Canvas not ready during initial state setup', error)
-    }
 
+    // Применяем состояние от сервера к превью
+    // В viewer режиме applyServerStateToPreview установит target координаты
     applyServerStateToPreview(state)
     syncUIWithState(state)
     updateViewerAudioIndicators() // Обновляем индикаторы звука
@@ -714,6 +699,13 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       if (wasConnected !== state.viewerConnected) {
         updateViewerStatusUI()
       }
+
+      // DYNAMIC MODE SWITCHING:
+      // If viewer is connected -> Follow viewer (clientSimulation: false)
+      // If viewer NOT connected -> Run local physics (clientSimulation: true)
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.options.clientSimulation = !state.viewerConnected
+      }
     }
 
     // Если пришли новые размеры экрана вьювера — обновим превью
@@ -725,18 +717,24 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       globalThis.__current.viewerConnected = true
       globalThis.__current.viewerScreenSize = nextSize
       if (sizeChanged) {
-        updatePreviewSize(nextSize)
+        // IMPORTANT: При изменении размера сначала обновляем размер физики
+        // но НЕ применяем состояние - это будет сделано ниже
+        updatePhysicsEngineWorldSize(nextSize)
+        const canvas = document.getElementById('preview')
+        if (canvas) {
+          const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, nextSize)
+          setCanvasDimensions(canvas, previewWidth, previewHeight)
+        }
         updateViewerInfo(nextSize)
         updateViewerStatusUI()
         // Обновляем статус в полноэкранном режиме если он открыт
         if (isPreviewFullscreen) {
           updateFullscreenViewerStatus()
         }
-        // При изменении размеров обновляем превью, но не останавливаем игру
-        // Игра должна продолжать работать
       }
     }
 
+    // Применяем состояние ОДИН раз, без дублирования
     applyServerStateToPreview(state)
     updateViewerAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
 
@@ -792,29 +790,78 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   })
 }
 /**
- * Улучшенная локальная симуляция для более плавного движения
+ * Применяет состояние от viewer/сервера к превью контроллера
+ * АРХИТЕКТУРА: Превью в viewer режиме (isViewer: true) следует за состоянием от viewer через SSE
  */
 function applyServerStateToPreview(state) {
   // Функция разбита для снижения когнитивной сложности
   if (!previewPhysicsEngine || !state) return
+
   // Синхронизируем размер мира движка с размерами экрана вьювера
   if (
     state.viewerScreenSize &&
     typeof state.viewerScreenSize.width === 'number' &&
-    typeof state.viewerScreenSize.height === 'number'
+    typeof state.viewerScreenSize.height === 'number' &&
+    state.viewerScreenSize.width > 0 &&
+    state.viewerScreenSize.height > 0
   ) {
-    previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height)
+    const currentW = previewPhysicsEngine.options.worldWidth
+    const currentH = previewPhysicsEngine.options.worldHeight
+    if (currentW !== state.viewerScreenSize.width || currentH !== state.viewerScreenSize.height) {
+      previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height)
+    }
   }
-  // Применяем состояние от сервера для обновления целевых координат
-  previewPhysicsEngine.applyCommand(state)
-  // Если пришло новое значение paused — синхронизируем таймеры
-  if (typeof state.paused === 'boolean') {
-    if (state.paused) {
+
+  // CRITICAL FIX: Применяем состояние в зависимости от режима
+  // Если viewer подключен (clientSimulation: false) - следуем за viewer
+  // Если viewer НЕ подключен (clientSimulation: true) - запускаем локальную физику
+  if (previewPhysicsEngine.options.clientSimulation) {
+    // LOCAL PHYSICS MODE: Preview runs its own physics
+    // Apply only settings (direction, speed), NOT position AND NOT pause state from server!
+    // Server is always paused when no viewer connected, so we ignore its pause state
+    const localCommand = {
+      dirX: state.dirX,
+      dirY: state.dirY,
+      speed: state.speed,
+      // CRITICAL: Do NOT include paused from server in local mode!
+      // paused: state.paused,  // REMOVED - local preview controls its own pause state
+      colorBall: state.colorBall,
+      colorBg: state.colorBg,
+      ballSize: state.ballSize
+    }
+
+    // Sanitize direction for local mode to avoid stopping the ball with (0,0)
+    if (
+      localCommand.dirX !== undefined &&
+      localCommand.dirY !== undefined &&
+      Math.abs(localCommand.dirX) < 1e-6 &&
+      Math.abs(localCommand.dirY) < 1e-6
+    ) {
+      delete localCommand.dirX
+      delete localCommand.dirY
+    }
+
+    previewPhysicsEngine.applyCommand(localCommand)
+  } else {
+    // FOLLOW VIEWER MODE: Preview follows viewer position
+    // Apply full state including position/velocity/pause
+    previewPhysicsEngine.applyCommand(state)
+  }
+
+  // Синхронизируем таймеры с состоянием паузы
+  // В локальном режиме используем локальное состояние паузы
+  const pausedState = previewPhysicsEngine.options.clientSimulation
+    ? previewPhysicsEngine.state.paused
+    : state.paused
+
+  if (typeof pausedState === 'boolean') {
+    if (pausedState) {
       bbCounters.stop(false)
     } else {
       bbCounters.start()
     }
   }
+
   // Детект пасов на основе смены направления — на каждом апдейте состояния
   if (lastServerState) {
     detectAndCountBounceFromServer(lastServerState, state)
@@ -1194,7 +1241,8 @@ function initializeComponents() {
   _initializeSizeControl()
   _initializeSoundControls()
 
-  setControlsEnabled(Boolean(globalThis.__current.viewerConnected))
+  // ИСПРАВЛЕНИЕ: Включаем управление всегда, для работы с локальным превью
+  setControlsEnabled(true)
 
   // Инициализируем отображение направления
   updateDirectionDisplay(1, 0)
@@ -1267,8 +1315,14 @@ async function initializePreview() {
   }
 
   try {
-    // Создаем движок физики для превью
-    previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
+    // Создаем движок физики для превью - КРИТИЧНО: используем isViewer: true
+    // clientSimulation: true по умолчанию для локальной работы.
+    // Если подключится вьювер, мы автоматически переключимся на clientSimulation: false
+    previewPhysicsEngine = new PhysicsEngine({
+      sessionId: 'preview',
+      isViewer: true,
+      clientSimulation: true // Start with local simulation (failsafe)
+    })
     // Экспортируем для UI‑тестов
     try {
       globalThis.__previewPhysics = previewPhysicsEngine
@@ -1276,8 +1330,6 @@ async function initializePreview() {
       // Silently handle case where globalThis is not writable
       debugWarn('Unable to export preview physics engine:', err)
     }
-    // Клиент теперь вычисляет физику локально (включая отскоки), сервер только синхронизирует
-    previewPhysicsEngine.isViewer = false
 
     // Явно устанавливаем паузу и центрируем мяч при загрузке
     // Это гарантирует правильную позицию в preview
@@ -1293,13 +1345,9 @@ async function initializePreview() {
     physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
     // Запускаем ЦИКЛ РЕНДЕРИНГА
     requestAnimationFrame(renderPreviewLoop)
-    // Создаем рендерер, который НЕ будет обновлять физику
+    // Создаем рендерер в режиме viewer - он только отображает состояние, не запускает физику
     globalThis.__previewRenderer = new BallRenderer(canvas, previewPhysicsEngine, {
-      localPhysics: false // Рендерер только рисует, физика обновляется отдельно
-    })
-    globalThis.__previewRenderer.setFrameCallback(() => {
-      // Дополнительная логика для превью может быть добавлена здесь
-      // deltaTime параметр сохранен для совместимости с интерфейсом
+      localPhysics: false // Превью следует за состоянием от viewer через SSE
     })
     globalThis.__previewCanvas = canvas
     // Центрируем мяч в превью при инициализации
@@ -1314,6 +1362,7 @@ async function initializePreview() {
       // Центрируем мяч относительно размеров вьювера
       const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
       const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
+      // В viewer режиме setPosition устанавливает и ball.x/y и target.x/y
       previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
       previewPhysicsEngine.setVelocity(0, 0)
     } else {
@@ -1819,8 +1868,8 @@ function updatePlayPauseButton() {
     } else {
       button.textContent = '▶️ Старт'
       button.classList.remove('playing')
-      // Отключаем кнопку если viewer не подключен
-      button.disabled = !globalThis.__current?.viewerConnected
+      // ИСПРАВЛЕНИЕ: Кнопка всегда активна, чтобы можно было запустить локальное превью
+      button.disabled = false
     }
   }
 }
@@ -2076,10 +2125,9 @@ function updateViewerAudioIndicators() {
 function _initializeFullscreenRenderer() {
   try {
     if (!previewPhysicsEngine) {
-      previewPhysicsEngine = new PhysicsEngine({ sessionId: 'preview' })
-      previewPhysicsEngine.isViewer = false
-      // Явно центрируем мяч в fullscreen preview
-      previewPhysicsEngine.setPaused(true)
+      // Используем одно и то же преviewPhysicsEngine, которое уже инициализировано
+      // Это гарантирует согласованность между обычным и полноэкранным превью
+      return
     }
 
     if (previewFsRenderer) {

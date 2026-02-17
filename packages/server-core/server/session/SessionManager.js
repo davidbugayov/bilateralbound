@@ -263,11 +263,9 @@ class SessionManager {
     this._schedulePhysicsUpdate(session.id)
     this.apiCache.delete(`state_${session.id}`)
 
-    if (this.clientSimulationOnly) {
-      this.stateBroadcaster.broadcastState(session.id, 'state_update', validatedUpdates)
-      return
-    }
-
+    // CRITICAL FIX: Always broadcast full state, not just updates
+    // Controller Preview needs complete state (paused, dirX, dirY, speed, etc)
+    // to start physics correctly
     this.stateBroadcaster.broadcastState(session.id)
   }
 

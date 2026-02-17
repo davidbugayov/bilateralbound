@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест движения мяча в превью контроллера</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        #canvas {
+            border: 2px solid #4a90e2;
+            background: #020617;
+            display: block;
+            margin: 20px auto;
+        }
+        .controls {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            background: #333;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест движения мяча в превью контроллера</h1>
+
+    <div class="controls">
+        <h2>Управление</h2>
+        <button onclick="testStart()">▶️ Старт (setPaused(false))</button>
+        <button onclick="testStop()">⏸ Пауза (setPaused(true))</button>
+        <button onclick="testDirection()">↔️ Установить направление (1,0)</button>
+        <button onclick="testApplyCommand()">📦 Применить команду Play</button>
+        <button onclick="testFullFlow()">🔬 Полный тест</button>
+        <button onclick="clearLog()">🗑️ Очистить лог</button>
+
+        <h2>Статус</h2>
+        <div id="status" class="status">
+            <div>clientSimulation: <span id="clientSim">-</span></div>
+            <div>isViewer: <span id="isViewer">-</span></div>
+            <div>paused: <span id="paused">-</span></div>
+            <div>direction: (<span id="dirX">-</span>, <span id="dirY">-</span>)</div>
+            <div>velocity: (<span id="vx">-</span>, <span id="vy">-</span>)</div>
+            <div>position: (<span id="posX">-</span>, <span id="posY">-</span>)</div>
+            <div>speed%: <span id="speed">-</span></div>
+        </div>
+
+        <h2>Лог диагностики</h2>
+        <div id="log" class="status" style="max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script src="/js/physics-engine.js?v=TIMESTAMP_HERE"></script>
+    <script src="/js/renderer.js?v=TIMESTAMP_HERE"></script>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Создаём движок физики в режиме viewer с локальной симуляцией
+        const physicsEngine = new PhysicsEngine({
+            sessionId: 'test-preview',
+            isViewer: true,
+            clientSimulation: true,
+            worldWidth: 800,
+            worldHeight: 600
+        });
+
+        const renderer = new BallRenderer(canvas, physicsEngine, {
+            localPhysics: false
+        });
+
+        let animationId;
+        let lastTime = 0;
+        const PHYSICS_DT = 1000 / 60;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateStatus() {
+            document.getElementById('clientSim').textContent = physicsEngine.options.clientSimulation;
+            document.getElementById('isViewer').textContent = physicsEngine.isViewer;
+            document.getElementById('paused').textContent = physicsEngine.state.paused;
+            document.getElementById('dirX').textContent = physicsEngine.state.lastDirection.x.toFixed(3);
+            document.getElementById('dirY').textContent = physicsEngine.state.lastDirection.y.toFixed(3);
+            document.getElementById('vx').textContent = physicsEngine.ball.vx.toFixed(2);
+            document.getElementById('vy').textContent = physicsEngine.ball.vy.toFixed(2);
+            document.getElementById('posX').textContent = physicsEngine.ball.x.toFixed(2);
+            document.getElementById('posY').textContent = physicsEngine.ball.y.toFixed(2);
+            document.getElementById('speed').textContent = physicsEngine.ball.speed;
+        }
+
+        function physicsLoop() {
+            physicsEngine.update(PHYSICS_DT / 1000);
+        }
+
+        function renderLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            if (deltaTime >= PHYSICS_DT) {
+                physicsLoop();
+            }
+
+            // Рендерим
+            ctx.fillStyle = physicsEngine.colors.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const state = physicsEngine.getInterpolatedBall(0.5);
+            ctx.fillStyle = physicsEngine.colors.ball;
+            ctx.beginPath();
+            ctx.arc(state.x, state.y, state.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            updateStatus();
+            animationId = requestAnimationFrame(renderLoop);
+        }
+
+        // Тесты
+        function testStart() {
+            log('▶️ TEST: setPaused(false)', 'info');
+            physicsEngine.setPaused(false);
+            log(`  ✓ paused = ${physicsEngine.state.paused}`, 'success');
+            log(`  ✓ vx = ${physicsEngine.ball.vx}, vy = ${physicsEngine.ball.vy}`, 'info');
+            log(`  ✓ direction = (${physicsEngine.state.lastDirection.x}, ${physicsEngine.state.lastDirection.y})`, 'info');
+
+            if (physicsEngine.ball.vx === 0 && physicsEngine.ball.vy === 0) {
+                log('  ⚠️ WARNING: Velocity is ZERO after unpause!', 'warning');
+            }
+        }
+
+        function testStop() {
+            log('⏸ TEST: setPaused(true)', 'info');
+            physicsEngine.setPaused(true);
+            log(`  ✓ paused = ${physicsEngine.state.paused}`, 'success');
+        }
+
+        function testDirection() {
+            log('↔️ TEST: setDirection(1, 0)', 'info');
+            physicsEngine.setDirection(1, 0);
+            log(`  ✓ direction = (${physicsEngine.state.lastDirection.x}, ${physicsEngine.state.lastDirection.y})`, 'success');
+            log(`  ✓ vx = ${physicsEngine.ball.vx}, vy = ${physicsEngine.ball.vy}`, 'info');
+
+            if (physicsEngine.ball.vx === 0) {
+                log('  ❌ ERROR: setDirection did NOT update velocity!', 'error');
+            } else {
+                log('  ✅ SUCCESS: Velocity updated correctly', 'success');
+            }
+        }
+
+        function testApplyCommand() {
+            log('📦 TEST: applyCommand({ paused: false, dirX: 1, dirY: 0, speed: 40 })', 'info');
+
+            const command = {
+                paused: false,
+                dirX: 1,
+                dirY: 0,
+                speed: 40
+            };
+
+            physicsEngine.applyCommand(command);
+
+            log(`  ✓ paused = ${physicsEngine.state.paused}`, 'info');
+            log(`  ✓ direction = (${physicsEngine.state.lastDirection.x}, ${physicsEngine.state.lastDirection.y})`, 'info');
+            log(`  ✓ speed = ${physicsEngine.ball.speed}%`, 'info');
+            log(`  ✓ vx = ${physicsEngine.ball.vx}, vy = ${physicsEngine.ball.vy}`, 'info');
+
+            if (physicsEngine.ball.vx === 0 && physicsEngine.ball.vy === 0) {
+                log('  ❌ ERROR: applyCommand did NOT set velocity!', 'error');
+                log('  This is the ROOT CAUSE of the preview not moving!', 'error');
+            } else {
+                log('  ✅ SUCCESS: Velocity set correctly', 'success');
+            }
+        }
+
+        function testFullFlow() {
+            log('🔬 FULL FLOW TEST: Simulating controller Play button', 'info');
+            log('─────────────────────────────────────────────────', 'info');
+
+            // 1. Начальное состояние
+            log('Step 1: Initial state (paused)', 'info');
+            physicsEngine.setPaused(true);
+            physicsEngine.setDirection(0, 0);
+            log(`  paused=${physicsEngine.state.paused}, vx=${physicsEngine.ball.vx}, vy=${physicsEngine.ball.vy}`, 'info');
+
+            setTimeout(() => {
+                // 2. Пользователь нажимает Play
+                log('Step 2: User clicks Play button', 'info');
+                const playCommand = {
+                    paused: false,
+                    dirX: 1,
+                    dirY: 0,
+                    speed: 40
+                };
+
+                log(`  Sending command: ${JSON.stringify(playCommand)}`, 'info');
+                physicsEngine.applyCommand(playCommand);
+
+                log(`  After applyCommand:`, 'info');
+                log(`    paused = ${physicsEngine.state.paused}`, 'info');
+                log(`    direction = (${physicsEngine.state.lastDirection.x}, ${physicsEngine.state.lastDirection.y})`, 'info');
+                log(`    vx = ${physicsEngine.ball.vx}`, 'info');
+                log(`    vy = ${physicsEngine.ball.vy}`, 'info');
+
+                setTimeout(() => {
+                    // 3. Проверяем после одного физического шага
+                    log('Step 3: After one physics step', 'info');
+                    physicsEngine.update(PHYSICS_DT / 1000);
+
+                    log(`  position: (${physicsEngine.ball.x.toFixed(2)}, ${physicsEngine.ball.y.toFixed(2)})`, 'info');
+                    log(`  velocity: (${physicsEngine.ball.vx.toFixed(2)}, ${physicsEngine.ball.vy.toFixed(2)})`, 'info');
+
+                    const initialX = 400;
+                    const moved = Math.abs(physicsEngine.ball.x - initialX) > 1;
+
+                    if (moved) {
+                        log('  ✅ SUCCESS: Ball is MOVING!', 'success');
+                    } else {
+                        log('  ❌ FAILURE: Ball is NOT moving!', 'error');
+                        log('  🔍 Diagnosis:', 'warning');
+                        log(`    - clientSimulation: ${physicsEngine.options.clientSimulation}`, 'warning');
+                        log(`    - isViewer: ${physicsEngine.isViewer}`, 'warning');
+                        log(`    - paused: ${physicsEngine.state.paused}`, 'warning');
+                        log(`    - direction: (${physicsEngine.state.lastDirection.x}, ${physicsEngine.state.lastDirection.y})`, 'warning');
+                        log(`    - vx: ${physicsEngine.ball.vx} (should be ~2000)`, 'warning');
+                        log(`    - Problem: velocity was not set in applyCommand handler`, 'error');
+                    }
+                }, 100);
+            }, 100);
+        }
+
+        // Инициализация
+        log('🚀 Physics Engine initialized', 'success');
+        log(`  isViewer: ${physicsEngine.isViewer}`, 'info');
+        log(`  clientSimulation: ${physicsEngine.options.clientSimulation}`, 'info');
+        log(`  worldSize: ${physicsEngine.options.worldWidth}x${physicsEngine.options.worldHeight}`, 'info');
+
+        updateStatus();
+        lastTime = performance.now();
+        renderLoop(lastTime);
+    </script>
+</body>
+</html>
+
+
