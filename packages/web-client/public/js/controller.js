@@ -1609,16 +1609,30 @@ function getDirectionVector(directionMode) {
  * @param {number} dirY - The new Y direction component.
  */
 function _applyDirectionChangeWhenPlaying(dirX, dirY) {
+  // Send to server
   safeSend(WS_MSG.controllerUpdate, {
     paused: true,
     returnToCenter: true
   })
+  
+  // Apply same logic to local preview: pause -> center -> new direction -> resume
+  if (previewPhysicsEngine) {
+    previewPhysicsEngine.setPaused(true)
+    centerBallInViewer()
+  }
+  
   setTimeout(() => {
     safeSend(WS_MSG.controllerUpdate, {
       paused: false,
       dirX,
       dirY
     })
+    
+    // Resume local preview with new direction
+    if (previewPhysicsEngine) {
+      previewPhysicsEngine.setDirection(dirX, dirY)
+      previewPhysicsEngine.setPaused(false)
+    }
   }, 200)
 }
 
@@ -1654,16 +1668,16 @@ function setDirection(directionMode) {
     // Блокируем переопределение сервером на 1500ms (увеличено для стабильности)
     __ignoreServerDirectionUntilTs = performance.now() + 1500
 
-    // Всегда обновляем локальное превью
-    if (previewPhysicsEngine) {
-      previewPhysicsEngine.setDirection(dirX, dirY)
-    }
-
-    // Отправляем на сервер всегда, чтобы сохранить состояние сессии
-    // даже если вьювер пока не подключен
+    // Отправляем на сервер и обновляем превью
+    // При игре: пауза -> центр -> новое направление -> старт (как во viewer)
+    // На паузе: просто обновляем направление
     if (isPlaying) {
       _applyDirectionChangeWhenPlaying(dirX, dirY)
     } else {
+      // На паузе просто обновляем направление в превью и на сервере
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setDirection(dirX, dirY)
+      }
       _applyDirectionChangeWhenPaused(dirX, dirY)
     }
 
