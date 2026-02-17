@@ -22,29 +22,23 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.98-d843060" />
+    <meta name="version" content="2.39.99-68ca978" />
     <meta name="theme-color" content="#020617" />
     <title>BilateralBound - EMDR терапия вьювер</title>
-
-    <!-- EMDR Specific Meta Tags -->
     <meta name="therapy-type" content="EMDR Viewer" />
     <meta name="target-audience" content="EMDR Patients, Couples" />
-
-    <!-- Favicon for Viewer (Eye Icon) -->
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.98-d843060"
+      href="/favicon-viewer.svg?v=2.39.99-68ca978"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.98-d843060"
+      href="/favicon-viewer.ico?v=2.39.99-68ca978"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.98-d843060" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.98-d843060" />
-
-    <!-- Open Graph for Viewer -->
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.99-68ca978" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.99-68ca978" />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -56,28 +50,18 @@
     />
     <meta property="article:tag" content="EMDR терапия" />
     <meta property="article:tag" content="биодинамическая стимуляция" />
-
-    <!-- DNS Prefetch for external resources -->
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="dns-prefetch" href="https://mc.yandex.com" />
-
-    <!-- Preload critical resources -->
     <link rel="preload" href="/css/shared-components.css" as="style" />
     <link rel="preload" href="/css/light-theme.css" as="style" />
     <link rel="preload" href="/css/viewer.css" as="style" />
-
-    <!-- Preload critical JS -->
-    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.98-d843060" as="script" />
-    <link rel="preload" href="/js/common.js?v=2.39.98-d843060" as="script" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.98-d843060" as="script" />
-    <link rel="preload" href="/js/renderer.js?v=2.39.98-d843060" as="script" />
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.98-d843060" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.98-d843060" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.98-d843060" />
-
-    <!-- Yandex.Metrika optimized counter -->
+    <link rel="preload" href="/js/core/debug-logger.js?v=2.39.99-68ca978" as="script" />
+    <link rel="preload" href="/js/common.js?v=2.39.99-68ca978" as="script" />
+    <link rel="preload" href="/js/physics-engine.js?v=2.39.99-68ca978" as="script" />
+    <link rel="preload" href="/js/renderer.js?v=2.39.99-68ca978" as="script" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.99-68ca978" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.99-68ca978" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.99-68ca978" />
     <noscript
       ><div>
         <img
@@ -86,7 +70,6 @@
           alt=""
         /></div
     ></noscript>
-    <!-- /Yandex.Metrika optimized counter -->
   </head>
   <body>
     <main class="viewer-container">
@@ -104,13 +87,9 @@
         <p class="sr-only">Анимация движущегося шарика для EMDR-терапии.</p>
       </canvas>
       <div id="loading" class="loading" aria-live="polite">Загрузка...</div>
-
-      <!-- Hotkeys Hint -->
       <div id="hotkeysHint" class="hotkeys-hint">
         <kbd>Space</kbd> — Пауза/Старт
       </div>
-
-      <!-- Unmute Overlay for Audio -->
       <div id="unmuteOverlay" class="unmute-overlay hidden">
         <button id="unmuteBtn" class="unmute-btn">
           <span>🔊</span>
@@ -118,29 +97,21 @@
         </button>
       </div>
     </main>
-
-    <!-- Debug Logger - Load first without defer -->
-    <script src="/js/core/debug-logger.js?v=2.39.98-d843060"></script>
-
-    <!-- Common utilities - Required for getSessionIdFromUrl -->
-    <script src="/js/common.js?v=2.39.98-d843060"></script>
-
-    <script src="/js/audio/audio-manager.js?v=2.39.98-d843060" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.98-d843060" defer></script>
-    <script src="/js/renderer.js?v=2.39.98-d843060" defer></script>
-    <script src="/js/sse-client.js?v=2.39.98-d843060" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.98-d843060" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.98-d843060" defer></script>
-    <script src="/js/shared-components.js?v=2.39.98-d843060" defer></script>
-
+    <script src="/js/core/debug-logger.js?v=2.39.99-68ca978"></script>
+    <script src="/js/common.js?v=2.39.99-68ca978"></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.99-68ca978" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.99-68ca978" defer></script>
+    <script src="/js/renderer.js?v=2.39.99-68ca978" defer></script>
+    <script src="/js/sse-client.js?v=2.39.99-68ca978" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.99-68ca978" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.99-68ca978" defer></script>
+    <script src="/js/shared-components.js?v=2.39.99-68ca978" defer></script>
     <script>
       "use strict";
-
       /**
        * @typedef {Object} StatusIndicatorComponent
        * @property {function(string, string): void} setStatus - Устанавливает статус индикатора
        */
-
       // Helper functions - defined early before DOMContentLoaded
       function showError(message) {
         console.error('❌ Viewer Error:', message);
@@ -150,14 +121,12 @@
           loading.style.color = '#ef4444';
         }
       }
-
       function hideLoading() {
         const loading = document.getElementById('loading');
         if (loading) {
           loading.style.display = 'none';
         }
       }
-
       function resizeCanvas() {
         const canvas = document.getElementById('viewerCanvas');
         if (canvas) {
@@ -165,7 +134,6 @@
           canvas.height = globalThis.innerHeight;
         }
       }
-
       async function connectToSession(sessionId) {
         try {
           const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
@@ -182,14 +150,12 @@
           debugWarn('⚠️ Error connecting to session:', error);
         }
       }
-
       function updateStatus(data) {
         // Трекаем состояние подключения контроллера
         if (typeof data.controllerConnected === 'boolean') {
           if (!globalThis.__current) globalThis.__current = {};
           globalThis.__current.controllerConnected = data.controllerConnected;
         }
-
         if (components.status) {
           if (data.controllerConnected) {
             components.status.setStatus('success', 'Controller connected');
@@ -198,7 +164,6 @@
           }
         }
       }
-
       function onStateUpdate(state) {
         if (physicsEngine && state) {
           debugLog('📥 [VIEWER] Received state update:', state);
@@ -208,13 +173,10 @@
             dirY: physicsEngine.state.lastDirection.y,
             speed: physicsEngine.ball.speed
           });
-
           physicsEngine.applyCommand(state);
-
           if (typeof state.paused === 'boolean') {
             physicsEngine.setPaused(state.paused);
           }
-
           debugLog('📥 [VIEWER] Engine state after update:', {
             paused: physicsEngine.state.paused,
             dirX: physicsEngine.state.lastDirection.x,
@@ -223,14 +185,12 @@
             vx: physicsEngine.ball.vx,
             vy: physicsEngine.ball.vy
           });
-
           // Log current colors after update
           debugLog('🎨 Current colors:', {
              ball: physicsEngine.colors.ball,
              bg: physicsEngine.colors.bg
           });
         }
-
         // ВАЖНО: Обрабатываем звук из state_update
         // Звук - критический параметр, должен применяться независимо от physics engine
         if (state && audioManager) {
@@ -245,7 +205,6 @@
           }
         }
       }
-
       /**
        * Запускает периодическую отправку состояния viewer на сервер
        * Это необходимо для синхронизации Controller Preview с Viewer
@@ -253,16 +212,12 @@
       function startViewerStateBroadcast() {
         const BROADCAST_RATE = 30; // Hz
         const BROADCAST_INTERVAL = 1000 / BROADCAST_RATE;
-
         setInterval(() => {
           if (!physicsEngine || !wsClient) return;
-
           const ball = physicsEngine.ball;
           const state = physicsEngine.state;
-
           // Отправляем только если есть изменения или мяч движется
           const isMoving = !state.paused && (Math.abs(ball.vx) > 0.1 || Math.abs(ball.vy) > 0.1);
-
           if (isMoving || state.paused) {
             const statePayload = {
               x: ball.x,
@@ -276,19 +231,15 @@
               radius: ball.radius,
               timestamp: Date.now()
             };
-
             wsClient.send('viewer_update', statePayload).catch(err => {
               // Игнорируем ошибки отправки - не критично
             });
           }
         }, BROADCAST_INTERVAL);
-
         debugLog('✅ Viewer state broadcast started at', BROADCAST_RATE, 'Hz');
       }
-
       function setupEventListeners() {
         globalThis.addEventListener('resize', resizeCanvas);
-
         // Fullscreen toggle
         globalThis.toggleFullscreen = function() {
           if (!document.fullscreenElement) {
@@ -301,7 +252,6 @@
             }
           }
         };
-
         // Keyboard controls
         document.addEventListener('keydown', (e) => {
           if (e.key === ' ' || e.key === 'Spacebar') {
@@ -316,7 +266,6 @@
           }
         });
       }
-
       // Global variables
       let wsClient;
       let physicsEngine;
@@ -333,10 +282,8 @@
       // components.status will be assigned in initializeComponents() and has setStatus method
       let resizeTimeout = null;
       let lastScreenSizeUpdate = 0;
-
       // Track controller connection status to prevent UI "jumping"
       let lastKnownControllerStatus = null;
-
       // Expose to window for debugging
       if (typeof window !== 'undefined') {
         window.audioManager = audioManager;
@@ -352,7 +299,6 @@
           console.log('🔊 Audio activation state reset. Reload page to see unmute overlay again.');
         };
       }
-
       // Initialize on DOM load
       document.addEventListener("DOMContentLoaded", async function () {
         debugLog('🚀 DOMContentLoaded fired');
@@ -366,14 +312,12 @@
           RealtimeClient: typeof RealtimeClient,
           sharedComponents: typeof sharedComponents
         });
-
         try {
           const sessionId = getSessionIdFromUrl();
           if (!sessionId) {
             showError("Session ID не найден в URL");
             return;
           }
-
           debugLog("📱 Session ID получен:", sessionId);
           initializeComponents();
           await initializeViewer(sessionId);
@@ -382,10 +326,8 @@
           showError("Ошибка инициализации: " + error.message);
         }
       });
-
       function initializeComponents() {
         debugLog('📦 initializeComponents вызван');
-
         components.status = sharedComponents.createStatusIndicator(
           document.getElementById("statusContainer"),
           {
@@ -395,10 +337,8 @@
           },
         );
         debugLog('📦 Status indicator создан');
-
         // Initialize Audio Manager (с задержкой если еще не загружен)
         debugLog('🔊 Проверка AudioManager:', typeof AudioManager);
-
         if (typeof AudioManager !== 'undefined') {
           debugLog('🔊 AudioManager доступен, инициализируем сразу');
           initAudioManager();
@@ -409,14 +349,12 @@
           const checkAudioManager = setInterval(() => {
             attempts++;
             debugLog(`🔊 Попытка ${attempts}/50 найти AudioManager:`, typeof AudioManager);
-
             if (typeof AudioManager !== 'undefined') {
               clearInterval(checkAudioManager);
               debugLog('🔊 AudioManager загружен, инициализируем');
               initAudioManager();
             }
           }, 100);
-
           // Таймаут на случай если AudioManager не загрузится
           setTimeout(() => {
             clearInterval(checkAudioManager);
@@ -426,58 +364,47 @@
           }, 5000);
         }
       }
-
       function initAudioManager() {
         if (typeof AudioManager === 'undefined') {
           debugWarn('AudioManager not loaded yet');
           return;
         }
-
         audioManager = new AudioManager();
         window.audioManager = audioManager; // Expose for debugging
         if (typeof logger !== 'undefined') {
           logger.audio('AudioManager создан, enabled:', audioManager.enabled);
         }
-
         // НЕ инициализируем audio из localStorage автоматически
         // Audio будет инициализирован только когда:
         // 1. Контроллер включит звук (soundEnabled=true)
         // 2. И пользователь сделает какой-то жест (клик/касание)
         // Это гарантирует что audio не будет инициализирован если контроллер отключил звук
-
         // Setup user gesture handlers for audio activation
         const activateAudio = () => {
           debugLog('🔘 [activateAudio] Функция вызвана');
           debugLog('🔘 audioManager:', audioManager);
           debugLog('🔘 audioActivated:', audioActivated);
-
           // Проверяем что audioManager существует
           if (!audioManager) {
             debugWarn('❌ [activateAudio] audioManager не инициализирован!');
             return;
           }
-
           debugLog('🔘 [activateAudio] audioManager существует, инициализируем...');
-
           // Инициализируем AudioContext
           audioManager.init();
           debugLog('✅ [activateAudio] audioManager.init() вызван');
-
           // Устанавливаем флаг активации
           audioActivated = true;
           window.audioActivated = true;
           localStorage.setItem('bb_audioActivated', 'true');
           debugLog('✅ [activateAudio] audioActivated установлен на true');
-
           // Обновляем UI - скрываем кнопку
           debugLog('🔘 [activateAudio] Вызываем checkAudioOverlay()...');
           checkAudioOverlay();
           debugLog('✅ [activateAudio] checkAudioOverlay() вызван');
-
           if (typeof logger !== 'undefined') {
             logger.audio('✅ Audio activated by user gesture - кнопка нажата!');
           }
-
           // Отправляем на сервер что зритель активировал звук
           const sendActivationNotification = () => {
             const sessionId = getSessionIdFromUrl();
@@ -485,13 +412,11 @@
             debugLog('📤 [sendActivationNotification] wsClient:', !!wsClient);
             debugLog('📤 [sendActivationNotification] wsClient.send:', typeof wsClient?.send);
             debugLog('📤 [sendActivationNotification] WS_MSG.viewerAudioActivated:', WS_MSG?.viewerAudioActivated);
-
             if (sessionId && wsClient) {
               debugLog('📤 [activateAudio] Отправляем viewerAudioActivated на сервер');
               // Отправляем сообщение БЕЗ задержки - WebSocket сам разберется если не подключен
               const result = wsClient.send(WS_MSG.viewerAudioActivated, { activated: true });
               debugLog('📤 [activateAudio] Результат отправки:', result);
-
               if (typeof logger !== 'undefined') {
                 logger.audio('📤 Sent viewerAudioActivated to server');
               }
@@ -504,16 +429,13 @@
             }
             return false;
           };
-
           // Отправляем сообщение сразу, без задержек
           const notificationResult = sendActivationNotification();
           debugLog('✅ [activateAudio] Уведомление отправлено:', notificationResult);
         };
-
         // НЕ добавляем глобальные обработчики, чтобы не скрывать overlay сразу
         // document.addEventListener('click', activateAudio, { once: true });
         // document.addEventListener('touchstart', activateAudio, { once: true });
-
         // ДОБАВЛЯЕМ: Обработчик для инициализации audio context при первом клике
         // Это необходимо для обхода браузерного ограничения на воспроизведение звука
         // Даже если оверлей скрыт (звук включен на контроллере), нужно инициализировать контекст
@@ -531,10 +453,8 @@
           document.removeEventListener('click', initAudioContextOnFirstUserGesture);
           document.removeEventListener('touchstart', initAudioContextOnFirstUserGesture);
         };
-
         document.addEventListener('click', initAudioContextOnFirstUserGesture, { once: true });
         document.addEventListener('touchstart', initAudioContextOnFirstUserGesture, { once: true });
-
         const unmuteBtn = document.getElementById('unmuteBtn');
         if (unmuteBtn) {
           if (typeof logger !== 'undefined') {
@@ -542,54 +462,44 @@
           }
           unmuteBtn.addEventListener('click', (e) => {
             e.stopPropagation(); // Предотвращаем всплытие
-
             // ВАЖНО: Удаляем глобальные обработчики чтобы избежать конфликтов
             document.removeEventListener('click', initAudioContextOnFirstUserGesture);
             document.removeEventListener('touchstart', initAudioContextOnFirstUserGesture);
-
             activateAudio();
           });
           unmuteBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
-
             // ВАЖНО: Удаляем глобальные обработчики чтобы избежать конфликтов
             document.removeEventListener('click', initAudioContextOnFirstUserGesture);
             document.removeEventListener('touchstart', initAudioContextOnFirstUserGesture);
-
             activateAudio();
           });
         } else {
           debugWarn('🔊 Unmute button НЕ найдена!');
         }
-
         // Экспортируем checkAudioOverlay глобально для отладки
         window.checkAudioOverlay = checkAudioOverlay;
-
         // ВАЖНО: Применяем отложенный soundEnabled если он был получен до готовности AudioManager
         if (pendingSoundEnabled !== false) {
           debugLog('🔊 Применяем отложенный soundEnabled:', pendingSoundEnabled);
           audioManager.setEnabled(pendingSoundEnabled);
           pendingSoundEnabled = false;
         }
-
         // Проверяем overlay сразу после инициализации
         checkAudioOverlay();
       }
-
       function checkAudioOverlay() {
         const overlay = document.getElementById('unmuteOverlay');
         if (!overlay) {
           debugWarn('🔊 checkAudioOverlay: overlay element НЕ найден!');
           return;
         }
-
         // Show overlay ONLY if:
         // 1. Sound is ENABLED on controller (!audioManager means not initialized yet, so hide)
         // 2. AND user hasn't activated audio yet
         // If sound is DISABLED on controller - hide overlay completely (button should not appear)
         const shouldShow = audioManager && audioManager.enabled && !audioActivated;
-
         if (typeof logger !== 'undefined') {
           logger.audio('checkAudioOverlay:', {
             audioManagerExists: !!audioManager,
@@ -599,7 +509,6 @@
             overlayClasses: overlay.className
           });
         }
-
         if (shouldShow) {
           overlay.classList.remove('hidden');
           if (typeof logger !== 'undefined') {
@@ -614,13 +523,11 @@
           }
         }
       }
-
       function onBounce(side, dirX, dirY) {
         // Play audio tick on bounce
         if (audioManager && audioManager.enabled && audioActivated) {
           audioManager.playTick();
         }
-
         // Send bounce to server via WebSocket
         if (wsClient) {
           wsClient.send('bounce', {
@@ -633,30 +540,24 @@
           });
         }
       }
-
       async function initializeViewer(sessionId) {
         try {
           debugLog("📱 Инициализация viewer для сессии:", sessionId);
           hideLoading();
-
           if (!globalThis.__current) {
             globalThis.__current = {};
           }
           globalThis.__current.sessionId = sessionId;
-
           const canvas = document.getElementById("viewerCanvas");
           if (!canvas) {
             console.error("Canvas не найден");
             return;
           }
-
           resizeCanvas();
-
           // Create bounce callback for audio
           const bounceCallback = (bounceData) => {
             onBounce(bounceData.side, bounceData.dirX, bounceData.dirY);
           };
-
           physicsEngine = new PhysicsEngine({
             worldWidth: globalThis.innerWidth,
             worldHeight: globalThis.innerHeight,
@@ -665,34 +566,26 @@
             bounceCallback: bounceCallback,
           });
           globalThis.physicsEngine = physicsEngine;
-
           // ИСПРАВЛЕНИЕ: явно вызываем setWorldSize для установки флага _worldSizeSet
           // Это необходимо для работы updateClientPhysics на viewer
           physicsEngine.setWorldSize(globalThis.innerWidth, globalThis.innerHeight);
-
           // Явно устанавливаем паузу и центрируем мяч при загрузке
           // Это гарантирует правильную позицию даже если контроллер не подключен
           physicsEngine.setPaused(true);
-
           ballRenderer = new BallRenderer(canvas, physicsEngine, {
             localPhysics: true,  // ИСПРАВЛЕНИЕ: включаем локальную физику для viewer
           });
-
           // Связываем рендерер с физикой для инвалидации кэша
           physicsEngine.setRenderer(ballRenderer);
-
           await connectToSession(sessionId);
-
            // Инициализация RealtimeClient (по умолчанию SSE, fallback на WebSocket)
            wsClient = new RealtimeClient(sessionId, "viewer");
           globalThis.wsClient = wsClient;
           debugLog("✅ RealtimeClient создан, транспорт:", wsClient.getTransportType());
-
           const transport = typeof wsClient.getTransportType === 'function'
             ? wsClient.getTransportType()
             : 'websocket'
           const isSSE = transport === 'sse'
-
           // Утилита: запрос состояния через REST для SSE (на случай реконнекта)
           async function fetchAndApplyState() {
             try {
@@ -708,17 +601,14 @@
               debugWarn('Не удалось получить состояние через REST', e)
             }
           }
-
           wsClient.on("open", (event) => {
             debugLog(`✅ Realtime connection established (transport=${transport}).`)
             components.status.setStatus("success", "Соединение установлено")
-
             // При реконнекте на SSE тянем состояние через REST
             if (event?.isReconnection && isSSE) {
               debugWarn("🔄 Reconnected via SSE - fetching state via REST")
               fetchAndApplyState()
             }
-
             // WebSocket: просим полную синхронизацию
             if (event?.isReconnection && !isSSE) {
               debugWarn("🔄 Reconnected - requesting state sync to restore ball position")
@@ -732,7 +622,6 @@
                   debugWarn("Не удалось запросить синхронизацию состояния:", error),
                 )
             }
-
             // Запрашиваем статус контроллера только для WebSocket (на SSE он придет сам по events)
             if (!isSSE) {
               wsClient
@@ -741,7 +630,6 @@
                   debugWarn("Не удалось запросить статус контроллера:", error),
                 )
             }
-
             // Уведомляем сервер о подключении вьювера (для SSE — POST внутри send)
             wsClient.send("viewer_connected", {
               timestamp: Date.now(),
@@ -749,15 +637,12 @@
               role: "viewer",
             })
           })
-
           wsClient.on("close", (event) => {
             debugWarn("🔌 Realtime connection closed.");
-
             // CRITICAL FIX: Code 1006 is abnormal closure - forcibly reset ball position
             // This prevents the ball from staying in wrong position after disconnect
             if (event.code === 1006) {
               debugError("⚠️ ABNORMAL DISCONNECTION (code 1006) - resetting ball state");
-
               // Force pause and center ball
               if (physicsEngine) {
                 physicsEngine.setPaused(true);
@@ -768,36 +653,30 @@
                 debugLog(`✅ Ball reset to center: (${centerX}, ${centerY})`);
               }
             }
-
             showError("Соединение потеряно. Попытка переподключения...");
           });
-
           wsClient.on("error", (error) => {
             // Не показываем ошибку connection_closed если это первая попытка подключения
             // или если контроллер еще не подключался (это нормально)
             const isConnectionClosed = error?.type === 'connection_closed'
             const isFirstAttempt = error?.isFirstAttempt === true
             const controllerNeverConnected = !globalThis.__current?.controllerConnected
-
             if (isConnectionClosed && (isFirstAttempt || controllerNeverConnected)) {
               // Это нормальная ситуация - не показываем ошибку пользователю
               debugLog(`ℹ️ Realtime: ${error?.type} (${isFirstAttempt ? 'first attempt' : 'controller not connected yet'})`)
               return
             }
-
             // Критическая ошибка - показываем
             debugError("❌ WebSocket error:", error);
             if (error?.type === 'connection') {
               showError("Ошибка соединения с сервером.");
             }
           });
-
           // Обработчик для получения статуса контроллера
           wsClient.on("controller_status", (status) => {
             debugLog("📊 Статус контроллера:", status);
             updateStatus(status);
           });
-
           // FIX: Add listeners for specific controller connection events which SSE emits
           wsClient.on("controller_connected", (data) => {
             console.log("📊 [VIEWER] Controller connected event received:", JSON.stringify(data));
@@ -817,11 +696,9 @@
               : { controllerConnected: false };
             updateStatus(statusData);
           });
-
           wsClient.on('state_update', onStateUpdate)
           wsClient.on('initial_state', onStateUpdate)
           wsClient.on('viewer_status', updateStatus)
-
           // Подключаемся к SSE/WebSocket
           // Не пробрасываем ошибку наверх если это первая попытка подключения
           try {
@@ -832,14 +709,11 @@
             debugWarn("⚠️ First connection attempt failed, will retry:", error.message);
             // Не показываем ошибку пользователю - автоматический реконнект обработает это
           }
-
           // Use BallRenderer's built-in optimized loop
           if (ballRenderer) {
              ballRenderer.start();
           }
-
           setupEventListeners();
-
           // Auto-hide hotkeys hint after 10 seconds
           setTimeout(() => {
             const hotkeysHint = document.getElementById('hotkeysHint');
@@ -847,7 +721,6 @@
               hotkeysHint.classList.add('hidden');
             }
           }, 10000);
-
           debugLog("✅ Viewer успешно инициализирован");
         } catch (error) {
           debugError("❌ Ошибка инициализации viewer:", error);

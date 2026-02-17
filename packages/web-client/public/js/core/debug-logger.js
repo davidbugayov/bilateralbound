@@ -1,4 +1,3 @@
-
 /**
  * @fileoverview Debug Logger - Unified debug logging with query toggle
  * @module utils/debug-logger
@@ -10,13 +9,9 @@
  *
  * Categories: sync, physics, network, sse, state, command, movement, bounce, audio
  */
-
 /* jshint esversion: 11, browser: true, node: true, boss: true, laxbreak: true, laxcomma: true, unused: false */
 /* global globalThis, console, module, Map, Set */
-
 'use strict'
-
-// Category color mappings for console styling
 const CATEGORY_COLORS = {
   sync: '#4A9EFF',
   sse: '#FF8C42',
@@ -28,7 +23,6 @@ const CATEGORY_COLORS = {
   bounce: '#C77DFF',
   audio: '#FFD700'
 }
-
 class DebugLogger {
   constructor() {
     this.enabled = this._checkDebugMode()
@@ -38,7 +32,6 @@ class DebugLogger {
       this._logStats()
     }
   }
-
   _checkDebugMode() {
     if (globalThis.window === undefined) {
       return false
@@ -46,7 +39,6 @@ class DebugLogger {
     const params = new URLSearchParams(globalThis.location.search)
     return params.get('debug') === '1' || params.get('bbdebug') === '1'
   }
-
   _getEnabledCategories() {
     if (!this.enabled) {
       return new Set()
@@ -57,7 +49,6 @@ class DebugLogger {
       ? new Set(categories.split(',').map(c => c.trim()))
       : new Set(Object.keys(CATEGORY_COLORS))
   }
-
   _logStats() {
     console.log(
       '%c[DEBUG MODE ENABLED]',
@@ -65,11 +56,9 @@ class DebugLogger {
     )
     console.log('📊 Enabled categories:', Array.from(this.categories).join(', '))
   }
-
   _isEnabled(category) {
     return this.enabled && this.categories.has(category)
   }
-
   _log(category, message, data) {
     if (!this._isEnabled(category)) {
       return
@@ -82,43 +71,33 @@ class DebugLogger {
       data ?? ''
     )
   }
-
   sync(msg, data) {
     this._log('sync', msg, data)
   }
-
   sse(msg, data) {
     this._log('sse', msg, data)
   }
-
   physics(msg, data) {
     this._log('physics', msg, data)
   }
-
   network(msg, data) {
     this._log('network', msg, data)
   }
-
   state(msg, data) {
     this._log('state', msg, data)
   }
-
   command(msg, data) {
     this._log('command', msg, data)
   }
-
   movement(msg, data) {
     this._log('movement', msg, data)
   }
-
   bounce(msg, data) {
     this._log('bounce', msg, data)
   }
-
   audio(msg, data) {
     this._log('audio', msg, data)
   }
-
   throttle(key, intervalMs, category, message, data) {
     const now = Date.now()
     const last = this.throttles.get(key)
@@ -128,23 +107,18 @@ class DebugLogger {
     this.throttles.set(key, now)
     this._log(category, message, data)
   }
-
   error(msg, err) {
     console.error(`%c[ERROR] ${msg}`, 'color: #F00; font-weight: bold;', err ?? '')
   }
-
   warn(msg, data) {
     console.warn(`%c[WARN] ${msg}`, 'color: #FA0; font-weight: bold;', data ?? '')
   }
-
   info(msg, data) {
     console.info(`%cℹ️ ${msg}`, 'color: #4A9EFF; font-weight: bold;', data ?? '')
   }
-
   log(msg, data) {
     console.log(msg, data ?? '')
   }
-
   /**
    * Creates a scoped logger for a specific module
    * @param {string} moduleName - The name of the module
@@ -171,22 +145,14 @@ class DebugLogger {
     }
   }
 }
-
 const debugLogger = new DebugLogger()
-
-// Экспортируем для Node.js (если module доступен)
 if (typeof module !== 'undefined' && module?.exports) {
   module.exports = debugLogger
 }
-
-// Экспортируем для браузера (globalThis всегда доступен)
 if (globalThis !== undefined) {
   globalThis.debugLogger = debugLogger
   globalThis.logger = debugLogger
-
-  // Export scope method for external usage
   globalThis.createScopedLogger = (moduleName) => debugLogger.scope(moduleName)
-
   globalThis.debugLog = (...args) => {
     if (!debugLogger.enabled) {
       return
@@ -212,4 +178,3 @@ if (globalThis !== undefined) {
     debugLogger.warn(args[0], args[1])
   }
 }
-

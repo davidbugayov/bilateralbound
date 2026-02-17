@@ -1,4 +1,3 @@
-
 /**
  * WebSocketClient - Модернизированный клиент для WebSocket соединений
  * Использует современные возможности JavaScript для лучшей надежности
@@ -6,50 +5,39 @@
 if (typeof WebSocketClient === 'undefined') {
   class WebSocketClient {
     constructor(sessionId, role, options = {}) {
-      // Валидация входных параметров
       if (!sessionId || typeof sessionId !== 'string') {
         throw new Error('Valid sessionId (string) is required for WebSocket connection')
       }
-
       if (!role || !['controller', 'viewer'].includes(role)) {
         throw new Error(
           'Valid role ("controller" or "viewer") is required for WebSocket connection'
         )
       }
-      // Конфигурация с умолчаниями - используем глобальную конфигурацию
       const globalConfig = globalThis.BBConfig?.network || {}
-
       this.config = {
         isSecure: globalThis.location.protocol === 'https:',
         maxReconnectAttempts: globalConfig.maxReconnectAttempts || 5,
         reconnectInterval: globalConfig.reconnectDelay || 3000,
         heartbeatInterval: globalConfig.heartbeatInterval || 25000,
         messageTimeout: globalConfig.messageTimeout || 5000,
-      // Коалесцирование/троттлинг исходящих сообщений
       coalesceTypes: globalConfig.coalesceTypes || ['controller_update'],
       coalesceDelayMs: globalConfig.coalesceDelayMs || 16, // ~60fps
         ...options
       }
-      // Состояние клиента
       this.sessionId = sessionId
       this.role = role
       this.ws = null
       this.isConnected = false
       this.isConnecting = false
-      // Обработчики событий
       this.eventHandlers = new Map()
       this.pendingMessages = new Map()
       this.messageIdCounter = 0
-      // Таймеры
       this.reconnectTimer = null
       this.heartbeatTimer = null
       this.messageTimeouts = new Map()
-      // Коалесцирование исходящих сообщений
       this._coalesceBuffers = new Map() // type -> latest payload
       this._coalesceTimers = new Map() // type -> timer id
-      // Генерация URL
       this.url = this._generateWebSocketUrl()
-      // Статистика
       this._stats = {
         messagesSent: 0,
         messagesReceived: 0,
@@ -60,7 +48,6 @@ if (typeof WebSocketClient === 'undefined') {
         _lastRttSamples: []
       }
     }
-
     _generateWebSocketUrl() {
       const protocol = this.config.isSecure ? 'wss:' : 'ws:'
       const host = globalThis.location.host
@@ -69,7 +56,6 @@ if (typeof WebSocketClient === 'undefined') {
       url.searchParams.set('role', this.role)
       return url.toString()
     }
-    // ===== ОСНОВНЫЕ МЕТОДЫ =====
     /**
      * Подключение к WebSocket серверу
      */
@@ -78,7 +64,6 @@ if (typeof WebSocketClient === 'undefined') {
         this.log('Connection already in progress or established')
         return
       }
-
       return new Promise((resolve, reject) => {
         this.isConnecting = true
         this.log(`Connecting to ${this.url}`)
@@ -97,7 +82,6 @@ if (typeof WebSocketClient === 'undefined') {
             this._handleConnectionSuccess()
             resolve()
           }
-
           this.ws.onerror = error => {
             clearTimeout(connectionTimeout)
             this.isConnecting = false
@@ -117,12 +101,9 @@ if (typeof WebSocketClient === 'undefined') {
       if (!this.isConnected) {
         throw new Error('WebSocket is not connected')
       }
-
       const priorityTypes = ['controller_update', 'heartbeat']
       const isPriority = priorityTypes.includes(type)
-
       if (isPriority) {
-        // Приоритетные сообщения отправляются сразу без коалесцирования
         const messageId = ++this.messageIdCounter
         const message = {
           id: messageId,
@@ -133,16 +114,13 @@ if (typeof WebSocketClient === 'undefined') {
         }
         return this._sendWithResponse(message, type, options)
       } else if (this.config.coalesceTypes.includes(type) && !options.expectResponse) {
-        // Коалесцирование для обычных сообщений
         this._coalesceMessage(type, payload)
       } else {
-        // Обычная отправка для остальных сообщений
         const messageId = ++this.messageIdCounter
         const message = { id: messageId, type, payload, timestamp: Date.now() }
         return this._sendWithResponse(message, type, options)
       }
     }
-
     _sendWithResponse(message, type, options) {
       if (options.expectResponse) {
         return new Promise((resolve, reject) => {
@@ -157,7 +135,6 @@ if (typeof WebSocketClient === 'undefined') {
         this._sendMessage(message)
       }
     }
-
     _coalesceMessage(type, payload) {
       this._coalesceBuffers.set(type, payload)
       if (!this._coalesceTimers.has(type)) {
@@ -172,7 +149,6 @@ if (typeof WebSocketClient === 'undefined') {
             timestamp: Date.now(),
             batched: true
           }
-
           try {
             this._sendMessage(coalescedMessage)
           } catch (e) {
@@ -189,16 +165,13 @@ if (typeof WebSocketClient === 'undefined') {
       if (!this.eventHandlers.has(eventType)) {
         this.eventHandlers.set(eventType, [])
       }
-
       this.eventHandlers.get(eventType).push(handler)
     }
-    // ===== ВНУТРЕННИЕ МЕТОДЫ =====
     _setupEventHandlers() {
       this.ws.onmessage = this._handleMessage.bind(this)
       this.ws.onclose = this._handleClose.bind(this)
       this.ws.onerror = this._handleError.bind(this)
     }
-
     _handleConnectionSuccess() {
       this.isConnected = true
       this.isConnecting = false
@@ -206,32 +179,21 @@ if (typeof WebSocketClient === 'undefined') {
       this._stats.reconnectCount = 0
       this._stats.lastActivity = Date.now()
       this._startHeartbeat()
-
-      // Emit event with flag to indicate if this is a reconnection
       this._emit('open', { sessionId: this.sessionId, role: this.role, isReconnection })
-
       this.log('Connected successfully' + (isReconnection ? ' (reconnected)' : ''))
     }
-
     _handleConnectionError(error) {
       this._emit('error', { error, type: 'connection' })
       this._scheduleReconnect()
     }
-
     _handleMessage(event) {
       try {
         const message = JSON.parse(event.data)
         this._stats.messagesReceived++
         this._stats.lastActivity = Date.now()
-
-        // Обработка подтверждений
         if (this._handlePendingMessage(message)) return
-
-        // Обработка обычных сообщений
         this._emit(message.type, message.payload)
         this._emit('message', message)
-
-        // Обновление сетевых метрик
         if (message?.timestamp) {
           this._updateNetworkMetrics(message.timestamp)
         }
@@ -240,34 +202,27 @@ if (typeof WebSocketClient === 'undefined') {
         this._emit('error', { error, type: 'parse', rawData: event.data })
       }
     }
-
     _handlePendingMessage(message) {
       if (!message.id || !this.pendingMessages.has(message.id)) return false
-
       const pending = this.pendingMessages.get(message.id)
       clearTimeout(pending.timeout)
       this.pendingMessages.delete(message.id)
       pending.resolve(message.payload)
       return true
     }
-
     _updateNetworkMetrics(timestamp) {
       const now = performance.now()
       const rtt = Math.max(0, now - timestamp)
       this._stats._lastRttSamples.push(rtt)
-
-      // Keep only last 20 samples
       if (this._stats._lastRttSamples.length > 20) {
         this._stats._lastRttSamples.shift()
       }
-
       const n = this._stats._lastRttSamples.length
       const avg = this._stats._lastRttSamples.reduce((a, b) => a + b, 0) / n
       const variance = this._stats._lastRttSamples.reduce(
         (a, b) => a + Math.pow(b - avg, 2), 0
       ) / n
       const jitter = Math.sqrt(variance)
-
       this._stats.rttMs = Math.round(avg)
       this._stats.jitterMs = Math.round(jitter)
       this._emit('net_metrics', {
@@ -275,28 +230,23 @@ if (typeof WebSocketClient === 'undefined') {
         jitterMs: this._stats.jitterMs
       })
     }
-
     _handleClose(event) {
       this.isConnected = false
       this._clearTimers()
       this._emit('close', event)
       if (event.code !== 1000) {
-        // Не нормальное отключение
         this._scheduleReconnect()
       }
     }
-
     _handleError(error) {
       this._emit('error', { error, type: 'websocket' })
     }
-
     _scheduleReconnect() {
       if (this._stats.reconnectCount >= this.config.maxReconnectAttempts) {
         this.log('Max reconnection attempts reached', 'error')
         this._emit('maxReconnectAttemptsReached')
         return
       }
-
       this._stats.reconnectCount++
       const delay = this.config.reconnectInterval * Math.pow(1.5, this._stats.reconnectCount - 1)
       this.log(
@@ -308,7 +258,6 @@ if (typeof WebSocketClient === 'undefined') {
         })
       }, delay)
     }
-
     _startHeartbeat() {
       this.heartbeatTimer = setInterval(() => {
         if (this.isConnected) {
@@ -318,7 +267,6 @@ if (typeof WebSocketClient === 'undefined') {
         }
       }, this.config.heartbeatInterval)
     }
-
     _sendMessage(message) {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify(message))
@@ -327,7 +275,6 @@ if (typeof WebSocketClient === 'undefined') {
         throw new Error('WebSocket is not connected')
       }
     }
-
     _emit(eventType, data) {
       const handlers = this.eventHandlers.get(eventType)
       if (handlers) {
@@ -340,30 +287,25 @@ if (typeof WebSocketClient === 'undefined') {
         }
       }
     }
-
     _clearTimers() {
       if (this.reconnectTimer) {
         clearTimeout(this.reconnectTimer)
         this.reconnectTimer = null
       }
-
       if (this.heartbeatTimer) {
         clearInterval(this.heartbeatTimer)
         this.heartbeatTimer = null
       }
-
       for (const timeout of this.messageTimeouts.values()) {
         clearTimeout(timeout)
       }
       this.messageTimeouts.clear()
-      // Чистим коалесцирование
       for (const timerId of this._coalesceTimers.values()) {
         clearTimeout(timerId)
       }
       this._coalesceTimers.clear()
       this._coalesceBuffers.clear()
     }
-
     log(message, type = 'info') {
       const timestamp = new Date().toLocaleTimeString()
       const prefix = `[WS:${this.role}]`
@@ -379,11 +321,8 @@ if (typeof WebSocketClient === 'undefined') {
       console[type === 'error' ? 'error' : 'log'](coloredMessage, style, timestamp)
     }
   }
-  // Export for module systems
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = WebSocketClient
   }
-
-  // Make sure WebSocketClient is globally available
   globalThis.WebSocketClient = WebSocketClient
 }

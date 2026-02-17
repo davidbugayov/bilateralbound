@@ -3,11 +3,8 @@
  * Direction - Логика управления направлением движения
  * @module domain/direction
  */
-
-// Состояние направления
 let _directionState = { dx: 1, dy: 0 }
 let _currentDirectionMode = 'horizontal'
-
 /**
  * Получить вектор направления для режима
  * @param {string} directionMode - Режим направления
@@ -20,14 +17,12 @@ function getDirectionVector(directionMode) {
     case 'vertical':
       return { dirX: 0, dirY: 1 }
     case 'diagRL': {
-      // Движение из верхнего левого угла в нижний правый (TL→BR)
       const width = globalThis.__current?.viewerScreenSize?.width || 800
       const height = globalThis.__current?.viewerScreenSize?.height || 600
       const diagonal = Math.hypot(width, height)
       return { dirX: width / diagonal, dirY: height / diagonal }
     }
     case 'diagRLL': {
-      // Движение из нижнего левого угла в верхний правый (BL→TR)
       const width = globalThis.__current?.viewerScreenSize?.width || 800
       const height = globalThis.__current?.viewerScreenSize?.height || 600
       const diagonal = Math.hypot(width, height)
@@ -41,7 +36,6 @@ function getDirectionVector(directionMode) {
       return null
   }
 }
-
 /**
  * Определить режим направления по компонентам вектора
  * @param {number} dirX
@@ -50,22 +44,14 @@ function getDirectionVector(directionMode) {
  */
 function getDirectionMode(dirX, dirY) {
   if (dirX === undefined || dirY === undefined) return 'horizontal'
-  
   const ax = Math.abs(dirX)
   const ay = Math.abs(dirY)
-  
-  // Горизонтальное
   if (ay < 0.01) return 'horizontal'
-  // Вертикальное
   if (ax < 0.01) return 'vertical'
-  
-  // Диагонали
   if (dirX > 0 && dirY > 0) return 'diagRL'   // TL→BR
   if (dirX > 0 && dirY < 0) return 'diagRLL'  // BL→TR
-  
   return 'horizontal'
 }
-
 /**
  * Проверить, является ли режим диагональным
  * @returns {boolean}
@@ -73,49 +59,41 @@ function getDirectionMode(dirX, dirY) {
 function isDiagonalMode() {
   return _currentDirectionMode === 'diagRL' || _currentDirectionMode === 'diagRLL'
 }
-
 /**
  * Получить текущее состояние направления
  */
 function getDirectionState() {
   return { ..._directionState }
 }
-
 /**
  * Установить состояние направления
  */
 function setDirectionState(dx, dy) {
   _directionState = { dx, dy }
 }
-
 /**
  * Получить текущий режим направления
  */
 function getCurrentDirectionMode() {
   return _currentDirectionMode
 }
-
 /**
  * Установить режим направления
  */
 function setCurrentDirectionMode(mode) {
   _currentDirectionMode = mode
 }
-
 /**
  * Пересчитать диагональное направление при изменении размера экрана
  */
 function recalculateDiagonalDirection() {
   if (!isDiagonalMode()) return null
-  
   const vector = getDirectionVector(_currentDirectionMode)
   if (vector) {
     _directionState = { dx: vector.dirX, dy: vector.dirY }
   }
   return vector
 }
-
-// Экспорт в глобальную область
 if (typeof globalThis !== 'undefined') {
   globalThis.Direction = {
     getVector: getDirectionVector,

@@ -1,13 +1,9 @@
-
 /**
  * Генерирует уникальный идентификатор сессии
  * @returns {string} Уникальный ID сессии
  */
-
 /* global debugWarn, debugError */
-
 function _generateId() {
-  // Используем криптографически стойкий метод генерации случайных чисел
   if (crypto?.randomUUID) {
     return crypto.randomUUID()
   }
@@ -16,10 +12,8 @@ function _generateId() {
     crypto.getRandomValues(array)
     return `${Date.now()}_${array[0].toString(36)}_${array[1].toString(36)}`
   }
-  // Fallback для старых браузеров без crypto API
   return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 }
-
 class FeatureManager {
   constructor() {
     this.presets = this.loadPresets()
@@ -28,7 +22,6 @@ class FeatureManager {
     this.currentSessionId = this.loadCurrentSessionId()
     this.initFeatures()
   }
-
   /**
    * Инициализация новых функций
    */
@@ -40,7 +33,6 @@ class FeatureManager {
     this.addKeyboardShortcuts()
     this.updateHeaderSessionName()
   }
-
   /**
    * Управление пресетами настроек
    */
@@ -75,7 +67,6 @@ class FeatureManager {
         size: 35
       }
     }
-
     try {
       const raw = localStorage.getItem('bb_presets')
       if (raw) {
@@ -87,14 +78,11 @@ class FeatureManager {
     } catch (err) {
       debugWarn('Не удалось загрузить сохранённые пресеты:', err)
     }
-
     return defaultPresets
   }
-
   addPresetControls() {
     const container = document.getElementById('presetControls')
     if (!container) return
-    // Очищаем контейнер
     container.innerHTML = ''
     const presetGrid = document.createElement('div')
     presetGrid.style.display = 'grid'
@@ -111,7 +99,6 @@ class FeatureManager {
     }
     container.appendChild(presetGrid)
   }
-
   /**
    * Применение предустановленных настроек
    */
@@ -124,7 +111,6 @@ class FeatureManager {
       globalThis.notificationSystem?.error('Ошибка', 'Ошибка применения пресета')
     }
   }
-
   /**
    * Применяет настройки пресета
    * @private
@@ -132,7 +118,6 @@ class FeatureManager {
   async _applyPresetSettings(preset) {
     await this._applyCommonSettings(preset)
   }
-
   /**
    * Показывает уведомление об применении пресета
    * @private
@@ -141,7 +126,6 @@ class FeatureManager {
     const presetName = Object.keys(this.presets).find(key => this.presets[key] === preset)
     globalThis.notificationSystem?.success('', `Пресет "${presetName}" применён`)
   }
-
   /**
    * Сохраняет текущее состояние как кастомный пресет
    */
@@ -149,7 +133,6 @@ class FeatureManager {
     const name = prompt('Название нового пресета:')
     if (!name || name.trim() === '') return
     const colorBtn = document.querySelector('.color-btn.active')
-
     this.presets[name.trim()] = {
       speed: globalThis.components?.speed?.getSpeed?.() ?? 40,
       colorBall: colorBtn?.style?.backgroundColor ?? '#60a5fa',
@@ -157,12 +140,10 @@ class FeatureManager {
       size: document.querySelector('.size-btn.active')?.dataset?.size ?? 20,
       direction: globalThis.currentDirectionMode || 'horizontal'
     }
-
     this.savePresets()
     this.addPresetControls()
     globalThis.notificationSystem?.success('', `Пресет "${name}" сохранён`)
   }
-
   savePresets() {
     try {
       localStorage.setItem('bb_presets', JSON.stringify(this.presets))
@@ -170,26 +151,22 @@ class FeatureManager {
       debugWarn('Не удалось сохранить пресеты:', err)
     }
   }
-
   /**
    * Управление экспортом/импортом сессий
    */
   addSessionExportImport() {
     const container = document.getElementById('sessionControls')
     if (!container) return
-    // Создаем контейнер для горизонтального расположения кнопок
     const buttonContainer = document.createElement('div')
     buttonContainer.style.display = 'grid'
     buttonContainer.style.gridTemplateColumns = '1fr 1fr'
     buttonContainer.style.gap = '10px'
     buttonContainer.style.marginTop = '12px'
-    // Кнопка экспорта
     const exportBtn = document.createElement('button')
     exportBtn.className = 'btn outline'
     exportBtn.innerHTML = '📤 Экспорт сессии'
     exportBtn.style.width = '100%'
     exportBtn.onclick = () => this.exportSession()
-    // Кнопка импорта
     const importInput = document.createElement('input')
     importInput.type = 'file'
     importInput.accept = '.json'
@@ -205,7 +182,6 @@ class FeatureManager {
     container.appendChild(buttonContainer)
     container.appendChild(importInput)
   }
-
   /**
    * Экспорт текущей сессии в JSON файл
    */
@@ -221,7 +197,6 @@ class FeatureManager {
     URL.revokeObjectURL(url)
     globalThis.notificationSystem?.success('', 'Сессия экспортирована')
   }
-
   /**
    * Импорт сессии из JSON файла
    */
@@ -230,69 +205,57 @@ class FeatureManager {
     try {
       const text = await file.text()
       const sessionData = JSON.parse(text)
-      // Применяем импортированные настройки
       if (sessionData.settings) {
         await this.applySettings(sessionData.settings)
       }
-      // Восстанавливаем счётчики
       if (sessionData.counters) {
         this.applyCounters(sessionData.counters)
       }
-
       globalThis.notificationSystem?.success('', 'Сессия импортирована')
     } catch (error) {
       debugError('Import error:', error)
       globalThis.notificationSystem?.error('Ошибка', 'Ошибка импорта сессии')
     }
   }
-
   async applySettings(settings) {
     await this._applyCommonSettings(settings)
     this.applyPlayStateSetting(settings.isPlaying)
   }
-
   async _applyCommonSettings(settings) {
     await this._applySpeedSetting(settings.speed)
     this._applyDirectionSetting(settings.direction)
     this._applyColorSettings(settings.ballColor, settings.bgColor)
     this._applySizeSetting(settings.ballSize)
   }
-
   async _applySpeedSetting(speed) {
     if (speed && globalThis.components?.speed) {
       globalThis.components.speed.setSpeed(speed)
       await this.sendUpdate({ speed: speed })
     }
   }
-
   _applyDirectionSetting(direction) {
     if (direction) {
       globalThis.setDirection(direction)
     }
   }
-
   _applyColorSettings(ballColor, bgColor) {
     if (ballColor) {
       globalThis.setBallColor(ballColor)
     }
-
     if (bgColor) {
       globalThis.setBackgroundColor(bgColor)
     }
   }
-
   _applySizeSetting(ballSize) {
     if (ballSize) {
       globalThis.setBallSize(ballSize)
     }
   }
-
   applyPlayStateSetting(isPlaying) {
     if (isPlaying !== globalThis.isPlaying) {
       globalThis.togglePlayPause()
     }
   }
-
   applyCounters(counters) {
     if (globalThis.bbCounters) {
       globalThis.bbCounters.timerMs = counters.timer || 0
@@ -301,7 +264,6 @@ class FeatureManager {
       globalThis.bbCounters.render?.()
     }
   }
-
   /**
    * Управление историей сессий
    */
@@ -310,12 +272,10 @@ class FeatureManager {
       timestamp: Date.now(),
       settings: this.captureCurrentSettings()
     })
-    // Ограничиваем историю 10 записями
     if (this.sessionHistory.length > 10) {
       this.sessionHistory.shift()
     }
   }
-
   /**
    * Захват текущих настроек
    */
@@ -329,19 +289,14 @@ class FeatureManager {
       ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 20
     }
   }
-
   /**
    * Горячие клавиши
    */
   addKeyboardShortcuts() {
     document.addEventListener('keydown', e => this.handleKeyPress(e))
   }
-
   handleKeyPress(event) {
-    // Игнорируем если фокус в input или textarea
     if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return
-
-    // Обработка комбинаций Ctrl
     if (event.ctrlKey || event.metaKey) {
       switch (event.key) {
         case 'z':
@@ -355,8 +310,6 @@ class FeatureManager {
       }
       return
     }
-
-    // Обработка одиночных клавиш
     switch (event.key) {
       case ' ':
         event.preventDefault()
@@ -371,11 +324,8 @@ class FeatureManager {
         event.preventDefault()
         this.handleArrowKeys(event.key)
         break
-      // Клавиша F обрабатывается в controller.js для полноэкранного режима
-      // не обрабатываем её здесь
     }
   }
-
   /**
    * Обработка стрелок клавиатуры
    */
@@ -386,10 +336,8 @@ class FeatureManager {
       ArrowLeft: 'horizontal',
       ArrowRight: 'horizontal'
     }
-
     setDirection(directionMap[key])
   }
-
   /**
    * Отмена последнего изменения
    */
@@ -398,25 +346,20 @@ class FeatureManager {
       globalThis.notificationSystem?.warning('', 'Нет изменений для отмены')
       return
     }
-
     this.sessionHistory.pop()
     const previousState = this.sessionHistory.at(-1)
-
     await this.applyState(previousState)
     globalThis.notificationSystem?.success('', 'Изменение отменено')
   }
-
   /**
    * Применяет сохраненное состояние
    */
   async applyState(state) {
     await this._applyCommonSettings(state)
   }
-
   /**
    * Переключатель темы - удалено, используется ThemeManager из common.js
    */
-
   /**
    * Менеджер локальных сессий (с именем)
    */
@@ -424,10 +367,8 @@ class FeatureManager {
     try {
       const raw = localStorage.getItem('bb_sessions')
       if (!raw) return []
-
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed
-      // миграция из старого формата объекта
       if (
         parsed &&
         typeof parsed === 'object' &&
@@ -439,10 +380,8 @@ class FeatureManager {
     } catch (err) {
       debugWarn('Не удалось загрузить сохранённые сессии:', err)
     }
-
     return []
   }
-
   saveSessions() {
     try {
       localStorage.setItem('bb_sessions', JSON.stringify(this.sessions))
@@ -450,7 +389,6 @@ class FeatureManager {
       debugWarn('Не удалось сохранить сессии:', err)
     }
   }
-
   loadCurrentSessionId() {
     try {
       return localStorage.getItem('bb_current_session') || null
@@ -459,7 +397,6 @@ class FeatureManager {
       return null
     }
   }
-
   persistCurrentSessionId(id) {
     try {
       if (id) {
@@ -468,17 +405,13 @@ class FeatureManager {
         localStorage.removeItem('bb_current_session')
       }
     } catch (err) {
-      // Silently handle localStorage errors as they are not critical
       debugWarn('Error persisting session ID:', err)
     }
-
     this.currentSessionId = id || null
   }
-
   addSessionManagerUI() {
     const container = document.getElementById('sessionControls')
     if (!container) return
-    // Очищаем и строим UI
     container.innerHTML = ''
     const nameRow = document.createElement('div')
     nameRow.style.display = 'flex'
@@ -502,7 +435,6 @@ class FeatureManager {
     container.appendChild(listWrap)
     this.renderSessionsList()
   }
-
   renderSessionsList() {
     const listWrap = document.getElementById('bbSessionsList')
     if (!listWrap) return
@@ -515,7 +447,6 @@ class FeatureManager {
       listWrap.appendChild(empty)
       return
     }
-
     const ul = document.createElement('div')
     ul.style.display = 'flex'
     ul.style.flexDirection = 'column'
@@ -568,11 +499,9 @@ class FeatureManager {
     }
     listWrap.appendChild(ul)
   }
-
   buildCurrentSessionData() {
     return this._getCurrentSessionData()
   }
-
   _getCurrentSessionData() {
     const colorBtn = document.querySelector('.color-btn.active')
     return {
@@ -595,7 +524,6 @@ class FeatureManager {
       }
     }
   }
-
   async applySessionData(sessionData) {
     try {
       await this._applySessionSettings(sessionData?.settings || {})
@@ -605,18 +533,15 @@ class FeatureManager {
       globalThis.notificationSystem?.error('Ошибка', 'Ошибка применения сессии')
     }
   }
-
   /**
    * Применяет настройки сессии
    * @private
    */
   async _applySessionSettings(settings) {
     if (!settings) return
-
     await this._applyCommonSettings(settings)
     this._applySessionPlayState(settings.isPlaying)
   }
-
   /**
    * Применяет состояние воспроизведения сессии
    * @private
@@ -626,36 +551,30 @@ class FeatureManager {
       globalThis.togglePlayPause()
     }
   }
-
   /**
    * Применяет счётчики сессии
    * @private
    */
   _applySessionCounters(counters) {
     if (!counters || !globalThis.bbCounters) return
-
     globalThis.bbCounters.timerMs = counters.timer || 0
     globalThis.bbCounters.passes = counters.passes || 0
     globalThis.bbCounters.sets = counters.sets || 0
     globalThis.bbCounters.render?.()
   }
-
   saveNamedSession(nameRaw) {
     const name = (nameRaw || '').trim() || 'Сессия'
     const existingSession = this.sessions.find(s => s.name === name)
-
     if (existingSession) {
       this._updateExistingSession(existingSession)
     } else {
       this._createNewSession(name)
     }
-
     this.saveSessions()
     this.renderSessionsList()
     this.updateHeaderSessionName()
     globalThis.notificationSystem?.success('', `Сессия "${name}" сохранена`)
   }
-
   async loadSessionById(id) {
     const session = this.sessions.find(s => s.id === id)
     if (!session) return
@@ -667,7 +586,6 @@ class FeatureManager {
     this.renderSessionsList()
     globalThis.notificationSystem?.success('', `Загружена сессия "${session.name}"`)
   }
-
   renameSessionById(id) {
     const session = this.sessions.find(s => s.id === id)
     if (!session) return
@@ -681,7 +599,6 @@ class FeatureManager {
     if (this.currentSessionId === id && input) input.value = session.name
     this.renderSessionsList()
   }
-
   deleteSessionById(id) {
     const idx = this.sessions.findIndex(s => s.id === id)
     if (idx === -1) return
@@ -691,19 +608,16 @@ class FeatureManager {
       const input = document.getElementById('bbSessionNameInput')
       if (input) input.value = ''
     }
-
     this.saveSessions()
     this.renderSessionsList()
     this.updateHeaderSessionName()
     globalThis.notificationSystem?.success('', `Сессия "${removed?.name || ''}" удалена`)
   }
-
   _updateExistingSession(session) {
     session.data = this.buildCurrentSessionData()
     session.updatedAt = new Date().toISOString()
     this.persistCurrentSessionId(session.id)
   }
-
   _createNewSession(name) {
     const now = new Date().toISOString()
     const id = _generateId()
@@ -717,7 +631,6 @@ class FeatureManager {
     this.sessions.push(session)
     this.persistCurrentSessionId(id)
   }
-
   updateHeaderSessionName() {
     try {
       const el = document.getElementById('sessionInfo')
@@ -729,11 +642,9 @@ class FeatureManager {
         : ''
       el.textContent = `${nameTxt}${createdTxt}`
     } catch (err) {
-      // Silently handle DOM update errors
       debugWarn('Error updating session display:', err)
     }
   }
-
   /**
    * Утилиты
    */
@@ -741,12 +652,10 @@ class FeatureManager {
     await globalThis.wsClient?.send?.('WS_MSG.controllerUpdate', data)
   }
 }
-// Экспортируем функции для глобального использования
 globalThis.applyPreset = preset => globalThis.featureManager?.applyPreset?.(preset)
 globalThis.createCustomPreset = () => globalThis.featureManager?.createCustomPreset?.()
 globalThis.exportSession = () => globalThis.featureManager?.exportSession?.()
 globalThis.importSession = file => globalThis.featureManager?.importSession?.(file)
-// Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
   globalThis.featureManager = new FeatureManager()
 })

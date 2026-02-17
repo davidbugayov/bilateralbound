@@ -1,4 +1,3 @@
-
 'use strict'
 /**
  * BallRenderer - оптимизированный модуль рендеринга для BilateralBound
@@ -8,30 +7,24 @@
 if (typeof BallRenderer === 'undefined') {
   class BallRenderer {
     constructor(canvas, physicsEngine, options = {}) {
-      // Проверяем входные параметры
       if (!canvas) {
         throw new Error('Canvas element is required for BallRenderer')
       }
-
       if (!physicsEngine) {
         throw new Error('PhysicsEngine is required for BallRenderer')
       }
-
       this.canvas = canvas
       this.ctx = canvas.getContext('2d')
       this.physics = physicsEngine
-      // Проверяем, что canvas имеет правильный контекст
       if (!this.ctx) {
         throw new Error('Unable to get 2D context from canvas')
       }
-
       this.animationFrameId = null
       this.lastTime = 0
       this.frameCount = 0
       this.frameTimeHistory = [] // История времен кадров для расчета реального FPS
       this.adaptiveFrameRate = true // Адаптивная частота кадров
       this.maxFrameTime = 50 // Максимальное время кадра в ms
-      // Фиксированный таймстеп для стабильной физики и плавности на малых скоростях
       this.fixedStepMs = 1000 / 60
       this.accumulatorMs = 0
       this.maxSubsteps = 3
@@ -41,21 +34,15 @@ if (typeof BallRenderer === 'undefined') {
         dirtyRegions: false, // Частичная перерисовка по регионам
         ...options
       }
-      // Применяем глобальную конфигурацию рендеринга
       this.adaptiveFrameRate =
         globalThis.BBConfig?.rendering?.adaptiveFrameRate ?? this.adaptiveFrameRate
       this.maxFrameTime = globalThis.BBConfig?.rendering?.maxFrameTime ?? this.maxFrameTime
-      // Removed forced isViewer override to allow external configuration
-      // this.physics.isViewer = !this.options.localPhysics
-      // Кэшируем часто используемые значения
       this.pi2 = Math.PI * 2
       this.fillRect = this.ctx.fillRect.bind(this.ctx)
       this.beginPath = this.ctx.beginPath.bind(this.ctx)
       this.fill = this.ctx.fill.bind(this.ctx)
-      // Предварительно создаем объекты для переиспользования
       this.ball = this.physics.ball
       this.colors = this.physics.colors
-      // Кэш для градиента и формы круга
       this._cached = {
         radius: null,
         color: null,
@@ -70,9 +57,7 @@ if (typeof BallRenderer === 'undefined') {
       if (this.animationFrameId) {
         this.stop()
       }
-      // Инициализируем lastTime текущим временем для избежания огромного deltaTime
       this.lastTime = performance.now()
-      // Привязываем контекст для предотвращения потери this
       this.renderLoop = this.renderLoop.bind(this)
       this.renderLoop(performance.now())
     }
@@ -99,7 +84,6 @@ if (typeof BallRenderer === 'undefined') {
       }
       return Math.min(deltaTime, this.maxFrameTime)
     }
-
     _updatePhysics(clampedDeltaTime) {
       this.accumulatorMs += clampedDeltaTime
       if (this.onFrameCallback) {
@@ -114,7 +98,6 @@ if (typeof BallRenderer === 'undefined') {
         }
       }
     }
-
     _renderFrame(currentTime) {
       let alpha = 1
       if (this.fixedStepMs > 0) {
@@ -128,7 +111,6 @@ if (typeof BallRenderer === 'undefined') {
       }
       this.render(alpha)
     }
-
     renderLoop(currentTime) {
       if (this.validateCanvas()) {
         const clientW = this.canvas.clientWidth
@@ -142,23 +124,19 @@ if (typeof BallRenderer === 'undefined') {
           this.animationFrameId = requestAnimationFrame(this.renderLoop)
           return
         }
-
         const clampedDeltaTime = this._calculateDeltaTime(currentTime)
         this.frameCount++
-
         try {
           this._updatePhysics(clampedDeltaTime)
           this._renderFrame(currentTime)
           this.lastTime = currentTime
         } catch (err) {
-          // Catch render loop errors and stop gracefully to prevent infinite errors
           if (typeof globalThis?.logger?.error === 'function') {
             globalThis.logger.error('Render loop error:', err)
           }
           this.stop()
           return
         }
-
         this.animationFrameId = requestAnimationFrame(this.renderLoop)
       } else {
         this.stop()
@@ -177,7 +155,6 @@ if (typeof BallRenderer === 'undefined') {
         : this.physics.ball
       this.renderBall(ballState)
     }
-
     /**
      * Renders the scene using a dirty regions strategy to minimize repaint areas.
      * @param {number} alpha - The interpolation factor.
@@ -186,18 +163,15 @@ if (typeof BallRenderer === 'undefined') {
     _renderDirty(alpha) {
       const padding = 4
       const prev = this._prevBall || { x: -1, y: -1, radius: 0 }
-
       const curr = this.physics.getInterpolatedBall
         ? this.physics.getInterpolatedBall(alpha)
         : this.physics.ball
-      // Очистка предыдущего региона
       if (prev.x >= 0) {
         const w = prev.radius * 2 + padding * 2
         const h = prev.radius * 2 + padding * 2
         this.ctx.fillStyle = this.colors.bg
         this.fillRect(prev.x - prev.radius - padding, prev.y - prev.radius - padding, w, h)
       }
-      // Очистка текущего региона и отрисовка мяча
       const w2 = curr.radius * 2 + padding * 2
       const h2 = curr.radius * 2 + padding * 2
       this.ctx.fillStyle = this.colors.bg
@@ -205,7 +179,6 @@ if (typeof BallRenderer === 'undefined') {
       this.renderBall(curr)
       this._prevBall = { x: curr.x, y: curr.y, radius: curr.radius }
     }
-
     /**
      * Renders the scene, choosing the optimal strategy (full or dirty regions).
      * @param {number} [alpha=1] - The interpolation factor for smooth animation.
@@ -214,7 +187,6 @@ if (typeof BallRenderer === 'undefined') {
       if (!this.canvas || !this.ctx || !this.physics) {
         return
       }
-
       try {
         if (this.options.dirtyRegions) {
           this._renderDirty(alpha)
@@ -222,7 +194,6 @@ if (typeof BallRenderer === 'undefined') {
           this._renderFull(alpha)
         }
       } catch (err) {
-        // Log the error for debugging but don't stop the render loop
         if (typeof debugError === 'function') {
           debugError('Error during render:', err)
         }
@@ -233,21 +204,15 @@ if (typeof BallRenderer === 'undefined') {
      */
     renderBall(ballState) {
       const ball = ballState || this.ball
-      // Проверяем валидность данных шарика
       if (ball && typeof ball.x === 'number' && typeof ball.y === 'number') {
-        // Проверяем разумные значения
         if (ball.radius <= 0 || ball.radius > 1000) {
           return
         }
-
         try {
-          // Кэшируем градиент и геометрию круга по (radius, color)
           const col = ball.colorBall || this.colors.ball
           if (this._cached.radius !== ball.radius || this._cached.color !== col) {
             this._cached.radius = ball.radius
             this._cached.color = col
-            // Градиент не должен зависеть от абсолютной позиции шара,
-            // чтобы исключить визуальные артефакты при ресайзе.
             const g = this.ctx.createRadialGradient(
               -ball.radius * 0.3,
               -ball.radius * 0.3,
@@ -263,29 +228,23 @@ if (typeof BallRenderer === 'undefined') {
             p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2)
             this._cached.path = p
           }
-
           this.beginPath()
-          // Рисуем мяч с градиентом и переиспользуемой формой
           this.ctx.save()
-          // Включаем сглаживание для более плавного рендеринга
           this.ctx.imageSmoothingEnabled = true
           this.ctx.imageSmoothingQuality = 'high'
           this.ctx.translate(ball.x, ball.y)
           this.ctx.fillStyle = this._cached.gradient
-          // Добавляем мягкую тень для объема
           this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
           this.ctx.shadowBlur = 4
           this.ctx.shadowOffsetX = 2
           this.ctx.shadowOffsetY = 2
           this.ctx.fill(this._cached.path)
           this.ctx.restore()
-          // Сбрасываем тень для следующих элементов
           this.ctx.shadowColor = 'transparent'
           this.ctx.shadowBlur = 0
           this.ctx.shadowOffsetX = 0
           this.ctx.shadowOffsetY = 0
         } catch (err) {
-          // Gracefully handle rendering errors for individual ball to continue animation
           if (typeof globalThis?.logger?.warn === 'function') {
             globalThis.logger.warn('Error rendering ball:', err)
           }
@@ -302,7 +261,6 @@ if (typeof BallRenderer === 'undefined') {
       const b = Math.max(0, Math.min(255, Number.parseInt(hex.slice(4, 6), 16) + amount))
       return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
     }
-
     /**
      * Инвалидирует кэш шарика (градиент и геометрию)
      * Вызывается при изменении цвета или размера
@@ -311,7 +269,6 @@ if (typeof BallRenderer === 'undefined') {
       this.cachedBallGradient = null
       this.cachedBallGeometry = null
     }
-
     /**
      * Изменяет размеры canvas
      */
@@ -319,25 +276,19 @@ if (typeof BallRenderer === 'undefined') {
       if (!this.canvas) {
         return
       }
-
       try {
         this.canvas.width = width
         this.canvas.height = height
-        // Синхронизируем CSS размеры с реальными, чтобы избежать растягивания пикселей
         this.canvas.style.width = width + 'px'
         this.canvas.style.height = height + 'px'
-        // Обновляем размеры мира физики
         if (this.physics) {
           this.physics.setWorldSize(width, height)
         }
-        // Инвалидируем кэш градиента/пути при смене размеров,
-        // чтобы форма и шейдинг корректно пересчитались под новый масштаб
         this._cached.radius = null
         this._cached.color = null
         this._cached.gradient = null
         this._cached.path = null
       } catch (err) {
-        // Log canvas resize error but continue operation
         if (typeof globalThis?.logger?.error === 'function') {
           globalThis.logger.error('Canvas resize error:', err)
         }
@@ -350,32 +301,25 @@ if (typeof BallRenderer === 'undefined') {
       if (!this.canvas) {
         return false
       }
-
       if (!this.canvas.parentNode) {
         return false
       }
-
       if (!this.ctx) {
         try {
           this.ctx = this.canvas.getContext('2d')
           if (this.ctx) {
-            // Переинициализируем кэшированные методы
             this.fillRect = this.ctx.fillRect.bind(this.ctx)
             this.beginPath = this.ctx.beginPath.bind(this.ctx)
             this.fill = this.ctx.fill.bind(this.ctx)
-            // Тихо восстанавливаем контекст канваса
             return true
           }
         } catch (err) {
-          // Log error recovering canvas context
           if (typeof globalThis?.logger?.warn === 'function') {
             globalThis.logger.warn('Failed to recover canvas context:', err)
           }
         }
-
         return false
       }
-
       return true
     }
     /**
@@ -385,15 +329,12 @@ if (typeof BallRenderer === 'undefined') {
       if (!physicsEngine) {
         return
       }
-
       if (!physicsEngine.ball || !physicsEngine.colors) {
         return
       }
-
       this.physics = physicsEngine
       this.ball = this.physics.ball
       this.colors = this.physics.colors
-      // Тихо обновляем рендерер
     }
     /**
      * Рендерит один кадр с переданным состоянием.
@@ -404,15 +345,11 @@ if (typeof BallRenderer === 'undefined') {
       if (!this.validateCanvas() || !state) {
         return
       }
-
       try {
-        // Очищаем canvas
         this.ctx.fillStyle = state.colorBg || this.colors.bg
         this.fillRect(0, 0, this.canvas.width, this.canvas.height)
-        // Рисуем шарик
         this.renderBall(state)
       } catch (err) {
-        // Log frame draw error but continue
         if (typeof globalThis?.logger?.warn === 'function') {
           globalThis.logger.warn('Error drawing frame:', err)
         }
@@ -425,16 +362,13 @@ if (typeof BallRenderer === 'undefined') {
       if (this.colors) {
         this.colors.bg = color
       }
-      // Принудительно перерисовываем следующий кадр
       this._cached.radius = null
       this._cached.color = null
     }
   }
-  // Экспортируем для использования
   if (typeof globalThis !== 'undefined') {
     globalThis.BallRenderer = BallRenderer
   }
-
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = BallRenderer
   }

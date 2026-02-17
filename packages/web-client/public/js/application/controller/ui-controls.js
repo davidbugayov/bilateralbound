@@ -3,33 +3,26 @@
  * UI Controls - Инициализация и управление UI контролами
  * @module application/controller/ui-controls
  */
-
 /* global sharedComponents, throttle */
-
-// Ссылка на компоненты
 const components = {}
-
 /**
  * Инициализация контрола скорости
  */
 function _initializeSpeedControl(onSpeedChange) {
   const container = document.getElementById('speedControl')
   if (!container) return
-  
   components.speed = sharedComponents.createSpeedControl(container, {
     onSpeedChange: throttle(speed => {
       if (onSpeedChange) onSpeedChange(speed)
     }, 100)
   })
 }
-
 /**
  * Инициализация контрола цвета мяча
  */
 function _initializeBallColorControl(onColorChange) {
   const container = document.getElementById('ballColorControl')
   if (!container) return
-  
   components.ballColor = sharedComponents.createColorControl(container, {
     colors: [
       '#60a5fa', '#ef4444', '#10b981', '#f59e0b',
@@ -43,14 +36,12 @@ function _initializeBallColorControl(onColorChange) {
     }
   })
 }
-
 /**
  * Инициализация контрола цвета фона
  */
 function _initializeBgColorControl(onColorChange) {
   const container = document.getElementById('bgColorControl')
   if (!container) return
-  
   components.bgColor = sharedComponents.createColorControl(container, {
     colors: [
       '#020617', '#000000', '#111827', '#0a2540',
@@ -64,14 +55,12 @@ function _initializeBgColorControl(onColorChange) {
     }
   })
 }
-
 /**
  * Инициализация контрола размера
  */
 function _initializeSizeControl(onSizeChange) {
   const container = document.getElementById('sizeControl')
   if (!container) return
-  
   components.size = sharedComponents.createSizeControl(container, {
     sizes: [20, 40, 80, 100],
     defaultValue: 20,
@@ -81,7 +70,6 @@ function _initializeSizeControl(onSizeChange) {
     }
   })
 }
-
 /**
  * Инициализация контролов звука
  */
@@ -89,14 +77,11 @@ function _initializeSoundControls(onSoundEnabledChange, onSoundTypeChange, getLa
   const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox')
   const soundTypeSelect = document.getElementById('soundTypeSelect')
   const soundTypeControl = document.getElementById('soundTypeControl')
-
   if (!soundEnabledCheckbox || !soundTypeSelect || !soundTypeControl) return
-
   try {
     soundEnabledCheckbox.addEventListener('change', (e) => {
       const enabled = e.target.checked
       if (onSoundEnabledChange) onSoundEnabledChange(enabled)
-
       if (enabled) {
         soundTypeControl.style.opacity = '1'
         soundTypeControl.style.pointerEvents = 'auto'
@@ -104,25 +89,20 @@ function _initializeSoundControls(onSoundEnabledChange, onSoundTypeChange, getLa
         soundTypeControl.style.opacity = '0.5'
         soundTypeControl.style.pointerEvents = 'none'
       }
-
       const lastState = getLastServerState ? getLastServerState() : null
       if (lastState) {
         lastState.soundEnabled = enabled
       }
       if (updateAudioIndicators) updateAudioIndicators()
     })
-
     soundTypeSelect.addEventListener('change', (e) => {
       const soundType = e.target.value
       if (onSoundTypeChange) onSoundTypeChange(soundType)
-
       const lastState = getLastServerState ? getLastServerState() : null
       if (lastState) {
         lastState.soundType = soundType
       }
     })
-
-    // Initialize from server state
     const lastState = getLastServerState ? getLastServerState() : null
     if (lastState) {
       if (typeof lastState.soundEnabled === 'boolean') {
@@ -140,7 +120,6 @@ function _initializeSoundControls(onSoundEnabledChange, onSoundTypeChange, getLa
     console.error('Error initializing sound controls:', error)
   }
 }
-
 /**
  * Инициализация всех компонентов
  */
@@ -155,14 +134,11 @@ function initializeComponents(callbacks) {
     callbacks?.getLastServerState,
     callbacks?.updateAudioIndicators
   )
-
   setControlsEnabled(true)
-  
   if (callbacks?.updateDirectionDisplay) {
     callbacks.updateDirectionDisplay(1, 0)
   }
 }
-
 /**
  * Включить/выключить контролы
  */
@@ -181,15 +157,12 @@ function setControlsEnabled(enabled) {
   toggle('sizeControl')
   toggle('speedControl')
 }
-
 /**
  * Получить компоненты
  */
 function getComponents() {
   return components
 }
-
-// Экспорт в глобальную область
 if (typeof globalThis !== 'undefined') {
   globalThis.UIControls = {
     initialize: initializeComponents,

@@ -3,7 +3,6 @@
  * Counters - Счётчики сессии (таймер, пассы, сеты)
  * @module domain/counters
  */
-
 const bbCounters = {
   timerMs: 0,
   passes: 0,
@@ -21,7 +20,6 @@ const bbCounters = {
   _lastSpeedMeasurement: 0,
   _measurementInterval: null,
   _currentPassesPerSecond: 0,
-
   initDom() {
     this.$timer = document.getElementById('bbTimer')
     this.$passes = document.getElementById('bbPasses')
@@ -35,13 +33,11 @@ const bbCounters = {
     this.initSpeedMeasurement()
     this.render()
   },
-
   initSpeedMeasurement() {
     this._measurementInterval = setInterval(() => {
       this.updatePassesPerSecond()
     }, 2000)
   },
-
   updatePassesPerSecond() {
     if (!this.running) {
       this._currentPassesPerSecond = 0
@@ -53,18 +49,15 @@ const bbCounters = {
     this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10
     this.renderSpeedInfo()
   },
-
   addPassMeasurement() {
     this._passesHistory.push(performance.now())
     this.updatePassesPerSecond()
   },
-
   start() {
     this.running = true
     this.lastTickTs = performance.now()
     this._passesHistory = []
   },
-
   stop(incrementSet = false) {
     this.tick(performance.now())
     this.running = false
@@ -78,7 +71,6 @@ const bbCounters = {
     this.timerMs = 0
     this.render()
   },
-
   resetAll() {
     this.timerMs = 0
     this.passes = 0
@@ -89,7 +81,6 @@ const bbCounters = {
     this._currentPassesPerSecond = 0
     this.render()
   },
-
   onBounce() {
     if (!this.running) return
     const now = performance.now()
@@ -102,7 +93,6 @@ const bbCounters = {
     }
     this.render()
   },
-
   tick(nowTs) {
     if (!this.running) return
     const dt = nowTs - this.lastTickTs
@@ -115,33 +105,27 @@ const bbCounters = {
       }
     }
   },
-
   formatTime(ms) {
     const totalSec = Math.floor(ms / 1000)
     const m = Math.floor(totalSec / 60)
     const s = totalSec % 60
     return `${m}:${String(s).padStart(2, '0')}`
   },
-
   render() {
     if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
     if (this.$passes) this.$passes.textContent = String(this.passes)
     if (this.$sets) this.$sets.textContent = String(this.sets)
     this.renderSpeedInfo()
   },
-
   renderSpeedInfo() {
     if (this.$passesPerSecond) {
       this.$passesPerSecond.textContent = this._currentPassesPerSecond.toString()
     }
-
-    // Получаем скорость через глобальные компоненты
     const speedComponent = globalThis.components?.speed
     if (speedComponent && this.$speedInfo) {
       const currentSpeed = speedComponent.getSpeed()
       let speedCategory = ''
       let speedColor = ''
-
       if (currentSpeed <= 15) {
         speedCategory = 'Очень медленно'
         speedColor = '#22c55e'
@@ -158,18 +142,14 @@ const bbCounters = {
         speedCategory = 'Очень быстро'
         speedColor = '#ef4444'
       }
-
       this.$speedInfo.textContent = speedCategory
       this.$speedInfo.style.color = speedColor
     }
   }
 }
-
-// Детектор отскоков по серверным state_update
 let __lastBounceTs = 0
 let __lastVxSign = 0
 let __lastVySign = 0
-
 function _hasBounced(currentVelocity, lastSign, minSpeed) {
   const currentSign = Math.sign(currentVelocity)
   return (
@@ -179,29 +159,22 @@ function _hasBounced(currentVelocity, lastSign, minSpeed) {
     Math.abs(currentVelocity) > minSpeed
   )
 }
-
 function detectAndCountBounceFromServer(prev, curr) {
   if (!prev || !curr) return
   if (curr.paused) return
-
   const minSpeed = 50
   const now = performance.now()
   if (now - __lastBounceTs < 100) return
-
   const bounced =
     _hasBounced(curr.vx, __lastVxSign, minSpeed) ||
     _hasBounced(curr.vy, __lastVySign, minSpeed)
-
   if (bounced) {
     __lastBounceTs = now
     bbCounters.onBounce()
   }
-
   if (Math.abs(curr.vx) > minSpeed) __lastVxSign = Math.sign(curr.vx)
   if (Math.abs(curr.vy) > minSpeed) __lastVySign = Math.sign(curr.vy)
 }
-
-// Экспорт в глобальную область
 if (typeof globalThis !== 'undefined') {
   globalThis.bbCounters = bbCounters
   globalThis.detectAndCountBounceFromServer = detectAndCountBounceFromServer

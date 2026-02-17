@@ -1,15 +1,10 @@
-
 'use strict'
-
 /**
  * AudioManager - Handles audio playback for the application.
  * Uses Web Audio API for both synthesized sounds and loaded audio files.
  * Supports multiple sound types with automatic fallback to synthesis.
  */
-
 class AudioManager {
-  // Статические/начальные значения как поля класса (уменьшают предупреждения линтера)
-
   constructor() {
     this.enabled = false
     this.volume = 0.5
@@ -18,12 +13,8 @@ class AudioManager {
     this.frequency = 180 // Hz - low frequency for soft wooden sound
     this.duration = 0.12 // seconds - soft knock duration
     this.soundType = 'soft' // soft (EMDR default), tick, tone, click, bounce, beep
-
-    // Буфер для загруженных звуков
     this.audioBuffers = new Map()
     this.loadingPromises = new Map()
-
-    // Определяем звуковые файлы для разных типов
     this.soundFiles = {
       tick: '/sounds/tick.wav',
       click: '/sounds/click.wav',
@@ -31,12 +22,9 @@ class AudioManager {
       tone: '/sounds/tone.wav',
       beep: '/sounds/beep.wav'
     }
-
-    // Флаг для определения режима (файлы или синтез)
     this.useAudioFiles = true
     this.filesLoaded = false
   }
-
   /**
    * Initializes the AudioContext. Must be called after a user gesture.
    */
@@ -52,7 +40,6 @@ class AudioManager {
         }
       }
     }
-
     if (this.audioContext?.state === 'suspended') {
       this.audioContext
         .resume()
@@ -62,8 +49,6 @@ class AudioManager {
           }
         })
     }
-
-    // Начинаем загрузку звуковых файлов
     if (this.useAudioFiles && !this.filesLoaded) {
       this.preloadSounds().catch((err) => {
         if (typeof logger !== 'undefined') {
@@ -76,7 +61,6 @@ class AudioManager {
       })
     }
   }
-
   /**
    * Загружает звуковой файл и декодирует его в AudioBuffer
    * @param {string} url - URL звукового файла
@@ -86,18 +70,12 @@ class AudioManager {
     if (!this.audioContext) {
       throw new Error('AudioContext not initialized')
     }
-
-    // Проверяем кэш
     if (this.audioBuffers.has(url)) {
       return this.audioBuffers.get(url)
     }
-
-    // Проверяем, не загружается ли уже
     if (this.loadingPromises.has(url)) {
       return await this.loadingPromises.get(url)
     }
-
-    // Загружаем файл
     const loadPromise = fetch(url)
       .then((response) => {
         if (!response.ok) {
@@ -115,11 +93,9 @@ class AudioManager {
         this.loadingPromises.delete(url)
         throw err
       })
-
     this.loadingPromises.set(url, loadPromise)
     return await loadPromise
   }
-
   /**
    * Предзагружает все звуковые файлы
    * @returns {Promise<void>}
@@ -128,19 +104,15 @@ class AudioManager {
     if (!this.audioContext) {
       return
     }
-
     logger?.log('🔊 Starting audio files preload...')
-
     const loadPromises = Object.values(this.soundFiles).map((url) =>
       this.loadSound(url)
         .then(() => true)
         .catch(() => null)
     )
-
     const results = await Promise.all(loadPromises)
     const loadedCount = results.filter((r) => r === true).length
     this.filesLoaded = loadedCount > 0
-
     if (loadedCount === Object.keys(this.soundFiles).length) {
       logger?.log(
         `✅ Audio files preloaded: ${loadedCount}/${Object.keys(this.soundFiles).length}`
@@ -154,20 +126,12 @@ class AudioManager {
       this.useAudioFiles = false
     }
   }
-
   setEnabled(enabled) {
     this.enabled = !!enabled
-    // НЕ инициализируем audio context здесь!
-    // AudioContext должен инициализироваться ТОЛЬКО при пользовательском жесте (клик/касание)
-    // Браузер требует жест для инициализации по политике безопасности
-    // setEnabled() только меняет флаг enabled, инициализация происходит в init()
   }
-
-
   setVolume(volume) {
     this.volume = Math.max(0, Math.min(1, volume))
   }
-
   setSoundType(type) {
     this.soundType = type
     switch (type) {
@@ -192,7 +156,6 @@ class AudioManager {
         this.duration = 0.06
         break
       case 'soft':
-        // Soft wooden knock - typical EMDR sound
         this.oscillatorType = 'sine'
         this.frequency = 180
         this.duration = 0.12
@@ -205,7 +168,6 @@ class AudioManager {
         break
     }
   }
-
   /**
    * Plays a tick sound using current or override type.
    * @param {string} [overrideType] - Optional: override the current sound type
@@ -214,19 +176,14 @@ class AudioManager {
     if (!this.enabled || !this.audioContext) {
       return
     }
-
     if (this.audioContext.state === 'suspended') {
       this.audioContext.resume().catch(() => {})
       return
     }
-
     const soundType = overrideType || this.soundType
-
-    // Обновляем параметры синтеза если тип изменился
     if (overrideType && overrideType !== this.soundType) {
       this.setSoundType(overrideType)
     }
-
     if (this.useAudioFiles && this.filesLoaded) {
       const url = this.soundFiles[soundType]
       if (url && this.audioBuffers.has(url)) {
@@ -234,10 +191,8 @@ class AudioManager {
         return
       }
     }
-
     this.playSynthesizedSound()
   }
-
   /**
    * Воспроизводит загруженный звук из буфера
    * @param {string} url - URL звукового файла
@@ -248,16 +203,12 @@ class AudioManager {
       if (!buffer) {
         return
       }
-
       const source = this.audioContext.createBufferSource()
       const gainNode = this.audioContext.createGain()
-
       source.buffer = buffer
       gainNode.gain.value = this.volume
-
       source.connect(gainNode)
       gainNode.connect(this.audioContext.destination)
-
       source.start()
     } catch (error) {
       if (typeof logger !== 'undefined') {
@@ -266,28 +217,22 @@ class AudioManager {
       this.playSynthesizedSound()
     }
   }
-
   /**
    * Воспроизводит синтезированный звук (оригинальный метод)
    */
   playSynthesizedSound() {
     try {
-      // Use special synthesis for soft/wooden sounds
       if (this.soundType === 'soft') {
         this.playSoftWoodenSound()
         return
       }
-
       const oscillator = this.audioContext.createOscillator()
       const gainNode = this.audioContext.createGain()
-
       oscillator.type = this.oscillatorType
       oscillator.frequency.setValueAtTime(
         this.frequency,
         this.audioContext.currentTime
       )
-
-      // Envelope for a short tick
       gainNode.gain.setValueAtTime(0, this.audioContext.currentTime)
       gainNode.gain.linearRampToValueAtTime(
         this.volume,
@@ -297,10 +242,8 @@ class AudioManager {
         0.001,
         this.audioContext.currentTime + this.duration
       )
-
       oscillator.connect(gainNode)
       gainNode.connect(this.audioContext.destination)
-
       oscillator.start()
       oscillator.stop(this.audioContext.currentTime + this.duration)
     } catch (error) {
@@ -309,7 +252,6 @@ class AudioManager {
       }
     }
   }
-
   /**
    * Plays a soft wooden knock sound - typical EMDR bilateral stimulation sound
    * Creates a warmer, more natural "thud" like a ball hitting a padded wall
@@ -318,8 +260,6 @@ class AudioManager {
     try {
       const now = this.audioContext.currentTime
       const duration = 0.15
-
-      // Main body - low frequency thud
       const osc1 = this.audioContext.createOscillator()
       const gain1 = this.audioContext.createGain()
       osc1.type = 'sine'
@@ -331,8 +271,6 @@ class AudioManager {
       gain1.connect(this.audioContext.destination)
       osc1.start(now)
       osc1.stop(now + duration)
-
-      // Attack transient - higher frequency click
       const osc2 = this.audioContext.createOscillator()
       const gain2 = this.audioContext.createGain()
       osc2.type = 'triangle'
@@ -344,8 +282,6 @@ class AudioManager {
       gain2.connect(this.audioContext.destination)
       osc2.start(now)
       osc2.stop(now + 0.03)
-
-      // Add subtle noise for realism
       const bufferSize = this.audioContext.sampleRate * 0.05
       const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate)
       const output = noiseBuffer.getChannelData(0)
@@ -371,8 +307,6 @@ class AudioManager {
     }
   }
 }
-
-// Export for use in other files
 if (typeof globalThis !== 'undefined') {
   globalThis.AudioManager = AudioManager
 }

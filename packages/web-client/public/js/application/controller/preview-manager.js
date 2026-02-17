@@ -3,22 +3,16 @@
  * PreviewManager - Управление превью контроллера
  * @module application/controller/preview-manager
  */
-
 /* global PhysicsEngine, BallRenderer, debugWarn */
-
-// Состояние
 let _previewPhysicsEngine = null
 let _physicsInterval = null
 const PHYSICS_DT = 1000 / 60 // 60 FPS
-
-// Callbacks
 let _callbacks = {
   onBounce: () => {},
   getLastServerState: () => null,
   isFullscreenActive: () => false,
   getFullscreenCanvas: () => null
 }
-
 /**
  * Инициализация превью
  */
@@ -26,18 +20,13 @@ async function initializePreview(callbacks) {
   if (callbacks) {
     _callbacks = { ..._callbacks, ...callbacks }
   }
-
   showWaitingForViewer()
-  
   const previewWrap = document.getElementById('previewWrap')
   if (previewWrap) {
     previewWrap.style.display = 'block'
   }
-
   const canvas = document.getElementById('preview')
   if (!canvas) return
-
-  // Проверяем и устанавливаем размеры canvas
   if (canvas.width === 0 || canvas.height === 0) {
     const container = canvas.parentElement
     const containerRect = container.getBoundingClientRect()
@@ -48,42 +37,27 @@ async function initializePreview(callbacks) {
     canvas.style.width = canvas.width + 'px'
     canvas.style.height = canvas.height + 'px'
   }
-
   try {
     _previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
       isViewer: true,
       clientSimulation: true
     })
-
     globalThis.__previewPhysics = _previewPhysicsEngine
     _previewPhysicsEngine.setPaused(true)
-
-    // Bounce events
     globalThis.addEventListener('bb_bounce', () => _callbacks.onBounce())
-
-    // Smoothing
     if (globalThis.BBConfig?.smoothing) {
       _previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
     }
-
-    // Physics loop
     if (_physicsInterval) clearInterval(_physicsInterval)
     _physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
-
-    // Render loop
     requestAnimationFrame(renderPreviewLoop)
-
-    // Renderer
     globalThis.__previewRenderer = new BallRenderer(canvas, _previewPhysicsEngine, {
       localPhysics: false
     })
     globalThis.__previewCanvas = canvas
-
-    // Center ball
     const canvasWidth = canvas.width
     const canvasHeight = canvas.height
-
     if (globalThis.__current?.viewerScreenSize?.width > 0) {
       _previewPhysicsEngine.setWorldSize(
         globalThis.__current.viewerScreenSize.width,
@@ -102,7 +76,6 @@ async function initializePreview(callbacks) {
     if (typeof debugWarn === 'function') debugWarn('Error initializing preview:', error)
   }
 }
-
 /**
  * Physics loop
  */
@@ -110,33 +83,24 @@ function physicsLoop() {
   if (!_previewPhysicsEngine) return
   _previewPhysicsEngine.update(PHYSICS_DT / 1000)
 }
-
 /**
  * Render loop
  */
 let _hiddenThrottleMs = 100
 let _lastRenderTime = 0
-
 function renderPreviewLoop(timestamp) {
   requestAnimationFrame(renderPreviewLoop)
-
-  // Throttle when hidden
   if (document.hidden) {
     if (timestamp - _lastRenderTime < _hiddenThrottleMs) return
   }
   _lastRenderTime = timestamp
-
-  // Render main preview
   if (globalThis.__previewRenderer) {
     globalThis.__previewRenderer.render()
   }
-
-  // Tick counters
   if (globalThis.bbCounters?.tick) {
     globalThis.bbCounters.tick(timestamp)
   }
 }
-
 /**
  * Show waiting message
  */
@@ -146,7 +110,6 @@ function showWaitingForViewer() {
     viewerInfo.textContent = '⏳ Ожидание подключения вьювера'
     viewerInfo.style.display = 'block'
   }
-
   if (_previewPhysicsEngine) {
     const canvas = document.getElementById('preview')
     if (canvas) {
@@ -158,7 +121,6 @@ function showWaitingForViewer() {
     }
   }
 }
-
 /**
  * Hide waiting message
  */
@@ -168,7 +130,6 @@ function hideWaitingForViewer() {
     viewerInfo.style.display = 'none'
   }
 }
-
 /**
  * Update preview size
  */
@@ -176,7 +137,6 @@ function updatePreviewSize(viewerScreenSize) {
   if (canUpdatePreview(viewerScreenSize)) {
     const canvas = document.getElementById('preview')
     if (!canvas) return
-
     const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
     setCanvasDimensions(canvas, previewWidth, previewHeight)
     updatePhysicsEngineWorldSize(viewerScreenSize)
@@ -187,11 +147,9 @@ function updatePreviewSize(viewerScreenSize) {
     centerBallInViewer()
   }
 }
-
 function canUpdatePreview(viewerScreenSize) {
   return Boolean(viewerScreenSize && globalThis.__previewRenderer && _previewPhysicsEngine)
 }
-
 function calculatePreviewDimensions(canvas, viewerScreenSize) {
   const container = canvas.parentElement
   const containerRect = container.getBoundingClientRect()
@@ -206,20 +164,17 @@ function calculatePreviewDimensions(canvas, viewerScreenSize) {
   }
   return { previewWidth, previewHeight }
 }
-
 function setCanvasDimensions(canvas, previewWidth, previewHeight) {
   canvas.width = previewWidth
   canvas.height = previewHeight
   canvas.style.width = canvas.width + 'px'
   canvas.style.height = canvas.height + 'px'
 }
-
 function updatePhysicsEngineWorldSize(viewerScreenSize) {
   if (_previewPhysicsEngine && viewerScreenSize?.width && viewerScreenSize?.height) {
     _previewPhysicsEngine.setWorldSize(viewerScreenSize.width, viewerScreenSize.height)
   }
 }
-
 function applyServerStateOrCenter() {
   const lastState = _callbacks.getLastServerState()
   if (lastState && _previewPhysicsEngine) {
@@ -228,13 +183,11 @@ function applyServerStateOrCenter() {
     centerBallInViewer()
   }
 }
-
 /**
  * Center ball in viewer
  */
 function centerBallInViewer() {
   if (!_previewPhysicsEngine) return
-
   if (globalThis.__current?.viewerScreenSize?.width > 0) {
     const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
     const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
@@ -249,7 +202,6 @@ function centerBallInViewer() {
     _previewPhysicsEngine.setVelocity(0, 0)
   }
 }
-
 /**
  * Update viewer info
  */
@@ -260,15 +212,12 @@ function updateViewerInfo(viewerScreenSize) {
     viewerInfo.style.display = 'block'
   }
 }
-
 /**
  * Get physics engine
  */
 function getPreviewPhysicsEngine() {
   return _previewPhysicsEngine
 }
-
-// Экспорт
 if (typeof globalThis !== 'undefined') {
   globalThis.PreviewManager = {
     init: initializePreview,
