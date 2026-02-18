@@ -168,6 +168,33 @@ function setupWebSocketServer(server, sessionManager) {
           }
         }
       },
+      // Bounce sync - viewer sends ball position on bounce for controller preview sync
+      bounce: (data, { sessionId, role }) => {
+        if (role === 'viewer') {
+          const clients = sessionManager.webSocketManager.getClients(sessionId)
+          const bounceMessage = JSON.stringify({
+            type: 'bounce_sync',
+            payload: {
+              side: data.payload.side,
+              x: data.payload.x,
+              y: data.payload.y,
+              dirX: data.payload.dirX,
+              dirY: data.payload.dirY,
+              timestamp: data.payload.timestamp
+            }
+          })
+          // Send only to controller (not back to viewer)
+          for (const { client, role: clientRole } of clients) {
+            if (clientRole === 'controller' && client.readyState === 1) {
+              try {
+                client.send(bounceMessage)
+              } catch (error) {
+                logger.error(`Error sending bounce_sync: ${error.message}`)
+              }
+            }
+          }
+        }
+      },
       viewer_update: (data, { sessionId, role }) => {
         if (role === 'viewer') {
           // Viewer может управлять паузой/стартом

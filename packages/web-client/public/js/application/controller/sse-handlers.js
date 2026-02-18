@@ -10,7 +10,8 @@ const WS_MSG = {
   controllerUpdate: 'controller_update',
   controllerConnected: 'controller_connected',
   netMetrics: 'net_metrics',
-  viewerAudioActivated: 'viewer_audio_activated'
+  viewerAudioActivated: 'viewer_audio_activated',
+  bounceSync: 'bounce_sync'
 }
 function createSSEHandlers(deps) {
   const {
@@ -147,6 +148,20 @@ function createSSEHandlers(deps) {
     onViewerAudioActivated(data) {
       if (globalThis.__current) globalThis.__current.viewerAudioActivated = data.activated
       updateViewerAudioIndicators()
+    },
+    // Bounce sync - sync preview ball position with viewer on bounce
+    onBounceSync(data) {
+      if (!previewPhysicsEngine) return
+      // Snap preview ball to viewer position on bounce
+      if (typeof data.x === 'number' && typeof data.y === 'number') {
+        previewPhysicsEngine.ball.x = data.x
+        previewPhysicsEngine.ball.y = data.y
+        // Also sync direction
+        if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
+          previewPhysicsEngine.state.dirX = data.dirX
+          previewPhysicsEngine.state.dirY = data.dirY
+        }
+      }
     },
     onMaxReconnect() {
       logger.error('Исчерпаны попытки переподключения')

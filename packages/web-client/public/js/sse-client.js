@@ -113,6 +113,10 @@ if (typeof SSEClient === 'undefined') {
         resetHeartbeatOnEvent()
         this._handleMessage('viewer_audio_activated', e.data)
       })
+      this.eventSource.addEventListener('bounce_sync', (e) => {
+        resetHeartbeatOnEvent()
+        this._handleMessage('bounce_sync', e.data)
+      })
       this.eventSource.addEventListener('controller_connected', (e) => {
         resetHeartbeatOnEvent()
         this._handleMessage('controller_connected', e.data)
@@ -184,7 +188,8 @@ if (typeof SSEClient === 'undefined') {
         viewer_update: `/api/session/${this.sessionId}/viewer/update`,
         viewer_audio_activated: `/api/session/${this.sessionId}/viewer/audio-activated`,
         controller_connected: `/api/session/${this.sessionId}/controller/connect`,
-        viewer_connected: `/api/session/${this.sessionId}/viewer/connect`
+        viewer_connected: `/api/session/${this.sessionId}/viewer/connect`,
+        bounce: `/api/session/${this.sessionId}/viewer/bounce`
       }
       const endpoint = endpoints[type]
       if (!endpoint) {

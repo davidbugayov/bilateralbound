@@ -144,7 +144,8 @@ if (typeof globalThis !== 'undefined') {
     stateUpdate: 'state_update',
     viewerStatus: 'viewer_status',
     viewerAudioActivated: 'viewer_audio_activated',
-    netMetrics: 'net_metrics'
+    netMetrics: 'net_metrics',
+    bounceSync: 'bounce_sync'
   })
 }
 /**

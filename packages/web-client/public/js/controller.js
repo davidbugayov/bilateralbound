@@ -590,6 +590,19 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
     updateViewerAudioIndicators()
   })
+  // Bounce sync - sync preview with viewer ball position on bounce
+  wsClient.on(WS_MSG.bounceSync, data => {
+    if (!previewPhysicsEngine) return
+    // Snap preview ball to viewer position
+    if (typeof data.x === 'number' && typeof data.y === 'number') {
+      previewPhysicsEngine.ball.x = data.x
+      previewPhysicsEngine.ball.y = data.y
+      if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
+        previewPhysicsEngine.state.dirX = data.dirX
+        previewPhysicsEngine.state.dirY = data.dirY
+      }
+    }
+  })
   wsClient.on('maxReconnectAttemptsReached', () => {
     logger.error('Исчерпаны попытки переподключения')
     showNotification('Не удается подключиться к серверу. Проверьте интернет-соединение.', 'error')

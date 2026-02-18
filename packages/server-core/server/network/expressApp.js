@@ -516,6 +516,25 @@ function setupExpressApp(sessionManager, apiCache) {
       res.json({ success: true })
     }
   )
+  // Bounce sync - viewer sends ball position for controller preview sync
+  app.post(
+    '/api/session/:sessionId/viewer/bounce',
+    requireSession(sessionManager),
+    (req, res) => {
+      const { sessionId } = req.params
+      const { side, x, y, dirX, dirY, timestamp } = req.body || {}
+
+      // Broadcast bounce_sync to controllers via SSE
+      sessionManager.sseManager.broadcast(
+        sessionId,
+        'bounce_sync',
+        { side, x, y, dirX, dirY, timestamp },
+        'viewer' // exclude viewer (they sent it)
+      )
+
+      res.json({ success: true })
+    }
+  )
   app.post(
     '/api/session/:sessionId/viewer/connect',
     requireSession(sessionManager),
