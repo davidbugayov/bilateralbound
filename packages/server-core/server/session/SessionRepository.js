@@ -10,25 +10,32 @@ class SessionRepository {
    */
   constructor() {
     this.sessions = new Map()
+    // LRU tracking - Map сохраняет порядок вставки, первый = самый старый
+    this.accessOrder = new Map() // sessionId -> lastAccessTime
   }
   
   /**
-   * Check if session limit reached and evict oldest if needed
+   * Update access time for LRU tracking
+   * @param {string} sessionId
+   * @private
+   */
+  _touchSession(sessionId) {
+    // Удаляем и добавляем заново чтобы переместить в конец Map
+    this.accessOrder.delete(sessionId)
+    this.accessOrder.set(sessionId, Date.now())
+  }
+  
+  /**
+   * Check if session limit reached and evict oldest if needed (O(1) with LRU)
    * @private
    */
   _enforceSessionLimit() {
     if (this.sessions.size >= MAX_SESSIONS) {
-      // Find and remove oldest session
-      let oldestId = null
-      let oldestTime = Infinity
-      for (const [id, session] of this.sessions.entries()) {
-        if (session.createdAt < oldestTime) {
-          oldestTime = session.createdAt
-          oldestId = id
-        }
-      }
+      // Первый элемент в accessOrder - самый старый (LRU)
+      const oldestId = this.accessOrder.keys().next().value
       if (oldestId) {
         this.sessions.delete(oldestId)
+        this.accessOrder.delete(oldestId)
       }
     }
   }
@@ -109,6 +116,7 @@ class SessionRepository {
     }
 
     this.sessions.set(session.id, session)
+    this._touchSession(session.id) // Track in LRU
     return session
   }
 
@@ -118,7 +126,11 @@ class SessionRepository {
    * @returns {Object|null} Сессия или null если не найдена
    */
   findById(sessionId) {
-    return this.sessions.get(sessionId) || null
+    const session = this.sessions.get(sessionId)
+    if (session) {
+      this._touchSession(sessionId) // Update LRU on access
+    }
+    return session || null
   }
 
   /**

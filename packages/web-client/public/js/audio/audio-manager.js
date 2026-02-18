@@ -27,8 +27,9 @@ class AudioManager {
   }
   /**
    * Initializes the AudioContext. Must be called after a user gesture.
+   * @param {boolean} preload - Whether to preload sounds immediately (default: false for lazy loading)
    */
-  init() {
+  init(preload = false) {
     if (!this.audioContext) {
       const AudioContext =
         globalThis.AudioContext || globalThis.webkitAudioContext
@@ -49,7 +50,8 @@ class AudioManager {
           }
         })
     }
-    if (this.useAudioFiles && !this.filesLoaded) {
+    // Lazy loading: only preload when explicitly requested or when sound is enabled
+    if (preload && this.useAudioFiles && !this.filesLoaded) {
       this.preloadSounds().catch((err) => {
         if (typeof logger !== 'undefined') {
           logger.warn(
@@ -128,6 +130,15 @@ class AudioManager {
   }
   setEnabled(enabled) {
     this.enabled = !!enabled
+    // Lazy load sounds when user enables sound for the first time
+    if (enabled && this.useAudioFiles && !this.filesLoaded && this.audioContext) {
+      this.preloadSounds().catch((err) => {
+        if (typeof logger !== 'undefined') {
+          logger.warn('Failed to load audio files:', err)
+        }
+        this.useAudioFiles = false
+      })
+    }
   }
   setVolume(volume) {
     this.volume = Math.max(0, Math.min(1, volume))
