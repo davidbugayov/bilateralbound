@@ -258,7 +258,9 @@ if (typeof SSEClient === 'undefined') {
         return
       }
       this.reconnectAttempts++
-      const delay = this.config.reconnectInterval * this.reconnectAttempts
+      // Cap delay at 30 seconds to prevent infinite growth
+      const baseDelay = this.config.reconnectInterval * this.reconnectAttempts
+      const delay = Math.min(baseDelay, 30000)
       const isFirstAttempt = this.reconnectAttempts === 1 && !this.hasEverConnected
       const logLevel = isFirstAttempt ? 'info' : 'warn'
       this.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.config.maxReconnectAttempts})`, logLevel)

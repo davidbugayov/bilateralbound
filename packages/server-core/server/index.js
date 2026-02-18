@@ -45,26 +45,21 @@ const cleanupIntervals = [
       const now = Date.now()
       let removedCount = 0
       for (const [key, cached] of apiCache) {
-        // Simplified TTL logic: 150ms for ball_state, 3s for others
-        const adaptiveTTL = (cached.type === 'ball_state' ? 50 : 1000) * 3
+        // Optimized TTL: 50ms for ball_state, 500ms for others
+        const adaptiveTTL = cached.type === 'ball_state' ? 50 : 500
         if (now - cached.timestamp > adaptiveTTL) {
           apiCache.delete(key)
           removedCount += 1
         }
       }
 
-      if (removedCount > 0) {
+      if (removedCount > 0 && DEBUG_MODE) {
         logger.info(`API cache cleanup: ${removedCount} items removed.`)
       }
     },
-    2 * 60 * 1000
-  ),
-  // SSE heartbeat для поддержания соединений
-  setInterval(() => {
-    if (sessionManager.sseManager) {
-      sessionManager.sseManager.sendHeartbeat()
-    }
-  }, 30000) // Каждые 30 секунд
+    30 * 1000 // Reduced from 2 minutes to 30 seconds
+  )
+  // Note: SSE heartbeat is handled by SSEManager internally, no need for duplicate here
 ]
 // 6. Graceful shutdown
 /**

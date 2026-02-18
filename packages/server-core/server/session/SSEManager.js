@@ -13,9 +13,10 @@ class SSEManager {
     this.sseClients = new Map()
 
     // Запускаем heartbeat интервал для поддержания SSE соединений
+    // Optimized: increased from 30s to 45s to reduce overhead
     this.heartbeatInterval = setInterval(() => {
       this.sendHeartbeat()
-    }, 30000) // Каждые 30 секунд
+    }, 45000)
   }
 
   /**

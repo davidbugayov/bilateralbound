@@ -2,6 +2,7 @@
 const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
+const compression = require('compression')
 const rateLimit = require('express-rate-limit')
 const os = require('node:os')
 const path = require('node:path')
@@ -201,6 +202,19 @@ function setupExpressApp(sessionManager, apiCache) {
       next()
     }
   })
+  
+  // Gzip compression for all responses (except SSE streams)
+  app.use(compression({
+    filter: (req, res) => {
+      // Don't compress SSE streams
+      if (req.path.includes('/sse/')) {
+        return false
+      }
+      return compression.filter(req, res)
+    },
+    level: 6 // Balance between speed and compression ratio
+  }))
+  
   app.use(express.json())
 
   // Static files path

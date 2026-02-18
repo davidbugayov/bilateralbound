@@ -1,5 +1,9 @@
 'use strict'
 // Интерфейс для управления данными сессий
+
+// Maximum number of sessions to prevent memory exhaustion
+const MAX_SESSIONS = 1000
+
 class SessionRepository {
   /**
    * Конструктор SessionRepository
@@ -7,6 +11,28 @@ class SessionRepository {
   constructor() {
     this.sessions = new Map()
   }
+  
+  /**
+   * Check if session limit reached and evict oldest if needed
+   * @private
+   */
+  _enforceSessionLimit() {
+    if (this.sessions.size >= MAX_SESSIONS) {
+      // Find and remove oldest session
+      let oldestId = null
+      let oldestTime = Infinity
+      for (const [id, session] of this.sessions.entries()) {
+        if (session.createdAt < oldestTime) {
+          oldestTime = session.createdAt
+          oldestId = id
+        }
+      }
+      if (oldestId) {
+        this.sessions.delete(oldestId)
+      }
+    }
+  }
+  
   /**
    * Валидация пользовательского ID сессии: латиница/цифры/подчеркивание/дефис, 3..32 символа
    * @param {string} id - ID для валидации
@@ -61,6 +87,9 @@ class SessionRepository {
     const ballState = sessionData.ballState && Object.keys(sessionData.ballState).length > 0
       ? { ...defaultBallState, ...sessionData.ballState }
       : defaultBallState
+    
+    // Enforce session limit before creating new one
+    this._enforceSessionLimit()
 
     const session = {
       id,
