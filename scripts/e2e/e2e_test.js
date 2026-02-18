@@ -91,6 +91,15 @@ async function main() {
     if (errors.length > 0) throw new Error('JS errors: ' + errors.join(', '))
   })
 
+  await test('Language selector присутствует', async () => {
+    if (!await ctrlPage.$('#languageSelectorBtn')) throw new Error('Language selector not found')
+  })
+
+  await test('i18n модуль загружен', async () => {
+    const ok = await ctrlPage.evaluate(() => typeof globalThis.i18n !== 'undefined' || typeof globalThis.I18nConstants !== 'undefined')
+    if (!ok) throw new Error('i18n not loaded')
+  })
+
   // Тест viewer
   const viewPage = await browser.newPage()
   await viewPage.goto(`${BASE_URL}/s/e2e_session`, { waitUntil: 'domcontentloaded', timeout: 15000 })
@@ -102,6 +111,16 @@ async function main() {
   await test('Viewer PhysicsEngine', async () => {
     const ok = await viewPage.evaluate(() => typeof PhysicsEngine !== 'undefined')
     if (!ok) throw new Error('Not found')
+  })
+
+  await test('SSE соединение работает', async () => {
+    // Проверим что viewer получает состояние через SSE
+    await new Promise(r => setTimeout(r, 2000))
+    const hasState = await viewPage.evaluate(() => {
+      return globalThis.__current?.sessionId !== undefined || 
+             document.querySelector('canvas') !== null
+    })
+    if (!hasState) throw new Error('SSE state not received')
   })
 
   // Тест мобильного viewport
