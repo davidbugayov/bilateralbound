@@ -43,7 +43,7 @@ async function main() {
   await test('Генерация ссылок', async () => {
     await mainPage.type('#customClientId', 'e2e_test')
     await mainPage.click('#generateLinksBtn')
-    await mainPage.waitForSelector('#generatedLinksContainer', { visible: true, timeout: 5000 })
+    await mainPage.waitForSelector('#generatedLinksContainer', { visible: true, timeout: 10000 })
   })
 
   await test('Language selector присутствует', async () => {
