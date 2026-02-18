@@ -24,7 +24,7 @@
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="language" content="Russian" />
-    <meta name="version" content="2.39.107-e31d0f8" />
+    <meta name="version" content="2.39.108-2978831" />
     <meta name="theme-color" content="#2563eb" />
     <meta name="therapy-type" content="EMDR Controller" />
     <meta
@@ -38,18 +38,18 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-controller.svg?v=2.39.107-e31d0f8"
+      href="/favicon-controller.svg?v=2.39.108-2978831"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-controller.ico?v=2.39.107-e31d0f8"
+      href="/favicon-controller.ico?v=2.39.108-2978831"
     />
     <link
       rel="apple-touch-icon"
-      href="/favicon-controller.svg?v=2.39.107-e31d0f8"
+      href="/favicon-controller.svg?v=2.39.108-2978831"
     />
-    <link rel="shortcut icon" href="/favicon-controller.ico?v=2.39.107-e31d0f8" />
+    <link rel="shortcut icon" href="/favicon-controller.ico?v=2.39.108-2978831" />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -63,7 +63,7 @@
     />
     <meta
       property="og:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.107-e31d0f8"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.108-2978831"
     />
     <meta property="og:url" content="https://emdrbilateral.ru/" />
     <meta property="og:site_name" content="BilateralBound" />
@@ -81,7 +81,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.107-e31d0f8"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.108-2978831"
     />
     <meta name="twitter:site" content="@bilateralbound" />
     <script type="application/ld+json">
@@ -99,10 +99,10 @@
         "genre": "Therapeutic Game"
       }
     </script>
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.107-e31d0f8" />
-    <link rel="stylesheet" href="/css/common.css?v=2.39.107-e31d0f8" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.107-e31d0f8" />
-    <link rel="stylesheet" href="/css/controller.css?v=2.39.107-e31d0f8" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.108-2978831" />
+    <link rel="stylesheet" href="/css/common.css?v=2.39.108-2978831" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.108-2978831" />
+    <link rel="stylesheet" href="/css/controller.css?v=2.39.108-2978831" />
     <noscript
       ><div>
         <img
@@ -130,15 +130,15 @@
     </header>
     <main class="wrap">
       <section class="control-section" aria-labelledby="session-heading">
-        <h3 id="session-heading">🎮 Сессия: <span id="curSid">...</span></h3>
+        <h3 id="session-heading"><span data-i18n="controller.sessionHeading">🎮 Session:</span> <span id="curSid">...</span></h3>
         <p id="sessionInfo" class="session-info">
           <span class="session-info-item">
-            <span class="session-info-timestamp" id="sessionTimestamp">Создана: загрузка...</span>
+            <span class="session-info-timestamp" id="sessionTimestamp" data-i18n="controller.sessionCreated">Created: loading...</span>
           </span>
         </p>
         <div class="link-group">
           <label for="view" class="link-group__label">
-            👁️ Ссылка для клиента (Viewer): <span id="viewerSessionId" class="viewer-session-id"></span> <span id="viewerStatus" class="disconnected">ожидание</span>
+            <span data-i18n="controller.viewerLinkLabel">👁️ Link for client (Viewer):</span> <span id="viewerSessionId" class="viewer-session-id"></span> <span id="viewerStatus" class="disconnected" data-i18n="controller.waiting">waiting</span>
           </label>
           <div class="link-group__input-wrapper">
             <input
@@ -735,17 +735,17 @@
         </div>
       </section>
       <section class="control-section" aria-labelledby="settings-heading">
-        <h3 id="settings-heading">🛠️ Настройки</h3>
+        <h3 id="settings-heading" data-i18n="controller.settingsHeading">🛠️ Settings</h3>
         <div class="appearance-grid">
           <div class="controls-card">
-            <p class="controls-title">🔊 Звук</p>
+            <p class="controls-title" data-i18n="controller.soundTitle">🔊 Sound</p>
             <div id="viewerAudioIndicator" class="viewer-audio-indicator hidden">
               <span class="icon">🔊</span>
-              <span id="viewerAudioText">Звук у зрителя выключен</span>
+              <span id="viewerAudioText" data-i18n="controller.viewerSoundOff">Viewer sound off</span>
             </div>
             <div id="viewerSoundPlayingIndicator" class="viewer-sound-playing-indicator hidden">
               <span class="icon">🎵</span>
-              <span>Зритель слышит звук</span>
+              <span data-i18n="controller.viewerHearingSound">Viewer hearing sound</span>
             </div>
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -754,28 +754,28 @@
                   id="soundEnabledCheckbox"
                   style="width: 20px; height: 20px; cursor: pointer;"
                 />
-                <span style="font-size: 0.95rem;">Включить звук</span>
+                <span style="font-size: 0.95rem;" data-i18n="controller.enableSound">Enable sound</span>
               </label>
             </div>
             <div id="soundTypeControl" style="opacity: 0.5; pointer-events: none;">
-              <label for="soundTypeSelect" style="display: block; margin-bottom: 8px; font-size: 0.9rem;">
-                Тип звука:
+              <label for="soundTypeSelect" style="display: block; margin-bottom: 8px; font-size: 0.9rem;" data-i18n="controller.soundTypeLabel">
+                Sound type:
               </label>
               <select
                 id="soundTypeSelect"
                 style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.95rem;"
               >
-                <option value="soft">🎵 Мягкий (EMDR)</option>
-                <option value="tick">⏱️ Тик</option>
-                <option value="tone">🎹 Тон</option>
-                <option value="click">🖱️ Клик</option>
-                <option value="bounce">🎾 Отскок</option>
-                <option value="beep">📢 Бип</option>
+                <option value="soft" data-i18n="controller.soundTypeSoft">🎵 Soft (EMDR)</option>
+                <option value="tick" data-i18n="controller.soundTypeTick">⏱️ Tick</option>
+                <option value="tone" data-i18n="controller.soundTypeTone">🎹 Tone</option>
+                <option value="click" data-i18n="controller.soundTypeClick">🖱️ Click</option>
+                <option value="bounce" data-i18n="controller.soundTypeBounce">🎾 Bounce</option>
+                <option value="beep" data-i18n="controller.soundTypeBeep">📢 Beep</option>
               </select>
             </div>
           </div>
           <div class="controls-card">
-            <p class="controls-title">🎯 Пресеты</p>
+            <p class="controls-title" data-i18n="controller.presetsTitle">🎯 Presets</p>
             <div id="presetControls"></div>
           </div>
           <div class="controls-card">
@@ -791,30 +791,30 @@
         </div>
       </section>
     </main>
-    <script src="/js/common.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/domain/session-state.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/domain/direction.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/domain/counters.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/audio/audio-manager.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/constants/i18n-constants.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/i18n/i18n.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/i18n/language-selector.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/renderer.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/shared-components.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/sse-client.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/config.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/notification-system.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/new-features.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/application/controller/ui-controls.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/application/controller/preview-manager.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/application/controller/fullscreen.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/application/controller/sse-handlers.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/application/controller/play-pause.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/application/controller/ui-sync.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/application/controller/viewer-status.js?v=2.39.107-e31d0f8" defer></script>
-    <script src="/js/controller.js?v=2.39.107-e31d0f8" defer></script>
+    <script src="/js/common.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/domain/session-state.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/domain/direction.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/domain/counters.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/constants/i18n-constants.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/i18n/i18n.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/i18n/language-selector.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/renderer.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/shared-components.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/sse-client.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/config.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/notification-system.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/new-features.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/application/controller/ui-controls.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/application/controller/preview-manager.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/application/controller/fullscreen.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/application/controller/sse-handlers.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/application/controller/play-pause.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/application/controller/ui-sync.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/application/controller/viewer-status.js?v=2.39.108-2978831" defer></script>
+    <script src="/js/controller.js?v=2.39.108-2978831" defer></script>
   </body>
 </html>
