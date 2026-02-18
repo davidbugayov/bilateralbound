@@ -208,7 +208,8 @@ function centerBallInViewer() {
 function updateViewerInfo(viewerScreenSize) {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.textContent = `Вьювер: ${viewerScreenSize.width}×${viewerScreenSize.height}`
+    const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer'
+    viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`
     viewerInfo.style.display = 'block'
   }
 }

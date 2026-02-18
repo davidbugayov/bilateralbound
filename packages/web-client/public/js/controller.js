@@ -640,6 +640,12 @@ function applyServerStateToPreview(state) {
     ? previewPhysicsEngine.state.paused
     : state.paused
   if (typeof pausedState === 'boolean') {
+    // Sync isPlaying with server state
+    const newIsPlaying = !pausedState
+    if (isPlaying !== newIsPlaying) {
+      isPlaying = newIsPlaying
+      updatePlayPauseButton()
+    }
     if (pausedState) {
       bbCounters.stop(false)
     } else {
@@ -1192,7 +1198,8 @@ function centerBallInViewer() {
 function updateViewerInfo(viewerScreenSize) {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.textContent = `Вьювер: ${viewerScreenSize.width}×${viewerScreenSize.height}`
+    const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer'
+    viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`
     viewerInfo.style.display = 'block'
   }
 }
@@ -1441,11 +1448,13 @@ function updatePlayPauseButton() {
   const button = document.getElementById('playPauseBtn')
   if (button) {
     if (isPlaying) {
-      button.textContent = '⏸ Стоп'
+      const stopText = globalThis.i18n?.t('controller.stop') || '⏸ Stop'
+      button.textContent = stopText
       button.classList.add('playing')
       button.disabled = false  // Кнопка активна при воспроизведении
     } else {
-      button.textContent = '▶️ Старт'
+      const startText = globalThis.i18n?.t('controller.start') || '▶️ Start'
+      button.textContent = startText
       button.classList.remove('playing')
       button.disabled = false
     }

@@ -92,11 +92,13 @@ function updateFullscreenStatus() {
   const el = document.getElementById('fsViewerStatus')
   if (!el) return
   if (globalThis.__current.viewerConnected) {
-    el.textContent = '🟢 Вьювер подключен'
+    const text = globalThis.i18n?.t('controller.viewerConnected') || 'Viewer connected'
+    el.textContent = `🟢 ${text}`
     el.classList.add('connected')
     el.classList.remove('disconnected')
   } else {
-    el.textContent = '🔴 Ожидание вьювера'
+    const text = globalThis.i18n?.t('controller.waitingViewer') || 'Waiting for viewer'
+    el.textContent = `🔴 ${text}`
     el.classList.add('disconnected')
     el.classList.remove('connected')
   }
