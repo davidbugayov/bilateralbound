@@ -639,14 +639,18 @@ function applyServerStateToPreview(state) {
   const pausedState = previewPhysicsEngine.options.clientSimulation
     ? previewPhysicsEngine.state.paused
     : state.paused
+  // Apply paused state from server to preview physics engine
+  if (typeof state.paused === 'boolean') {
+    previewPhysicsEngine.setPaused(state.paused)
+  }
   if (typeof pausedState === 'boolean') {
     // Sync isPlaying with server state
-    const newIsPlaying = !pausedState
+    const newIsPlaying = !state.paused
     if (isPlaying !== newIsPlaying) {
       isPlaying = newIsPlaying
       updatePlayPauseButton()
     }
-    if (pausedState) {
+    if (state.paused) {
       bbCounters.stop(false)
     } else {
       bbCounters.start()

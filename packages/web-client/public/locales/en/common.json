@@ -30,7 +30,9 @@
     "start": "🚀 Start EMDR Session",
     "creating": "⏳ Creating...",
     "loading": "⏳ Loading...",
-    "creatingSession": "🔄 Creating session..."
+    "creatingSession": "🔄 Creating session...",
+    "createError": "Failed to create session",
+    "jsonError": "Server returned non-JSON response"
   },
   "links": {
     "heading": "🔗 Permanent Links for Clients",
