@@ -4,6 +4,11 @@
  * @module application/controller/fullscreen
  */
 /* global BallRenderer, debugError, debugWarn */
+// Защита от повторной загрузки - ранний выход
+if (typeof globalThis.Fullscreen !== 'undefined') {
+  // Модуль уже загружен, пропускаем повторную инициализацию
+} else {
+  (function() {
 let _isPreviewFullscreen = false
 let _previewFsCanvas = null
 let _previewFsRenderer = null
@@ -281,15 +286,15 @@ function isFullscreenActive() {
 function getFullscreenCanvas() {
   return _previewFsCanvas
 }
-if (typeof globalThis !== 'undefined') {
-  globalThis.Fullscreen = {
-    init: initFullscreen,
-    open: openPreviewFullscreen,
-    close: closePreviewFullscreen,
-    resize: resizePreviewFullscreen,
-    syncPlayPauseButton: syncFsPlayPauseButton,
-    updateViewerStatus: updateFullscreenViewerStatus,
-    isActive: isFullscreenActive,
-    getCanvas: getFullscreenCanvas
-  }
+globalThis.Fullscreen = {
+  init: initFullscreen,
+  open: openPreviewFullscreen,
+  close: closePreviewFullscreen,
+  resize: resizePreviewFullscreen,
+  syncPlayPauseButton: syncFsPlayPauseButton,
+  updateViewerStatus: updateFullscreenViewerStatus,
+  isActive: isFullscreenActive,
+  getCanvas: getFullscreenCanvas
 }
+  })() // Конец IIFE
+} // Конец защиты от повторной загрузки

@@ -3,6 +3,11 @@
  * Viewer Status - управление статусом подключения вьювера
  * @module application/controller/viewer-status
  */
+// Защита от повторной загрузки
+if (typeof globalThis.ViewerStatus !== 'undefined') {
+  // Модуль уже загружен
+} else {
+  (function() {
 let _deps = {}
 let _lastAudioState = null
 function init(deps) {
@@ -96,12 +101,12 @@ function updateFullscreenStatus() {
     el.classList.remove('connected')
   }
 }
-if (typeof globalThis !== 'undefined') {
-  globalThis.ViewerStatus = {
-    init,
-    updateStatusUI,
-    updateLinkVisualState,
-    updateAudioIndicators,
-    updateFullscreenStatus
-  }
+globalThis.ViewerStatus = {
+  init,
+  updateStatusUI,
+  updateLinkVisualState,
+  updateAudioIndicators,
+  updateFullscreenStatus
 }
+  })() // Конец IIFE
+} // Конец защиты от повторной загрузки

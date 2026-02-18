@@ -69,6 +69,28 @@ async function main() {
     if (!ok) throw new Error('Not found')
   })
 
+  await test('togglePlayPause функция доступна', async () => {
+    const ok = await ctrlPage.evaluate(() => typeof togglePlayPause === 'function')
+    if (!ok) throw new Error('togglePlayPause not defined')
+  })
+
+  await test('setDirection функция доступна', async () => {
+    const ok = await ctrlPage.evaluate(() => typeof setDirection === 'function')
+    if (!ok) throw new Error('setDirection not defined')
+  })
+
+  await test('Клик на Play кнопку не вызывает ошибку', async () => {
+    const errorsBefore = await ctrlPage.evaluate(() => window.__jsErrors || [])
+    await ctrlPage.evaluate(() => {
+      window.__jsErrors = []
+      window.onerror = (msg) => window.__jsErrors.push(msg)
+    })
+    await ctrlPage.click('#playPauseBtn')
+    await new Promise(r => setTimeout(r, 500))
+    const errors = await ctrlPage.evaluate(() => window.__jsErrors)
+    if (errors.length > 0) throw new Error('JS errors: ' + errors.join(', '))
+  })
+
   // Тест viewer
   const viewPage = await browser.newPage()
   await viewPage.goto(`${BASE_URL}/s/e2e_session`, { waitUntil: 'domcontentloaded', timeout: 15000 })

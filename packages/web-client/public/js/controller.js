@@ -5,18 +5,24 @@
  */
 /* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession, setSoundEnabled, setSoundType */
 /* global debugWarn, debugError, RealtimeClient */
+// Защита от повторной загрузки
+if (typeof globalThis.__controllerLoaded !== 'undefined') {
+  console.warn('Controller already loaded, skipping')
+} else {
+globalThis.__controllerLoaded = true
+
 if (typeof globalThis.BBDebug === 'undefined') {
   globalThis.BBDebug = { isEnabled: false, log: () => {} }
 }
-globalThis.__current = {
+globalThis.__current = globalThis.__current || {
   sessionId: null,
   viewerConnected: false,
   viewerScreenSize: { width: 0, height: 0 },
   isInitializing: true // Глобальный флаг инициализации
 }
-globalThis.__previewRenderer = null
-globalThis.__previewScale = 1 // Коэффициент масштабирования
-const components = {}
+globalThis.__previewRenderer = globalThis.__previewRenderer || null
+globalThis.__previewScale = globalThis.__previewScale || 1 // Коэффициент масштабирования
+const components = globalThis.components || {}
 if (typeof globalThis !== 'undefined') {
   globalThis.components = components
 }
@@ -1996,3 +2002,16 @@ function showNotification(message, type = 'info') {
     alert(message)
   }
 }
+
+// Экспорт функций в глобальную область видимости для доступа из HTML onclick
+globalThis.togglePlayPause = togglePlayPause
+globalThis.setDirection = setDirection
+globalThis.updateSpeed = updateSpeed
+globalThis.setBallColor = setBallColor
+globalThis.setBallSize = setBallSize
+globalThis.setBackgroundColor = setBackgroundColor
+globalThis.resetSession = resetSession
+globalThis.setSoundEnabled = setSoundEnabled
+globalThis.setSoundType = setSoundType
+globalThis.setBallSizeMultiplier = setBallSizeMultiplier
+} // Конец защиты от повторной загрузки

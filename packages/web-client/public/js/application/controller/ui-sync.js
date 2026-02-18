@@ -3,6 +3,11 @@
  * UI Sync - синхронизация UI с состоянием сервера
  * @module application/controller/ui-sync
  */
+// Защита от повторной загрузки
+if (typeof globalThis.UISync !== 'undefined') {
+  // Модуль уже загружен
+} else {
+  (function() {
 let _components = {}
 let _deps = {}
 let __ignoreServerPausedUntilTs = 0
@@ -92,18 +97,18 @@ function syncAll(ballState) {
 }
 function setIgnorePausedUntil(ts) { __ignoreServerPausedUntilTs = ts }
 function setIgnoreDirectionUntil(ts) { __ignoreServerDirectionUntilTs = ts }
-if (typeof globalThis !== 'undefined') {
-  globalThis.UISync = {
-    init,
-    syncAll,
-    syncSpeed,
-    syncSize,
-    syncColors,
-    syncPause,
-    syncDirection,
-    syncSound,
-    getDirectionMode,
-    setIgnorePausedUntil,
-    setIgnoreDirectionUntil
-  }
+globalThis.UISync = {
+  init,
+  syncAll,
+  syncSpeed,
+  syncSize,
+  syncColors,
+  syncPause,
+  syncDirection,
+  syncSound,
+  getDirectionMode,
+  setIgnorePausedUntil,
+  setIgnoreDirectionUntil
 }
+  })() // Конец IIFE
+} // Конец защиты от повторной загрузки
