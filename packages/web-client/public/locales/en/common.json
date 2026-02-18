@@ -17,7 +17,9 @@
   },
   "home": {
     "title": "BilateralBound - EMDR Therapy",
-    "subtitle": "Innovative platform for EMDR therapy with bilateral stimulation"
+    "subtitle": "Innovative platform for EMDR therapy with bilateral stimulation",
+    "pageTitle": "BilateralBound - EMDR Therapy for Patients",
+    "metaDescription": "Online EMDR platform for treating PTSD, anxiety and couples therapy. Certified psychologists, safe sessions, permanent links."
   },
   "emdr": {
     "heading": "🎯 What is EMDR Therapy?",
@@ -112,7 +114,8 @@
     "controllerConnected": "Controller connected",
     "controllerDisconnected": "Controller disconnected",
     "waitingForController": "Connection established, waiting for controller...",
-    "enableSound": "Enable Sound"
+    "enableSound": "Enable Sound",
+    "hotkeysHint": "— Pause/Start"
   },
   "test": {
     "title": "🌐 Language Selector - Testing",

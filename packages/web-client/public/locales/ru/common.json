@@ -17,7 +17,9 @@
   },
   "home": {
     "title": "BilateralBound - EMDR Терапия",
-    "subtitle": "Инновационная платформа для EMDR терапии с биодинамической стимуляцией"
+    "subtitle": "Инновационная платформа для EMDR терапии с биодинамической стимуляцией",
+    "pageTitle": "BilateralBound - EMDR терапия для пациентов",
+    "metaDescription": "Онлайн-платформа EMDR для лечения ПТСР, тревоги и парной терапии. Сертифицированные психологи, безопасные сессии, постоянные ссылки."
   },
   "emdr": {
     "heading": "🎯 Что такое EMDR терапия?",
@@ -114,7 +116,8 @@
     "controllerConnected": "Контроллер подключен",
     "controllerDisconnected": "Контроллер отключен",
     "waitingForController": "Соединение установлено, ожидание контроллера...",
-    "enableSound": "Включить звук"
+    "enableSound": "Включить звук",
+    "hotkeysHint": "— Пауза/Старт"
   },
   "test": {
     "title": "🌐 Language Selector - Тестирование",
