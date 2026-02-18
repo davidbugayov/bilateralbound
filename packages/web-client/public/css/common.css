@@ -16,19 +16,15 @@
 .preview-canvas-wrapper {
   text-align: center;
   position: relative;
-  padding-bottom: 35px;
+  padding-bottom: 0;
 }
 
-.viewer-info-popup {
-  margin-top: 8px;
-  font-size: 12px;
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  padding: 4px 8px;
-  border-radius: 4px;
+.preview-status-stack {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
 }
 
 /* === SESSION INFO STYLING === */

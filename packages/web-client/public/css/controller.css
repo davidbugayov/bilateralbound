@@ -17,6 +17,67 @@
   overflow-y: auto;
 }
 
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #fff;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #2196f3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196f3;
+}
+
+input:checked + .slider::before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round::before {
+  border-radius: 50%;
+}
+
+.sound-control {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
 #previewFsPanel input {
   background: #1e293b;
   border: 1px solid #334155;
@@ -50,14 +111,32 @@
   color: #374151;
 }
 
+/* Перенёс блок #sessionControls + div выше, чтобы он шел до #bbCounters и не вызывал no-descending-specificity */
+#sessionControls + div {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
 /* bbCounters dark theme support */
 #bbCounters > div {
   background: #334155;
   border: 1px solid #475569;
 }
 
+/* Перемещённый блок light-theme для bbCounters — менее специфичный селектор должен идти раньше более специфичного */
+.light-theme #bbCounters > div {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
 #bbCounters > div > div > div:first-child {
   color: #cbd5e1;
+}
+
+.light-theme #bbCounters > div > div > div:first-child {
+  color: #64748b;
 }
 
 #bbTimer {
@@ -66,24 +145,15 @@
   color: #e2e8f0;
 }
 
-#bbPasses,
-#bbSets {
-  color: #e2e8f0;
-}
-
-.light-theme #bbCounters > div {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-
-.light-theme #bbCounters > div > div > div:first-child {
-  color: #64748b;
-}
-
 .light-theme #bbTimer {
   background: #fff;
   border: 1px solid #e2e8f0;
   color: #374151;
+}
+
+#bbPasses,
+#bbSets {
+  color: #e2e8f0;
 }
 
 .light-theme #bbPasses,
@@ -310,20 +380,24 @@ body.fullscreen-active .back-btn {
 }
 
 .fs-btn {
-  font-size: 12px;
-  padding: 8px;
+  font-size: 13px;
+  padding: 10px 12px;
+  border: 2px solid transparent;
+  min-height: 44px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
 }
 
 .fs-btn-grid {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  gap: 6px;
 }
 
 .fs-seg-btn {
-  font-size: 11px;
-  padding: 6px;
+  font-size: 12px;
+  padding: 8px;
+  min-height: 44px;
 }
 
 .fs-slider-group {
@@ -341,29 +415,33 @@ body.fullscreen-active .back-btn {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .fs-control-group--colors {
-  gap: 3px;
+  gap: 5px;
   margin-bottom: 4px;
 }
 
 .fs-label {
-  font-size: 11px;
+  font-size: 12px;
   min-width: 50px;
+  font-weight: 600;
 }
 
 .fs-size-btn {
-  font-size: 10px;
-  padding: 4px 6px;
+  font-size: 11px;
+  padding: 6px 8px;
+  min-height: 36px;
+  min-width: 44px;
 }
 
 .fs-color-btn {
-  width: 14px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: 8px;
+  border-width: 2px;
 }
 
 .btn-full-width {
@@ -387,11 +465,11 @@ body.fullscreen-active .back-btn {
   margin-top: 16px;
 }
 
-#sessionControls + div {
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+/* Темная тема - для каждого селектора идут все состояния подряд (сначала атрибутный селектор, затем #presetControls, затем #sessionControls) */
+
+[aria-labelledby="tools-heading"] .btn {
+  border: 2px solid #475569;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
 }
 
 /* Viewer Audio Indicators */
@@ -502,11 +580,92 @@ body.fullscreen-active .back-btn {
 }
 
 /* Responsive improvements */
+
 @media (width <= 768px) {
   .fullscreen-panel {
     width: calc(100vw - 40px);
     max-width: 320px;
     right: 20px;
     left: auto;
+  }
+}
+
+/* Viewer Audio Status Indicator */
+.viewer-audio-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: rgb(234 179 8 / 15%);
+  border: 1px solid rgb(234 179 8 / 30%);
+  color: #fbbf24;
+}
+
+.viewer-audio-indicator.hidden {
+  display: none;
+}
+
+.viewer-audio-indicator.warning {
+  background: rgb(239 68 68 / 15%);
+  border-color: rgb(239 68 68 / 30%);
+  color: #f87171;
+}
+
+.viewer-audio-indicator.ready {
+  background: rgb(34 197 94 / 15%);
+  border-color: rgb(34 197 94 / 30%);
+  color: #4ade80;
+}
+
+.viewer-audio-indicator .icon {
+  font-size: 1rem;
+}
+
+/* Viewer Sound Playing Indicator */
+.viewer-sound-playing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin-top: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: rgb(100 100 100 / 10%);
+  border: 1px solid rgb(100 100 100 / 20%);
+  color: var(--text-secondary, #888);
+  opacity: 0.5;
+  transition: all 0.15s ease;
+}
+
+.viewer-sound-playing-indicator.playing {
+  background: rgb(34 197 94 / 20%);
+  border-color: rgb(34 197 94 / 40%);
+  color: #4ade80;
+  opacity: 1;
+}
+
+.viewer-sound-playing-indicator .sound-wave {
+  font-size: 1rem;
+  transition: transform 0.1s ease;
+}
+
+.viewer-sound-playing-indicator.playing .sound-wave {
+  animation: pulse-sound 0.3s ease;
+}
+
+@keyframes pulse-sound {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }

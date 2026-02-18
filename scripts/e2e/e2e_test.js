@@ -46,6 +46,27 @@ async function main() {
     await mainPage.waitForSelector('#generatedLinksContainer', { visible: true, timeout: 5000 })
   })
 
+  await test('Language selector присутствует', async () => {
+    if (!await mainPage.$('#languageSelectorBtn')) throw new Error('Language selector not found')
+  })
+
+  await test('Переключение языка работает', async () => {
+    // Кликаем на кнопку языка
+    await mainPage.click('#languageSelectorBtn')
+    await new Promise(r => setTimeout(r, 300))
+    // Проверяем что dropdown открылся
+    const isOpen = await mainPage.evaluate(() => !document.getElementById('languageDropdown')?.hasAttribute('hidden'))
+    if (!isOpen) throw new Error('Dropdown not opened')
+    // Выбираем English
+    await mainPage.click('[data-lang="en"]')
+    await new Promise(r => setTimeout(r, 1000))
+    // Проверяем что язык сохранён в localStorage и label изменился
+    const langSaved = await mainPage.evaluate(() => localStorage.getItem('emdr-language'))
+    const label = await mainPage.evaluate(() => document.getElementById('currentLanguageLabel')?.textContent)
+    if (langSaved !== 'en') throw new Error('Language not saved: ' + langSaved)
+    if (!label?.includes('English')) throw new Error('Label not updated: ' + label)
+  })
+
   await mainPage.close()
 
   // Тест контроллера
@@ -89,10 +110,6 @@ async function main() {
     await new Promise(r => setTimeout(r, 500))
     const errors = await ctrlPage.evaluate(() => window.__jsErrors)
     if (errors.length > 0) throw new Error('JS errors: ' + errors.join(', '))
-  })
-
-  await test('Language selector присутствует', async () => {
-    if (!await ctrlPage.$('#languageSelectorBtn')) throw new Error('Language selector not found')
   })
 
   await test('i18n модуль загружен', async () => {

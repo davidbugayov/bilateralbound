@@ -1,7 +1,136 @@
-/* Основные стили для главной страницы BilateralBound */
+/* filepath: /Users/davidbugayov/StudioProject/bilateral_bound/packages/web-client/public/css/main-page.css */
+
+/* CSS Variables for theme support */
+:root {
+  --bg-card: rgb(31 41 55 / 80%);
+  --bg-secondary: #1e293b;
+  --text-color: #f3f4f6;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border-color: rgb(55 65 81 / 80%);
+  --hover-bg: rgb(55 65 81 / 50%);
+}
+
+body.light-theme {
+  --bg-card: rgb(255 255 255 / 95%);
+  --bg-secondary: #f8fafc;
+  --text-color: #1e293b;
+  --text-primary: #374151;
+  --text-secondary: #64748b;
+  --border-color: rgb(226 232 240 / 80%);
+  --hover-bg: rgb(59 130 246 / 8%);
+}
+
+/* Header Controls */
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  gap: 16px;
+}
+
+.header-controls__left,
+.header-controls__right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.header-controls__right {
+  justify-content: flex-end;
+}
+
+/* Language Selector */
+.language-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.language-selector__btn {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  color: #fff;
+  border: 0;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgb(37 99 235 / 25%);
+}
+
+.language-selector__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgb(37 99 235 / 35%);
+}
+
+.language-selector__btn:active {
+  transform: translateY(0);
+}
+
+.language-selector__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  min-width: 200px;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 15%);
+  z-index: 1000;
+  animation: slideDown 0.2s ease-out;
+}
+
+.language-selector__dropdown[hidden] {
+  display: none;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-color);
+}
+
+.language-option:hover {
+  background: var(--hover-bg);
+}
+
+.language-option--active {
+  background: rgb(37 99 235 / 10%);
+  font-weight: 600;
+  border-left: 3px solid #2563eb;
+  padding-left: 13px;
+}
+
+.language-option:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
 .main-button {
   background: linear-gradient(135deg, #2563eb, #7c3aed);
-  color: white;
+  color: #fff;
   border: 0;
   padding: 18px 36px;
   border-radius: 16px;
@@ -40,6 +169,24 @@
 }
 
 /* Light theme для постоянных ссылок */
+.light-theme .language-selector__dropdown {
+  background: rgb(255 255 255 / 95%);
+  border-color: rgb(226 232 240 / 80%);
+}
+
+.light-theme .language-option {
+  color: #1e293b;
+}
+
+.light-theme .language-option:hover {
+  background: rgb(59 130 246 / 8%);
+}
+
+.light-theme .language-option--active {
+  background: rgb(59 130 246 / 12%);
+  border-left-color: #2563eb;
+}
+
 .light-theme #customClientId {
   background: rgb(255 255 255 / 90%);
   border-color: rgb(59 130 246 / 40%);

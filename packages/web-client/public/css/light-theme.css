@@ -1,5 +1,4 @@
 /* Light theme overrides for BilateralBound */
-
 body.light-theme {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
   color: #1e293b;
@@ -63,38 +62,38 @@ body.light-theme .btn.outline:hover {
 body.light-theme .btn.primary {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #fff;
-  box-shadow: 0 4px 12px rgb(16 185 129 / 30%);
-  border: 1px solid rgb(16 185 129 / 20%);
+  box-shadow: 0 4px 12px #10b9814d; /* 30% alpha */
+  border: 1px solid #10b98133; /* 20% alpha */
 }
 
 body.light-theme .btn.primary:hover {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgb(16 185 129 / 40%);
+  box-shadow: 0 8px 20px #10b98166; /* 40% alpha */
 }
 
 body.light-theme .btn.primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgb(16 185 129 / 30%);
+  box-shadow: 0 2px 8px #10b9814d; /* 30% alpha */
 }
 
 /* Специфичные стили для кнопки playPauseBtn - максимальный приоритет */
 body.light-theme #playPauseBtn {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #fff;
-  box-shadow: 0 4px 12px rgb(16 185 129 / 30%);
-  border: 1px solid rgb(16 185 129 / 20%);
+  box-shadow: 0 4px 12px #10b9814d; /* 30% alpha */
+  border: 1px solid #10b98133; /* 20% alpha */
 }
 
 body.light-theme #playPauseBtn:hover {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgb(16 185 129 / 40%);
+  box-shadow: 0 8px 20px #10b98166; /* 40% alpha */
 }
 
 body.light-theme #playPauseBtn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgb(16 185 129 / 30%);
+  box-shadow: 0 2px 8px #10b9814d; /* 30% alpha */
 }
 
 /* Состояние «идёт воспроизведение» для кнопки Старт/Стоп */
@@ -102,14 +101,14 @@ body.light-theme .btn.primary.playing,
 body.light-theme #playPauseBtn.playing {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: #111827;
-  box-shadow: 0 4px 12px rgb(245 158 11 / 30%);
-  border: 1px solid rgb(245 158 11 / 20%);
+  box-shadow: 0 4px 12px #f59e0b4d; /* orange 30% */
+  border: 1px solid #f59e0b33; /* orange 20% */
   animation: pulse-glow 2s ease-in-out infinite alternate;
 }
 
 body.light-theme .btn.danger {
   background: linear-gradient(135deg, #ef4444, #dc2626);
-  box-shadow: 0 2px 8px rgb(239 68 68 / 30%);
+  box-shadow: 0 2px 8px #ef44444d; /* red 30% */
 }
 
 /* Input elements */
@@ -118,13 +117,13 @@ body.light-theme textarea {
   background: #fff;
   border: 1px solid #cbd5e1;
   color: #334155;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+  box-shadow: 0 1px 2px #0000000d; /* black 5% */
 }
 
 body.light-theme input:focus,
 body.light-theme textarea:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgb(59 130 246 / 10%);
+  box-shadow: 0 0 0 3px #3b82f61a; /* blue 10% */
   outline: none;
 }
 
@@ -156,10 +155,10 @@ body.light-theme #curSid {
 
 /* Progress bars and visual elements */
 body.light-theme .bb-notification {
-  background: rgb(255 255 255 / 95%);
-  border: 1px solid rgb(226 232 240 / 80%);
+  background: #fffffff2; /* rgba(255,255,255,95%) -> #fffffff2 (95% ~ f2) */
+  border: 1px solid #e2e8f0cc; /* 80% -> cc */
   color: #374151;
-  box-shadow: 0 10px 25px rgb(0 0 0 / 10%);
+  box-shadow: 0 10px 25px #0000001a; /* 10% black */
 }
 
 body.light-theme .bb-notification.success {
@@ -182,7 +181,6 @@ body.light-theme .bb-notification.info {
   color: #1e3a8a;
 }
 
-/* Speed control */
 body.light-theme .speed-control {
   background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
   border: 1px solid rgb(226 232 240 / 80%);
@@ -219,11 +217,10 @@ body.light-theme .speed-preset:hover {
 body.light-theme .speed-preset.active {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border-color: #3b82f6;
-  color: white;
-  box-shadow: 0 4px 12px rgb(59 130 246 / 30%);
+  color: #fff;
+  box-shadow: 0 4px 12px #3b82f64d; /* blue 30% */
 }
 
-/* Size and color controls */
 body.light-theme .size-control h3,
 body.light-theme .color-control h3 {
   color: #2563eb;
@@ -246,67 +243,9 @@ body.light-theme .size-btn:hover {
 
 body.light-theme .size-btn.active {
   background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
+  color: #fff;
   border-color: #2563eb;
-  box-shadow: 0 2px 8px rgb(59 130 246 / 30%);
-}
-
-body.light-theme .color-btn {
-  border: 2px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
-}
-
-body.light-theme .color-btn:hover {
-  transform: scale(1.05);
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 8px rgb(0 0 0 / 15%);
-}
-
-body.light-theme .color-btn.active {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgb(59 130 246 / 20%);
-}
-
-/* Segmented controls */
-body.light-theme .segmented {
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  box-shadow: none;
-}
-
-body.light-theme .segmented .seg-btn {
-  color: #64748b;
-}
-
-body.light-theme .segmented .seg-btn + .seg-btn {
-  border-left: 1px solid #e2e8f0;
-}
-
-body.light-theme .segmented .seg-btn:hover {
-  background: #e2e8f0;
-  color: #374151;
-}
-
-body.light-theme .segmented .seg-btn.active {
-  background: #2563eb;
-  color: white;
-  box-shadow: 0 2px 6px rgb(37 99 235 / 25%);
-}
-
-body.light-theme .direction-btn {
-  background: #3b82f6;
-  color: white;
-}
-
-body.light-theme .direction-btn:hover {
-  background: #2563eb;
-  box-shadow: 0 4px 8px rgb(59 130 246 / 30%);
-}
-
-body.light-theme .direction-btn.active {
-  background: #1d4ed8;
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgb(245 158 11 / 20%);
+  box-shadow: 0 2px 8px #3b82f64d; /* blue 30% */
 }
 
 /* Status indicator */
@@ -345,7 +284,7 @@ body.light-theme .status-indicator.warning {
 /* Mobile controls */
 body.light-theme .mobile-btn {
   background: #3b82f6;
-  color: white;
+  color: #fff;
 }
 
 body.light-theme .mobile-btn:hover {
@@ -512,13 +451,13 @@ body.light-theme .warning-card {
 
 body.light-theme .main-button {
   background: #1e40af;
-  color: white;
-  box-shadow: 0 8px 20px rgb(30 64 175 / 25%);
+  color: #fff;
+  box-shadow: 0 8px 20px #1e40af40; /* 25% */
 }
 
 body.light-theme .main-button:hover {
   background: #1e3a8a;
-  box-shadow: 0 12px 30px rgb(30 64 175 / 30%);
+  box-shadow: 0 12px 30px #1e40af4d; /* 30% */
 }
 
 body.light-theme .footer {
@@ -530,10 +469,10 @@ body.light-theme .footer {
 /* Viewer link container */
 body.light-theme .viewer-link-container,
 body.light-theme .actions-grid .btn {
-  background: rgb(255 255 255 / 80%);
-  border: 1px solid rgb(226 232 240 / 80%);
+  background: #fffc; /* was #ffffffcc */
+  border: 1px solid #e2e8f0cc; /* 80% */
   color: #374151;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
+  box-shadow: 0 2px 8px #0000000f; /* 6% */
 }
 
 body.light-theme .actions-grid .btn:hover {
@@ -546,14 +485,14 @@ body.light-theme .actions-grid .btn:hover {
 
 body.light-theme .actions-grid .btn.primary {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgb(16 185 129 / 25%);
+  color: #fff;
+  box-shadow: 0 4px 12px #10b98140; /* 25% */
 }
 
 body.light-theme .actions-grid .btn.danger {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgb(239 68 68 / 25%);
+  color: #fff;
+  box-shadow: 0 4px 12px #ef444440; /* 25% */
 }
 
 /* Text colors for status */
