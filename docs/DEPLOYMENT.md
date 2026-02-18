@@ -27,7 +27,7 @@
 
 ### Development
 - **URL**: https://dev.emdrbilateral.online
-- **Тип**: Развернуто по веткe `stable-enhanced`
+- **Тип**: Развернуто по ветке `main`
 - **Путь**: `/var/www/dev.emdrbilateral.online`
 - **Статус**: Включено
 - **Использование**: Тестирование новых функций
@@ -70,17 +70,16 @@ node /var/www/emdrbilateral.online/packages/server-core/server/index.js
 cd bilateral_bound
 git add -A
 git commit -m "Fix: описание изменений"
-git push origin stable-enhanced
+git push origin main
 ```
 
 ### Автоматическое обновление на dev сервере
 
 ```bash
-# На VPS сервере (автоматически)
+# На VPS сервере
 cd /var/www/dev.emdrbilateral.online
-git pull origin stable-enhanced
-npm install --production
-# Перезапуск происходит автоматически через systemd или pm2
+git pull origin main
+pm2 restart bilateral-bound-dev
 ```
 
 ## Ручной деплой по SSH
@@ -174,5 +173,5 @@ nohup node /var/www/dev.emdrbilateral.online/packages/server-core/server/index.j
 - `packages/web-client/package.json`
 - `packages/web-client/public/*.html` файлах
 
-Текущая версия: **2.39.75**
+Текущая версия: **2.39.125**
 

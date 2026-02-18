@@ -1,6 +1,6 @@
 # 📦 NPM Commands Reference
 
-Справочник всех доступных команд в проекте BilateralBound v2.39.75.
+Справочник всех доступных команд в проекте BilateralBound v2.39.125.
 
 ## 🚀 Основные команды
 
@@ -72,7 +72,7 @@ npm run deploy:dev:status  # Статус PM2
 
 ### Ручной запуск (если npm не работает)
 ```bash
-sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/stable-enhanced && systemctl restart emdrbilateral-dev'
+sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/main && pm2 restart bilateral-bound-dev'
 ```
 
 ## 🌐 Деплой на PROD (emdrbilateral.online / .ru)
@@ -111,7 +111,7 @@ npm run git:sync     # Fetch all + status
 ```bash
 git add -A
 git commit -m "fix: исправление"
-git push origin stable-enhanced
+git push origin main
 npm run deploy:dev
 ```
 
