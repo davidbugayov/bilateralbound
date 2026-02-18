@@ -3,56 +3,33 @@ const puppeteer = require('puppeteer');
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
   const page = await browser.newPage();
   
-  page.on('console', msg => console.log('BROWSER:', msg.text()));
+  // Собираем все console.log
+  const logs = [];
+  page.on('console', msg => {
+    logs.push(msg.text());
+    console.log('BROWSER:', msg.text());
+  });
+  page.on('pageerror', err => console.log('PAGE ERROR:', err.message));
   
   await page.goto('https://dev.emdrbilateral.online', { waitUntil: 'networkidle0' });
-  await new Promise(r => setTimeout(r, 3000));
+  await new Promise(r => setTimeout(r, 5000));
   
   const state = await page.evaluate(() => ({
     hasI18nLower: typeof window.i18n !== 'undefined',
     hasI18nUpper: typeof window.I18n !== 'undefined',
     isReady: window.i18n ? window.i18n.isReady : null,
     currentLang: window.i18n ? window.i18n.currentLanguage : null,
-    translations: window.i18n ? Object.keys(window.i18n.translations || {}) : null,
-    storage: localStorage.getItem('emdr-language')
+    storage: localStorage.getItem('emdr-language'),
+    htmlLang: document.documentElement.lang
   }));
-  console.log('State:', JSON.stringify(state, null, 2));
+  console.log('\nState:', JSON.stringify(state, null, 2));
   
-  // Проверим переключение языка
-  if (state.hasI18nLower && state.isReady) {
-    console.log('Testing language switch...');
-    
-    // Найдем элемент с переводом
-    const titleBefore = await page.evaluate(() => {
-      const el = document.querySelector('[data-i18n="home.title"]');
-      return el ? el.textContent : 'not found';
-    });
-    console.log('Title before:', titleBefore);
-    
-    // Переключаем на русский
-    await page.evaluate(async () => {
-      await window.i18n.changeLanguage('ru');
-    });
-    await new Promise(r => setTimeout(r, 1000));
-    
-    const titleAfterRu = await page.evaluate(() => {
-      const el = document.querySelector('[data-i18n="home.title"]');
-      return el ? el.textContent : 'not found';
-    });
-    console.log('Title after RU:', titleAfterRu);
-    
-    // Переключаем на английский
-    await page.evaluate(async () => {
-      await window.i18n.changeLanguage('en');
-    });
-    await new Promise(r => setTimeout(r, 1000));
-    
-    const titleAfterEn = await page.evaluate(() => {
-      const el = document.querySelector('[data-i18n="home.title"]');
-      return el ? el.textContent : 'not found';
-    });
-    console.log('Title after EN:', titleAfterEn);
-  }
+  // Check if i18n script tag exists
+  const scripts = await page.evaluate(() => {
+    const scriptTags = [...document.querySelectorAll('script[src]')];
+    return scriptTags.map(s => s.src).filter(s => s.includes('i18n'));
+  });
+  console.log('\ni18n scripts:', scripts);
   
   await browser.close();
 })();
