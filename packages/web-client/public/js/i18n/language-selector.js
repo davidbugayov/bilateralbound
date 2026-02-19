@@ -148,11 +148,18 @@ const LanguageSelector = (function () {
     const options = document.querySelectorAll('.language-option')
 
     if (label) {
-      // Получаем название языка из i18n
+      // Получаем название языка из i18n, если доступно и перевод существует
       const langNameKey = `common.lang.${lang}`
-      label.textContent = globalThis.i18n?.t
-        ? globalThis.i18n.t(langNameKey)
-        : languageNames[lang] || lang
+      let translatedName = null
+      if (globalThis.i18n?.t) {
+        const result = globalThis.i18n.t(langNameKey)
+        // Проверяем, что перевод не вернул сам ключ (что означает отсутствие перевода)
+        if (result && result !== langNameKey) {
+          translatedName = result
+        }
+      }
+      // Используем перевод или fallback на hardcoded languageNames
+      label.textContent = translatedName || languageNames[lang] || lang
     }
 
     for (const option of options) {

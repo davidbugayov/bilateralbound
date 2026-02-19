@@ -438,9 +438,11 @@ body.light-theme .hotkeys-hint kbd {
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 4px 12px rgb(59 130 246 / 50%);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
+  width: auto;
+  white-space: nowrap;
   transition:
     transform 0.2s,
     background-color 0.2s;
