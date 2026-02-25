@@ -4,161 +4,103 @@
 
 Проект развернут на VPS **213.139.229.44** в двух окружениях:
 
-### 1. Development
+### Development
 - **URL**: https://dev.emdrbilateral.online
 - **Директория**: `/var/www/dev.emdrbilateral.online`
-- **Ветка Git**: `stable-enhanced`
-- **Порт**: 3000
-- **NODE_ENV**: development
+- **Ветка Git**: `main`
+- **Порт**: 3003
+- **NODE_ENV**: production
+- **systemd**: `emdrbilateral-dev`
 - **Назначение**: Тестирование новых функций
 
-### 2. Production
-- **URL**: https://emdrbilateral.online (основной) или https://emdrbilateral.ru (альтернативный)
+### Production
+- **URL**: https://emdrbilateral.online и https://emdrbilateral.ru
 - **Директория**: `/var/www/emdrbilateral.online`
 - **Ветка Git**: `stable`
-- **Порт**: 3000
+- **Порт**: 8080
 - **NODE_ENV**: production
+- **systemd**: `emdrbilateral-online` + `emdrbilateral-ru`
 - **Назначение**: Основной рабочий сайт
-- **Примечание**: Оба домена указывают на одну директорию и один процесс Node.js
 
-## Node.js процессы
-
-Каждое окружение запускает отдельный Node.js процесс:
-
-```bash
-# Development
-node /var/www/dev.emdrbilateral.online/packages/server-core/server/index.js
-
-# Production
-node /var/www/emdrbilateral.online/packages/server-core/server/index.js
-```
-
-Процессы запускаются вручную или автоматически при перезагрузке через systemd/pm2.
-
-## Команды деплоя
-
-### Через npm scripts (из локального проекта)
-
-```bash
-# Development
-npm run deploy:dev              # Pull + restart
-npm run deploy:dev:status       # Проверить статус
-npm run deploy:dev:logs         # Показать логи
-
-# Production (оба окружения)
-npm run deploy:prod             # Pull + restart для обоих
-npm run deploy:prod:status      # Проверить статус
 ## Nginx конфигурация
 
 Nginx проксирует запросы на соответствующие порты:
-- `dev.emdrbilateral.online` → `localhost:3000`
-- `emdrbilateral.online` → `localhost:3000`
-- `emdrbilateral.ru` → `localhost:3000` (тот же процесс что и .online)
+- `dev.emdrbilateral.online` → `localhost:3003`
+- `emdrbilateral.online` → `localhost:8080`
+- `emdrbilateral.ru` → `localhost:8080`
 
-Два продакшн домена (emdrbilateral.online и emdrbilateral.ru) обслуживаются одним Node.js процессом.
+**Важно**: SSE endpoint `/api/session/:id/stream` имеет специальный nginx-блок с `proxy_buffering off` и `proxy_read_timeout 3600s`. Без этого EventSource буферизуется и не доставляет события.
 
-## Деплой через Git Push
-
-Оба окружения могут быть обновлены через Git:
+## Команды деплоя
 
 ```bash
-# Development: push в stable-enhanced
-git push origin stable-enhanced
+# Development
+npm run deploy:dev              # Pull origin/main + restart
+npm run deploy:dev:status       # Статус systemd
+npm run deploy:dev:logs         # Логи (journalctl)
 
-# Production: push в stable
-git push origin stable
+# Production
+npm run deploy:prod             # Pull origin/stable + restart обоих
+npm run deploy:prod:status      # Статус systemd
+npm run deploy:prod:logs        # Логи
 ```
 
-После push нужно вручную обновить на сервере:
-
-```bash
-# Подключиться к серверу
-ssh root@213.139.229.44
-
-# Development обновление
-cd /var/www/dev.emdrbilateral.online
-git pull origin stable-enhanced
-npm install --production
-pkill -f 'node.*packages/server-core'
-sleep 2
-nohup node packages/server-core/server/index.js > /tmp/server-dev.log 2>&1 &
-
-# Production обновление
-cd /var/www/emdrbilateral.online
-git pull origin stable
-npm install --production
-pkill -f 'node.*packages/server-core'
-sleep 2
-nohup node packages/server-core/server/index.js > /tmp/server-prod.log 2>&1 &
-```
-
-## Мониторинг
+## Диагностика
 
 ```bash
 # Проверить запущенные Node.js процессы
-ps aux | grep 'node.*packages/server-core'
+ps aux | grep node | grep -v grep
 
-# Проверить статус dev сервера
+# Проверить порты
+ss -tlnp | grep -E '3003|8080'
+
+# Health check
 curl https://dev.emdrbilateral.online/api/health
-
-# Проверить статус prod сервера (оба домена)
 curl https://emdrbilateral.online/api/health
-curl https://emdrbilateral.ru/api/health
 
-# Показать логи dev
-tail -f /tmp/server-dev.log
-
-# Показать логи prod
-tail -f /tmp/server-prod.log
+# Логи
+journalctl -u emdrbilateral-dev -n 50 --no-pager
+journalctl -u emdrbilateral-online -n 50 --no-pager
 ```
 
 ## Troubleshooting
 
-### Сервер не отвечает
+### Сервис в crash-loop (EADDRINUSE)
+
+Причина: зомби-процесс держит порт (из-за конкуренции между systemd RestartSec и check-services.sh cron).
 
 ```bash
-# Подключиться к серверу
 ssh root@213.139.229.44
-
-# Проверить процессы
-ps aux | grep node
-
-# Убить старые процессы
-pkill -9 -f 'node.*packages/server-core'
-
-# Проверить логи последние 50 строк
-tail -50 /tmp/server-dev.log
-tail -50 /tmp/server-prod.log
-
-# Запустить вручную для debug
-cd /var/www/dev.emdrbilateral.online
-PORT=3000 node packages/server-core/server/index.js
+systemctl stop emdrbilateral-dev
+kill -9 $(lsof -t -i:3003 2>/dev/null)
+sleep 3
+systemctl start emdrbilateral-dev
 ```
 
-### Высокое использование памяти
+### Cron-скрипт мониторинга
 
-```bash
-# Проверить процессы
-ps aux --sort=-%mem | head -10
+`/usr/local/bin/check-services.sh` запускается каждые 5 минут и автоматически рестартует упавший сервис. При ручном управлении нужно учитывать, что он может запустить orphan-процесс.
 
-# Перезапустить конкретное окружение
-pkill -f '/var/www/dev.emdrbilateral.online'
-cd /var/www/dev.emdrbilateral.online
-nohup node packages/server-core/server/index.js > /tmp/server-dev.log 2>&1 &
+### Nginx не стримит SSE
+
+Убедиться, что в nginx-конфиге для `/api/session/:id/stream` есть:
+```nginx
+proxy_buffering off;
+proxy_cache off;
+proxy_read_timeout 3600s;
+proxy_set_header Connection '';
 ```
 
 ## Структура директорий на VPS
 
 ```
 /var/www/
-├── dev.emdrbilateral.online/     # Development (ветка: stable-enhanced)
+├── dev.emdrbilateral.online/    # Development (ветка: main)
 │   ├── packages/server-core/
 │   ├── packages/web-client/
-│   ├── package.json
-│   └── ...
-└── emdrbilateral.online/         # Production (ветка: stable)
+│   └── package.json
+└── emdrbilateral.online/        # Production (ветка: stable)
     ├── packages/server-core/
     ├── packages/web-client/
-    ├── package.json
-    └── ...
+    └── package.json
 ```
