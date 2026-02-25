@@ -439,14 +439,24 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
         role: 'controller'
       })
       if (lastPlayingState && globalThis.__current?.viewerConnected) {
-        setTimeout(() => {
+        setTimeout(async () => {
           // Don't restore if user explicitly changed play state recently
           if (performance.now() < __ignoreServerPausedUntilTs) return
+          // Verify server is actually playing before restoring local state
+          try {
+            const resp = await fetch(`/api/session/${sessionId}/state`)
+            if (!resp.ok) return
+            const state = await resp.json()
+            if (state.paused === true) return // Server is paused, don't restore
+          } catch (e) {
+            return // If fetch fails, don't restore
+          }
           if (previewPhysicsEngine) {
             previewPhysicsEngine.setPaused(false)
           }
           isPlaying = true
           globalThis.__current.isPlaying = true
+          globalThis.isPlaying = true
           updatePlayPauseButton()
         }, 500)
       }

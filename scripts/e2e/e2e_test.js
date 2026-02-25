@@ -202,7 +202,7 @@ async function main() {
 
   // Тест синхронизации движения viewer <-> controller
   await test('Синхронизация viewer-controller', async () => {
-    // Step 1: Force pause via API + client toggle to avoid SSE-reconnect race conditions
+    // Step 1: Force pause via server API + directly reset all client play-state flags
     await ctrlPage.evaluate(async () => {
       const sid = globalThis.__current?.sessionId
       if (sid) {
@@ -212,24 +212,13 @@ async function main() {
           body: JSON.stringify({ paused: true, returnToCenter: true })
         }).catch(() => {})
       }
-      // Sync client state if currently playing
-      if (globalThis.__current?.isPlaying || globalThis.isPlaying) {
-        globalThis.togglePlayPause()
-      }
+      // Directly reset all play-state variables (avoids togglePlayPause state inconsistency)
+      globalThis.__current.isPlaying = false
+      globalThis.isPlaying = false
     })
 
-    // Poll until paused confirmed on client (max 2s)
-    const pauseDeadline = Date.now() + 2000
-    while (Date.now() < pauseDeadline) {
-      const paused = await ctrlPage.evaluate(() =>
-        !globalThis.__current?.isPlaying && !globalThis.isPlaying
-      )
-      if (paused) break
-      await new Promise(r => setTimeout(r, 200))
-    }
-
-    // Buffer: wait past SSE reconnect restore window (>500ms) for stability
-    await new Promise(r => setTimeout(r, 900))
+    // Wait for server to process and broadcast the pause (SSE state_update)
+    await new Promise(r => setTimeout(r, 1500))
 
     const beforeClick = await ctrlPage.evaluate(() => ({
       isPlaying: globalThis.__current?.isPlaying,

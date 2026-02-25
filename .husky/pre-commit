@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # Автообновление версии перед коммитом
 echo "🔄 Обновление версии..."
 node scripts/update-version.js
