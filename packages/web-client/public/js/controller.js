@@ -671,6 +671,20 @@ function applyServerStateToPreview(state) {
       delete localCommand.dirY
     }
     previewPhysicsEngine.applyCommand(localCommand)
+    // Position sync: on each state_update (15Hz), gently correct drift toward server position.
+    // This runs only when new data arrives, not every frame, so it doesn't cause jitter.
+    if (typeof state.x === 'number' && typeof state.y === 'number'
+        && !previewPhysicsEngine.state.paused) {
+      const dx = state.x - previewPhysicsEngine.ball.x
+      const dy = state.y - previewPhysicsEngine.ball.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      if (dist > 5) { // Dead zone: skip tiny corrections to avoid micro-jitter
+        // Scale alpha by distance: larger drift → stronger correction
+        const alpha = dist > 100 ? 0.5 : dist > 30 ? 0.2 : 0.1
+        previewPhysicsEngine.ball.x += dx * alpha
+        previewPhysicsEngine.ball.y += dy * alpha
+      }
+    }
   } else {
     previewPhysicsEngine.applyCommand(state)
   }
@@ -706,14 +720,6 @@ const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
 function physicsLoop() {
   if (previewPhysicsEngine) {
     previewPhysicsEngine.update(PHYSICS_DT / 1000)
-    // Drift correction: lerp toward server-authoritative position to stay in sync with viewer
-    if (lastServerState && !previewPhysicsEngine.state.paused
-        && typeof lastServerState.x === 'number'
-        && typeof lastServerState.y === 'number') {
-      const alpha = 0.15
-      previewPhysicsEngine.ball.x += (lastServerState.x - previewPhysicsEngine.ball.x) * alpha
-      previewPhysicsEngine.ball.y += (lastServerState.y - previewPhysicsEngine.ball.y) * alpha
-    }
   }
 }
 function renderPreviewLoop(timestamp) {

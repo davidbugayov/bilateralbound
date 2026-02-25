@@ -69,3 +69,38 @@ npm run format           # Prettier
 - Prod: `emdrbilateral.online` / `emdrbilateral.ru` (branch: `stable`) — `npm run deploy:prod`
 - systemd services on `213.139.229.44`: `emdrbilateral-dev`, `emdrbilateral-online`, `emdrbilateral-ru`
 - **All development happens on `main`**; prod branch `stable` is updated manually when ready
+
+## Plugin Configuration
+
+Plugins installed in Claude Code. Use them proactively for the relevant tasks:
+
+### context7
+- Use for: Express, SSE/EventSource, Service Worker, Puppeteer, Node.js APIs
+- When asking about API or best practices — check context7 first before guessing
+
+### playwright
+- Use for: E2E testing, browser automation, cross-browser testing
+- Use when writing or debugging e2e tests in `scripts/e2e/`
+
+### frontend-design
+- Use when modifying: `viewer.html`, `session-controller.html`, `index.html`
+- Goals: accessibility, readability, neutral therapeutic copy, correct i18n
+
+### feature-dev
+- Use for: guided feature development with codebase understanding
+- Use when implementing new features that span multiple files
+
+### code-simplifier
+- Use for: refactoring, reducing complexity, cleaning up dead code
+- Use when code review finds overly complex logic
+
+### typescript-lsp
+- Use for: type checking, finding references, rename refactoring
+- Useful even in JS codebase for type inference and navigation
+
+### Security review
+- Run security review before merging changes to:
+  - `session/` (SessionManager, SSEManager, SessionRepository)
+  - `network/` (expressApp, webSocketServer)
+  - `js/sse-client.js`, `js/realtime-client.js`
+  - Controller API endpoints
