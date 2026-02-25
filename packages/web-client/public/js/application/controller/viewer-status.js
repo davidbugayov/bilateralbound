@@ -17,7 +17,7 @@ function updateStatusUI() {
   const el = document.getElementById('viewerStatus')
   if (el) {
     if (globalThis.__current.viewerConnected) {
-      el.textContent = 'подключен'
+      el.textContent = globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
       el.classList.add('connected')
       el.classList.remove('disconnected')
       el.style.fontWeight = '600'
@@ -27,7 +27,7 @@ function updateStatusUI() {
       }
       _deps.setControlsEnabled(true)
     } else {
-      el.textContent = 'ожидание'
+      el.textContent = globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
       el.classList.add('disconnected')
       el.classList.remove('connected')
       el.style.fontWeight = '400'
@@ -68,13 +68,13 @@ function updateAudioIndicators() {
     if (!audioActivated) {
       indicator.classList.remove('hidden', 'ready')
       indicator.classList.add('warning')
-      text.textContent = 'Ожидание: зритель должен нажать "Включить звук"'
+      text.textContent = globalThis.i18n?.t('controller.viewerSoundNotActivated') || "Waiting: viewer must click \"Enable sound\""
       playing.classList.add('hidden')
       playing.classList.remove('active')
     } else {
       indicator.classList.remove('hidden', 'warning')
       indicator.classList.add('ready')
-      text.textContent = 'Звук активирован у зрителя'
+      text.textContent = globalThis.i18n?.t('controller.viewerHearingSound') || 'Viewer sound activated'
       if (isPlaying) {
         playing.classList.remove('hidden')
         playing.classList.add('active')

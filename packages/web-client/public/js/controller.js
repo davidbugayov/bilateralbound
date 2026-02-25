@@ -379,7 +379,7 @@ async function initializeDOMElements(sessionId) {
   }
   const viewerStatusEl = document.getElementById('viewerStatus')
   if (viewerStatusEl) {
-    viewerStatusEl.textContent = 'ожидание'
+    viewerStatusEl.textContent = globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
     viewerStatusEl.classList.add('disconnected')
   }
   updateViewerLink(sessionId)
@@ -496,7 +496,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       lastServerState = null
       const viewerStatusEl = document.getElementById('viewerStatus')
       if (viewerStatusEl) {
-        viewerStatusEl.textContent = 'ожидание'
+        viewerStatusEl.textContent = globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
         viewerStatusEl.classList.remove('connected')
         viewerStatusEl.classList.add('disconnected')
         viewerStatusEl.style.fontWeight = '400'
@@ -1341,16 +1341,14 @@ function setBallColor(color) {
   safeSend(WS_MSG.controllerUpdate, { colorBall: color })
 }
 function setBallSize(size) {
-  if (globalThis.__current?.isInitializing) {
-     if (lastServerState) {
-        lastServerState.radius = size
-    }
-    return
+  // Всегда обновляем локальное состояние и превью
+  if (lastServerState) {
+    lastServerState.radius = size
   }
-  if (!globalThis.__current.viewerConnected) {
-    if (lastServerState) {
-        lastServerState.radius = size
-    }
+  if (previewPhysicsEngine) {
+    previewPhysicsEngine.ball.radius = size
+  }
+  if (globalThis.__current?.isInitializing) {
     return
   }
   safeSend(WS_MSG.controllerUpdate, { radius: size })
@@ -1591,17 +1589,17 @@ function updateViewerStatusUI() {
   const viewerStatusEl = document.getElementById('viewerStatus')
   if (viewerStatusEl) {
     if (globalThis.__current.viewerConnected) {
-      viewerStatusEl.textContent = 'подключен'
+      viewerStatusEl.textContent = globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
       viewerStatusEl.classList.add('connected')
       viewerStatusEl.classList.remove('disconnected')
-      viewerStatusEl.style.fontWeight = '600' // делаем текст жирным для лучшей видимости
+      viewerStatusEl.style.fontWeight = '600'
       hideWaitingForViewer()
       if (globalThis.__current.viewerScreenSize?.width > 0) {
         updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
       setControlsEnabled(true)
     } else {
-      viewerStatusEl.textContent = 'ожидание'
+      viewerStatusEl.textContent = globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
       viewerStatusEl.classList.add('disconnected')
       viewerStatusEl.classList.remove('connected')
       viewerStatusEl.style.fontWeight = '400'
@@ -1654,7 +1652,7 @@ function updateViewerAudioIndicators() {
       audioIndicator.classList.remove('hidden')
       audioIndicator.classList.remove('ready')
       audioIndicator.classList.add('warning')
-      audioText.textContent = 'Ожидание: зритель должен нажать "Включить звук"'
+      audioText.textContent = globalThis.i18n?.t('controller.viewerSoundNotActivated') || "Waiting: viewer must click \"Enable sound\""
       soundPlayingIndicator.classList.add('hidden')
       soundPlayingIndicator.classList.remove('active')
     }
@@ -1662,7 +1660,7 @@ function updateViewerAudioIndicators() {
       audioIndicator.classList.remove('hidden')
       audioIndicator.classList.add('ready')
       audioIndicator.classList.remove('warning')
-      audioText.textContent = 'Звук активирован у зрителя'
+      audioText.textContent = globalThis.i18n?.t('controller.viewerHearingSound') || 'Viewer sound activated'
       if ( isPlaying) {
         soundPlayingIndicator.classList.remove('hidden')
         soundPlayingIndicator.classList.add('active')
@@ -1985,10 +1983,10 @@ function updateFullscreenViewerStatus() {
   if (!statusText) return
   if (globalThis.__current?.viewerConnected) {
     fsViewerStatus.classList.add('connected')
-    statusText.textContent = 'Подключен'
+    statusText.textContent = globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
   } else {
     fsViewerStatus.classList.remove('connected')
-    statusText.textContent = 'Ожидание...'
+    statusText.textContent = globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
   }
 }
 /**

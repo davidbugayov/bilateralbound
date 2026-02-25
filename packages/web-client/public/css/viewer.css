@@ -149,33 +149,6 @@ body.light-theme .loading::after {
   border-top-color: transparent;
 }
 
-/* Unmute Overlay */
-.unmute-overlay {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: rgb(0 0 0 / 80%);
-  color: white;
-  padding: 15px 20px;
-  border-radius: 10px;
-  border: 1px solid rgb(255 255 255 / 20%);
-  font-size: 14px;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
-}
-
-.unmute-overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.status-offline {
-  border-color: #ef4444;
-  color: #ef4444;
-}
-
 /* Waiting status with pulse animation */
 .status-overlay.status-waiting {
   animation: pulse-border 2s ease-in-out infinite;
@@ -226,52 +199,6 @@ body.light-theme .loading::after {
   }
 }
 
-/* Controls */
-.fullscreen-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgb(0 0 0 / 80%);
-  color: white;
-  border: 1px solid rgb(255 255 255 / 20%);
-  padding: 10px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgb(59 130 246 / 50%);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition:
-    transform 0.2s,
-    background-color 0.2s;
-}
-
-.unmute-btn:hover {
-  background: #2563eb;
-  transform: scale(1.05);
-}
-
-.unmute-btn:active {
-  transform: scale(0.95);
-}
-
-.loading::after {
-  content: "";
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #60a5fa;
-  border-radius: 50%;
-  border-top-color: transparent;
-  animation: spin 1s linear infinite;
-  margin-left: 10px;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 /* Hotkeys hint */
 .hotkeys-hint {
@@ -412,13 +339,15 @@ body.light-theme .hotkeys-hint kbd {
   }
 }
 
-/* Unmute Overlay */
+/* Unmute Overlay - small button at bottom */
 .unmute-overlay {
-  position: absolute;
-  bottom: 40px;
+  position: fixed;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1001;
+  width: auto;
+  max-width: fit-content;
   transition: opacity 0.3s ease;
 }
 
@@ -429,35 +358,36 @@ body.light-theme .hotkeys-hint kbd {
 }
 
 .unmute-btn {
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 50px;
-  font-size: 16px;
-  font-weight: 600;
+  background: rgb(0 0 0 / 70%) !important;
+  color: #fff !important;
+  border: 1px solid rgb(255 255 255 / 20%) !important;
+  padding: 8px 16px !important;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgb(59 130 246 / 50%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  width: auto;
+  gap: 6px;
+  width: auto !important;
+  max-width: fit-content;
   white-space: nowrap;
+  backdrop-filter: blur(10px);
   transition:
     transform 0.2s,
     background-color 0.2s;
 }
 
 .unmute-btn span:first-child {
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 
 .unmute-btn:hover {
-  background: #2563eb;
+  background: rgb(0 0 0 / 85%);
   transform: scale(1.05);
-  box-shadow: 0 6px 30px rgb(59 130 246 / 60%);
 }
 
 .unmute-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
 }

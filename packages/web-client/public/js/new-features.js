@@ -38,28 +38,28 @@ class FeatureManager {
    */
   loadPresets() {
     const defaultPresets = {
-      Релаксация: {
+      [globalThis.i18n?.t('controller.presets.relaxation') || 'Relaxation']: {
         speed: 20,
         direction: 'horizontal',
         colorBall: '#60a5fa',
         colorBg: '#020617',
         size: 20
       },
-      Активация: {
+      [globalThis.i18n?.t('controller.presets.activation') || 'Activation']: {
         speed: 80,
         direction: 'vertical',
         colorBall: '#ef4444',
         colorBg: '#000000',
         size: 30
       },
-      'Супружеская терапия': {
+      [globalThis.i18n?.t('controller.presets.couplesTherapy') || 'Couples Therapy']: {
         speed: 40,
         direction: 'diagRL',
         colorBall: '#10b981',
         colorBg: '#052e16',
         size: 25
       },
-      Динамическая: {
+      [globalThis.i18n?.t('controller.presets.dynamic') || 'Dynamic']: {
         speed: 60,
         direction: 'diagRLL',
         colorBall: '#f59e0b',
@@ -108,7 +108,7 @@ class FeatureManager {
       this._showPresetAppliedNotification(preset)
     } catch (error) {
       debugError('Apply preset error:', error)
-      globalThis.notificationSystem?.error('Ошибка', 'Ошибка применения пресета')
+      globalThis.notificationSystem?.error('Error', 'Failed to apply preset')
     }
   }
   /**
@@ -124,13 +124,13 @@ class FeatureManager {
    */
   _showPresetAppliedNotification(preset) {
     const presetName = Object.keys(this.presets).find(key => this.presets[key] === preset)
-    globalThis.notificationSystem?.success('', `Пресет "${presetName}" применён`)
+    globalThis.notificationSystem?.success('', `Preset "${presetName}" applied`)
   }
   /**
    * Сохраняет текущее состояние как кастомный пресет
    */
   createCustomPreset() {
-    const name = prompt('Название нового пресета:')
+    const name = prompt(globalThis.i18n?.t('controller.presetNamePrompt') || 'New preset name:')
     if (!name || name.trim() === '') return
     const colorBtn = document.querySelector('.color-btn.active')
     this.presets[name.trim()] = {
@@ -142,7 +142,7 @@ class FeatureManager {
     }
     this.savePresets()
     this.addPresetControls()
-    globalThis.notificationSystem?.success('', `Пресет "${name}" сохранён`)
+    globalThis.notificationSystem?.success('', `Preset "${name}" saved`)
   }
   savePresets() {
     try {
@@ -195,7 +195,7 @@ class FeatureManager {
     link.download = `bilateralbound-session-${new Date().toISOString().split('T')[0]}.json`
     link.click()
     URL.revokeObjectURL(url)
-    globalThis.notificationSystem?.success('', 'Сессия экспортирована')
+    globalThis.notificationSystem?.success('', 'Session exported')
   }
   /**
    * Импорт сессии из JSON файла
@@ -211,10 +211,10 @@ class FeatureManager {
       if (sessionData.counters) {
         this.applyCounters(sessionData.counters)
       }
-      globalThis.notificationSystem?.success('', 'Сессия импортирована')
+      globalThis.notificationSystem?.success('', 'Session imported')
     } catch (error) {
       debugError('Import error:', error)
-      globalThis.notificationSystem?.error('Ошибка', 'Ошибка импорта сессии')
+      globalThis.notificationSystem?.error('Error', 'Failed to import session')
     }
   }
   async applySettings(settings) {
@@ -343,13 +343,13 @@ class FeatureManager {
    */
   async undoLastChange() {
     if (this.sessionHistory.length < 2) {
-      globalThis.notificationSystem?.warning('', 'Нет изменений для отмены')
+      globalThis.notificationSystem?.warning('', 'No changes to undo')
       return
     }
     this.sessionHistory.pop()
     const previousState = this.sessionHistory.at(-1)
     await this.applyState(previousState)
-    globalThis.notificationSystem?.success('', 'Изменение отменено')
+    globalThis.notificationSystem?.success('', 'Change undone')
   }
   /**
    * Применяет сохраненное состояние
@@ -419,11 +419,11 @@ class FeatureManager {
     nameRow.style.marginBottom = '8px'
     const saveBtn = document.createElement('button')
     saveBtn.className = 'btn'
-    saveBtn.textContent = '💾 Сохранить'
-    saveBtn.onclick = () => this.saveNamedSession('Сессия')
+    saveBtn.textContent = '💾 Save'
+    saveBtn.onclick = () => this.saveNamedSession('Session')
     const deleteBtn = document.createElement('button')
     deleteBtn.className = 'btn outline'
-    deleteBtn.textContent = '🗑 Удалить'
+    deleteBtn.textContent = '🗑 Delete'
     deleteBtn.disabled = !this.currentSessionId
     deleteBtn.onclick = () => this.deleteSessionById(this.currentSessionId)
     nameRow.appendChild(saveBtn)
@@ -443,7 +443,7 @@ class FeatureManager {
       const empty = document.createElement('div')
       empty.style.color = '#9ca3af'
       empty.style.fontSize = '12px'
-      empty.textContent = 'Нет сохранённых сессий'
+      empty.textContent = globalThis.i18n?.t('controller.noSavedSessions') || 'No saved sessions'
       listWrap.appendChild(empty)
       return
     }
@@ -468,11 +468,11 @@ class FeatureManager {
       const title = document.createElement('div')
       title.style.color = '#e5e7eb'
       title.style.fontWeight = '600'
-      title.textContent = s.name || 'Без названия'
+      title.textContent = s.name || 'Untitled'
       const meta = document.createElement('div')
       meta.style.color = '#9ca3af'
       meta.style.fontSize = '11px'
-      meta.textContent = `Обновлено: ${new Date(s.updatedAt).toLocaleString()}`
+      meta.textContent = `Updated: ${new Date(s.updatedAt).toLocaleString()}`
       info.appendChild(title)
       info.appendChild(meta)
       const actions = document.createElement('div')
@@ -480,11 +480,11 @@ class FeatureManager {
       actions.style.gap = '6px'
       const loadBtn = document.createElement('button')
       loadBtn.className = 'btn'
-      loadBtn.textContent = 'Загрузить'
+      loadBtn.textContent = globalThis.i18n?.t('controller.loadBtn') || 'Load'
       loadBtn.onclick = () => this.loadSessionById(s.id)
       const renameBtn = document.createElement('button')
       renameBtn.className = 'btn outline'
-      renameBtn.textContent = '✎ Имя'
+      renameBtn.textContent = '✎ Rename'
       renameBtn.onclick = () => this.renameSessionById(s.id)
       const delBtn = document.createElement('button')
       delBtn.className = 'btn outline'
@@ -530,7 +530,7 @@ class FeatureManager {
       this._applySessionCounters(sessionData?.counters)
     } catch (e) {
       debugError('applySessionData error', e)
-      globalThis.notificationSystem?.error('Ошибка', 'Ошибка применения сессии')
+      globalThis.notificationSystem?.error('Error', 'Failed to apply session')
     }
   }
   /**
@@ -563,7 +563,7 @@ class FeatureManager {
     globalThis.bbCounters.render?.()
   }
   saveNamedSession(nameRaw) {
-    const name = (nameRaw || '').trim() || 'Сессия'
+    const name = (nameRaw || '').trim() || 'Session'
     const existingSession = this.sessions.find(s => s.name === name)
     if (existingSession) {
       this._updateExistingSession(existingSession)
@@ -573,7 +573,7 @@ class FeatureManager {
     this.saveSessions()
     this.renderSessionsList()
     this.updateHeaderSessionName()
-    globalThis.notificationSystem?.success('', `Сессия "${name}" сохранена`)
+    globalThis.notificationSystem?.success('', `Session "${name}" saved`)
   }
   async loadSessionById(id) {
     const session = this.sessions.find(s => s.id === id)
@@ -584,12 +584,12 @@ class FeatureManager {
     if (input) input.value = session.name
     this.updateHeaderSessionName()
     this.renderSessionsList()
-    globalThis.notificationSystem?.success('', `Загружена сессия "${session.name}"`)
+    globalThis.notificationSystem?.success('', `Session "${session.name}" loaded`)
   }
   renameSessionById(id) {
     const session = this.sessions.find(s => s.id === id)
     if (!session) return
-    const newName = prompt('Новое название сессии:', session.name)
+    const newName = prompt(globalThis.i18n?.t('controller.renameSessionPrompt') || 'New session name:', session.name)
     if (!newName) return
     session.name = newName.trim() || session.name
     session.updatedAt = new Date().toISOString()

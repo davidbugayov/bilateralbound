@@ -268,10 +268,10 @@ function updateFullscreenViewerStatus() {
   if (!statusText) return
   if (globalThis.__current?.viewerConnected) {
     fsViewerStatus.classList.add('connected')
-    statusText.textContent = 'Подключен'
+    statusText.textContent = globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
   } else {
     fsViewerStatus.classList.remove('connected')
-    statusText.textContent = 'Ожидание...'
+    statusText.textContent = globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
   }
 }
 /**
