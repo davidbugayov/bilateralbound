@@ -68,6 +68,9 @@ playwright-report/
 tmp/
 temp/
 
+# Claude Code
+.claude/
+
 # IDE files
 .vscode/
 .idea/*

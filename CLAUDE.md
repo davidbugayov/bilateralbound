@@ -65,6 +65,7 @@ npm run format           # Prettier
 
 ## Deployment
 
-- Dev: `dev.emdrbilateral.online` (branch: `stable-enhanced`)
-- Prod: `emdrbilateral.online` / `emdrbilateral.ru` (branch: `stable`)
-- systemd services on `213.139.229.44`
+- Dev: `dev.emdrbilateral.online` (branch: `main`) — `npm run deploy:dev`
+- Prod: `emdrbilateral.online` / `emdrbilateral.ru` (branch: `stable`) — `npm run deploy:prod`
+- systemd services on `213.139.229.44`: `emdrbilateral-dev`, `emdrbilateral-online`, `emdrbilateral-ru`
+- **All development happens on `main`**; prod branch `stable` is updated manually when ready

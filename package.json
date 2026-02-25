@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.134",
+  "version": "2.39.135",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -41,7 +41,7 @@
     "sonar": "sonar-scanner",
     "deploy": "cd packages/server-core && npm start",
     "deploy:dev": "npm run deploy:dev:pull && npm run deploy:dev:restart",
-    "deploy:dev:pull": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/stable-enhanced'",
+    "deploy:dev:pull": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/main'",
     "deploy:dev:restart": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl restart emdrbilateral-dev'",
     "deploy:dev:logs": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'journalctl -u emdrbilateral-dev -n 50 --no-pager'",
     "deploy:dev:status": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl status emdrbilateral-dev --no-pager'",

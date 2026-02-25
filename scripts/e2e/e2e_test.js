@@ -165,8 +165,15 @@ async function main() {
     if (!hasState) throw new Error('SSE state not received')
   })
 
-  // Ждём подключения обоих клиентов
-  await new Promise(r => setTimeout(r, 3000))
+  // Ждём подключения обоих клиентов (до 8с с polling каждые 500мс)
+  await (async () => {
+    const deadline = Date.now() + 8000
+    while (Date.now() < deadline) {
+      const connected = await ctrlPage.evaluate(() => globalThis.__current?.viewerConnected === true)
+      if (connected) break
+      await new Promise(r => setTimeout(r, 500))
+    }
+  })()
 
   // Тест: контроллер видит viewer как подключённый
   await test('Контроллер видит viewer подключён', async () => {
