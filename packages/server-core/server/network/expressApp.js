@@ -112,6 +112,7 @@ function setupExpressApp(sessionManager, apiCache) {
     next()
   })
   // Расширенная конфигурация Helmet
+  const isDev = process.env.NODE_ENV !== 'production'
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -137,7 +138,9 @@ function setupExpressApp(sessionManager, apiCache) {
             'https://mc.yandex.com',
             'wss://mc.yandex.com'
           ],
-          frameSrc: ['\'self\'', 'https://mc.yandex.md']
+          frameSrc: ['\'self\'', 'https://mc.yandex.md'],
+          // Disable upgrade-insecure-requests in dev (HTTP) to allow SSE/fetch on localhost
+          upgradeInsecureRequests: isDev ? null : []
         }
       },
       crossOriginResourcePolicy: { policy: 'same-site' },
@@ -202,19 +205,19 @@ function setupExpressApp(sessionManager, apiCache) {
       next()
     }
   })
-  
+
   // Gzip compression for all responses (except SSE streams)
   app.use(compression({
     filter: (req, res) => {
       // Don't compress SSE streams
-      if (req.path.includes('/sse/')) {
+      if (req.path.includes('/sse/') || req.path.includes('/stream')) {
         return false
       }
       return compression.filter(req, res)
     },
     level: 6 // Balance between speed and compression ratio
   }))
-  
+
   app.use(express.json())
 
   // Static files path
@@ -449,6 +452,10 @@ function setupExpressApp(sessionManager, apiCache) {
       sessionManager.updateBallState(sessionId, req.body)
       sessionManager.sessionRepository.update(sessionId, { controllerConnected: true })
       clearStateCache(apiCache, sessionId)
+
+      // FIX: Уведомляем вьювера о подключении контроллера через SSE
+      sessionManager.broadcastControllerConnection(sessionId, true)
+
       res.json({ success: true, message: 'Controller connected' })
     }
   )
@@ -546,6 +553,9 @@ function setupExpressApp(sessionManager, apiCache) {
         sessionManager.setViewerScreenSize(sessionId, screenSize)
         clearStateCache(apiCache, sessionId)
       }
+
+      // FIX: Уведомляем контроллер о подключении вьювера через SSE
+      sessionManager.broadcastViewerConnection(sessionId, true, screenSize)
 
       res.json({ success: true, message: 'Viewer connected' })
     }

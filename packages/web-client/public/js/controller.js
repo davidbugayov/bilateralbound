@@ -466,15 +466,19 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   wsClient.on('error', () => {
   })
   wsClient.on(WS_MSG.viewerStatus, data => {
+    // console.log('[CONTROLLER] 📊 viewer_status event received:', JSON.stringify(data))
     const wasConnected = globalThis.__current.viewerConnected
-    globalThis.__current.viewerConnected = data.connected
+    const isConnected = data.connected === true || data.viewerConnected === true
+    // console.log('[CONTROLLER] ✅ Setting viewerConnected to:', isConnected)
+    globalThis.__current.viewerConnected = isConnected
     if (data.screenSize) {
       globalThis.__current.viewerScreenSize = data.screenSize
     }
-    if (data.connected) {
+    if (isConnected) {
       completeInitialization().catch(debugError)
+      updateViewerStatusUI()
     }
-    if (wasConnected && !data.connected) {
+    if (wasConnected && !isConnected) {
       globalThis.__current.viewerAudioActivated = false
       globalThis.__current.viewerScreenSize = null
       isPlaying = false
@@ -1501,6 +1505,8 @@ function _setPlayPauseState(shouldPlay) {
       }
   safeSend(WS_MSG.controllerUpdate, payload)
   isPlaying = shouldPlay
+  globalThis.__current.isPlaying = shouldPlay
+  globalThis.isPlaying = shouldPlay
   globalThis.forcePauseUntilUserAction = false
   if (shouldPlay) {
     bbCounters.start()

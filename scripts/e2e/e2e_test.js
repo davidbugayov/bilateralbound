@@ -22,9 +22,22 @@ async function test(name, fn) {
   }
 }
 
+async function reserveSession(sessionId) {
+  try {
+    const res = await fetch(`${BASE_URL}/api/session/${sessionId}/reserve`, { method: 'POST' })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  } catch (e) {
+    console.warn(`⚠️  Could not reserve session ${sessionId}: ${e.message}`)
+  }
+}
+
 async function main() {
   console.log(`\n🚀 E2E: ${BASE_URL}\n`)
-  
+
+  // Reserve sessions before navigating to controller/viewer pages
+  await reserveSession('e2e_session')
+  await reserveSession('e2e_mobile')
+
   browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] })
 
   // Тест главной страницы
@@ -154,45 +167,70 @@ async function main() {
     if (!hasState) throw new Error('SSE state not received')
   })
 
+  // Ждём подключения обоих клиентов
+  await new Promise(r => setTimeout(r, 3000))
+
+  // Тест: контроллер видит viewer как подключённый
+  await test('Контроллер видит viewer подключён', async () => {
+    const viewerConnected = await ctrlPage.evaluate(() => globalThis.__current?.viewerConnected === true)
+    if (!viewerConnected) throw new Error('Controller does not see viewer as connected')
+  })
+
+  // Тест: UI контроллера показывает "подключен"
+  await test('viewerStatus показывает "подключен"', async () => {
+    const statusText = await ctrlPage.evaluate(() => {
+      return document.getElementById('viewerStatus')?.textContent?.trim()
+    })
+    if (!statusText?.includes('подключен')) {
+      throw new Error(`viewerStatus text is "${statusText}", expected "подключен"`)
+    }
+  })
+
+  // Тест: viewer получает статус контроллера
+  await test('Viewer видит controllerConnected', async () => {
+    const controllerConnected = await viewPage.evaluate(() => {
+      return globalThis.__current?.controllerConnected === true ||
+             globalThis.controllerConnected === true
+    })
+    if (!controllerConnected) throw new Error('Viewer does not see controller as connected')
+  })
+
   // Тест синхронизации движения viewer <-> controller
   await test('Синхронизация viewer-controller', async () => {
-    // Ждём подключения обоих клиентов и получения viewer screen size
-    await new Promise(r => setTimeout(r, 3000))
-    
-    // Проверяем подключение viewer на контроллере
-    const viewerConnected = await ctrlPage.evaluate(() => {
-      return globalThis.__current?.viewerConnected === true
-    })
-    
-    // Запускаем движение с контроллера
+    // Запускаем движение с контроллера (убедимся что viewer подключён перед play)
+    const viewerReady = await ctrlPage.evaluate(() => globalThis.__current?.viewerConnected === true)
+    if (!viewerReady) {
+      // Подождём ещё немного
+      await new Promise(r => setTimeout(r, 2000))
+    }
+
     await ctrlPage.evaluate(() => {
       const btn = document.getElementById('playPauseBtn')
       if (btn) btn.click()
     })
-    
-    // Даём время на синхронизацию
-    await new Promise(r => setTimeout(r, 2000))
-    
-    // Проверяем состояние
+
+    // Даём время на синхронизацию через SSE
+    await new Promise(r => setTimeout(r, 3000))
+
     const ctrlState = await ctrlPage.evaluate(() => ({
-      isPlaying: globalThis.isPlaying,
+      isPlaying: globalThis.__current?.isPlaying,
+      globalIsPlaying: globalThis.isPlaying,
       viewerConnected: globalThis.__current?.viewerConnected
     }))
-    
+
     const viewState = await viewPage.evaluate(() => {
       const engine = globalThis.physicsEngine
-      return { paused: engine?.state?.paused }
-    })
-    
-    // Успех если контроллер играет или viewer не на паузе
-    const isPlaying = ctrlState.isPlaying === true || viewState.paused === false
-    
-    if (!isPlaying) {
-      // Это OK если viewer не подключен - тест пройден если механизм работает
-      if (!viewerConnected) {
-        return // viewer не подключен, но это не ошибка синхронизации
+      return {
+        paused: engine?.state?.paused,
+        engineExists: typeof engine !== 'undefined'
       }
-      throw new Error(`Sync: ctrl.isPlaying=${ctrlState.isPlaying}, view.paused=${viewState.paused}`)
+    })
+
+    const isPlayingOnCtrl = ctrlState.isPlaying === true || ctrlState.globalIsPlaying === true
+    const isPlayingOnViewer = viewState.paused === false
+    const isPlaying = isPlayingOnCtrl || isPlayingOnViewer
+    if (!isPlaying) {
+      throw new Error(`Sync: ctrl.isPlaying=${ctrlState.isPlaying}/${ctrlState.globalIsPlaying}, view.paused=${viewState.paused}, viewer=${ctrlState.viewerConnected}`)
     }
   })
 

@@ -312,6 +312,11 @@ class SessionManager {
 
     this.stateBroadcaster.broadcastViewerStatus(sessionId)
     this._broadcastControllerConnectionIfNeeded(sessionId, role)
+
+    // Если подключился вьювер, уведомляем контроллеры
+    if (role === 'viewer') {
+      this.broadcastViewerConnection(sessionId, true, session.viewerScreenSize)
+    }
   }
 
   /**
@@ -339,11 +344,9 @@ class SessionManager {
     // Устанавливаем флаги подключения
     if (role === 'viewer') {
       session.viewerConnected = true
-      // console.log(`[SessionManager] ✅ Viewer connected via SSE to session ${sessionId}`)
       this.logger.logSession(sessionId, 'Viewer connected via SSE')
     } else if (role === 'controller') {
       session.controllerConnected = true
-      // console.log(`[SessionManager] ✅ Controller connected via SSE to session ${sessionId}`)
       this.logger.logSession(sessionId, 'Controller connected via SSE')
     }
 
@@ -389,7 +392,7 @@ class SessionManager {
             }
           }
           const sent = this.sseManager.sendEvent(controllerClient.res, 'viewer_status', viewerConnectedEvent)
-          // console.log(`[SessionManager] 📤 Sent viewer_status to controller for session ${sessionId}: ${sent}`)
+          // console.log(`[SessionManager] 📤 Sent viewer_status to controller for session ${sessionId}: ${sent}, payload:`, JSON.stringify(viewerConnectedEvent))
           this.logger.logSession(sessionId, `Sent viewer_status to controller: ${sent}`)
         }
         // console.log(`[SessionManager] ✅ Completed sending viewer_status to controller(s) for session ${sessionId}`)
@@ -402,6 +405,11 @@ class SessionManager {
     this.stateBroadcaster.broadcastViewerStatus(sessionId)
     this._broadcastControllerConnectionIfNeeded(sessionId, role)
 
+    // Если подключился вьювер, уведомляем контроллеры
+    if (role === 'viewer') {
+      this.broadcastViewerConnection(sessionId, true, session.viewerScreenSize)
+    }
+
     this.logger.logSession(sessionId, `SSE ${role} connected`)
     return true
   }
@@ -411,18 +419,25 @@ class SessionManager {
    * @private
    */
   _handleSSEControllerInitialState(sessionId, res, session) {
-    if (this._isViewerScreenSizeSet(session)) {
-      const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
-      this.stateBroadcaster.broadcastInitialState(sessionId, res, finalState)
-      this.logger.logSession(
-        sessionId,
-        'Sent initial_state to SSE controller (viewer screen size already set)'
-      )
-    } else {
-      this.logger.logSession(
-        sessionId,
-        'SSE Controller connected, deferring initial_state until viewer screen size is set.'
-      )
+    const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
+    this.stateBroadcaster.broadcastInitialState(sessionId, res, finalState)
+    this.logger.logSession(sessionId, 'Sent initial_state to SSE controller')
+
+    // CRITICAL FIX: When controller connects AFTER viewer, send viewer status to controller
+    if (session.viewerConnected) {
+      setImmediate(() => {
+        const viewerStatusEvent = {
+          type: 'viewer_status',
+          timestamp: Date.now(),
+          payload: {
+            connected: true,
+            viewerConnected: true,
+            screenSize: session.viewerScreenSize
+          }
+        }
+        this.sseManager.sendEvent(res, 'viewer_status', viewerStatusEvent)
+        this.logger.logSession(sessionId, 'Sent viewer_status to newly connected controller')
+      })
     }
   }
 
@@ -466,14 +481,9 @@ class SessionManager {
       /* ignore */
     }
 
-    if (this._isViewerScreenSizeSet(session)) {
-      this._broadcastInitialStateToController(sessionId, ws, session)
-    } else {
-      this.logger.logSession(
-        sessionId,
-        'Controller connected, deferring initial_state until viewer screen size is set.'
-      )
-    }
+    // FIX: Send initial_state to controller immediately, regardless of viewer connection status
+    // Controller should be able to initialize even if viewer hasn't connected yet
+    this._broadcastInitialStateToController(sessionId, ws, session)
   }
 
   /**
@@ -540,21 +550,36 @@ class SessionManager {
       return
     }
 
-    const payload = { controllerConnected: isConnected }
-
-    // TEMPORARY DEBUG LOG
     this.logger.logSession(
       sessionId,
       `Broadcasting controller_${isConnected ? 'connected' : 'disconnected'} event`,
       'debug'
     )
 
-    // Рассылаем через StateBroadcaster (поддерживает SSE и WebSocket)
-    this.stateBroadcaster.broadcastState(
+    // Используем специализированный метод StateBroadcaster который отправляет только вьюверам
+    this.stateBroadcaster.broadcastControllerConnection(sessionId, isConnected)
+  }
+
+  /**
+   * Рассылает событие о подключении/отключении вьювера всем контроллерам сессии
+   * @param {string} sessionId - ID сессии
+   * @param {boolean} isConnected - Статус подключения вьювера
+   * @param {Object} screenSize - Размеры экрана вьювера (если подключен)
+   */
+  broadcastViewerConnection(sessionId, isConnected, screenSize = null) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) {
+      return
+    }
+
+    this.logger.logSession(
       sessionId,
-      isConnected ? 'controller_connected' : 'controller_disconnected',
-      payload
+      `Broadcasting viewer_${isConnected ? 'connected' : 'disconnected'} event`,
+      'debug'
     )
+
+    // Используем специализированный метод StateBroadcaster для отправки вьювера события контроллерам
+    this.stateBroadcaster.broadcastViewerConnection(sessionId, isConnected, screenSize)
   }
 
   /**
@@ -704,14 +729,21 @@ class SessionManager {
    * @private
    */
   _sendInitialStateToControllers(sessionId, session) {
-    const clients = this.webSocketManager.getClients(sessionId)
     const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
 
+    // WebSocket controllers
+    const clients = this.webSocketManager.getClients(sessionId)
     for (const { client, info } of clients) {
       if (info.role === 'controller' && !client.initialStateSent) {
         this.stateBroadcaster.broadcastInitialState(sessionId, client, finalState)
         client.initialStateSent = true
       }
+    }
+
+    // SSE controllers
+    const sseControllers = this.sseManager.getClients(sessionId, 'controller')
+    for (const controllerClient of sseControllers) {
+      this.stateBroadcaster.broadcastInitialState(sessionId, controllerClient.res, finalState)
     }
   }
 

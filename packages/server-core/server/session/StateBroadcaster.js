@@ -83,6 +83,8 @@ class StateBroadcaster {
     }
     return this.broadcastState(sessionId, 'viewer_status', {
       connected: session.viewerConnected,
+      viewerConnected: session.viewerConnected, // Добавляем для совместимости с viewer.html
+      controllerConnected: session.controllerConnected, // Добавляем для вьювера
       screenSize: session.viewerScreenSize
     })
   }
@@ -139,6 +141,81 @@ class StateBroadcaster {
     }
 
     return false
+  }
+
+  /**
+   * Рассылает уведомление о подключении контроллера всем вьюверам
+   */
+  broadcastControllerConnection(sessionId, isConnected) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) {
+      return false
+    }
+
+    const eventType = isConnected ? 'controller_connected' : 'controller_disconnected'
+    const event = {
+      type: eventType,
+      timestamp: Date.now(),
+      payload: {
+        controllerConnected: isConnected
+      }
+    }
+
+    let sentCount = 0
+
+    // Рассылка через SSE (только вьюверам)
+    if (this.sseManager) {
+      const viewers = this.sseManager.getClients(sessionId, 'viewer')
+      for (const viewerClient of viewers) {
+        if (this.sseManager.sendEvent(viewerClient.res, eventType, event)) {
+          sentCount++
+        }
+      }
+    }
+
+    if (DEBUG_MODE) {
+      this.logger.logSession(sessionId, `Broadcasted controller_connection (connected=${isConnected}) to ${sentCount} viewers`)
+    }
+
+    return sentCount > 0
+  }
+
+  /**
+   * Рассылает уведомление о подключении вьювера всем контроллерам
+   */
+  broadcastViewerConnection(sessionId, isConnected, screenSize = null) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) {
+      return false
+    }
+
+    const event = {
+      type: 'viewer_status',
+      timestamp: Date.now(),
+      payload: {
+        connected: isConnected,
+        viewerConnected: isConnected,
+        screenSize: screenSize || session.viewerScreenSize
+      }
+    }
+
+    let sentCount = 0
+
+    // Рассылка через SSE (только контроллерам)
+    if (this.sseManager) {
+      const controllers = this.sseManager.getClients(sessionId, 'controller')
+      for (const controllerClient of controllers) {
+        if (this.sseManager.sendEvent(controllerClient.res, 'viewer_status', event)) {
+          sentCount++
+        }
+      }
+    }
+
+    if (DEBUG_MODE) {
+      this.logger.logSession(sessionId, `Broadcasted viewer_connection (connected=${isConnected}) to ${sentCount} controllers`)
+    }
+
+    return sentCount > 0
   }
 
   _isClientReady(client) {

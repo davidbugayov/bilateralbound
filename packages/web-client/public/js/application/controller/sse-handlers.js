@@ -77,15 +77,20 @@ function createSSEHandlers(deps) {
       const wasConnected = globalThis.__current.viewerConnected
       globalThis.__current.viewerConnected = data.connected
       if (data.screenSize) globalThis.__current.viewerScreenSize = data.screenSize
-      if (wasConnected && !data.connected) {
-        globalThis.__current.viewerAudioActivated = false
-        globalThis.__current.viewerScreenSize = null
-        setIsPlaying(false)
-        if (previewPhysicsEngine) previewPhysicsEngine.setPaused(true)
-        lastServerState = null
-        centerBallInViewer()
-        showWaitingForViewer()
-        updatePlayPauseButton()
+
+      // Обновляем UI когда меняется статус подключения viewer
+      if (wasConnected !== data.connected) {
+        if (!data.connected) {
+          // Viewer отключился - отключаем контролы
+          globalThis.__current.viewerAudioActivated = false
+          globalThis.__current.viewerScreenSize = null
+          setIsPlaying(false)
+          if (previewPhysicsEngine) previewPhysicsEngine.setPaused(true)
+          lastServerState = null
+          centerBallInViewer()
+          showWaitingForViewer()
+          updatePlayPauseButton()
+        }
         updateViewerStatusUI()
       }
     },
