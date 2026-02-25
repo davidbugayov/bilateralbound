@@ -97,6 +97,9 @@ if (typeof BallRenderer === 'undefined') {
           substeps++
         }
       }
+      if (this.onPostPhysics) {
+        this.onPostPhysics()
+      }
     }
     _renderFrame(currentTime) {
       let alpha = 1

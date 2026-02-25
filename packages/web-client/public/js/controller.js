@@ -706,6 +706,14 @@ const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
 function physicsLoop() {
   if (previewPhysicsEngine) {
     previewPhysicsEngine.update(PHYSICS_DT / 1000)
+    // Drift correction: lerp toward server-authoritative position to stay in sync with viewer
+    if (lastServerState && !previewPhysicsEngine.state.paused
+        && typeof lastServerState.x === 'number'
+        && typeof lastServerState.y === 'number') {
+      const alpha = 0.15
+      previewPhysicsEngine.ball.x += (lastServerState.x - previewPhysicsEngine.ball.x) * alpha
+      previewPhysicsEngine.ball.y += (lastServerState.y - previewPhysicsEngine.ball.y) * alpha
+    }
   }
 }
 function renderPreviewLoop(timestamp) {
