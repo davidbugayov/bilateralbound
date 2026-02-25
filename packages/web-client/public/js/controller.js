@@ -423,6 +423,15 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   let lastPlayingState = false
   wsClient.on('open', (event) => {
     updateConnectionStatus(true)
+    // Sync current language to session so viewer gets the same locale
+    const currentLang = localStorage.getItem('emdr-language')
+    if (currentLang && sessionId) {
+      fetch(`/api/session/${sessionId}/language`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: currentLang })
+      }).catch(() => {})
+    }
     if (event?.isReconnection) {
       safeSend('request_state_sync', {
         timestamp: Date.now(),
