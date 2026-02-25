@@ -440,6 +440,8 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       })
       if (lastPlayingState && globalThis.__current?.viewerConnected) {
         setTimeout(() => {
+          // Don't restore if user explicitly changed play state recently
+          if (performance.now() < __ignoreServerPausedUntilTs) return
           if (previewPhysicsEngine) {
             previewPhysicsEngine.setPaused(false)
           }

@@ -202,19 +202,56 @@ async function main() {
 
   // Тест синхронизации движения viewer <-> controller
   await test('Синхронизация viewer-controller', async () => {
-    // Запускаем движение с контроллера (убедимся что viewer подключён перед play)
-    const viewerReady = await ctrlPage.evaluate(() => globalThis.__current?.viewerConnected === true)
-    if (!viewerReady) {
-      // Подождём ещё немного
-      await new Promise(r => setTimeout(r, 2000))
+    // Step 1: Force pause via API + client toggle to avoid SSE-reconnect race conditions
+    await ctrlPage.evaluate(async () => {
+      const sid = globalThis.__current?.sessionId
+      if (sid) {
+        await fetch(`/api/session/${sid}/controller/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paused: true, returnToCenter: true })
+        }).catch(() => {})
+      }
+      // Sync client state if currently playing
+      if (globalThis.__current?.isPlaying || globalThis.isPlaying) {
+        globalThis.togglePlayPause()
+      }
+    })
+
+    // Poll until paused confirmed on client (max 2s)
+    const pauseDeadline = Date.now() + 2000
+    while (Date.now() < pauseDeadline) {
+      const paused = await ctrlPage.evaluate(() =>
+        !globalThis.__current?.isPlaying && !globalThis.isPlaying
+      )
+      if (paused) break
+      await new Promise(r => setTimeout(r, 200))
     }
 
+    // Buffer: wait past SSE reconnect restore window (>500ms) for stability
+    await new Promise(r => setTimeout(r, 900))
+
+    const beforeClick = await ctrlPage.evaluate(() => ({
+      isPlaying: globalThis.__current?.isPlaying,
+      viewerConnected: globalThis.__current?.viewerConnected,
+      btnDisabled: document.getElementById('playPauseBtn')?.disabled,
+      btnText: document.getElementById('playPauseBtn')?.textContent?.trim()
+    }))
+    console.log('  [SYNC DEBUG before click]', JSON.stringify(beforeClick))
+
+    // Step 2: Start playback from controller
     await ctrlPage.evaluate(() => {
       const btn = document.getElementById('playPauseBtn')
       if (btn) btn.click()
     })
+    await new Promise(r => setTimeout(r, 500))
+    const afterClick = await ctrlPage.evaluate(() => ({
+      isPlaying: globalThis.__current?.isPlaying,
+      globalIsPlaying: globalThis.isPlaying
+    }))
+    console.log('  [SYNC DEBUG after click]', JSON.stringify(afterClick))
 
-    // Даём время на синхронизацию через SSE
+    // Step 3: Wait for SSE sync propagation to viewer
     await new Promise(r => setTimeout(r, 3000))
 
     const ctrlState = await ctrlPage.evaluate(() => ({
