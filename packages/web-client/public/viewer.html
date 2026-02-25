@@ -27,7 +27,7 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.136-7a676cf" />
+    <meta name="version" content="2.39.137-343c8a9" />
     <meta name="theme-color" content="#020617" />
     <title data-i18n="viewer.title">BilateralBound - EMDR Therapy Viewer</title>
     <meta name="therapy-type" content="EMDR Viewer" />
@@ -35,15 +35,15 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.136-7a676cf"
+      href="/favicon-viewer.svg?v=2.39.137-343c8a9"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.136-7a676cf"
+      href="/favicon-viewer.ico?v=2.39.137-343c8a9"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.136-7a676cf" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.136-7a676cf" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.137-343c8a9" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.137-343c8a9" />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -57,9 +57,9 @@
     <meta property="article:tag" content="биодинамическая стимуляция" />
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="dns-prefetch" href="https://mc.yandex.com" />
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.136-7a676cf" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.136-7a676cf" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.136-7a676cf" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.137-343c8a9" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.137-343c8a9" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.137-343c8a9" />
     <noscript
       ><div>
         <img
@@ -98,17 +98,17 @@
         </button>
       </div>
     </main>
-    <script src="/js/core/debug-logger.js?v=2.39.136-7a676cf"></script>
-    <script src="/js/common.js?v=2.39.136-7a676cf"></script>
-    <script src="/js/constants/i18n-constants.js?v=2.39.136-7a676cf" defer></script>
-    <script src="/js/i18n/i18n.js?v=2.39.136-7a676cf" defer></script>
-    <script src="/js/i18n/language-selector.js?v=2.39.136-7a676cf" defer></script>
-    <script src="/js/audio/audio-manager.js?v=2.39.136-7a676cf" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.136-7a676cf" defer></script>
-    <script src="/js/renderer.js?v=2.39.136-7a676cf" defer></script>
-    <script src="/js/sse-client.js?v=2.39.136-7a676cf" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.136-7a676cf" defer></script>
-    <script src="/js/shared-components.js?v=2.39.136-7a676cf" defer></script>
+    <script src="/js/core/debug-logger.js?v=2.39.137-343c8a9"></script>
+    <script src="/js/common.js?v=2.39.137-343c8a9"></script>
+    <script src="/js/constants/i18n-constants.js?v=2.39.137-343c8a9" defer></script>
+    <script src="/js/i18n/i18n.js?v=2.39.137-343c8a9" defer></script>
+    <script src="/js/i18n/language-selector.js?v=2.39.137-343c8a9" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.137-343c8a9" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.137-343c8a9" defer></script>
+    <script src="/js/renderer.js?v=2.39.137-343c8a9" defer></script>
+    <script src="/js/sse-client.js?v=2.39.137-343c8a9" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.137-343c8a9" defer></script>
+    <script src="/js/shared-components.js?v=2.39.137-343c8a9" defer></script>
     <script>
       "use strict";
       /**
@@ -171,6 +171,10 @@
         }
       }
       function onStateUpdate(state) {
+        // Применяем язык из initial_state (один раз при подключении)
+        if (state && state.language && state.language !== localStorage.getItem('emdr-language')) {
+          onLanguageUpdate({ language: state.language });
+        }
         // Обновляем статус подключения контроллера из любого обновления состояния
         if (state && typeof state.controllerConnected === 'boolean') {
           updateStatus(state);
@@ -207,6 +211,32 @@
             debugLog('🔊 [VIEWER] soundType from state:', state.soundType);
             audioManager.setSoundType(state.soundType);
           }
+        }
+      }
+      /**
+       * Обработчик обновления языка от контроллера через SSE
+       * Синхронизирует язык вьювера с контроллером
+       * @param {Object} data - Данные события
+       */
+      function onLanguageUpdate(data) {
+        const language = data?.language;
+        if (!language) {
+          debugWarn('❌ Invalid language update data:', data);
+          return;
+        }
+
+        debugLog('🌍 Language update received:', language);
+
+        // Применяем язык через i18n если доступен
+        if (globalThis.i18n && typeof globalThis.i18n.setLanguage === 'function') {
+          try {
+            globalThis.i18n.setLanguage(language);
+            debugLog('✅ Language applied:', language);
+          } catch (err) {
+            debugWarn('❌ Failed to apply language:', err.message);
+          }
+        } else {
+          debugWarn('⚠️ i18n not available for language update');
         }
       }
       /**
@@ -693,6 +723,7 @@
           wsClient.on('state_update', onStateUpdate)
           wsClient.on('initial_state', onStateUpdate)
           wsClient.on('viewer_status', updateStatus)
+          wsClient.on('language_updated', onLanguageUpdate)
           // Подключаемся к SSE/WebSocket
           // Не пробрасываем ошибку наверх если это первая попытка подключения
           try {

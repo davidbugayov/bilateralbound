@@ -412,6 +412,7 @@ function setupExpressApp(sessionManager, apiCache) {
       id: session.id,
       controllerConnected: session.controllerConnected,
       viewerConnected: session.viewerConnected,
+      language: session.language,
       createdAt: session.createdAt,
       lastActivity: session.lastActivity
     })
@@ -574,6 +575,25 @@ function setupExpressApp(sessionManager, apiCache) {
       }
 
       return res.status(400).json({ error: 'Invalid screen size', requestId: req.id })
+    }
+  )
+  app.post(
+    '/api/session/:sessionId/language',
+    requireSession(sessionManager),
+    (req, res) => {
+      const { sessionId } = req.params
+      const { language } = req.body || {}
+
+      if (typeof language !== 'string' || !/^[a-z]{2,5}$/.test(language)) {
+        return res.status(400).json({ error: 'Invalid language code', requestId: req.id })
+      }
+
+      const success = sessionManager.setLanguage(sessionId, language)
+      if (!success) {
+        return res.status(500).json({ error: 'Failed to set language', requestId: req.id })
+      }
+
+      return res.json({ success: true, language })
     }
   )
   // Static routes

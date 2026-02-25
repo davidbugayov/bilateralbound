@@ -898,6 +898,58 @@ class SessionManager {
 
     return null
   }
+
+  /**
+   * Устанавливает язык сессии и уведомляет всех клиентов
+   * @param {string} sessionId - ID сессии
+   * @param {string} language - Код языка (e.g., 'en', 'ru', 'de')
+   * @returns {boolean} Успех установки
+   */
+  setLanguage(sessionId, language) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) {
+      return false
+    }
+
+    // Валидируем язык: латиница/цифры, 2-5 символов
+    if (typeof language !== 'string' || !/^[a-z]{2,5}$/.test(language)) {
+      return false
+    }
+
+    // Сохраняем язык в сессии
+    session.language = language
+
+    // Рассылаем обновление языка всем клиентам этой сессии
+    this.broadcastLanguageUpdate(sessionId, language)
+
+    this.logger.logSession(sessionId, `Language updated to: ${language}`)
+    return true
+  }
+
+  /**
+   * Рассылает обновление языка всем клиентам сессии
+   * @param {string} sessionId - ID сессии
+   * @param {string} language - Код языка
+   */
+  broadcastLanguageUpdate(sessionId, language) {
+    if (!this.sseManager) {
+      return
+    }
+
+    const eventData = {
+      type: 'language_updated',
+      timestamp: Date.now(),
+      payload: {
+        language
+      }
+    }
+
+    const sentCount = this.sseManager.broadcast(sessionId, 'language_updated', eventData)
+
+    if (sentCount > 0 && DEBUG_MODE) {
+      this.logger.logSession(sessionId, `Broadcasted language_updated to ${sentCount} clients`)
+    }
+  }
 }
 
 module.exports = SessionManager

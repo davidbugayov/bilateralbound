@@ -13,7 +13,7 @@ class SessionRepository {
     // LRU tracking - Map сохраняет порядок вставки, первый = самый старый
     this.accessOrder = new Map() // sessionId -> lastAccessTime
   }
-  
+
   /**
    * Update access time for LRU tracking
    * @param {string} sessionId
@@ -24,7 +24,7 @@ class SessionRepository {
     this.accessOrder.delete(sessionId)
     this.accessOrder.set(sessionId, Date.now())
   }
-  
+
   /**
    * Check if session limit reached and evict oldest if needed (O(1) with LRU)
    * @private
@@ -39,7 +39,7 @@ class SessionRepository {
       }
     }
   }
-  
+
   /**
    * Валидация пользовательского ID сессии: латиница/цифры/подчеркивание/дефис, 3..32 символа
    * @param {string} id - ID для валидации
@@ -94,7 +94,7 @@ class SessionRepository {
     const ballState = sessionData.ballState && Object.keys(sessionData.ballState).length > 0
       ? { ...defaultBallState, ...sessionData.ballState }
       : defaultBallState
-    
+
     // Enforce session limit before creating new one
     this._enforceSessionLimit()
 
@@ -104,6 +104,7 @@ class SessionRepository {
       controllerConnected: false,
       viewerConnected: false,
       viewerScreenSize: null,
+      language: 'en', // Язык сессии (синхронизируется между контроллером и вьювером)
       createdAt: Date.now(),
       lastActivity: Date.now(),
       lastStateUpdate: Date.now(), // Время последнего обновления состояния (для детекции неактивности)

@@ -328,6 +328,14 @@
     },
 
     /**
+     * Alias for changeLanguage for API consistency
+     * Used when receiving language updates from server
+     */
+    setLanguage: async function (lang) {
+      return this.changeLanguage(lang)
+    },
+
+    /**
      * Apply translations to DOM elements with data-i18n or data-i18n-attr attributes.
      * - elements with `data-i18n` will have their textContent replaced
      * - elements with `data-i18n-attr` will set attributes, e.g. data-i18n-attr="placeholder:home.placeholder"
