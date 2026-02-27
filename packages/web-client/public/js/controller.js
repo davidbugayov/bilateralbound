@@ -423,6 +423,14 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   let lastPlayingState = false
   wsClient.on('open', (event) => {
     updateConnectionStatus(true)
+    // Lazy-load non-critical modules after SSE connection established
+    if (!event?.isReconnection && !globalThis.__nonCriticalLoaded) {
+      globalThis.__nonCriticalLoaded = true
+      const s = document.createElement('script')
+      s.src = '/js/new-features.js?v=' + (document.querySelector('meta[name="version"]')?.content || '')
+      s.defer = true
+      document.body.appendChild(s)
+    }
     // Sync current language to session so viewer gets the same locale
     const currentLang = localStorage.getItem('emdr-language')
     if (currentLang && sessionId) {
@@ -533,6 +541,9 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     if (typeof state.viewerConnected === 'boolean') {
       globalThis.__current.viewerConnected = state.viewerConnected
     }
+    if (typeof state.viewerAudioActivated === 'boolean') {
+      globalThis.__current.viewerAudioActivated = state.viewerAudioActivated
+    }
     if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
       globalThis.__current.viewerScreenSize = state.viewerScreenSize
       updatePreviewSize(state.viewerScreenSize)
@@ -629,8 +640,13 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
   })
   wsClient.on('maxReconnectAttemptsReached', () => {
-    logger.error('Исчерпаны попытки переподключения')
-    showNotification('Не удается подключиться к серверу. Проверьте интернет-соединение.', 'error')
+    logger.error('Max reconnect attempts reached')
+    showNotification(globalThis.i18n?.t('controller.connectionFailed') || 'Cannot connect to server. Check your internet connection.', 'error')
+  })
+  wsClient.on('session_lost', () => {
+    logger.error('Session lost (evicted by server)')
+    const msg = globalThis.i18n?.t('controller.sessionLost') || 'Session expired. Please reload the page.'
+    showNotification(msg, 'error')
   })
 }
 /**
@@ -749,7 +765,9 @@ function updateConnectionStatus(isConnected) {
     wsStatus.className = isConnected
       ? 'status-indicator connected'
       : 'status-indicator disconnected'
-    wsStatus.textContent = isConnected ? 'Подключен' : 'Отключен'
+    wsStatus.textContent = isConnected
+      ? (globalThis.i18n?.t('controller.connected') || 'Connected')
+      : (globalThis.i18n?.t('controller.disconnected') || 'Disconnected')
   }
 }
 /**
@@ -1036,8 +1054,15 @@ function setControlsEnabled(enabled) {
 function safeSend(type, payload) {
   try {
     if (typeof wsClient?.send === 'function') {
-      wsClient.send(type, payload)
-    } else {
+      const result = wsClient.send(type, payload)
+      if (result && typeof result.catch === 'function') {
+        result.catch(err => {
+          if (err.message === 'Session not found') {
+            const msg = globalThis.i18n?.t('controller.sessionLost') || 'Session expired. Please reload the page.'
+            showNotification(msg, 'error')
+          }
+        })
+      }
     }
   } catch (e) {
   }
@@ -1114,7 +1139,7 @@ async function initializePreview() {
 function showWaitingForViewer() {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.textContent = '⏳ Ожидание подключения вьювера'
+    viewerInfo.textContent = globalThis.i18n?.t('controller.waitingForViewerConnection') || '⏳ Waiting for viewer connection'
     viewerInfo.style.display = 'block'
   }
   if (previewPhysicsEngine) {
@@ -1455,17 +1480,17 @@ function updateDirectionButtons() {
 function getDirectionInfo(mode) {
   switch (mode) {
     case 'horizontal':
-      return { text: 'Горизонтальное', icon: '↔️' }
+      return { text: globalThis.i18n?.t('controller.horizontalFull') || '↔️ Horizontal', icon: '↔️' }
     case 'vertical':
-      return { text: 'Вертикальное', icon: '↕️' }
+      return { text: globalThis.i18n?.t('controller.verticalFull') || '↕️ Vertical', icon: '↕️' }
     case 'diagRL':
-      return { text: 'Диагональ ↖️ → ↘️', icon: '↘️' }
+      return { text: globalThis.i18n?.t('controller.diagLTRB') || '↘️ Diagonal', icon: '↘️' }
     case 'diagRLL':
-      return { text: 'Диагональ ↙️ → ↗️', icon: '↗️' }
+      return { text: globalThis.i18n?.t('controller.diagLBRT') || '↗️ Diagonal', icon: '↗️' }
     case 'random':
-      return { text: 'Случайное', icon: '🎲' }
+      return { text: globalThis.i18n?.t('controller.randomFull') || '🎲 Random', icon: '🎲' }
     default:
-      return { text: 'Неизвестное направление', icon: '❓' }
+      return { text: globalThis.i18n?.t('controller.unknownDirection') || '❓ Unknown', icon: '❓' }
   }
 }
 /**
@@ -1523,7 +1548,7 @@ function updatePlayPauseButton() {
 function _setPlayPauseState(shouldPlay) {
   if (!globalThis.__current?.viewerConnected) {
     if (shouldPlay) {
-       showNotification('Внимание: клиент не подключен, анимация может не работать', 'warning')
+       showNotification(globalThis.i18n?.t('controller.clientNotConnected') || 'Warning: client not connected, animation may not work', 'warning')
     }
   }
   const payload = shouldPlay
@@ -1660,7 +1685,7 @@ function updateViewerLinkVisualState() {
     viewInput.style.borderColor = '#ef4444'
     viewInput.style.backgroundColor = '#fef2f2'
     viewInput.style.color = '#ef4444'
-    viewInput.placeholder = 'Ожидание подключения вьювера...'
+    viewInput.placeholder = (globalThis.i18n?.t('controller.waitingViewer') || 'Waiting for viewer') + '...'
   }
 }
 /**
@@ -1669,44 +1694,24 @@ function updateViewerLinkVisualState() {
 function updateViewerAudioIndicators() {
   const audioIndicator = document.getElementById('viewerAudioIndicator')
   const audioText = document.getElementById('viewerAudioText')
-  const soundPlayingIndicator = document.getElementById('viewerSoundPlayingIndicator')
-  if (!audioIndicator || !audioText || !soundPlayingIndicator) {
-    return
-  }
-  const isViewerConnected = globalThis.__current?.viewerConnected
+  if (!audioIndicator || !audioText) return
   const soundEnabled = lastServerState?.soundEnabled ?? false
-  const isPlaying = globalThis.__current?.isPlaying ?? false
   const viewerAudioActivated = globalThis.__current?.viewerAudioActivated ?? false
-  const currentState = `${soundEnabled}-${viewerAudioActivated}-${isPlaying}`
-  if (updateViewerAudioIndicators._lastState === currentState) {
-    return // Состояние не изменилось, не обновляем
-  }
+  const currentState = `${soundEnabled}-${viewerAudioActivated}`
+  if (updateViewerAudioIndicators._lastState === currentState) return
   updateViewerAudioIndicators._lastState = currentState
   if (soundEnabled) {
     if (!viewerAudioActivated) {
-      audioIndicator.classList.remove('hidden')
-      audioIndicator.classList.remove('ready')
+      audioIndicator.classList.remove('hidden', 'ready')
       audioIndicator.classList.add('warning')
       audioText.textContent = globalThis.i18n?.t('controller.viewerSoundNotActivated') || "Waiting: viewer must click \"Enable sound\""
-      soundPlayingIndicator.classList.add('hidden')
-      soundPlayingIndicator.classList.remove('active')
-    }
-    else {
-      audioIndicator.classList.remove('hidden')
+    } else {
+      audioIndicator.classList.remove('hidden', 'warning')
       audioIndicator.classList.add('ready')
-      audioIndicator.classList.remove('warning')
       audioText.textContent = globalThis.i18n?.t('controller.viewerHearingSound') || 'Viewer sound activated'
-      if ( isPlaying) {
-        soundPlayingIndicator.classList.remove('hidden')
-        soundPlayingIndicator.classList.add('active')
-      } else {
-        soundPlayingIndicator.classList.add('hidden')
-        soundPlayingIndicator.classList.remove('active')
-      }
     }
   } else {
     audioIndicator.classList.add('hidden')
-    soundPlayingIndicator.classList.add('hidden')
   }
 }
 function _initializeFullscreenRenderer() {
@@ -2038,10 +2043,10 @@ function resetSession() {
       returnToCenter: true
     })
     setDirection('horizontal')
-    showNotification('Сессия сброшена', 'info')
+    showNotification(globalThis.i18n?.t('controller.sessionReset') || 'Session reset', 'info')
   } catch (error) {
-    console.error('❌ Ошибка при сбросе сессии:', error)
-    showNotification('Ошибка при сбросе сессии', 'error')
+    console.error('Session reset error:', error)
+    showNotification(globalThis.i18n?.t('controller.sessionResetError') || 'Error resetting session', 'error')
   }
 }
 /**

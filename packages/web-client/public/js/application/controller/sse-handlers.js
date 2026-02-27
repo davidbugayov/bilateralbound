@@ -99,6 +99,9 @@ function createSSEHandlers(deps) {
       if (typeof state.viewerConnected === 'boolean') {
         globalThis.__current.viewerConnected = state.viewerConnected
       }
+      if (typeof state.viewerAudioActivated === 'boolean') {
+        globalThis.__current.viewerAudioActivated = state.viewerAudioActivated
+      }
       if (state.viewerScreenSize?.width > 0) {
         globalThis.__current.viewerScreenSize = state.viewerScreenSize
         updatePreviewSize(state.viewerScreenSize)
@@ -169,8 +172,12 @@ function createSSEHandlers(deps) {
       }
     },
     onMaxReconnect() {
-      logger.error('Исчерпаны попытки переподключения')
-      showNotification('Не удается подключиться к серверу', 'error')
+      logger.error('Max reconnect attempts reached')
+      showNotification(globalThis.i18n?.t('controller.connectionFailed') || 'Cannot connect to server', 'error')
+    },
+    onSessionLost() {
+      logger.error('Session lost (evicted by server)')
+      showNotification(globalThis.i18n?.t('controller.sessionLost') || 'Session expired. Please reload the page.', 'error')
     },
     getLastServerState() { return lastServerState },
     setLastServerState(s) { lastServerState = s }

@@ -104,6 +104,7 @@ class StateBroadcaster {
         viewerConnected: session.viewerConnected,
         controllerConnected: session.controllerConnected,
         viewerScreenSize: session.viewerScreenSize,
+        viewerAudioActivated: session.viewerAudioActivated || false,
         clientSimulationOnly: this.clientSimulationOnly,
         language: session.language || 'en'
       }

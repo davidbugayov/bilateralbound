@@ -50,18 +50,16 @@ function updateLinkVisualState() {
     input.style.borderColor = '#ef4444'
     input.style.backgroundColor = '#fef2f2'
     input.style.color = '#ef4444'
-    input.placeholder = 'Ожидание подключения вьювера...'
+    input.placeholder = (globalThis.i18n?.t('controller.waitingViewer') || 'Waiting for viewer') + '...'
   }
 }
 function updateAudioIndicators() {
   const indicator = document.getElementById('viewerAudioIndicator')
   const text = document.getElementById('viewerAudioText')
-  const playing = document.getElementById('viewerSoundPlayingIndicator')
-  if (!indicator || !text || !playing) return
+  if (!indicator || !text) return
   const soundEnabled = _deps.getLastServerState()?.soundEnabled ?? false
-  const isPlaying = globalThis.__current?.isPlaying ?? false
   const audioActivated = globalThis.__current?.viewerAudioActivated ?? false
-  const state = `${soundEnabled}-${audioActivated}-${isPlaying}`
+  const state = `${soundEnabled}-${audioActivated}`
   if (_lastAudioState === state) return
   _lastAudioState = state
   if (soundEnabled) {
@@ -69,23 +67,13 @@ function updateAudioIndicators() {
       indicator.classList.remove('hidden', 'ready')
       indicator.classList.add('warning')
       text.textContent = globalThis.i18n?.t('controller.viewerSoundNotActivated') || "Waiting: viewer must click \"Enable sound\""
-      playing.classList.add('hidden')
-      playing.classList.remove('active')
     } else {
       indicator.classList.remove('hidden', 'warning')
       indicator.classList.add('ready')
       text.textContent = globalThis.i18n?.t('controller.viewerHearingSound') || 'Viewer sound activated'
-      if (isPlaying) {
-        playing.classList.remove('hidden')
-        playing.classList.add('active')
-      } else {
-        playing.classList.add('hidden')
-        playing.classList.remove('active')
-      }
     }
   } else {
     indicator.classList.add('hidden')
-    playing.classList.add('hidden')
   }
 }
 function updateFullscreenStatus() {
