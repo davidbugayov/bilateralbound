@@ -213,7 +213,9 @@ function setupExpressApp(sessionManager, apiCache) {
       max: 100,
       message: 'Too many requests from this IP, please try again later.',
       standardHeaders: true,
-      legacyHeaders: false
+      legacyHeaders: false,
+      // Behind nginx proxy — disable X-Forwarded-For validation
+      validate: { xForwardedForHeader: false }
     })
     app.use('/api/', apiLimiter)
   }
