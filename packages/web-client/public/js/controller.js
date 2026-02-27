@@ -395,7 +395,7 @@ function updateViewerLink(sessionId) {
   }
 }
 /**
- * Современная инициализация RealtimeClient (SSE по умолчанию)
+ * Современная инициализация RealtimeClient (WebSocket по умолчанию)
  */
 async function initializeWebSocketClient(sessionId) {
   const logger = createLogger('RealtimeClient')

@@ -175,6 +175,21 @@ class StateBroadcaster {
       }
     }
 
+    // Рассылка через WebSocket (только вьюверам)
+    if (this.webSocketManager) {
+      const message = JSON.stringify(event)
+      for (const { client, info } of this.webSocketManager.getClients(sessionId)) {
+        if (info.role === 'viewer' && this._isClientReady(client)) {
+          try {
+            client.send(message)
+            sentCount++
+          } catch (error) {
+            this.logger.error(`Error broadcasting ${eventType} to WS viewer: ${error.message}`)
+          }
+        }
+      }
+    }
+
     if (DEBUG_MODE) {
       this.logger.logSession(sessionId, `Broadcasted controller_connection (connected=${isConnected}) to ${sentCount} viewers`)
     }
@@ -209,6 +224,21 @@ class StateBroadcaster {
       for (const controllerClient of controllers) {
         if (this.sseManager.sendEvent(controllerClient.res, 'viewer_status', event)) {
           sentCount++
+        }
+      }
+    }
+
+    // Рассылка через WebSocket (только контроллерам)
+    if (this.webSocketManager) {
+      const message = JSON.stringify(event)
+      for (const { client, info } of this.webSocketManager.getClients(sessionId)) {
+        if (info.role === 'controller' && this._isClientReady(client)) {
+          try {
+            client.send(message)
+            sentCount++
+          } catch (error) {
+            this.logger.error(`Error broadcasting viewer_status to WS controller: ${error.message}`)
+          }
         }
       }
     }

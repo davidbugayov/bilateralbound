@@ -1,7 +1,7 @@
 /**
  * RealtimeClient - Универсальный адаптер для WebSocket и SSE
  * Автоматически выбирает оптимальный транспорт в зависимости от настроек
- * По умолчанию использует SSE (меньше нагрузка на сервер)
+ * По умолчанию использует WebSocket (меньше overhead на слабом VPS)
  */
 /* global SSEClient, WebSocketClient */
 if (typeof RealtimeClient === 'undefined') {
@@ -9,13 +9,13 @@ if (typeof RealtimeClient === 'undefined') {
     constructor(sessionId, role, options = {}) {
       this.sessionId = sessionId
       this.role = role
-      const useSSE = options.transport !== 'websocket'
+      const useSSE = options.transport === 'sse'
       this.transportType = useSSE ? 'sse' : 'websocket'
-      if (useSSE && typeof SSEClient !== 'undefined') {
-        this.client = new SSEClient(sessionId, role, options)
-      } else if (typeof WebSocketClient !== 'undefined') {
+      if (!useSSE && typeof WebSocketClient !== 'undefined') {
         this.client = new WebSocketClient(sessionId, role, options)
-        this.transportType = 'websocket'
+      } else if (useSSE && typeof SSEClient !== 'undefined') {
+        this.client = new SSEClient(sessionId, role, options)
+        this.transportType = 'sse'
       } else {
         throw new Error('No realtime transport available (SSEClient or WebSocketClient)')
       }

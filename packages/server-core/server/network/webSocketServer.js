@@ -184,8 +184,8 @@ function setupWebSocketServer(server, sessionManager) {
             }
           })
           // Send only to controller (not back to viewer)
-          for (const { client, role: clientRole } of clients) {
-            if (clientRole === 'controller' && client.readyState === 1) {
+          for (const { client, info: clientInfo } of clients) {
+            if (clientInfo.role === 'controller' && client.readyState === 1) {
               try {
                 client.send(bounceMessage)
               } catch (error) {
@@ -193,6 +193,20 @@ function setupWebSocketServer(server, sessionManager) {
               }
             }
           }
+        }
+      },
+      viewer_screen_size: (data, { sessionId, role }) => {
+        if (role === 'viewer') {
+          const { width, height } = data.payload || {}
+          if (typeof width === 'number' && typeof height === 'number') {
+            sessionManager.setViewerScreenSize(sessionId, { width, height })
+          }
+        }
+      },
+      language: (data, { sessionId }) => {
+        const language = data.payload?.language
+        if (language) {
+          sessionManager.setLanguage(sessionId, language)
         }
       },
       viewer_update: (data, { sessionId, role }) => {
@@ -264,24 +278,36 @@ function setupWebSocketServer(server, sessionManager) {
     })
 
     ws.on('close', () => {
-      sessionManager.handleWebSocketDisconnection(ws)
-      // Рассылаем событие об отключении контроллера всем оставшимся клиентам
+      // Capture client info BEFORE disconnection removes ws from registry
       const clientInfo = sessionManager.getClientInfo(ws)
-      if (clientInfo?.role === 'controller') {
-        // Получаем всех клиентов сессии
-        const clients = sessionManager.webSocketManager.getClients(sessionId)
+      sessionManager.handleWebSocketDisconnection(ws)
+
+      if (!clientInfo) return
+
+      const clients = sessionManager.webSocketManager.getClients(sessionId)
+      if (clientInfo.role === 'controller') {
+        const msg = JSON.stringify({
+          type: 'controller_disconnected',
+          payload: { controllerConnected: false },
+          timestamp: Date.now()
+        })
         for (const { client } of clients) {
           if (client !== ws && client.readyState === 1) {
-            try {
-              client.send(
-                JSON.stringify({
-                  type: 'controller_disconnected',
-                  payload: { controllerConnected: false },
-                  timestamp: Date.now()
-                })
-              )
-            } catch (error) {
+            try { client.send(msg) } catch (error) {
               logger.error(`Error sending controller_disconnected: ${error.message}`)
+            }
+          }
+        }
+      } else if (clientInfo.role === 'viewer') {
+        const msg = JSON.stringify({
+          type: 'viewer_status',
+          payload: { connected: false, viewerConnected: false },
+          timestamp: Date.now()
+        })
+        for (const { client } of clients) {
+          if (client !== ws && client.readyState === 1) {
+            try { client.send(msg) } catch (error) {
+              logger.error(`Error sending viewer_disconnected: ${error.message}`)
             }
           }
         }

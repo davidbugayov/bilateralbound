@@ -214,8 +214,6 @@ function setupExpressApp(sessionManager, apiCache) {
       message: 'Too many requests from this IP, please try again later.',
       standardHeaders: true,
       legacyHeaders: false
-      // Используем стандартный keyGenerator для корректной обработки IPv6
-      // keyGenerator не нужен - библиотека автоматически обрабатывает IPv4/IPv6
     })
     app.use('/api/', apiLimiter)
   }

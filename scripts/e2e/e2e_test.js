@@ -155,14 +155,14 @@ async function main() {
     if (!ok) throw new Error('Not found')
   })
 
-  await test('SSE соединение работает', async () => {
-    // Проверим что viewer получает состояние через SSE
+  await test('Realtime соединение работает', async () => {
+    // Проверим что viewer получает состояние через WS/SSE
     await new Promise(r => setTimeout(r, 2000))
     const hasState = await viewPage.evaluate(() => {
       return globalThis.__current?.sessionId !== undefined ||
              document.querySelector('canvas') !== null
     })
-    if (!hasState) throw new Error('SSE state not received')
+    if (!hasState) throw new Error('Realtime state not received')
   })
 
   // Ждём подключения обоих клиентов (до 8с с polling каждые 500мс)

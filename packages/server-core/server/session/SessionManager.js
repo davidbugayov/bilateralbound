@@ -954,10 +954,6 @@ class SessionManager {
    * @param {string} language - Код языка
    */
   broadcastLanguageUpdate(sessionId, language) {
-    if (!this.sseManager) {
-      return
-    }
-
     const eventData = {
       type: 'language_updated',
       timestamp: Date.now(),
@@ -966,7 +962,25 @@ class SessionManager {
       }
     }
 
-    const sentCount = this.sseManager.broadcast(sessionId, 'language_updated', eventData)
+    let sentCount = 0
+
+    if (this.sseManager) {
+      sentCount += this.sseManager.broadcast(sessionId, 'language_updated', eventData)
+    }
+
+    if (this.webSocketManager) {
+      const message = JSON.stringify(eventData)
+      for (const { client } of this.webSocketManager.getClients(sessionId)) {
+        if (client.readyState === 1) {
+          try {
+            client.send(message)
+            sentCount++
+          } catch (error) {
+            logger.error(`Error broadcasting language_updated to WS client: ${error.message}`)
+          }
+        }
+      }
+    }
 
     if (sentCount > 0 && DEBUG_MODE) {
       this.logger.logSession(sessionId, `Broadcasted language_updated to ${sentCount} clients`)

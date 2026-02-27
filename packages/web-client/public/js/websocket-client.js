@@ -16,7 +16,7 @@ if (typeof WebSocketClient === 'undefined') {
       const globalConfig = globalThis.BBConfig?.network || {}
       this.config = {
         isSecure: globalThis.location.protocol === 'https:',
-        maxReconnectAttempts: globalConfig.maxReconnectAttempts || 5,
+        maxReconnectAttempts: globalConfig.maxReconnectAttempts || 50,
         reconnectInterval: globalConfig.reconnectDelay || 3000,
         heartbeatInterval: globalConfig.heartbeatInterval || 25000,
         messageTimeout: globalConfig.messageTimeout || 5000,
@@ -166,6 +166,32 @@ if (typeof WebSocketClient === 'undefined') {
         this.eventHandlers.set(eventType, [])
       }
       this.eventHandlers.get(eventType).push(handler)
+    }
+    off(eventType, handler) {
+      const handlers = this.eventHandlers.get(eventType)
+      if (!handlers) return
+      const idx = handlers.indexOf(handler)
+      if (idx !== -1) handlers.splice(idx, 1)
+    }
+    close() {
+      this._clearTimers()
+      if (this.ws) {
+        this.ws.onclose = null // prevent reconnect on intentional close
+        this.ws.close(1000, 'Client closed')
+        this.ws = null
+      }
+      this.isConnected = false
+      this.isConnecting = false
+    }
+    getStats() {
+      return {
+        messagesSent: this._stats.messagesSent,
+        messagesReceived: this._stats.messagesReceived,
+        reconnectCount: this._stats.reconnectCount,
+        lastActivity: this._stats.lastActivity,
+        rttMs: this._stats.rttMs,
+        jitterMs: this._stats.jitterMs
+      }
     }
     _setupEventHandlers() {
       this.ws.onmessage = this._handleMessage.bind(this)
