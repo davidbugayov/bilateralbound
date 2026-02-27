@@ -46,7 +46,15 @@
     "controllerLabel": "🎮 Controller link for therapist:",
     "copyBtnLabelClient": "Copy viewer link",
     "copyBtnLabelController": "Copy controller link",
-    "tip": "💡 <strong>Save these links!</strong> They are permanent and will always work. Send the viewer link to the client and open the controller link yourself to manage the session."
+    "tip": "💡 <strong>Save these links!</strong> They are permanent and will always work. Send the viewer link to the client and open the controller link yourself to manage the session.",
+    "creating": "⏳ Creating...",
+    "creatingLinks": "Creating permanent links...",
+    "createdSuccess": "✅ Links created successfully!",
+    "createdNotification": "🎉 Permanent links created!",
+    "errorUnknown": "Unknown error",
+    "errorCreating": "Error creating links: ",
+    "validationEmpty": "❌ Please enter a client ID",
+    "validationFormat": "❌ Invalid format. Use only latin letters, numbers, _ or - (3-32 characters)"
   },
   "restore": {
     "heading": "🔄 Restore session by ID",
@@ -238,6 +246,9 @@
     "viewerConnected": "Viewer connected",
     "waitingViewer": "Waiting for viewer",
     "close": "Close",
+    "clientNotConnected": "Warning: client not connected, animation may not work",
+    "connectionFailed": "Cannot connect to server. Check your internet connection.",
+    "sessionLost": "Session expired. Please reload the page.",
     "sessionReset": "Session reset",
     "sessionResetError": "Error resetting session",
     "linkCopied": "Client link copied!",
