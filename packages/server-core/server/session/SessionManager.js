@@ -260,7 +260,8 @@ class SessionManager {
   }
 
   _postUpdateActions(session, validatedUpdates) {
-    this._schedulePhysicsUpdate(session.id)
+    // Ensure physics loop is running (idempotent — won't restart if already active)
+    this._ensurePhysicsLoop(session.id)
     this.apiCache.delete(`state_${session.id}`)
 
     // CRITICAL FIX: Always broadcast full state, not just updates
@@ -306,7 +307,7 @@ class SessionManager {
     const session = this.sessionRepository.findById(sessionId)
     if (session) {
       session.lastActivity = Date.now()
-      this._schedulePhysicsUpdate(sessionId)
+      this._ensurePhysicsLoop(sessionId)
       this._handleInitialStateBroadcast(sessionId, ws, role, session)
     }
 
@@ -351,7 +352,7 @@ class SessionManager {
     }
 
     session.lastActivity = Date.now()
-    this._schedulePhysicsUpdate(sessionId)
+    this._ensurePhysicsLoop(sessionId)
 
     // Отправляем начальное состояние
     if (role === 'viewer') {
@@ -761,14 +762,27 @@ class SessionManager {
   }
 
   /**
-   * Планирует обновление физики для сессии
+   * Ensures the physics loop is running for a session (idempotent).
+   * Does NOT restart if already active — prevents loop kill/restart race on rapid commands.
+   */
+  _ensurePhysicsLoop(sessionId) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return
+
+    // Already running — nothing to do
+    if (session.mainLoop) return
+
+    this._startPhysicsLoop(sessionId, session)
+  }
+
+  /**
+   * Планирует обновление физики для сессии (restarts the loop).
+   * Use _ensurePhysicsLoop() for idempotent "make sure it's running" calls.
    * @param {string} sessionId - ID сессии
    */
   _schedulePhysicsUpdate(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
-    if (!session) {
-      return
-    }
+    if (!session) return
 
     // Останавливаем существующий цикл если есть
     if (session.mainLoop) {
@@ -776,6 +790,13 @@ class SessionManager {
       session.mainLoop = null
     }
 
+    this._startPhysicsLoop(sessionId, session)
+  }
+
+  /**
+   * Internal: starts the physics loop for a session if conditions are met.
+   */
+  _startPhysicsLoop(sessionId, session) {
     if (this.clientSimulationOnly) {
       this.logger.logSession(sessionId, 'Server-side physics loop disabled (client simulation)', 'debug')
       return
@@ -825,6 +846,7 @@ class SessionManager {
           session.ticks++
 
           if (session.ticks % 4 === 0) {
+             session.lastStateUpdate = Date.now()
              this.stateBroadcaster.broadcastState(sessionId)
           }
         } catch (error) {

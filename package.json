@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.143",
+  "version": "2.39.144",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -87,7 +87,5 @@
     "stylelint-config-standard": "^39.0.1",
     "stylelint-prettier": "^5.0.3"
   },
-  "dependencies": {
-    "clean-webpack-plugin": "^4.0.0"
-  }
+  "dependencies": {}
 }

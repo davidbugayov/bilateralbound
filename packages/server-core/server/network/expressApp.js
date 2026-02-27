@@ -6,7 +6,6 @@ const compression = require('compression')
 const rateLimit = require('express-rate-limit')
 const os = require('node:os')
 const path = require('node:path')
-const net = require('node:net')
 const fs = require('node:fs')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
@@ -26,29 +25,6 @@ const getNetworkInterfaces = () => {
     }
   }
   return result
-}
-// Проверка доступности порта
-/**
- * Проверяет доступность порта
- * @param {number} port - Порт для проверки
- * @returns {Promise<boolean>} Promise, разрешающийся в true если порт доступен
- */
-const checkPortAvailability = port => {
-  return new Promise((resolve, reject) => {
-    const tester = net
-      .createServer()
-      .once('error', err => {
-        if (err.code === 'EADDRINUSE') {
-          resolve(false)
-        } else {
-          reject(err)
-        }
-      })
-      .once('listening', () => {
-        tester.once('close', () => resolve(true)).close()
-      })
-      .listen(port)
-  })
 }
 
 /**
@@ -90,6 +66,88 @@ const clearStateCache = (apiCache, sessionId) => {
  * @param {Map} apiCache - Кэш API
  * @returns {Object} Express приложение
  */
+// Supported languages matching locales/ directory
+const SUPPORTED_LANGS = ['en', 'ru', 'de', 'es', 'fr', 'pt', 'ja', 'zh']
+
+/**
+ * Loads all locale JSON files at startup for server-side meta tag injection.
+ * Returns Map<lang, parsedJSON>
+ */
+function loadLocales(publicPath) {
+  const locales = new Map()
+  for (const lang of SUPPORTED_LANGS) {
+    const filePath = path.join(publicPath, 'locales', lang, 'common.json')
+    try {
+      locales.set(lang, JSON.parse(fs.readFileSync(filePath, 'utf8')))
+    } catch (e) {
+      logger.error(`Failed to load locale ${lang}: ${e.message}`)
+    }
+  }
+  return locales
+}
+
+/**
+ * Resolves nested key like "viewer.title" from locale object
+ */
+function getLocaleValue(locale, key) {
+  return key.split('.').reduce((obj, k) => obj?.[k], locale)
+}
+
+/**
+ * Detects language from request: ?lang= > session.language > domain > 'en'
+ */
+function detectLanguage(req, session) {
+  // 1. Explicit query param
+  const queryLang = req.query.lang
+  if (queryLang && SUPPORTED_LANGS.includes(queryLang)) return queryLang
+
+  // 2. Session language (set by controller)
+  if (session?.language && SUPPORTED_LANGS.includes(session.language)) return session.language
+
+  // 3. Domain-based: .ru → ru, everything else → en
+  const host = req.get('host') || ''
+  if (host.endsWith('.ru')) return 'ru'
+
+  return 'en'
+}
+
+/**
+ * Replaces meta tags in cached HTML with localized values.
+ * Strategy: find all <meta .../> tags (multiline), check if they match
+ * an entry from metaMap, and replace content="..." inside.
+ */
+function localizeHtml(html, lang, locale, metaMap) {
+  let result = html.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
+
+  // Match each <meta ... /> or <meta ... > tag (spanning multiple lines)
+  result = result.replace(/<meta\b[^>]*?\/?>/gs, (tag) => {
+    for (const entry of metaMap) {
+      if (entry.isTitle) continue
+      // Check if this tag has the right attribute (e.g. name="description" or property="og:title")
+      const attrPattern = new RegExp(`${entry.attr}=["']${entry.attrValue}["']`)
+      if (!attrPattern.test(tag)) continue
+
+      const value = getLocaleValue(locale, entry.key)
+      if (value) {
+        const escaped = value.replace(/"/g, '&quot;')
+        return tag.replace(/content="[^"]*"/, `content="${escaped}"`)
+      }
+    }
+    return tag
+  })
+
+  // Replace <title>...</title>
+  const titleEntry = metaMap.find(m => m.isTitle)
+  if (titleEntry) {
+    const titleValue = getLocaleValue(locale, titleEntry.key)
+    if (titleValue) {
+      result = result.replace(/<title[^>]*>[^<]*<\/title>/, `<title data-i18n="${titleEntry.key}">${titleValue}</title>`)
+    }
+  }
+
+  return result
+}
+
 function setupExpressApp(sessionManager, apiCache) {
   const networkInterfaces = getNetworkInterfaces()
   const app = express()
@@ -147,19 +205,6 @@ function setupExpressApp(sessionManager, apiCache) {
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
     })
   )
-  // Добавляем middleware для проверки доступности порта при старте
-  app.use(async (req, res, next) => {
-    try {
-      const portAvailable = await checkPortAvailability(config.port)
-      if (!portAvailable) {
-        logger.warn(`[${req.id}] Port ${config.port} is not available during request`)
-      }
-
-      next()
-    } catch (error) {
-      next(error)
-    }
-  })
   // Rate limiting
   const isLocal = process.env.NODE_ENV !== 'production'
   if (!isLocal) {
@@ -191,20 +236,6 @@ function setupExpressApp(sessionManager, apiCache) {
       optionsSuccessStatus: 200
     })
   )
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*')
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    res.header(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-Requested-With, Origin, Accept, X-Request-Id'
-    )
-    res.header('Access-Control-Allow-Credentials', 'true')
-    if (req.method === 'OPTIONS') {
-      res.sendStatus(200)
-    } else {
-      next()
-    }
-  })
 
   // Gzip compression for all responses (except SSE streams)
   app.use(compression({
@@ -223,30 +254,40 @@ function setupExpressApp(sessionManager, apiCache) {
   // Static files path
   const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
 
-  // Root route - serve index.html with injected version (MUST come before static middleware)
+  // Cache locale files and HTML templates at startup for server-side meta tag localization
+  const locales = loadLocales(publicPath)
+  const cachedViewerHtml = fs.readFileSync(path.join(publicPath, 'viewer.html'), 'utf8')
+  const cachedControllerHtml = fs.readFileSync(path.join(publicPath, 'session-controller.html'), 'utf8')
+
+  // Meta tag replacement uses attribute-level search (not full tag regex)
+  // to avoid greedy multiline matching issues
+  const viewerMetaMap = [
+    { isTitle: true, key: 'viewer.title' },
+    { attr: 'name', attrValue: 'description', key: 'viewer.description' },
+    { attr: 'property', attrValue: 'og:title', key: 'viewer.title' },
+    { attr: 'property', attrValue: 'og:description', key: 'viewer.description' }
+  ]
+
+  const controllerMetaMap = [
+    { isTitle: true, key: 'controller.meta.controllerTitle' },
+    { attr: 'name', attrValue: 'description', key: 'controller.meta.controllerDescription' },
+    { attr: 'property', attrValue: 'og:title', key: 'controller.meta.controllerTitle' },
+    { attr: 'property', attrValue: 'og:description', key: 'controller.meta.controllerDescription' },
+    { attr: 'name', attrValue: 'twitter:title', key: 'controller.meta.controllerTitle' },
+    { attr: 'name', attrValue: 'twitter:description', key: 'controller.meta.controllerDescription' }
+  ]
+
+  // Pre-render index.html with version at startup (avoid 2x sync fs reads per request)
+  const packageJsonPath = path.join(__dirname, '..', '..', '..', '..', 'package.json')
+  const appVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version
+  const cachedIndexHtml = fs.readFileSync(path.join(publicPath, 'index.html'), 'utf8')
+    .replace(/⚡ BilateralBound v[\d.]+/, `⚡ BilateralBound v${appVersion}`)
+
+  // Root route - serve cached index.html with injected version (MUST come before static middleware)
   app.get('/', (req, res) => {
-    try {
-      // Read package.json to get current version
-      const packageJsonPath = path.join(__dirname, '..', '..', '..', '..', 'package.json')
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-      const version = packageJson.version
-
-      // Read index.html
-      const indexPath = path.join(publicPath, 'index.html')
-      let html = fs.readFileSync(indexPath, 'utf8')
-
-      // Replace hardcoded version with dynamic version
-      html = html.replace(/⚡ BilateralBound v[\d.]+/, `⚡ BilateralBound v${version}`)
-
-      // Set headers and send modified HTML
-      res.setHeader('Content-Type', 'text/html; charset=utf-8')
-      setNoCacheHeaders(res)
-      res.send(html)
-    } catch (error) {
-      logger.error(`Error serving index.html: ${error.message}`)
-      // Fallback to static file if something goes wrong
-      res.sendFile(path.join(publicPath, 'index.html'))
-    }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    setNoCacheHeaders(res)
+    res.send(cachedIndexHtml)
   })
 
   // Routes
@@ -305,14 +346,17 @@ function setupExpressApp(sessionManager, apiCache) {
   })
 
   // Static files - only serve specific paths, not root using helper function
+  // Assets use ?v=version query params → safe for immutable long-term cache
   const staticDirectories = ['css', 'js', 'emdr-therapy']
   for (const dir of staticDirectories) {
     app.use(
       `/${dir}`,
       express.static(path.join(publicPath, dir), {
-        etag: false,
-        lastModified: false,
-        setHeaders: setNoCacheHeaders
+        etag: true,
+        lastModified: true,
+        setHeaders: (res) => {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+        }
       })
     )
   }
@@ -596,12 +640,24 @@ function setupExpressApp(sessionManager, apiCache) {
       return res.json({ success: true, language })
     }
   )
-  // Static routes
+  // Static routes with server-side meta tag localization
   app.get('/s/:sessionId', (req, res) => {
-    res.sendFile(path.join(publicPath, 'viewer.html'))
+    const session = sessionManager.getSession(req.params.sessionId)
+    const lang = detectLanguage(req, session)
+    const locale = locales.get(lang) || locales.get('en')
+    const html = localizeHtml(cachedViewerHtml, lang, locale, viewerMetaMap)
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    setNoCacheHeaders(res)
+    res.send(html)
   })
   app.get('/c/:sessionId', (req, res) => {
-    res.sendFile(path.join(publicPath, 'session-controller.html'))
+    const session = sessionManager.getSession(req.params.sessionId)
+    const lang = detectLanguage(req, session)
+    const locale = locales.get(lang) || locales.get('en')
+    const html = localizeHtml(cachedControllerHtml, lang, locale, controllerMetaMap)
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    setNoCacheHeaders(res)
+    res.send(html)
   })
   app.get('/test/:file', (req, res) => {
     const file = req.params.file
