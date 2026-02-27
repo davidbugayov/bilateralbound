@@ -86,7 +86,7 @@ function physicsLoop() {
 /**
  * Render loop
  */
-let _hiddenThrottleMs = 100
+const _hiddenThrottleMs = 100
 let _lastRenderTime = 0
 function renderPreviewLoop(timestamp) {
   requestAnimationFrame(renderPreviewLoop)
@@ -107,7 +107,7 @@ function renderPreviewLoop(timestamp) {
 function showWaitingForViewer() {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.textContent = '⏳ Ожидание подключения вьювера'
+    viewerInfo.textContent = globalThis.i18n?.t('controller.waitingForViewerConnection') || '⏳ Waiting for viewer connection'
     viewerInfo.style.display = 'block'
   }
   if (_previewPhysicsEngine) {

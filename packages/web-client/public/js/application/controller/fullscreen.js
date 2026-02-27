@@ -225,8 +225,8 @@ function wireFullscreenControls() {
     if (btn) btn.onclick = () => _callbacks.setBallSizeMultiplier(i + 1)
   })
   const dirs = {
-    'fsDirH': 'horizontal', 'fsDirV': 'vertical',
-    'fsDirDL': 'diagRLL', 'fsDirDR': 'diagRL', 'fsDirRandom': 'random'
+    fsDirH: 'horizontal', fsDirV: 'vertical',
+    fsDirDL: 'diagRLL', fsDirDR: 'diagRL', fsDirRandom: 'random'
   }
   Object.entries(dirs).forEach(([id, mode]) => {
     const btn = document.getElementById(id)

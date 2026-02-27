@@ -286,9 +286,12 @@ async function registerControllerOnServer(sessionId, logger) {
       body: JSON.stringify({})
     })
     if (connectResponse.ok) {
+      // Connection established
     } else {
+      // Connection failed
     }
   } catch (error) {
+    // Silently ignore connection errors
   }
 }
 async function initializePreviewUI() {
@@ -352,6 +355,7 @@ async function completeInitialization() {
   isInitialized = true
   const logger = createLogger('Controller')
   try {
+    // Initialization logic will be added here
   } catch (error) {
     await handleInitializationError(error, logger)
   }
@@ -626,16 +630,29 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
     updateViewerAudioIndicators()
   })
-  // Bounce sync - sync preview with viewer ball position on bounce
+  // Bounce sync - snap preview to viewer's exact bounce position + direction
   wsClient.on(WS_MSG.bounceSync, data => {
     if (!previewPhysicsEngine) return
-    // Snap preview ball to viewer position
     if (typeof data.x === 'number' && typeof data.y === 'number') {
+      // Snap position
       previewPhysicsEngine.ball.x = data.x
       previewPhysicsEngine.ball.y = data.y
+      previewPhysicsEngine._prevPos.x = data.x
+      previewPhysicsEngine._prevPos.y = data.y
+      previewPhysicsEngine._currPos.x = data.x
+      previewPhysicsEngine._currPos.y = data.y
+      // Sync direction (was incorrectly writing to state.dirX instead of state.lastDirection.x)
       if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
-        previewPhysicsEngine.state.dirX = data.dirX
-        previewPhysicsEngine.state.dirY = data.dirY
+        previewPhysicsEngine.state.lastDirection.x = data.dirX
+        previewPhysicsEngine.state.lastDirection.y = data.dirY
+        // Recalculate velocity from new direction
+        const pps = (previewPhysicsEngine.ball.speed / 100) * previewPhysicsEngine.options.maxSpeed
+        previewPhysicsEngine.ball.vx = data.dirX * pps
+        previewPhysicsEngine.ball.vy = data.dirY * pps
+      }
+      // Sync side info for debugging
+      if (data.side) {
+        previewPhysicsEngine._lastBounceSide = data.side
       }
     }
   })
@@ -687,18 +704,28 @@ function applyServerStateToPreview(state) {
       delete localCommand.dirY
     }
     previewPhysicsEngine.applyCommand(localCommand)
-    // Position sync: on each state_update (15Hz), gently correct drift toward server position.
-    // This runs only when new data arrives, not every frame, so it doesn't cause jitter.
+    // Position sync: on each state_update (~15Hz), correct drift toward server position.
     if (typeof state.x === 'number' && typeof state.y === 'number'
         && !previewPhysicsEngine.state.paused) {
       const dx = state.x - previewPhysicsEngine.ball.x
       const dy = state.y - previewPhysicsEngine.ball.y
       const dist = Math.sqrt(dx * dx + dy * dy)
-      if (dist > 5) { // Dead zone: skip tiny corrections to avoid micro-jitter
-        // Scale alpha by distance: larger drift → stronger correction
-        const alpha = dist > 100 ? 0.5 : dist > 30 ? 0.2 : 0.1
+      // First update after play: hard-snap to server position to start in sync
+      if (!previewPhysicsEngine._hasReceivedFirstMovingUpdate) {
+        previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
+        previewPhysicsEngine.ball.x = state.x
+        previewPhysicsEngine.ball.y = state.y
+        previewPhysicsEngine._prevPos.x = state.x
+        previewPhysicsEngine._prevPos.y = state.y
+        previewPhysicsEngine._currPos.x = state.x
+        previewPhysicsEngine._currPos.y = state.y
+      } else if (dist > 2) {
+        // Aggressive alpha: preview should closely track server/viewer
+        const alpha = dist > 80 ? 0.7 : dist > 30 ? 0.4 : 0.25
         previewPhysicsEngine.ball.x += dx * alpha
         previewPhysicsEngine.ball.y += dy * alpha
+        previewPhysicsEngine._currPos.x = previewPhysicsEngine.ball.x
+        previewPhysicsEngine._currPos.y = previewPhysicsEngine.ball.y
       }
     }
   } else {
@@ -710,6 +737,10 @@ function applyServerStateToPreview(state) {
   // Apply paused state from server to preview physics engine
   if (typeof state.paused === 'boolean') {
     previewPhysicsEngine.setPaused(state.paused)
+    // Reset first-update flag on pause so next play starts with hard-snap
+    if (state.paused) {
+      previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
+    }
   }
   if (typeof pausedState === 'boolean') {
     // Sync isPlaying with server state
@@ -803,6 +834,7 @@ class AppError extends Error {
 async function handleInitializationError(error, logger) {
   logger.error('Критическая ошибка инициализации:', error)
   if (error instanceof AppError) {
+    // AppError already logged with context
   }
 }
 function _syncUISpeed(ballState) {
@@ -1065,6 +1097,7 @@ function safeSend(type, payload) {
       }
     }
   } catch (e) {
+    // Silently ignore errors in speed update
   }
 }
 function updateSpeed(speed) {
@@ -1134,6 +1167,7 @@ async function initializePreview() {
       previewPhysicsEngine.setVelocity(0, 0)
     }
   } catch (error) {
+    // Silently ignore canvas size errors
   }
 }
 function showWaitingForViewer() {
@@ -1385,6 +1419,7 @@ function setDirection(directionMode) {
 }
 function setBallColor(color) {
   if (globalThis.__previewRenderer) {
+    // Preview renderer color update would go here
   }
   if (globalThis.__current?.isInitializing) {
     if (lastServerState) {
@@ -1704,7 +1739,7 @@ function updateViewerAudioIndicators() {
     if (!viewerAudioActivated) {
       audioIndicator.classList.remove('hidden', 'ready')
       audioIndicator.classList.add('warning')
-      audioText.textContent = globalThis.i18n?.t('controller.viewerSoundNotActivated') || "Waiting: viewer must click \"Enable sound\""
+      audioText.textContent = globalThis.i18n?.t('controller.viewerSoundNotActivated') || 'Waiting: viewer must click "Enable sound"'
     } else {
       audioIndicator.classList.remove('hidden', 'warning')
       audioIndicator.classList.add('ready')

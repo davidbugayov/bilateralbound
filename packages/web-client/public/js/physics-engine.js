@@ -208,7 +208,7 @@ if (typeof PhysicsEngine === 'undefined') {
       } else {
         this.state.allowInterpWhenPaused = false
         if (this.options.clientSimulation) {
-           this._restoreLocalVelocity();
+           this._restoreLocalVelocity()
         }
       }
     }
@@ -220,8 +220,8 @@ if (typeof PhysicsEngine === 'undefined') {
     _restoreLocalVelocity() {
         if (Math.abs(this.state.lastDirection.x || 0) < 1e-6 &&
             Math.abs(this.state.lastDirection.y || 0) < 1e-6) {
-            this.state.lastDirection.x = 1;
-            this.state.lastDirection.y = 0;
+            this.state.lastDirection.x = 1
+            this.state.lastDirection.y = 0
         }
         const speedPercent = this.ball.speed / 100
         const pixelsPerSecond = speedPercent * this.options.maxSpeed
@@ -635,6 +635,7 @@ if (typeof PhysicsEngine === 'undefined') {
           globalThis.dispatchEvent(ev)
         }
       } catch {
+        // Silently ignore event dispatch errors
       }
     }
     /**
@@ -953,7 +954,7 @@ if (typeof PhysicsEngine === 'undefined') {
     _handleViewerDirectionUpdate(command) {
       if (command.dirX !== undefined || command.dirY !== undefined) {
         if (this.options.clientSimulation && !this.state.paused) {
-          const atCenter = Math.abs(this.ball.x - this.centerX) < 10 && 
+          const atCenter = Math.abs(this.ball.x - this.centerX) < 10 &&
                            Math.abs(this.ball.y - this.centerY) < 10
           if (!atCenter) {
             return

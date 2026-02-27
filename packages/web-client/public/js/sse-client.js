@@ -16,7 +16,7 @@ if (typeof SSEClient === 'undefined') {
       this.config = {
         reconnectInterval: options.reconnectInterval || 2000,
         maxReconnectAttempts: options.maxReconnectAttempts || 1000, // Бесконечные попытки по умолчанию
-        heartbeatTimeout: options.heartbeatTimeout || 0, // Отключаем heartbeat timeout (0 = бесконечно)
+        heartbeatTimeout: options.heartbeatTimeout || 90000, // 90с — если нет данных, считаем соединение мёртвым
         ...options
       }
       this.sessionId = sessionId
@@ -155,9 +155,6 @@ if (typeof SSEClient === 'undefined') {
      * SSE только принимает данные, отправка через обычный HTTP
      */
     async send(type, payload) {
-      if (!this.isConnected) {
-        throw new Error('SSE is not connected')
-      }
       const url = this._getCommandUrl(type)
       try {
         const response = await fetch(url, {
@@ -168,6 +165,11 @@ if (typeof SSEClient === 'undefined') {
           credentials: 'include',
           body: JSON.stringify(payload)
         })
+        if (response.status === 404) {
+          this.log('Session not found (404) - session may have been evicted', 'error')
+          this._emit('session_lost', { sessionId: this.sessionId })
+          throw new Error('Session not found')
+        }
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }

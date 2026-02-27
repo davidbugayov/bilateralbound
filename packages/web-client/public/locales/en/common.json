@@ -32,7 +32,10 @@
     "loading": "⏳ Loading...",
     "creatingSession": "🔄 Creating session...",
     "createError": "Failed to create session",
-    "jsonError": "Server returned non-JSON response"
+    "jsonError": "Server returned non-JSON response",
+    "noId": "Session created but ID not received.",
+    "controllerError": "Error connecting controller: ",
+    "createFailed": "Error creating session: "
   },
   "links": {
     "heading": "🔗 Permanent Links for Clients",
@@ -62,7 +65,14 @@
     "label": "Existing session ID",
     "placeholder": "Enter session ID...",
     "loadBtn": "📥 Load",
-    "foundTitle": "✅ Session found!"
+    "foundTitle": "✅ Session found!",
+    "loading": "⏳ Loading...",
+    "checking": "Checking session...",
+    "notFound": "Session with this ID not found.",
+    "serverError": "Server error: ",
+    "found": "🎉 Session found!",
+    "validationEmpty": "❌ Please enter a session ID.",
+    "errorLoading": "Error loading session: "
   },
   "steps": {
     "heading": "📋 How to start therapy:",

@@ -157,17 +157,22 @@ function createSSEHandlers(deps) {
       if (globalThis.__current) globalThis.__current.viewerAudioActivated = data.activated
       updateViewerAudioIndicators()
     },
-    // Bounce sync - sync preview ball position with viewer on bounce
+    // Bounce sync - snap preview to viewer's exact bounce position + direction
     onBounceSync(data) {
       if (!previewPhysicsEngine) return
-      // Snap preview ball to viewer position on bounce
       if (typeof data.x === 'number' && typeof data.y === 'number') {
         previewPhysicsEngine.ball.x = data.x
         previewPhysicsEngine.ball.y = data.y
-        // Also sync direction
+        previewPhysicsEngine._prevPos.x = data.x
+        previewPhysicsEngine._prevPos.y = data.y
+        previewPhysicsEngine._currPos.x = data.x
+        previewPhysicsEngine._currPos.y = data.y
         if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
-          previewPhysicsEngine.state.dirX = data.dirX
-          previewPhysicsEngine.state.dirY = data.dirY
+          previewPhysicsEngine.state.lastDirection.x = data.dirX
+          previewPhysicsEngine.state.lastDirection.y = data.dirY
+          const pps = (previewPhysicsEngine.ball.speed / 100) * previewPhysicsEngine.options.maxSpeed
+          previewPhysicsEngine.ball.vx = data.dirX * pps
+          previewPhysicsEngine.ball.vy = data.dirY * pps
         }
       }
     },

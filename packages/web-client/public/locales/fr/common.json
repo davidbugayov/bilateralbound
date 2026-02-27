@@ -17,7 +17,9 @@
   },
   "home": {
     "title": "BilateralBound - Thérapie EMDR",
-    "subtitle": "Plateforme innovante pour la thérapie EMDR avec stimulation bilatérale"
+    "subtitle": "Plateforme innovante pour la thérapie EMDR avec stimulation bilatérale",
+    "pageTitle": "BilateralBound - Thérapie EMDR pour Patients",
+    "metaDescription": "Plateforme EMDR en ligne pour le traitement du TSPT, de l'anxiété et de la thérapie de couple. Psychologues certifiés, séances sécurisées, liens permanents."
   },
   "emdr": {
     "heading": "🎯 Qu'est-ce que la thérapie EMDR?",
@@ -30,7 +32,12 @@
     "loading": "⏳ Chargement...",
     "creatingSession": "🔄 Création de la séance...",
     "alreadyInProgress": "La création de la séance est déjà en cours...",
-    "loadingScripts": "Chargement des scripts de séance..."
+    "loadingScripts": "Chargement des scripts de séance...",
+    "createError": "Impossible de créer la séance",
+    "jsonError": "Le serveur a renvoyé une réponse non JSON",
+    "noId": "Séance créée mais ID non reçu.",
+    "controllerError": "Erreur de connexion du contrôleur: ",
+    "createFailed": "Erreur lors de la création de la séance: "
   },
   "links": {
     "heading": "🔗 Liens permanents pour les clients",
@@ -44,7 +51,15 @@
     "controllerLabel": "🎮 Lien pour le thérapeute (Controller):",
     "copyBtnLabelClient": "Copier le lien du client",
     "copyBtnLabelController": "Copier le lien du thérapeute",
-    "tip": "💡 <strong>Enregistrez ces liens!</strong> Ils sont permanents et fonctionneront toujours. Envoyez le lien viewer au client et ouvrez le lien controller vous-même pour gérer la séance."
+    "tip": "💡 <strong>Enregistrez ces liens!</strong> Ils sont permanents et fonctionneront toujours. Envoyez le lien viewer au client et ouvrez le lien controller vous-même pour gérer la séance.",
+    "creating": "⏳ Création...",
+    "creatingLinks": "Création des liens permanents...",
+    "createdSuccess": "✅ Liens créés avec succès!",
+    "createdNotification": "🎉 Liens permanents créés!",
+    "errorUnknown": "Erreur inconnue",
+    "errorCreating": "Erreur lors de la création des liens: ",
+    "validationEmpty": "❌ Veuillez saisir un ID client",
+    "validationFormat": "❌ Format invalide. Utilisez uniquement des lettres latines, chiffres, _ ou - (3-32 caractères)"
   },
   "restore": {
     "heading": "🔄 Restaurer la séance par ID",
@@ -52,7 +67,14 @@
     "label": "ID de séance existante",
     "placeholder": "Saisissez l'ID de séance...",
     "loadBtn": "📥 Charger",
-    "foundTitle": "✅ Séance trouvée!"
+    "foundTitle": "✅ Séance trouvée!",
+    "loading": "⏳ Chargement...",
+    "checking": "Vérification de la séance...",
+    "notFound": "Séance avec cet ID introuvable.",
+    "serverError": "Erreur serveur: ",
+    "found": "🎉 Séance trouvée!",
+    "validationEmpty": "❌ Veuillez saisir un ID de séance.",
+    "errorLoading": "Erreur lors du chargement de la séance: "
   },
   "steps": {
     "heading": "📋 Comment commencer la thérapie:",
@@ -141,6 +163,10 @@
     "waiting": "En attente...",
     "connected": "Connecté",
     "disconnected": "Déconnecté",
+    "connectionDirect": "✅ Connexion directe",
+    "connectionRelay": "⚠️ Relais serveur (léger délai possible)",
+    "connectionNone": "❌ Pas de connexion",
+    "sessionCreated": "Créée: chargement...",
     "viewerLinkLabel": "👁️ Lien pour le client (Viewer):",
     "copyClientLink": "📋 Copier",
     "passesLabel": "Passes",
@@ -173,11 +199,20 @@
     "soundTypeBounce": "Rebond",
     "soundTypeSoft": "Doux (EMDR)",
     "soundTypeBeep": "Bip",
+    "enableSound": "Activer le son",
+    "viewerSoundOff": "Son du visualiseur désactivé",
+    "viewerHearingSound": "Le visualiseur entend le son",
+    "viewerSoundReady": "Son du visualiseur prêt",
+    "viewerSoundPlaying": "Son en lecture",
+    "viewerSoundSuspended": "Son du visualiseur suspendu",
+    "viewerSoundNotActivated": "Le visualiseur n'a pas activé le son",
+    "viewerPlaying": "Visualiseur",
     "soundTitleTick": "Son (Tic)",
     "soundTitleTone": "Son (Tonalité)",
     "soundTitleClick": "Son (Clic)",
     "soundTitleBounce": "Son (Rebond)",
     "playOnController": "Jouer sur le contrôleur",
+    "settingsHeading": "🛠️ Paramètres",
     "appearanceHeading": "🎨 Apparence",
     "ballColorTitle": "Couleur de la balle",
     "bgColorTitle": "Couleur de fond",
@@ -217,7 +252,13 @@
     "sizeLabel": "Taille",
     "ballColor": "Balle",
     "bgColor": "Fond",
+    "viewerSize": "Visualiseur",
+    "viewerConnected": "Visualiseur connecté",
+    "waitingViewer": "En attente du visualiseur",
     "close": "Fermer",
+    "clientNotConnected": "Attention : client non connecté, l'animation peut ne pas fonctionner",
+    "connectionFailed": "Impossible de se connecter au serveur. Vérifiez votre connexion internet.",
+    "sessionLost": "La session a expiré. Veuillez recharger la page.",
     "sessionReset": "Séance réinitialisée",
     "sessionResetError": "Erreur lors de la réinitialisation de la séance",
     "linkCopied": "Lien du client copié!",

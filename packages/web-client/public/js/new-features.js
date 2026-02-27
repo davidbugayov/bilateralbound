@@ -38,28 +38,36 @@ class FeatureManager {
    */
   loadPresets() {
     const defaultPresets = {
-      [globalThis.i18n?.t('controller.presets.relaxation') || 'Relaxation']: {
+      relaxation: {
+        i18nKey: 'controller.presets.relaxation',
+        fallbackName: 'Relaxation',
         speed: 20,
         direction: 'horizontal',
         colorBall: '#60a5fa',
         colorBg: '#020617',
         size: 20
       },
-      [globalThis.i18n?.t('controller.presets.activation') || 'Activation']: {
+      activation: {
+        i18nKey: 'controller.presets.activation',
+        fallbackName: 'Activation',
         speed: 80,
         direction: 'vertical',
         colorBall: '#ef4444',
         colorBg: '#000000',
         size: 30
       },
-      [globalThis.i18n?.t('controller.presets.couplesTherapy') || 'Couples Therapy']: {
+      couplesTherapy: {
+        i18nKey: 'controller.presets.couplesTherapy',
+        fallbackName: 'Couples Therapy',
         speed: 40,
         direction: 'diagRL',
         colorBall: '#10b981',
         colorBg: '#052e16',
         size: 25
       },
-      [globalThis.i18n?.t('controller.presets.dynamic') || 'Dynamic']: {
+      dynamic: {
+        i18nKey: 'controller.presets.dynamic',
+        fallbackName: 'Dynamic',
         speed: 60,
         direction: 'diagRLL',
         colorBall: '#f59e0b',
@@ -88,12 +96,14 @@ class FeatureManager {
     presetGrid.style.display = 'grid'
     presetGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(120px, 1fr))'
     presetGrid.style.gap = '8px'
-    for (const [name, config] of Object.entries(this.presets)) {
+    for (const [id, config] of Object.entries(this.presets)) {
       const btn = document.createElement('button')
       btn.className = 'btn outline'
       btn.style.padding = '8px'
       btn.style.fontSize = '12px'
-      btn.textContent = name
+      btn.textContent = config.i18nKey
+        ? (globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id)
+        : id
       btn.onclick = () => this.applyPreset(config)
       presetGrid.appendChild(btn)
     }
@@ -123,7 +133,10 @@ class FeatureManager {
    * @private
    */
   _showPresetAppliedNotification(preset) {
-    const presetName = Object.keys(this.presets).find(key => this.presets[key] === preset)
+    const presetEntry = Object.entries(this.presets).find(([, v]) => v === preset)
+    const presetName = presetEntry
+      ? (presetEntry[1].i18nKey ? (globalThis.i18n?.t(presetEntry[1].i18nKey) || presetEntry[1].fallbackName) : presetEntry[0])
+      : ''
     globalThis.notificationSystem?.success('', `Preset "${presetName}" applied`)
   }
   /**

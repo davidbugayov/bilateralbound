@@ -64,6 +64,7 @@ async function main() {
     // Проверяем что контейнер появился или запрос успешен
     const isVisible = await mainPage.evaluate(() => {
       const container = document.getElementById('generatedLinksContainer')
+      // eslint-disable-next-line no-undef
       return container && getComputedStyle(container).display !== 'none'
     })
     if (!isVisible) {
@@ -126,7 +127,6 @@ async function main() {
   })
 
   await test('Клик на Play кнопку не вызывает ошибку', async () => {
-    const errorsBefore = await ctrlPage.evaluate(() => window.__jsErrors || [])
     await ctrlPage.evaluate(() => {
       window.__jsErrors = []
       window.onerror = (msg) => window.__jsErrors.push(msg)
@@ -159,7 +159,7 @@ async function main() {
     // Проверим что viewer получает состояние через SSE
     await new Promise(r => setTimeout(r, 2000))
     const hasState = await viewPage.evaluate(() => {
-      return globalThis.__current?.sessionId !== undefined || 
+      return globalThis.__current?.sessionId !== undefined ||
              document.querySelector('canvas') !== null
     })
     if (!hasState) throw new Error('SSE state not received')
@@ -213,7 +213,8 @@ async function main() {
         }).catch(() => {})
       }
       // Directly reset all play-state variables (avoids togglePlayPause state inconsistency)
-      globalThis.__current.isPlaying = false
+      // Atomic assignment: set both variables without intermediate state check
+      globalThis.__current = Object.assign(globalThis.__current || {}, { isPlaying: false })
       globalThis.isPlaying = false
     })
 

@@ -53,7 +53,7 @@ const cleanupIntervals = [
         }
       }
 
-      if (removedCount > 0 && DEBUG_MODE) {
+      if (removedCount > 0 && process.env.DEBUG_MODE) {
         logger.info(`API cache cleanup: ${removedCount} items removed.`)
       }
     },

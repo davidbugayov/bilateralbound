@@ -58,6 +58,7 @@
         }
       }
       if (typeof window !== 'undefined' && typeof Event === 'function') {
+        // eslint-disable-next-line no-undef
         globalThis.dispatchEvent(new Event('i18nReady'))
       }
     },
@@ -313,6 +314,7 @@
           )
         } else {
           // Fallback for very old environments
+          // eslint-disable-next-line no-undef
           globalThis.dispatchEvent(new Event('i18nLanguageChanged'))
         }
       } catch (err) {

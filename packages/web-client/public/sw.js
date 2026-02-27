@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* global self, caches, fetch, URL */
 'use strict'
 /**
  * Service Worker for BilateralBound
@@ -22,7 +24,13 @@ const STATIC_ASSETS = [
   '/js/i18n/lang-preload.js',
   '/js/i18n/language-selector.js',
   '/locales/en/common.json',
-  '/locales/ru/common.json'
+  '/locales/ru/common.json',
+  '/locales/de/common.json',
+  '/locales/es/common.json',
+  '/locales/fr/common.json',
+  '/locales/pt/common.json',
+  '/locales/ja/common.json',
+  '/locales/zh/common.json'
 ]
 
 // Install - cache static assets
@@ -54,12 +62,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
-  
+
   // Skip non-GET requests and SSE/WebSocket
   if (request.method !== 'GET') return
   if (url.pathname.includes('/sse/') || url.pathname.includes('/ws/')) return
   if (url.pathname.startsWith('/api/')) return
-  
+
   // For static assets: cache first
   if (STATIC_ASSETS.some(asset => url.pathname === asset || url.pathname.endsWith(asset))) {
     event.respondWith(
@@ -77,7 +85,7 @@ self.addEventListener('fetch', (event) => {
     )
     return
   }
-  
+
   // For other requests: network first, cache fallback
   event.respondWith(
     fetch(request)

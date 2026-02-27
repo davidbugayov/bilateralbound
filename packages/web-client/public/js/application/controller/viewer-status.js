@@ -66,7 +66,7 @@ function updateAudioIndicators() {
     if (!audioActivated) {
       indicator.classList.remove('hidden', 'ready')
       indicator.classList.add('warning')
-      text.textContent = globalThis.i18n?.t('controller.viewerSoundNotActivated') || "Waiting: viewer must click \"Enable sound\""
+      text.textContent = globalThis.i18n?.t('controller.viewerSoundNotActivated') || 'Waiting: viewer must click "Enable sound"'
     } else {
       indicator.classList.remove('hidden', 'warning')
       indicator.classList.add('ready')

@@ -40,7 +40,7 @@ function scheduleAnimations() {
 function setPlayPauseState(shouldPlay) {
   const { previewPhysicsEngine, safeSend, centerBall, getDirectionVector, currentDirectionMode, components, bbCounters, showNotification, WS_MSG } = _deps
   if (!globalThis.__current?.viewerConnected && shouldPlay) {
-    showNotification('Внимание: клиент не подключен', 'warning')
+    showNotification(globalThis.i18n?.t('controller.clientNotConnected') || 'Warning: client not connected, animation may not work', 'warning')
   }
   const payload = shouldPlay
     ? {
@@ -56,6 +56,12 @@ function setPlayPauseState(shouldPlay) {
   if (shouldPlay) bbCounters.start()
   else bbCounters.stop(true)
   if (previewPhysicsEngine) {
+    if (shouldPlay) {
+      // Reset first-update flag so first state_update hard-snaps position
+      previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
+      // Start from center (same as viewer) for clean sync
+      centerBall()
+    }
     previewPhysicsEngine.applyCommand(payload)
     if (!shouldPlay) centerBall()
   }
