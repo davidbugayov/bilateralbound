@@ -277,17 +277,29 @@ function setupExpressApp(sessionManager, apiCache) {
     { attr: 'name', attrValue: 'twitter:description', key: 'controller.meta.controllerDescription' }
   ]
 
+  const indexMetaMap = [
+    { isTitle: true, key: 'home.pageTitle' },
+    { attr: 'name', attrValue: 'description', key: 'home.metaDescription' },
+    { attr: 'property', attrValue: 'og:title', key: 'home.pageTitle' },
+    { attr: 'property', attrValue: 'og:description', key: 'home.metaDescription' },
+    { attr: 'name', attrValue: 'twitter:title', key: 'home.pageTitle' },
+    { attr: 'name', attrValue: 'twitter:description', key: 'home.metaDescription' }
+  ]
+
   // Pre-render index.html with version at startup (avoid 2x sync fs reads per request)
   const packageJsonPath = path.join(__dirname, '..', '..', '..', '..', 'package.json')
   const appVersion = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version
   const cachedIndexHtml = fs.readFileSync(path.join(publicPath, 'index.html'), 'utf8')
     .replace(/⚡ BilateralBound v[\d.]+/, `⚡ BilateralBound v${appVersion}`)
 
-  // Root route - serve cached index.html with injected version (MUST come before static middleware)
+  // Root route - serve cached index.html with injected version and localized meta tags
   app.get('/', (req, res) => {
+    const lang = detectLanguage(req, null)
+    const locale = locales.get(lang) || locales.get('en')
+    const html = localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap)
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
-    res.send(cachedIndexHtml)
+    res.send(html)
   })
 
   // Routes
