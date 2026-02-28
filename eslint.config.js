@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
-const globals = require('globals');
-const js = require('@eslint/js');
-const stylistic = require('@stylistic/eslint-plugin');
+const globals = require('globals')
+const js = require('@eslint/js')
+const stylistic = require('@stylistic/eslint-plugin')
 
 // Define common rules to be shared across configurations
 const commonRules = {
@@ -32,15 +32,15 @@ const commonRules = {
 
   // Disabled rules for this project
   'no-console': 'off',
-  'no-debugger': 'off',
-};
+  'no-debugger': 'off'
+}
 
 module.exports = [
   // 0. Import @stylistic plugin
   {
     plugins: {
-      '@stylistic': stylistic,
-    },
+      '@stylistic': stylistic
+    }
   },
 
   // 1. Global ignores
@@ -68,8 +68,8 @@ module.exports = [
       'scripts/update-version.js',
       'jsconfig.json',
       '.scannerwork/**',
-      'reports/**',
-    ],
+      'reports/**'
+    ]
   },
 
   // 2. Base recommended config
@@ -81,14 +81,14 @@ module.exports = [
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',
-      globals: globals.node,
+      globals: globals.node
     },
     rules: {
       ...commonRules,
       // Allow JSHint directives and legacy comments
       'no-redeclare': 'off',
-      'no-unused-vars': ['error', { args: 'none' }],
-    },
+      'no-unused-vars': ['error', { args: 'none' }]
+    }
   },
 
   // 3.1. Config files (ESLint, webpack, etc.)
@@ -98,22 +98,22 @@ module.exports = [
       'webpack.config.js',
       'config/**/*.js',
       'packages/web-client/webpack.config.js',
-      'packages/web-client/sonar-scanner.js',
+      'packages/web-client/sonar-scanner.js'
     ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',
       globals: {
-        ...globals.node,
-      },
+        ...globals.node
+      }
     },
     rules: {
       // More lenient rules for config files
       'no-undef': 'off', // Allow global Node.js features
       'no-console': 'off',
       'no-debugger': 'off',
-      'no-unused-vars': 'warn',
-    },
+      'no-unused-vars': 'warn'
+    }
   },
 
   // 4.1. Client-side code (Browser) - Web Client public files with custom globals
@@ -240,15 +240,15 @@ module.exports = [
         showViewerSoundIndicator: 'readonly',
         resizePreviewFullscreen: 'readonly',
         setSoundEnabled: 'readonly',
-        setSoundType: 'readonly',
-      },
+        setSoundType: 'readonly'
+      }
     },
     rules: {
       ...commonRules,
       // Browser files often redefine globals - this is OK for browserify/global scope
       'no-redeclare': 'off',
-      'no-unused-vars': 'off', // Browser globals may be used in other scripts
-    },
+      'no-unused-vars': 'off' // Browser globals may be used in other scripts
+    }
   },
 
   // 4.1.old. Client-side code (Browser) - Web Client public files (old config - removing)
@@ -258,13 +258,13 @@ module.exports = [
       ecmaVersion: 2022,
       sourceType: 'script',
       globals: {
-        ...globals.browser,
-      },
+        ...globals.browser
+      }
     },
     rules: {
       'no-redeclare': 'off',
-      'no-unused-vars': 'off',
-    },
+      'no-unused-vars': 'off'
+    }
   },
 
   // 5. E2E test scripts (hybrid - they use both Node.js and browser globals)
@@ -278,12 +278,12 @@ module.exports = [
         // Browser-like globals that puppeteer tests might use
         document: 'readonly',
         window: 'readonly',
-        PhysicsEngine: 'readonly',
-      },
+        PhysicsEngine: 'readonly'
+      }
     },
     rules: {
       'no-await-in-loop': 'off', // Disable in test scripts where sequential awaiting is often necessary
-      'no-unused-vars': 'warn',
-    },
-  },
-];
+      'no-unused-vars': 'warn'
+    }
+  }
+]

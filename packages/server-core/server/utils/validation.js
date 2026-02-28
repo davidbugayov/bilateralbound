@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * Централизованная валидация данных для BilateralBound
  * Упрощает и унифицирует валидацию по всему приложению
@@ -10,20 +10,20 @@ class ValidationUtils {
    */
   static validateBallStateUpdates(updates) {
     if (!updates || typeof updates !== 'object') {
-      return {};
+      return {}
     }
 
-    const validated = {};
+    const validated = {}
 
-    this._validateSpeed(updates, validated);
-    this._validateRadius(updates, validated);
-    this._validatePause(updates, validated);
-    this._validateDirection(updates, validated);
-    this._validateColors(updates, validated);
-    this._validateSound(updates, validated);
-    this._validateCommands(updates, validated);
+    this._validateSpeed(updates, validated)
+    this._validateRadius(updates, validated)
+    this._validatePause(updates, validated)
+    this._validateDirection(updates, validated)
+    this._validateColors(updates, validated)
+    this._validateSound(updates, validated)
+    this._validateCommands(updates, validated)
 
-    return validated;
+    return validated
   }
 
   /**
@@ -34,7 +34,7 @@ class ValidationUtils {
     if (updates.speed !== undefined)
       if (this._isValidSpeed(updates.speed)) {
         // console.log('[ValidationUtils] _validateSpeed input:', updates.speed)
-        validated.speed = updates.speed;
+        validated.speed = updates.speed
       }
   }
 
@@ -44,7 +44,7 @@ class ValidationUtils {
    */
   static _validateRadius(updates, validated) {
     if (this._isValidRadius(updates.radius)) {
-      validated.radius = updates.radius;
+      validated.radius = updates.radius
     }
   }
 
@@ -56,7 +56,7 @@ class ValidationUtils {
     if (updates.paused !== undefined)
       if (typeof updates.paused === 'boolean') {
         // console.log('[ValidationUtils] _validatePause input:', updates.paused)
-        validated.paused = updates.paused;
+        validated.paused = updates.paused
       }
   }
 
@@ -69,10 +69,10 @@ class ValidationUtils {
       if (this._isValidDirectionValue(updates.dirX)) {
         // console.log('[ValidationUtils] _validateDirection input:', updates.dirX, updates.dirY)
 
-        validated.dirX = updates.dirX;
+        validated.dirX = updates.dirX
       }
     if (this._isValidDirectionValue(updates.dirY)) {
-      validated.dirY = updates.dirY;
+      validated.dirY = updates.dirY
     }
   }
 
@@ -84,14 +84,14 @@ class ValidationUtils {
     // console.log('[ValidationUtils] _validateColors input:', JSON.stringify({ colorBall: updates.colorBall, colorBg: updates.colorBg }))
 
     if (this._isValidColor(updates.colorBall)) {
-      validated.colorBall = updates.colorBall;
+      validated.colorBall = updates.colorBall
       // console.log('[ValidationUtils] colorBall is valid:', updates.colorBall)
     } else if (updates.colorBall !== undefined) {
       // console.log('[ValidationUtils] colorBall is INVALID:', updates.colorBall, typeof updates.colorBall)
     }
 
     if (this._isValidColor(updates.colorBg)) {
-      validated.colorBg = updates.colorBg;
+      validated.colorBg = updates.colorBg
       // console.log('[ValidationUtils] colorBg is valid:', updates.colorBg)
     } else if (updates.colorBg !== undefined) {
       // console.log('[ValidationUtils] colorBg is INVALID:', updates.colorBg, typeof updates.colorBg)
@@ -104,15 +104,15 @@ class ValidationUtils {
    */
   static _validateSound(updates, validated) {
     if (typeof updates.soundEnabled === 'boolean') {
-      validated.soundEnabled = updates.soundEnabled;
+      validated.soundEnabled = updates.soundEnabled
     }
     if (
       updates.soundType &&
       ['soft', 'tick', 'tone', 'click', 'bounce', 'beep'].includes(
-        updates.soundType,
+        updates.soundType
       )
     ) {
-      validated.soundType = updates.soundType;
+      validated.soundType = updates.soundType
     }
   }
 
@@ -122,16 +122,16 @@ class ValidationUtils {
    */
   static _validateCommands(updates, validated) {
     if (updates.reset === true) {
-      validated.reset = true;
+      validated.reset = true
     }
     if (updates.resume === true) {
-      validated.paused = false;
+      validated.paused = false
     }
     if (updates.pause === true) {
-      validated.paused = true;
+      validated.paused = true
     }
     if (updates.returnToCenter === true) {
-      validated.returnToCenter = true;
+      validated.returnToCenter = true
     }
   }
 
@@ -140,21 +140,21 @@ class ValidationUtils {
    */
   static validateWebSocketCommand(command) {
     if (!command || typeof command !== 'object') {
-      return {};
+      return {}
     }
 
-    const validated = {};
+    const validated = {}
 
     if (command.role === 'viewer') {
-      this._validateViewerCommand(command, validated);
+      this._validateViewerCommand(command, validated)
     } else {
-      this._validateControllerCommand(command, validated);
+      this._validateControllerCommand(command, validated)
     }
 
     // Общие валидации для всех режимов
-    this._validateCommonCommandFields(command, validated);
+    this._validateCommonCommandFields(command, validated)
 
-    return validated;
+    return validated
   }
 
   /**
@@ -163,16 +163,16 @@ class ValidationUtils {
    */
   static _validateViewerCommand(command, validated) {
     if (typeof command.x === 'number' && !Number.isNaN(command.x)) {
-      validated.x = command.x;
+      validated.x = command.x
     }
     if (typeof command.y === 'number' && !Number.isNaN(command.y)) {
-      validated.y = command.y;
+      validated.y = command.y
     }
     if (typeof command.vx === 'number' && !Number.isNaN(command.vx)) {
-      validated.vx = command.vx;
+      validated.vx = command.vx
     }
     if (typeof command.vy === 'number' && !Number.isNaN(command.vy)) {
-      validated.vy = command.vy;
+      validated.vy = command.vy
     }
   }
 
@@ -182,13 +182,13 @@ class ValidationUtils {
    */
   static _validateControllerCommand(command, validated) {
     if (this._isValidDirectionValue(command.dirX)) {
-      validated.dirX = command.dirX;
+      validated.dirX = command.dirX
     }
     if (this._isValidDirectionValue(command.dirY)) {
-      validated.dirY = command.dirY;
+      validated.dirY = command.dirY
     }
     if (this._isValidSpeed(command.speed)) {
-      validated.speed = command.speed;
+      validated.speed = command.speed
     }
   }
 
@@ -198,19 +198,19 @@ class ValidationUtils {
    */
   static _validateCommonCommandFields(command, validated) {
     if (typeof command.paused === 'boolean') {
-      validated.paused = command.paused;
+      validated.paused = command.paused
     }
     if (command.reset === true) {
-      validated.reset = true;
+      validated.reset = true
     }
     if (this._isValidRadius(command.radius)) {
-      validated.radius = command.radius;
+      validated.radius = command.radius
     }
     if (this._isValidColor(command.colorBall)) {
-      validated.colorBall = command.colorBall;
+      validated.colorBall = command.colorBall
     }
     if (this._isValidColor(command.colorBg)) {
-      validated.colorBg = command.colorBg;
+      validated.colorBg = command.colorBg
     }
   }
 
@@ -221,7 +221,7 @@ class ValidationUtils {
   static _isValidDirectionValue(value) {
     return (
       typeof value === 'number' && Math.abs(value) <= 1 && !Number.isNaN(value)
-    );
+    )
   }
 
   /**
@@ -234,7 +234,7 @@ class ValidationUtils {
       value >= 0 &&
       value <= 100 &&
       !Number.isNaN(value)
-    );
+    )
   }
 
   /**
@@ -247,7 +247,7 @@ class ValidationUtils {
       value > 0 &&
       value <= 1000 &&
       !Number.isNaN(value)
-    );
+    )
   }
 
   /**
@@ -259,7 +259,7 @@ class ValidationUtils {
     return (
       typeof value === 'string' &&
       /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
-    );
+    )
   }
 
   /**
@@ -267,11 +267,11 @@ class ValidationUtils {
    */
   static validateScreenSize(screenSize) {
     if (!screenSize || typeof screenSize !== 'object') {
-      return null;
+      return null
     }
 
-    const width = Number.parseInt(screenSize.width);
-    const height = Number.parseInt(screenSize.height);
+    const width = Number.parseInt(screenSize.width)
+    const height = Number.parseInt(screenSize.height)
 
     if (
       Number.isNaN(width) ||
@@ -279,11 +279,11 @@ class ValidationUtils {
       width <= 0 ||
       height <= 0
     ) {
-      return null;
+      return null
     }
 
-    return { width, height };
+    return { width, height }
   }
 }
 
-module.exports = ValidationUtils;
+module.exports = ValidationUtils

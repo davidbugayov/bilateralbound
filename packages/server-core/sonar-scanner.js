@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
-const scanner = require('sonarqube-scanner').default;
-const path = require('path');
-const fs = require('fs');
+const scanner = require('sonarqube-scanner').default
+const path = require('path')
+const fs = require('fs')
 
-const serverCoreDir = __dirname;
+const serverCoreDir = __dirname
 
 // Валидация окружения
 function validateEnvironment() {
   if (!fs.existsSync(path.join(serverCoreDir, 'server'))) {
     throw new Error(
-      `Server directory not found: ${path.join(serverCoreDir, 'server')}`,
-    );
+      `Server directory not found: ${path.join(serverCoreDir, 'server')}`
+    )
   }
 }
 
@@ -30,38 +30,38 @@ const scannerOptions = {
       '**/node_modules/**,**/dist/**,**/coverage/**,**/.scannerwork/**,**/*.test.js,**/spec/**',
     'sonar.sourceEncoding': 'UTF-8',
     'sonar.qualitygate.wait': false,
-    'sonar.qualitygate.timeout': 300,
-  },
-};
-
-async function runScan() {
-  try {
-    validateEnvironment();
-    console.log('🚀 Starting SonarQube analysis...');
-    console.log(`📍 Server: ${scannerOptions.serverUrl}`);
-    console.log(`📦 Project: ${scannerOptions.options['sonar.projectKey']}`);
-
-    await scanner(scannerOptions, () => {
-      console.log('✅ SonarQube analysis completed successfully');
-      console.log(
-        '📊 View results at:',
-        `${scannerOptions.serverUrl}/projects/${scannerOptions.options['sonar.projectKey']}`,
-      );
-      process.exit(0);
-    });
-  } catch (error) {
-    console.error('❌ SonarQube analysis failed');
-    console.error('Error:', error?.message || error);
-
-    if (error?.message?.includes('ECONNREFUSED')) {
-      console.error('⚠️  Cannot connect to SonarQube server');
-      console.error(
-        `   Ensure SonarQube is running at ${scannerOptions.serverUrl}`,
-      );
-    }
-
-    process.exit(1);
+    'sonar.qualitygate.timeout': 300
   }
 }
 
-runScan();
+async function runScan() {
+  try {
+    validateEnvironment()
+    console.log('🚀 Starting SonarQube analysis...')
+    console.log(`📍 Server: ${scannerOptions.serverUrl}`)
+    console.log(`📦 Project: ${scannerOptions.options['sonar.projectKey']}`)
+
+    await scanner(scannerOptions, () => {
+      console.log('✅ SonarQube analysis completed successfully')
+      console.log(
+        '📊 View results at:',
+        `${scannerOptions.serverUrl}/projects/${scannerOptions.options['sonar.projectKey']}`
+      )
+      process.exit(0)
+    })
+  } catch (error) {
+    console.error('❌ SonarQube analysis failed')
+    console.error('Error:', error?.message || error)
+
+    if (error?.message?.includes('ECONNREFUSED')) {
+      console.error('⚠️  Cannot connect to SonarQube server')
+      console.error(
+        `   Ensure SonarQube is running at ${scannerOptions.serverUrl}`
+      )
+    }
+
+    process.exit(1)
+  }
+}
+
+runScan()

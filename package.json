@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.152",
+  "version": "2.39.153",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -37,8 +37,8 @@
     "format:check": "npx prettier --check '**/*.{js,json,css,html,md}'",
     "version:update": "node scripts/update-version.js",
     "lint:report": "npx eslint . --format=json --output-file=reports/eslint-report.json --ignore-pattern='eslint.config.js' --ignore-pattern='webpack.config.js' --ignore-pattern='packages/web-client/.eslintrc.js' --ignore-pattern='packages/web-client/sonar-scanner.js' --ignore-pattern='packages/web-client/webpack.config.js' --ignore-pattern='scripts/update-version.js'",
-    "sonar:report": "npm run lint:report && sonar-scanner",
-    "sonar": "sonar-scanner",
+    "sonar:report": "npm run lint:report && SONAR_TOKEN=$SONAR_TOKEN sonar-scanner -Dsonar.projectKey=bound -Dsonar.host.url=http://localhost:9000",
+    "sonar": "SONAR_TOKEN=$SONAR_TOKEN sonar-scanner -Dsonar.projectKey=bound -Dsonar.host.url=http://localhost:9000",
     "deploy": "cd packages/server-core && npm start",
     "deploy:dev": "npm run deploy:dev:pull && npm run deploy:dev:restart",
     "deploy:dev:pull": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/main'",
