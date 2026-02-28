@@ -3,18 +3,20 @@
  * @returns {string} Уникальный ID сессии
  */
 /* global debugWarn, debugError */
-function _generateId() {
-  if (crypto?.randomUUID) {
-    return crypto.randomUUID()
+
+if (typeof globalThis.FeatureManager === 'undefined') {
+  function _generateId() {
+    if (crypto?.randomUUID) {
+      return crypto.randomUUID()
+    }
+    if (crypto?.getRandomValues) {
+      const array = new Uint32Array(2)
+      crypto.getRandomValues(array)
+      return `${Date.now()}_${array[0].toString(36)}_${array[1].toString(36)}`
+    }
+    return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   }
-  if (crypto?.getRandomValues) {
-    const array = new Uint32Array(2)
-    crypto.getRandomValues(array)
-    return `${Date.now()}_${array[0].toString(36)}_${array[1].toString(36)}`
-  }
-  return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-}
-class FeatureManager {
+  class FeatureManager {
   constructor() {
     this.presets = this.loadPresets()
     this.sessionHistory = []
@@ -665,10 +667,14 @@ class FeatureManager {
     await globalThis.wsClient?.send?.('WS_MSG.controllerUpdate', data)
   }
 }
+globalThis.FeatureManager = FeatureManager
+}
 globalThis.applyPreset = preset => globalThis.featureManager?.applyPreset?.(preset)
 globalThis.createCustomPreset = () => globalThis.featureManager?.createCustomPreset?.()
 globalThis.exportSession = () => globalThis.featureManager?.exportSession?.()
 globalThis.importSession = file => globalThis.featureManager?.importSession?.(file)
 document.addEventListener('DOMContentLoaded', () => {
-  globalThis.featureManager = new FeatureManager()
+  if (!globalThis.featureManager) {
+    globalThis.featureManager = new globalThis.FeatureManager()
+  }
 })
