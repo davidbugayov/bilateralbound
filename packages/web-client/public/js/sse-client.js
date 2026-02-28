@@ -48,9 +48,23 @@ if (typeof SSEClient === 'undefined') {
         this.log('Connection already in progress or established')
         return
       }
-      return new Promise((resolve, reject) => {
-        this.log(`Connecting to SSE: ${this.url}`)
+      return new Promise(async (resolve, reject) => {
         try {
+          // Проверяем если сессия существует прежде чем подключиться к SSE
+          const checkResponse = await fetch(`/api/session/${this.sessionId}/state`)
+          if (checkResponse.status === 404) {
+            const errorMsg = globalThis.i18n?.t('restore.notFound') || 'Session with this ID not found.'
+            this.log(errorMsg, 'error')
+            this._emit('session_not_found', { sessionId: this.sessionId })
+            return reject(new Error(errorMsg))
+          }
+          if (!checkResponse.ok) {
+            const errorMsg = (globalThis.i18n?.t('restore.serverError') || 'Server error: ') + checkResponse.status
+            this.log(errorMsg, 'error')
+            return reject(new Error(errorMsg))
+          }
+
+          this.log(`Connecting to SSE: ${this.url}`)
           this.eventSource = new EventSource(this.url, {
             withCredentials: true
           })

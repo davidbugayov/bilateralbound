@@ -275,7 +275,13 @@ async function initializeController() {
   } catch (error) {
     if (globalThis.__current) globalThis.__current.isInitializing = false
     debugError('Error initializing controller:', error)
-    showNotification('Ошибка инициализации контроллера: ' + (error?.message || error), 'error')
+    let errorMsg = error?.message || error
+    if (errorMsg?.includes('Session with this ID not found') || errorMsg?.includes('not found')) {
+      errorMsg = globalThis.i18n?.t('restore.notFound') || 'Session with this ID not found. Please check the URL and try again.'
+    } else if (errorMsg?.includes('Realtime connection')) {
+      errorMsg = globalThis.i18n?.t('controller.connectionError') || 'Failed to connect to session. Please reload the page and try again.'
+    }
+    showNotification(errorMsg, 'error')
   }
 }
 async function registerControllerOnServer(sessionId, logger) {
