@@ -1,33 +1,41 @@
-'use strict'
-/**
- * Common utilities and functions for BilateralBound
- * Упрощенная версия с использованием общих утилит
- */
-/**
- * Условное логирование только в режиме разработки.
- * @param {...*} args - Аргументы для логирования.
- */
-const debugLog =
-  typeof globalThis !== 'undefined' && globalThis.debugLog ? globalThis.debugLog : () => {}
+/* jshint esversion: 11, asi: true */
+(function () {
+  'use strict'
+  /**
+   * Common utilities and functions for BilateralBound
+   * Упрощенная версия с использованием общих утилит
+   */
+  /**
+   * Условное логирование только в режиме разработки.
+   * @param {...*} args - Аргументы для логирования.
+   */
+  const debugLog =
+    (typeof globalThis !== 'undefined' && globalThis.debugLog)
+      ? globalThis.debugLog
+      : () => {}
 /**
  * Логирует ошибки в режиме разработки.
  * @param {...*} args - Аргументы для логирования.
  */
 const debugError =
-  typeof globalThis !== 'undefined' && globalThis.debugError ? globalThis.debugError : () => {}
+  (typeof globalThis !== 'undefined' && globalThis.debugError)
+    ? globalThis.debugError
+    : () => {}
 /**
  * Логирует предупреждения в режиме разработки.
  * @param {...*} args - Аргументы для логирования.
  */
 const debugWarn =
-  typeof globalThis !== 'undefined' && globalThis.debugWarn ? globalThis.debugWarn : () => {}
+  (typeof globalThis !== 'undefined' && globalThis.debugWarn)
+    ? globalThis.debugWarn
+    : () => {}
 /**
  * Извлекает ID сессии из URL.
  * @returns {string|null} ID сессии или null, если не найден.
  */
 const getSessionIdFromUrl =
-  globalThis.CommonUtils?.getSessionIdFromUrl &&
-  typeof globalThis.CommonUtils.getSessionIdFromUrl === 'function'
+  (globalThis.CommonUtils?.getSessionIdFromUrl &&
+    typeof globalThis.CommonUtils.getSessionIdFromUrl === 'function')
     ? globalThis.CommonUtils.getSessionIdFromUrl
     : function () {
         const path = globalThis.location.pathname
@@ -39,8 +47,8 @@ const getSessionIdFromUrl =
         return urlParams.get('sessionId')
       }
 const toggleFullscreen =
-  globalThis.CommonUtils?.toggleFullscreen &&
-  typeof globalThis.CommonUtils.toggleFullscreen === 'function'
+  (globalThis.CommonUtils?.toggleFullscreen &&
+    typeof globalThis.CommonUtils.toggleFullscreen === 'function')
     ? globalThis.CommonUtils.toggleFullscreen
     : (function () {
         const canFullscreen = () => {
@@ -100,7 +108,7 @@ const toggleFullscreen =
  * @returns {Function} Новая throttled-функция.
  */
 const throttle =
-  globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function'
+  (globalThis.CommonUtils && typeof globalThis.CommonUtils.throttle === 'function')
     ? globalThis.CommonUtils.throttle
     : function throttleImplementation(fn, wait = 100) {
         if (typeof fn !== 'function') {
@@ -158,6 +166,9 @@ class ThemeManager {
    * @type {string}
    * @private
    */
+  /**
+   * Initializes the ThemeManager
+   */
   constructor() {
     this.themeKey = 'bb_theme'
     this.init()
@@ -177,10 +188,7 @@ class ThemeManager {
   loadTheme() {
     const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
     document.body.classList.remove('dark-theme', 'light-theme')
-    if (savedTheme === 'dark') {
-      document.body.classList.add('dark-theme')
-      this.updateThemeButton('🌙')
-    } else if (savedTheme === 'light') {
+    if (savedTheme === 'light') {
       document.body.classList.add('light-theme')
       this.updateThemeButton('☀️')
     } else {
@@ -257,7 +265,7 @@ async function copy(elementId, successMessage) {
  * Navigates the user to the main page.
  */
 function goBack() {
-  window.location.href = '/'
+  globalThis.location.href = '/'
 }
 document.addEventListener('DOMContentLoaded', () => {
   globalThis.themeManager = new ThemeManager()
@@ -266,3 +274,4 @@ if (typeof globalThis !== 'undefined') {
   globalThis.copy = copy
   globalThis.goBack = goBack
 }
+})()

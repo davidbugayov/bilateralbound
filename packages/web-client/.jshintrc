@@ -10,6 +10,7 @@
   "evil": false,
   "expr": true,
   "forin": true,
+  "funcscope": true,
   "immed": true,
   "latedef": false,
   "loopfunc": true,
@@ -46,6 +47,8 @@
     "performance": true,
     "module": true,
     "exports": true,
+    "crypto": true,
+    "Path2D": true,
     "PhysicsEngine": true,
     "BallRenderer": true,
     "WebSocketClient": true,
@@ -59,6 +62,9 @@
     "bbCounters": true,
     "ControllerState": true,
     "ViewerState": true,
-    "BBConfig": true
+    "BBConfig": true,
+    "togglePlayPause": true,
+    "setDirection": true,
+    "debugError": true
   }
 }

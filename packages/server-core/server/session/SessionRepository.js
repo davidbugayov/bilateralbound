@@ -1,17 +1,17 @@
-'use strict'
+'use strict';
 // Интерфейс для управления данными сессий
 
 // Maximum number of sessions to prevent memory exhaustion
-const MAX_SESSIONS = 1000
+const MAX_SESSIONS = 1000;
 
 class SessionRepository {
   /**
    * Конструктор SessionRepository
    */
   constructor() {
-    this.sessions = new Map()
+    this.sessions = new Map();
     // LRU tracking - Map сохраняет порядок вставки, первый = самый старый
-    this.accessOrder = new Map() // sessionId -> lastAccessTime
+    this.accessOrder = new Map(); // sessionId -> lastAccessTime
   }
 
   /**
@@ -21,8 +21,8 @@ class SessionRepository {
    */
   _touchSession(sessionId) {
     // Удаляем и добавляем заново чтобы переместить в конец Map
-    this.accessOrder.delete(sessionId)
-    this.accessOrder.set(sessionId, Date.now())
+    this.accessOrder.delete(sessionId);
+    this.accessOrder.set(sessionId, Date.now());
   }
 
   /**
@@ -32,10 +32,10 @@ class SessionRepository {
   _enforceSessionLimit() {
     if (this.sessions.size >= MAX_SESSIONS) {
       // Первый элемент в accessOrder - самый старый (LRU)
-      const oldestId = this.accessOrder.keys().next().value
+      const oldestId = this.accessOrder.keys().next().value;
       if (oldestId) {
-        this.sessions.delete(oldestId)
-        this.accessOrder.delete(oldestId)
+        this.sessions.delete(oldestId);
+        this.accessOrder.delete(oldestId);
       }
     }
   }
@@ -46,7 +46,7 @@ class SessionRepository {
    * @returns {boolean} Результат валидации
    */
   isValidCustomId(id) {
-    return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id)
+    return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id);
   }
 
   /**
@@ -55,8 +55,8 @@ class SessionRepository {
    * @returns {Promise<Object>} Созданная сессия
    */
   async create(sessionData = {}) {
-    const { v4: uuidv4 } = await import('uuid')
-    return this._createInternal(uuidv4().substring(0, 6), sessionData)
+    const { v4: uuidv4 } = await import('uuid');
+    return this._createInternal(uuidv4().substring(0, 6), sessionData);
   }
 
   /**
@@ -67,9 +67,9 @@ class SessionRepository {
    */
   findOrCreateById(id, sessionData = {}) {
     if (!this.isValidCustomId(id)) {
-      return null
+      return null;
     }
-    return this.sessions.get(id) || this._createInternal(id, sessionData)
+    return this.sessions.get(id) || this._createInternal(id, sessionData);
   }
 
   /**
@@ -87,16 +87,17 @@ class SessionRepository {
       colorBg: '#020617',
       paused: true,
       soundEnabled: false,
-      soundType: 'soft'
-    }
+      soundType: 'soft',
+    };
 
     // Применяем пользовательские значения только если они есть
-    const ballState = sessionData.ballState && Object.keys(sessionData.ballState).length > 0
-      ? { ...defaultBallState, ...sessionData.ballState }
-      : defaultBallState
+    const ballState =
+      sessionData.ballState && Object.keys(sessionData.ballState).length > 0
+        ? { ...defaultBallState, ...sessionData.ballState }
+        : defaultBallState;
 
     // Enforce session limit before creating new one
-    this._enforceSessionLimit()
+    this._enforceSessionLimit();
 
     const session = {
       id,
@@ -113,12 +114,12 @@ class SessionRepository {
        * @type {Map<WebSocket, {role: string, connectedAt: number, sessionId: string}>}
        */
       clients: new Map(),
-      mainLoop: null // Единый цикл для физики и рассылки
-    }
+      mainLoop: null, // Единый цикл для физики и рассылки
+    };
 
-    this.sessions.set(session.id, session)
-    this._touchSession(session.id) // Track in LRU
-    return session
+    this.sessions.set(session.id, session);
+    this._touchSession(session.id); // Track in LRU
+    return session;
   }
 
   /**
@@ -127,11 +128,11 @@ class SessionRepository {
    * @returns {Object|null} Сессия или null если не найдена
    */
   findById(sessionId) {
-    const session = this.sessions.get(sessionId)
+    const session = this.sessions.get(sessionId);
     if (session) {
-      this._touchSession(sessionId) // Update LRU on access
+      this._touchSession(sessionId); // Update LRU on access
     }
-    return session || null
+    return session || null;
   }
 
   /**
@@ -141,13 +142,13 @@ class SessionRepository {
    * @returns {boolean} Успех обновления
    */
   update(sessionId, updates) {
-    const session = this.findById(sessionId)
+    const session = this.findById(sessionId);
     if (!session) {
-      return false
+      return false;
     }
-    Object.assign(session, updates)
-    session.lastActivity = Date.now()
-    return true
+    Object.assign(session, updates);
+    session.lastActivity = Date.now();
+    return true;
   }
 
   /**
@@ -157,12 +158,12 @@ class SessionRepository {
    * @returns {boolean} Успех обновления
    */
   updateBallState(sessionId, ballUpdates) {
-    const session = this.findById(sessionId)
+    const session = this.findById(sessionId);
     if (!session) {
-      return false
+      return false;
     }
-    Object.assign(session.ballState, ballUpdates)
-    return true
+    Object.assign(session.ballState, ballUpdates);
+    return true;
   }
 
   /**
@@ -171,7 +172,7 @@ class SessionRepository {
    * @returns {boolean} Успех удаления
    */
   delete(sessionId) {
-    return this.sessions.delete(sessionId)
+    return this.sessions.delete(sessionId);
   }
 
   /**
@@ -179,7 +180,7 @@ class SessionRepository {
    * @returns {Array} Массив сессий
    */
   getAll() {
-    return Array.from(this.sessions.values())
+    return Array.from(this.sessions.values());
   }
 
   /**
@@ -189,51 +190,63 @@ class SessionRepository {
    * @param {number} inactivityTimeout - Таймаут при отсутствии обновлений состояния в мс (по умолчанию 30 минут)
    * @returns {Array} Массив ID удаленных сессий
    */
-  cleanupExpired(maxAge = 60 * 60 * 1000, partialDisconnectTimeout = 15 * 60 * 1000, inactivityTimeout = 30 * 60 * 1000) {
-    const now = Date.now()
-    const expiredIds = []
+  cleanupExpired(
+    maxAge = 60 * 60 * 1000,
+    partialDisconnectTimeout = 15 * 60 * 1000,
+    inactivityTimeout = 30 * 60 * 1000,
+  ) {
+    const now = Date.now();
+    const expiredIds = [];
 
     for (const [id, session] of this.sessions) {
-      const age = now - session.createdAt
-      const inactiveTime = now - (session.lastActivity || session.createdAt)
-      const noUpdatesTime = now - (session.lastStateUpdate || session.createdAt)
+      const age = now - session.createdAt;
+      const inactiveTime = now - (session.lastActivity || session.createdAt);
+      const noUpdatesTime =
+        now - (session.lastStateUpdate || session.createdAt);
 
       // Причины удаления сессии:
       // 1. Сессия старше 1 часа (maxAge)
       if (age > maxAge) {
-        expiredIds.push({ id, reason: 'max_age_exceeded' })
-        continue
+        expiredIds.push({ id, reason: 'max_age_exceeded' });
+        continue;
       }
 
       // 2. Один из участников отключился более 15 минут назад
       if (session.partialDisconnectTime) {
-        const disconnectAge = now - session.partialDisconnectTime
+        const disconnectAge = now - session.partialDisconnectTime;
         if (disconnectAge > partialDisconnectTimeout) {
-          expiredIds.push({ id, reason: 'partial_disconnect_timeout' })
-          continue
+          expiredIds.push({ id, reason: 'partial_disconnect_timeout' });
+          continue;
         }
       }
 
       // 3. Полная неактивность (никто не подключен) более 30 минут
-      if (!session.controllerConnected && !session.viewerConnected && inactiveTime > 30 * 60 * 1000) {
-        expiredIds.push({ id, reason: 'full_inactivity' })
-        continue
+      if (
+        !session.controllerConnected &&
+        !session.viewerConnected &&
+        inactiveTime > 30 * 60 * 1000
+      ) {
+        expiredIds.push({ id, reason: 'full_inactivity' });
+        continue;
       }
 
       // 4. Нет обновлений состояния более 30 минут (свернутая вкладка/неактивная сессия)
       // Проверяем только если хотя бы один клиент подключен
-      if ((session.controllerConnected || session.viewerConnected) && noUpdatesTime > inactivityTimeout) {
-        expiredIds.push({ id, reason: 'no_state_updates' })
-        continue
+      if (
+        (session.controllerConnected || session.viewerConnected) &&
+        noUpdatesTime > inactivityTimeout
+      ) {
+        expiredIds.push({ id, reason: 'no_state_updates' });
+        continue;
       }
     }
 
     for (const { id } of expiredIds) {
-      this.delete(id)
+      this.delete(id);
     }
 
-    return expiredIds
+    return expiredIds;
   }
 }
 
-module.exports = SessionRepository
+module.exports = SessionRepository;

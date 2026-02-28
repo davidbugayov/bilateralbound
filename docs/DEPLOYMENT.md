@@ -26,6 +26,7 @@
 ## Сайты и домены
 
 ### Development
+
 - **URL**: https://dev.emdrbilateral.online
 - **Тип**: Развернуто по ветке `main`
 - **Путь**: `/var/www/dev.emdrbilateral.online`
@@ -33,6 +34,7 @@
 - **Использование**: Тестирование новых функций
 
 ### Production
+
 - **URL**: https://emdrbilateral.online (основной) или https://emdrbilateral.ru (альтернативный)
 - **Тип**: Развернуто по ветке `stable`
 - **Путь**: `/var/www/emdrbilateral.online`
@@ -55,6 +57,7 @@ node /var/www/emdrbilateral.online/packages/server-core/server/index.js
 ## Nginx конфигурация
 
 Оба сайта настроены в Nginx с:
+
 - **SSL/TLS** (Let's Encrypt)
 - **Reverse proxy** на Node.js приложение
 - **Compression** для оптимизации
@@ -168,10 +171,10 @@ nohup node /var/www/dev.emdrbilateral.online/packages/server-core/server/index.j
 ## Версионирование
 
 Версия автоматически обновляется в:
+
 - `package.json`
 - `packages/server-core/package.json`
 - `packages/web-client/package.json`
 - `packages/web-client/public/*.html` файлах
 
 Текущая версия: **2.39.125**
-

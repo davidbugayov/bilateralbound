@@ -5,6 +5,7 @@
 Проект развернут на VPS **213.139.229.44** в двух окружениях:
 
 ### Development
+
 - **URL**: https://dev.emdrbilateral.online
 - **Директория**: `/var/www/dev.emdrbilateral.online`
 - **Ветка Git**: `main`
@@ -14,6 +15,7 @@
 - **Назначение**: Тестирование новых функций
 
 ### Production
+
 - **URL**: https://emdrbilateral.online и https://emdrbilateral.ru
 - **Директория**: `/var/www/emdrbilateral.online`
 - **Ветка Git**: `stable`
@@ -25,6 +27,7 @@
 ## Nginx конфигурация
 
 Nginx проксирует запросы на соответствующие порты:
+
 - `dev.emdrbilateral.online` → `localhost:3003`
 - `emdrbilateral.online` → `localhost:8080`
 - `emdrbilateral.ru` → `localhost:8080`
@@ -84,6 +87,7 @@ systemctl start emdrbilateral-dev
 ### Nginx не стримит SSE
 
 Убедиться, что в nginx-конфиге для `/api/session/:id/stream` есть:
+
 ```nginx
 proxy_buffering off;
 proxy_cache off;

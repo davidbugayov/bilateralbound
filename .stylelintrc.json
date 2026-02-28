@@ -1,10 +1,6 @@
 {
-  "extends": [
-    "stylelint-config-standard"
-  ],
-  "plugins": [
-    "stylelint-prettier"
-  ],
+  "extends": ["stylelint-config-standard"],
+  "plugins": ["stylelint-prettier"],
   "rules": {
     "selector-id-pattern": null,
     "selector-class-pattern": null,
@@ -17,7 +13,10 @@
     "property-no-vendor-prefix": [
       true,
       {
-        "ignoreProperties": ["-webkit-background-clip", "-webkit-text-fill-color"]
+        "ignoreProperties": [
+          "-webkit-background-clip",
+          "-webkit-text-fill-color"
+        ]
       }
     ],
     "prettier/prettier": true

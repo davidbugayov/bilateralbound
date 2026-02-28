@@ -43,6 +43,7 @@ npm run deploy:prod      # Pull stable + restart on prod servers
 **Monorepo** with npm workspaces: `packages/server-core` (Node.js + Express) and `packages/web-client` (Vanilla JS, no framework).
 
 ### Server (`packages/server-core/server/`)
+
 - `index.js` — entry: creates SessionManager, Express app, WebSocket server
 - `network/expressApp.js` — all HTTP/SSE routes, compression (excludes `/stream` paths for SSE)
 - `session/SessionManager.js` — orchestrator: physics loop (60Hz tick, 15Hz broadcast), SSE, WS, broadcast
@@ -51,6 +52,7 @@ npm run deploy:prod      # Pull stable + restart on prod servers
 - `session/SessionRepository.js` — in-memory Map, LRU eviction, MAX_SESSIONS=1000
 
 ### Frontend (`packages/web-client/public/`)
+
 - `viewer.html` / `session-controller.html` — patient and therapist views
 - `js/physics-engine.js` — shared physics (used server-side AND client-side), two modes: `_updateServerPhysics` (server/controller) and `_updateViewerPhysics` (viewer interpolation or client simulation)
 - `js/sse-client.js` — SSE with auto-reconnect
@@ -60,7 +62,9 @@ npm run deploy:prod      # Pull stable + restart on prod servers
 - `locales/` — 8 languages (en, ru, de, es, fr, pt, ja, zh)
 
 ### Synchronization (critical path)
+
 All push-based, NO polling:
+
 1. Server physics at 60Hz → broadcasts `state_update` every 4th tick (15Hz) via SSE
 2. Bounce events broadcast immediately (not throttled)
 3. Viewer runs local physics (`clientSimulation: true`) at 60Hz, receives server commands via `applyCommand()`
@@ -71,6 +75,7 @@ All push-based, NO polling:
 **Key sync rule**: never correct position on every render frame (causes jitter). Only correct when new server data arrives (~15Hz) with dead zone and adaptive alpha.
 
 ### Data Flow
+
 1. Therapist opens `/c/:id` → SSE as controller
 2. Patient opens `/s/:id` → SSE as viewer, sends screen size
 3. Server physics ticks at 60Hz, broadcasts state ~15/sec
@@ -92,9 +97,109 @@ All push-based, NO polling:
 
 - Dev: `dev.emdrbilateral.online` (branch: `main`) — `npm run deploy:dev`
 - Prod: `emdrbilateral.online` / `emdrbilateral.ru` (branch: `stable`) — `npm run deploy:prod`
-- systemd services on `213.139.229.44`: `emdrbilateral-dev`, `emdrbilateral-online`, `emdrbilateral-ru`
 - **All development happens on `main`**; prod branch `stable` is updated manually when ready
-- UFW firewall enabled: ports 22, 80, 443, 500/udp, 4500/udp
+- UFW firewall: ports 22, 80, 443 (TCP), 500/udp, 4500/udp (VPN)
+
+## VPS Server — 213.139.229.44
+
+**OS**: Ubuntu, Linux 6.18, Node.js v22.22.0
+
+### Systemd Services
+
+| Service                        | Port | Path                                | Branch | Status         |
+| ------------------------------ | ---- | ----------------------------------- | ------ | -------------- |
+| `emdrbilateral-online.service` | 8080 | `/var/www/emdrbilateral.online`     | stable | prod (.online) |
+| `emdrbilateral-ru.service`     | 8081 | `/var/www/emdrbilateral.ru`         | stable | prod (.ru)     |
+| `emdrbilateral-dev.service`    | 3003 | `/var/www/dev.emdrbilateral.online` | main   | dev            |
+
+**⚠ Important**: There is an OLD legacy service `emdrbilateral.service` (points to same codebase, PORT=8080) that **must remain disabled**. If it starts, it conflicts with `emdrbilateral-online.service` on port 8080, causing 42000+ restart loops. Fix: `systemctl stop emdrbilateral.service && systemctl disable emdrbilateral.service`.
+
+### Nginx
+
+- `/etc/nginx/sites-enabled/emdrbilateral` — config for .online (→ 8080) and .ru (→ 8080)
+- `/etc/nginx/sites-enabled/dev.emdrbilateral.online` — config for dev (→ 3003)
+- Note: the `emdrbilateral` file also has a stale dev block pointing to port 3000 — the dedicated dev file takes precedence.
+
+### Manage services
+
+```bash
+ssh root@213.139.229.44
+
+# EMDR services
+systemctl status emdrbilateral-online.service
+systemctl restart emdrbilateral-online.service
+journalctl -u emdrbilateral-online -n 50 --no-pager
+
+# Check all
+systemctl list-units --type=service | grep emdr
+ss -tlnp | grep node
+```
+
+## VPN — StrongSwan IKEv2
+
+**Protocol**: IKEv2/IPsec (StrongSwan 6.0.1), for macOS and iOS clients.
+
+```bash
+# Check status (charon daemon runs independently from the service)
+ipsec status          # show active connections
+ipsec statusall       # verbose
+
+# The service shows as "inactive/dead" — this is NORMAL
+# Charon daemon runs as a background process after starter exits
+systemctl status strongswan-starter.service
+
+# User management: credentials stored in /etc/ipsec.secrets
+# IKEv2 config: /etc/ipsec.conf or /etc/ipsec.d/
+```
+
+VPN users (9 total): Swetlana, Sergey, Yulia, David, DavidMac1, DavidMac2, Elena, DavidDeck, Bogdan.
+
+## Clawdbot (Telegram AI Bot)
+
+**What it is**: [Clawdbot](https://clawdbot.com) v2026.1.24-3 — personal AI assistant accessible via Telegram bot `@davidbugayov_bot`. Uses GitHub Copilot for model access.
+
+**Workspace**: `/root/clawd/` — contains identity/soul/memory files for the bot's persona.
+
+**Config**: `/root/.clawdbot/clawdbot.json`
+
+- Primary model: `github-copilot/claude-haiku-4-5-20251001`
+- Telegram channel: enabled, bot `@davidbugayov_bot`
+- Gateway port: 18789 (loopback only)
+
+### Service management
+
+```bash
+# User service (runs as root with linger enabled)
+systemctl --user status clawdbot-gateway.service
+systemctl --user restart clawdbot-gateway.service
+journalctl --user -u clawdbot-gateway -n 50 --no-pager
+
+# Check gateway is listening
+ss -tlnp | grep 18789
+```
+
+### Known issues & fixes applied
+
+**Issue 1: Service restart loop (2391+ restarts)**
+
+- **Cause**: systemd `start operation timed out` was killing the gateway every ~82 seconds
+- **Fix applied**: Added `TimeoutStartSec=infinity` to `/root/.config/systemd/user/clawdbot-gateway.service`
+
+**Issue 2: Poor/no responses in Telegram**
+
+- **Cause**: Was using `github-copilot/gpt-4o` model; GitHub Copilot OAuth token refreshes every 30 min (normal behavior)
+- **Fix applied**: Changed primary model to `github-copilot/claude-haiku-4-5-20251001`
+- If bot stops responding: `systemctl --user restart clawdbot-gateway.service` and check journalctl for auth errors
+
+**Issue 3: Cron errors in logs**
+
+- Non-fatal. Claude agents try to call `cron.add` with outdated API schema. Cosmetic errors, doesn't affect responses.
+
+### If bot completely stops working
+
+1. Check GitHub Copilot token: `cat /root/.clawdbot/credentials/github-copilot.token.json` — if expired, run `clawdbot auth add` on the server or re-run `clawdbot onboard`
+2. Check logs: `journalctl --user -u clawdbot-gateway -n 100 --no-pager`
+3. To switch to Anthropic API directly (better, no token expiry): add API key via `clawdbot auth add anthropic` and set model to `anthropic/claude-haiku-4-5-20251001`
 
 ## Plugin Configuration
 

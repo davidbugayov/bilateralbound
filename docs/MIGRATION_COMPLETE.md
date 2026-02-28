@@ -4,12 +4,12 @@
 
 ### 1. **Снижение нагрузки на сервер: 40-60%**
 
-| Метрика | До (WebSocket) | После (SSE) | Экономия |
-|---------|----------------|-------------|----------|
-| **Память на соединение** | 150 KB | 40 KB | **73%** ↓ |
-| **CPU на операцию** | 0.8 ms | 0.3 ms | **62%** ↓ |
-| **Network overhead** | 100% | 60% | **40%** ↓ |
-| **Открытых соединений** | 2N | N | **50%** ↓ |
+| Метрика                  | До (WebSocket) | После (SSE) | Экономия  |
+| ------------------------ | -------------- | ----------- | --------- |
+| **Память на соединение** | 150 KB         | 40 KB       | **73%** ↓ |
+| **CPU на операцию**      | 0.8 ms         | 0.3 ms      | **62%** ↓ |
+| **Network overhead**     | 100%           | 60%         | **40%** ↓ |
+| **Открытых соединений**  | 2N             | N           | **50%** ↓ |
 
 ### 2. **100% синхронизация всех свойств**
 
@@ -37,15 +37,12 @@
    - Регистрация/удаление клиентов
    - Broadcast событий
    - Heartbeat механизм
-   
 2. **Обновленный `StateBroadcaster.js`**
    - Поддержка SSE + WebSocket
    - Унифицированный API рассылки
-   
 3. **Обновленный `SessionManager.js`**
    - Методы для SSE-соединений
    - Гибридная работа с обоими транспортами
-   
 4. **Новые HTTP endpoints в `expressApp.js`**
    - `GET /api/session/:id/stream` - SSE stream
    - `POST /api/session/:id/controller/update` - Команды
@@ -83,6 +80,7 @@ BASE_URL=https://dev.emdrbilateral.online npm test
 ```
 
 Тесты проверяют:
+
 - ✅ Движение мяча
 - ✅ Синхронизацию скорости
 - ✅ Синхронизацию цветов (мяч и фон)
@@ -100,6 +98,7 @@ npm start
 ```
 
 Сервер автоматически поддерживает:
+
 - ✅ SSE (по умолчанию)
 - ✅ WebSocket (fallback)
 
@@ -156,16 +155,16 @@ Response:
 
 ```javascript
 // В controller.js или viewer.html
-const client = new RealtimeClient(sessionId, 'viewer', {
-  transport: 'websocket' // Принудительно WebSocket
-})
+const client = new RealtimeClient(sessionId, "viewer", {
+  transport: "websocket", // Принудительно WebSocket
+});
 ```
 
 ### По умолчанию SSE
 
 ```javascript
 // Автоматически выбирает SSE
-const client = new RealtimeClient(sessionId, 'viewer')
+const client = new RealtimeClient(sessionId, "viewer");
 ```
 
 ## 📈 Мониторинг
@@ -173,13 +172,13 @@ const client = new RealtimeClient(sessionId, 'viewer')
 ### Метрики клиента
 
 ```javascript
-const stats = wsClient.getStats()
+const stats = wsClient.getStats();
 console.log({
   transportType: stats.transportType, // 'sse' или 'websocket'
   messagesReceived: stats.messagesReceived,
   reconnectCount: stats.reconnectCount,
-  isConnected: stats.isConnected
-})
+  isConnected: stats.isConnected,
+});
 ```
 
 ### Health check сервера
@@ -207,8 +206,8 @@ curl http://localhost:3000/health
 Убедитесь что правильно настроены CORS заголовки:
 
 ```javascript
-res.setHeader('Access-Control-Allow-Origin', origin)
-res.setHeader('Access-Control-Allow-Credentials', 'true')
+res.setHeader("Access-Control-Allow-Origin", origin);
+res.setHeader("Access-Control-Allow-Credentials", "true");
 ```
 
 ### 3. Nginx конфигурация
