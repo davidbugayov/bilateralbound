@@ -103,13 +103,21 @@ if (typeof globalThis.FeatureManager === 'undefined') {
       btn.className = 'btn outline'
       btn.style.padding = '8px'
       btn.style.fontSize = '12px'
-      btn.textContent = config.i18nKey
-        ? (globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id)
-        : id
+      // Use data-i18n attribute for automatic translation
+      if (config.i18nKey) {
+        btn.setAttribute('data-i18n', config.i18nKey)
+        btn.textContent = globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id
+      } else {
+        btn.textContent = id
+      }
       btn.onclick = () => this.applyPreset(config)
       presetGrid.appendChild(btn)
     }
     container.appendChild(presetGrid)
+    // Re-apply translations to newly added elements
+    if (globalThis.i18n?.applyTranslations) {
+      globalThis.i18n.applyTranslations()
+    }
   }
   /**
    * Применение предустановленных настроек
