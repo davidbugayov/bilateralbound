@@ -77,9 +77,11 @@ self.addEventListener('fetch', (event) => {
             if (response.ok) {
               const clone = response.clone()
               caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+              return response
             }
-            return response
-          })
+            // Non-OK (e.g. 503 during deployment) — serve any cached version as fallback
+            return caches.match(request, { ignoreSearch: true }).then(fallback => fallback || response)
+          }).catch(() => caches.match(request, { ignoreSearch: true }))
         })
     )
     return
@@ -92,9 +94,11 @@ self.addEventListener('fetch', (event) => {
         if (response.ok && request.url.startsWith(self.location.origin)) {
           const clone = response.clone()
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+          return response
         }
-        return response
+        // Non-OK — serve any cached version as fallback
+        return caches.match(request, { ignoreSearch: true }).then(fallback => fallback || response)
       })
-      .catch(() => caches.match(request))
+      .catch(() => caches.match(request, { ignoreSearch: true }))
   )
 })
