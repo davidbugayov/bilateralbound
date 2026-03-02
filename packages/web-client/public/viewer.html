@@ -29,26 +29,26 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.161-1d9a3c0" />
+    <meta name="version" content="2.39.162-681ec55" />
     <meta name="theme-color" content="#020617" />
     <title data-i18n="viewer.title">BilateralBound - EMDR Therapy Viewer</title>
     <meta name="therapy-type" content="EMDR Viewer" />
     <meta name="target-audience" content="EMDR Patients, Couples" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.161-1d9a3c0" as="script" />
-    <link rel="preload" href="/js/renderer.js?v=2.39.161-1d9a3c0" as="script" />
-    <link rel="preload" href="/js/websocket-client.js?v=2.39.161-1d9a3c0" as="script" />
+    <link rel="preload" href="/js/physics-engine.js?v=2.39.162-681ec55" as="script" />
+    <link rel="preload" href="/js/renderer.js?v=2.39.162-681ec55" as="script" />
+    <link rel="preload" href="/js/websocket-client.js?v=2.39.162-681ec55" as="script" />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.161-1d9a3c0"
+      href="/favicon-viewer.svg?v=2.39.162-681ec55"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.161-1d9a3c0"
+      href="/favicon-viewer.ico?v=2.39.162-681ec55"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.161-1d9a3c0" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.161-1d9a3c0" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.162-681ec55" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.162-681ec55" />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -64,9 +64,9 @@
     <meta property="article:tag" content="биодинамическая стимуляция" />
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="dns-prefetch" href="https://mc.yandex.com" />
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.161-1d9a3c0" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.161-1d9a3c0" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.161-1d9a3c0" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.162-681ec55" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.162-681ec55" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.162-681ec55" />
     <noscript
       ><div>
         <img
@@ -105,17 +105,17 @@
         </button>
       </div>
     </main>
-    <script src="/js/core/debug-logger.js?v=2.39.161-1d9a3c0"></script>
-    <script src="/js/common.js?v=2.39.161-1d9a3c0"></script>
-    <script src="/js/constants/i18n-constants.js?v=2.39.161-1d9a3c0" defer></script>
-    <script src="/js/i18n/i18n.js?v=2.39.161-1d9a3c0" defer></script>
-    <script src="/js/i18n/language-selector.js?v=2.39.161-1d9a3c0" defer></script>
-    <script src="/js/audio/audio-manager.js?v=2.39.161-1d9a3c0" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.161-1d9a3c0" defer></script>
-    <script src="/js/renderer.js?v=2.39.161-1d9a3c0" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.161-1d9a3c0" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.161-1d9a3c0" defer></script>
-    <script src="/js/shared-components.js?v=2.39.161-1d9a3c0" defer></script>
+    <script src="/js/core/debug-logger.js?v=2.39.162-681ec55"></script>
+    <script src="/js/common.js?v=2.39.162-681ec55"></script>
+    <script src="/js/constants/i18n-constants.js?v=2.39.162-681ec55" defer></script>
+    <script src="/js/i18n/i18n.js?v=2.39.162-681ec55" defer></script>
+    <script src="/js/i18n/language-selector.js?v=2.39.162-681ec55" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.162-681ec55" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.162-681ec55" defer></script>
+    <script src="/js/renderer.js?v=2.39.162-681ec55" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.162-681ec55" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.162-681ec55" defer></script>
+    <script src="/js/shared-components.js?v=2.39.162-681ec55" defer></script>
     <script>
       "use strict";
       /**
@@ -221,7 +221,7 @@
         }
       }
       /**
-       * Обработчик обновления языка от контроллера через SSE
+       * Обработчик обновления языка от контроллера
        * Синхронизирует язык вьювера с контроллером
        * @param {Object} data - Данные события
        */
@@ -385,7 +385,6 @@
           PhysicsEngine: typeof PhysicsEngine,
           BallRenderer: typeof BallRenderer,
           WebSocketClient: typeof WebSocketClient,
-          SSEClient: typeof SSEClient,
           RealtimeClient: typeof RealtimeClient,
           sharedComponents: typeof sharedComponents
         });
@@ -664,7 +663,6 @@
           // Связываем рендерер с физикой для инвалидации кэша
           physicsEngine.setRenderer(ballRenderer);
           await connectToSession(sessionId);
-          // SSE-only соединение
           wsClient = new RealtimeClient(sessionId, "viewer");
           globalThis.wsClient = wsClient;
           debugLog("✅ WebSocketClient создан");
@@ -726,11 +724,11 @@
             debugLog("📊 Статус контроллера:", status);
             updateStatus(status);
           });
-          // FIX: Add listeners for specific controller connection events which SSE emits
+          // Controller connection events
           wsClient.on("controller_connected", (data) => {
             console.log("📊 [VIEWER] Controller connected event received:", JSON.stringify(data));
             debugLog("📊 Controller connected event:", data);
-            // SSE sends payload directly, ensure we have controllerConnected property
+            // Ensure we have controllerConnected property
             const statusData = data.controllerConnected !== undefined
               ? data
               : { controllerConnected: true };
@@ -739,7 +737,7 @@
           wsClient.on("controller_disconnected", (data) => {
             console.log("📊 [VIEWER] Controller disconnected event received:", JSON.stringify(data));
             debugLog("📊 Controller disconnected event:", data);
-            // SSE sends payload directly, ensure we have controllerConnected property
+            // Ensure we have controllerConnected property
             const statusData = data.controllerConnected !== undefined
               ? data
               : { controllerConnected: false };
@@ -749,13 +747,12 @@
           wsClient.on('initial_state', onStateUpdate)
           wsClient.on('viewer_status', updateStatus)
           wsClient.on('language_updated', onLanguageUpdate)
-          // Подключаемся к SSE/WebSocket
+          // Подключаемся к WebSocket
           // Не пробрасываем ошибку наверх если это первая попытка подключения
           try {
             await wsClient.connect();
           } catch (error) {
-            // SSE может не подключиться с первой попытки если controller ещё не создал сессию
-            // Это нормально - RealtimeClient автоматически переподключится
+            // Может не подключиться с первой попытки — RealtimeClient переподключится
             debugWarn("⚠️ First connection attempt failed, will retry:", error.message);
             // Не показываем ошибку пользователю - автоматический реконнект обработает это
           }

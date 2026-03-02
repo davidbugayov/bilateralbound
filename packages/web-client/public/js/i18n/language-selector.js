@@ -216,6 +216,18 @@ const LanguageSelector = (function () {
             /* ignore */
           }
         }
+        // Emit language change event for fallback path
+        try {
+          if (typeof CustomEvent === 'function') {
+            globalThis.dispatchEvent(
+              new CustomEvent('i18nLanguageChanged', { detail: { lang } })
+            )
+          } else {
+            globalThis.dispatchEvent(new Event('i18nLanguageChanged'))
+          }
+        } catch {
+          /* ignore event dispatch errors */
+        }
         return true
       } catch {
         return false
