@@ -200,7 +200,7 @@ function setupExpressApp(sessionManager, apiCache) {
             'wss://mc.yandex.com'
           ],
           frameSrc: ['\'self\'', 'https://mc.yandex.md'],
-          // Disable upgrade-insecure-requests in dev (HTTP) to allow SSE/fetch on localhost
+          // Disable upgrade-insecure-requests in dev (HTTP) to allow fetch on localhost
           upgradeInsecureRequests: isDev ? null : []
         }
       },
@@ -240,17 +240,9 @@ function setupExpressApp(sessionManager, apiCache) {
     })
   )
 
-  // Gzip compression for all responses (except SSE streams)
   app.use(
     compression({
-      filter: (req, res) => {
-        // Don't compress SSE streams
-        if (req.path.includes('/sse/') || req.path.includes('/stream')) {
-          return false
-        }
-        return compression.filter(req, res)
-      },
-      level: 6 // Balance between speed and compression ratio
+      level: 6
     })
   )
 
@@ -350,51 +342,6 @@ function setupExpressApp(sessionManager, apiCache) {
       timestamp: new Date().toISOString(),
       sessions: sessionManager.getSessionCount(),
       uptime: process.uptime()
-    })
-  })
-
-  // SSE endpoint для стриминга состояния сессии
-  app.get('/api/session/:sessionId/stream', requireSession(sessionManager), (req, res) => {
-    const { sessionId } = req.params
-    const role = req.query.role || 'viewer'
-
-    // Валидация роли
-    if (!['viewer', 'controller'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role. Must be viewer or controller' })
-    }
-
-    // Настраиваем SSE заголовки
-    res.setHeader('Content-Type', 'text/event-stream')
-    res.setHeader('Cache-Control', 'no-cache')
-    res.setHeader('Connection', 'keep-alive')
-    res.setHeader('X-Accel-Buffering', 'no') // Отключаем буферизацию для nginx
-
-    // Разрешаем CORS для SSE
-    const origin = req.headers.origin
-    if (origin) {
-      res.setHeader('Access-Control-Allow-Origin', origin)
-      res.setHeader('Access-Control-Allow-Credentials', 'true')
-    }
-
-    // Отправляем начальный комментарий для установки соединения
-    res.write(': SSE connection established\n\n')
-
-    // Регистрируем SSE-клиента
-    const connected = sessionManager.handleSSEConnection(res, sessionId, role)
-    if (!connected) {
-      return res.end()
-    }
-
-    if (DEBUG_MODE) {
-      logger.info(`[${req.id}] SSE stream opened for session ${sessionId}, role: ${role}`)
-    }
-
-    // Обработка закрытия соединения
-    req.on('close', () => {
-      sessionManager.handleSSEDisconnection(res)
-      if (DEBUG_MODE) {
-        logger.info(`[${req.id}] SSE stream closed for session ${sessionId}`)
-      }
     })
   })
 
@@ -557,7 +504,6 @@ function setupExpressApp(sessionManager, apiCache) {
       })
       clearStateCache(apiCache, sessionId)
 
-      // FIX: Уведомляем вьювера о подключении контроллера через SSE
       sessionManager.broadcastControllerConnection(sessionId, true)
 
       res.json({ success: true, message: 'Controller connected' })
@@ -610,7 +556,6 @@ function setupExpressApp(sessionManager, apiCache) {
 
       session.viewerAudioActivated = req.body?.activated ?? true
 
-      // Рассылаем уведомление контроллерам через SSE и WebSocket
       sessionManager.stateBroadcaster.broadcastState(sessionId, 'viewer_audio_activated', {
         activated: session.viewerAudioActivated,
         timestamp: Date.now()
@@ -624,13 +569,18 @@ function setupExpressApp(sessionManager, apiCache) {
     const { sessionId } = req.params
     const { side, x, y, dirX, dirY, timestamp } = req.body || {}
 
-    // Broadcast bounce_sync to controllers via SSE
-    sessionManager.sseManager.broadcast(
-      sessionId,
-      'bounce_sync',
-      { side, x, y, dirX, dirY, timestamp },
-      'viewer' // exclude viewer (they sent it)
-    )
+    // Broadcast bounce_sync to controllers via WebSocket
+    const bounceMessage = JSON.stringify({
+      type: 'bounce_sync',
+      payload: { side, x, y, dirX, dirY, timestamp }
+    })
+    for (const { client, info } of sessionManager.webSocketManager.getClients(sessionId)) {
+      if (info.role === 'controller' && client.readyState === 1) {
+        try {
+          client.send(bounceMessage)
+        } catch { /* ignore */ }
+      }
+    }
 
     res.json({ success: true })
   })
@@ -645,7 +595,6 @@ function setupExpressApp(sessionManager, apiCache) {
       clearStateCache(apiCache, sessionId)
     }
 
-    // FIX: Уведомляем контроллер о подключении вьювера через SSE
     sessionManager.broadcastViewerConnection(sessionId, true, screenSize)
 
     res.json({ success: true, message: 'Viewer connected' })

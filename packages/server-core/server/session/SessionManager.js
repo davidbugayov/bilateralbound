@@ -2,7 +2,6 @@
 const PhysicsEngine = require('../../../web-client/public/js/physics-engine.js')
 const SessionRepository = require('./SessionRepository.js')
 const WebSocketManager = require('./WebSocketManager.js')
-const SSEManager = require('./SSEManager.js')
 const StateBroadcaster = require('./StateBroadcaster.js')
 const ValidationUtils = require('../utils/validation.js')
 const { logger, DEBUG_MODE } = require('../logger.js')
@@ -16,12 +15,10 @@ class SessionManager {
   constructor(apiCache) {
     this.sessionRepository = new SessionRepository()
     this.webSocketManager = new WebSocketManager(this.sessionRepository)
-    this.sseManager = new SSEManager(this.sessionRepository)
     this.clientSimulationOnly = config.getRuntimeTuning().CLIENT_SIM_ONLY
     this.stateBroadcaster = new StateBroadcaster(
       this.sessionRepository,
       this.webSocketManager,
-      this.sseManager,
       { clientSimulationOnly: this.clientSimulationOnly }
     )
     this.apiCache = apiCache // Получаем ссылку на кэш API
@@ -323,155 +320,6 @@ class SessionManager {
   }
 
   /**
-   * Обрабатывает подключение SSE клиента
-   * @param {Object} res - Express response объект
-   * @param {string} sessionId - ID сессии
-   * @param {string} role - Роль клиента (viewer или controller)
-   */
-  handleSSEConnection(res, sessionId, role) {
-    const session = this.sessionRepository.findOrCreateById(sessionId)
-    if (!session) {
-      res.status(400).json({ error: 'Invalid session id' })
-      return false
-    }
-
-    if (!session.physicsEngine) {
-      this._initializePhysicsEngine(session)
-    }
-
-    if (!this.sseManager.addClient(sessionId, res, role)) {
-      res.status(500).json({ error: 'Failed to add SSE client' })
-      return false
-    }
-
-    // Устанавливаем флаги подключения
-    if (role === 'viewer') {
-      session.viewerConnected = true
-      this.logger.logSession(sessionId, 'Viewer connected via SSE')
-    } else if (role === 'controller') {
-      session.controllerConnected = true
-      this.logger.logSession(sessionId, 'Controller connected via SSE')
-    }
-
-    session.lastActivity = Date.now()
-    this._ensurePhysicsLoop(sessionId)
-
-    // Отправляем начальное состояние
-    if (role === 'viewer') {
-      this.stateBroadcaster.broadcastInitialState(sessionId, res, session.ballState)
-
-      // CRITICAL FIX: Explicitly send controller connection status to viewer
-      // When viewer connects AFTER controller, the controller_connected event was already sent
-      // So we need to explicitly notify the viewer about current controller status
-      // Add small delay to ensure browser is ready to receive SSE events
-      if (session.controllerConnected) {
-        setImmediate(() => {
-          // Send controller_connected event directly to this viewer
-          const controllerStatusEvent = {
-            type: 'controller_connected',
-            timestamp: Date.now(),
-            payload: { controllerConnected: true }
-          }
-          this.sseManager.sendEvent(res, 'controller_connected', controllerStatusEvent)
-          this.logger.logSession(sessionId, 'Sent controller_connected to newly connected viewer')
-        })
-      }
-
-      // CRITICAL FIX: When viewer connects, notify controller about viewer connection
-      // This ensures controller UI updates immediately when viewer connects via SSE
-      setImmediate(() => {
-        const controllers = this.sseManager.getClients(sessionId, 'controller')
-        // console.log(`[SessionManager] 📡 Found ${controllers.length} controller(s) to notify about viewer connection for session ${sessionId}`)
-        this.logger.logSession(
-          sessionId,
-          `Found ${controllers.length} controller(s) to notify about viewer connection`
-        )
-
-        for (const controllerClient of controllers) {
-          const viewerConnectedEvent = {
-            type: 'viewer_status',
-            timestamp: Date.now(),
-            payload: {
-              connected: true,
-              viewerConnected: true,
-              screenSize: session.viewerScreenSize
-            }
-          }
-          const sent = this.sseManager.sendEvent(
-            controllerClient.res,
-            'viewer_status',
-            viewerConnectedEvent
-          )
-          // console.log(`[SessionManager] 📤 Sent viewer_status to controller for session ${sessionId}: ${sent}, payload:`, JSON.stringify(viewerConnectedEvent))
-          this.logger.logSession(sessionId, `Sent viewer_status to controller: ${sent}`)
-        }
-        // console.log(`[SessionManager] ✅ Completed sending viewer_status to controller(s) for session ${sessionId}`)
-        this.logger.logSession(
-          sessionId,
-          'Sent viewer_status to controller(s) when viewer connected'
-        )
-      })
-    } else {
-      this._handleSSEControllerInitialState(sessionId, res, session)
-    }
-
-    this.stateBroadcaster.broadcastViewerStatus(sessionId)
-    this._broadcastControllerConnectionIfNeeded(sessionId, role)
-
-    // Если подключился вьювер, уведомляем контроллеры
-    if (role === 'viewer') {
-      this.broadcastViewerConnection(sessionId, true, session.viewerScreenSize)
-    }
-
-    this.logger.logSession(sessionId, `SSE ${role} connected`)
-    return true
-  }
-
-  /**
-   * Обрабатывает начальное состояние для SSE контроллера
-   * @private
-   */
-  _handleSSEControllerInitialState(sessionId, res, session) {
-    const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
-    this.stateBroadcaster.broadcastInitialState(sessionId, res, finalState)
-    this.logger.logSession(sessionId, 'Sent initial_state to SSE controller')
-
-    // CRITICAL FIX: When controller connects AFTER viewer, send viewer status to controller
-    if (session.viewerConnected) {
-      setImmediate(() => {
-        const viewerStatusEvent = {
-          type: 'viewer_status',
-          timestamp: Date.now(),
-          payload: {
-            connected: true,
-            viewerConnected: true,
-            screenSize: session.viewerScreenSize
-          }
-        }
-        this.sseManager.sendEvent(res, 'viewer_status', viewerStatusEvent)
-        this.logger.logSession(sessionId, 'Sent viewer_status to newly connected controller')
-      })
-    }
-  }
-
-  /**
-   * Обрабатывает отключение SSE клиента
-   * @param {Object} res - Express response объект
-   */
-  handleSSEDisconnection(res) {
-    const sessionId = this.sseManager.removeClient(res)
-    if (sessionId) {
-      this._schedulePhysicsUpdate(sessionId)
-      this.stateBroadcaster.broadcastViewerStatus(sessionId)
-
-      const session = this.sessionRepository.findById(sessionId)
-      if (session && !session.controllerConnected) {
-        this.broadcastControllerConnection(sessionId, false)
-      }
-    }
-  }
-
-  /**
    * Обрабатывает начальную рассылку состояния для клиента
    * @private
    */
@@ -744,19 +592,12 @@ class SessionManager {
   _sendInitialStateToControllers(sessionId, session) {
     const finalState = session.physicsEngine ? session.physicsEngine.getState() : session.ballState
 
-    // WebSocket controllers
     const clients = this.webSocketManager.getClients(sessionId)
     for (const { client, info } of clients) {
       if (info.role === 'controller' && !client.initialStateSent) {
         this.stateBroadcaster.broadcastInitialState(sessionId, client, finalState)
         client.initialStateSent = true
       }
-    }
-
-    // SSE controllers
-    const sseControllers = this.sseManager.getClients(sessionId, 'controller')
-    for (const controllerClient of sseControllers) {
-      this.stateBroadcaster.broadcastInitialState(sessionId, controllerClient.res, finalState)
     }
   }
 
@@ -818,12 +659,8 @@ class SessionManager {
       return
     }
 
-    // Проверяем есть ли подключенные вьюверы (WebSocket или SSE)
     const wsClients = this.webSocketManager.getClients(sessionId)
-    const sseClients = this.sseManager.getClients(sessionId)
-    const hasViewers =
-      wsClients.some(({ info }) => info.role === 'viewer') ||
-      sseClients.some(c => c.role === 'viewer')
+    const hasViewers = wsClients.some(({ info }) => info.role === 'viewer')
 
     // Запускаем серверный цикл физики только если есть вьюверы
     if (hasViewers && session.physicsEngine) {
@@ -980,10 +817,6 @@ class SessionManager {
     }
 
     let sentCount = 0
-
-    if (this.sseManager) {
-      sentCount += this.sseManager.broadcast(sessionId, 'language_updated', eventData)
-    }
 
     if (this.webSocketManager) {
       const message = JSON.stringify(eventData)

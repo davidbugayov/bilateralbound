@@ -59,7 +59,6 @@ const cleanupIntervals = [
     },
     30 * 1000 // Reduced from 2 minutes to 30 seconds
   )
-  // Note: SSE heartbeat is handled by SSEManager internally, no need for duplicate here
 ]
 // 6. Graceful shutdown
 /**

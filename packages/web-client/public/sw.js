@@ -63,9 +63,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
-  // Skip non-GET requests and SSE/WebSocket
+  // Skip non-GET requests and API calls
   if (request.method !== 'GET') return
-  if (url.pathname.includes('/sse/') || url.pathname.includes('/ws/')) return
   if (url.pathname.startsWith('/api/')) return
 
   // For static assets: cache first

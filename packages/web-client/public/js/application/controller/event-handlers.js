@@ -1,7 +1,7 @@
 'use strict'
 /**
- * SSE Event Handlers - обработчики событий SSE
- * @module application/controller/sse-handlers
+ * Event Handlers - обработчики событий WebSocket
+ * @module application/controller/event-handlers
  */
 const WS_MSG = {
   viewerStatus: 'viewer_status',
@@ -13,7 +13,7 @@ const WS_MSG = {
   viewerAudioActivated: 'viewer_audio_activated',
   bounceSync: 'bounce_sync'
 }
-function createSSEHandlers(deps) {
+function createEventHandlers(deps) {
   const {
     previewPhysicsEngine,
     getIsPlaying,
@@ -189,5 +189,7 @@ function createSSEHandlers(deps) {
   }
 }
 if (typeof globalThis !== 'undefined') {
-  globalThis.SSEHandlers = { create: createSSEHandlers, WS_MSG }
+  globalThis.EventHandlers = { create: createEventHandlers, WS_MSG }
+  // Backwards compat alias
+  globalThis.SSEHandlers = globalThis.EventHandlers
 }

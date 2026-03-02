@@ -433,7 +433,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   let lastPlayingState = false
   wsClient.on('open', (event) => {
     updateConnectionStatus(true)
-    // Lazy-load non-critical modules after SSE connection established
+    // Lazy-load non-critical modules after connection established
     if (!event?.isReconnection && !globalThis.__nonCriticalLoaded) {
       globalThis.__nonCriticalLoaded = true
       const s = document.createElement('script')
@@ -674,7 +674,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
 }
 /**
  * Применяет состояние от viewer/сервера к превью контроллера
- * АРХИТЕКТУРА: Превью в viewer режиме (isViewer: true) следует за состоянием от viewer через SSE
+ * АРХИТЕКТУРА: Превью в viewer режиме (isViewer: true) следует за состоянием от viewer через WebSocket
  */
 function applyServerStateToPreview(state) {
   if (!previewPhysicsEngine || !state) return
@@ -690,6 +690,29 @@ function applyServerStateToPreview(state) {
     if (currentW !== state.viewerScreenSize.width || currentH !== state.viewerScreenSize.height) {
       previewPhysicsEngine.setWorldSize(state.viewerScreenSize.width, state.viewerScreenSize.height)
     }
+  }
+  // First server update after play pressed — snap to server position and unpause
+  if (previewPhysicsEngine._pendingPlaySync && state.paused === false) {
+    previewPhysicsEngine._pendingPlaySync = false
+    previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
+    if (typeof state.x === 'number' && typeof state.y === 'number') {
+      previewPhysicsEngine.ball.x = state.x
+      previewPhysicsEngine.ball.y = state.y
+      previewPhysicsEngine._prevPos.x = state.x
+      previewPhysicsEngine._prevPos.y = state.y
+      previewPhysicsEngine._currPos.x = state.x
+      previewPhysicsEngine._currPos.y = state.y
+    }
+    if (state.dirX !== undefined) previewPhysicsEngine.state.lastDirection.x = state.dirX
+    if (state.dirY !== undefined) previewPhysicsEngine.state.lastDirection.y = state.dirY
+    if (state.speed !== undefined) previewPhysicsEngine.setSpeed(state.speed)
+    previewPhysicsEngine.setPaused(false)
+    if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall)
+    if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg)
+    isPlaying = true
+    updatePlayPauseButton()
+    bbCounters.start()
+    return
   }
   if (previewPhysicsEngine.options.clientSimulation) {
     const localCommand = {
@@ -1153,7 +1176,7 @@ async function initializePreview() {
     physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
     requestAnimationFrame(renderPreviewLoop)
     globalThis.__previewRenderer = new BallRenderer(canvas, previewPhysicsEngine, {
-      localPhysics: false // Превью следует за состоянием от viewer через SSE
+      localPhysics: false // Превью следует за состоянием от viewer через WebSocket
     })
     globalThis.__previewCanvas = canvas
     const canvasWidth = canvas.width
@@ -1613,8 +1636,16 @@ function _setPlayPauseState(shouldPlay) {
     bbCounters.stop(true)
   }
   if (previewPhysicsEngine) {
-    previewPhysicsEngine.applyCommand(payload)
-    if (!shouldPlay) {
+    if (shouldPlay) {
+      // Don't unpause preview yet — wait for first server state_update to sync position.
+      // This prevents jitter caused by preview moving ahead of server during network latency.
+      const dirOnly = { ...payload }
+      delete dirOnly.paused
+      previewPhysicsEngine.applyCommand(dirOnly)
+      previewPhysicsEngine._pendingPlaySync = true
+      previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
+    } else {
+      previewPhysicsEngine.applyCommand(payload)
       centerBallInViewer()
     }
   }

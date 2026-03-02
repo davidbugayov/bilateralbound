@@ -156,7 +156,7 @@ async function main() {
   })
 
   await test('Realtime соединение работает', async () => {
-    // Проверим что viewer получает состояние через WS/SSE
+    // Проверим что viewer получает состояние через WebSocket
     await new Promise(r => setTimeout(r, 2000))
     const hasState = await viewPage.evaluate(() => {
       return globalThis.__current?.sessionId !== undefined ||
@@ -218,7 +218,7 @@ async function main() {
       globalThis.isPlaying = false
     })
 
-    // Wait for server to process and broadcast the pause (SSE state_update)
+    // Wait for server to process and broadcast the pause (state_update)
     await new Promise(r => setTimeout(r, 1500))
 
     const beforeClick = await ctrlPage.evaluate(() => ({
@@ -241,7 +241,7 @@ async function main() {
     }))
     console.log('  [SYNC DEBUG after click]', JSON.stringify(afterClick))
 
-    // Step 3: Wait for SSE sync propagation to viewer
+    // Step 3: Wait for sync propagation to viewer
     await new Promise(r => setTimeout(r, 3000))
 
     const ctrlState = await ctrlPage.evaluate(() => ({
