@@ -222,7 +222,8 @@ const LanguageSelector = (function () {
             globalThis.dispatchEvent(
               new CustomEvent('i18nLanguageChanged', { detail: { lang } })
             )
-          } else {
+          } else if (typeof Event === 'function') {
+            // eslint-disable-next-line no-undef
             globalThis.dispatchEvent(new Event('i18nLanguageChanged'))
           }
         } catch {
