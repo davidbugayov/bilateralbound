@@ -173,11 +173,16 @@
     },
 
     /**
-     * Load translations from server
+     * Load translations from server.
+     * Language is captured at call time to avoid a race condition where
+     * currentLanguage changes during the async fetch, which would cause
+     * translations for one language to be stored under a different key.
      */
     loadTranslations: async function () {
+      // Capture language now — currentLanguage may change while we await the fetch
+      const lang = this.currentLanguage
       try {
-        const url = `/locales/${this.currentLanguage}/common.json`
+        const url = `/locales/${lang}/common.json`
         if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
           globalThis.debugLog('[i18n] Loading translations from:', url)
         }
@@ -190,17 +195,17 @@
             )
           }
           // If not English, switch to en and retry
-          if (this.currentLanguage !== 'en') {
+          if (lang !== 'en') {
             this.currentLanguage = 'en'
             return await this.loadTranslations()
           }
           return false
         }
-        this.translations[this.currentLanguage] = await response.json()
+        this.translations[lang] = await response.json()
         if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
           globalThis.debugLog(
             '[i18n] Successfully loaded translations for:',
-            this.currentLanguage
+            lang
           )
         }
         return true
@@ -211,7 +216,7 @@
           )
         }
         // Fallback: load English if current language fails
-        if (this.currentLanguage !== 'en') {
+        if (lang !== 'en') {
           this.currentLanguage = 'en'
           return await this.loadTranslations()
         }

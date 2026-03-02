@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.164",
+  "version": "2.39.165",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -24,6 +24,9 @@
     "test:local": "node scripts/e2e/e2e_test.js http://localhost:3000",
     "test:dev": "node scripts/e2e/e2e_test.js https://dev.emdrbilateral.online",
     "test:prod": "node scripts/e2e/e2e_test.js https://emdrbilateral.ru",
+    "test:sync": "node scripts/e2e/test-sync-params.js",
+    "test:sync:local": "node scripts/e2e/test-sync-params.js http://localhost:3000",
+    "test:sync:dev": "node scripts/e2e/test-sync-params.js https://dev.emdrbilateral.online",
     "test:session": "curl -s -X POST 'https://dev.emdrbilateral.online/api/session'",
     "test:load:sse": "node scripts/load-test-sse.js",
     "test:load:sse:10": "NUM_SESSIONS=10 DURATION_SEC=60 node scripts/load-test-sse.js",
