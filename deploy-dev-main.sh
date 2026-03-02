@@ -30,7 +30,7 @@ fi
 echo "📦 Installing dependencies..."
 ssh -T ${USER}@${SERVER} << 'ENDSSH'
 cd /var/www/dev.emdrbilateral.online
-npm ci --omit=dev
+npm ci --omit=dev --ignore-scripts
 ENDSSH
 
 if [ $? -eq 0 ]; then
