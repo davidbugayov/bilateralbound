@@ -70,6 +70,10 @@ function gracefulShutdown() {
   for (const interval of cleanupIntervals) {
     clearInterval(interval)
   }
+  // Force exit after 3s — WebSocket connections are long-lived and
+  // server.close() alone would hang until all clients disconnect
+  setTimeout(() => process.exit(0), 3000).unref()
+  server.closeAllConnections()
   server.close(() => {
     logger.info('Server stopped.')
     process.exit(0)
