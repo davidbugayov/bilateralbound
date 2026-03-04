@@ -37,7 +37,7 @@ if (typeof SharedComponents === 'undefined') {
           if (defaultOptions.simple) {
             speedControl.innerHTML = `
     <div class="speed-info">
-    ${defaultOptions.showValue ? '<div class="speed-display"><span class="speed-value">Средне</span></div>' : ''}
+    ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></div>` : ''}
     </div>
     <div class="speed-slider-container">
     <input type="range"
@@ -53,7 +53,7 @@ if (typeof SharedComponents === 'undefined') {
     <div class="speed-header">
     <div class="speed-icon">⚡</div>
     <div class="speed-info">
-    ${defaultOptions.showValue ? '<div class="speed-display"><span class="speed-value">Средне</span></div>' : ''}
+    ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></div>` : ''}
     </div>
     <div class="speed-indicator">
     <div class="speed-bar">
@@ -63,9 +63,9 @@ if (typeof SharedComponents === 'undefined') {
     </div>
     <div class="speed-controls">
     <div class="speed-presets">
-    <button class="speed-preset slow" data-speed="20">🐌<span>Медленно</span></button>
-    <button class="speed-preset normal active" data-speed="40">⚡<span>Нормально</span></button>
-    <button class="speed-preset fast" data-speed="80">🚀<span>Быстро</span></button>
+    <button class="speed-preset slow" data-speed="20">🐌<span>${globalThis.i18n?.t('controller.speedSlow') || 'Slow'}</span></button>
+    <button class="speed-preset normal active" data-speed="40">⚡<span>${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></button>
+    <button class="speed-preset fast" data-speed="80">🚀<span>${globalThis.i18n?.t('controller.speedFast') || 'Fast'}</span></button>
     </div>
     <div class="speed-slider-container">
     <div class="speed-track">
@@ -142,21 +142,22 @@ if (typeof SharedComponents === 'undefined') {
           }
           let speedCategory = ''
           let speedColor = ''
+          const t = key => globalThis.i18n?.t(key) || key
           if (this.currentSpeed <= 15) {
-            speedCategory = 'Очень медленно'
-            speedColor = '#22c55e' // зеленый
+            speedCategory = t('controller.speedVerySlow')
+            speedColor = '#22c55e'
           } else if (this.currentSpeed <= 25) {
-            speedCategory = 'Медленно'
-            speedColor = '#3b82f6' // синий
+            speedCategory = t('controller.speedSlow')
+            speedColor = '#3b82f6'
           } else if (this.currentSpeed <= 35) {
-            speedCategory = 'Средне'
-            speedColor = '#8b5cf6' // фиолетовый
+            speedCategory = t('controller.speedMedium')
+            speedColor = '#8b5cf6'
           } else if (this.currentSpeed <= 50) {
-            speedCategory = 'Быстро'
-            speedColor = '#f59e0b' // оранжевый
+            speedCategory = t('controller.speedFast')
+            speedColor = '#f59e0b'
           } else {
-            speedCategory = 'Очень быстро'
-            speedColor = '#ef4444' // красный
+            speedCategory = t('controller.speedVeryFast')
+            speedColor = '#ef4444'
           }
           if (this.elements.value) {
             this.elements.value.textContent = speedCategory
@@ -190,7 +191,12 @@ if (typeof SharedComponents === 'undefined') {
           this.setSpeed(this.options.defaultValue)
         }
       }
-      return component.render()
+      component.render()
+      // Refresh speed label on language change
+      globalThis.addEventListener('i18nLanguageChanged', () => {
+        component.setSpeed(component.currentSpeed)
+      })
+      return component
     }
     /**
      * Создает переиспользуемый компонент управления цветом
