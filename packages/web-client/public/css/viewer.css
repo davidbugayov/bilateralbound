@@ -17,19 +17,18 @@ body {
 }
 
 .viewer-canvas {
+  /*
+   * Absolutely fill the container so canvas always covers the full viewport,
+   * including in fullscreen mode. Buffer size is controlled by JS
+   * (resizeCanvas sets canvas.width/height = innerWidth/innerHeight),
+   * so there is no aspect-ratio mismatch and no letterboxing.
+   */
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: #020617;
   display: block;
-
-  /*
-   * IMPORTANT:
-   * Canvas buffer size is controlled by JS (canvas.width/height).
-   * If CSS stretches the canvas to a different aspect ratio, circles become ovals.
-   * Prevent non-uniform stretching on resize and keep pixels square.
-   */
-  object-fit: contain;
-  object-position: center;
   image-rendering: auto;
 }
 

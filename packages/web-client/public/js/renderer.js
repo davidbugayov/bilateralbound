@@ -148,8 +148,11 @@ if (typeof BallRenderer === 'undefined') {
      * @private
      */
     _renderFull(alpha) {
+      // Use world dimensions for fill so background covers full canvas even when scaled
+      const w = this.physics.options.worldWidth || this.canvas.width
+      const h = this.physics.options.worldHeight || this.canvas.height
       this.ctx.fillStyle = this.colors.bg
-      this.fillRect(0, 0, this.canvas.width, this.canvas.height)
+      this.fillRect(0, 0, w, h)
       const ballState = this.physics.getInterpolatedBall
         ? this.physics.getInterpolatedBall(alpha)
         : this.physics.ball
@@ -187,13 +190,30 @@ if (typeof BallRenderer === 'undefined') {
       if (!this.canvas || !this.ctx || !this.physics) {
         return
       }
+      const worldW = this.physics.options.worldWidth
+      const worldH = this.physics.options.worldHeight
+      // Scale canvas context when canvas size differs from physics world (e.g. controller preview)
+      // This makes ball appear at correct relative position on both preview and viewer
+      const needsScale =
+        worldW > 0 && worldH > 0 &&
+        (this.canvas.width !== worldW || this.canvas.height !== worldH)
       try {
+        if (needsScale) {
+          this.ctx.save()
+          this.ctx.scale(this.canvas.width / worldW, this.canvas.height / worldH)
+        }
         if (this.options.dirtyRegions) {
           this._renderDirty(alpha)
         } else {
           this._renderFull(alpha)
         }
+        if (needsScale) {
+          this.ctx.restore()
+        }
       } catch (err) {
+        if (needsScale) {
+          this.ctx.restore()
+        }
         if (typeof debugError === 'function') {
           debugError('Error during render:', err)
         }
