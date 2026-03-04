@@ -9,6 +9,7 @@ const path = require('node:path')
 const fs = require('node:fs')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
+const analytics = require('../analytics.js')
 // Определяем доступные сетевые интерфейсы
 /**
  * Получает доступные сетевые интерфейсы
@@ -248,6 +249,15 @@ function setupExpressApp(sessionManager, apiCache) {
 
   app.use(express.json())
 
+  // Analytics tracking middleware
+  app.use((req, res, next) => {
+    analytics.recordHttpRequest()
+    res.on('finish', () => {
+      if (res.statusCode >= 400) analytics.recordHttpError(res.statusCode)
+    })
+    next()
+  })
+
   // Static files path
   const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
 
@@ -343,6 +353,21 @@ function setupExpressApp(sessionManager, apiCache) {
       sessions: sessionManager.getSessionCount(),
       uptime: process.uptime()
     })
+  })
+
+  // Analytics endpoint — localhost only
+  app.get('/api/analytics', (req, res) => {
+    const remoteAddr = req.socket?.remoteAddress
+    const isLocal =
+      remoteAddr === '127.0.0.1' ||
+      remoteAddr === '::1' ||
+      remoteAddr === '::ffff:127.0.0.1'
+    if (!isLocal) {
+      return res.status(403).json({ error: 'Forbidden' })
+    }
+    const count = sessionManager.getSessionCount()
+    analytics.updatePeak(count)
+    res.json(analytics.getStats(count))
   })
 
   // Static files - only serve specific paths, not root using helper function

@@ -6,6 +6,7 @@ const StateBroadcaster = require('./StateBroadcaster.js')
 const ValidationUtils = require('../utils/validation.js')
 const { logger, DEBUG_MODE } = require('../logger.js')
 const config = require('../config.js')
+const analytics = require('../analytics.js')
 // Основной оркестратор сессий
 class SessionManager {
   /**
@@ -41,6 +42,8 @@ class SessionManager {
   async createSession(ballState = {}) {
     const session = await this.sessionRepository.create({ ballState })
     this._initializePhysicsEngine(session)
+    analytics.recordSessionCreated(session.id)
+    analytics.updatePeak(this.getSessionCount())
     return session
   }
 
@@ -51,6 +54,7 @@ class SessionManager {
    * @returns {Object|null} Сессия или null если не найдена
    */
   findOrCreateSession(sessionId, ballState = {}) {
+    const alreadyExists = !!this.sessionRepository.findById(sessionId)
     const session = this.sessionRepository.findOrCreateById(sessionId, {
       ballState
     })
@@ -60,7 +64,10 @@ class SessionManager {
     if (!session.physicsEngine) {
       this._initializePhysicsEngine(session)
     }
-
+    if (!alreadyExists) {
+      analytics.recordSessionCreated(session.id)
+      analytics.updatePeak(this.getSessionCount())
+    }
     return session
   }
 
@@ -744,6 +751,7 @@ class SessionManager {
       this.logger.info(`Cleaned up ${expiredSessions.length} expired sessions.`)
       for (const { id, reason } of expiredSessions) {
         this.stopPhysics(id)
+        analytics.recordSessionEnded(id)
         this.logger.logSession(id, `Session cleaned up: ${reason}`)
       }
     }
@@ -794,6 +802,8 @@ class SessionManager {
 
     // Сохраняем язык в сессии
     session.language = language
+
+    analytics.recordLanguage(language)
 
     // Рассылаем обновление языка всем клиентам этой сессии
     this.broadcastLanguageUpdate(sessionId, language)

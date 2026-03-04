@@ -1,6 +1,7 @@
 'use strict'
 const { WebSocketServer } = require('ws')
 const { logger, DEBUG_MODE } = require('../logger.js')
+const analytics = require('../analytics.js')
 
 function setupWebSocketServer(server, sessionManager) {
   const wss = new WebSocketServer({ server })
@@ -28,6 +29,12 @@ function setupWebSocketServer(server, sessionManager) {
     })
 
     sessionManager.handleWebSocketConnection(ws, sessionId, role)
+
+    if (role === 'viewer') {
+      analytics.recordViewerConnected(sessionId)
+    } else if (role === 'controller') {
+      analytics.recordControllerConnected(sessionId)
+    }
 
     const messageHandlers = {
       request_state_sync: (data, { sessionId, role }) => {
@@ -278,6 +285,11 @@ function setupWebSocketServer(server, sessionManager) {
     })
 
     ws.on('close', () => {
+      if (role === 'viewer') {
+        analytics.recordViewerDisconnected()
+      } else if (role === 'controller') {
+        analytics.recordControllerDisconnected()
+      }
       // Capture client info BEFORE disconnection removes ws from registry
       const clientInfo = sessionManager.getClientInfo(ws)
       sessionManager.handleWebSocketDisconnection(ws)
