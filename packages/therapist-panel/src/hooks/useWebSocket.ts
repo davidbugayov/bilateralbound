@@ -27,7 +27,6 @@ export function useWebSocket(sessionId: string | null) {
   // Counters — client-side only
   const bounceCountRef = useRef(0) // total wall hits received
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const isPlayingRef = useRef(false)
 
   const [viewerConnected, setViewerConnected] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -87,7 +86,6 @@ export function useWebSocket(sessionId: string | null) {
       if (msg.type === 'initial_state' && p.isPlaying !== undefined) {
         const playing = p.isPlaying as boolean
         setIsPlaying(playing)
-        isPlayingRef.current = playing
         if (playing) startTimer()
         else stopTimer()
       }
@@ -124,7 +122,9 @@ export function useWebSocket(sessionId: string | null) {
   }, [sessionId, handleMessage])
 
   useEffect(() => {
-    bcRef.current = new BroadcastChannel('bb_preview')
+    if (typeof BroadcastChannel !== 'undefined') {
+      bcRef.current = new BroadcastChannel('bb_preview')
+    }
     return () => {
       bcRef.current?.close()
     }
@@ -148,7 +148,6 @@ export function useWebSocket(sessionId: string | null) {
   // Toggle play/pause — call this from App when user clicks Start/Stop
   const setPlaying = useCallback((playing: boolean) => {
     setIsPlaying(playing)
-    isPlayingRef.current = playing
     if (playing) startTimer()
     else stopTimer()
   }, [])
