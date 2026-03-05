@@ -282,12 +282,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const autoStopPassesInput = document.getElementById('autoStopPassesInput')
   const autoStopSecondsInput = document.getElementById('autoStopSecondsInput')
   if (autoStopPassesInput) {
-    autoStopPassesInput.addEventListener('change', () => {
+    autoStopPassesInput.addEventListener('input', () => {
       bbCounters.autoStopPasses = Math.max(0, parseInt(autoStopPassesInput.value, 10) || 0)
     })
   }
   if (autoStopSecondsInput) {
-    autoStopSecondsInput.addEventListener('change', () => {
+    autoStopSecondsInput.addEventListener('input', () => {
       bbCounters.autoStopSeconds = Math.max(0, parseInt(autoStopSecondsInput.value, 10) || 0)
     })
   }
