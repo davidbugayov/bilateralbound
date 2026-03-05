@@ -79,6 +79,8 @@ const bbCounters = {
     this.$stickyTimer = document.getElementById('stickyTimer')
     this.$stickyPasses = document.getElementById('stickyPasses')
     this.$stickySets = document.getElementById('stickySets')
+    this.$autoStopPassesInput = document.getElementById('autoStopPassesInput')
+    this.$autoStopSecondsInput = document.getElementById('autoStopSecondsInput')
     const resetBtn = document.getElementById('bbResetBtn')
     if (resetBtn) {
       resetBtn.addEventListener('click', () => this.resetAll())
@@ -128,6 +130,7 @@ const bbCounters = {
       this._passesHistory = [] // Очищаем историю
     }
     this.timerMs = 0
+    this._restoreAutoStopInputs()
     this.render()
   },
   resetAll() {
@@ -188,28 +191,28 @@ const bbCounters = {
     const s = totalSec % 60
     return `${m}:${String(s).padStart(2, '0')}`
   },
-  _timerDisplay() {
-    if (this.autoStopSeconds > 0) {
-      return this.formatTime(Math.max(0, this.autoStopSeconds * 1000 - this.timerMs))
-    }
-    return this.formatTime(this.timerMs)
-  },
-  _passesDisplay() {
-    if (this.autoStopPasses > 0) {
-      return String(Math.max(0, this.autoStopPasses - this.passes))
-    }
-    return String(this.passes)
-  },
   render() {
-    const timerText = this._timerDisplay()
-    const passesText = this._passesDisplay()
-    if (this.$timer) this.$timer.textContent = timerText
-    if (this.$passes) this.$passes.textContent = passesText
+    if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
+    if (this.$passes) this.$passes.textContent = String(this.passes)
     if (this.$sets) this.$sets.textContent = String(this.sets)
-    if (this.$stickyTimer) this.$stickyTimer.textContent = timerText
-    if (this.$stickyPasses) this.$stickyPasses.textContent = passesText
+    if (this.$stickyTimer) this.$stickyTimer.textContent = this.formatTime(this.timerMs)
+    if (this.$stickyPasses) this.$stickyPasses.textContent = String(this.passes)
     if (this.$stickySets) this.$stickySets.textContent = String(this.sets)
+    this._renderAutoStopCountdown()
     this.renderSpeedInfo()
+  },
+  _renderAutoStopCountdown() {
+    if (!this.running) return
+    if (this.$autoStopPassesInput && this.autoStopPasses > 0) {
+      this.$autoStopPassesInput.value = Math.max(0, this.autoStopPasses - this.passes)
+    }
+    if (this.$autoStopSecondsInput && this.autoStopSeconds > 0) {
+      this.$autoStopSecondsInput.value = Math.max(0, this.autoStopSeconds - Math.floor(this.timerMs / 1000))
+    }
+  },
+  _restoreAutoStopInputs() {
+    if (this.$autoStopPassesInput) this.$autoStopPassesInput.value = this.autoStopPasses || 0
+    if (this.$autoStopSecondsInput) this.$autoStopSecondsInput.value = this.autoStopSeconds || 0
   },
   renderSpeedInfo() {
     if (this.$passesPerSecond) {
