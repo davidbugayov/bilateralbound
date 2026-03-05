@@ -15,7 +15,7 @@
    */
   function detectFromDomain() {
     const hostname = (typeof globalThis !== 'undefined' ? globalThis : window)
-      .location.hostname;
+      .location.hostname
 
     if (hostname.includes('emdrbilateral.ru')) {
       return 'ru'

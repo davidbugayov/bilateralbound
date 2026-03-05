@@ -48,8 +48,8 @@ function getDirectionMode(dirX, dirY) {
   const ay = Math.abs(dirY)
   if (ay < 0.01) return 'horizontal'
   if (ax < 0.01) return 'vertical'
-  if (dirX > 0 && dirY > 0) return 'diagRL'; // TL→BR
-  if (dirX > 0 && dirY < 0) return 'diagRLL'; // BL→TR
+  if (dirX > 0 && dirY > 0) return 'diagRL' // TL→BR
+  if (dirX > 0 && dirY < 0) return 'diagRLL' // BL→TR
   return 'horizontal'
 }
 /**
@@ -59,7 +59,7 @@ function getDirectionMode(dirX, dirY) {
 function isDiagonalMode() {
   return (
     _currentDirectionMode === 'diagRL' || _currentDirectionMode === 'diagRLL'
-  );
+  )
 }
 /**
  * Получить текущее состояние направления

@@ -2,14 +2,14 @@ const puppeteer = require('puppeteer');
 (async () => {
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox'],
-  });
+    args: ['--no-sandbox']
+  })
   const page = await browser.newPage()
 
   await page.goto('https://dev.emdrbilateral.online', {
-    waitUntil: 'networkidle0',
-  });
-  await new Promise((r) => setTimeout(r, 3000));
+    waitUntil: 'networkidle0'
+  })
+  await new Promise((r) => setTimeout(r, 3000))
 
   // Check i18n state
   const state = await page.evaluate(() => ({
@@ -31,7 +31,7 @@ const puppeteer = require('puppeteer');
   await page.evaluate(async () => {
     await window.i18n.changeLanguage('ru')
   })
-  await new Promise((r) => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000))
 
   const afterRu = await page.evaluate(() => ({
     lang: window.i18n.currentLanguage,
@@ -49,7 +49,7 @@ const puppeteer = require('puppeteer');
   await page.evaluate(async () => {
     await window.i18n.changeLanguage('en')
   })
-  await new Promise((r) => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000))
 
   const titleAfterEn = await page.evaluate(() => {
     const el = document.querySelector('[data-i18n="home.title"]')

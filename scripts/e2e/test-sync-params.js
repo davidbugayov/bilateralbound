@@ -31,20 +31,20 @@ async function test(name, fn) {
   }
 }
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 // Send controller state update via REST API (from controller page context)
 async function ctrl(updates) {
   await ctrlPage.evaluate(async (upd) => {
-    const sid = globalThis.__current?.sessionId;
-    if (!sid) throw new Error('No sessionId in __current');
+    const sid = globalThis.__current?.sessionId
+    if (!sid) throw new Error('No sessionId in __current')
     const res = await fetch(`/api/session/${sid}/controller/update`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(upd),
-    });
-    if (!res.ok) throw new Error(`controller/update HTTP ${res.status}`);
-  }, updates);
+      body: JSON.stringify(upd)
+    })
+    if (!res.ok) throw new Error(`controller/update HTTP ${res.status}`)
+  }, updates)
 }
 
 // Get viewer physicsEngine state (uses getState() which returns all physics fields)
@@ -72,11 +72,11 @@ async function waitConnected(ms = 8000) {
   const deadline = Date.now() + ms
   while (Date.now() < deadline) {
     const vc = await ctrlPage.evaluate(
-      () => globalThis.__current?.viewerConnected === true,
-    );
+      () => globalThis.__current?.viewerConnected === true
+    )
     const cc = await viewPage.evaluate(
-      () => globalThis.__current?.controllerConnected === true,
-    );
+      () => globalThis.__current?.controllerConnected === true
+    )
     if (vc && cc) return true
     await sleep(400)
   }
@@ -99,8 +99,8 @@ async function main() {
   // Reserve session (idempotent)
   try {
     const r = await fetch(`${BASE_URL}/api/session/${SESSION_ID}/reserve`, {
-      method: 'POST',
-    });
+      method: 'POST'
+    })
     if (!r.ok) console.warn(`⚠️  reserve: HTTP ${r.status}`)
   } catch (e) {
     console.warn(`⚠️  reserve: ${e.message}`)
@@ -122,7 +122,7 @@ async function main() {
     })
 
     if (!(await waitConnected())) {
-      console.warn('⚠️  Timeout waiting for both sides to connect');
+      console.warn('⚠️  Timeout waiting for both sides to connect')
     }
 
     // Establish known initial state
@@ -133,15 +133,15 @@ async function main() {
 
     await test('Controller видит Viewer подключённым', async () => {
       const ok = await ctrlPage.evaluate(
-        () => globalThis.__current?.viewerConnected === true,
-      );
+        () => globalThis.__current?.viewerConnected === true
+      )
       if (!ok) throw new Error('viewerConnected !== true на контроллере')
     })
 
     await test('Viewer видит Controller подключённым', async () => {
       const ok = await viewPage.evaluate(
-        () => globalThis.__current?.controllerConnected === true,
-      );
+        () => globalThis.__current?.controllerConnected === true
+      )
       if (!ok) throw new Error('controllerConnected !== true на viewer')
     })
 
@@ -156,7 +156,7 @@ async function main() {
       const s2 = await vState()
       const dist = Math.hypot(s2.x - s1.x, s2.y - s1.y)
       if (dist < 1)
-        throw new Error(`Мяч не двигается: dist=${dist.toFixed(2)}`);
+        throw new Error(`Мяч не двигается: dist=${dist.toFixed(2)}`)
     })
 
     await test('Плавность: позиция непрерывно обновляется', async () => {
@@ -199,7 +199,7 @@ async function main() {
       const s = await vState()
       if (!s) throw new Error('physicsEngine недоступен')
       if (Math.abs(s.speed - 15) > 5)
-        throw new Error(`speed=${s.speed}, ожидалось ~15`);
+        throw new Error(`speed=${s.speed}, ожидалось ~15`)
     })
 
     await test('Скорость 85 синхронизируется на Viewer', async () => {
@@ -208,22 +208,22 @@ async function main() {
       const s = await vState()
       if (!s) throw new Error('physicsEngine недоступен')
       if (Math.abs(s.speed - 85) > 5)
-        throw new Error(`speed=${s.speed}, ожидалось ~85`);
+        throw new Error(`speed=${s.speed}, ожидалось ~85`)
     })
 
     await test('Высокая скорость — мяч перемещается дальше за то же время', async () => {
-      await pause();
-      await resume(1, 0, 10);
-      const p1 = await vState();
-      await sleep(500);
-      const p2 = await vState();
+      await pause()
+      await resume(1, 0, 10)
+      const p1 = await vState()
+      await sleep(500)
+      const p2 = await vState()
       const dLow = Math.hypot(p2.x - p1.x, p2.y - p1.y)
 
-      await pause();
-      await resume(1, 0, 90);
-      const p3 = await vState();
-      await sleep(500);
-      const p4 = await vState();
+      await pause()
+      await resume(1, 0, 90)
+      const p3 = await vState()
+      await sleep(500)
+      const p4 = await vState()
       const dHigh = Math.hypot(p4.x - p3.x, p4.y - p3.y)
 
       if (dHigh <= dLow * 1.5) {
@@ -240,8 +240,8 @@ async function main() {
     // We verify via velocity components: |vx| vs |vy| determines axis.
 
     await test('Направление: Горизонтальное (dirX=1, dirY=0)', async () => {
-      await pause();
-      await resume(1, 0, 60);
+      await pause()
+      await resume(1, 0, 60)
       await sleep(400)
       const s = await vState()
       if (!s) throw new Error('physicsEngine недоступен')
@@ -249,14 +249,14 @@ async function main() {
       const ay = Math.abs(s.vy || 0)
       if (ax <= ay) {
         throw new Error(
-          `Движение не горизонтальное: vx=${s.vx?.toFixed(1)}, vy=${s.vy?.toFixed(1)}`,
-        );
+          `Движение не горизонтальное: vx=${s.vx?.toFixed(1)}, vy=${s.vy?.toFixed(1)}`
+        )
       }
     })
 
     await test('Направление: Вертикальное (dirX=0, dirY=1)', async () => {
-      await pause();
-      await resume(0, 1, 60);
+      await pause()
+      await resume(0, 1, 60)
       await sleep(400)
       const s = await vState()
       if (!s) throw new Error('physicsEngine недоступен')
@@ -264,15 +264,15 @@ async function main() {
       const ay = Math.abs(s.vy || 0)
       if (ay <= ax) {
         throw new Error(
-          `Движение не вертикальное: vx=${s.vx?.toFixed(1)}, vy=${s.vy?.toFixed(1)}`,
-        );
+          `Движение не вертикальное: vx=${s.vx?.toFixed(1)}, vy=${s.vy?.toFixed(1)}`
+        )
       }
     })
 
     await test('Направление: Диагональ ↖→↘ (dirX≈dirY≈0.71)', async () => {
       const d = +(1 / Math.SQRT2).toFixed(4)
-      await pause();
-      await resume(d, d, 60);
+      await pause()
+      await resume(d, d, 60)
       await sleep(400)
       const s = await vState()
       if (!s) throw new Error('physicsEngine недоступен')
@@ -290,8 +290,8 @@ async function main() {
 
     await test('Направление: Диагональ ↙→↗ (dirX≈0.71, dirY≈-0.71)', async () => {
       const d = +(1 / Math.SQRT2).toFixed(4)
-      await pause();
-      await resume(d, -d, 60);
+      await pause()
+      await resume(d, -d, 60)
       await sleep(400)
       const s = await vState()
       if (!s) throw new Error('physicsEngine недоступен')
@@ -454,7 +454,7 @@ async function main() {
       const errors = []
       if (s.paused) errors.push('paused=true')
       if (Math.abs(s.speed - 70) > 5)
-        errors.push(`speed=${s.speed} (ожидалось 70)`);
+        errors.push(`speed=${s.speed} (ожидалось 70)`)
       if (!(s.colorBall || '').toLowerCase().includes('f59e0b')) {
         errors.push(`colorBall=${s.colorBall}`)
       }
@@ -480,13 +480,13 @@ async function main() {
   } finally {
     await browser.close()
     console.log(
-      `\n📊 Результаты: ${passed} прошло, ${failed} упало из ${passed + failed}`,
-    );
+      `\n📊 Результаты: ${passed} прошло, ${failed} упало из ${passed + failed}`
+    )
     process.exit(failed > 0 ? 1 : 0)
   }
 }
 
 main().catch((e) => {
-  console.error('Fatal:', e);
-  process.exit(1);
-});
+  console.error('Fatal:', e)
+  process.exit(1)
+})

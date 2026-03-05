@@ -7,8 +7,8 @@ if (typeof WebSocketClient === 'undefined') {
     constructor(sessionId, role, options = {}) {
       if (!sessionId || typeof sessionId !== 'string') {
         throw new Error(
-          'Valid sessionId (string) is required for WebSocket connection',
-        );
+          'Valid sessionId (string) is required for WebSocket connection'
+        )
       }
       if (!role || !['controller', 'viewer'].includes(role)) {
         throw new Error(
@@ -24,8 +24,8 @@ if (typeof WebSocketClient === 'undefined') {
         messageTimeout: globalConfig.messageTimeout || 5000,
         coalesceTypes: globalConfig.coalesceTypes || ['controller_update'],
         coalesceDelayMs: globalConfig.coalesceDelayMs || 16, // ~60fps
-        ...options,
-      };
+        ...options
+      }
       this.sessionId = sessionId
       this.role = role
       this.ws = null
@@ -85,11 +85,11 @@ if (typeof WebSocketClient === 'undefined') {
             resolve()
           }
           this.ws.onerror = (error) => {
-            clearTimeout(connectionTimeout);
-            this.isConnecting = false;
-            this._handleConnectionError(error);
-            reject(new Error('WebSocket connection failed'));
-          };
+            clearTimeout(connectionTimeout)
+            this.isConnecting = false
+            this._handleConnectionError(error)
+            reject(new Error('WebSocket connection failed'))
+          }
         } catch (error) {
           this.isConnecting = false
           reject(new Error(`WebSocket connection failed: ${error.message}`))
@@ -106,24 +106,24 @@ if (typeof WebSocketClient === 'undefined') {
       const priorityTypes = ['controller_update', 'heartbeat']
       const isPriority = priorityTypes.includes(type)
       if (isPriority) {
-        const messageId = ++this.messageIdCounter;
+        const messageId = ++this.messageIdCounter
         const message = {
           id: messageId,
           type,
           payload,
           timestamp: Date.now(),
-          priority: true,
-        };
-        return this._sendWithResponse(message, type, options);
+          priority: true
+        }
+        return this._sendWithResponse(message, type, options)
       } else if (
         this.config.coalesceTypes.includes(type) &&
         !options.expectResponse
       ) {
-        this._coalesceMessage(type, payload);
+        this._coalesceMessage(type, payload)
       } else {
-        const messageId = ++this.messageIdCounter;
-        const message = { id: messageId, type, payload, timestamp: Date.now() };
-        return this._sendWithResponse(message, type, options);
+        const messageId = ++this.messageIdCounter
+        const message = { id: messageId, type, payload, timestamp: Date.now() }
+        return this._sendWithResponse(message, type, options)
       }
     }
     _sendWithResponse(message, type, options) {
@@ -213,11 +213,11 @@ if (typeof WebSocketClient === 'undefined') {
       this._emit('open', {
         sessionId: this.sessionId,
         role: this.role,
-        isReconnection,
-      });
+        isReconnection
+      })
       this.log(
-        'Connected successfully' + (isReconnection ? ' (reconnected)' : ''),
-      );
+        'Connected successfully' + (isReconnection ? ' (reconnected)' : '')
+      )
     }
     _handleConnectionError(error) {
       this._emit('error', { error, type: 'connection' })
@@ -259,8 +259,8 @@ if (typeof WebSocketClient === 'undefined') {
       const variance =
         this._stats._lastRttSamples.reduce(
           (a, b) => a + Math.pow(b - avg, 2),
-          0,
-        ) / n;
+          0
+        ) / n
       const jitter = Math.sqrt(variance)
       this._stats.rttMs = Math.round(avg)
       this._stats.jitterMs = Math.round(jitter)
@@ -289,7 +289,7 @@ if (typeof WebSocketClient === 'undefined') {
       this._stats.reconnectCount++
       const delay =
         this.config.reconnectInterval *
-        Math.pow(1.5, this._stats.reconnectCount - 1);
+        Math.pow(1.5, this._stats.reconnectCount - 1)
       this.log(
         `Reconnecting in ${Math.round(delay / 1000)}s (attempt ${this._stats.reconnectCount})`
       )
@@ -303,8 +303,8 @@ if (typeof WebSocketClient === 'undefined') {
       this.heartbeatTimer = setInterval(() => {
         if (this.isConnected) {
           this.send('heartbeat', { timestamp: Date.now() }).catch((err) => {
-            this.log(`Heartbeat failed: ${err.message}`, 'warning');
-          });
+            this.log(`Heartbeat failed: ${err.message}`, 'warning')
+          })
         }
       }, this.config.heartbeatInterval)
     }
@@ -325,8 +325,8 @@ if (typeof WebSocketClient === 'undefined') {
           } catch (error) {
             this.log(
               `Error in event handler for ${eventType}: ${error.message}`,
-              'error',
-            );
+              'error'
+            )
           }
         }
       }
@@ -365,8 +365,8 @@ if (typeof WebSocketClient === 'undefined') {
       console[type === 'error' ? 'error' : 'log'](
         coloredMessage,
         style,
-        timestamp,
-      );
+        timestamp
+      )
     }
   }
   if (typeof module !== 'undefined' && module.exports) {

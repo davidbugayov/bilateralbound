@@ -44,9 +44,9 @@ class AudioManager {
     if (this.audioContext?.state === 'suspended') {
       this.audioContext.resume().catch((err) => {
         if (typeof logger !== 'undefined') {
-          logger.warn('Failed to resume AudioContext:', err);
+          logger.warn('Failed to resume AudioContext:', err)
         }
-      });
+      })
     }
     // Lazy loading: only preload when explicitly requested or when sound is enabled
     if (preload && this.useAudioFiles && !this.filesLoaded) {
@@ -137,10 +137,10 @@ class AudioManager {
     ) {
       this.preloadSounds().catch((err) => {
         if (typeof logger !== 'undefined') {
-          logger.warn('Failed to load audio files:', err);
+          logger.warn('Failed to load audio files:', err)
         }
-        this.useAudioFiles = false;
-      });
+        this.useAudioFiles = false
+      })
     }
   }
   setVolume(volume) {
@@ -300,8 +300,8 @@ class AudioManager {
       const noiseBuffer = this.audioContext.createBuffer(
         1,
         bufferSize,
-        this.audioContext.sampleRate,
-      );
+        this.audioContext.sampleRate
+      )
       const output = noiseBuffer.getChannelData(0)
       for (let i = 0; i < bufferSize; i++) {
         output[i] = Math.random() * 2 - 1

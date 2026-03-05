@@ -124,8 +124,8 @@
           globalThis.location &&
           globalThis.location.search
           ? globalThis.location.search
-          : '',
-      );
+          : ''
+      )
       const langParam = params.get('lang')
       if (langParam && this.supportedLanguages.includes(langParam)) {
         this.currentLanguage = langParam
@@ -261,7 +261,7 @@
         const versionMeta = document.querySelector('meta[name="version"]')
         const version = versionMeta
           ? versionMeta.getAttribute('content')
-          : 'dev';
+          : 'dev'
         options.VERSION = `v${version}`
       }
 
@@ -379,7 +379,7 @@
             const versionMeta = document.querySelector('meta[name="version"]')
             const version = versionMeta
               ? versionMeta.getAttribute('content')
-              : 'dev';
+              : 'dev'
             value = value.replace('{{VERSION}}', `v${version}`)
           }
 

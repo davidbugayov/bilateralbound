@@ -12,7 +12,7 @@
     // 1. Set html background immediately to cover the viewport
     document.documentElement.style.backgroundColor = isDark
       ? '#0f172a'
-      : '#f8fafc';
+      : '#f8fafc'
 
     // 2. Add preload class to html
     const preloadClass = isDark ? 'preload-dark' : 'preload-light'
@@ -34,8 +34,8 @@
       // Remove preload classes
       document.documentElement.classList.remove(
         'preload-dark',
-        'preload-light',
-      );
+        'preload-light'
+      )
 
       // Remove style tag
       const styleTag = document.getElementById('theme-preload-style')

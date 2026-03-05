@@ -11,7 +11,7 @@ function init(deps) {
   _isPlaying = false
 }
 function getIsPlaying() {
-  return _isPlaying;
+  return _isPlaying
 }
 function setIsPlaying(v) {
   _isPlaying = v
@@ -49,14 +49,14 @@ function setPlayPauseState(shouldPlay) {
     components,
     bbCounters,
     showNotification,
-    WS_MSG,
-  } = _deps;
+    WS_MSG
+  } = _deps
   if (!globalThis.__current?.viewerConnected && shouldPlay) {
     showNotification(
       globalThis.i18n?.t('controller.clientNotConnected') ||
         'Warning: client not connected, animation may not work',
-      'warning',
-    );
+      'warning'
+    )
   }
   const payload = shouldPlay
     ? {

@@ -79,8 +79,8 @@ function setupWebSocketServer(server, sessionManager) {
                 )
               } catch (error) {
                 logger.error(
-                  `Error sending controller_connected: ${error.message}`,
-                );
+                  `Error sending controller_connected: ${error.message}`
+                )
               }
             }
           }
@@ -105,8 +105,8 @@ function setupWebSocketServer(server, sessionManager) {
                 )
               } catch (error) {
                 logger.error(
-                  `Error sending viewer_connected: ${error.message}`,
-                );
+                  `Error sending viewer_connected: ${error.message}`
+                )
               }
             }
           }
@@ -125,8 +125,8 @@ function setupWebSocketServer(server, sessionManager) {
             // Отправляем уведомление контроллеру
             const controllers = sessionManager.webSocketManager.getClients(
               sessionId,
-              'controller',
-            );
+              'controller'
+            )
             // console.log(`📤 [Server] Отправляем контроллерам: ${controllers.length} подключено`)
 
             const notificationMessage = JSON.stringify({
@@ -144,8 +144,8 @@ function setupWebSocketServer(server, sessionManager) {
                   client.send(notificationMessage)
                 } catch (error) {
                   logger.error(
-                    `Error sending viewer_audio_activated: ${error.message}`,
-                  );
+                    `Error sending viewer_audio_activated: ${error.message}`
+                  )
                 }
               }
             }
@@ -178,8 +178,8 @@ function setupWebSocketServer(server, sessionManager) {
                   client.send(updateMessage)
                 } catch (error) {
                   logger.error(
-                    `Error broadcasting controller_update: ${error.message}`,
-                  );
+                    `Error broadcasting controller_update: ${error.message}`
+                  )
                 }
               }
             }
@@ -254,8 +254,8 @@ function setupWebSocketServer(server, sessionManager) {
                   client.send(updateMessage)
                 } catch (error) {
                   logger.error(
-                    `Error broadcasting viewer_update: ${error.message}`,
-                  );
+                    `Error broadcasting viewer_update: ${error.message}`
+                  )
                 }
               }
             }
@@ -266,38 +266,38 @@ function setupWebSocketServer(server, sessionManager) {
 
     ws.on('message', (message) => {
       try {
-        const clientInfo = sessionManager.getClientInfo(ws);
+        const clientInfo = sessionManager.getClientInfo(ws)
         if (!clientInfo) {
-          return;
+          return
         }
 
-        const data = JSON.parse(message);
+        const data = JSON.parse(message)
         if (data.type === 'heartbeat') {
-          return;
+          return
         }
 
         if (DEBUG_MODE) {
           logger.logSession(
             clientInfo.sessionId,
             `[MSG IN] ${clientInfo.role}:${data.type}`,
-            'debug',
-          );
+            'debug'
+          )
         }
 
-        const handler = messageHandlers[data.type];
+        const handler = messageHandlers[data.type]
         if (handler) {
-          handler(data, clientInfo);
+          handler(data, clientInfo)
         }
       } catch (error) {
-        const clientInfoForError = sessionManager.getClientInfo(ws);
+        const clientInfoForError = sessionManager.getClientInfo(ws)
         const sid = clientInfoForError
           ? clientInfoForError.sessionId
-          : 'unknown';
+          : 'unknown'
         if (DEBUG_MODE) {
-          logger.error(`WebSocket error from session ${sid}: ${error.message}`);
+          logger.error(`WebSocket error from session ${sid}: ${error.message}`)
         }
       }
-    });
+    })
 
     ws.on('close', () => {
       if (role === 'viewer') {
@@ -324,8 +324,8 @@ function setupWebSocketServer(server, sessionManager) {
               client.send(msg)
             } catch (error) {
               logger.error(
-                `Error sending controller_disconnected: ${error.message}`,
-              );
+                `Error sending controller_disconnected: ${error.message}`
+              )
             }
           }
         }
@@ -341,8 +341,8 @@ function setupWebSocketServer(server, sessionManager) {
               client.send(msg)
             } catch (error) {
               logger.error(
-                `Error sending viewer_disconnected: ${error.message}`,
-              );
+                `Error sending viewer_disconnected: ${error.message}`
+              )
             }
           }
         }
@@ -351,9 +351,9 @@ function setupWebSocketServer(server, sessionManager) {
 
     ws.on('error', (error) => {
       logger.error(
-        `WebSocket error for session ${sessionId}: ${error.message}`,
-      );
-    });
+        `WebSocket error for session ${sessionId}: ${error.message}`
+      )
+    })
   })
 
   const heartbeatInterval = setInterval(function ping() {

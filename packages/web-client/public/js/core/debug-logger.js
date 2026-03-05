@@ -47,7 +47,7 @@ class DebugLogger {
     const categories = params.get('debug-cat') || params.get('categories')
     return categories
       ? new Set(categories.split(',').map((c) => c.trim()))
-      : new Set(Object.keys(CATEGORY_COLORS));
+      : new Set(Object.keys(CATEGORY_COLORS))
   }
   _logStats() {
     console.log(
@@ -56,8 +56,8 @@ class DebugLogger {
     )
     console.log(
       '📊 Enabled categories:',
-      Array.from(this.categories).join(', '),
-    );
+      Array.from(this.categories).join(', ')
+    )
   }
   _isEnabled(category) {
     return this.enabled && this.categories.has(category)
@@ -114,22 +114,22 @@ class DebugLogger {
     console.error(
       `%c[ERROR] ${msg}`,
       'color: #F00; font-weight: bold;',
-      err ?? '',
-    );
+      err ?? ''
+    )
   }
   warn(msg, data) {
     console.warn(
       `%c[WARN] ${msg}`,
       'color: #FA0; font-weight: bold;',
-      data ?? '',
-    );
+      data ?? ''
+    )
   }
   info(msg, data) {
     console.info(
       `%cℹ️ ${msg}`,
       'color: #4A9EFF; font-weight: bold;',
-      data ?? '',
-    );
+      data ?? ''
+    )
   }
   log(msg, data) {
     console.log(msg, data ?? '')

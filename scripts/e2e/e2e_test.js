@@ -8,7 +8,7 @@ const puppeteer = require('puppeteer')
 const BASE_URL = process.argv[2] || 'https://dev.emdrbilateral.online'
 let browser,
   passed = 0,
-  failed = 0;
+  failed = 0
 
 async function test(name, fn) {
   try {
@@ -27,8 +27,8 @@ async function test(name, fn) {
 async function reserveSession(sessionId) {
   try {
     const res = await fetch(`${BASE_URL}/api/session/${sessionId}/reserve`, {
-      method: 'POST',
-    });
+      method: 'POST'
+    })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
   } catch (e) {
     console.warn(`⚠️  Could not reserve session ${sessionId}: ${e.message}`)
@@ -48,8 +48,8 @@ async function main() {
   const mainPage = await browser.newPage()
   await mainPage.goto(BASE_URL, {
     waitUntil: 'domcontentloaded',
-    timeout: 15000,
-  });
+    timeout: 15000
+  })
 
   await test('Главная загружается', async () => {
     const t = await mainPage.title()
@@ -57,17 +57,17 @@ async function main() {
   })
 
   await test('Кнопка создания сессии', async () => {
-    if (!(await mainPage.$('#createSessionBtn'))) throw new Error('Not found');
+    if (!(await mainPage.$('#createSessionBtn'))) throw new Error('Not found')
   })
 
   await test('Генерация ссылок', async () => {
     // Очищаем поле и вводим уникальный ID
-    await mainPage.$eval('#customClientId', (el) => (el.value = ''));
+    await mainPage.$eval('#customClientId', (el) => (el.value = ''))
     const testId = 'e2e_' + Date.now()
     await mainPage.type('#customClientId', testId)
     await mainPage.click('#generateLinksBtn')
     // Ждём небольшую задержку для запроса
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 2000))
     // Проверяем что контейнер появился или запрос успешен
     const isVisible = await mainPage.evaluate(() => {
       const container = document.getElementById('generatedLinksContainer')
@@ -78,15 +78,15 @@ async function main() {
       // Альтернативная проверка - просто проверяем что кнопка не в состоянии ошибки
       const btnText = await mainPage.$eval(
         '#generateLinksBtn',
-        (el) => el.textContent,
-      );
+        (el) => el.textContent
+      )
       if (btnText.includes('❌')) throw new Error('Link generation failed')
     }
   })
 
   await test('Language selector присутствует', async () => {
     if (!(await mainPage.$('#languageSelectorBtn')))
-      throw new Error('Language selector not found');
+      throw new Error('Language selector not found')
   })
 
   await test('Переключение языка работает', async () => {
@@ -99,10 +99,10 @@ async function main() {
       return { clicked: !!enOption, dropdownExists: !!dropdown }
     })
     if (!result.clicked) throw new Error('Language option not found')
-    await new Promise((r) => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 1000))
     const langSaved = await mainPage.evaluate(() =>
-      localStorage.getItem('emdr-language'),
-    );
+      localStorage.getItem('emdr-language')
+    )
     if (langSaved !== 'en') throw new Error('Language not saved: ' + langSaved)
   })
 
@@ -112,39 +112,39 @@ async function main() {
   const ctrlPage = await browser.newPage()
   await ctrlPage.goto(`${BASE_URL}/c/e2e_session`, {
     waitUntil: 'domcontentloaded',
-    timeout: 15000,
-  });
+    timeout: 15000
+  })
 
   await test('Контроллер загружается', async () => {
     await ctrlPage.waitForSelector('#preview', { timeout: 10000 })
   })
 
   await test('Play кнопка', async () => {
-    if (!(await ctrlPage.$('#playPauseBtn'))) throw new Error('Not found');
+    if (!(await ctrlPage.$('#playPauseBtn'))) throw new Error('Not found')
   })
 
   await test('Скорость контрол', async () => {
-    if (!(await ctrlPage.$('#speedControl'))) throw new Error('Not found');
+    if (!(await ctrlPage.$('#speedControl'))) throw new Error('Not found')
   })
 
   await test('PhysicsEngine', async () => {
     const ok = await ctrlPage.evaluate(
-      () => typeof PhysicsEngine !== 'undefined',
-    );
+      () => typeof PhysicsEngine !== 'undefined'
+    )
     if (!ok) throw new Error('Not found')
   })
 
   await test('togglePlayPause функция доступна', async () => {
     const ok = await ctrlPage.evaluate(
-      () => typeof togglePlayPause === 'function',
-    );
+      () => typeof togglePlayPause === 'function'
+    )
     if (!ok) throw new Error('togglePlayPause not defined')
   })
 
   await test('setDirection функция доступна', async () => {
     const ok = await ctrlPage.evaluate(
-      () => typeof setDirection === 'function',
-    );
+      () => typeof setDirection === 'function'
+    )
     if (!ok) throw new Error('setDirection not defined')
   })
 
@@ -154,7 +154,7 @@ async function main() {
       window.onerror = (msg) => window.__jsErrors.push(msg)
     })
     await ctrlPage.click('#playPauseBtn')
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500))
     const errors = await ctrlPage.evaluate(() => window.__jsErrors)
     if (errors.length > 0) throw new Error('JS errors: ' + errors.join(', '))
   })
@@ -163,8 +163,8 @@ async function main() {
     const ok = await ctrlPage.evaluate(
       () =>
         typeof globalThis.i18n !== 'undefined' ||
-        typeof globalThis.I18nConstants !== 'undefined',
-    );
+        typeof globalThis.I18nConstants !== 'undefined'
+    )
     if (!ok) throw new Error('i18n not loaded')
   })
 
@@ -172,8 +172,8 @@ async function main() {
   const viewPage = await browser.newPage()
   await viewPage.goto(`${BASE_URL}/s/e2e_session`, {
     waitUntil: 'domcontentloaded',
-    timeout: 15000,
-  });
+    timeout: 15000
+  })
 
   await test('Viewer загружается', async () => {
     await viewPage.waitForSelector('canvas', { timeout: 10000 })
@@ -181,19 +181,19 @@ async function main() {
 
   await test('Viewer PhysicsEngine', async () => {
     const ok = await viewPage.evaluate(
-      () => typeof PhysicsEngine !== 'undefined',
-    );
+      () => typeof PhysicsEngine !== 'undefined'
+    )
     if (!ok) throw new Error('Not found')
   })
 
   await test('Realtime соединение работает', async () => {
     // Проверим что viewer получает состояние через WebSocket
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 2000))
     const hasState = await viewPage.evaluate(() => {
       return (
         globalThis.__current?.sessionId !== undefined ||
         document.querySelector('canvas') !== null
-      );
+      )
     })
     if (!hasState) throw new Error('Realtime state not received')
   })
@@ -203,20 +203,20 @@ async function main() {
     const deadline = Date.now() + 8000
     while (Date.now() < deadline) {
       const connected = await ctrlPage.evaluate(
-        () => globalThis.__current?.viewerConnected === true,
-      );
+        () => globalThis.__current?.viewerConnected === true
+      )
       if (connected) break
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500))
     }
   })()
 
   // Тест: контроллер видит viewer как подключённый
   await test('Контроллер видит viewer подключён', async () => {
     const viewerConnected = await ctrlPage.evaluate(
-      () => globalThis.__current?.viewerConnected === true,
-    );
+      () => globalThis.__current?.viewerConnected === true
+    )
     if (!viewerConnected)
-      throw new Error('Controller does not see viewer as connected');
+      throw new Error('Controller does not see viewer as connected')
   })
 
   // Тест: UI контроллера показывает статус подключения
@@ -225,15 +225,15 @@ async function main() {
       return document
         .getElementById('viewerStatus')
         ?.textContent?.trim()
-        ?.toLowerCase();
+        ?.toLowerCase()
     })
     if (
       !statusText?.includes('connect') &&
       !statusText?.includes('подключен')
     ) {
       throw new Error(
-        `viewerStatus text is "${statusText}", expected connected status`,
-      );
+        `viewerStatus text is "${statusText}", expected connected status`
+      )
     }
   })
 
@@ -243,10 +243,10 @@ async function main() {
       return (
         globalThis.__current?.controllerConnected === true ||
         globalThis.controllerConnected === true
-      );
+      )
     })
     if (!controllerConnected)
-      throw new Error('Viewer does not see controller as connected');
+      throw new Error('Viewer does not see controller as connected')
   })
 
   // Тест синхронизации движения viewer <-> controller
@@ -264,13 +264,13 @@ async function main() {
       // Directly reset all play-state variables (avoids togglePlayPause state inconsistency)
       // Atomic assignment: set both variables without intermediate state check
       globalThis.__current = Object.assign(globalThis.__current || {}, {
-        isPlaying: false,
-      });
+        isPlaying: false
+      })
       globalThis.isPlaying = false
     })
 
     // Wait for server to process and broadcast the pause (state_update)
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1500))
 
     const beforeClick = await ctrlPage.evaluate(() => ({
       isPlaying: globalThis.__current?.isPlaying,
@@ -285,7 +285,7 @@ async function main() {
       const btn = document.getElementById('playPauseBtn')
       if (btn) btn.click()
     })
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500))
     const afterClick = await ctrlPage.evaluate(() => ({
       isPlaying: globalThis.__current?.isPlaying,
       globalIsPlaying: globalThis.isPlaying
@@ -293,7 +293,7 @@ async function main() {
     console.log('  [SYNC DEBUG after click]', JSON.stringify(afterClick))
 
     // Step 3: Wait for sync propagation to viewer
-    await new Promise((r) => setTimeout(r, 3000));
+    await new Promise((r) => setTimeout(r, 3000))
 
     const ctrlState = await ctrlPage.evaluate(() => ({
       isPlaying: globalThis.__current?.isPlaying,
@@ -310,13 +310,13 @@ async function main() {
     })
 
     const isPlayingOnCtrl =
-      ctrlState.isPlaying === true || ctrlState.globalIsPlaying === true;
+      ctrlState.isPlaying === true || ctrlState.globalIsPlaying === true
     const isPlayingOnViewer = viewState.paused === false
     const isPlaying = isPlayingOnCtrl || isPlayingOnViewer
     if (!isPlaying) {
       throw new Error(
-        `Sync: ctrl.isPlaying=${ctrlState.isPlaying}/${ctrlState.globalIsPlaying}, view.paused=${viewState.paused}, viewer=${ctrlState.viewerConnected}`,
-      );
+        `Sync: ctrl.isPlaying=${ctrlState.isPlaying}/${ctrlState.globalIsPlaying}, view.paused=${viewState.paused}, viewer=${ctrlState.viewerConnected}`
+      )
     }
   })
 
@@ -325,8 +325,8 @@ async function main() {
   await mobilePage.setViewport({ width: 375, height: 667 })
   await mobilePage.goto(`${BASE_URL}/c/e2e_mobile`, {
     waitUntil: 'domcontentloaded',
-    timeout: 15000,
-  });
+    timeout: 15000
+  })
 
   await test('Mobile viewport', async () => {
     await mobilePage.waitForSelector('#preview', { timeout: 10000 })
@@ -341,7 +341,7 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error('Fatal:', e);
-  if (browser) browser.close();
-  process.exit(1);
-});
+  console.error('Fatal:', e)
+  if (browser) browser.close()
+  process.exit(1)
+})

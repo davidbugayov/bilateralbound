@@ -95,8 +95,8 @@ class SessionManager {
         // Gracefully handle errors during bounce state broadcast to avoid disrupting physics
         logger.error(
           `Bounce state broadcast error for session ${session.id}:`,
-          err,
-        );
+          err
+        )
       }
     }
   }
@@ -177,14 +177,14 @@ class SessionManager {
       Object.keys(updates).length > 0
     ) {
       // console.log('[SessionManager] ⚠️ VALIDATION FAILED but bypassing for debug. Applying raw updates:', JSON.stringify(updates))
-      return this._applyValidatedUpdates(session, updates);
+      return this._applyValidatedUpdates(session, updates)
     }
 
     if (Object.keys(validatedUpdates).length === 0) {
       this.logger.logSession(
         sessionId,
-        '[VALIDATION] No valid fields in update, ignoring',
-      );
+        '[VALIDATION] No valid fields in update, ignoring'
+      )
       // console.log(`[SessionManager] ❌ No valid fields after validation for ${sessionId}`)
       return false
     }
@@ -358,8 +358,8 @@ class SessionManager {
       this.stateBroadcaster.broadcastInitialState(
         sessionId,
         ws,
-        session.ballState,
-      );
+        session.ballState
+      )
     } else {
       this._handleControllerInitialState(sessionId, ws, role, session)
     }
@@ -388,7 +388,7 @@ class SessionManager {
   _broadcastInitialStateToController(sessionId, ws, session) {
     const finalState = session.physicsEngine
       ? session.physicsEngine.getState()
-      : session.ballState;
+      : session.ballState
     this.stateBroadcaster.broadcastInitialState(sessionId, ws, finalState)
     ws.initialStateSent = true
     this.logger.logSession(
@@ -479,8 +479,8 @@ class SessionManager {
     this.stateBroadcaster.broadcastViewerConnection(
       sessionId,
       isConnected,
-      screenSize,
-    );
+      screenSize
+    )
   }
 
   /**
@@ -535,8 +535,8 @@ class SessionManager {
 
       session.physicsEngine.setWorldSize(
         validatedSize.width,
-        validatedSize.height,
-      );
+        validatedSize.height
+      )
 
       if (!hadPrevSize) {
         this._initializeBallPosition(session, validatedSize)
@@ -545,8 +545,8 @@ class SessionManager {
           session,
           currentState,
           validatedSize,
-          wasPlaying,
-        );
+          wasPlaying
+        )
       }
 
       // Сохраняем настройки которые НЕ должны перезаписываться
@@ -580,8 +580,8 @@ class SessionManager {
   _initializeBallPosition(session, validatedSize) {
     session.physicsEngine.setPosition(
       validatedSize.width / 2,
-      validatedSize.height / 2,
-    );
+      validatedSize.height / 2
+    )
     session.physicsEngine.setVelocity(0, 0)
   }
 
@@ -594,12 +594,12 @@ class SessionManager {
     const scaleY = validatedSize.height / session._oldHeight
     const newX = Math.min(
       currentState.x * scaleX,
-      validatedSize.width - currentState.radius,
-    );
+      validatedSize.width - currentState.radius
+    )
     const newY = Math.min(
       currentState.y * scaleY,
-      validatedSize.height - currentState.radius,
-    );
+      validatedSize.height - currentState.radius
+    )
 
     session.physicsEngine.setPosition(
       Math.max(newX, currentState.radius),
@@ -649,7 +649,7 @@ class SessionManager {
   _sendInitialStateToControllers(sessionId, session) {
     const finalState = session.physicsEngine
       ? session.physicsEngine.getState()
-      : session.ballState;
+      : session.ballState
 
     const clients = this.webSocketManager.getClients(sessionId)
     for (const { client, info } of clients) {
@@ -657,8 +657,8 @@ class SessionManager {
         this.stateBroadcaster.broadcastInitialState(
           sessionId,
           client,
-          finalState,
-        );
+          finalState
+        )
         client.initialStateSent = true
       }
     }
@@ -768,8 +768,8 @@ class SessionManager {
           }
         } catch (error) {
           this.logger.error(
-            `Error in physics loop for session ${sessionId}: ${error.message}`,
-          );
+            `Error in physics loop for session ${sessionId}: ${error.message}`
+          )
         }
       }, PHYSICS_DT)
 
@@ -807,8 +807,8 @@ class SessionManager {
     const expiredSessions = this.sessionRepository.cleanupExpired()
     if (expiredSessions.length > 0) {
       this.logger.info(
-        `Cleaned up ${expiredSessions.length} expired sessions.`,
-      );
+        `Cleaned up ${expiredSessions.length} expired sessions.`
+      )
       for (const { id, reason } of expiredSessions) {
         this.stopPhysics(id)
         analytics.recordSessionEnded(id)
@@ -897,8 +897,8 @@ class SessionManager {
             sentCount++
           } catch (error) {
             logger.error(
-              `Error broadcasting language_updated to WS client: ${error.message}`,
-            );
+              `Error broadcasting language_updated to WS client: ${error.message}`
+            )
           }
         }
       }
@@ -907,8 +907,8 @@ class SessionManager {
     if (sentCount > 0 && DEBUG_MODE) {
       this.logger.logSession(
         sessionId,
-        `Broadcasted language_updated to ${sentCount} clients`,
-      );
+        `Broadcasted language_updated to ${sentCount} clients`
+      )
     }
   }
 }

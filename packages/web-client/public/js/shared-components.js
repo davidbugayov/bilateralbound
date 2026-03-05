@@ -102,8 +102,8 @@ if (typeof SharedComponents === 'undefined') {
         setupEventListeners() {
           if (this.elements.range) {
             this.elements.range.addEventListener('input', (e) => {
-              this.setSpeed(Number.parseInt(e.target.value, 10));
-            });
+              this.setSpeed(Number.parseInt(e.target.value, 10))
+            })
           }
           if (this.elements?.presets?.length) {
             for (const preset of this.elements.presets) {
@@ -131,8 +131,8 @@ if (typeof SharedComponents === 'undefined') {
             activePreset = 'fast'
           }
           const activeElement = container.querySelector(
-            `.speed-preset.${activePreset}`,
-          );
+            `.speed-preset.${activePreset}`
+          )
           if (activeElement) {
             activeElement.classList.add('active')
           }
@@ -140,14 +140,14 @@ if (typeof SharedComponents === 'undefined') {
         setSpeed(speed) {
           this.currentSpeed = Math.max(
             this.options.min,
-            Math.min(this.options.max, speed),
-          );
+            Math.min(this.options.max, speed)
+          )
           if (this.elements.range) {
             this.elements.range.value = this.currentSpeed
           }
           let speedCategory = ''
           let speedColor = ''
-          const t = (key) => globalThis.i18n?.t(key) || key;
+          const t = (key) => globalThis.i18n?.t(key) || key
           if (this.currentSpeed <= 15) {
             speedCategory = t('controller.speedVerySlow')
             speedColor = '#22c55e'
@@ -214,13 +214,13 @@ if (typeof SharedComponents === 'undefined') {
           '#10b981',
           '#f59e0b',
           '#8b5cf6',
-          '#ec4899',
+          '#ec4899'
         ],
         defaultValue: null, // Будет установлен в colors[0] если не указан
         onColorChange: null,
         title: '🎨 Цвет',
-        ...options,
-      };
+        ...options
+      }
       const component = {
         container,
         options: defaultOptions,
@@ -240,11 +240,11 @@ if (typeof SharedComponents === 'undefined') {
     style="background-color: ${color}"
     title="${color}">
     </button>
-    `,
+    `
       )
       .join('')}
     </div>
-    `;
+    `
           container.appendChild(colorControl)
           this.setupEventListeners()
           this.setColor(this.currentColor)
@@ -325,8 +325,8 @@ if (typeof SharedComponents === 'undefined') {
           for (const btn of buttons) {
             btn.classList.toggle(
               'active',
-              Number.parseInt(btn.dataset.size, 10) === size,
-            );
+              Number.parseInt(btn.dataset.size, 10) === size
+            )
           }
           this.options.onSizeChange?.(size)
         }
@@ -367,7 +367,7 @@ if (typeof SharedComponents === 'undefined') {
         },
         setupElements() {
           this.elements.container =
-            container.querySelector('.status-indicator');
+            container.querySelector('.status-indicator')
           this.elements.icon = container.querySelector('.status-icon')
           this.elements.text = container.querySelector('.status-text')
         },
@@ -409,8 +409,8 @@ if (typeof SharedComponents === 'undefined') {
               'status-warning',
               'status-loading',
               'status-waiting',
-              'status-idle',
-            );
+              'status-idle'
+            )
             this.elements.container.classList.add(`status-${status}`)
           }
           if (this.options.autoHide && status === 'success') {

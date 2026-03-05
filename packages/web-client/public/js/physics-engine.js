@@ -64,8 +64,8 @@ if (typeof PhysicsEngine === 'undefined') {
         allowInterpWhenPaused: false,
         stopping: false, // deceleration phase active
         stoppingStartTs: 0, // performance.now() when stopping began
-        stoppingDuration: 0.6, // seconds to decelerate to zero
-      };
+        stoppingDuration: 0.6 // seconds to decelerate to zero
+      }
       this.bounceCallback = this.options.bounceCallback
       this.sqrt = Math.sqrt
       this.min = Math.min
@@ -211,7 +211,7 @@ if (typeof PhysicsEngine === 'undefined') {
       } else {
         this.state.allowInterpWhenPaused = false
         if (this.options.clientSimulation) {
-          this._restoreLocalVelocity();
+          this._restoreLocalVelocity()
         }
       }
     }
@@ -236,15 +236,15 @@ if (typeof PhysicsEngine === 'undefined') {
         Math.abs(this.state.lastDirection.x || 0) < 1e-6 &&
         Math.abs(this.state.lastDirection.y || 0) < 1e-6
       ) {
-        this.state.lastDirection.x = 1;
-        this.state.lastDirection.y = 0;
+        this.state.lastDirection.x = 1
+        this.state.lastDirection.y = 0
       }
-      const speedPercent = this.ball.speed / 100;
-      const pixelsPerSecond = speedPercent * this.options.maxSpeed;
-      this.ball.vx = this.state.lastDirection.x * pixelsPerSecond;
-      this.ball.vy = this.state.lastDirection.y * pixelsPerSecond;
-      this.state.lastVx = this.ball.vx;
-      this.state.lastVy = this.ball.vy;
+      const speedPercent = this.ball.speed / 100
+      const pixelsPerSecond = speedPercent * this.options.maxSpeed
+      this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
+      this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
+      this.state.lastVx = this.ball.vx
+      this.state.lastVy = this.ball.vy
     }
     /**
      * Сбрасывает мяч в центр с нулевой скоростью
@@ -275,7 +275,7 @@ if (typeof PhysicsEngine === 'undefined') {
           this.renderer &&
           typeof this.renderer.invalidateBallCache === 'function'
         ) {
-          this.renderer.invalidateBallCache();
+          this.renderer.invalidateBallCache()
         }
       }
     }
@@ -289,7 +289,7 @@ if (typeof PhysicsEngine === 'undefined') {
           this.renderer &&
           typeof this.renderer.invalidateBallCache === 'function'
         ) {
-          this.renderer.invalidateBallCache();
+          this.renderer.invalidateBallCache()
         }
       }
     }
@@ -503,11 +503,11 @@ if (typeof PhysicsEngine === 'undefined') {
           let speedFactor = 1.0
           if (this.state.stopping) {
             const elapsed =
-              (performance.now() - this.state.stoppingStartTs) / 1000;
+              (performance.now() - this.state.stoppingStartTs) / 1000
             speedFactor = Math.max(
               0,
-              1 - elapsed / this.state.stoppingDuration,
-            );
+              1 - elapsed / this.state.stoppingDuration
+            )
             if (speedFactor <= 0) {
               this.setPaused(true)
               return
@@ -515,7 +515,7 @@ if (typeof PhysicsEngine === 'undefined') {
           }
           const speedPercent = this.ball.speed / 100
           const pixelsPerSecond =
-            speedPercent * this.options.maxSpeed * speedFactor;
+            speedPercent * this.options.maxSpeed * speedFactor
           this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
           this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
           this._prevPos.x = this.ball.x
@@ -568,7 +568,7 @@ if (typeof PhysicsEngine === 'undefined') {
       return false
     }
     _calculateClientVelocity() {
-      const pps = (this.ball.speed / 100) * this.options.maxSpeed;
+      const pps = (this.ball.speed / 100) * this.options.maxSpeed
       const vx = (this.state.lastDirection.x || 0) * pps
       const vy = (this.state.lastDirection.y || 0) * pps
       return { vx, vy }
@@ -576,16 +576,16 @@ if (typeof PhysicsEngine === 'undefined') {
     _applyAxisLock(velocity) {
       const dirX = this.state.lastDirection.x || 0
       const dirY = this.state.lastDirection.y || 0
-      const pps = (this.ball.speed / 100) * this.options.maxSpeed;
+      const pps = (this.ball.speed / 100) * this.options.maxSpeed
       const isVertical = Math.abs(dirX) < 1e-6 && Math.abs(dirY) > 0
       const isHorizontal = Math.abs(dirY) < 1e-6 && Math.abs(dirX) > 0
       if (isVertical) {
         velocity.vx = 0
-        velocity.vy = dirY * pps; // Используем dirY напрямую (может быть -1 или 1)
+        velocity.vy = dirY * pps // Используем dirY напрямую (может быть -1 или 1)
         this.state.smoothVx = 0
       } else if (isHorizontal) {
         velocity.vy = 0
-        velocity.vx = dirX * pps; // Используем dirX напрямую (может быть -1 или 1)
+        velocity.vx = dirX * pps // Используем dirX напрямую (может быть -1 или 1)
         this.state.smoothVy = 0
       } else if (Math.abs(dirX) > 0 || Math.abs(dirY) > 0) {
         velocity.vx = dirX * pps
@@ -957,9 +957,9 @@ if (typeof PhysicsEngine === 'undefined') {
         const localMovingLeft = this.ball.vx < 0
         const localMovingRight = this.ball.vx > 0
         if (nearLeftWall && serverMovingLeft && localMovingRight) {
-          newVx = undefined;
+          newVx = undefined
         } else if (nearRightWall && serverMovingRight && localMovingLeft) {
-          newVx = undefined;
+          newVx = undefined
         }
       }
       if (newVy !== undefined) {
@@ -1000,7 +1000,7 @@ if (typeof PhysicsEngine === 'undefined') {
         if (this.options.clientSimulation && !this.state.paused) {
           const atCenter =
             Math.abs(this.ball.x - this.centerX) < 10 &&
-            Math.abs(this.ball.y - this.centerY) < 10;
+            Math.abs(this.ball.y - this.centerY) < 10
           if (!atCenter) {
             return
           }
@@ -1039,7 +1039,7 @@ if (typeof PhysicsEngine === 'undefined') {
       }
     }
     _updatePredictionBase() {
-      const pps = (this.ball.speed / 100) * this.options.maxSpeed;
+      const pps = (this.ball.speed / 100) * this.options.maxSpeed
       const dx = this.state.lastDirection.x || 0
       const dy = this.state.lastDirection.y || 0
       if (dx !== 0 || dy !== 0) {
