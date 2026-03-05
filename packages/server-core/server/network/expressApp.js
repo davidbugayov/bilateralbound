@@ -372,7 +372,7 @@ function setupExpressApp(sessionManager, apiCache) {
 
   // Static files - only serve specific paths, not root using helper function
   // Assets use ?v=version query params → safe for immutable long-term cache
-  const staticDirectories = ['css', 'js', 'emdr-therapy']
+  const staticDirectories = ['css', 'js', 'emdr-therapy', 'panel']
   for (const dir of staticDirectories) {
     app.use(
       `/${dir}`,
@@ -673,6 +673,11 @@ function setupExpressApp(sessionManager, apiCache) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
+  })
+  // Therapist panel (React SPA) — serve index.html for any /panel/:sessionId path
+  app.get('/panel/:sessionId', (req, res) => {
+    setNoCacheHeaders(res)
+    res.sendFile(path.join(publicPath, 'panel', 'index.html'))
   })
   app.get('/test/:file', (req, res) => {
     const file = req.params.file
