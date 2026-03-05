@@ -669,3 +669,106 @@ body.fullscreen-active .back-btn {
     transform: scale(1);
   }
 }
+
+/* ===== TWO-COLUMN CONTROLLER LAYOUT ===== */
+
+/* Override .wrap grid columns for controller page only */
+.controller-layout {
+  grid-template-columns: 1fr 1.1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* previewOverlay is position:fixed — remove from grid flow */
+.controller-layout > #previewOverlay {
+  display: none;
+}
+
+.controller-layout > #previewOverlay.hidden {
+  display: none;
+}
+
+/* JS removes .hidden from #previewOverlay to show it — restore display via JS-managed class.
+   previewOverlay uses position:fixed so it never affects grid layout anyway. */
+
+.controller-left-col,
+.controller-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Right column: sticky so controls stay visible while user scrolls settings */
+.controller-right-col {
+  position: sticky;
+  top: 70px;
+  align-self: start;
+}
+
+/* Preview takes full width of right column, no sticky positioning */
+.controller-right-col #previewWrap {
+  position: static;
+  top: auto;
+}
+
+/* Counters in right col: no extra top margin */
+.controller-right-col .counters-container {
+  margin-top: 0;
+}
+
+/* Action buttons row: Start (full width) + compact Reset */
+.right-col-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+/* Large Start button */
+.right-col-start-btn {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  min-height: 56px !important;
+  padding: 14px 24px !important;
+}
+
+/* Compact Reset button beside Start */
+.right-col-reset-btn {
+  min-height: 56px;
+  padding: 14px 16px;
+  font-size: 18px;
+}
+
+/* Autostop row in right col: no extra margin since it's in a flex gap */
+.controller-right-col .autostop-row {
+  margin-top: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+
+/* Below 900px: single column, right col goes first */
+@media (width <= 900px) {
+  .controller-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .controller-right-col {
+    position: static;
+    order: -1;
+  }
+}
+
+/* Below 480px: tighten spacing */
+@media (width <= 480px) {
+  .right-col-start-btn {
+    font-size: 16px !important;
+    min-height: 50px !important;
+  }
+
+  .controller-right-col .counters-container {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+}
