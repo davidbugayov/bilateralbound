@@ -52,6 +52,7 @@ const bbCounters = {
   sets: 0,
   running: false,
   lastTickTs: 0,
+  _timerInterval: null,
   $timer: null,
   $passes: null,
   $sets: null,
@@ -75,6 +76,10 @@ const bbCounters = {
     }
     this.initSpeedMeasurement()
     this.render()
+    // Drive timer accumulation independently of render loop
+    this._timerInterval = setInterval(() => {
+      this.tick(performance.now())
+    }, 100)
   },
   initSpeedMeasurement() {
     this._measurementInterval = setInterval(() => {
@@ -806,7 +811,6 @@ function renderPreviewLoop(timestamp) {
   const now = performance.now()
   const lastPhysicsUpdate = previewPhysicsEngine?.__lastPhysicsUpdateTs ?? now
   const alpha = Math.max(0, Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT))
-  bbCounters.tick(timestamp)
   const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
   const stateToRender = getScaledState(interpolatedState)
   globalThis.__previewRenderer?.drawFrame(stateToRender)
