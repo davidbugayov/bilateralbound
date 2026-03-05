@@ -1153,12 +1153,57 @@ function _initializeSoundControls() {
     console.error('Error initializing sound controls:', error)
   }
 }
+let _controllerAudioManager = null
+function _initializeControllerAudio() {
+  const monitorCheckbox = document.getElementById('controllerMonitorCheckbox')
+  const volumeSlider = document.getElementById('controllerVolumeSlider')
+  const volumeValue = document.getElementById('controllerVolumeValue')
+  const volumeControl = document.getElementById('controllerVolumeControl')
+  if (!monitorCheckbox) return
+
+  monitorCheckbox.addEventListener('change', (e) => {
+    const enabled = e.target.checked
+    if (enabled) {
+      if (!_controllerAudioManager && typeof AudioManager !== 'undefined') {
+        _controllerAudioManager = new AudioManager()
+        _controllerAudioManager.init(true)
+        _controllerAudioManager.setVolume((volumeSlider?.value ?? 50) / 100)
+        _controllerAudioManager.setSoundType(lastServerState?.soundType || 'soft')
+      } else if (_controllerAudioManager) {
+        _controllerAudioManager.init()
+      }
+      if (_controllerAudioManager) _controllerAudioManager.setEnabled(true)
+      if (volumeControl) { volumeControl.style.opacity = '1'; volumeControl.style.pointerEvents = 'auto' }
+    } else {
+      if (_controllerAudioManager) _controllerAudioManager.setEnabled(false)
+      if (volumeControl) { volumeControl.style.opacity = '0.5'; volumeControl.style.pointerEvents = 'none' }
+    }
+  })
+
+  if (volumeSlider) {
+    volumeSlider.addEventListener('input', () => {
+      if (volumeValue) volumeValue.textContent = `${volumeSlider.value}%`
+      if (_controllerAudioManager) _controllerAudioManager.setVolume(volumeSlider.value / 100)
+    })
+  }
+
+  // Play sound on bounce when monitoring is active
+  globalThis.addEventListener('bb_bounce', () => {
+    if (!_controllerAudioManager?.enabled) return
+    const soundType = lastServerState?.soundType || 'soft'
+    if (_controllerAudioManager.soundType !== soundType) {
+      _controllerAudioManager.setSoundType(soundType)
+    }
+    _controllerAudioManager.playTick()
+  })
+}
 function initializeComponents() {
   _initializeSpeedControl()
   _initializeBallColorControl()
   _initializeBgColorControl()
   _initializeSizeControl()
   _initializeSoundControls()
+  _initializeControllerAudio()
   setControlsEnabled(true)
   updateDirectionDisplay(1, 0)
 }

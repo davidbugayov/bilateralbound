@@ -137,7 +137,8 @@
     "controllerDisconnected": "Контроллер отключен",
     "waitingForController": "Соединение установлено, ожидание контроллера...",
     "enableSound": "Включить звук",
-    "hotkeysHint": "— Пауза/Старт"
+    "hotkeysHint": "— Пауза/Старт",
+    "volumeLabel": "Громкость"
   },
   "test": {
     "title": "🌐 Language Selector - Тестирование",
@@ -324,6 +325,8 @@
     "meta": {
       "controllerTitle": "Управление сессией | BilateralBound",
       "controllerDescription": "EMDR терапия контроллер для управления билатеральной стимуляцией. Инструмент для EMDR терапевта при проведении парной терапии"
-    }
+    },
+    "monitorSound": "Мониторинг звука",
+    "volumeLabel": "Громкость"
   }
 }

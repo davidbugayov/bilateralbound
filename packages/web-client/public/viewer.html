@@ -29,26 +29,26 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.195-7c25853" />
+    <meta name="version" content="2.39.196-5062f70" />
     <meta name="theme-color" content="#020617" />
     <title data-i18n="viewer.title">BilateralBound - EMDR Therapy Viewer</title>
     <meta name="therapy-type" content="EMDR Viewer" />
     <meta name="target-audience" content="EMDR Patients, Couples" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.195-7c25853" as="script" />
-    <link rel="preload" href="/js/renderer.js?v=2.39.195-7c25853" as="script" />
-    <link rel="preload" href="/js/websocket-client.js?v=2.39.195-7c25853" as="script" />
+    <link rel="preload" href="/js/physics-engine.js?v=2.39.196-5062f70" as="script" />
+    <link rel="preload" href="/js/renderer.js?v=2.39.196-5062f70" as="script" />
+    <link rel="preload" href="/js/websocket-client.js?v=2.39.196-5062f70" as="script" />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.195-7c25853"
+      href="/favicon-viewer.svg?v=2.39.196-5062f70"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.195-7c25853"
+      href="/favicon-viewer.ico?v=2.39.196-5062f70"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.195-7c25853" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.195-7c25853" />
+    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.196-5062f70" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.196-5062f70" />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -64,9 +64,9 @@
     <meta property="article:tag" content="биодинамическая стимуляция" />
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="dns-prefetch" href="https://mc.yandex.com" />
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.195-7c25853" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.195-7c25853" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.195-7c25853" />
+    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.196-5062f70" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.196-5062f70" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.196-5062f70" />
     <noscript
       ><div>
         <img
@@ -80,6 +80,12 @@
     <main class="viewer-container">
       <header>
         <div id="statusContainer" aria-live="polite"></div>
+        <div id="viewerAudioControls" class="hidden" style="display: none; align-items: center; gap: 6px; opacity: 0.7;">
+          <span style="font-size: 1rem;">🔊</span>
+          <input type="range" id="viewerVolumeSlider" min="0" max="100" value="50"
+            style="width: 80px; cursor: pointer; accent-color: #60a5fa;"
+            aria-label="Volume" />
+        </div>
         <button
           class="fullscreen-btn"
           onclick="toggleFullscreen()"
@@ -105,17 +111,17 @@
         </button>
       </div>
     </main>
-    <script src="/js/core/debug-logger.js?v=2.39.195-7c25853"></script>
-    <script src="/js/common.js?v=2.39.195-7c25853"></script>
-    <script src="/js/constants/i18n-constants.js?v=2.39.195-7c25853" defer></script>
-    <script src="/js/i18n/i18n.js?v=2.39.195-7c25853" defer></script>
-    <script src="/js/i18n/language-selector.js?v=2.39.195-7c25853" defer></script>
-    <script src="/js/audio/audio-manager.js?v=2.39.195-7c25853" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.195-7c25853" defer></script>
-    <script src="/js/renderer.js?v=2.39.195-7c25853" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.195-7c25853" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.195-7c25853" defer></script>
-    <script src="/js/shared-components.js?v=2.39.195-7c25853" defer></script>
+    <script src="/js/core/debug-logger.js?v=2.39.196-5062f70"></script>
+    <script src="/js/common.js?v=2.39.196-5062f70"></script>
+    <script src="/js/constants/i18n-constants.js?v=2.39.196-5062f70" defer></script>
+    <script src="/js/i18n/i18n.js?v=2.39.196-5062f70" defer></script>
+    <script src="/js/i18n/language-selector.js?v=2.39.196-5062f70" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.196-5062f70" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.196-5062f70" defer></script>
+    <script src="/js/renderer.js?v=2.39.196-5062f70" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.196-5062f70" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.196-5062f70" defer></script>
+    <script src="/js/shared-components.js?v=2.39.196-5062f70" defer></script>
     <script>
       "use strict";
       /**
@@ -577,6 +583,13 @@
         } else {
           debugWarn('🔊 Unmute button НЕ найдена!');
         }
+        // Volume slider
+        const viewerVolumeSlider = document.getElementById('viewerVolumeSlider');
+        if (viewerVolumeSlider) {
+          viewerVolumeSlider.addEventListener('input', () => {
+            if (audioManager) audioManager.setVolume(viewerVolumeSlider.value / 100);
+          });
+        }
         // Экспортируем checkAudioOverlay глобально для отладки
         window.checkAudioOverlay = checkAudioOverlay;
         // ВАЖНО: Применяем отложенный soundEnabled если он был получен до готовности AudioManager
@@ -619,6 +632,17 @@
             logger.audio('Скрываем unmute overlay', {
               reason: !audioManager ? 'audioManager не инициализирован' : !audioManager.enabled ? 'звук отключен на контроллере' : 'уже активирован'
             });
+          }
+        }
+        // Show volume control in header only when audio is active
+        const audioControls = document.getElementById('viewerAudioControls');
+        if (audioControls) {
+          if (audioManager && audioActivated) {
+            audioControls.classList.remove('hidden');
+            audioControls.style.display = 'flex';
+          } else {
+            audioControls.classList.add('hidden');
+            audioControls.style.display = 'none';
           }
         }
       }

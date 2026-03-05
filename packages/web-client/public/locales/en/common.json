@@ -135,7 +135,8 @@
     "controllerDisconnected": "Controller disconnected",
     "waitingForController": "Connection established, waiting for controller...",
     "enableSound": "Enable Sound",
-    "hotkeysHint": "— Pause/Start"
+    "hotkeysHint": "— Pause/Start",
+    "volumeLabel": "Volume"
   },
   "test": {
     "title": "🌐 Language Selector - Testing",
@@ -302,6 +303,8 @@
       "marriageTherapy": "Marriage Therapy",
       "couplesTherapy": "Couples Therapy",
       "dynamic": "Dynamic"
-    }
+    },
+    "monitorSound": "Monitor sound",
+    "volumeLabel": "Volume"
   }
 }
