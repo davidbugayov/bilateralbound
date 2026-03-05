@@ -77,6 +77,7 @@ const bbCounters = {
     this.initSpeedMeasurement()
     this.render()
     // Drive timer accumulation independently of render loop
+    if (this._timerInterval) clearInterval(this._timerInterval)
     this._timerInterval = setInterval(() => {
       this.tick(performance.now())
     }, 100)
