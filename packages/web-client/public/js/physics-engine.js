@@ -61,7 +61,10 @@ if (typeof PhysicsEngine === 'undefined') {
         targetY: this.centerY,
         smoothVx: 0,
         smoothVy: 0,
-        allowInterpWhenPaused: false
+        allowInterpWhenPaused: false,
+        stopping: false,       // deceleration phase active
+        stoppingStartTs: 0,    // performance.now() when stopping began
+        stoppingDuration: 0.6  // seconds to decelerate to zero
       }
       this.bounceCallback = this.options.bounceCallback
       this.sqrt = Math.sqrt
@@ -192,11 +195,11 @@ if (typeof PhysicsEngine === 'undefined') {
      */
     setPaused(paused) {
       this.state.paused = Boolean(paused)
+      this.state.stopping = false
       if (this.state.paused) {
         if (this.isViewer) {
-          this.state.targetX = this.centerX
-          this.state.targetY = this.centerY
-          this.state.allowInterpWhenPaused = true
+          // Stop in place — no snap to server position, no seek to center
+          this.state.allowInterpWhenPaused = false
           this.state.lastVx = 0
           this.state.lastVy = 0
           this.state.smoothVx = 0
@@ -211,6 +214,17 @@ if (typeof PhysicsEngine === 'undefined') {
            this._restoreLocalVelocity()
         }
       }
+    }
+    /**
+     * Начинает плавное замедление шарика перед остановкой.
+     * Используется вместо немедленного setPaused(true).
+     * @param {number} [duration=0.6] - Длительность замедления в секундах
+     */
+    startStopping(duration = 0.6) {
+      if (this.state.paused) return
+      this.state.stopping = true
+      this.state.stoppingStartTs = performance.now()
+      this.state.stoppingDuration = duration
     }
     /**
      * Восстанавливает скорость для локальной симуляции (clientSimulation)
@@ -478,8 +492,17 @@ if (typeof PhysicsEngine === 'undefined') {
           return
         }
         if (this._worldSizeSet) {
+          let speedFactor = 1.0
+          if (this.state.stopping) {
+            const elapsed = (performance.now() - this.state.stoppingStartTs) / 1000
+            speedFactor = Math.max(0, 1 - elapsed / this.state.stoppingDuration)
+            if (speedFactor <= 0) {
+              this.setPaused(true)
+              return
+            }
+          }
           const speedPercent = this.ball.speed / 100
-          const pixelsPerSecond = speedPercent * this.options.maxSpeed
+          const pixelsPerSecond = speedPercent * this.options.maxSpeed * speedFactor
           this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
           this.ball.vy = this.state.lastDirection.y * pixelsPerSecond
           this._prevPos.x = this.ball.x
