@@ -104,10 +104,10 @@ npm run deploy:dev   # Deploy to dev
 
 ## 🌐 Окружения
 
-| Environment | URL | Branch |
-|-------------|-----|--------|
-| Development | https://dev.emdrbilateral.online | `main` |
-| Production | https://emdrbilateral.online | `stable` |
+| Environment | URL                              | Branch   |
+| ----------- | -------------------------------- | -------- |
+| Development | https://dev.emdrbilateral.online | `main`   |
+| Production  | https://emdrbilateral.online     | `stable` |
 
 ## 🔧 Технологии
 

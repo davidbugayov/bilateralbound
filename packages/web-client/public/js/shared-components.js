@@ -101,9 +101,9 @@ if (typeof SharedComponents === 'undefined') {
         },
         setupEventListeners() {
           if (this.elements.range) {
-            this.elements.range.addEventListener('input', e => {
-              this.setSpeed(Number.parseInt(e.target.value, 10))
-            })
+            this.elements.range.addEventListener('input', (e) => {
+              this.setSpeed(Number.parseInt(e.target.value, 10));
+            });
           }
           if (this.elements?.presets?.length) {
             for (const preset of this.elements.presets) {
@@ -130,19 +130,24 @@ if (typeof SharedComponents === 'undefined') {
           } else {
             activePreset = 'fast'
           }
-          const activeElement = container.querySelector(`.speed-preset.${activePreset}`)
+          const activeElement = container.querySelector(
+            `.speed-preset.${activePreset}`,
+          );
           if (activeElement) {
             activeElement.classList.add('active')
           }
         },
         setSpeed(speed) {
-          this.currentSpeed = Math.max(this.options.min, Math.min(this.options.max, speed))
+          this.currentSpeed = Math.max(
+            this.options.min,
+            Math.min(this.options.max, speed),
+          );
           if (this.elements.range) {
             this.elements.range.value = this.currentSpeed
           }
           let speedCategory = ''
           let speedColor = ''
-          const t = key => globalThis.i18n?.t(key) || key
+          const t = (key) => globalThis.i18n?.t(key) || key;
           if (this.currentSpeed <= 15) {
             speedCategory = t('controller.speedVerySlow')
             speedColor = '#22c55e'
@@ -203,12 +208,19 @@ if (typeof SharedComponents === 'undefined') {
      */
     createColorControl(container, options = {}) {
       const defaultOptions = {
-        colors: ['#60a5fa', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+        colors: [
+          '#60a5fa',
+          '#ef4444',
+          '#10b981',
+          '#f59e0b',
+          '#8b5cf6',
+          '#ec4899',
+        ],
         defaultValue: null, // Будет установлен в colors[0] если не указан
         onColorChange: null,
         title: '🎨 Цвет',
-        ...options
-      }
+        ...options,
+      };
       const component = {
         container,
         options: defaultOptions,
@@ -222,17 +234,17 @@ if (typeof SharedComponents === 'undefined') {
     <div class="color-palette">
     ${defaultOptions.colors
       .map(
-        color => `
+        (color) => `
     <button class="color-btn"
     data-color="${color}"
     style="background-color: ${color}"
     title="${color}">
     </button>
-    `
+    `,
       )
       .join('')}
     </div>
-    `
+    `;
           container.appendChild(colorControl)
           this.setupEventListeners()
           this.setColor(this.currentColor)
@@ -311,7 +323,10 @@ if (typeof SharedComponents === 'undefined') {
           this.currentSize = size
           const buttons = container.querySelectorAll('.size-btn')
           for (const btn of buttons) {
-            btn.classList.toggle('active', Number.parseInt(btn.dataset.size, 10) === size)
+            btn.classList.toggle(
+              'active',
+              Number.parseInt(btn.dataset.size, 10) === size,
+            );
           }
           this.options.onSizeChange?.(size)
         }
@@ -351,7 +366,8 @@ if (typeof SharedComponents === 'undefined') {
           return this
         },
         setupElements() {
-          this.elements.container = container.querySelector('.status-indicator')
+          this.elements.container =
+            container.querySelector('.status-indicator');
           this.elements.icon = container.querySelector('.status-icon')
           this.elements.text = container.querySelector('.status-text')
         },
@@ -387,7 +403,14 @@ if (typeof SharedComponents === 'undefined') {
             }
           }
           if (this.elements.container) {
-            this.elements.container.classList.remove('status-success', 'status-error', 'status-warning', 'status-loading', 'status-waiting', 'status-idle')
+            this.elements.container.classList.remove(
+              'status-success',
+              'status-error',
+              'status-warning',
+              'status-loading',
+              'status-waiting',
+              'status-idle',
+            );
             this.elements.container.classList.add(`status-${status}`)
           }
           if (this.options.autoHide && status === 'success') {

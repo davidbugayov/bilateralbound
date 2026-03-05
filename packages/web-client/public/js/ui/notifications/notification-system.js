@@ -241,7 +241,9 @@ class NotificationSystem {
       position: 'top-right'
     }
     const config = { ...defaults, ...options }
-    const duplicate = this.notifications.find(n => n.config?.message === config.message)
+    const duplicate = this.notifications.find(
+      (n) => n.config?.message === config.message,
+    );
     if (duplicate) {
       if (
         duplicate.config?.type === config.type &&
@@ -337,7 +339,7 @@ class NotificationSystem {
         return
       }
       const elapsed = Date.now() - startTime
-      const progress = Math.max(0, 100 - elapsed / duration * 100)
+      const progress = Math.max(0, 100 - (elapsed / duration) * 100);
       notification.progress.style.width = `${progress}%`
       if (progress > 0) {
         requestAnimationFrame(updateProgress)

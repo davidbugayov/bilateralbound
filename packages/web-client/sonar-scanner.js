@@ -1,30 +1,35 @@
-const scanner = require('sonarqube-scanner').default
-const path = require('path')
-const fs = require('fs')
+const scanner = require('sonarqube-scanner').default;
+const path = require('path');
+const fs = require('fs');
 
 const webClientDir = __dirname;
 
 // Валидация окружения
 function validateEnvironment() {
   if (!fs.existsSync(path.join(webClientDir, 'public', 'js'))) {
-    throw new Error(`JavaScript directory not found: ${path.join(webClientDir, 'public', 'js')}`);
+    throw new Error(
+      `JavaScript directory not found: ${path.join(webClientDir, 'public', 'js')}`,
+    );
   }
 }
 
 const scannerOptions = {
   serverUrl: process.env.SONARQUBE_HOST || 'http://localhost:9000',
-  token: process.env.SONARQUBE_TOKEN || 'squ_4c5f0fafcba46d0827a22d5ba95dc50cae7eb9d2',
+  token:
+    process.env.SONARQUBE_TOKEN ||
+    'squ_4c5f0fafcba46d0827a22d5ba95dc50cae7eb9d2',
   options: {
     'sonar.projectKey': 'bilateral-bound-web-client',
     'sonar.projectName': 'Bilateral Bound - Web Client',
     'sonar.projectVersion': '2.39.5',
     'sonar.projectBaseDir': webClientDir,
     'sonar.sources': 'public/js',
-    'sonar.exclusions': '**/node_modules/**,**/dist/**,**/coverage/**,**/.scannerwork/**,**/*.test.js,**/spec/**',
+    'sonar.exclusions':
+      '**/node_modules/**,**/dist/**,**/coverage/**,**/.scannerwork/**,**/*.test.js,**/spec/**',
     'sonar.sourceEncoding': 'UTF-8',
     'sonar.qualitygate.wait': false,
-    'sonar.qualitygate.timeout': 300
-  }
+    'sonar.qualitygate.timeout': 300,
+  },
 };
 
 async function runScan() {
@@ -36,7 +41,10 @@ async function runScan() {
 
     await scanner(scannerOptions, () => {
       console.log('✅ SonarQube analysis completed successfully');
-      console.log('📊 View results at:', `${scannerOptions.serverUrl}/projects/${scannerOptions.options['sonar.projectKey']}`);
+      console.log(
+        '📊 View results at:',
+        `${scannerOptions.serverUrl}/projects/${scannerOptions.options['sonar.projectKey']}`,
+      );
       process.exit(0);
     });
   } catch (error) {
@@ -45,7 +53,9 @@ async function runScan() {
 
     if (error?.message?.includes('ECONNREFUSED')) {
       console.error('⚠️  Cannot connect to SonarQube server');
-      console.error(`   Ensure SonarQube is running at ${scannerOptions.serverUrl}`);
+      console.error(
+        `   Ensure SonarQube is running at ${scannerOptions.serverUrl}`,
+      );
     }
 
     process.exit(1);

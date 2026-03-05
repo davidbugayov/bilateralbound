@@ -10,81 +10,82 @@
  * - This ensures single source of truth and prevents version drift
  */
 
-const fs = require('fs')
-const path = require('path')
-const { execSync } = require('child_process')
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 
-const ROOT = path.resolve(__dirname, '..')
+const ROOT = path.resolve(__dirname, '..');
 
 // Generate version with timestamp for unique tracking
 function generateVersion() {
-  const rootPackage = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
-  const [major, minor] = rootPackage.version.split('.').map(Number)
+  const rootPackage = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'),
+  );
+  const [major, minor] = rootPackage.version.split('.').map(Number);
 
   // Auto-increment patch version
-  const patch = (parseInt(rootPackage.version.split('.')[2]) || 0) + 1
+  const patch = (parseInt(rootPackage.version.split('.')[2]) || 0) + 1;
 
-  return `${major}.${minor}.${patch}`
+  return `${major}.${minor}.${patch}`;
 }
 
 // Get current git hash
 function getGitHash() {
   try {
-    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
   } catch (err) {
     // Fallback to 'dev' if git is not available or command fails
-    console.warn('Unable to get git hash:', err.message)
-    return 'dev'
+    console.warn('Unable to get git hash:', err.message);
+    return 'dev';
   }
 }
 
 // Update version in package.json
 function updatePackageJson(filePath, version) {
-  const content = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+  const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
   // Храним только чистую семантическую версию без хешей
-  content.version = version
-  fs.writeFileSync(filePath, JSON.stringify(content, null, 2) + '\n')
-  console.log(`✅ Updated ${path.relative(ROOT, filePath)}: ${version}`)
+  content.version = version;
+  fs.writeFileSync(filePath, JSON.stringify(content, null, 2) + '\n');
+  console.log(`✅ Updated ${path.relative(ROOT, filePath)}: ${version}`);
 }
 
 // Update version in HTML files - FIXED VERSION
 function updateHtmlFiles(version, hash) {
-  const versionString = `${version}-${hash}`
-  const publicDir = path.join(ROOT, 'packages/web-client/public')
+  const versionString = `${version}-${hash}`;
+  const publicDir = path.join(ROOT, 'packages/web-client/public');
 
-  const htmlFiles = [
-    'index.html',
-    'session-controller.html',
-    'viewer.html'
-  ]
+  const htmlFiles = ['index.html', 'session-controller.html', 'viewer.html'];
 
-  htmlFiles.forEach(file => {
-    const filePath = path.join(publicDir, file)
-    if (!fs.existsSync(filePath)) return
+  htmlFiles.forEach((file) => {
+    const filePath = path.join(publicDir, file);
+    if (!fs.existsSync(filePath)) return;
 
-    let content = fs.readFileSync(filePath, 'utf8')
+    let content = fs.readFileSync(filePath, 'utf8');
 
     // STEP 1: Remove ALL version meta tags (including duplicates)
-    content = content.replace(/<meta name="version" content="[^"]*"\s*\/?>\s*/g, '')
+    content = content.replace(
+      /<meta name="version" content="[^"]*"\s*\/?>\s*/g,
+      '',
+    );
     // STEP 2: Update version query parameter in all resource URLs (script, link, etc)
-    content = content.replace(/\?v=[^"'\s]*/g, `?v=${versionString}`)
+    content = content.replace(/\?v=[^"'\s]*/g, `?v=${versionString}`);
     // STEP 3: Add single meta version tag (before theme-color for consistency)
     content = content.replace(
       /<meta name="theme-color"/,
-      `<meta name="version" content="${versionString}" />\n    <meta name="theme-color"`
-    )
+      `<meta name="version" content="${versionString}" />\n    <meta name="theme-color"`,
+    );
 
     // STEP 4: Update version display in page content (⚡ BilateralBound)
     if (content.includes('⚡ BilateralBound')) {
       content = content.replace(
         /⚡ BilateralBound v?\d+\.\d+\.\d+(?:-[a-f0-9]+)?/g,
-        `⚡ BilateralBound v${versionString}`
-      )
+        `⚡ BilateralBound v${versionString}`,
+      );
     }
 
-    fs.writeFileSync(filePath, content)
-    console.log(`✅ Updated ${file}: v${versionString}`)
-  })
+    fs.writeFileSync(filePath, content);
+    console.log(`✅ Updated ${file}: v${versionString}`);
+  });
 }
 
 // Locale files now use {{VERSION}} placeholder - no update needed
@@ -92,41 +93,39 @@ function updateHtmlFiles(version, hash) {
 
 // Main update function
 function updateVersion() {
-  console.log('\n🔄 Auto-updating version...\n')
+  console.log('\n🔄 Auto-updating version...\n');
 
-  const version = generateVersion()
-  const hash = getGitHash()
+  const version = generateVersion();
+  const hash = getGitHash();
 
-  console.log(`📦 New version: ${version}`)
-  console.log(`🔗 Git hash: ${hash}\n`)
+  console.log(`📦 New version: ${version}`);
+  console.log(`🔗 Git hash: ${hash}\n`);
 
   // Update all package.json files
   const packageFiles = [
     'package.json',
     'packages/shared/package.json',
     'packages/server-core/package.json',
-    'packages/web-client/package.json'
-  ]
+    'packages/web-client/package.json',
+  ];
 
-  packageFiles.forEach(file => {
-    const filePath = path.join(ROOT, file)
+  packageFiles.forEach((file) => {
+    const filePath = path.join(ROOT, file);
     if (fs.existsSync(filePath)) {
-      updatePackageJson(filePath, version)
+      updatePackageJson(filePath, version);
     }
-  })
+  });
 
   // Update HTML files
-  updateHtmlFiles(version, hash)
+  updateHtmlFiles(version, hash);
 
-
-  console.log(`\n✅ Version updated to ${version}-${hash}`)
-  console.log('📝 Files staged for commit\n')
+  console.log(`\n✅ Version updated to ${version}-${hash}`);
+  console.log('📝 Files staged for commit\n');
 }
 
 // Run if called directly
 if (require.main === module) {
-  updateVersion()
+  updateVersion();
 }
 
-module.exports = { updateVersion, generateVersion, getGitHash }
-
+module.exports = { updateVersion, generateVersion, getGitHash };

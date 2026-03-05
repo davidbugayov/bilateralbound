@@ -13,15 +13,6 @@
       "@client/*": ["./*"]
     }
   },
-  "include": [
-    "public/js/**/*",
-    "public/**/*",
-    "src/**/*",
-    "**/*.js"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ]
+  "include": ["public/js/**/*", "public/**/*", "src/**/*", "**/*.js"],
+  "exclude": ["node_modules", "dist", "build"]
 }

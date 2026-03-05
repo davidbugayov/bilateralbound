@@ -35,8 +35,10 @@ if (typeof BallRenderer === 'undefined') {
         ...options
       }
       this.adaptiveFrameRate =
-        globalThis.BBConfig?.rendering?.adaptiveFrameRate ?? this.adaptiveFrameRate
-      this.maxFrameTime = globalThis.BBConfig?.rendering?.maxFrameTime ?? this.maxFrameTime
+        globalThis.BBConfig?.rendering?.adaptiveFrameRate ??
+        this.adaptiveFrameRate;
+      this.maxFrameTime =
+        globalThis.BBConfig?.rendering?.maxFrameTime ?? this.maxFrameTime;
       this.pi2 = Math.PI * 2
       this.fillRect = this.ctx.fillRect.bind(this.ctx)
       this.beginPath = this.ctx.beginPath.bind(this.ctx)
@@ -91,10 +93,13 @@ if (typeof BallRenderer === 'undefined') {
       }
       if (this.options.localPhysics) {
         let substeps = 0
-        while (this.accumulatorMs >= this.fixedStepMs && substeps < this.maxSubsteps) {
-          this.physics.update(this.fixedStepMs / 1000)
-          this.accumulatorMs -= this.fixedStepMs
-          substeps++
+        while (
+          this.accumulatorMs >= this.fixedStepMs &&
+          substeps < this.maxSubsteps
+        ) {
+          this.physics.update(this.fixedStepMs / 1000);
+          this.accumulatorMs -= this.fixedStepMs;
+          substeps++;
         }
       }
     }
@@ -102,7 +107,10 @@ if (typeof BallRenderer === 'undefined') {
       let alpha = 1
       if (this.fixedStepMs > 0) {
         if (this.options.localPhysics) {
-          alpha = Math.max(0, Math.min(1, this.accumulatorMs / this.fixedStepMs))
+          alpha = Math.max(
+            0,
+            Math.min(1, this.accumulatorMs / this.fixedStepMs),
+          );
         } else {
           const now = currentTime
           const lastTs = this.physics?.__lastPhysicsUpdateTs ?? now
@@ -119,7 +127,10 @@ if (typeof BallRenderer === 'undefined') {
           (clientW && clientW !== this.canvas.width) ||
           (clientH && clientH !== this.canvas.height)
         ) {
-          this.resize(clientW || this.canvas.width, clientH || this.canvas.height)
+          this.resize(
+            clientW || this.canvas.width,
+            clientH || this.canvas.height,
+          );
           this.lastTime = currentTime
           this.animationFrameId = requestAnimationFrame(this.renderLoop)
           return
@@ -173,12 +184,22 @@ if (typeof BallRenderer === 'undefined') {
         const w = prev.radius * 2 + padding * 2
         const h = prev.radius * 2 + padding * 2
         this.ctx.fillStyle = this.colors.bg
-        this.fillRect(prev.x - prev.radius - padding, prev.y - prev.radius - padding, w, h)
+        this.fillRect(
+          prev.x - prev.radius - padding,
+          prev.y - prev.radius - padding,
+          w,
+          h,
+        );
       }
       const w2 = curr.radius * 2 + padding * 2
       const h2 = curr.radius * 2 + padding * 2
       this.ctx.fillStyle = this.colors.bg
-      this.fillRect(curr.x - curr.radius - padding, curr.y - curr.radius - padding, w2, h2)
+      this.fillRect(
+        curr.x - curr.radius - padding,
+        curr.y - curr.radius - padding,
+        w2,
+        h2,
+      );
       this.renderBall(curr)
       this._prevBall = { x: curr.x, y: curr.y, radius: curr.radius }
     }
@@ -195,12 +216,16 @@ if (typeof BallRenderer === 'undefined') {
       // Scale canvas context when canvas size differs from physics world (e.g. controller preview)
       // This makes ball appear at correct relative position on both preview and viewer
       const needsScale =
-        worldW > 0 && worldH > 0 &&
-        (this.canvas.width !== worldW || this.canvas.height !== worldH)
+        worldW > 0 &&
+        worldH > 0 &&
+        (this.canvas.width !== worldW || this.canvas.height !== worldH);
       try {
         if (needsScale) {
           this.ctx.save()
-          this.ctx.scale(this.canvas.width / worldW, this.canvas.height / worldH)
+          this.ctx.scale(
+            this.canvas.width / worldW,
+            this.canvas.height / worldH,
+          );
         }
         if (this.options.dirtyRegions) {
           this._renderDirty(alpha)
@@ -230,23 +255,26 @@ if (typeof BallRenderer === 'undefined') {
         }
         try {
           const col = ball.colorBall || this.colors.ball
-          if (this._cached.radius !== ball.radius || this._cached.color !== col) {
-            this._cached.radius = ball.radius
-            this._cached.color = col
+          if (
+            this._cached.radius !== ball.radius ||
+            this._cached.color !== col
+          ) {
+            this._cached.radius = ball.radius;
+            this._cached.color = col;
             const g = this.ctx.createRadialGradient(
               -ball.radius * 0.3,
               -ball.radius * 0.3,
               0,
               0,
               0,
-              ball.radius
-            )
-            g.addColorStop(0, col)
-            g.addColorStop(1, this.adjustBrightness(col, -20))
-            this._cached.gradient = g
-            const p = new Path2D()
-            p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2)
-            this._cached.path = p
+              ball.radius,
+            );
+            g.addColorStop(0, col);
+            g.addColorStop(1, this.adjustBrightness(col, -20));
+            this._cached.gradient = g;
+            const p = new Path2D();
+            p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2);
+            this._cached.path = p;
           }
           this.beginPath()
           this.ctx.save()
@@ -276,9 +304,18 @@ if (typeof BallRenderer === 'undefined') {
      */
     adjustBrightness(color, amount) {
       const hex = color.replace('#', '')
-      const r = Math.max(0, Math.min(255, Number.parseInt(hex.slice(0, 2), 16) + amount))
-      const g = Math.max(0, Math.min(255, Number.parseInt(hex.slice(2, 4), 16) + amount))
-      const b = Math.max(0, Math.min(255, Number.parseInt(hex.slice(4, 6), 16) + amount))
+      const r = Math.max(
+        0,
+        Math.min(255, Number.parseInt(hex.slice(0, 2), 16) + amount),
+      );
+      const g = Math.max(
+        0,
+        Math.min(255, Number.parseInt(hex.slice(2, 4), 16) + amount),
+      );
+      const b = Math.max(
+        0,
+        Math.min(255, Number.parseInt(hex.slice(4, 6), 16) + amount),
+      );
       return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
     }
     /**

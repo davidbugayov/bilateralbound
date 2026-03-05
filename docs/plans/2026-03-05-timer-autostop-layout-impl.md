@@ -24,6 +24,7 @@
 ## Task 1: Fix Timer — Decouple from RAF
 
 **Files:**
+
 - Modify: `packages/web-client/public/js/controller.js`
 
 The timer currently ticks only when the render loop is healthy. Replace with a dedicated interval.
@@ -31,9 +32,11 @@ The timer currently ticks only when the render loop is healthy. Replace with a d
 **Step 1: Find and remove the RAF tick**
 
 In `controller.js`, find `renderPreviewLoop` (~line 801). Remove ONLY this line:
+
 ```js
-bbCounters.tick(timestamp)
+bbCounters.tick(timestamp);
 ```
+
 Do not remove anything else from the function.
 
 **Step 2: Add interval tick to `bbCounters.initDom()`**
@@ -43,8 +46,8 @@ In `controller.js`, find `bbCounters.initDom()` (~line 67). Add a `setInterval` 
 ```js
 // Drive timer accumulation independently of render loop
 this._timerInterval = setInterval(() => {
-  this.tick(performance.now())
-}, 100)
+  this.tick(performance.now());
+}, 100);
 ```
 
 Also add `_timerInterval: null` to the bbCounters object properties (top of the object, near the other `null` fields).
@@ -69,11 +72,13 @@ git commit -m "fix: drive timer via setInterval, not RAF"
 ## Task 2: Add Auto-Stop Fields to `bbCounters`
 
 **Files:**
+
 - Modify: `packages/web-client/public/js/controller.js`
 
 **Step 1: Add state fields**
 
 At the top of the `bbCounters` object (with the other properties), add:
+
 ```js
 autoStopPasses: 0,    // 0 = disabled
 autoStopSeconds: 0,   // 0 = disabled
@@ -83,6 +88,7 @@ _autoStopFired: false,
 **Step 2: Add `_checkAutoStop()` method**
 
 Add this method to the `bbCounters` object:
+
 ```js
 _checkAutoStop() {
   if (this._autoStopFired || !this.running) return
@@ -105,20 +111,23 @@ _checkAutoStop() {
 **Step 3: Call `_checkAutoStop()` in `tick()` and `onBounce()`**
 
 In `tick()`, add at the end of the `if (dt > 0)` block (after `this.render()`):
+
 ```js
-this._checkAutoStop()
+this._checkAutoStop();
 ```
 
 In `onBounce()`, add at the end (after `this.render()`):
+
 ```js
-this._checkAutoStop()
+this._checkAutoStop();
 ```
 
 **Step 4: Reset `_autoStopFired` on `start()`**
 
 In `bbCounters.start()`, add:
+
 ```js
-this._autoStopFired = false
+this._autoStopFired = false;
 ```
 
 **Step 5: Commit**
@@ -133,6 +142,7 @@ git commit -m "feat: add auto-stop logic to bbCounters"
 ## Task 3: Add Auto-Stop UI Inputs
 
 **Files:**
+
 - Modify: `packages/web-client/public/session-controller.html`
 - Modify: `packages/web-client/public/locales/en/common.json`
 - Modify: `packages/web-client/public/locales/ru/common.json`
@@ -141,6 +151,7 @@ git commit -m "feat: add auto-stop logic to bbCounters"
 **Step 1: Add i18n keys to `en/common.json`**
 
 Inside `"controller": { ... }`, add:
+
 ```json
 "autoStopLabel": "Auto-stop",
 "autoStopPassesLabel": "passes",
@@ -165,7 +176,9 @@ In `session-controller.html`, find the `actions-grid` div that contains `#playPa
 
 ```html
 <div class="autostop-row" id="autoStopRow">
-  <span class="autostop-label" data-i18n="controller.autoStopLabel">Auto-stop</span>
+  <span class="autostop-label" data-i18n="controller.autoStopLabel"
+    >Auto-stop</span
+  >
   <div class="autostop-field">
     <input
       type="number"
@@ -177,7 +190,9 @@ In `session-controller.html`, find the `actions-grid` div that contains `#playPa
       data-i18n-attr="placeholder:controller.autoStopPlaceholder"
       placeholder="0 = off"
     />
-    <span class="autostop-unit" data-i18n="controller.autoStopPassesLabel">passes</span>
+    <span class="autostop-unit" data-i18n="controller.autoStopPassesLabel"
+      >passes</span
+    >
   </div>
   <div class="autostop-field">
     <input
@@ -190,7 +205,9 @@ In `session-controller.html`, find the `actions-grid` div that contains `#playPa
       data-i18n-attr="placeholder:controller.autoStopPlaceholder"
       placeholder="0 = off"
     />
-    <span class="autostop-unit" data-i18n="controller.autoStopSecondsLabel">sec</span>
+    <span class="autostop-unit" data-i18n="controller.autoStopSecondsLabel"
+      >sec</span
+    >
   </div>
 </div>
 ```
@@ -200,17 +217,23 @@ In `session-controller.html`, find the `actions-grid` div that contains `#playPa
 Find where `bbCounters.initDom()` is called (~line 244). After it, add:
 
 ```js
-const autoStopPassesInput = document.getElementById('autoStopPassesInput')
-const autoStopSecondsInput = document.getElementById('autoStopSecondsInput')
+const autoStopPassesInput = document.getElementById("autoStopPassesInput");
+const autoStopSecondsInput = document.getElementById("autoStopSecondsInput");
 if (autoStopPassesInput) {
-  autoStopPassesInput.addEventListener('change', () => {
-    bbCounters.autoStopPasses = Math.max(0, parseInt(autoStopPassesInput.value, 10) || 0)
-  })
+  autoStopPassesInput.addEventListener("change", () => {
+    bbCounters.autoStopPasses = Math.max(
+      0,
+      parseInt(autoStopPassesInput.value, 10) || 0,
+    );
+  });
 }
 if (autoStopSecondsInput) {
-  autoStopSecondsInput.addEventListener('change', () => {
-    bbCounters.autoStopSeconds = Math.max(0, parseInt(autoStopSecondsInput.value, 10) || 0)
-  })
+  autoStopSecondsInput.addEventListener("change", () => {
+    bbCounters.autoStopSeconds = Math.max(
+      0,
+      parseInt(autoStopSecondsInput.value, 10) || 0,
+    );
+  });
 }
 ```
 
@@ -282,6 +305,7 @@ git commit -m "feat: add auto-stop by passes and seconds"
 ## Task 4: Sticky Control Bar HTML + CSS
 
 **Files:**
+
 - Modify: `packages/web-client/public/session-controller.html`
 - Modify: `packages/web-client/public/css/shared-components.css`
 
@@ -292,18 +316,33 @@ git commit -m "feat: add auto-stop by passes and seconds"
 At the bottom of `<body>` in `session-controller.html`, before the `<script>` tags, add:
 
 ```html
-<div id="stickyControlBar" class="sticky-control-bar" role="toolbar" aria-label="Session controls">
+<div
+  id="stickyControlBar"
+  class="sticky-control-bar"
+  role="toolbar"
+  aria-label="Session controls"
+>
   <div class="sticky-counters">
     <div class="sticky-counter">
-      <span class="sticky-counter-label" data-i18n="controller.timerLabel">Timer</span>
-      <span id="stickyTimer" class="sticky-counter-value sticky-counter-value--timer">0:00</span>
+      <span class="sticky-counter-label" data-i18n="controller.timerLabel"
+        >Timer</span
+      >
+      <span
+        id="stickyTimer"
+        class="sticky-counter-value sticky-counter-value--timer"
+        >0:00</span
+      >
     </div>
     <div class="sticky-counter">
-      <span class="sticky-counter-label" data-i18n="controller.passesLabel">Passes</span>
+      <span class="sticky-counter-label" data-i18n="controller.passesLabel"
+        >Passes</span
+      >
       <span id="stickyPasses" class="sticky-counter-value">0</span>
     </div>
     <div class="sticky-counter">
-      <span class="sticky-counter-label" data-i18n="controller.setsLabel">Sets</span>
+      <span class="sticky-counter-label" data-i18n="controller.setsLabel"
+        >Sets</span
+      >
       <span id="stickySets" class="sticky-counter-value">0</span>
     </div>
   </div>
@@ -313,12 +352,16 @@ At the bottom of `<body>` in `session-controller.html`, before the `<script>` ta
       class="btn primary sticky-btn"
       onclick="togglePlayPause()"
       data-i18n="controller.start"
-    >▶️ Старт</button>
+    >
+      ▶️ Старт
+    </button>
     <button
       class="btn outline sticky-btn"
       onclick="resetSession()"
       data-i18n="controller.reset"
-    >🔄</button>
+    >
+      🔄
+    </button>
   </div>
 </div>
 ```
@@ -432,6 +475,7 @@ git commit -m "feat: add sticky control bar for tablet"
 ## Task 5: Sync Sticky Bar State
 
 **Files:**
+
 - Modify: `packages/web-client/public/js/controller.js`
 
 The sticky bar needs to show live counter values and the correct play/pause button label.
@@ -439,13 +483,15 @@ The sticky bar needs to show live counter values and the correct play/pause butt
 **Step 1: Add sticky DOM refs to `bbCounters.initDom()`**
 
 In `controller.js`, inside `bbCounters.initDom()`, add:
+
 ```js
-this.$stickyTimer = document.getElementById('stickyTimer')
-this.$stickyPasses = document.getElementById('stickyPasses')
-this.$stickySets = document.getElementById('stickySets')
+this.$stickyTimer = document.getElementById("stickyTimer");
+this.$stickyPasses = document.getElementById("stickyPasses");
+this.$stickySets = document.getElementById("stickySets");
 ```
 
 Also add the properties to the object top:
+
 ```js
 $stickyTimer: null,
 $stickyPasses: null,
@@ -455,10 +501,12 @@ $stickySets: null,
 **Step 2: Update `bbCounters.render()` to sync sticky bar**
 
 In `bbCounters.render()`, after the existing `if (this.$timer)` lines, add:
+
 ```js
-if (this.$stickyTimer) this.$stickyTimer.textContent = this.formatTime(this.timerMs)
-if (this.$stickyPasses) this.$stickyPasses.textContent = String(this.passes)
-if (this.$stickySets) this.$stickySets.textContent = String(this.sets)
+if (this.$stickyTimer)
+  this.$stickyTimer.textContent = this.formatTime(this.timerMs);
+if (this.$stickyPasses) this.$stickyPasses.textContent = String(this.passes);
+if (this.$stickySets) this.$stickySets.textContent = String(this.sets);
 ```
 
 **Step 3: Sync sticky play/pause button label**
@@ -466,12 +514,12 @@ if (this.$stickySets) this.$stickySets.textContent = String(this.sets)
 Find `updatePlayPauseButton()` in `controller.js` (~line 18 of play-pause.js, but there's also a local copy used in controller.js). In controller.js, find the function that updates `#playPauseBtn` text and `.playing` class. Add the same logic for `#stickyPlayPauseBtn`:
 
 ```js
-const stickyBtn = document.getElementById('stickyPlayPauseBtn')
+const stickyBtn = document.getElementById("stickyPlayPauseBtn");
 if (stickyBtn) {
   stickyBtn.textContent = isPlaying
-    ? (globalThis.i18n?.t('controller.stop') || '⏸ Стоп')
-    : (globalThis.i18n?.t('controller.start') || '▶️ Старт')
-  stickyBtn.classList.toggle('playing', isPlaying)
+    ? globalThis.i18n?.t("controller.stop") || "⏸ Стоп"
+    : globalThis.i18n?.t("controller.start") || "▶️ Старт";
+  stickyBtn.classList.toggle("playing", isPlaying);
 }
 ```
 
@@ -493,6 +541,7 @@ git commit -m "feat: sync sticky bar state with counters and play/pause"
 ## Task 6: Apply i18n to Sticky Bar
 
 **Files:**
+
 - Modify: `packages/web-client/public/locales/en/common.json`
 - Modify all other locales
 
@@ -501,9 +550,11 @@ The sticky bar HTML uses `data-i18n` attributes that reuse existing keys (`contr
 **Step 1: Verify existing keys exist**
 
 Run:
+
 ```bash
 grep -r "timerLabel\|passesLabel\|setsLabel" packages/web-client/public/locales/en/
 ```
+
 Expected: all three found in `common.json`.
 
 **Step 2: Verify i18n applies at runtime**
@@ -526,6 +577,7 @@ git commit -m "i18n: add auto-stop keys to all locales"
 ```bash
 npm run test:local
 ```
+
 Expected: all 21 tests pass. The new features don't break existing behavior.
 
 **Step 2: Manual end-to-end check**

@@ -155,16 +155,16 @@ Response:
 
 ```javascript
 // В controller.js или viewer.html
-const client = new RealtimeClient(sessionId, 'viewer', {
-  transport: 'websocket' // Принудительно WebSocket
-})
+const client = new RealtimeClient(sessionId, "viewer", {
+  transport: "websocket", // Принудительно WebSocket
+});
 ```
 
 ### По умолчанию SSE
 
 ```javascript
 // Автоматически выбирает SSE
-const client = new RealtimeClient(sessionId, 'viewer')
+const client = new RealtimeClient(sessionId, "viewer");
 ```
 
 ## 📈 Мониторинг
@@ -172,13 +172,13 @@ const client = new RealtimeClient(sessionId, 'viewer')
 ### Метрики клиента
 
 ```javascript
-const stats = wsClient.getStats()
+const stats = wsClient.getStats();
 console.log({
   transportType: stats.transportType, // 'sse' или 'websocket'
   messagesReceived: stats.messagesReceived,
   reconnectCount: stats.reconnectCount,
-  isConnected: stats.isConnected
-})
+  isConnected: stats.isConnected,
+});
 ```
 
 ### Health check сервера
@@ -206,8 +206,8 @@ curl http://localhost:3000/health
 Убедитесь что правильно настроены CORS заголовки:
 
 ```javascript
-res.setHeader('Access-Control-Allow-Origin', origin)
-res.setHeader('Access-Control-Allow-Credentials', 'true')
+res.setHeader("Access-Control-Allow-Origin", origin);
+res.setHeader("Access-Control-Allow-Credentials", "true");
 ```
 
 ### 3. Nginx конфигурация

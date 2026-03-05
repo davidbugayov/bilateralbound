@@ -14,7 +14,8 @@
    * @returns {string} Language code
    */
   function detectFromDomain() {
-    const hostname = (typeof globalThis !== 'undefined' ? globalThis : window).location.hostname
+    const hostname = (typeof globalThis !== 'undefined' ? globalThis : window)
+      .location.hostname;
 
     if (hostname.includes('emdrbilateral.ru')) {
       return 'ru'
@@ -62,5 +63,4 @@
 
   // Execute immediately
   applyLanguage()
-
 })()

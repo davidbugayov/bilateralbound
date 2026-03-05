@@ -11,6 +11,7 @@
 Two optional numeric inputs in the controls area: "Stop after N passes" and "Stop after N seconds" (0 = disabled).
 
 On each `bbCounters.tick()` and `bbCounters.onBounce()`, check limits:
+
 - `autoStopPasses > 0 && passes >= autoStopPasses` → trigger stop
 - `autoStopSeconds > 0 && timerMs >= autoStopSeconds * 1000` → trigger stop
 
@@ -22,6 +23,7 @@ UI: two small number inputs with labels, placed in the controls card next to Pla
 ## 3. Tablet Layout — Sticky Control Bar
 
 Add a `#stickyControlBar` fixed element (bottom of viewport on mobile, hidden on desktop) containing:
+
 - Timer display
 - Passes count
 - Sets count

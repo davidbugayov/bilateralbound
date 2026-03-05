@@ -44,7 +44,9 @@ const bbCounters = {
       return
     }
     const now = performance.now()
-    this._passesHistory = this._passesHistory.filter(timestamp => now - timestamp < 2000)
+    this._passesHistory = this._passesHistory.filter(
+      (timestamp) => now - timestamp < 2000,
+    );
     const passesInLast2Seconds = this._passesHistory.length / 2
     this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10
     this.renderSpeedInfo()
@@ -119,7 +121,8 @@ const bbCounters = {
   },
   renderSpeedInfo() {
     if (this.$passesPerSecond) {
-      this.$passesPerSecond.textContent = this._currentPassesPerSecond.toString()
+      this.$passesPerSecond.textContent =
+        this._currentPassesPerSecond.toString();
     }
     const speedComponent = globalThis.components?.speed
     if (speedComponent && this.$speedInfo) {

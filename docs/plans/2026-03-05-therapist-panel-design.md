@@ -40,7 +40,9 @@ Add one route to `packages/server-core/server/network/expressApp.js`:
 
 ```js
 // SPA fallback for therapist panel
-app.get('/panel/*', (req, res) => res.sendFile('panel/index.html', { root: publicDir }))
+app.get("/panel/*", (req, res) =>
+  res.sendFile("panel/index.html", { root: publicDir }),
+);
 ```
 
 No other server changes.
@@ -68,13 +70,13 @@ Preview:   Button that opens popup window
 
 ## Persistent Storage (localStorage)
 
-| Key                  | Value           |
-|----------------------|-----------------|
-| bb_panel_speed       | float 0.1–3.0   |
-| bb_panel_ballColor   | hex string      |
-| bb_panel_bgColor     | hex string      |
-| bb_panel_ballSize    | int 1–5         |
-| bb_panel_session_log | JSON array      |
+| Key                  | Value         |
+| -------------------- | ------------- |
+| bb_panel_speed       | float 0.1–3.0 |
+| bb_panel_ballColor   | hex string    |
+| bb_panel_bgColor     | hex string    |
+| bb_panel_ballSize    | int 1–5       |
+| bb_panel_session_log | JSON array    |
 
 ## Preview Popup
 

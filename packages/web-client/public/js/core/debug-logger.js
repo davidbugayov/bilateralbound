@@ -46,15 +46,18 @@ class DebugLogger {
     const params = new URLSearchParams(globalThis.location.search)
     const categories = params.get('debug-cat') || params.get('categories')
     return categories
-      ? new Set(categories.split(',').map(c => c.trim()))
-      : new Set(Object.keys(CATEGORY_COLORS))
+      ? new Set(categories.split(',').map((c) => c.trim()))
+      : new Set(Object.keys(CATEGORY_COLORS));
   }
   _logStats() {
     console.log(
       '%c[DEBUG MODE ENABLED]',
       'background: #0A0; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;'
     )
-    console.log('📊 Enabled categories:', Array.from(this.categories).join(', '))
+    console.log(
+      '📊 Enabled categories:',
+      Array.from(this.categories).join(', '),
+    );
   }
   _isEnabled(category) {
     return this.enabled && this.categories.has(category)
@@ -108,13 +111,25 @@ class DebugLogger {
     this._log(category, message, data)
   }
   error(msg, err) {
-    console.error(`%c[ERROR] ${msg}`, 'color: #F00; font-weight: bold;', err ?? '')
+    console.error(
+      `%c[ERROR] ${msg}`,
+      'color: #F00; font-weight: bold;',
+      err ?? '',
+    );
   }
   warn(msg, data) {
-    console.warn(`%c[WARN] ${msg}`, 'color: #FA0; font-weight: bold;', data ?? '')
+    console.warn(
+      `%c[WARN] ${msg}`,
+      'color: #FA0; font-weight: bold;',
+      data ?? '',
+    );
   }
   info(msg, data) {
-    console.info(`%cℹ️ ${msg}`, 'color: #4A9EFF; font-weight: bold;', data ?? '')
+    console.info(
+      `%cℹ️ ${msg}`,
+      'color: #4A9EFF; font-weight: bold;',
+      data ?? '',
+    );
   }
   log(msg, data) {
     console.log(msg, data ?? '')

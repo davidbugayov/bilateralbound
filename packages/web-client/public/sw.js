@@ -1,12 +1,12 @@
 /* eslint-disable no-undef */
 /* global self, caches, fetch, URL */
-'use strict'
+'use strict';
 /**
  * Service Worker for BilateralBound
  * Provides offline support and caching
  */
 
-const CACHE_NAME = 'bilateralbound-v1'
+const CACHE_NAME = 'bilateralbound-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -30,61 +30,75 @@ const STATIC_ASSETS = [
   '/locales/fr/common.json',
   '/locales/pt/common.json',
   '/locales/ja/common.json',
-  '/locales/zh/common.json'
-]
+  '/locales/zh/common.json',
+];
 
 // Install - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches
+      .open(CACHE_NAME)
       .then((cache) => {
-        console.log('[SW] Caching static assets')
-        return cache.addAll(STATIC_ASSETS)
+        console.log('[SW] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
       })
       .then(() => self.skipWaiting())
-      .catch((err) => console.warn('[SW] Cache failed:', err))
-  )
-})
+      .catch((err) => console.warn('[SW] Cache failed:', err)),
+  );
+});
 
 // Activate - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(
-        keys.filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
-  )
-})
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
+      )
+      .then(() => self.clients.claim()),
+  );
+});
 
 // Fetch - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
-  const { request } = event
-  const url = new URL(request.url)
+  const { request } = event;
+  const url = new URL(request.url);
 
   // Skip non-GET requests and API calls
-  if (request.method !== 'GET') return
-  if (url.pathname.startsWith('/api/')) return
+  if (request.method !== 'GET') return;
+  if (url.pathname.startsWith('/api/')) return;
 
   // For static assets: cache first
-  if (STATIC_ASSETS.some(asset => url.pathname === asset || url.pathname.endsWith(asset))) {
+  if (
+    STATIC_ASSETS.some(
+      (asset) => url.pathname === asset || url.pathname.endsWith(asset),
+    )
+  ) {
     event.respondWith(
-      caches.match(request)
-        .then((cached) => {
-          if (cached) return cached
-          return fetch(request).then((response) => {
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request)
+          .then((response) => {
             if (response.ok) {
-              const clone = response.clone()
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-              return response
+              const clone = response.clone();
+              caches
+                .open(CACHE_NAME)
+                .then((cache) => cache.put(request, clone));
+              return response;
             }
             // Non-OK (e.g. 503 during deployment) — serve any cached version as fallback
-            return caches.match(request, { ignoreSearch: true }).then(fallback => fallback || response)
-          }).catch(() => caches.match(request, { ignoreSearch: true }))
-        })
-    )
-    return
+            return caches
+              .match(request, { ignoreSearch: true })
+              .then((fallback) => fallback || response);
+          })
+          .catch(() => caches.match(request, { ignoreSearch: true }));
+      }),
+    );
+    return;
   }
 
   // For other requests: network first, cache fallback
@@ -92,13 +106,15 @@ self.addEventListener('fetch', (event) => {
     fetch(request)
       .then((response) => {
         if (response.ok && request.url.startsWith(self.location.origin)) {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-          return response
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
         }
         // Non-OK — serve any cached version as fallback
-        return caches.match(request, { ignoreSearch: true }).then(fallback => fallback || response)
+        return caches
+          .match(request, { ignoreSearch: true })
+          .then((fallback) => fallback || response);
       })
-      .catch(() => caches.match(request, { ignoreSearch: true }))
-  )
-})
+      .catch(() => caches.match(request, { ignoreSearch: true })),
+  );
+});

@@ -13,7 +13,10 @@
     "property-no-vendor-prefix": [
       true,
       {
-        "ignoreProperties": ["-webkit-background-clip", "-webkit-text-fill-color"]
+        "ignoreProperties": [
+          "-webkit-background-clip",
+          "-webkit-text-fill-color"
+        ]
       }
     ],
     "prettier/prettier": true

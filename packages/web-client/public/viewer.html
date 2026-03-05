@@ -29,26 +29,37 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.197-25068cc" />
+    <meta name="version" content="2.39.198-8a17962" />
     <meta name="theme-color" content="#020617" />
     <title data-i18n="viewer.title">BilateralBound - EMDR Therapy Viewer</title>
     <meta name="therapy-type" content="EMDR Viewer" />
     <meta name="target-audience" content="EMDR Patients, Couples" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.197-25068cc" as="script" />
-    <link rel="preload" href="/js/renderer.js?v=2.39.197-25068cc" as="script" />
-    <link rel="preload" href="/js/websocket-client.js?v=2.39.197-25068cc" as="script" />
+    <link
+      as="script"
+      href="/js/physics-engine.js?v=2.39.198-8a17962"
+      rel="preload"
+    />
+    <link rel="preload" href="/js/renderer.js?v=2.39.198-8a17962" as="script" />
+    <link
+      as="script"
+      href="/js/websocket-client.js?v=2.39.198-8a17962"
+      rel="preload"
+    />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.197-25068cc"
+      href="/favicon-viewer.svg?v=2.39.198-8a17962"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.197-25068cc"
+      href="/favicon-viewer.ico?v=2.39.198-8a17962"
     />
-    <link rel="apple-touch-icon" href="/favicon-viewer.svg?v=2.39.197-25068cc" />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.197-25068cc" />
+    <link
+      href="/favicon-viewer.svg?v=2.39.198-8a17962"
+      rel="apple-touch-icon"
+    />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.198-8a17962" />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -64,9 +75,12 @@
     <meta property="article:tag" content="биодинамическая стимуляция" />
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="dns-prefetch" href="https://mc.yandex.com" />
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.197-25068cc" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.197-25068cc" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.197-25068cc" />
+    <link
+      href="/css/shared-components.css?v=2.39.198-8a17962"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.198-8a17962" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.198-8a17962" />
     <noscript
       ><div>
         <img
@@ -80,11 +94,21 @@
     <main class="viewer-container">
       <header>
         <div id="statusContainer" aria-live="polite"></div>
-        <div id="viewerAudioControls" class="hidden" style="display: none; align-items: center; gap: 6px; opacity: 0.7;">
-          <span style="font-size: 1rem;">🔊</span>
-          <input type="range" id="viewerVolumeSlider" min="0" max="100" value="50"
-            style="width: 80px; cursor: pointer; accent-color: #60a5fa;"
-            aria-label="Volume" />
+        <div
+          class="hidden"
+          id="viewerAudioControls"
+          style="display: none; align-items: center; gap: 6px; opacity: 0.7"
+        >
+          <span style="font-size: 1rem">🔊</span>
+          <input
+            aria-label="Volume"
+            id="viewerVolumeSlider"
+            max="100"
+            min="0"
+            style="width: 80px; cursor: pointer; accent-color: #60a5fa"
+            type="range"
+            value="50"
+          />
         </div>
         <button
           class="fullscreen-btn"
@@ -100,9 +124,17 @@
           Анимация движущегося шарика для EMDR-терапии.
         </p>
       </canvas>
-      <div id="loading" class="loading" aria-live="polite" data-i18n="viewer.loading">Loading...</div>
+      <div
+        aria-live="polite"
+        class="loading"
+        data-i18n="viewer.loading"
+        id="loading"
+      >
+        Loading...
+      </div>
       <div id="hotkeysHint" class="hotkeys-hint">
-        <kbd>Space</kbd> <span data-i18n="viewer.hotkeysHint">— Pause/Start</span>
+        <kbd>Space</kbd>
+        <span data-i18n="viewer.hotkeysHint">— Pause/Start</span>
       </div>
       <div id="unmuteOverlay" class="unmute-overlay hidden">
         <button id="unmuteBtn" class="unmute-btn">
@@ -111,17 +143,23 @@
         </button>
       </div>
     </main>
-    <script src="/js/core/debug-logger.js?v=2.39.197-25068cc"></script>
-    <script src="/js/common.js?v=2.39.197-25068cc"></script>
-    <script src="/js/constants/i18n-constants.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/i18n/i18n.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/i18n/language-selector.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/audio/audio-manager.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/renderer.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/shared-components.js?v=2.39.197-25068cc" defer></script>
+    <script src="/js/core/debug-logger.js?v=2.39.198-8a17962"></script>
+    <script src="/js/common.js?v=2.39.198-8a17962"></script>
+    <script
+      defer
+      src="/js/constants/i18n-constants.js?v=2.39.198-8a17962"
+    ></script>
+    <script src="/js/i18n/i18n.js?v=2.39.198-8a17962" defer></script>
+    <script
+      defer
+      src="/js/i18n/language-selector.js?v=2.39.198-8a17962"
+    ></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/renderer.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/shared-components.js?v=2.39.198-8a17962" defer></script>
     <script>
       "use strict";
       /**
@@ -130,103 +168,128 @@
        */
       // Helper functions - defined early before DOMContentLoaded
       function showError(message) {
-        console.error('❌ Viewer Error:', message);
-        const loading = document.getElementById('loading');
+        console.error("❌ Viewer Error:", message);
+        const loading = document.getElementById("loading");
         if (loading) {
-          loading.textContent = '❌ ' + message;
-          loading.style.color = '#ef4444';
+          loading.textContent = "❌ " + message;
+          loading.style.color = "#ef4444";
         }
       }
       function hideLoading() {
-        const loading = document.getElementById('loading');
+        const loading = document.getElementById("loading");
         if (loading) {
-          loading.style.display = 'none';
+          loading.style.display = "none";
         }
       }
       function resizeCanvas() {
-        const canvas = document.getElementById('viewerCanvas');
+        const canvas = document.getElementById("viewerCanvas");
         if (canvas) {
           canvas.width = globalThis.innerWidth;
           canvas.height = globalThis.innerHeight;
           // Keep local physics world in sync with actual screen size
           // Server uses innerWidth/innerHeight as world — viewer must match
           if (physicsEngine) {
-            physicsEngine.setWorldSize(globalThis.innerWidth, globalThis.innerHeight);
+            physicsEngine.setWorldSize(
+              globalThis.innerWidth,
+              globalThis.innerHeight,
+            );
           }
         }
       }
       async function connectToSession(sessionId) {
         try {
-          const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ screenSize: { width: globalThis.innerWidth, height: globalThis.innerHeight } })
-          });
+          const response = await fetch(
+            `/api/session/${sessionId}/viewer/connect`,
+            {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({
+                screenSize: {
+                  width: globalThis.innerWidth,
+                  height: globalThis.innerHeight,
+                },
+              }),
+            },
+          );
           if (response.ok) {
-            debugLog('✅ Viewer connected to session');
+            debugLog("✅ Viewer connected to session");
           } else {
-            debugWarn('⚠️ Failed to connect viewer to session');
+            debugWarn("⚠️ Failed to connect viewer to session");
           }
         } catch (error) {
-          debugWarn('⚠️ Error connecting to session:', error);
+          debugWarn("⚠️ Error connecting to session:", error);
         }
       }
       function updateStatus(data) {
         // Трекаем состояние подключения контроллера
         if (!globalThis.__current) globalThis.__current = {};
-        if (typeof data.controllerConnected === 'boolean') {
+        if (typeof data.controllerConnected === "boolean") {
           globalThis.__current.controllerConnected = data.controllerConnected;
-          console.log('📊 [VIEWER] controllerConnected updated to:', data.controllerConnected);
+          console.log(
+            "📊 [VIEWER] controllerConnected updated to:",
+            data.controllerConnected,
+          );
         }
         if (components.status) {
           if (data.controllerConnected === true) {
-            const msg = globalThis.i18n?.t('viewer.controllerConnected') || 'Controller connected';
-            components.status.setStatus('success', msg);
+            const msg =
+              globalThis.i18n?.t("viewer.controllerConnected") ||
+              "Controller connected";
+            components.status.setStatus("success", msg);
           } else if (data.controllerConnected === false) {
-            const msg = globalThis.i18n?.t('viewer.waitingForController') || 'Waiting for controller...';
-            components.status.setStatus('waiting', msg);
+            const msg =
+              globalThis.i18n?.t("viewer.waitingForController") ||
+              "Waiting for controller...";
+            components.status.setStatus("waiting", msg);
           }
         }
       }
       function onStateUpdate(state) {
         // Применяем язык из initial_state (один раз при подключении)
-        if (state && state.language && state.language !== localStorage.getItem('emdr-language')) {
+        if (
+          state &&
+          state.language &&
+          state.language !== localStorage.getItem("emdr-language")
+        ) {
           onLanguageUpdate({ language: state.language });
         }
         // Обновляем статус подключения контроллера из любого обновления состояния
-        if (state && typeof state.controllerConnected === 'boolean') {
+        if (state && typeof state.controllerConnected === "boolean") {
           updateStatus(state);
         }
         if (physicsEngine && state) {
-          debugLog('📥 [VIEWER] Received state update:', state);
+          debugLog("📥 [VIEWER] Received state update:", state);
           physicsEngine.applyCommand(state);
-          if (typeof state.paused === 'boolean') {
+          if (typeof state.paused === "boolean") {
             physicsEngine.setPaused(state.paused);
           }
-          debugLog('📥 [VIEWER] Engine state after update:', {
+          debugLog("📥 [VIEWER] Engine state after update:", {
             paused: physicsEngine.state.paused,
             dirX: physicsEngine.state.lastDirection.x,
             dirY: physicsEngine.state.lastDirection.y,
             speed: physicsEngine.ball.speed,
             vx: physicsEngine.ball.vx,
-            vy: physicsEngine.ball.vy
+            vy: physicsEngine.ball.vy,
           });
           // Log current colors after update
-          debugLog('🎨 Current colors:', {
-             ball: physicsEngine.colors.ball,
-             bg: physicsEngine.colors.bg
+          debugLog("🎨 Current colors:", {
+            ball: physicsEngine.colors.ball,
+            bg: physicsEngine.colors.bg,
           });
         }
         // ВАЖНО: Обрабатываем звук из state_update
         // Звук - критический параметр, должен применяться независимо от physics engine
         if (state && audioManager) {
-          if (typeof state.soundEnabled === 'boolean') {
-            debugLog('🔊 [VIEWER] soundEnabled from state:', state.soundEnabled);
+          if (typeof state.soundEnabled === "boolean") {
+            debugLog(
+              "🔊 [VIEWER] soundEnabled from state:",
+              state.soundEnabled,
+            );
             audioManager.setEnabled(state.soundEnabled);
             checkAudioOverlay();
           }
           if (state.soundType) {
-            debugLog('🔊 [VIEWER] soundType from state:', state.soundType);
+            debugLog("🔊 [VIEWER] soundType from state:", state.soundType);
             audioManager.setSoundType(state.soundType);
           }
         }
@@ -239,22 +302,25 @@
       function onLanguageUpdate(data) {
         const language = data?.language;
         if (!language) {
-          debugWarn('❌ Invalid language update data:', data);
+          debugWarn("❌ Invalid language update data:", data);
           return;
         }
 
-        debugLog('🌍 Language update received:', language);
+        debugLog("🌍 Language update received:", language);
 
         // Применяем язык через i18n если доступен
-        if (globalThis.i18n && typeof globalThis.i18n.setLanguage === 'function') {
+        if (
+          globalThis.i18n &&
+          typeof globalThis.i18n.setLanguage === "function"
+        ) {
           try {
             globalThis.i18n.setLanguage(language);
-            debugLog('✅ Language applied:', language);
+            debugLog("✅ Language applied:", language);
           } catch (err) {
-            debugWarn('❌ Failed to apply language:', err.message);
+            debugWarn("❌ Failed to apply language:", err.message);
           }
         } else {
-          debugWarn('⚠️ i18n not available for language update');
+          debugWarn("⚠️ i18n not available for language update");
         }
       }
       /**
@@ -269,46 +335,54 @@
           if (!physicsEngine || !wsClient) return;
           const ball = physicsEngine.ball;
           const state = physicsEngine.state;
-          const isMoving = !state.paused && (Math.abs(ball.vx) > 0.1 || Math.abs(ball.vy) > 0.1);
+          const isMoving =
+            !state.paused &&
+            (Math.abs(ball.vx) > 0.1 || Math.abs(ball.vy) > 0.1);
           // Skip if paused and we already sent paused state
           if (state.paused && lastPausedSent) return;
           lastPausedSent = state.paused;
           if (isMoving || state.paused) {
-            wsClient.send('viewer_update', {
-              x: ball.x,
-              y: ball.y,
-              vx: ball.vx,
-              vy: ball.vy,
-              dirX: state.lastDirection?.x ?? 0,
-              dirY: state.lastDirection?.y ?? 0,
-              speed: ball.speed,
-              paused: state.paused,
-              radius: ball.radius,
-              timestamp: Date.now()
-            }).catch(() => {});
+            wsClient
+              .send("viewer_update", {
+                x: ball.x,
+                y: ball.y,
+                vx: ball.vx,
+                vy: ball.vy,
+                dirX: state.lastDirection?.x ?? 0,
+                dirY: state.lastDirection?.y ?? 0,
+                speed: ball.speed,
+                paused: state.paused,
+                radius: ball.radius,
+                timestamp: Date.now(),
+              })
+              .catch(() => {
+              });
           }
         }, BROADCAST_INTERVAL);
-        debugLog('✅ Viewer state broadcast started at', BROADCAST_RATE, 'Hz');
+        debugLog("✅ Viewer state broadcast started at", BROADCAST_RATE, "Hz");
       }
       function setupEventListeners() {
-        globalThis.addEventListener('resize', () => {
+        globalThis.addEventListener("resize", () => {
           resizeCanvas();
           // Send updated screen size to server via WS
           if (wsClient) {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
-              wsClient.send('viewer_screen_size', {
-                width: globalThis.innerWidth,
-                height: globalThis.innerHeight
-              }).catch(() => {});
+              wsClient
+                .send("viewer_screen_size", {
+                  width: globalThis.innerWidth,
+                  height: globalThis.innerHeight,
+                })
+                .catch(() => {
+                });
             }, 300);
           }
         });
         // Fullscreen toggle
-        globalThis.toggleFullscreen = function() {
+        globalThis.toggleFullscreen = function () {
           if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-              debugWarn('Error attempting to enable fullscreen:', err);
+            document.documentElement.requestFullscreen().catch((err) => {
+              debugWarn("Error attempting to enable fullscreen:", err);
             });
           } else {
             if (document.exitFullscreen) {
@@ -318,48 +392,56 @@
         };
         // Обновление текста кнопки при изменении fullscreen
         function updateFullscreenButton() {
-          const btn = document.querySelector('.fullscreen-btn');
+          const btn = document.querySelector(".fullscreen-btn");
           if (!btn) return;
           const isFs = !!document.fullscreenElement;
-          const key = isFs ? 'viewer.exitFullscreen' : 'viewer.fullscreen';
-          const fallback = isFs ? '⛶ Выйти' : '⛶ Полноэкранный';
-          btn.textContent = globalThis.i18n?.t ? globalThis.i18n.t(key) : fallback;
-          btn.setAttribute('data-i18n', key);
+          const key = isFs ? "viewer.exitFullscreen" : "viewer.fullscreen";
+          const fallback = isFs ? "⛶ Выйти" : "⛶ Полноэкранный";
+          btn.textContent = globalThis.i18n?.t
+            ? globalThis.i18n.t(key)
+            : fallback;
+          btn.setAttribute("data-i18n", key);
         }
-        document.addEventListener('fullscreenchange', () => {
+
+        document.addEventListener("fullscreenchange", () => {
           updateFullscreenButton();
           // Resize canvas to match new screen dimensions (fullscreen or restored)
           resizeCanvas();
           if (wsClient) {
-            wsClient.send('viewer_screen_size', {
-              width: globalThis.innerWidth,
-              height: globalThis.innerHeight
-            }).catch(() => {});
+            wsClient
+              .send("viewer_screen_size", {
+                width: globalThis.innerWidth,
+                height: globalThis.innerHeight,
+              })
+              .catch(() => {
+              });
           }
         });
         // Обновляем все переводы при готовности i18n
-        globalThis.addEventListener('i18nReady', () => {
+        globalThis.addEventListener("i18nReady", () => {
           if (globalThis.i18n?.applyTranslations) {
             globalThis.i18n.applyTranslations();
           }
         });
         // Также при смене языка
-        globalThis.addEventListener('i18nLanguageChanged', () => {
+        globalThis.addEventListener("i18nLanguageChanged", () => {
           if (globalThis.i18n?.applyTranslations) {
             globalThis.i18n.applyTranslations();
           }
           updateFullscreenButton();
         });
         // Keyboard controls
-        document.addEventListener('keydown', (e) => {
-          if (e.key === ' ' || e.key === 'Spacebar') {
+        document.addEventListener("keydown", (e) => {
+          if (e.key === " " || e.key === "Spacebar") {
             e.preventDefault();
             // Toggle pause via websocket
             if (wsClient && physicsEngine) {
               const currentPaused = physicsEngine.state?.paused ?? true;
               const newPaused = !currentPaused;
-              debugLog(`[VIEWER] Space pressed: toggling pause from ${currentPaused} to ${newPaused}`);
-              wsClient.send('viewer_update', { paused: newPaused });
+              debugLog(
+                `[VIEWER] Space pressed: toggling pause from ${currentPaused} to ${newPaused}`,
+              );
+              wsClient.send("viewer_update", {paused: newPaused});
             }
           }
         });
@@ -383,31 +465,36 @@
       // Track controller connection status to prevent UI "jumping"
       let lastKnownControllerStatus = null;
       // Expose to window for debugging
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.audioManager = audioManager;
         window.audioActivated = audioActivated;
         // Функция для сброса состояния активации аудио (для отладки)
-        window.resetAudioActivation = function() {
-          localStorage.removeItem('bb_audioActivated');
+        window.resetAudioActivation = function () {
+          localStorage.removeItem("bb_audioActivated");
           audioActivated = false;
           window.audioActivated = false;
           if (audioManager) {
             checkAudioOverlay();
           }
-          console.log('🔊 Audio activation state reset. Reload page to see unmute overlay again.');
+          console.log(
+            "🔊 Audio activation state reset. Reload page to see unmute overlay again.",
+          );
         };
       }
       // Initialize on DOM load
       document.addEventListener("DOMContentLoaded", async function () {
-        debugLog('🚀 DOMContentLoaded fired');
-        debugLog('🔊 Audio activation state restored from localStorage:', audioActivated);
-        debugLog('🚀 Доступные глобальные объекты:', {
+        debugLog("🚀 DOMContentLoaded fired");
+        debugLog(
+          "🔊 Audio activation state restored from localStorage:",
+          audioActivated,
+        );
+        debugLog("🚀 Доступные глобальные объекты:", {
           AudioManager: typeof AudioManager,
           PhysicsEngine: typeof PhysicsEngine,
           BallRenderer: typeof BallRenderer,
           WebSocketClient: typeof WebSocketClient,
           RealtimeClient: typeof RealtimeClient,
-          sharedComponents: typeof sharedComponents
+          sharedComponents: typeof sharedComponents,
         });
         try {
           const sessionId = getSessionIdFromUrl();
@@ -421,63 +508,71 @@
         } catch (error) {
           debugError("❌ Критическая ошибка инициализации:", error);
           let errorMsg = error.message || error;
-          if (errorMsg?.includes('Session with this ID not found') || errorMsg?.includes('not found')) {
-            errorMsg = 'Session with this ID not found. Please check the URL and try again.';
-          } else if (errorMsg?.includes('Realtime connection')) {
-            errorMsg = 'Failed to connect to session. Please reload the page and try again.';
+          if (
+            errorMsg?.includes("Session with this ID not found") ||
+            errorMsg?.includes("not found")
+          ) {
+            errorMsg =
+              "Session with this ID not found. Please check the URL and try again.";
+          } else if (errorMsg?.includes("Realtime connection")) {
+            errorMsg =
+              "Failed to connect to session. Please reload the page and try again.";
           }
           showError(errorMsg);
         }
       });
       function initializeComponents() {
-        debugLog('📦 initializeComponents вызван');
-        if (typeof sharedComponents !== 'undefined') {
+        debugLog("📦 initializeComponents вызван");
+        if (typeof sharedComponents !== "undefined") {
           components.status = sharedComponents.createStatusIndicator(
             document.getElementById("statusContainer"),
             {
-              title: globalThis.i18n?.t('viewer.connecting') || 'Connecting...',
+              title: globalThis.i18n?.t("viewer.connecting") || "Connecting...",
               showIcon: true,
               autoHide: false,
             },
           );
         }
-        debugLog('📦 Status indicator создан');
+        debugLog("📦 Status indicator создан");
         // Initialize Audio Manager (с задержкой если еще не загружен)
-        debugLog('🔊 Проверка AudioManager:', typeof AudioManager);
-        if (typeof AudioManager !== 'undefined') {
-          debugLog('🔊 AudioManager доступен, инициализируем сразу');
+        debugLog("🔊 Проверка AudioManager:", typeof AudioManager);
+        if (typeof AudioManager !== "undefined") {
+          debugLog("🔊 AudioManager доступен, инициализируем сразу");
           initAudioManager();
         } else {
-          debugLog('🔊 AudioManager еще не загружен, ждем...');
+          debugLog("🔊 AudioManager еще не загружен, ждем...");
           let attempts = 0;
           // Ждем загрузки AudioManager
           const checkAudioManager = setInterval(() => {
             attempts++;
-            debugLog(`🔊 Попытка ${attempts}/50 найти AudioManager:`, typeof AudioManager);
-            if (typeof AudioManager !== 'undefined') {
+            debugLog(
+              `🔊 Попытка ${attempts}/50 найти AudioManager:`,
+              typeof AudioManager,
+            );
+            if (typeof AudioManager !== "undefined") {
               clearInterval(checkAudioManager);
-              debugLog('🔊 AudioManager загружен, инициализируем');
+              debugLog("🔊 AudioManager загружен, инициализируем");
               initAudioManager();
             }
           }, 100);
           // Таймаут на случай если AudioManager не загрузится
           setTimeout(() => {
             clearInterval(checkAudioManager);
-            if (typeof AudioManager === 'undefined') {
-              debugError('❌ AudioManager не загрузился за 5 секунд!');
+            if (typeof AudioManager === "undefined") {
+              debugError("❌ AudioManager не загрузился за 5 секунд!");
             }
           }, 5000);
         }
       }
       function initAudioManager() {
-        if (typeof AudioManager === 'undefined') {
-          debugWarn('AudioManager not loaded yet');
+        if (typeof AudioManager === "undefined") {
+          debugWarn("AudioManager not loaded yet");
           return;
         }
         audioManager = new AudioManager();
         window.audioManager = audioManager; // Expose for debugging
-        if (typeof logger !== 'undefined') {
-          logger.audio('AudioManager создан, enabled:', audioManager.enabled);
+        if (typeof logger !== "undefined") {
+          logger.audio("AudioManager создан, enabled:", audioManager.enabled);
         }
         // НЕ инициализируем audio из localStorage автоматически
         // Audio будет инициализирован только когда:
@@ -486,57 +581,72 @@
         // Это гарантирует что audio не будет инициализирован если контроллер отключил звук
         // Setup user gesture handlers for audio activation
         const activateAudio = () => {
-          debugLog('🔘 [activateAudio] Функция вызвана');
-          debugLog('🔘 audioManager:', audioManager);
-          debugLog('🔘 audioActivated:', audioActivated);
+          debugLog("🔘 [activateAudio] Функция вызвана");
+          debugLog("🔘 audioManager:", audioManager);
+          debugLog("🔘 audioActivated:", audioActivated);
           // Проверяем что audioManager существует
           if (!audioManager) {
-            debugWarn('❌ [activateAudio] audioManager не инициализирован!');
+            debugWarn("❌ [activateAudio] audioManager не инициализирован!");
             return;
           }
-          debugLog('🔘 [activateAudio] audioManager существует, инициализируем...');
+          debugLog(
+            "🔘 [activateAudio] audioManager существует, инициализируем...",
+          );
           // Инициализируем AudioContext
           audioManager.init();
-          debugLog('✅ [activateAudio] audioManager.init() вызван');
+          debugLog("✅ [activateAudio] audioManager.init() вызван");
           // Устанавливаем флаг активации
           audioActivated = true;
           window.audioActivated = true;
-          localStorage.setItem('bb_audioActivated', 'true');
-          debugLog('✅ [activateAudio] audioActivated установлен на true');
+          localStorage.setItem("bb_audioActivated", "true");
+          debugLog("✅ [activateAudio] audioActivated установлен на true");
           // Обновляем UI - скрываем кнопку
-          debugLog('🔘 [activateAudio] Вызываем checkAudioOverlay()...');
+          debugLog("🔘 [activateAudio] Вызываем checkAudioOverlay()...");
           checkAudioOverlay();
-          debugLog('✅ [activateAudio] checkAudioOverlay() вызван');
-          if (typeof logger !== 'undefined') {
-            logger.audio('✅ Audio activated by user gesture - кнопка нажата!');
+          debugLog("✅ [activateAudio] checkAudioOverlay() вызван");
+          if (typeof logger !== "undefined") {
+            logger.audio("✅ Audio activated by user gesture - кнопка нажата!");
           }
           // Отправляем на сервер что зритель активировал звук
           const sendActivationNotification = () => {
             const sessionId = getSessionIdFromUrl();
-            debugLog('📤 [sendActivationNotification] sessionId:', sessionId);
-            debugLog('📤 [sendActivationNotification] wsClient:', !!wsClient);
-            debugLog('📤 [sendActivationNotification] wsClient.send:', typeof wsClient?.send);
-            debugLog('📤 [sendActivationNotification] WS_MSG.viewerAudioActivated:', WS_MSG?.viewerAudioActivated);
+            debugLog("📤 [sendActivationNotification] sessionId:", sessionId);
+            debugLog("📤 [sendActivationNotification] wsClient:", !!wsClient);
+            debugLog(
+              "📤 [sendActivationNotification] wsClient.send:",
+              typeof wsClient?.send,
+            );
+            debugLog(
+              "📤 [sendActivationNotification] WS_MSG.viewerAudioActivated:",
+              WS_MSG?.viewerAudioActivated,
+            );
             if (sessionId && wsClient) {
-              debugLog('📤 [activateAudio] Отправляем viewerAudioActivated на сервер');
+              debugLog(
+                "📤 [activateAudio] Отправляем viewerAudioActivated на сервер",
+              );
               // Отправляем сообщение БЕЗ задержки - WebSocket сам разберется если не подключен
-              const result = wsClient.send(WS_MSG.viewerAudioActivated, { activated: true });
-              debugLog('📤 [activateAudio] Результат отправки:', result);
-              if (typeof logger !== 'undefined') {
-                logger.audio('📤 Sent viewerAudioActivated to server');
+              const result = wsClient.send(WS_MSG.viewerAudioActivated, {
+                activated: true,
+              });
+              debugLog("📤 [activateAudio] Результат отправки:", result);
+              if (typeof logger !== "undefined") {
+                logger.audio("📤 Sent viewerAudioActivated to server");
               }
               return true;
             } else {
-              debugLog('⚠️ [activateAudio] wsClient не готов:', {
+              debugLog("⚠️ [activateAudio] wsClient не готов:", {
                 sessionId: !!sessionId,
-                wsClient: !!wsClient
+                wsClient: !!wsClient,
               });
             }
             return false;
           };
           // Отправляем сообщение сразу, без задержек
           const notificationResult = sendActivationNotification();
-          debugLog('✅ [activateAudio] Уведомление отправлено:', notificationResult);
+          debugLog(
+            "✅ [activateAudio] Уведомление отправлено:",
+            notificationResult,
+          );
         };
         // НЕ добавляем глобальные обработчики, чтобы не скрывать overlay сразу
         // document.addEventListener('click', activateAudio, { once: true });
@@ -549,52 +659,83 @@
             audioManager.init();
             audioActivated = true;
             window.audioActivated = true;
-            localStorage.setItem('bb_audioActivated', 'true');
-            if (typeof logger !== 'undefined') {
-              logger.audio('🖱️ Audio context initialized on user gesture (implicit click) - кнопка скрыта');
+            localStorage.setItem("bb_audioActivated", "true");
+            if (typeof logger !== "undefined") {
+              logger.audio(
+                "🖱️ Audio context initialized on user gesture (implicit click) - кнопка скрыта",
+              );
             }
           }
           // Удаляем обработчик после первого срабатывания
-          document.removeEventListener('click', initAudioContextOnFirstUserGesture);
-          document.removeEventListener('touchstart', initAudioContextOnFirstUserGesture);
+          document.removeEventListener(
+            "click",
+            initAudioContextOnFirstUserGesture,
+          );
+          document.removeEventListener(
+            "touchstart",
+            initAudioContextOnFirstUserGesture,
+          );
         };
-        document.addEventListener('click', initAudioContextOnFirstUserGesture, { once: true });
-        document.addEventListener('touchstart', initAudioContextOnFirstUserGesture, { once: true });
-        const unmuteBtn = document.getElementById('unmuteBtn');
+        document.addEventListener("click", initAudioContextOnFirstUserGesture, {
+          once: true,
+        });
+        document.addEventListener(
+          "touchstart",
+          initAudioContextOnFirstUserGesture,
+          {once: true},
+        );
+        const unmuteBtn = document.getElementById("unmuteBtn");
         if (unmuteBtn) {
-          if (typeof logger !== 'undefined') {
-            logger.audio('Unmute button найдена, добавляем обработчики');
+          if (typeof logger !== "undefined") {
+            logger.audio("Unmute button найдена, добавляем обработчики");
           }
-          unmuteBtn.addEventListener('click', (e) => {
+          unmuteBtn.addEventListener("click", (e) => {
             e.stopPropagation(); // Предотвращаем всплытие
             // ВАЖНО: Удаляем глобальные обработчики чтобы избежать конфликтов
-            document.removeEventListener('click', initAudioContextOnFirstUserGesture);
-            document.removeEventListener('touchstart', initAudioContextOnFirstUserGesture);
+            document.removeEventListener(
+              "click",
+              initAudioContextOnFirstUserGesture,
+            );
+            document.removeEventListener(
+              "touchstart",
+              initAudioContextOnFirstUserGesture,
+            );
             activateAudio();
           });
-          unmuteBtn.addEventListener('touchstart', (e) => {
+          unmuteBtn.addEventListener("touchstart", (e) => {
             e.preventDefault();
             e.stopPropagation();
             // ВАЖНО: Удаляем глобальные обработчики чтобы избежать конфликтов
-            document.removeEventListener('click', initAudioContextOnFirstUserGesture);
-            document.removeEventListener('touchstart', initAudioContextOnFirstUserGesture);
+            document.removeEventListener(
+              "click",
+              initAudioContextOnFirstUserGesture,
+            );
+            document.removeEventListener(
+              "touchstart",
+              initAudioContextOnFirstUserGesture,
+            );
             activateAudio();
           });
         } else {
-          debugWarn('🔊 Unmute button НЕ найдена!');
+          debugWarn("🔊 Unmute button НЕ найдена!");
         }
         // Volume slider
-        const viewerVolumeSlider = document.getElementById('viewerVolumeSlider');
+        const viewerVolumeSlider =
+          document.getElementById("viewerVolumeSlider");
         if (viewerVolumeSlider) {
-          viewerVolumeSlider.addEventListener('input', () => {
-            if (audioManager) audioManager.setVolume(viewerVolumeSlider.value / 100);
+          viewerVolumeSlider.addEventListener("input", () => {
+            if (audioManager)
+              audioManager.setVolume(viewerVolumeSlider.value / 100);
           });
         }
         // Экспортируем checkAudioOverlay глобально для отладки
         window.checkAudioOverlay = checkAudioOverlay;
         // ВАЖНО: Применяем отложенный soundEnabled если он был получен до готовности AudioManager
         if (pendingSoundEnabled !== false) {
-          debugLog('🔊 Применяем отложенный soundEnabled:', pendingSoundEnabled);
+          debugLog(
+            "🔊 Применяем отложенный soundEnabled:",
+            pendingSoundEnabled,
+          );
           audioManager.setEnabled(pendingSoundEnabled);
           pendingSoundEnabled = false;
         }
@@ -602,47 +743,54 @@
         checkAudioOverlay();
       }
       function checkAudioOverlay() {
-        const overlay = document.getElementById('unmuteOverlay');
+        const overlay = document.getElementById("unmuteOverlay");
         if (!overlay) {
-          debugWarn('🔊 checkAudioOverlay: overlay element НЕ найден!');
+          debugWarn("🔊 checkAudioOverlay: overlay element НЕ найден!");
           return;
         }
         // Show overlay ONLY if:
         // 1. Sound is ENABLED on controller (!audioManager means not initialized yet, so hide)
         // 2. AND user hasn't activated audio yet
         // If sound is DISABLED on controller - hide overlay completely (button should not appear)
-        const shouldShow = audioManager && audioManager.enabled && !audioActivated;
-        if (typeof logger !== 'undefined') {
-          logger.audio('checkAudioOverlay:', {
+        const shouldShow =
+          audioManager && audioManager.enabled && !audioActivated;
+        if (typeof logger !== "undefined") {
+          logger.audio("checkAudioOverlay:", {
             audioManagerExists: !!audioManager,
             enabled: audioManager?.enabled,
             activated: audioActivated,
             shouldShow,
-            overlayClasses: overlay.className
+            overlayClasses: overlay.className,
           });
         }
         if (shouldShow) {
-          overlay.classList.remove('hidden');
-          if (typeof logger !== 'undefined') {
-            logger.audio('Показываем unmute overlay - звук включен на контроллере, но не активирован');
+          overlay.classList.remove("hidden");
+          if (typeof logger !== "undefined") {
+            logger.audio(
+              "Показываем unmute overlay - звук включен на контроллере, но не активирован",
+            );
           }
         } else {
-          overlay.classList.add('hidden');
-          if (typeof logger !== 'undefined') {
-            logger.audio('Скрываем unmute overlay', {
-              reason: !audioManager ? 'audioManager не инициализирован' : !audioManager.enabled ? 'звук отключен на контроллере' : 'уже активирован'
+          overlay.classList.add("hidden");
+          if (typeof logger !== "undefined") {
+            logger.audio("Скрываем unmute overlay", {
+              reason: !audioManager
+                ? "audioManager не инициализирован"
+                : !audioManager.enabled
+                  ? "звук отключен на контроллере"
+                  : "уже активирован",
             });
           }
         }
         // Show volume control in header only when audio is active
-        const audioControls = document.getElementById('viewerAudioControls');
+        const audioControls = document.getElementById("viewerAudioControls");
         if (audioControls) {
           if (audioManager && audioActivated) {
-            audioControls.classList.remove('hidden');
-            audioControls.style.display = 'flex';
+            audioControls.classList.remove("hidden");
+            audioControls.style.display = "flex";
           } else {
-            audioControls.classList.add('hidden');
-            audioControls.style.display = 'none';
+            audioControls.classList.add("hidden");
+            audioControls.style.display = "none";
           }
         }
       }
@@ -654,16 +802,18 @@
         // Send bounce with ball position to server for controller sync
         if (wsClient && physicsEngine) {
           const ball = physicsEngine.ball;
-          wsClient.send('bounce', {
-            side: side,
-            x: ball.x,
-            y: ball.y,
-            dirX: dirX || 0,
-            dirY: dirY || 0,
-            timestamp: Date.now()
-          }).catch(err => {
-            debugWarn('Failed to send bounce:', err);
-          });
+          wsClient
+            .send("bounce", {
+              side: side,
+              x: ball.x,
+              y: ball.y,
+              dirX: dirX || 0,
+              dirY: dirY || 0,
+              timestamp: Date.now(),
+            })
+            .catch((err) => {
+              debugWarn("Failed to send bounce:", err);
+            });
         }
       }
       async function initializeViewer(sessionId) {
@@ -694,12 +844,15 @@
           globalThis.physicsEngine = physicsEngine;
           // ИСПРАВЛЕНИЕ: явно вызываем setWorldSize для установки флага _worldSizeSet
           // Это необходимо для работы updateClientPhysics на viewer
-          physicsEngine.setWorldSize(globalThis.innerWidth, globalThis.innerHeight);
+          physicsEngine.setWorldSize(
+            globalThis.innerWidth,
+            globalThis.innerHeight,
+          );
           // Явно устанавливаем паузу и центрируем мяч при загрузке
           // Это гарантирует правильную позицию даже если контроллер не подключен
           physicsEngine.setPaused(true);
           ballRenderer = new BallRenderer(canvas, physicsEngine, {
-            localPhysics: true,  // ИСПРАВЛЕНИЕ: включаем локальную физику для viewer
+            localPhysics: true, // ИСПРАВЛЕНИЕ: включаем локальную физику для viewer
           });
           // Связываем рендерер с физикой для инвалидации кэша
           physicsEngine.setRenderer(ballRenderer);
@@ -710,54 +863,71 @@
           // Запрос состояния через REST (при реконнекте)
           async function fetchAndApplyState() {
             try {
-              const resp = await fetch(`/api/session/${sessionId}/state`)
-              if (!resp.ok) return
-              const state = await resp.json()
-              onStateUpdate(state)
-              updateStatus(state)
+              const resp = await fetch(`/api/session/${sessionId}/state`);
+              if (!resp.ok) return;
+              const state = await resp.json();
+              onStateUpdate(state);
+              updateStatus(state);
             } catch (e) {
-              debugWarn('Не удалось получить состояние через REST', e)
+              debugWarn("Не удалось получить состояние через REST", e);
             }
           }
           wsClient.on("open", (event) => {
-            debugLog("✅ WS connection established.")
-            const connMsg = globalThis.i18n?.t('viewer.connectionEstablished') || 'Connection established';
-            components.status?.setStatus("success", connMsg)
+            debugLog("✅ WS connection established.");
+            const connMsg =
+              globalThis.i18n?.t("viewer.connectionEstablished") ||
+              "Connection established";
+            components.status?.setStatus("success", connMsg);
             // При реконнекте тянем свежее состояние через REST
             if (event?.isReconnection) {
-              debugWarn("🔄 WS reconnected - fetching state via REST")
-              fetchAndApplyState()
+              debugWarn("🔄 WS reconnected - fetching state via REST");
+              fetchAndApplyState();
             }
             // Уведомляем сервер о подключении вьювера с размерами экрана
-            wsClient.send("viewer_connected", {
-              timestamp: Date.now(),
-              sessionId: sessionId,
-              role: "viewer",
-              screenSize: {
-                width: globalThis.innerWidth,
-                height: globalThis.innerHeight
-              }
-            }).catch(() => {})
-          })
+            wsClient
+              .send("viewer_connected", {
+                timestamp: Date.now(),
+                sessionId: sessionId,
+                role: "viewer",
+                screenSize: {
+                  width: globalThis.innerWidth,
+                  height: globalThis.innerHeight,
+                },
+              })
+              .catch(() => {
+              });
+          });
           wsClient.on("close", () => {
             debugWarn("🔌 WS connection closed.");
-            showError(globalThis.i18n?.t('viewer.connectionLost') || 'Connection lost. Reconnecting...');
+            showError(
+              globalThis.i18n?.t("viewer.connectionLost") ||
+              "Connection lost. Reconnecting...",
+            );
           });
           wsClient.on("error", (error) => {
             // Не показываем ошибку connection_closed если это первая попытка подключения
             // или если контроллер еще не подключался (это нормально)
-            const isConnectionClosed = error?.type === 'connection_closed'
-            const isFirstAttempt = error?.isFirstAttempt === true
-            const controllerNeverConnected = !globalThis.__current?.controllerConnected
-            if (isConnectionClosed && (isFirstAttempt || controllerNeverConnected)) {
+            const isConnectionClosed = error?.type === "connection_closed";
+            const isFirstAttempt = error?.isFirstAttempt === true;
+            const controllerNeverConnected =
+              !globalThis.__current?.controllerConnected;
+            if (
+              isConnectionClosed &&
+              (isFirstAttempt || controllerNeverConnected)
+            ) {
               // Это нормальная ситуация - не показываем ошибку пользователю
-              debugLog(`ℹ️ Realtime: ${error?.type} (${isFirstAttempt ? 'first attempt' : 'controller not connected yet'})`)
-              return
+              debugLog(
+                `ℹ️ Realtime: ${error?.type} (${isFirstAttempt ? "first attempt" : "controller not connected yet"})`,
+              );
+              return;
             }
             // Критическая ошибка - показываем
             debugError("❌ WebSocket error:", error);
-            if (error?.type === 'connection') {
-              showError(globalThis.i18n?.t('viewer.connectionError') || 'Connection error');
+            if (error?.type === "connection") {
+              showError(
+                globalThis.i18n?.t("viewer.connectionError") ||
+                "Connection error",
+              );
             }
           });
           // Обработчик для получения статуса контроллера
@@ -767,52 +937,66 @@
           });
           // Controller connection events
           wsClient.on("controller_connected", (data) => {
-            console.log("📊 [VIEWER] Controller connected event received:", JSON.stringify(data));
+            console.log(
+              "📊 [VIEWER] Controller connected event received:",
+              JSON.stringify(data),
+            );
             debugLog("📊 Controller connected event:", data);
             // Ensure we have controllerConnected property
-            const statusData = data.controllerConnected !== undefined
-              ? data
-              : { controllerConnected: true };
+            const statusData =
+              data.controllerConnected !== undefined
+                ? data
+                : {controllerConnected: true};
             updateStatus(statusData);
           });
           wsClient.on("controller_disconnected", (data) => {
-            console.log("📊 [VIEWER] Controller disconnected event received:", JSON.stringify(data));
+            console.log(
+              "📊 [VIEWER] Controller disconnected event received:",
+              JSON.stringify(data),
+            );
             debugLog("📊 Controller disconnected event:", data);
             // Ensure we have controllerConnected property
-            const statusData = data.controllerConnected !== undefined
-              ? data
-              : { controllerConnected: false };
+            const statusData =
+              data.controllerConnected !== undefined
+                ? data
+                : {controllerConnected: false};
             updateStatus(statusData);
           });
-          wsClient.on('state_update', onStateUpdate)
-          wsClient.on('initial_state', onStateUpdate)
-          wsClient.on('viewer_status', updateStatus)
-          wsClient.on('language_updated', onLanguageUpdate)
+          wsClient.on("state_update", onStateUpdate);
+          wsClient.on("initial_state", onStateUpdate);
+          wsClient.on("viewer_status", updateStatus);
+          wsClient.on("language_updated", onLanguageUpdate);
           // Подключаемся к WebSocket
           // Не пробрасываем ошибку наверх если это первая попытка подключения
           try {
             await wsClient.connect();
           } catch (error) {
             // Может не подключиться с первой попытки — RealtimeClient переподключится
-            debugWarn("⚠️ First connection attempt failed, will retry:", error.message);
+            debugWarn(
+              "⚠️ First connection attempt failed, will retry:",
+              error.message,
+            );
             // Не показываем ошибку пользователю - автоматический реконнект обработает это
           }
           // Use BallRenderer's built-in optimized loop
           if (ballRenderer) {
-             ballRenderer.start();
+            ballRenderer.start();
           }
           setupEventListeners();
           // Auto-hide hotkeys hint after 10 seconds
           setTimeout(() => {
-            const hotkeysHint = document.getElementById('hotkeysHint');
+            const hotkeysHint = document.getElementById("hotkeysHint");
             if (hotkeysHint) {
-              hotkeysHint.classList.add('hidden');
+              hotkeysHint.classList.add("hidden");
             }
           }, 10000);
           debugLog("✅ Viewer успешно инициализирован");
         } catch (error) {
           debugError("❌ Ошибка инициализации viewer:", error);
-          showError((globalThis.i18n?.t('viewer.initError') || 'Initialization error: ') + error.message);
+          showError(
+            (globalThis.i18n?.t("viewer.initError") ||
+              "Initialization error: ") + error.message,
+          );
         }
       }
     </script>

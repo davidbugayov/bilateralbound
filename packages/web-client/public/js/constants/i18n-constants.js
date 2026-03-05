@@ -1,16 +1,15 @@
-'use strict'
+'use strict';
 /**
  * @fileoverview Shared i18n constants - Single Source of Truth
  * All language-related constants are defined here to avoid duplication
  * @module constants/i18n-constants
  */
-
-;(function (root) {
+(function (root) {
   /**
    * List of supported languages
    * @constant {string[]}
    */
-  const SUPPORTED_LANGUAGES = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh']
+  const SUPPORTED_LANGUAGES = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh'];
 
   /**
    * Human-readable language names
@@ -24,20 +23,20 @@
     de: 'Deutsch',
     pt: 'Português',
     ja: '日本語',
-    zh: '中文'
-  }
+    zh: '中文',
+  };
 
   /**
    * LocalStorage key for language preference
    * @constant {string}
    */
-  const STORAGE_KEY = 'emdr-language'
+  const STORAGE_KEY = 'emdr-language';
 
   /**
    * Default language fallback
    * @constant {string}
    */
-  const DEFAULT_LANGUAGE = 'en'
+  const DEFAULT_LANGUAGE = 'en';
 
   /**
    * Check if a language code is supported
@@ -45,7 +44,7 @@
    * @returns {boolean}
    */
   function isSupported(lang) {
-    return SUPPORTED_LANGUAGES.includes(lang)
+    return SUPPORTED_LANGUAGES.includes(lang);
   }
 
   /**
@@ -54,20 +53,20 @@
    */
   function detectFromDomain() {
     // Safe access to location.hostname
-    let hostname = 'localhost'
+    let hostname = 'localhost';
     if (typeof globalThis !== 'undefined' && globalThis.location) {
-      hostname = globalThis.location.hostname
+      hostname = globalThis.location.hostname;
     }
 
     // Check domain for language detection (emdrbilateral is project name, not a typo)
     if (hostname.includes('emdrbilateral.ru')) {
-      return 'ru'
+      return 'ru';
     }
     if (hostname.includes('emdrbilateral.online')) {
-      return 'en'
+      return 'en';
     }
 
-    return DEFAULT_LANGUAGE
+    return DEFAULT_LANGUAGE;
   }
 
   /**
@@ -77,13 +76,13 @@
   function saveLanguage(lang) {
     // Early return if not supported
     if (!isSupported(lang)) {
-      return
+      return;
     }
 
     // Save to localStorage if available
     if (typeof globalThis !== 'undefined' && globalThis.localStorage) {
       try {
-        globalThis.localStorage.setItem(STORAGE_KEY, lang)
+        globalThis.localStorage.setItem(STORAGE_KEY, lang);
       } catch {
         // Ignore storage errors
       }
@@ -98,21 +97,21 @@
     DEFAULT_LANGUAGE,
     isSupported,
     detectFromDomain,
-    saveLanguage
-  }
+    saveLanguage,
+  };
 
   // Freeze to prevent accidental mutation
-  Object.freeze(I18nConstants)
-  Object.freeze(SUPPORTED_LANGUAGES)
-  Object.freeze(LANGUAGE_NAMES)
+  Object.freeze(I18nConstants);
+  Object.freeze(SUPPORTED_LANGUAGES);
+  Object.freeze(LANGUAGE_NAMES);
 
   // Export to global scope (browser)
   if (typeof root !== 'undefined' && root) {
-    root.I18nConstants = I18nConstants
+    root.I18nConstants = I18nConstants;
   }
 
   // CommonJS export (Node.js)
   if (typeof module !== 'undefined' && module && module.exports) {
-    module.exports = I18nConstants
+    module.exports = I18nConstants;
   }
-})(typeof globalThis !== 'undefined' ? globalThis : this)
+})(typeof globalThis !== 'undefined' ? globalThis : this);

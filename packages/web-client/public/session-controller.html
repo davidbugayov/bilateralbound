@@ -12,7 +12,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <title data-i18n="controller.meta.controllerTitle">BilateralBound - EMDR Therapy Controller</title>
+    <title data-i18n="controller.meta.controllerTitle">
+      BilateralBound - EMDR Therapy Controller
+    </title>
     <meta
       name="description"
       data-i18n-attr="content:controller.meta.controllerDescription"
@@ -25,7 +27,7 @@
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="language" content="multilingual" />
-    <meta name="version" content="2.39.197-25068cc" />
+    <meta name="version" content="2.39.198-8a17962" />
     <meta name="theme-color" content="#2563eb" />
     <meta name="therapy-type" content="EMDR Controller" />
     <meta
@@ -36,25 +38,44 @@
     <link rel="preload" href="/css/shared-components.css" as="style" />
     <link rel="preload" href="/css/light-theme.css" as="style" />
     <link rel="preload" href="/css/controller.css" as="style" />
-    <link rel="preload" href="/js/i18n/i18n.js?v=2.39.197-25068cc" as="script" />
-    <link rel="preload" href="/js/physics-engine.js?v=2.39.197-25068cc" as="script" />
-    <link rel="preload" href="/js/controller.js?v=2.39.197-25068cc" as="script" />
-    <link rel="preload" href="/js/websocket-client.js?v=2.39.197-25068cc" as="script" />
+    <link
+      as="script"
+      href="/js/i18n/i18n.js?v=2.39.198-8a17962"
+      rel="preload"
+    />
+    <link
+      as="script"
+      href="/js/physics-engine.js?v=2.39.198-8a17962"
+      rel="preload"
+    />
+    <link
+      as="script"
+      href="/js/controller.js?v=2.39.198-8a17962"
+      rel="preload"
+    />
+    <link
+      as="script"
+      href="/js/websocket-client.js?v=2.39.198-8a17962"
+      rel="preload"
+    />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-controller.svg?v=2.39.197-25068cc"
+      href="/favicon-controller.svg?v=2.39.198-8a17962"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-controller.ico?v=2.39.197-25068cc"
+      href="/favicon-controller.ico?v=2.39.198-8a17962"
     />
     <link
       rel="apple-touch-icon"
-      href="/favicon-controller.svg?v=2.39.197-25068cc"
+      href="/favicon-controller.svg?v=2.39.198-8a17962"
     />
-    <link rel="shortcut icon" href="/favicon-controller.ico?v=2.39.197-25068cc" />
+    <link
+      href="/favicon-controller.ico?v=2.39.198-8a17962"
+      rel="shortcut icon"
+    />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -68,7 +89,7 @@
     />
     <meta
       property="og:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.197-25068cc"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.198-8a17962"
     />
     <meta property="og:url" content="https://emdrbilateral.ru/" />
     <meta property="og:site_name" content="BilateralBound" />
@@ -86,7 +107,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.197-25068cc"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.198-8a17962"
     />
     <meta name="twitter:site" content="@bilateralbound" />
     <script type="application/ld+json">
@@ -104,10 +125,13 @@
         "genre": "Therapeutic Game"
       }
     </script>
-    <link rel="stylesheet" href="/css/shared-components.css?v=2.39.197-25068cc" />
-    <link rel="stylesheet" href="/css/common.css?v=2.39.197-25068cc" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.197-25068cc" />
-    <link rel="stylesheet" href="/css/controller.css?v=2.39.197-25068cc" />
+    <link
+      href="/css/shared-components.css?v=2.39.198-8a17962"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/common.css?v=2.39.198-8a17962" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.198-8a17962" />
+    <link rel="stylesheet" href="/css/controller.css?v=2.39.198-8a17962" />
     <noscript
       ><div>
         <img
@@ -135,15 +159,32 @@
     </header>
     <main class="wrap">
       <section class="control-section" aria-labelledby="session-heading">
-        <h3 id="session-heading"><span data-i18n="controller.sessionHeading">🎮 Session:</span> <span id="curSid">...</span></h3>
+        <h3 id="session-heading">
+          <span data-i18n="controller.sessionHeading">🎮 Session:</span>
+          <span id="curSid">...</span>
+        </h3>
         <p id="sessionInfo" class="session-info">
           <span class="session-info-item">
-            <span class="session-info-timestamp" id="sessionTimestamp" data-i18n="controller.sessionCreated">Created: loading...</span>
+            <span
+              class="session-info-timestamp"
+              data-i18n="controller.sessionCreated"
+              id="sessionTimestamp"
+            >Created: loading...</span
+            >
           </span>
         </p>
         <div class="link-group">
           <label for="view" class="link-group__label">
-            <span data-i18n="controller.viewerLinkLabel">👁️ Link for client (Viewer):</span> <span id="viewerSessionId" class="viewer-session-id"></span> <span id="viewerStatus" class="disconnected" data-i18n="controller.waiting">waiting</span>
+            <span data-i18n="controller.viewerLinkLabel"
+            >👁️ Link for client (Viewer):</span
+            >
+            <span class="viewer-session-id" id="viewerSessionId"></span>
+            <span
+              class="disconnected"
+              data-i18n="controller.waiting"
+              id="viewerStatus"
+            >waiting</span
+            >
           </label>
           <div class="link-group__input-wrapper">
             <input
@@ -269,7 +310,9 @@
             <span id="fsCurSid" class="fs-session-id">SID: ...</span>
             <div id="fsViewerStatus" class="fs-viewer-status">
               <span class="fs-status-indicator"></span>
-              <span class="fs-status-text" data-i18n="controller.waiting">Waiting...</span>
+              <span class="fs-status-text" data-i18n="controller.waiting"
+              >Waiting...</span
+              >
             </div>
             <div class="fs-link-group">
               <label
@@ -543,7 +586,9 @@
               </button>
             </div>
             <div class="autostop-row" id="autoStopRow">
-              <span class="autostop-label" data-i18n="controller.autoStopLabel">Auto-stop</span>
+              <span class="autostop-label" data-i18n="controller.autoStopLabel"
+              >Auto-stop</span
+              >
               <div class="autostop-field">
                 <input
                   type="number"
@@ -555,7 +600,11 @@
                   data-i18n-attr="placeholder:controller.autoStopPlaceholder"
                   placeholder="0 = off"
                 />
-                <span class="autostop-unit" data-i18n="controller.autoStopPassesLabel">passes</span>
+                <span
+                  class="autostop-unit"
+                  data-i18n="controller.autoStopPassesLabel"
+                >passes</span
+                >
               </div>
               <div class="autostop-field">
                 <input
@@ -568,12 +617,21 @@
                   data-i18n-attr="placeholder:controller.autoStopPlaceholder"
                   placeholder="0 = off"
                 />
-                <span class="autostop-unit" data-i18n="controller.autoStopSecondsLabel">sec</span>
+                <span
+                  class="autostop-unit"
+                  data-i18n="controller.autoStopSecondsLabel"
+                >sec</span
+                >
               </div>
             </div>
             <p class="controls-title" style="margin-top: 16px">
               <span data-i18n="controller.directionTitle">Direction</span>
-              <span id="currentDirectionDisplay" class="direction-display" style="margin-left: 8px; font-size: 1.2em;">↔️</span>
+              <span
+                class="direction-display"
+                id="currentDirectionDisplay"
+                style="margin-left: 8px; font-size: 1.2em"
+              >↔️</span
+              >
             </p>
             <div class="direction-row">
               <fieldset class="segmented" id="directionSegmented">
@@ -657,53 +715,152 @@
         </div>
       </section>
       <section class="control-section" aria-labelledby="settings-heading">
-        <h3 id="settings-heading" data-i18n="controller.settingsHeading">🛠️ Settings</h3>
+        <h3 data-i18n="controller.settingsHeading" id="settings-heading">
+          🛠️ Settings
+        </h3>
         <div class="appearance-grid">
           <div class="controls-card">
-            <div id="viewerAudioIndicator" class="viewer-audio-indicator hidden">
+            <div
+              class="viewer-audio-indicator hidden"
+              id="viewerAudioIndicator"
+            >
               <span class="icon">🔊</span>
-              <span id="viewerAudioText" data-i18n="controller.viewerSoundOff">Viewer sound off</span>
+              <span data-i18n="controller.viewerSoundOff" id="viewerAudioText"
+              >Viewer sound off</span
+              >
             </div>
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 12px;
+              "
+            >
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  cursor: pointer;
+                "
+              >
                 <input
                   type="checkbox"
                   id="soundEnabledCheckbox"
-                  style="width: 20px; height: 20px; cursor: pointer;"
+                  style="width: 20px; height: 20px; cursor: pointer"
                 />
-                <span style="font-size: 0.95rem;" data-i18n="controller.enableSound">Enable sound</span>
+                <span
+                  data-i18n="controller.enableSound"
+                  style="font-size: 0.95rem"
+                >Enable sound</span
+                >
               </label>
             </div>
-            <div id="soundTypeControl" style="opacity: 0.5; pointer-events: none;">
-              <label for="soundTypeSelect" style="display: block; margin-bottom: 8px; font-size: 0.9rem;" data-i18n="controller.soundTypeLabel">
+            <div
+              id="soundTypeControl"
+              style="opacity: 0.5; pointer-events: none"
+            >
+              <label
+                data-i18n="controller.soundTypeLabel"
+                for="soundTypeSelect"
+                style="display: block; margin-bottom: 8px; font-size: 0.9rem"
+              >
                 Sound type:
               </label>
               <select
                 id="soundTypeSelect"
-                style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.95rem;"
+                style="
+                  width: 100%;
+                  padding: 8px;
+                  border-radius: 6px;
+                  border: 1px solid #cbd5e1;
+                  font-size: 0.95rem;
+                "
               >
-                <option value="soft" data-i18n="controller.soundTypeSoft">🎵 Soft (EMDR)</option>
-                <option value="tick" data-i18n="controller.soundTypeTick">⏱️ Tick</option>
-                <option value="tone" data-i18n="controller.soundTypeTone">🎹 Tone</option>
-                <option value="click" data-i18n="controller.soundTypeClick">🖱️ Click</option>
-                <option value="bounce" data-i18n="controller.soundTypeBounce">🎾 Bounce</option>
-                <option value="beep" data-i18n="controller.soundTypeBeep">📢 Beep</option>
+                <option data-i18n="controller.soundTypeSoft" value="soft">
+                  🎵 Soft (EMDR)
+                </option>
+                <option data-i18n="controller.soundTypeTick" value="tick">
+                  ⏱️ Tick
+                </option>
+                <option data-i18n="controller.soundTypeTone" value="tone">
+                  🎹 Tone
+                </option>
+                <option data-i18n="controller.soundTypeClick" value="click">
+                  🖱️ Click
+                </option>
+                <option data-i18n="controller.soundTypeBounce" value="bounce">
+                  🎾 Bounce
+                </option>
+                <option data-i18n="controller.soundTypeBeep" value="beep">
+                  📢 Beep
+                </option>
               </select>
             </div>
-            <div id="controllerMonitorControl" style="margin-top: 12px; border-top: 1px solid #1f2937; padding-top: 12px;">
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 10px;">
-                <input type="checkbox" id="controllerMonitorCheckbox" style="width: 18px; height: 18px; cursor: pointer;" />
-                <span style="font-size: 0.9rem;" data-i18n="controller.monitorSound">Monitor sound</span>
+            <div
+              id="controllerMonitorControl"
+              style="
+                margin-top: 12px;
+                border-top: 1px solid #1f2937;
+                padding-top: 12px;
+              "
+            >
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  cursor: pointer;
+                  margin-bottom: 10px;
+                "
+              >
+                <input
+                  id="controllerMonitorCheckbox"
+                  style="width: 18px; height: 18px; cursor: pointer"
+                  type="checkbox"
+                />
+                <span
+                  data-i18n="controller.monitorSound"
+                  style="font-size: 0.9rem"
+                >Monitor sound</span
+                >
               </label>
-              <div id="controllerVolumeControl" style="display: flex; align-items: center; gap: 8px; opacity: 0.5; pointer-events: none;">
-                <span style="font-size: 0.85rem; white-space: nowrap;" data-i18n="controller.volumeLabel">Volume</span>
-                <input type="range" id="controllerVolumeSlider" min="0" max="100" value="50" style="flex: 1; cursor: pointer;" />
-                <span id="controllerVolumeValue" style="font-size: 0.85rem; min-width: 35px; text-align: right;">50%</span>
+              <div
+                id="controllerVolumeControl"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  opacity: 0.5;
+                  pointer-events: none;
+                "
+              >
+                <span
+                  data-i18n="controller.volumeLabel"
+                  style="font-size: 0.85rem; white-space: nowrap"
+                >Volume</span
+                >
+                <input
+                  id="controllerVolumeSlider"
+                  max="100"
+                  min="0"
+                  style="flex: 1; cursor: pointer"
+                  type="range"
+                  value="50"
+                />
+                <span
+                  id="controllerVolumeValue"
+                  style="font-size: 0.85rem; min-width: 35px; text-align: right"
+                >50%</span
+                >
               </div>
             </div>
           </div>
           <div class="controls-card">
-            <p class="controls-title" data-i18n="controller.presetsTitle">🎯 Presets</p>
+            <p class="controls-title" data-i18n="controller.presetsTitle">
+              🎯 Presets
+            </p>
             <div id="presetControls"></div>
           </div>
           <div class="controls-card">
@@ -711,26 +868,56 @@
               ⌨️ Hotkeys
             </p>
             <div class="hotkey-info">
-              <div><kbd data-i18n="controller.hotkeySpaceKey">Space</kbd> <span data-i18n="controller.hotkeySpaceAction">— Start/Stop</span></div>
-              <div><kbd>F</kbd> <span data-i18n="controller.hotkeyFAction">— Fullscreen preview</span></div>
-              <div><kbd>↑↓←→</kbd> <span data-i18n="controller.hotkeyArrowsAction">— Direction control</span></div>
+              <div>
+                <kbd data-i18n="controller.hotkeySpaceKey">Space</kbd>
+                <span data-i18n="controller.hotkeySpaceAction"
+                >— Start/Stop</span
+                >
+              </div>
+              <div>
+                <kbd>F</kbd>
+                <span data-i18n="controller.hotkeyFAction"
+                >— Fullscreen preview</span
+                >
+              </div>
+              <div>
+                <kbd>↑↓←→</kbd>
+                <span data-i18n="controller.hotkeyArrowsAction"
+                >— Direction control</span
+                >
+              </div>
             </div>
           </div>
         </div>
       </section>
     </main>
-    <div id="stickyControlBar" class="sticky-control-bar" role="toolbar" aria-label="Session controls">
+    <div
+      aria-label="Session controls"
+      class="sticky-control-bar"
+      id="stickyControlBar"
+      role="toolbar"
+    >
       <div class="sticky-counters">
         <div class="sticky-counter">
-          <span class="sticky-counter-label" data-i18n="controller.timerLabel">Timer</span>
-          <span id="stickyTimer" class="sticky-counter-value sticky-counter-value--timer">0:00</span>
+          <span class="sticky-counter-label" data-i18n="controller.timerLabel"
+          >Timer</span
+          >
+          <span
+            class="sticky-counter-value sticky-counter-value--timer"
+            id="stickyTimer"
+          >0:00</span
+          >
         </div>
         <div class="sticky-counter">
-          <span class="sticky-counter-label" data-i18n="controller.passesLabel">Passes</span>
+          <span class="sticky-counter-label" data-i18n="controller.passesLabel"
+          >Passes</span
+          >
           <span id="stickyPasses" class="sticky-counter-value">0</span>
         </div>
         <div class="sticky-counter">
-          <span class="sticky-counter-label" data-i18n="controller.setsLabel">Sets</span>
+          <span class="sticky-counter-label" data-i18n="controller.setsLabel"
+          >Sets</span
+          >
           <span id="stickySets" class="sticky-counter-value">0</span>
         </div>
       </div>
@@ -740,36 +927,67 @@
           class="btn primary sticky-btn"
           onclick="togglePlayPause()"
           data-i18n="controller.start"
-        >▶️ Старт</button>
+        >
+          ▶️ Старт
+        </button>
         <button
           class="btn outline sticky-btn"
           onclick="resetSession()"
           data-i18n="controller.reset"
-        >🔄</button>
+        >
+          🔄
+        </button>
       </div>
     </div>
-    <script src="/js/common.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/domain/session-state.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/domain/direction.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/domain/counters.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/audio/audio-manager.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/constants/i18n-constants.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/i18n/i18n.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/i18n/language-selector.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/renderer.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/shared-components.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/config.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/ui/notifications/notification-system.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/application/controller/ui-controls.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/application/controller/preview-manager.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/application/controller/event-handlers.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/application/controller/play-pause.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/application/controller/ui-sync.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/application/controller/viewer-status.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/new-features.js?v=2.39.197-25068cc" defer></script>
-    <script src="/js/controller.js?v=2.39.197-25068cc" defer></script>
+    <script src="/js/common.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/domain/session-state.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/domain/direction.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/domain/counters.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.198-8a17962" defer></script>
+    <script
+      defer
+      src="/js/constants/i18n-constants.js?v=2.39.198-8a17962"
+    ></script>
+    <script src="/js/i18n/i18n.js?v=2.39.198-8a17962" defer></script>
+    <script
+      defer
+      src="/js/i18n/language-selector.js?v=2.39.198-8a17962"
+    ></script>
+    <script src="/js/renderer.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/shared-components.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/config.js?v=2.39.198-8a17962" defer></script>
+    <script
+      defer
+      src="/js/ui/notifications/notification-system.js?v=2.39.198-8a17962"
+    ></script>
+    <script
+      defer
+      src="/js/application/controller/ui-controls.js?v=2.39.198-8a17962"
+    ></script>
+    <script
+      defer
+      src="/js/application/controller/preview-manager.js?v=2.39.198-8a17962"
+    ></script>
+    <script
+      defer
+      src="/js/application/controller/event-handlers.js?v=2.39.198-8a17962"
+    ></script>
+    <script
+      defer
+      src="/js/application/controller/play-pause.js?v=2.39.198-8a17962"
+    ></script>
+    <script
+      defer
+      src="/js/application/controller/ui-sync.js?v=2.39.198-8a17962"
+    ></script>
+    <script
+      defer
+      src="/js/application/controller/viewer-status.js?v=2.39.198-8a17962"
+    ></script>
+    <script src="/js/new-features.js?v=2.39.198-8a17962" defer></script>
+    <script src="/js/controller.js?v=2.39.198-8a17962" defer></script>
   </body>
 </html>

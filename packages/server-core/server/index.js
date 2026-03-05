@@ -17,20 +17,20 @@ const server = http.createServer(app)
 const { heartbeatInterval } = setupWebSocketServer(server, sessionManager)
 // 4. Запуск сервера с обработкой ошибки EADDRINUSE
 const PORT = config.getServerConfig().PORT
-server.on('error', err => {
+server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    logger.error(`Port ${PORT} is already in use. Waiting before retry...`)
+    logger.error(`Port ${PORT} is already in use. Waiting before retry...`);
     setTimeout(() => {
-      logger.info(`Attempting to restart server on port ${PORT}...`)
+      logger.info(`Attempting to restart server on port ${PORT}...`);
       server.close(() => {
-        server.listen(PORT)
-      })
-    }, 3000)
+        server.listen(PORT);
+      });
+    }, 3000);
   } else {
-    logger.error('Server error:', err)
-    process.exit(1)
+    logger.error('Server error:', err);
+    process.exit(1);
   }
-})
+});
 server.listen(PORT, () => {
   // Unconditional stdout so test harness detects readiness
   logger.info('Modular server architecture is ready.')

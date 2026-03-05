@@ -52,9 +52,13 @@ async function initializePreview(callbacks) {
     if (_physicsInterval) clearInterval(_physicsInterval)
     _physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
     requestAnimationFrame(renderPreviewLoop)
-    globalThis.__previewRenderer = new BallRenderer(canvas, _previewPhysicsEngine, {
-      localPhysics: false
-    })
+    globalThis.__previewRenderer = new BallRenderer(
+      canvas,
+      _previewPhysicsEngine,
+      {
+        localPhysics: false,
+      },
+    );
     globalThis.__previewCanvas = canvas
     const canvasWidth = canvas.width
     const canvasHeight = canvas.height
@@ -73,7 +77,8 @@ async function initializePreview(callbacks) {
       _previewPhysicsEngine.setVelocity(0, 0)
     }
   } catch (error) {
-    if (typeof debugWarn === 'function') debugWarn('Error initializing preview:', error)
+    if (typeof debugWarn === 'function')
+      debugWarn('Error initializing preview:', error);
   }
 }
 /**
@@ -107,7 +112,9 @@ function renderPreviewLoop(timestamp) {
 function showWaitingForViewer() {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.textContent = globalThis.i18n?.t('controller.waitingForViewerConnection') || '⏳ Waiting for viewer connection'
+    viewerInfo.textContent =
+      globalThis.i18n?.t('controller.waitingForViewerConnection') ||
+      '⏳ Waiting for viewer connection';
     viewerInfo.style.display = 'block'
   }
   if (_previewPhysicsEngine) {
@@ -137,7 +144,10 @@ function updatePreviewSize(viewerScreenSize) {
   if (canUpdatePreview(viewerScreenSize)) {
     const canvas = document.getElementById('preview')
     if (!canvas) return
-    const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, viewerScreenSize)
+    const { previewWidth, previewHeight } = calculatePreviewDimensions(
+      canvas,
+      viewerScreenSize,
+    );
     setCanvasDimensions(canvas, previewWidth, previewHeight)
     updatePhysicsEngineWorldSize(viewerScreenSize)
     applyServerStateOrCenter()
@@ -148,7 +158,9 @@ function updatePreviewSize(viewerScreenSize) {
   }
 }
 function canUpdatePreview(viewerScreenSize) {
-  return Boolean(viewerScreenSize && globalThis.__previewRenderer && _previewPhysicsEngine)
+  return Boolean(
+    viewerScreenSize && globalThis.__previewRenderer && _previewPhysicsEngine,
+  );
 }
 function calculatePreviewDimensions(canvas, viewerScreenSize) {
   const container = canvas.parentElement
@@ -171,8 +183,15 @@ function setCanvasDimensions(canvas, previewWidth, previewHeight) {
   canvas.style.height = canvas.height + 'px'
 }
 function updatePhysicsEngineWorldSize(viewerScreenSize) {
-  if (_previewPhysicsEngine && viewerScreenSize?.width && viewerScreenSize?.height) {
-    _previewPhysicsEngine.setWorldSize(viewerScreenSize.width, viewerScreenSize.height)
+  if (
+    _previewPhysicsEngine &&
+    viewerScreenSize?.width &&
+    viewerScreenSize?.height
+  ) {
+    _previewPhysicsEngine.setWorldSize(
+      viewerScreenSize.width,
+      viewerScreenSize.height,
+    );
   }
 }
 function applyServerStateOrCenter() {
@@ -189,17 +208,23 @@ function applyServerStateOrCenter() {
 function centerBallInViewer() {
   if (!_previewPhysicsEngine) return
   if (globalThis.__current?.viewerScreenSize?.width > 0) {
-    const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
-    const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
-    _previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
-    _previewPhysicsEngine.setVelocity(0, 0)
-  } else if (_callbacks.isFullscreenActive() && _callbacks.getFullscreenCanvas()) {
-    const fsCanvas = _callbacks.getFullscreenCanvas()
-    _previewPhysicsEngine.setPosition(fsCanvas.width / 2, fsCanvas.height / 2)
-    _previewPhysicsEngine.setVelocity(0, 0)
+    const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2;
+    const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2;
+    _previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY);
+    _previewPhysicsEngine.setVelocity(0, 0);
+  } else if (
+    _callbacks.isFullscreenActive() &&
+    _callbacks.getFullscreenCanvas()
+  ) {
+    const fsCanvas = _callbacks.getFullscreenCanvas();
+    _previewPhysicsEngine.setPosition(fsCanvas.width / 2, fsCanvas.height / 2);
+    _previewPhysicsEngine.setVelocity(0, 0);
   } else if (globalThis.__previewCanvas) {
-    _previewPhysicsEngine.setPosition(globalThis.__previewCanvas.width / 2, globalThis.__previewCanvas.height / 2)
-    _previewPhysicsEngine.setVelocity(0, 0)
+    _previewPhysicsEngine.setPosition(
+      globalThis.__previewCanvas.width / 2,
+      globalThis.__previewCanvas.height / 2,
+    );
+    _previewPhysicsEngine.setVelocity(0, 0);
   }
 }
 /**

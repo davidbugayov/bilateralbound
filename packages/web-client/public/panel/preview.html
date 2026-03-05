@@ -5,12 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Превью клиента</title>
     <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { background: #000; overflow: hidden; }
-      canvas { display: block; width: 100vw; height: 100vh; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #000;
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
     </style>
-    <script type="module" crossorigin src="/panel/assets/preview-DxBs-lhk.js"></script>
-    <link rel="modulepreload" crossorigin href="/panel/assets/modulepreload-polyfill-B5Qt9EMX.js">
+    <script
+      crossorigin
+      src="/panel/assets/preview-DxBs-lhk.js"
+      type="module"
+    ></script>
+    <link
+      crossorigin
+      href="/panel/assets/modulepreload-polyfill-B5Qt9EMX.js"
+      rel="modulepreload"
+    />
   </head>
   <body>
     <canvas id="c"></canvas>

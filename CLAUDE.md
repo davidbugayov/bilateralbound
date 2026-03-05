@@ -151,6 +151,7 @@ ipsec statusall    # verbose
 VPN users (9): Swetlana, Sergey, Yulia, David, DavidMac1, DavidMac2, Elena, DavidDeck, Bogdan.
 
 **⚠ After VPS reboot**: iptables NAT rules are lost. Restore:
+
 ```bash
 iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o eth0 -j MASQUERADE
 iptables -A FORWARD -s 10.10.10.0/24 -j ACCEPT
@@ -179,6 +180,7 @@ iptables -A FORWARD -d 10.10.10.0/24 -j ACCEPT
 **Fix**: Use `CLAWDBOT_NO_RESPAWN=1` env var — skips the fork, runs gateway directly in foreground.
 
 **Startup script**: `/usr/local/bin/clawdbot-gw.sh`
+
 ```bash
 #!/bin/bash
 cd /root
@@ -210,11 +212,11 @@ systemctl --user restart clawdbot-gateway.service
 
 **Available models** (clawdbot v2026.1.24-3):
 
-| Model ID | Provider | Notes |
-|---|---|---|
-| `github-copilot/claude-haiku-4.5` | GitHub Copilot | free ← используется |
-| `github-copilot/claude-sonnet-4.6` | GitHub Copilot | free |
-| `github-copilot/claude-opus-4.6` | GitHub Copilot | free |
+| Model ID                           | Provider       | Notes               |
+| ---------------------------------- | -------------- | ------------------- |
+| `github-copilot/claude-haiku-4.5`  | GitHub Copilot | free ← используется |
+| `github-copilot/claude-sonnet-4.6` | GitHub Copilot | free                |
+| `github-copilot/claude-opus-4.6`   | GitHub Copilot | free                |
 
 ⚠️ **Anthropic API не используется** — на аккаунте нет кредитов (`credit balance is too low`). Использовать только GitHub Copilot модели.
 
@@ -223,12 +225,21 @@ systemctl --user restart clawdbot-gateway.service
 ### Auth files
 
 `/root/.clawdbot/agents/main/agent/auth-profiles.json` — **must have** `version` + `profiles` wrapper:
+
 ```json
 {
   "version": 1,
   "profiles": {
-    "github-copilot:github": {"type":"token","provider":"github-copilot","token":"ghu_..."},
-    "anthropic:default": {"type":"api_key","provider":"anthropic","key":"sk-ant-..."}
+    "github-copilot:github": {
+      "type": "token",
+      "provider": "github-copilot",
+      "token": "ghu_..."
+    },
+    "anthropic:default": {
+      "type": "api_key",
+      "provider": "anthropic",
+      "key": "sk-ant-..."
+    }
   }
 }
 ```

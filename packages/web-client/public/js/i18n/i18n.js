@@ -121,11 +121,11 @@
       // 1. Check URL parameter (highest priority)
       const params = new URLSearchParams(
         typeof globalThis !== 'undefined' &&
-        globalThis.location &&
-        globalThis.location.search
+          globalThis.location &&
+          globalThis.location.search
           ? globalThis.location.search
-          : ''
-      )
+          : '',
+      );
       const langParam = params.get('lang')
       if (langParam && this.supportedLanguages.includes(langParam)) {
         this.currentLanguage = langParam
@@ -259,7 +259,9 @@
       // Auto-inject VERSION from meta tag if placeholder exists
       if (typeof value === 'string' && value.includes('{{VERSION}}')) {
         const versionMeta = document.querySelector('meta[name="version"]')
-        const version = versionMeta ? versionMeta.getAttribute('content') : 'dev'
+        const version = versionMeta
+          ? versionMeta.getAttribute('content')
+          : 'dev';
         options.VERSION = `v${version}`
       }
 
@@ -375,7 +377,9 @@
           // Auto-inject VERSION from meta tag if placeholder exists
           if (typeof value === 'string' && value.includes('{{VERSION}}')) {
             const versionMeta = document.querySelector('meta[name="version"]')
-            const version = versionMeta ? versionMeta.getAttribute('content') : 'dev'
+            const version = versionMeta
+              ? versionMeta.getAttribute('content')
+              : 'dev';
             value = value.replace('{{VERSION}}', `v${version}`)
           }
 

@@ -270,10 +270,14 @@ const LanguageSelector = (function () {
 
     // Синхронизируем язык с Viewer через API (только для Controller)
     if (globalThis.location.pathname.includes('/c/')) {
-      const sessionId = globalThis.getSessionIdFromUrl?.() || extractSessionIdFromUrl()
+      const sessionId =
+        globalThis.getSessionIdFromUrl?.() || extractSessionIdFromUrl();
       if (sessionId) {
         syncLanguageToViewer(sessionId, lang).catch((err) => {
-          console.warn('[LanguageSelector] Failed to sync language to Viewer:', err.message)
+          console.warn(
+            '[LanguageSelector] Failed to sync language to Viewer:',
+            err.message,
+          );
         })
       }
     }
@@ -303,7 +307,10 @@ const LanguageSelector = (function () {
       }
 
       const data = await response.json()
-      console.log('[LanguageSelector] ✅ Language synced to Viewer:', data.language)
+      console.log(
+        '[LanguageSelector] ✅ Language synced to Viewer:',
+        data.language,
+      );
     } catch (error) {
       console.error('[LanguageSelector] ❌ Failed to sync language:', error)
       throw error
