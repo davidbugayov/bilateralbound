@@ -1,25 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 
-export type BallState = {
-  x: number
-  y: number
-  dx: number
-  dy: number
-  isPlaying: boolean
-  ballColor: string
-  backgroundColor: string
-  ballSize: number
-}
-
-export type SessionState = {
-  isPlaying: boolean
-  viewerConnected: boolean
-  passes: number
-  sets: number
-  timerMs: number
-  ball: BallState | null
-}
-
 export function useWebSocket(sessionId: string | null) {
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -33,24 +13,9 @@ export function useWebSocket(sessionId: string | null) {
   const [passes, setPasses] = useState(0)
   const [sets, setSets] = useState(0)
   const [timerMs, setTimerMs] = useState(0)
-  const [ball, setBall] = useState<BallState | null>(null)
 
   // BroadcastChannel to forward ball position to preview popup
   const bcRef = useRef<BroadcastChannel | null>(null)
-
-  function startTimer() {
-    if (timerIntervalRef.current) return
-    timerIntervalRef.current = setInterval(() => {
-      setTimerMs(t => t + 100)
-    }, 100)
-  }
-
-  function stopTimer() {
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current)
-      timerIntervalRef.current = null
-    }
-  }
 
   const handleMessage = useCallback((data: string) => {
     let msg: { type: string; payload?: Record<string, unknown> }
@@ -61,33 +26,27 @@ export function useWebSocket(sessionId: string | null) {
     }
 
     if (msg.type === 'state_update' || msg.type === 'initial_state') {
-      const p = msg.payload as Partial<BallState> & { isPlaying?: boolean; viewerConnected?: boolean }
+      const p = msg.payload as Record<string, unknown>
 
-      const newBall: BallState = {
-        x: (p.x as number) ?? 0,
-        y: (p.y as number) ?? 0,
-        dx: (p.dx as number) ?? 1,
-        dy: (p.dy as number) ?? 0,
-        isPlaying: (p.isPlaying as boolean) ?? false,
-        ballColor: (p.ballColor as string) ?? '#3b82f6',
-        backgroundColor: (p.backgroundColor as string) ?? '#000000',
-        ballSize: (p.ballSize as number) ?? 3,
-      }
-      setBall(newBall)
+      // Forward ball position to preview popup
+      bcRef.current?.postMessage({ type: 'ball', ...p })
 
-      // Forward to preview popup
-      bcRef.current?.postMessage({ type: 'ball', ...newBall })
-
-      if (p.viewerConnected !== undefined) {
-        setViewerConnected(p.viewerConnected as boolean)
+      if (typeof p.viewerConnected === 'boolean') {
+        setViewerConnected(p.viewerConnected)
       }
 
-      // Sync isPlaying from server (only on initial_state to avoid conflicts)
-      if (msg.type === 'initial_state' && p.isPlaying !== undefined) {
-        const playing = p.isPlaying as boolean
+      // Sync isPlaying from server only on initial_state to avoid overriding user's local toggle
+      if (msg.type === 'initial_state' && typeof p.isPlaying === 'boolean') {
+        const playing = p.isPlaying
         setIsPlaying(playing)
-        if (playing) startTimer()
-        else stopTimer()
+        if (playing) {
+          if (!timerIntervalRef.current) {
+            timerIntervalRef.current = setInterval(() => setTimerMs(t => t + 100), 100)
+          }
+        } else {
+          clearInterval(timerIntervalRef.current ?? undefined)
+          timerIntervalRef.current = null
+        }
       }
     }
 
@@ -139,7 +98,8 @@ export function useWebSocket(sessionId: string | null) {
     }, 30000)
     return () => {
       clearInterval(hb)
-      stopTimer()
+      clearInterval(timerIntervalRef.current ?? undefined)
+      timerIntervalRef.current = null
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
       wsRef.current?.close()
     }
@@ -148,8 +108,14 @@ export function useWebSocket(sessionId: string | null) {
   // Toggle play/pause — call this from App when user clicks Start/Stop
   const setPlaying = useCallback((playing: boolean) => {
     setIsPlaying(playing)
-    if (playing) startTimer()
-    else stopTimer()
+    if (playing) {
+      if (!timerIntervalRef.current) {
+        timerIntervalRef.current = setInterval(() => setTimerMs(t => t + 100), 100)
+      }
+    } else {
+      clearInterval(timerIntervalRef.current ?? undefined)
+      timerIntervalRef.current = null
+    }
   }, [])
 
   // Reset counters — call from App when user clicks Reset
@@ -181,7 +147,6 @@ export function useWebSocket(sessionId: string | null) {
     passes,
     sets,
     timerMs,
-    ball,
     setPlaying,
     resetCounters,
     sendUpdate,

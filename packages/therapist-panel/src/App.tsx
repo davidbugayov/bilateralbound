@@ -56,6 +56,7 @@ export default function App() {
   }
 
   function handleReset() {
+    setPlaying(false)
     resetCounters()
     sendUpdate(buildPayload({ isPlaying: false }))
   }
@@ -105,7 +106,7 @@ export default function App() {
       <Counters timerMs={timerMs} passes={passes} sets={sets} onReset={handleReset} />
       <PlayButton
         isPlaying={isPlaying}
-        disabled={false}
+        disabled={!viewerConnected}
         onClick={handlePlayToggle}
       />
       <SpeedSlider

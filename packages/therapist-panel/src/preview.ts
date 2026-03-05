@@ -49,7 +49,8 @@ if (typeof BroadcastChannel !== 'undefined') {
   }
 }
 
-if (sessionId) {
+// Connect via WS only when BroadcastChannel is unavailable (e.g. Safari < 15.4)
+if (sessionId && typeof BroadcastChannel === 'undefined') {
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
   const ws = new WebSocket(`${protocol}://${location.host}/?sessionId=${sessionId}&role=controller`)
   ws.onmessage = (e: MessageEvent) => {
