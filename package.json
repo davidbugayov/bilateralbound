@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.189",
+  "version": "2.39.190",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -15,6 +15,8 @@
     "dev": "npm run dev:server",
     "dev:server": "cd packages/server-core && npm run dev",
     "dev:client": "cd packages/web-client && npm run dev",
+    "dev:panel": "cd packages/therapist-panel && npm run dev",
+    "build:panel": "cd packages/therapist-panel && npm run build",
     "install:all": "npm install && cd packages/server-core && npm install && cd packages/web-client && npm install",
     "clean": "rm -rf node_modules packages/*/node_modules package-lock.json",
     "clean:cache": "npm cache clean --force && rm -rf node_modules/.cache",
