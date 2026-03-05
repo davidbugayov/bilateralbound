@@ -290,6 +290,10 @@
       "sessionSaved": "会话已保存",
       "sessionDeleted": "会话已删除"
     },
+    "autoStopLabel": "自动停止",
+    "autoStopPassesLabel": "次",
+    "autoStopSecondsLabel": "秒",
+    "autoStopPlaceholder": "0 = 关",
     "presets": {
       "relaxation": "放松",
       "activation": "激活",

@@ -2448,3 +2448,132 @@ button:hover {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* Auto-stop inputs */
+.autostop-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.autostop-label {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
+  min-width: 70px;
+}
+
+.autostop-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.autostop-input {
+  width: 64px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.light-theme .autostop-input {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: #374151;
+}
+
+.autostop-unit {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* === STICKY CONTROL BAR (tablet / mobile) === */
+.sticky-control-bar {
+  display: none;
+}
+
+@media (width <= 900px) {
+  .sticky-control-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 500;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    background: rgb(15 23 42 / 97%);
+    border-top: 1px solid #334155;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 -4px 20px rgb(0 0 0 / 40%);
+  }
+
+  .light-theme .sticky-control-bar {
+    background: rgb(255 255 255 / 97%);
+    border-top-color: #e2e8f0;
+    box-shadow: 0 -4px 20px rgb(0 0 0 / 15%);
+  }
+
+  body {
+    padding-bottom: 80px;
+  }
+}
+
+.sticky-counters {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.sticky-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.sticky-counter-label {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sticky-counter-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.light-theme .sticky-counter-value {
+  color: #1e293b;
+}
+
+.sticky-counter-value--timer {
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: center;
+}
+
+.sticky-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sticky-btn {
+  padding: 10px 16px;
+  font-size: 14px;
+  min-height: 44px;
+  white-space: nowrap;
+}

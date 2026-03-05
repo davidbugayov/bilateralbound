@@ -305,6 +305,10 @@
       "sessionSaved": "セッションが保存されました",
       "sessionDeleted": "セッションが削除されました"
     },
+    "autoStopLabel": "自動停止",
+    "autoStopPassesLabel": "パス",
+    "autoStopSecondsLabel": "秒",
+    "autoStopPlaceholder": "0 = オフ",
     "presets": {
       "relaxation": "リラクゼーション",
       "activation": "活性化",

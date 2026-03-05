@@ -317,6 +317,10 @@
     "sessionResetError": "Ошибка при сбросе сессии",
     "viewerSizeLabel": "Вьювер",
     "viewerConnectedInfo": "✅ Вьювер подключен",
+    "autoStopLabel": "Авто-стоп",
+    "autoStopPassesLabel": "пасов",
+    "autoStopSecondsLabel": "сек",
+    "autoStopPlaceholder": "0 = выкл",
     "meta": {
       "controllerTitle": "Управление сессией | BilateralBound",
       "controllerDescription": "EMDR терапия контроллер для управления биодинамической стимуляцией. Инструмент для EMDR терапевта при проведении парной терапии"

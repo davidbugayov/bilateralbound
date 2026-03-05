@@ -58,6 +58,9 @@ const bbCounters = {
   $sets: null,
   $passesPerSecond: null,
   $speedInfo: null,
+  $stickyTimer: null,
+  $stickyPasses: null,
+  $stickySets: null,
   _lastBounceTs: 0,
   bounceHits: 0, // количество отдельных стуков (2 стука = 1 пасс)
   _passesHistory: [], // История пассов для расчета скорости
@@ -73,6 +76,9 @@ const bbCounters = {
     this.$sets = document.getElementById('bbSets')
     this.$passesPerSecond = document.getElementById('bbPassesPerSecond')
     this.$speedInfo = document.getElementById('speedInfo')
+    this.$stickyTimer = document.getElementById('stickyTimer')
+    this.$stickyPasses = document.getElementById('stickyPasses')
+    this.$stickySets = document.getElementById('stickySets')
     const resetBtn = document.getElementById('bbResetBtn')
     if (resetBtn) {
       resetBtn.addEventListener('click', () => this.resetAll())
@@ -186,6 +192,9 @@ const bbCounters = {
     if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
     if (this.$passes) this.$passes.textContent = String(this.passes)
     if (this.$sets) this.$sets.textContent = String(this.sets)
+    if (this.$stickyTimer) this.$stickyTimer.textContent = this.formatTime(this.timerMs)
+    if (this.$stickyPasses) this.$stickyPasses.textContent = String(this.passes)
+    if (this.$stickySets) this.$stickySets.textContent = String(this.sets)
     this.renderSpeedInfo()
   },
   renderSpeedInfo() {
@@ -270,6 +279,18 @@ function detectAndCountBounceFromServer(prev, curr) {
 document.addEventListener('DOMContentLoaded', () => {
   initializeController().catch(debugError)
   bbCounters.initDom()
+  const autoStopPassesInput = document.getElementById('autoStopPassesInput')
+  const autoStopSecondsInput = document.getElementById('autoStopSecondsInput')
+  if (autoStopPassesInput) {
+    autoStopPassesInput.addEventListener('change', () => {
+      bbCounters.autoStopPasses = Math.max(0, parseInt(autoStopPassesInput.value, 10) || 0)
+    })
+  }
+  if (autoStopSecondsInput) {
+    autoStopSecondsInput.addEventListener('change', () => {
+      bbCounters.autoStopSeconds = Math.max(0, parseInt(autoStopSecondsInput.value, 10) || 0)
+    })
+  }
   globalThis.addEventListener('resize', () => {
     const size = globalThis.__current?.viewerScreenSize
     if (size?.width > 0 && size?.height > 0) {
@@ -1628,6 +1649,13 @@ function updatePlayPauseButton() {
       button.classList.remove('playing')
       button.disabled = false
     }
+  }
+  const stickyBtn = document.getElementById('stickyPlayPauseBtn')
+  if (stickyBtn) {
+    stickyBtn.textContent = isPlaying
+      ? (globalThis.i18n?.t('controller.stop') || '⏸ Стоп')
+      : (globalThis.i18n?.t('controller.start') || '▶️ Старт')
+    stickyBtn.classList.toggle('playing', isPlaying)
   }
 }
 /**

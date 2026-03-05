@@ -273,6 +273,10 @@
     "errorMaxReconnect": "Cannot connect to server. Check internet connection.",
     "viewerSizeLabel": "Viewer",
     "viewerConnectedInfo": "✅ Viewer connected",
+    "autoStopLabel": "Auto-stop",
+    "autoStopPassesLabel": "passes",
+    "autoStopSecondsLabel": "sec",
+    "autoStopPlaceholder": "0 = off",
     "meta": {
       "controllerTitle": "Session Control | BilateralBound",
       "controllerDescription": "EMDR therapy controller for managing bilateral stimulation. Tool for EMDR therapist during couple therapy sessions"

@@ -298,6 +298,10 @@
       "sessionSaved": "Sessão salva",
       "sessionDeleted": "Sessão excluída"
     },
+    "autoStopLabel": "Parar auto",
+    "autoStopPassesLabel": "passes",
+    "autoStopSecondsLabel": "seg",
+    "autoStopPlaceholder": "0 = off",
     "presets": {
       "relaxation": "Relaxamento",
       "activation": "Ativação",

@@ -305,6 +305,10 @@
       "sessionSaved": "Sitzung gespeichert",
       "sessionDeleted": "Sitzung gelöscht"
     },
+    "autoStopLabel": "Auto-Stopp",
+    "autoStopPassesLabel": "Pässe",
+    "autoStopSecondsLabel": "Sek",
+    "autoStopPlaceholder": "0 = aus",
     "presets": {
       "relaxation": "Entspannung",
       "activation": "Aktivierung",
