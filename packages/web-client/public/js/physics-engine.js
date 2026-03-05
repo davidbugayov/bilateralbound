@@ -540,8 +540,19 @@ if (typeof PhysicsEngine === 'undefined') {
       if (!this._ensureWorldSizeSet()) {
         return
       }
+      let speedFactor = 1.0
+      if (this.state.stopping) {
+        const elapsed = (performance.now() - this.state.stoppingStartTs) / 1000
+        speedFactor = Math.max(0, 1 - elapsed / this.state.stoppingDuration)
+        if (speedFactor <= 0) {
+          this.setPaused(true)
+          return
+        }
+      }
       const velocity = this._calculateClientVelocity()
       this._applyAxisLock(velocity)
+      velocity.vx *= speedFactor
+      velocity.vy *= speedFactor
       this._updateBallPosition(velocity, deltaTime)
       this.handleBoundaryCollisions()
       this._updateCurrentPosition()
@@ -829,6 +840,8 @@ if (typeof PhysicsEngine === 'undefined') {
       const validated = {}
       if (typeof command.paused === 'boolean')
         validated.paused = command.paused
+      if (typeof command.stopping === 'boolean')
+        validated.stopping = command.stopping
       if (command.reset === true) validated.reset = true
       if (
         typeof command.radius === 'number' &&
@@ -920,17 +933,13 @@ if (typeof PhysicsEngine === 'undefined') {
       }
     }
     _handleViewerPositionPause(cx, cy) {
-      this.state.allowInterpWhenPaused = true
+      // Don't snap ball to server position — ball already stopped in place via setPaused()
+      // Just clear velocities; no center-seek animation needed
+      this.state.allowInterpWhenPaused = false
       this.state.smoothVx = 0
       this.state.smoothVy = 0
       this.state.lastVx = 0
       this.state.lastVy = 0
-      this.ball.x = cx
-      this.ball.y = cy
-      this._prevPos.x = this.ball.x
-      this._prevPos.y = this.ball.y
-      this._currPos.x = this.ball.x
-      this._currPos.y = this.ball.y
     }
     _handleViewerVelocityUpdate(command) {
       if (this.options.clientSimulation) {
@@ -1085,6 +1094,10 @@ if (typeof PhysicsEngine === 'undefined') {
       this.setVelocity(dirX * pixelsPerSecond, dirY * pixelsPerSecond)
     }
     _handleCommonCommands(command) {
+      // If server signals deceleration phase, start local stopping (viewer/preview)
+      if (command.stopping === true && this.isViewer && !this.state.paused && !this.state.stopping) {
+        this.startStopping()
+      }
       if (command.paused !== undefined) {
         const wasPaused = this.state.paused
         this.setPaused(command.paused)
@@ -1124,6 +1137,7 @@ if (typeof PhysicsEngine === 'undefined') {
         speed: this.ball.speed,
         radius: this.ball.radius,
         paused: this.state.paused,
+        stopping: this.state.stopping,
         colorBall: this.colors.ball,
         colorBg: this.colors.bg
       }

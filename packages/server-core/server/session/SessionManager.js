@@ -232,7 +232,30 @@ class SessionManager {
       session.ballState = {}
     }
 
-    // console.log(`[SessionManager] 🔍 PhysicsEngine exists: ${!!session.physicsEngine}`)
+    // Smooth stop: intercept paused:true when currently playing — start deceleration instead
+    const isStopRequest =
+      updates.paused === true &&
+      session.physicsEngine &&
+      !session.physicsEngine.state.paused &&
+      !session.physicsEngine.state.stopping
+
+    if (isStopRequest) {
+      session.physicsEngine.startStopping()
+      // Apply all other updates (speed, color, etc.) but not paused:true yet
+      const updatesWithoutPause = { ...updates }
+      delete updatesWithoutPause.paused
+      if (Object.keys(updatesWithoutPause).length > 0) {
+        Object.assign(session.ballState, updatesWithoutPause)
+        session.physicsEngine.applyCommand(updatesWithoutPause)
+        const engineState = session.physicsEngine.getState()
+        Object.assign(session.ballState, engineState, updatesWithoutPause)
+      } else {
+        const engineState = session.physicsEngine.getState()
+        Object.assign(session.ballState, engineState)
+      }
+      session.lastStateUpdate = Date.now()
+      return
+    }
 
     // Применяем все валидные обновления к ballState
     Object.assign(session.ballState, updates)
@@ -240,20 +263,11 @@ class SessionManager {
     // CRITICAL FIX: Also apply updates to PhysicsEngine!
     // Otherwise the physics loop will overwrite ballState with old physics state on next tick
     if (session.physicsEngine) {
-      // PhysicsEngine expects commands like { paused: true, speed: 50, ... }
-      // It has its own internal validation, so passing updates is safe
-      // console.log(`[SessionManager] 🎯 Applying command to PhysicsEngine:`, JSON.stringify(updates))
       session.physicsEngine.applyCommand(updates)
 
       // Sync back immediately to ensure consistency
-      // Use efficient merge that prefers the NEW updates if they are valid
       const engineState = session.physicsEngine.getState()
-
-      // Preserve updates that might not be reflected in engineState yet or are meta-properties
-      // This solves the issue where getting state immediately might revert a property if engine didn't process it same way
       Object.assign(session.ballState, engineState, updates)
-    } else {
-      // console.log(`[SessionManager] ⚠️  No PhysicsEngine - updates applied only to ballState`)
     }
 
     // Обновляем timestamp
