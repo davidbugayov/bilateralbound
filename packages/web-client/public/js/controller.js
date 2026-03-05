@@ -64,6 +64,9 @@ const bbCounters = {
   _lastSpeedMeasurement: 0,
   _measurementInterval: null,
   _currentPassesPerSecond: 0,
+  autoStopPasses: 0,    // 0 = disabled
+  autoStopSeconds: 0,   // 0 = disabled
+  _autoStopFired: false,
   initDom() {
     this.$timer = document.getElementById('bbTimer')
     this.$passes = document.getElementById('bbPasses')
@@ -106,6 +109,7 @@ const bbCounters = {
     this.running = true
     this.lastTickTs = performance.now()
     this._passesHistory = [] // Очищаем историю при старте
+    this._autoStopFired = false
   },
   stop(incrementSet = false) {
     this.tick(performance.now())
@@ -141,6 +145,23 @@ const bbCounters = {
       this.addPassMeasurement()
     }
     this.render()
+    this._checkAutoStop()
+  },
+  _checkAutoStop() {
+    if (this._autoStopFired || !this.running) return
+    const passLimit = this.autoStopPasses
+    const secLimit = this.autoStopSeconds
+    const passHit = passLimit > 0 && this.passes >= passLimit
+    const secHit = secLimit > 0 && this.timerMs >= secLimit * 1000
+    if (passHit || secHit) {
+      this._autoStopFired = true
+      // Small delay so the last bounce registers visually
+      setTimeout(() => {
+        if (typeof globalThis.togglePlayPause === 'function') {
+          globalThis.togglePlayPause()
+        }
+      }, 200)
+    }
   },
   tick(nowTs) {
     if (!this.running) return
@@ -152,6 +173,7 @@ const bbCounters = {
         this._lastRenderTs = nowTs
         this.render()
       }
+      this._checkAutoStop()
     }
   },
   formatTime(ms) {
