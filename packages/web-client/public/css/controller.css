@@ -467,11 +467,6 @@ body.fullscreen-active .back-btn {
 
 /* Темная тема - для каждого селектора идут все состояния подряд (сначала атрибутный селектор, затем #presetControls, затем #sessionControls) */
 
-[aria-labelledby="tools-heading"] .btn {
-  border: 2px solid #475569;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
-}
-
 .light-theme .viewer-audio-indicator {
   background: rgb(234 179 8 / 10%);
   border-color: rgb(234 179 8 / 25%);
@@ -607,12 +602,7 @@ body.fullscreen-active .back-btn {
   display: none;
 }
 
-.controller-layout > #previewOverlay.hidden {
-  display: none;
-}
-
-/* JS removes .hidden from #previewOverlay to show it — restore display via JS-managed class.
-   previewOverlay uses position:fixed so it never affects grid layout anyway. */
+/* JS controls visibility via style.display — inline style overrides this CSS rule */
 
 .controller-left-col,
 .controller-right-col {
@@ -625,7 +615,7 @@ body.fullscreen-active .back-btn {
 /* Right column: sticky so controls stay visible while user scrolls settings */
 .controller-right-col {
   position: sticky;
-  top: 70px;
+  top: 70px; /* clears fixed header (~50px) + breathing room */
   align-self: start;
 }
 
@@ -691,7 +681,6 @@ body.fullscreen-active .back-btn {
   }
 
   .controller-right-col .counters-container {
-    flex-wrap: nowrap;
     gap: 8px;
   }
 }
