@@ -1,11 +1,12 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.181",
+  "version": "2.39.182",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
     "packages/server-core",
-    "packages/web-client"
+    "packages/web-client",
+    "packages/therapist-panel"
   ],
   "scripts": {
     "start": "npm run start:server",
