@@ -682,9 +682,7 @@ body.fullscreen-active .back-btn {
   letter-spacing: 0.02em;
 }
 
-/* Bottom section:
-   Row 1: [Auto-stop label]  [Reset btn]
-   Row 2: [passes input  ]  [sec input ]  */
+/* Bottom section: [Auto-stop label] on row 1, [passes] [sec] inputs on row 2 */
 .session-bottom-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -693,28 +691,16 @@ body.fullscreen-active .back-btn {
 }
 
 .session-autostop-label {
-  grid-column: 1;
+  grid-column: 1 / -1;
   grid-row: 1;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #64748b;
-  white-space: nowrap;
-  align-self: center;
 }
 
-.session-bottom-row .autostop-field:first-of-type {
-  grid-column: 1;
-  grid-row: 2;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.session-bottom-row .autostop-field:last-of-type {
-  grid-column: 2;
+.session-bottom-row .autostop-field {
   grid-row: 2;
   min-width: 0;
   display: flex;
@@ -727,15 +713,6 @@ body.fullscreen-active .back-btn {
   min-width: 0;
   padding: 4px 6px;
   font-size: 13px;
-}
-
-.session-counter-reset-btn {
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
-  font-size: 12px !important;
-  padding: 4px 8px !important;
-  min-height: 30px !important;
 }
 
 /* Left col: tighter gap and card padding to fit all content without scroll */
