@@ -137,13 +137,10 @@ if (typeof PhysicsEngine === 'undefined') {
       this.centerX = width / 2
       this.centerY = height / 2
       this._worldSizeSet = true // Устанавливаем флаг
-      // If ball is at old center and paused, snap to new center.
-      // Fixes off-center initial render when CSS canvas size differs from innerWidth/innerHeight
-      // (e.g. iOS Safari 100vh vs innerHeight mismatch on first render frame).
-      const atOldCenter =
-        Math.abs(this.ball.x - oldCenterX) < 20 &&
-        Math.abs(this.ball.y - oldCenterY) < 20
-      if (this.state?.paused && atOldCenter) {
+      // When paused and world size changes, always snap ball to new center.
+      // Covers: iOS 100vh vs innerHeight mismatch, viewer connect/reconnect where
+      // the ball was left at canvas coords (not world coords) by centerBallInViewer().
+      if (this.state?.paused) {
         this.ball.x = this.centerX
         this.ball.y = this.centerY
         this._prevPos.x = this.centerX
