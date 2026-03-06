@@ -712,7 +712,7 @@ body.fullscreen-active .back-btn {
 }
 
 .session-bottom-row .autostop-input {
-  width: 100%;
+  flex: 1;
   min-width: 0;
   padding: 4px 6px;
   font-size: 13px;
