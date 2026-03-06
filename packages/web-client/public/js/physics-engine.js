@@ -130,11 +130,29 @@ if (typeof PhysicsEngine === 'undefined') {
      * Устанавливает размеры мира с пересчетом центра
      */
     setWorldSize(width, height) {
+      const oldCenterX = this.centerX
+      const oldCenterY = this.centerY
       this.options.worldWidth = width
       this.options.worldHeight = height
       this.centerX = width / 2
       this.centerY = height / 2
       this._worldSizeSet = true // Устанавливаем флаг
+      // If ball is at old center and paused, snap to new center.
+      // Fixes off-center initial render when CSS canvas size differs from innerWidth/innerHeight
+      // (e.g. iOS Safari 100vh vs innerHeight mismatch on first render frame).
+      const atOldCenter =
+        Math.abs(this.ball.x - oldCenterX) < 20 &&
+        Math.abs(this.ball.y - oldCenterY) < 20
+      if (this.state?.paused && atOldCenter) {
+        this.ball.x = this.centerX
+        this.ball.y = this.centerY
+        this._prevPos.x = this.centerX
+        this._prevPos.y = this.centerY
+        this._currPos.x = this.centerX
+        this._currPos.y = this.centerY
+        this.state.targetX = this.centerX
+        this.state.targetY = this.centerY
+      }
       this.clampBallWithinBounds()
     }
     /**
