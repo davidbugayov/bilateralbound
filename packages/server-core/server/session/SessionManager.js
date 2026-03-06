@@ -424,13 +424,14 @@ class SessionManager {
    * @param {WebSocket} ws - WebSocket соединение
    */
   handleWebSocketDisconnection(ws) {
+    // Получаем роль ДО удаления клиента из Map
+    const clientInfo = this.getClientInfo(ws)
     const sessionId = this.webSocketManager.removeClient(ws)
     if (sessionId) {
       this._schedulePhysicsUpdate(sessionId)
       this.stateBroadcaster.broadcastViewerStatus(sessionId)
     }
-    // Рассылаем событие об отключении контроллера всем клиентам
-    const clientInfo = this.getClientInfo(ws)
+    // Рассылаем событие об отключении контроллера всем вьюверам
     if (clientInfo?.role === 'controller') {
       this.broadcastControllerConnection(sessionId, false)
     }

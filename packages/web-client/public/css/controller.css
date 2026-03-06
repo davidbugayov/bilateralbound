@@ -119,46 +119,17 @@ input:checked + .slider::before {
   gap: 10px;
 }
 
-/* bbCounters dark theme support */
-#bbCounters > div {
-  background: #334155;
-  border: 1px solid #475569;
-}
-
-/* Перемещённый блок light-theme для bbCounters — менее специфичный селектор должен идти раньше более специфичного */
-.light-theme #bbCounters > div {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-
-#bbCounters > div > div > div:first-child {
-  color: #cbd5e1;
-}
-
-.light-theme #bbCounters > div > div > div:first-child {
-  color: #64748b;
-}
-
-#bbTimer {
-  background: #1e293b;
-  border: 1px solid #475569;
-  color: #e2e8f0;
-}
-
-.light-theme #bbTimer {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  color: #374151;
-}
-
+/* Session stats values: dark theme */
+#bbTimer,
 #bbPasses,
 #bbSets {
   color: #e2e8f0;
 }
 
+.light-theme #bbTimer,
 .light-theme #bbPasses,
 .light-theme #bbSets {
-  color: #374151;
+  color: #1e293b;
 }
 
 /* Preview canvas dark theme support */
@@ -623,89 +594,127 @@ body.fullscreen-active .back-btn {
   position: static;
 }
 
-/* Counters and autostop in right col: no extra margin */
-.controller-right-col .counters-container,
-.controller-right-col .autostop-row {
-  margin-top: 0;
-}
-
-/* Compact counters block — fit inside 280px right col */
-.controller-right-col .counters-container {
+/* ===== UNIFIED SESSION BLOCK ===== */
+.session-unified-block {
+  display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px;
+  gap: 8px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 12px;
 }
 
-.controller-right-col .counters-group {
-  width: 100%;
-  gap: 4px;
-  padding: 4px 6px;
+.light-theme .session-unified-block {
+  background: #f8fafc;
+  border-color: #e2e8f0;
 }
 
-.controller-right-col .counter-block,
-.controller-right-col .counter-block--compact {
-  flex: 1;
-  min-width: 0;
-}
-
-.controller-right-col .counter-label {
-  font-size: 11px;
-}
-
-.controller-right-col .counter-value {
-  font-size: 18px;
-}
-
-.controller-right-col .btn-reset-counter {
-  width: 100%;
-}
-
-/* Compact autostop — grid layout, no overflow */
-.controller-right-col .autostop-row {
-  display: grid;
-  grid-template-columns: auto 1fr 1fr;
-  gap: 6px;
-  align-items: center;
-  flex-wrap: nowrap;
-}
-
-.controller-right-col .autostop-label {
-  min-width: 0;
-  font-size: 12px;
-}
-
-.controller-right-col .autostop-field {
-  min-width: 0;
-}
-
-.controller-right-col .autostop-input {
-  width: 100%;
-  min-width: 0;
-  padding: 4px;
-  font-size: 13px;
-}
-
-/* Start + Reset row */
-.main-actions {
+/* Start / Session-reset row */
+.session-actions-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
   align-items: stretch;
 }
 
-/* Large Start button */
-.right-col-start-btn {
+.session-start-btn {
   font-size: 18px !important;
   font-weight: 700 !important;
   min-height: 56px !important;
   padding: 14px 24px !important;
 }
 
-/* Compact Reset button beside Start */
-.right-col-reset-btn {
+.session-reset-btn {
   min-height: 56px;
   padding: 14px 16px;
   font-size: 18px;
+}
+
+/* Stats: Timer | Passes | Sets */
+.session-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.light-theme .session-stats-row {
+  background: #fff;
+  border-color: #e2e8f0;
+}
+
+.session-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  gap: 3px;
+}
+
+.session-stat + .session-stat {
+  border-left: 1px solid #334155;
+}
+
+.light-theme .session-stat + .session-stat {
+  border-left-color: #e2e8f0;
+}
+
+.session-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.session-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.session-stat--timer .session-stat-value {
+  font-size: 22px;
+  letter-spacing: 0.02em;
+}
+
+/* Bottom row: Autostop + Counter reset */
+.session-bottom-row {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.session-autostop-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.session-counter-reset-btn {
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  min-height: 32px !important;
+}
+
+/* Autostop inputs inside unified block: fill available space */
+.session-bottom-row .autostop-field {
+  min-width: 0;
+}
+
+.session-bottom-row .autostop-input {
+  width: 100%;
+  min-width: 0;
+  padding: 4px 6px;
+  font-size: 13px;
 }
 
 /* Left col: tighter gap and card padding to fit all content without scroll */
@@ -974,17 +983,18 @@ body {
     border-top: none;
   }
 
-  /* Start full width on mobile */
-  .main-actions {
-    grid-template-columns: 1fr auto;
-  }
 }
 
-/* Below 480px: tighten spacing */
+/* Below 480px: tighten unified block */
 @media (width <= 480px) {
-  .right-col-start-btn {
+  .session-start-btn {
     font-size: 16px !important;
     min-height: 50px !important;
+  }
+
+  .session-bottom-row {
+    grid-template-columns: auto 1fr 1fr auto;
+    gap: 4px;
   }
 }
 
