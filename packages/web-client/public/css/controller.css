@@ -931,7 +931,7 @@ body {
   }
 }
 
-/* ===== MOBILE/IPAD (≤900px): single col, appearance first, start last ===== */
+/* ===== MOBILE/IPAD (≤900px): single col, preview first, start second, appearance+presets last ===== */
 
 @media (width <= 900px) {
   .controller-layout {
@@ -939,16 +939,16 @@ body {
     gap: 12px;
   }
 
-  /* Appearance at top, session+preview in middle, controls (Start etc.) last */
-  .controller-left-col {
+  /* Preview at top, start/reset second, appearance+settings+presets last */
+  .controller-center-col {
     order: -3;
   }
 
-  .controller-center-col {
+  .controller-right-col {
     order: -2;
   }
 
-  .controller-right-col {
+  .controller-left-col {
     order: -1;
   }
 
