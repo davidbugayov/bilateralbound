@@ -682,29 +682,40 @@ body.fullscreen-active .back-btn {
   letter-spacing: 0.02em;
 }
 
-/* Bottom section: Autostop row 1 (label + inputs), row 2 (reset button) */
+/* Bottom section:
+   Row 1: [Auto-stop label]  [Reset btn]
+   Row 2: [passes input  ]  [sec input ]  */
 .session-bottom-row {
   display: grid;
-  grid-template-columns: auto 1fr 1fr;
-  grid-template-rows: auto auto;
+  grid-template-columns: 1fr 1fr;
   gap: 4px 6px;
   align-items: center;
 }
 
 .session-autostop-label {
+  grid-column: 1;
+  grid-row: 1;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #64748b;
   white-space: nowrap;
-  grid-row: 1;
-  grid-column: 1;
+  align-self: center;
 }
 
-/* Each autostop field takes one column in row 1 */
-.session-bottom-row .autostop-field {
-  grid-row: 1;
+.session-bottom-row .autostop-field:first-of-type {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.session-bottom-row .autostop-field:last-of-type {
+  grid-column: 2;
+  grid-row: 2;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -718,11 +729,10 @@ body.fullscreen-active .back-btn {
   font-size: 13px;
 }
 
-/* Reset button spans all columns in row 2 */
 .session-counter-reset-btn {
-  grid-row: 2;
-  grid-column: 1 / -1;
-  width: 100%;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
   font-size: 12px !important;
   padding: 4px 8px !important;
   min-height: 30px !important;
