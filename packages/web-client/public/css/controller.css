@@ -658,6 +658,48 @@ body.fullscreen-active .back-btn {
   margin-top: 0;
 }
 
+/* ===== BOTTOM BAR ===== */
+
+/* Spans both grid columns — full page width */
+.controller-bottom-bar {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  border-top: 1px solid #334155;
+  padding-top: 16px;
+}
+
+.light-theme .controller-bottom-bar {
+  border-top-color: #e2e8f0;
+}
+
+.bottom-bar-left,
+.bottom-bar-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bottom-bar-right {
+  justify-content: flex-end;
+}
+
+/* Speed card in bottom bar: minimal top margin */
+.bottom-speed-card .controls-title {
+  margin-top: 0;
+}
+
+/* Remove top margin from counters in bottom bar */
+.controller-bottom-bar .counters-container {
+  margin-top: 0;
+}
+
+/* Remove top margin from autostop in bottom bar */
+.controller-bottom-bar .autostop-row {
+  margin-top: 0;
+}
+
 /* ===== RESPONSIVE ===== */
 
 /* Below 900px: single column, right col goes first */
@@ -671,6 +713,10 @@ body.fullscreen-active .back-btn {
     position: static;
     order: -1;
   }
+
+  .controller-bottom-bar {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Below 480px: tighten spacing */
@@ -678,9 +724,5 @@ body.fullscreen-active .back-btn {
   .right-col-start-btn {
     font-size: 16px !important;
     min-height: 50px !important;
-  }
-
-  .controller-right-col .counters-container {
-    gap: 8px;
   }
 }
