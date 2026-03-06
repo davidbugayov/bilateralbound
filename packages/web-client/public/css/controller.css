@@ -588,13 +588,13 @@ body.fullscreen-active .back-btn {
   }
 }
 
-/* ===== TWO-COLUMN CONTROLLER LAYOUT ===== */
+/* ===== THREE-COLUMN CONTROLLER LAYOUT ===== */
 
-/* Override .wrap grid columns for controller page only */
 .controller-layout {
-  grid-template-columns: 1fr 1.1fr;
-  gap: 24px;
-  align-items: start;
+  max-width: 1400px;
+  grid-template-columns: 260px 1fr 280px;
+  gap: 20px;
+  align-items: stretch;
 }
 
 /* previewOverlay is position:fixed — remove from grid flow */
@@ -602,9 +602,9 @@ body.fullscreen-active .back-btn {
   display: none;
 }
 
-/* JS controls visibility via style.display — inline style overrides this CSS rule */
-
+/* All three columns */
 .controller-left-col,
+.controller-center-col,
 .controller-right-col {
   display: flex;
   flex-direction: column;
@@ -612,26 +612,25 @@ body.fullscreen-active .back-btn {
   min-width: 0;
 }
 
-/* Right column: sticky so controls stay visible while user scrolls settings */
+/* Center col: preview fills remaining height */
+.controller-center-col #previewWrap {
+  flex: 1;
+  min-height: 200px;
+}
+
+/* Right col: no sticky — all primary controls are here */
 .controller-right-col {
-  position: sticky;
-  top: 70px; /* clears fixed header (~50px) + breathing room */
-  align-self: start;
-}
-
-/* Preview takes full width of right column, no sticky positioning */
-.controller-right-col #previewWrap {
   position: static;
-  top: auto;
 }
 
-/* Counters in right col: no extra top margin */
-.controller-right-col .counters-container {
+/* Counters and autostop in right col: no extra margin */
+.controller-right-col .counters-container,
+.controller-right-col .autostop-row {
   margin-top: 0;
 }
 
-/* Action buttons row: Start (full width) + compact Reset */
-.right-col-actions {
+/* Start + Reset row */
+.main-actions {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
@@ -653,56 +652,89 @@ body.fullscreen-active .back-btn {
   font-size: 18px;
 }
 
-/* Autostop row in right col: no extra margin since it's in a flex gap */
-.controller-right-col .autostop-row {
-  margin-top: 0;
+/* Left col headings: more compact than default 1.5rem */
+.controller-left-col h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
 }
 
-/* ===== BOTTOM BAR ===== */
-
-/* Spans both grid columns — full page width */
-.controller-bottom-bar {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  border-top: 1px solid #334155;
-  padding-top: 16px;
+/* Presets as collapsible <details> */
+.presets-details {
+  background: rgb(30 41 59 / 80%);
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 12px 16px;
 }
 
-.light-theme .controller-bottom-bar {
-  border-top-color: #e2e8f0;
+.presets-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #94a3b8;
+  list-style: none;
+  user-select: none;
 }
 
-.bottom-bar-left,
-.bottom-bar-right {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.presets-details summary::-webkit-details-marker {
+  display: none;
 }
 
-.bottom-bar-right {
-  justify-content: flex-end;
+.presets-details[open] summary {
+  margin-bottom: 12px;
 }
 
-/* Speed card in bottom bar: minimal top margin */
-.bottom-speed-card .controls-title {
-  margin-top: 0;
+.light-theme .presets-details {
+  background: rgb(248 250 252 / 80%);
+  border-color: #e2e8f0;
 }
 
-/* Remove top margin from counters in bottom bar */
-.controller-bottom-bar .counters-container {
-  margin-top: 0;
+.light-theme .presets-details summary {
+  color: #64748b;
 }
 
-/* Remove top margin from autostop in bottom bar */
-.controller-bottom-bar .autostop-row {
-  margin-top: 0;
+/* ===== DESKTOP: no page scroll, each column scrolls independently ===== */
+
+@media (width >= 901px) {
+  .controller-layout {
+    /* 20px top + 20px bottom from .wrap padding */
+    height: calc(100dvh - 40px);
+    overflow: hidden;
+  }
+
+  .controller-left-col,
+  .controller-center-col,
+  .controller-right-col {
+    height: 100%;
+    overflow-y: auto;
+  }
 }
 
 /* ===== RESPONSIVE ===== */
 
-/* Below 900px: single column, right col goes first */
+/* 901–1100px: 2-column, center full-width on top */
+@media (width <= 1100px) and (width >= 901px) {
+  .controller-layout {
+    max-width: 1000px;
+    grid-template-columns: 1fr 1fr;
+    height: calc(100dvh - 40px);
+  }
+
+  .controller-center-col {
+    grid-column: 1 / -1;
+    order: -1;
+    flex: none;
+    height: auto;
+    overflow-y: visible;
+  }
+
+  .controller-left-col,
+  .controller-right-col {
+    height: auto;
+    overflow-y: visible;
+  }
+}
+
+/* Below 900px: single column, right col first */
 @media (width <= 900px) {
   .controller-layout {
     grid-template-columns: 1fr;
@@ -710,12 +742,11 @@ body.fullscreen-active .back-btn {
   }
 
   .controller-right-col {
-    position: static;
-    order: -1;
+    order: -2;
   }
 
-  .controller-bottom-bar {
-    grid-template-columns: 1fr;
+  .controller-center-col {
+    order: -1;
   }
 }
 
