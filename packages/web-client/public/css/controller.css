@@ -658,6 +658,77 @@ body.fullscreen-active .back-btn {
   margin-bottom: 8px;
 }
 
+/* Theme toggle not needed on controller page — index.html only */
+.theme-toggle-container {
+  display: none;
+}
+
+/* Appearance: 2-col in narrow left col */
+.controller-left-col .appearance-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Settings section in left col: 1-col stack (sound card too wide for 2-col) */
+.controller-left-col [aria-labelledby="settings-heading"] .appearance-grid {
+  grid-template-columns: 1fr;
+}
+
+/* Direction buttons: 2×2+1 grid in narrow right col */
+.controller-right-col .direction-row .segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.controller-right-col .direction-row .segmented .seg-btn:last-child {
+  grid-column: 1 / -1;
+}
+
+.controller-right-col .direction-row .segmented .seg-btn {
+  font-size: 11px;
+  padding: 9px 6px;
+  min-height: 38px;
+}
+
+/* Override flex border rules for grid layout */
+.controller-right-col .direction-row .segmented .seg-btn + .seg-btn {
+  border-left: none;
+  border-top: 1px solid #475569;
+}
+
+/* Restore left border for column 2 */
+.controller-right-col .direction-row .segmented .seg-btn:nth-child(2),
+.controller-right-col .direction-row .segmented .seg-btn:nth-child(4) {
+  border-left: 1px solid #475569;
+}
+
+/* Row 1: no top border */
+.controller-right-col .direction-row .segmented .seg-btn:nth-child(-n + 2) {
+  border-top: none;
+}
+
+/* Light theme borders for direction grid */
+.light-theme
+  .controller-right-col
+  .direction-row
+  .segmented
+  .seg-btn
+  + .seg-btn {
+  border-top-color: #e2e8f0;
+}
+
+.light-theme
+  .controller-right-col
+  .direction-row
+  .segmented
+  .seg-btn:nth-child(2),
+.light-theme
+  .controller-right-col
+  .direction-row
+  .segmented
+  .seg-btn:nth-child(4) {
+  border-left-color: #e2e8f0;
+}
+
 /* Presets as collapsible <details> */
 .presets-details {
   background: rgb(30 41 59 / 80%);
@@ -692,11 +763,31 @@ body.fullscreen-active .back-btn {
   color: #64748b;
 }
 
-/* ===== DESKTOP: no page scroll, each column scrolls independently ===== */
+/* Color buttons compact in left col (default 48px is too large) */
+.controller-left-col .color-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border-width: 2px;
+}
 
-@media (width >= 901px) {
+.controller-left-col .color-palette {
+  gap: 5px;
+}
+
+/* Prevent horizontal overflow / white strip */
+html {
+  overflow-x: hidden;
+}
+
+/* ===== DESKTOP (>1100px): 3-col, no page scroll ===== */
+
+@media (width >= 1101px) {
+  body {
+    overflow: hidden;
+  }
+
   .controller-layout {
-    /* 20px top + 20px bottom from .wrap padding */
     height: calc(100dvh - 40px);
     overflow: hidden;
   }
@@ -707,46 +798,73 @@ body.fullscreen-active .back-btn {
     height: 100%;
     overflow-y: auto;
   }
+
+  /* Clear fixed back-btn (top:20px, ~34px tall) */
+  .controller-left-col {
+    padding-top: 44px;
+  }
 }
 
-/* ===== RESPONSIVE ===== */
+/* ===== TABLET (901–1100px): 2-col, normal scroll ===== */
 
-/* 901–1100px: 2-column, center full-width on top */
 @media (width <= 1100px) and (width >= 901px) {
   .controller-layout {
     max-width: 1000px;
     grid-template-columns: 1fr 1fr;
-    height: calc(100dvh - 40px);
   }
 
   .controller-center-col {
     grid-column: 1 / -1;
     order: -1;
-    flex: none;
-    height: auto;
-    overflow-y: visible;
-  }
-
-  .controller-left-col,
-  .controller-right-col {
-    height: auto;
-    overflow-y: visible;
   }
 }
 
-/* Below 900px: single column, right col first */
+/* ===== MOBILE/IPAD (≤900px): single col, appearance first, start last ===== */
+
 @media (width <= 900px) {
   .controller-layout {
     grid-template-columns: 1fr;
     gap: 12px;
   }
 
-  .controller-right-col {
-    order: -2;
+  /* Appearance at top, session+preview in middle, controls (Start etc.) last */
+  .controller-left-col {
+    order: -3;
   }
 
   .controller-center-col {
+    order: -2;
+  }
+
+  .controller-right-col {
     order: -1;
+  }
+
+  /* Direction buttons on mobile: same 2×2+1 grid */
+  .controller-right-col .direction-row .segmented {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .controller-right-col .direction-row .segmented .seg-btn:last-child {
+    grid-column: auto;
+  }
+
+  .controller-right-col .direction-row .segmented .seg-btn:nth-child(4) {
+    border-left: none;
+    border-top: 1px solid #475569;
+  }
+
+  .controller-right-col .direction-row .segmented .seg-btn:nth-child(3) {
+    border-left: 1px solid #475569;
+  }
+
+  .controller-right-col .direction-row .segmented .seg-btn:nth-child(-n + 3) {
+    border-top: none;
+  }
+
+  /* Start full width on mobile */
+  .main-actions {
+    grid-template-columns: 1fr auto;
   }
 }
 
