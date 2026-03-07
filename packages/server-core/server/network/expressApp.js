@@ -127,7 +127,7 @@ function localizeHtml(html, lang, locale, metaMap) {
   let result = html.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
 
   // Match each <meta ... /> or <meta ... > tag (spanning multiple lines)
-  result = result.replace(/<meta\b[^>]*?\/?>/gs, (tag) => {
+  result = result.replace(/<meta\b[^>]*?\/?>/g, (tag) => {
     for (const entry of metaMap) {
       if (entry.isTitle) continue
       // Check if this tag has the right attribute (e.g. name="description" or property="og:title")
@@ -161,14 +161,17 @@ function localizeHtml(html, lang, locale, metaMap) {
 }
 
 /**
- * Replaces hardcoded canonical and injects hreflang tags based on the request host.
- * .ru domain → canonical to emdrbilateral.ru; everything else → emdrbilateral.online
+ * Replaces hardcoded canonical, injects hreflang tags, and fixes all domain-specific
+ * meta tags (og:url, og:image, twitter:image, og:locale, preconnect, JSON-LD URLs)
+ * based on the request host.
+ * .ru domain → emdrbilateral.ru; everything else → emdrbilateral.online
  */
 function injectCanonicalHreflang(html, host) {
   const isRu = (host || '').endsWith('.ru')
   const ruBase = 'https://emdrbilateral.ru'
   const onlineBase = 'https://emdrbilateral.online'
-  const canonicalUrl = isRu ? `${ruBase}/` : `${onlineBase}/`
+  const base = isRu ? ruBase : onlineBase
+  const canonicalUrl = `${base}/`
 
   html = html.replace(
     /<link rel="canonical" href="[^"]*" \/>/,
@@ -192,6 +195,43 @@ function injectCanonicalHreflang(html, host) {
     `$1\n    ${hreflang}`
   )
 
+  // Fix og:url
+  html = html.replace(
+    /(<meta property="og:url" content=")[^"]*(")/,
+    `$1${canonicalUrl}$2`
+  )
+
+  // Fix og:image (preserve path+query after domain)
+  html = html.replace(
+    /(<meta property="og:image" content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
+    `$1${base}$3`
+  )
+
+  // Fix twitter:image
+  html = html.replace(
+    /(<meta name="twitter:image" content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
+    `$1${base}$3`
+  )
+
+  // Fix og:locale
+  html = html.replace(
+    /(<meta property="og:locale" content=")[^"]*(")/,
+    `$1${isRu ? 'ru_RU' : 'en_US'}$2`
+  )
+
+  // Fix preconnect link (domain-specific, not fonts)
+  html = html.replace(
+    /(<link\s+rel="preconnect"\s+href=")https:\/\/emdrbilateral\.(ru|online)("[^>]*>)/,
+    `$1${base}$3`
+  )
+
+  // Fix JSON-LD: replace wrong domain URLs in ld+json script blocks
+  const wrongBase = isRu ? onlineBase : ruBase
+  html = html.replace(
+    /(<script type="application\/ld\+json">[\s\S]*?<\/script>)/g,
+    (block) => block.split(wrongBase).join(base)
+  )
+
   return html
 }
 
@@ -205,7 +245,7 @@ function setupExpressApp(sessionManager, apiCache) {
     next()
   })
   // Улучшенная обработка безопасности с учетом сетевых интерфейсов
-  app.use((req, res, next) => {
+  app.use((req, res, next) => { /* jshint unused: false */
     const interfaceIP = networkInterfaces[Object.keys(networkInterfaces)[0]]
 
     req.interfaceIP = interfaceIP || '127.0.1'
@@ -288,7 +328,7 @@ function setupExpressApp(sessionManager, apiCache) {
   app.use(express.json())
 
   // Analytics tracking middleware
-  app.use((req, res, next) => {
+  app.use((req, res, next) => { /* jshint unused: false */
     analytics.recordHttpRequest()
     res.on('finish', () => {
       if (res.statusCode >= 400) analytics.recordHttpError(res.statusCode)
@@ -414,7 +454,7 @@ function setupExpressApp(sessionManager, apiCache) {
   })
 
   // Routes
-  app.get('/health', (req, res) => {
+  app.get('/health', (req, res) => { /* jshint unused: false */
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -436,6 +476,128 @@ function setupExpressApp(sessionManager, apiCache) {
     const count = sessionManager.getSessionCount()
     analytics.updatePeak(count)
     res.json(analytics.getStats(count))
+  })
+
+  // Dynamic robots.txt per domain (.ru gets Host directive, .online does not)
+  app.get('/robots.txt', (req, res) => {
+    const host = req.get('host') || ''
+    const isRu = host.endsWith('.ru')
+    const base = isRu ? 'https://emdrbilateral.ru' : 'https://emdrbilateral.online'
+    const lines = [
+      '# Robots.txt - BilateralBound EMDR Therapy',
+      '',
+      'User-agent: *',
+      'Allow: /',
+      '',
+      'Disallow: /admin/',
+      'Disallow: /private/',
+      'Disallow: /config/',
+      'Disallow: /scripts/',
+      'Disallow: /test/',
+      'Disallow: /tmp/',
+      'Disallow: /cache/',
+      'Disallow: /logs/',
+      'Disallow: /backup/',
+      'Disallow: /node_modules/',
+      'Disallow: /.git/',
+      'Disallow: /.github/',
+      'Disallow: /.env',
+      'Disallow: /.htaccess',
+      'Disallow: /.htpasswd',
+      'Disallow: /package.json',
+      'Disallow: /package-lock.json',
+      '',
+      'User-agent: Googlebot',
+      'Allow: /',
+      'Crawl-delay: 1',
+      '',
+      'User-agent: Googlebot-Image',
+      'Allow: /',
+      'Crawl-delay: 2',
+      '',
+      'User-agent: Yandex',
+      'Allow: /',
+      'Crawl-delay: 1',
+      ...(isRu ? [`Host: ${base}`] : []),
+      '',
+      'User-agent: YandexImages',
+      'Allow: /',
+      'Crawl-delay: 2',
+      '',
+      'User-agent: Bingbot',
+      'Allow: /',
+      'Crawl-delay: 1',
+      '',
+      'User-agent: DuckDuckBot',
+      'Allow: /',
+      'Crawl-delay: 1',
+      '',
+      'User-agent: facebookexternalhit',
+      'Allow: /',
+      '',
+      'User-agent: Twitterbot',
+      'Allow: /',
+      '',
+      'User-agent: TelegramBot',
+      'Allow: /',
+      '',
+      'User-agent: vkShare',
+      'Allow: /',
+      '',
+      'User-agent: GPTBot',
+      'Disallow: /',
+      '',
+      'User-agent: Claude-Web',
+      'Disallow: /',
+      '',
+      'User-agent: Google-Extended',
+      'Disallow: /',
+      '',
+      `Sitemap: ${base}/sitemap.xml`,
+    ]
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+    res.send(lines.join('\n'))
+  })
+
+  // Dynamic sitemap.xml per domain
+  app.get('/sitemap.xml', (req, res) => {
+    const host = req.get('host') || ''
+    const isRu = host.endsWith('.ru')
+    const base = isRu ? 'https://emdrbilateral.ru' : 'https://emdrbilateral.online'
+    const today = new Date().toISOString().split('T')[0]
+    const imageTitle = isRu
+      ? 'BilateralBound - EMDR терапия онлайн'
+      : 'BilateralBound - Online EMDR Therapy Platform'
+    const imageCaption = isRu
+      ? 'Профессиональная платформа EMDR терапии с биодинамической стимуляцией'
+      : 'Professional EMDR therapy platform with bilateral stimulation'
+    const verificationUrls = isRu
+      ? [
+        '  <url>\n    <loc>https://emdrbilateral.ru/google0a8d78e57c19cb2f.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
+        '  <url>\n    <loc>https://emdrbilateral.ru/yandex_736ad8daf3553b6b.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
+        '  <url>\n    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
+      ].join('\n')
+      : ''
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>${base}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>${base}/emdr-eye.png</image:loc>
+      <image:title>${imageTitle}</image:title>
+      <image:caption>${imageCaption}</image:caption>
+    </image:image>
+  </url>
+${verificationUrls}
+</urlset>`
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8')
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+    res.send(xml.trim())
   })
 
   // Static files - only serve specific paths, not root using helper function
@@ -781,7 +943,7 @@ function setupExpressApp(sessionManager, apiCache) {
     res.send(html)
   })
   // Therapist panel (React SPA) — serve index.html for any /panel/:sessionId path
-  app.get('/panel/:sessionId', (req, res) => {
+  app.get('/panel/:sessionId', (req, res) => { /* jshint unused: false */
     setNoCacheHeaders(res)
     res.sendFile(path.join(publicPath, 'panel', 'index.html'))
   })
@@ -832,7 +994,7 @@ function setupExpressApp(sessionManager, apiCache) {
       .json({ error: 'Not Found', path: req.path, requestId: req.id })
   })
   // Centralized error handler
-  app.use((err, req, res, next) => {
+  app.use((err, req, res, next) => { /* jshint unused: false */
     const status = err.status || 500
     const message = err.message || 'Internal Server Error'
     if (DEBUG_MODE) {
