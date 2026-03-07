@@ -65,13 +65,10 @@ class ValidationUtils {
    * @private
    */
   static _validateDirection(updates, validated) {
-    if (updates.dirX !== undefined || updates.dirY !== undefined)
-      if (this._isValidDirectionValue(updates.dirX)) {
-        // console.log('[ValidationUtils] _validateDirection input:', updates.dirX, updates.dirY)
-
-        validated.dirX = updates.dirX
-      }
-    if (this._isValidDirectionValue(updates.dirY)) {
+    if (updates.dirX !== undefined && this._isValidDirectionValue(updates.dirX)) {
+      validated.dirX = updates.dirX
+    }
+    if (updates.dirY !== undefined && this._isValidDirectionValue(updates.dirY)) {
       validated.dirY = updates.dirY
     }
   }
@@ -132,6 +129,9 @@ class ValidationUtils {
     }
     if (updates.returnToCenter === true) {
       validated.returnToCenter = true
+    }
+    if (typeof updates.stopping === 'boolean') {
+      validated.stopping = updates.stopping
     }
   }
 
