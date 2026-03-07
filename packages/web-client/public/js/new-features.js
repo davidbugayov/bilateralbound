@@ -154,9 +154,12 @@ if (typeof globalThis.FeatureManager === 'undefined') {
             presetEntry[1].fallbackName
           : presetEntry[0]
         : ''
+      const _i = globalThis.i18n
+      const _key = 'controller.presetApplied'
+      const _appliedLabel = (_i?.isReady && _i.t(_key) !== _key) ? _i.t(_key) : 'Preset applied'
       globalThis.notificationSystem?.success(
         '',
-        `${presetName} — ${globalThis.i18n?.t('controller.presetApplied') || 'Preset applied'}`
+        `${presetName} — ${_appliedLabel}`
       )
     }
     /**
