@@ -32,6 +32,7 @@ class SessionManager {
         }
       }
     }
+    this._startSharedPhysicsLoop()
   }
 
   /**
@@ -286,6 +287,14 @@ class SessionManager {
     const session = this.sessionRepository.findById(sessionId)
     if (session) {
       session.lastActivity = Date.now()
+      session.pendingDeleteAt = null // cancel pending deletion on reconnect
+
+      // Restore physics engine if it was freed on last disconnect
+      if (!session.physicsEngine) {
+        this._initializePhysicsEngine(session)
+        this.logger.logSession(sessionId, 'Physics engine restored on reconnect')
+      }
+
       this._ensurePhysicsLoop(sessionId)
       this._handleInitialStateBroadcast(sessionId, ws, role, session)
     }
@@ -374,14 +383,27 @@ class SessionManager {
    * @param {WebSocket} ws - WebSocket соединение
    */
   handleWebSocketDisconnection(ws) {
-    // Получаем роль ДО удаления клиента из Map
     const clientInfo = this.getClientInfo(ws)
     const sessionId = this.webSocketManager.removeClient(ws)
+
     if (sessionId) {
-      this._schedulePhysicsUpdate(sessionId)
+      const session = this.sessionRepository.findById(sessionId)
+      if (session) {
+        const remaining = this.webSocketManager.getClients(sessionId)
+        if (remaining.length === 0) {
+          // No clients left — free physics engine immediately, schedule session deletion
+          if (session.mainLoop) {
+            clearInterval(session.mainLoop)
+            session.mainLoop = null
+          }
+          session.physicsEngine = null
+          session.pendingDeleteAt = Date.now() + 5 * 60 * 1000
+          this.logger.logSession(sessionId, 'All clients disconnected — physics freed, session pending delete in 5 min')
+        }
+      }
       this.stateBroadcaster.broadcastViewerStatus(sessionId)
     }
-    // Рассылаем событие об отключении контроллера всем вьюверам
+
     if (clientInfo?.role === 'controller') {
       this.broadcastControllerConnection(sessionId, false)
     }
@@ -619,72 +641,35 @@ class SessionManager {
   }
 
   /**
-   * Запускает физический движок для сессии
-   * @param {string} sessionId - ID сессии
+   * Starts the single shared 60Hz physics loop that serves all sessions.
+   * Called once in the constructor. Replaces per-session setIntervals.
    */
-  startPhysics(sessionId) {
-    const session = this.sessionRepository.findById(sessionId)
-    if (!session) {
-      return
-    }
-    this._schedulePhysicsUpdate(sessionId)
-    this.logger.logSession(sessionId, 'Physics manager initialized', 'debug')
-  }
+  _startSharedPhysicsLoop() {
+    if (this._sharedPhysicsLoop) return
 
-  /**
-   * Ensures the physics loop is running for a session (idempotent).
-   * Does NOT restart if already active — prevents loop kill/restart race on rapid commands.
-   */
-  _ensurePhysicsLoop(sessionId) {
-    const session = this.sessionRepository.findById(sessionId)
-    if (!session) return
+    const PHYSICS_TICK_RATE = 60
+    const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
 
-    // Already running — nothing to do
-    if (session.mainLoop) return
+    this._sharedPhysicsLoop = setInterval(() => {
+      if (this.clientSimulationOnly) return
 
-    this._startPhysicsLoop(sessionId, session)
-  }
+      for (const session of this.sessionRepository.sessions.values()) {
+        // Pending deletion — remove and skip
+        if (session.pendingDeleteAt && Date.now() > session.pendingDeleteAt) {
+          this.sessionRepository.delete(session.id)
+          analytics.recordSessionEnded(session.id)
+          this.logger.logSession(session.id, 'Session deleted after grace period')
+          continue
+        }
 
-  /**
-   * Планирует обновление физики для сессии (restarts the loop).
-   * Use _ensurePhysicsLoop() for idempotent "make sure it's running" calls.
-   * @param {string} sessionId - ID сессии
-   */
-  _schedulePhysicsUpdate(sessionId) {
-    const session = this.sessionRepository.findById(sessionId)
-    if (!session) return
+        // No physics engine (freed on disconnect) — skip
+        if (!session.physicsEngine) continue
 
-    // Останавливаем существующий цикл если есть
-    if (session.mainLoop) {
-      clearInterval(session.mainLoop)
-      session.mainLoop = null
-    }
+        // Only run physics when viewers are connected
+        const hasViewers = this.webSocketManager.getClients(session.id)
+          .some(({ info }) => info.role === 'viewer')
+        if (!hasViewers) continue
 
-    this._startPhysicsLoop(sessionId, session)
-  }
-
-  /**
-   * Internal: starts the physics loop for a session if conditions are met.
-   */
-  _startPhysicsLoop(sessionId, session) {
-    if (this.clientSimulationOnly) {
-      this.logger.logSession(
-        sessionId,
-        'Server-side physics loop disabled (client simulation)',
-        'debug'
-      )
-      return
-    }
-
-    const wsClients = this.webSocketManager.getClients(sessionId)
-    const hasViewers = wsClients.some(({ info }) => info.role === 'viewer')
-
-    // Запускаем серверный цикл физики только если есть вьюверы
-    if (hasViewers && session.physicsEngine) {
-      const PHYSICS_TICK_RATE = 60 // Гц - фиксированная частота обновления
-      const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE // ~16.67 мс
-
-      session.mainLoop = setInterval(() => {
         try {
           const { dirX: userDirX, dirY: userDirY } = session.ballState
           this._withSoundPreserved(session, () => {
@@ -696,33 +681,33 @@ class SessionManager {
             session.ballState.dirY = userDirY
           }
 
-          // Рассылаем обновленное состояние (drift correction) чаще для плавности (15 раз в секунду)
           if (!session.ticks) session.ticks = 0
           session.ticks++
 
           if (session.ticks % 4 === 0) {
             session.lastStateUpdate = Date.now()
-            this.stateBroadcaster.broadcastState(sessionId)
+            this.stateBroadcaster.broadcastState(session.id)
           }
         } catch (error) {
-          this.logger.error(
-            `Error in physics loop for session ${sessionId}: ${error.message}`
-          )
+          this.logger.error(`Shared physics loop error for session ${session.id}: ${error.message}`)
         }
-      }, PHYSICS_DT)
+      }
+    }, PHYSICS_DT)
+  }
 
-      this.logger.logSession(
-        sessionId,
-        `Server-side physics loop started at ${PHYSICS_TICK_RATE}Hz`,
-        'debug'
-      )
-    } else {
-      this.logger.logSession(
-        sessionId,
-        'Server-side physics loop not started (no viewers connected)',
-        'debug'
-      )
-    }
+  /**
+   * Запускает физический движок для сессии (no-op — handled by shared loop)
+   * @param {string} sessionId - ID сессии
+   */
+  startPhysics(sessionId) {
+    // Physics handled by shared loop in _startSharedPhysicsLoop
+  }
+
+  /**
+   * Ensures the physics loop is running for a session (no-op — shared loop always runs).
+   */
+  _ensurePhysicsLoop(sessionId) {
+    // Shared loop handles all sessions automatically
   }
 
   /**
@@ -731,10 +716,7 @@ class SessionManager {
    */
   stopPhysics(sessionId) {
     const session = this.sessionRepository.findById(sessionId)
-    if (session?.mainLoop) {
-      clearInterval(session.mainLoop)
-      session.mainLoop = null
-    }
+    if (session) session.physicsEngine = null
   }
 
   /**

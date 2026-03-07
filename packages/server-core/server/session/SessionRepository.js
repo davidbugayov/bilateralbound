@@ -113,8 +113,7 @@ class SessionRepository {
       /**
        * @type {Map<WebSocket, {role: string, connectedAt: number, sessionId: string}>}
        */
-      clients: new Map(),
-      mainLoop: null // Единый цикл для физики и рассылки
+      clients: new Map()
     }
 
     this.sessions.set(session.id, session)
