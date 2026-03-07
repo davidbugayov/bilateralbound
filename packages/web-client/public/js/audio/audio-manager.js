@@ -267,57 +267,26 @@ class AudioManager {
     }
   }
   /**
-   * Plays a soft wooden knock sound - typical EMDR bilateral stimulation sound
-   * Creates a warmer, more natural "thud" like a ball hitting a padded wall
+   * Plays a soft low-frequency thud — default EMDR bilateral stimulation sound.
+   * Pure sine sweep (120→60 Hz) with smooth decay. No harsh transients.
    */
   playSoftWoodenSound() {
     try {
       const now = this.audioContext.currentTime
-      const duration = 0.15
-      const osc1 = this.audioContext.createOscillator()
-      const gain1 = this.audioContext.createGain()
-      osc1.type = 'sine'
-      osc1.frequency.setValueAtTime(120, now)
-      osc1.frequency.exponentialRampToValueAtTime(60, now + duration)
-      gain1.gain.setValueAtTime(this.volume * 0.8, now)
-      gain1.gain.exponentialRampToValueAtTime(0.001, now + duration)
-      osc1.connect(gain1)
-      gain1.connect(this.audioContext.destination)
-      osc1.start(now)
-      osc1.stop(now + duration)
-      const osc2 = this.audioContext.createOscillator()
-      const gain2 = this.audioContext.createGain()
-      osc2.type = 'triangle'
-      osc2.frequency.setValueAtTime(800, now)
-      osc2.frequency.exponentialRampToValueAtTime(200, now + 0.02)
-      gain2.gain.setValueAtTime(this.volume * 0.4, now)
-      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.03)
-      osc2.connect(gain2)
-      gain2.connect(this.audioContext.destination)
-      osc2.start(now)
-      osc2.stop(now + 0.03)
-      const bufferSize = this.audioContext.sampleRate * 0.05
-      const noiseBuffer = this.audioContext.createBuffer(
-        1,
-        bufferSize,
-        this.audioContext.sampleRate
-      )
-      const output = noiseBuffer.getChannelData(0)
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1
-      }
-      const noise = this.audioContext.createBufferSource()
-      noise.buffer = noiseBuffer
-      const noiseGain = this.audioContext.createGain()
-      const noiseFilter = this.audioContext.createBiquadFilter()
-      noiseFilter.type = 'lowpass'
-      noiseFilter.frequency.value = 500
-      noiseGain.gain.setValueAtTime(this.volume * 0.15, now)
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04)
-      noise.connect(noiseFilter)
-      noiseFilter.connect(noiseGain)
-      noiseGain.connect(this.audioContext.destination)
-      noise.start(now)
+      const duration = 0.16
+      const osc = this.audioContext.createOscillator()
+      const gain = this.audioContext.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(120, now)
+      osc.frequency.exponentialRampToValueAtTime(60, now + duration)
+      // Short linear attack to avoid click artifact, then smooth decay
+      gain.gain.setValueAtTime(0, now)
+      gain.gain.linearRampToValueAtTime(this.volume * 0.8, now + 0.004)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
+      osc.connect(gain)
+      gain.connect(this.audioContext.destination)
+      osc.start(now)
+      osc.stop(now + duration)
     } catch (error) {
       if (typeof logger !== 'undefined') {
         logger.error('Error playing soft wooden sound:', error)
