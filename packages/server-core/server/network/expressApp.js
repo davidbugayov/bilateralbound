@@ -159,6 +159,41 @@ function localizeHtml(html, lang, locale, metaMap) {
   return result
 }
 
+/**
+ * Replaces hardcoded canonical and injects hreflang tags based on the request host.
+ * .ru domain → canonical to emdrbilateral.ru; everything else → emdrbilateral.online
+ */
+function injectCanonicalHreflang(html, host) {
+  const isRu = (host || '').endsWith('.ru')
+  const ruBase = 'https://emdrbilateral.ru'
+  const onlineBase = 'https://emdrbilateral.online'
+  const canonicalUrl = isRu ? `${ruBase}/` : `${onlineBase}/`
+
+  html = html.replace(
+    /<link rel="canonical" href="[^"]*" \/>/,
+    `<link rel="canonical" href="${canonicalUrl}" />`
+  )
+
+  const hreflang = [
+    `<link rel="alternate" hreflang="ru" href="${ruBase}/" />`,
+    `<link rel="alternate" hreflang="en" href="${onlineBase}/" />`,
+    `<link rel="alternate" hreflang="de" href="${onlineBase}/?lang=de" />`,
+    `<link rel="alternate" hreflang="es" href="${onlineBase}/?lang=es" />`,
+    `<link rel="alternate" hreflang="fr" href="${onlineBase}/?lang=fr" />`,
+    `<link rel="alternate" hreflang="pt" href="${onlineBase}/?lang=pt" />`,
+    `<link rel="alternate" hreflang="ja" href="${onlineBase}/?lang=ja" />`,
+    `<link rel="alternate" hreflang="zh" href="${onlineBase}/?lang=zh" />`,
+    `<link rel="alternate" hreflang="x-default" href="${onlineBase}/" />`
+  ].join('\n    ')
+
+  html = html.replace(
+    /(<link rel="canonical"[^>]*\/>)/,
+    `$1\n    ${hreflang}`
+  )
+
+  return html
+}
+
 function setupExpressApp(sessionManager, apiCache) {
   const networkInterfaces = getNetworkInterfaces()
   const app = express()
@@ -365,7 +400,8 @@ function setupExpressApp(sessionManager, apiCache) {
   app.get('/', (req, res) => {
     const lang = detectLanguage(req, null)
     const locale = locales.get(lang) || locales.get('en')
-    const html = localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap)
+    let html = localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap)
+    html = injectCanonicalHreflang(html, req.get('host') || '')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
