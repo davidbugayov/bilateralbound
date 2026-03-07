@@ -5,6 +5,7 @@ class WebSocketManager {
   constructor(sessionRepository) {
     this.sessionRepository = sessionRepository
     this.logger = logger
+    this._wsIndex = new Map() // reverse map: ws → {sessionId, role}
   }
 
   addClient(sessionId, ws, role) {
@@ -17,6 +18,7 @@ class WebSocketManager {
       connectedAt: Date.now(),
       sessionId
     })
+    this._wsIndex.set(ws, { sessionId, role })
     // Обновляем статус подключения
     if (role === 'controller') {
       session.controllerConnected = true
@@ -38,32 +40,36 @@ class WebSocketManager {
   }
 
   removeClient(ws) {
-    for (const session of this.sessionRepository.getAll()) {
-      if (session.clients.has(ws)) {
-        const clientInfo = session.clients.get(ws)
-        session.clients.delete(ws)
-        // Проверяем, остались ли клиенты этой роли
-        this._updateConnectionStatus(session, clientInfo.role)
-        this.logger.logSession(
-          session.id,
-          `${clientInfo.role} disconnected via WebSocket`
-        )
+    const entry = this._wsIndex.get(ws) // O(1)
+    if (!entry) return null
 
-        // Устанавливаем таймаут на отключение если осталась только одна роль
-        if (!session.controllerConnected || !session.viewerConnected) {
-          session.partialDisconnectTime = Date.now()
-          this.logger.logSession(
-            session.id,
-            'Partial disconnect detected - 15 min timeout started'
-          )
-        }
+    this._wsIndex.delete(ws)
+    const { sessionId, role } = entry
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return sessionId
 
-        // Возвращаем ID сессии для дальнейшей обработки (например, для остановки физики)
-        return session.id
-      }
+    session.clients.delete(ws)
+    this._updateConnectionStatus(session, role)
+    this.logger.logSession(sessionId, `${role} disconnected via WebSocket`)
+
+    if (!session.controllerConnected || !session.viewerConnected) {
+      session.partialDisconnectTime = Date.now()
+      this.logger.logSession(
+        sessionId,
+        'Partial disconnect detected - 15 min timeout started'
+      )
     }
 
-    return null
+    return sessionId
+  }
+
+  /**
+   * Returns {sessionId, role} for a WS connection in O(1).
+   * @param {WebSocket} ws
+   * @returns {{sessionId: string, role: string}|null}
+   */
+  getClientInfo(ws) {
+    return this._wsIndex.get(ws) || null
   }
 
   _updateConnectionStatus(session, disconnectedRole) {

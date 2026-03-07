@@ -79,20 +79,11 @@ class SessionManager {
     // Немедленная рассылка состояния при отскоке, чтобы вьювер видел касание границ
     session.physicsEngine.bounceCallback = () => {
       try {
-        // Сохраняем звуковые настройки
-        const soundEnabled = session.ballState.soundEnabled
-        const soundType = session.ballState.soundType
-        Object.assign(session.ballState, session.physicsEngine.getState())
-        // Восстанавливаем звуковые настройки
-        if (soundEnabled !== undefined) {
-          session.ballState.soundEnabled = soundEnabled
-        }
-        if (soundType !== undefined) {
-          session.ballState.soundType = soundType
-        }
+        this._withSoundPreserved(session, () => {
+          Object.assign(session.ballState, session.physicsEngine.getState())
+        })
         this.stateBroadcaster.broadcastState(session.id)
       } catch (err) {
-        // Gracefully handle errors during bounce state broadcast to avoid disrupting physics
         logger.error(
           `Bounce state broadcast error for session ${session.id}:`,
           err
@@ -113,19 +104,9 @@ class SessionManager {
     })
     this._initPhysicsCallbacks(session)
     const engineState = session.physicsEngine.getState()
-    // Сохраняем звуковые настройки перед обновлением от физического движка
-    const soundSettings = {}
-    if (session.ballState.soundEnabled !== undefined) {
-      soundSettings.soundEnabled = session.ballState.soundEnabled
-    }
-    if (session.ballState.soundType !== undefined) {
-      soundSettings.soundType = session.ballState.soundType
-    }
-    Object.assign(session.ballState, engineState)
-    // Восстанавливаем звуковые настройки только если они были определены
-    if (Object.keys(soundSettings).length > 0) {
-      Object.assign(session.ballState, soundSettings)
-    }
+    this._withSoundPreserved(session, () => {
+      Object.assign(session.ballState, engineState)
+    })
 
     // Устанавливаем начальное направление движения (горизонтальное)
     // ВАЖНО: не устанавливаем скорость напрямую, только направление
@@ -165,14 +146,6 @@ class SessionManager {
     }
 
     const validatedUpdates = ValidationUtils.validateBallStateUpdates(updates)
-
-    // TEMPORARY BYPASS VALIDATION
-    if (
-      Object.keys(validatedUpdates).length === 0 &&
-      Object.keys(updates).length > 0
-    ) {
-      return this._applyValidatedUpdates(session, updates)
-    }
 
     if (Object.keys(validatedUpdates).length === 0) {
       this.logger.logSession(
@@ -527,21 +500,10 @@ class SessionManager {
         )
       }
 
-      // Сохраняем настройки которые НЕ должны перезаписываться
-      const soundEnabled = session.ballState.soundEnabled
-      const soundType = session.ballState.soundType
-      const userDirX = session.ballState.dirX
-      const userDirY = session.ballState.dirY
-
-      Object.assign(session.ballState, session.physicsEngine.getState())
-
-      // Восстанавливаем сохраненные настройки
-      if (soundEnabled !== undefined) {
-        session.ballState.soundEnabled = soundEnabled
-      }
-      if (soundType !== undefined) {
-        session.ballState.soundType = soundType
-      }
+      const { dirX: userDirX, dirY: userDirY } = session.ballState
+      this._withSoundPreserved(session, () => {
+        Object.assign(session.ballState, session.physicsEngine.getState())
+      })
       if (userDirX !== undefined && userDirY !== undefined) {
         session.ballState.dirX = userDirX
         session.ballState.dirY = userDirY
@@ -587,6 +549,20 @@ class SessionManager {
     if (wasPlaying) {
       session.physicsEngine.setVelocity(currentState.vx, currentState.vy)
     }
+  }
+
+  /**
+   * Preserves soundEnabled/soundType across a ballState mutation (Object.assign from physics engine
+   * overwrites these fields since PhysicsEngine doesn't track sound state).
+   * @param {Object} session
+   * @param {Function} fn - mutation to execute
+   * @private
+   */
+  _withSoundPreserved(session, fn) {
+    const { soundEnabled, soundType } = session.ballState
+    fn()
+    if (soundEnabled !== undefined) session.ballState.soundEnabled = soundEnabled
+    if (soundType !== undefined) session.ballState.soundType = soundType
   }
 
   /**
@@ -710,30 +686,14 @@ class SessionManager {
 
       session.mainLoop = setInterval(() => {
         try {
-          // КРИТИЧЕСКИ ВАЖНО: Сохраняем направление выбранное пользователем ДО обновления физики
-          const userDirX = session.ballState.dirX
-          const userDirY = session.ballState.dirY
-          const soundEnabled = session.ballState.soundEnabled
-          const soundType = session.ballState.soundType
-
-          // Обновляем физику на сервере
-          session.physicsEngine.update(PHYSICS_DT / 1000)
-
-          // Синхронизируем состояние сессии с движком
-          Object.assign(session.ballState, session.physicsEngine.getState())
-
-          // Восстанавливаем направление выбранное пользователем
+          const { dirX: userDirX, dirY: userDirY } = session.ballState
+          this._withSoundPreserved(session, () => {
+            session.physicsEngine.update(PHYSICS_DT / 1000)
+            Object.assign(session.ballState, session.physicsEngine.getState())
+          })
           if (userDirX !== undefined && userDirY !== undefined) {
             session.ballState.dirX = userDirX
             session.ballState.dirY = userDirY
-          }
-
-          // Восстанавливаем звуковые настройки
-          if (soundEnabled !== undefined) {
-            session.ballState.soundEnabled = soundEnabled
-          }
-          if (soundType !== undefined) {
-            session.ballState.soundType = soundType
           }
 
           // Рассылаем обновленное состояние (drift correction) чаще для плавности (15 раз в секунду)
@@ -811,14 +771,7 @@ class SessionManager {
    * @returns {Object|null} Информация о клиенте или null
    */
   getClientInfo(ws) {
-    for (const session of this.sessionRepository.getAll()) {
-      if (session.clients.has(ws)) {
-        const clientInfo = session.clients.get(ws)
-        return { sessionId: clientInfo.sessionId, role: clientInfo.role }
-      }
-    }
-
-    return null
+    return this.webSocketManager.getClientInfo(ws)
   }
 
   /**
