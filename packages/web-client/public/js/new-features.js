@@ -156,7 +156,7 @@ if (typeof globalThis.FeatureManager === 'undefined') {
         : ''
       globalThis.notificationSystem?.success(
         '',
-        `Preset "${presetName}" applied`
+        `${presetName} — ${globalThis.i18n?.t('controller.presetApplied') || 'Preset applied'}`
       )
     }
     /**
