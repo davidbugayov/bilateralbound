@@ -113,21 +113,17 @@ function setupWebSocketServer(server, sessionManager) {
         }
       },
       viewer_audio_activated: (data, { sessionId, role }) => {
-        // console.log(`🔊 [Server] Получено viewer_audio_activated от ${role}, sessionId=${sessionId}`, data)
-
         if (role === 'viewer') {
           const session = sessionManager.sessionRepository.findById(sessionId)
           if (session) {
             // Сохраняем статус активации звука зрителем
             session.viewerAudioActivated = data.payload?.activated ?? true
-            // console.log(`✅ [Server] Сохранено viewerAudioActivated = ${session.viewerAudioActivated} для сессии ${sessionId}`)
 
             // Отправляем уведомление контроллеру
             const controllers = sessionManager.webSocketManager.getClients(
               sessionId,
               'controller'
             )
-            // console.log(`📤 [Server] Отправляем контроллерам: ${controllers.length} подключено`)
 
             const notificationMessage = JSON.stringify({
               type: 'viewer_audio_activated',
@@ -139,7 +135,6 @@ function setupWebSocketServer(server, sessionManager) {
 
             for (const { client } of controllers) {
               if (client.readyState === 1) {
-                // console.log('📤 [Server] Отправляю сообщение контроллеру')
                 try {
                   client.send(notificationMessage)
                 } catch (error) {

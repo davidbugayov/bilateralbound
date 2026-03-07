@@ -619,11 +619,6 @@ function setupExpressApp(sessionManager, apiCache) {
       const { sessionId } = req.params
       const updates = req.body
 
-      // console.log(`[EXPRESS] 📥 Controller update payload for ${sessionId}:`, JSON.stringify(updates))
-      if (Object.keys(updates).length === 0) {
-        // console.log('[EXPRESS] ⚠️  Received EMPTY payload from controller! Headers:', JSON.stringify(req.headers))
-      }
-
       // Обновляем состояние шара
       const success = sessionManager.updateBallState(sessionId, updates)
 
@@ -641,7 +636,6 @@ function setupExpressApp(sessionManager, apiCache) {
     requireSession(sessionManager),
     (req, res) => {
       const { sessionId } = req.params
-      // console.log(`[EXPRESS] 📥 Viewer update payload for ${sessionId}:`, JSON.stringify(req.body))
       sessionManager.updateBallState(sessionId, req.body)
 
       // Рассылаем обновление всем WebSocket клиентам

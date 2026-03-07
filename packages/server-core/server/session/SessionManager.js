@@ -155,28 +155,22 @@ class SessionManager {
    * @returns {boolean} Успех обновления
    */
   updateBallState(sessionId, updates) {
-    // console.log(`[SessionManager] 📥 Received updates for ${sessionId} from unknown source:`, JSON.stringify(updates))
-
     const session = this.sessionRepository.findById(sessionId)
     if (!session) {
-      // console.log(`[SessionManager] ❌ Session not found: ${sessionId}`)
       return false
     }
 
     if (!this._shouldUpdateState(session, updates)) {
-      // console.log(`[SessionManager] ⏭️  Throttled update for session ${sessionId}`)
       return true // Возвращаем true, так как это не ошибка клиента, а защита сервера
     }
 
     const validatedUpdates = ValidationUtils.validateBallStateUpdates(updates)
-    // console.log(`[SessionManager] 📝 Validated updates for ${sessionId}:`, JSON.stringify(validatedUpdates))
 
     // TEMPORARY BYPASS VALIDATION
     if (
       Object.keys(validatedUpdates).length === 0 &&
       Object.keys(updates).length > 0
     ) {
-      // console.log('[SessionManager] ⚠️ VALIDATION FAILED but bypassing for debug. Applying raw updates:', JSON.stringify(updates))
       return this._applyValidatedUpdates(session, updates)
     }
 
@@ -185,7 +179,6 @@ class SessionManager {
         sessionId,
         '[VALIDATION] No valid fields in update, ignoring'
       )
-      // console.log(`[SessionManager] ❌ No valid fields after validation for ${sessionId}`)
       return false
     }
 
@@ -215,10 +208,7 @@ class SessionManager {
    * @private
    */
   _applyValidatedUpdates(session, validatedUpdates) {
-    // console.log(`[SessionManager] 🔧 _applyValidatedUpdates called for session ${session.id}`)
-    // this._handleReturnToCenter(session, validatedUpdates) // TODO: implement if needed
     this._applyPhysicsUpdates(session, validatedUpdates)
-    // console.log(`[SessionManager] 📢 Calling broadcastState for session ${session.id}`)
     this._postUpdateActions(session, validatedUpdates)
     return true
   }
@@ -273,19 +263,6 @@ class SessionManager {
     // Обновляем timestamp
     session.lastStateUpdate = Date.now()
 
-    if (updates.dirX !== undefined || updates.dirY !== undefined) {
-      // ИСПРАВЛЕНИЕ: при изменении направления, если сессия активна, нужно обновить скорость в ballState
-      // PhysicsEngine делает это внутри applyCommand -> setDirection, но нужно убедиться что getState() вернет правильные vx/vy
-      // Если PhysicsEngine не обновил vx/vy (например из-за того что считал что стоит на паузе в этот тик), форсируем обновление
-
-      // ВАЖНО: Если мы форсируем направление, мы должны быть уверены что скорость не 0
-      // Используем helper PhysicsEngine для расчета скорости
-      if (session.physicsEngine && !session.ballState.paused) {
-        // Force update instruction? No, engine does it.
-        // Just ensure synchronization logic is logging correctly
-        // console.log(`[SessionManager] Check velocities after dir update: vx=${session.physicsEngine.ball.vx}, vy=${session.physicsEngine.ball.vy}`)
-      }
-    }
   }
 
   _postUpdateActions(session, validatedUpdates) {
