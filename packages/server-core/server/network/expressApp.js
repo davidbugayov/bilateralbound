@@ -10,6 +10,7 @@ const fs = require('node:fs')
 const config = require('../config.js')
 const { DEBUG_MODE, logger } = require('../logger.js')
 const analytics = require('../analytics.js')
+const { v4: uuidv4 } = require('uuid')
 // Определяем доступные сетевые интерфейсы
 /**
  * Получает доступные сетевые интерфейсы
@@ -198,15 +199,10 @@ function setupExpressApp(sessionManager, apiCache) {
   const networkInterfaces = getNetworkInterfaces()
   const app = express()
   // Request ID middleware for traceability
-  app.use(async (req, res, next) => {
-    try {
-      const { v4: uuidv4 } = await import('uuid')
-      req.id = req.headers['x-request-id'] || uuidv4()
-      res.setHeader('X-Request-Id', req.id)
-      next()
-    } catch (error) {
-      next(error)
-    }
+  app.use((req, res, next) => {
+    req.id = req.headers['x-request-id'] || uuidv4()
+    res.setHeader('X-Request-Id', req.id)
+    next()
   })
   // Улучшенная обработка безопасности с учетом сетевых интерфейсов
   app.use((req, res, next) => {
@@ -380,6 +376,9 @@ function setupExpressApp(sessionManager, apiCache) {
     }
   ]
 
+  // Pre-render localized HTML for all languages at startup (avoids regex per request)
+  const _htmlCache = new Map()
+
   // Pre-render index.html with version at startup (avoid 2x sync fs reads per request)
   const packageJsonPath = path.join(
     __dirname,
@@ -396,11 +395,18 @@ function setupExpressApp(sessionManager, apiCache) {
     .readFileSync(path.join(publicPath, 'index.html'), 'utf8')
     .replace(/⚡ BilateralBound v[\d.]+/, `⚡ BilateralBound v${appVersion}`)
 
+  // Build per-language HTML cache
+  for (const lang of SUPPORTED_LANGS) {
+    const locale = locales.get(lang) || locales.get('en')
+    _htmlCache.set(`viewer_${lang}`, localizeHtml(cachedViewerHtml, lang, locale, viewerMetaMap))
+    _htmlCache.set(`controller_${lang}`, localizeHtml(cachedControllerHtml, lang, locale, controllerMetaMap))
+    _htmlCache.set(`index_${lang}`, localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap))
+  }
+
   // Root route - serve cached index.html with injected version and localized meta tags
   app.get('/', (req, res) => {
     const lang = detectLanguage(req, null)
-    const locale = locales.get(lang) || locales.get('en')
-    let html = localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap)
+    let html = _htmlCache.get(`index_${lang}`) || _htmlCache.get('index_en')
     html = injectCanonicalHreflang(html, req.get('host') || '')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
@@ -759,8 +765,8 @@ function setupExpressApp(sessionManager, apiCache) {
   app.get('/s/:sessionId', (req, res) => {
     const session = sessionManager.getSession(req.params.sessionId)
     const lang = detectLanguage(req, session)
-    const locale = locales.get(lang) || locales.get('en')
-    const html = localizeHtml(cachedViewerHtml, lang, locale, viewerMetaMap)
+    let html = _htmlCache.get(`viewer_${lang}`) || _htmlCache.get('viewer_en')
+    html = injectCanonicalHreflang(html, req.get('host') || '')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
@@ -768,13 +774,8 @@ function setupExpressApp(sessionManager, apiCache) {
   app.get('/c/:sessionId', (req, res) => {
     const session = sessionManager.getSession(req.params.sessionId)
     const lang = detectLanguage(req, session)
-    const locale = locales.get(lang) || locales.get('en')
-    const html = localizeHtml(
-      cachedControllerHtml,
-      lang,
-      locale,
-      controllerMetaMap
-    )
+    let html = _htmlCache.get(`controller_${lang}`) || _htmlCache.get('controller_en')
+    html = injectCanonicalHreflang(html, req.get('host') || '')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
@@ -831,7 +832,7 @@ function setupExpressApp(sessionManager, apiCache) {
       .json({ error: 'Not Found', path: req.path, requestId: req.id })
   })
   // Centralized error handler
-  app.use((err, req, res) => {
+  app.use((err, req, res, next) => {
     const status = err.status || 500
     const message = err.message || 'Internal Server Error'
     if (DEBUG_MODE) {
