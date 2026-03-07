@@ -239,7 +239,7 @@ class SessionManager {
 
   }
 
-  _postUpdateActions(session, validatedUpdates) {
+  _postUpdateActions(session, validatedUpdates) { /* jshint unused: false */
     // Ensure physics loop is running (idempotent — won't restart if already active)
     this._ensurePhysicsLoop(session.id)
     this.apiCache.delete(`state_${session.id}`)
@@ -328,7 +328,7 @@ class SessionManager {
    * Обрабатывает начальное состояние для контроллера
    * @private
    */
-  _handleControllerInitialState(sessionId, ws, role, session) {
+  _handleControllerInitialState(sessionId, ws, role, session) { /* jshint unused: false */
     try {
       ws.initialStateSent = false
     } catch {
@@ -649,8 +649,13 @@ class SessionManager {
 
     const PHYSICS_TICK_RATE = 60
     const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
+    let _lastTickAt = Date.now()
 
     this._sharedPhysicsLoop = setInterval(() => {
+      const now = Date.now()
+      analytics.recordPhysicsTick(now - _lastTickAt)
+      _lastTickAt = now
+
       if (this.clientSimulationOnly) return
 
       for (const session of this.sessionRepository.sessions.values()) {
@@ -699,14 +704,14 @@ class SessionManager {
    * Запускает физический движок для сессии (no-op — handled by shared loop)
    * @param {string} sessionId - ID сессии
    */
-  startPhysics(sessionId) {
+  startPhysics(sessionId) { /* jshint unused: false */
     // Physics handled by shared loop in _startSharedPhysicsLoop
   }
 
   /**
    * Ensures the physics loop is running for a session (no-op — shared loop always runs).
    */
-  _ensurePhysicsLoop(sessionId) {
+  _ensurePhysicsLoop(sessionId) { /* jshint unused: false */
     // Shared loop handles all sessions automatically
   }
 

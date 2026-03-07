@@ -20,6 +20,8 @@ class Analytics {
     this.totalPairedSessions = 0 // sessions where both viewer + controller connected
     // In-memory session tracking
     this._sessionMeta = new Map() // sessionId -> { startTs, viewerConnected, controllerConnected, hasPair }
+    // Physics tick jitter tracking (last 120 intervals, ~2 seconds at 60Hz)
+    this._physicsTickIntervals = []
     // Persist every N requests to reduce I/O
     this._requestsSinceLastPersist = 0
     this._persistPath = this._resolvePersistPath()
@@ -150,6 +152,11 @@ class Analytics {
     this._persist()
   }
 
+  recordPhysicsTick(actualIntervalMs) {
+    this._physicsTickIntervals.push(actualIntervalMs)
+    if (this._physicsTickIntervals.length > 120) this._physicsTickIntervals.shift()
+  }
+
   recordLanguage(lang) {
     if (!lang || typeof lang !== 'string') return
     this.languageStats[lang] = (this.languageStats[lang] || 0) + 1
@@ -179,6 +186,16 @@ class Analytics {
         return obj
       }, {})
 
+    const ticks = this._physicsTickIntervals
+    const TARGET_TICK_MS = 1000 / 60
+    const avgTickMs = ticks.length
+      ? Math.round((ticks.reduce((a, b) => a + b, 0) / ticks.length) * 10) / 10
+      : 0
+    const maxTickMs = ticks.length ? Math.round(Math.max(...ticks) * 10) / 10 : 0
+    const jitterMs = ticks.length
+      ? Math.round(Math.max(...ticks.map((t) => Math.abs(t - TARGET_TICK_MS))) * 10) / 10
+      : 0
+
     return {
       server: {
         startedAt: new Date(this.startedAt).toISOString(),
@@ -206,6 +223,12 @@ class Analytics {
         totalRequests: this.totalHttpRequests,
         errors4xx: this.errors4xx,
         errors5xx: this.errors5xx
+      },
+      physics: {
+        avgTickMs,
+        maxTickMs,
+        jitterMs,
+        sampleCount: ticks.length
       },
       languages: sortedLangs
     }
