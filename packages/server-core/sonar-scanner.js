@@ -23,29 +23,32 @@ const scannerOptions = {
   options: {
     'sonar.projectKey': 'bilateral-bound-server-core',
     'sonar.projectName': 'Bilateral Bound - Server Core',
-    'sonar.projectVersion': '2.39.5',
+    'sonar.projectVersion': '2.39.241',
     'sonar.projectBaseDir': serverCoreDir,
     'sonar.sources': 'server',
     'sonar.exclusions':
       '**/node_modules/**,**/dist/**,**/coverage/**,**/.scannerwork/**,**/*.test.js,**/spec/**',
     'sonar.sourceEncoding': 'UTF-8',
-    'sonar.qualitygate.wait': false,
-    'sonar.qualitygate.timeout': 300
+    'sonar.qualitygate.wait': true,
+    'sonar.qualitygate.timeout': 300,
+    // Code quality metrics
+    'sonar.javascript.lcov.reportPaths': 'coverage/lcov.info'
   }
 }
 
 async function runScan() {
   try {
     validateEnvironment()
-    console.log('🚀 Starting SonarQube analysis...')
+    console.log('🚀 Starting SonarQube analysis for Server Core...')
     console.log(`📍 Server: ${scannerOptions.serverUrl}`)
     console.log(`📦 Project: ${scannerOptions.options['sonar.projectKey']}`)
+    console.log(`📂 Base directory: ${serverCoreDir}`)
 
     await scanner(scannerOptions, () => {
       console.log('✅ SonarQube analysis completed successfully')
       console.log(
         '📊 View results at:',
-        `${scannerOptions.serverUrl}/projects/${scannerOptions.options['sonar.projectKey']}`
+        `${scannerOptions.serverUrl}/dashboard?id=${scannerOptions.options['sonar.projectKey']}`
       )
       process.exit(0)
     })

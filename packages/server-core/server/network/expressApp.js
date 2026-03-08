@@ -553,7 +553,7 @@ function setupExpressApp(sessionManager, apiCache) {
       'User-agent: Google-Extended',
       'Disallow: /',
       '',
-      `Sitemap: ${base}/sitemap.xml`,
+      `Sitemap: ${base}/sitemap.xml`
     ]
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
     res.setHeader('Cache-Control', 'public, max-age=86400')
@@ -576,7 +576,7 @@ function setupExpressApp(sessionManager, apiCache) {
       ? [
         '  <url>\n    <loc>https://emdrbilateral.ru/google0a8d78e57c19cb2f.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
         '  <url>\n    <loc>https://emdrbilateral.ru/yandex_736ad8daf3553b6b.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
-        '  <url>\n    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
+        '  <url>\n    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>'
       ].join('\n')
       : ''
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
