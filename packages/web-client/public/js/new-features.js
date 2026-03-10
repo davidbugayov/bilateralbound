@@ -120,6 +120,10 @@ if (typeof globalThis.FeatureManager === 'undefined') {
       if (globalThis.i18n?.applyTranslations) {
         globalThis.i18n.applyTranslations()
       }
+      // Reinitialize viewer connection warnings for newly added buttons
+      if (globalThis.reinitializeViewerConnectionWarnings) {
+        globalThis.reinitializeViewerConnectionWarnings()
+      }
     }
     /**
      * Применение предустановленных настроек

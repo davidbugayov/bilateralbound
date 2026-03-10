@@ -34,7 +34,6 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   let isInitialized = false // Флаг для предотвращения повторной инициализации
   let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
   let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
-  const isInitializing = true // Flag to prevent sending updates during initialization
   let previewPhysicsEngine = null // Локальный движок физики для превью
   let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
   if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
@@ -1345,6 +1344,13 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     }
   }
   function updateSpeed(speed) {
+    if (globalThis.__current?.isInitializing) {
+      return
+    }
+    if (!globalThis.__current?.viewerConnected) {
+      showViewerNotConnectedWarning()
+      return
+    }
     try {
       safeSend(WS_MSG.controllerUpdate, { speed })
     } catch (err) {
@@ -1656,6 +1662,10 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    */
   function setDirection(directionMode) {
     if (!directionMode) return
+    // Во время инициализации просто обновляем локальное состояние
+    if (globalThis.__current?.isInitializing) {
+      return
+    }
     try {
       const directionVector = getDirectionVector(directionMode)
       if (!directionVector) return
@@ -1709,7 +1719,11 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     safeSend(WS_MSG.controllerUpdate, { radius: size })
   }
   function setSoundEnabled(enabled) {
+    if (globalThis.__current?.isInitializing) {
+      return
+    }
     if (!globalThis.__current?.viewerConnected) {
+      showViewerNotConnectedWarning()
       return
     }
     safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) })
@@ -1719,7 +1733,11 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     updateViewerAudioIndicators()
   }
   function setSoundType(soundType) {
+    if (globalThis.__current?.isInitializing) {
+      return
+    }
     if (!globalThis.__current?.viewerConnected) {
+      showViewerNotConnectedWarning()
       return
     }
     safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
@@ -1866,6 +1884,10 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    * @private
    */
   function _setPlayPauseState(shouldPlay) {
+    // Не отправляем команды во время инициализации
+    if (globalThis.__current?.isInitializing) {
+      return
+    }
     if (!globalThis.__current?.viewerConnected) {
       if (shouldPlay) {
         showNotification(
@@ -2443,10 +2465,45 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    * Унифицированный обработчик для всех контролов
    */
   function showViewerNotConnectedWarning() {
-    const title = globalThis.i18n?.t('controller.viewerNotConnectedWarning') || '⚠️ Cannot change settings'
-    const message = globalThis.i18n?.t('controller.viewerNotConnectedMessage') ||
-      'Please wait for the viewer to connect. Share the viewer link with the client so they can join the session.'
-    showNotification(`${title}\n${message}`, 'warning')
+    // Не показываем варнинг во время инициализации
+    if (globalThis.__current?.isInitializing) {
+      return
+    }
+
+    // Получаем переводы с fallback на английский, если i18n не готова
+    let title = '⚠️ Cannot change settings'
+    let message = 'Please wait for the viewer to connect. Share the viewer link with the client so they can join the session.'
+
+    // Если i18n система готова, используем переводы
+    if (globalThis.i18n && globalThis.i18n.isReady) {
+      const titleKey = 'controller.viewerNotConnectedWarning'
+      const messageKey = 'controller.viewerNotConnectedMessage'
+
+      const translatedTitle = globalThis.i18n.t(titleKey)
+      const translatedMessage = globalThis.i18n.t(messageKey)
+
+      // Убедимся что получили переведённый текст, а не ключ
+      // Если i18n вернул сам ключ, это значит перевода нет
+      if (translatedTitle && translatedTitle !== titleKey) {
+        title = translatedTitle
+      }
+      if (translatedMessage && translatedMessage !== messageKey) {
+        message = translatedMessage
+      }
+    }
+
+    // Используем notificationSystem API для корректного отображения title и message
+    if (globalThis.notificationSystem?.show) {
+      globalThis.notificationSystem.show({
+        type: 'warning',
+        title: title,
+        message: message,
+        duration: 6000 // Дольше показываем, т.к. текст длинный
+      })
+    } else {
+      // Fallback для старых систем уведомлений
+      showNotification(`${title}\n\n${message}`, 'warning')
+    }
   }
   /**
    * Проверяет подключение вьювера перед выполнением действия
@@ -2474,56 +2531,71 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function initViewerConnectionWarnings() {
     // Селекторы всех контролов, которые требуют подключения вьювера
     const controlSelectors = [
-      // Кнопки направления
+      // Кнопки направления (data-mode)
       '[data-mode]',
-      // Слайдер скорости
-      '#speedSlider',
-      // Переключатели звука
-      '#soundToggle',
+      // Переключатели звука из создаваемых компонентов
       '.sound-type-btn',
-      // Кнопки размера мяча
+      // Кнопки размера мяча из создаваемых компонентов
+      '.size-btn',
       '.size-multiplier-btn',
-      // Color pickers
-      'input[type="color"]',
+      // Color pickers из создаваемых компонентов
+      '.color-btn',
       // Play/Pause кнопка
       '#playPauseBtn',
       // Fullscreen direction buttons
-      '#fsDirH', '#fsDirV', '#fsDirDL', '#fsDirDR', '#fsDirRandom'
+      '#fsDirH', '#fsDirV', '#fsDirDL', '#fsDirDR', '#fsDirRandom',
+      // Fullscreen size buttons
+      '#fsSize1', '#fsSize2', '#fsSize3', '#fsSize4',
+      // Fullscreen color buttons
+      '#fsBallCol1', '#fsBallCol2', '#fsBallCol3', '#fsBallCol4', '#fsBallCol5', '#fsBallCol6',
+      '#fsBallCol7', '#fsBallCol8', '#fsBallCol9', '#fsBallCol10', '#fsBallCol11', '#fsBallCol12',
+      '#fsBg1', '#fsBg2', '#fsBg3', '#fsBg4', '#fsBg5', '#fsBg6',
+      '#fsBg7', '#fsBg8', '#fsBg9', '#fsBg10', '#fsBg11', '#fsBg12',
+      // Кнопки пресетов (динамически добавляются)
+      '#presetControls button'
     ]
 
     // Добавляем обработчики на все контролы
     controlSelectors.forEach(selector => {
       const elements = document.querySelectorAll(selector)
       elements.forEach(element => {
-        // Добавляем обработчик capture фазы, чтобы перехватить клик до других обработчиков
-        element.addEventListener('click', (event) => {
-          if (!globalThis.__current?.viewerConnected) {
-            event.stopImmediatePropagation() // Останавливаем все обработчики
-            event.preventDefault()
-            showViewerNotConnectedWarning()
-          }
-        }, true) // true = capture phase
+        // Проверяем, уже ли добавлен обработчик (чтобы избежать дублирования)
+        if (!element._viewerConnectionWarningAdded) {
+          element._viewerConnectionWarningAdded = true
+          // Добавляем обработчик capture фазы, чтобы перехватить клик до других обработчиков
+          element.addEventListener('click', (event) => {
+            if (!globalThis.__current?.viewerConnected) {
+              event.stopImmediatePropagation() // Останавливаем все обработчики
+              event.preventDefault()
+              showViewerNotConnectedWarning()
+            }
+          }, true) // true = capture phase
+        }
       })
     })
 
     // Специальная обработка для input элементов (color picker, range slider)
     const inputElements = document.querySelectorAll('input[type="color"], input[type="range"]')
     inputElements.forEach(input => {
-      // Предотвращаем изменение до подключения вьювера
-      input.addEventListener('input', (event) => {
-        if (!globalThis.__current?.viewerConnected) {
-          event.stopImmediatePropagation()
-          event.preventDefault()
-          showViewerNotConnectedWarning()
-          // Возвращаем предыдущее значение
-          if (input._prevValue !== undefined) {
-            input.value = input._prevValue
+      // Проверяем, уже ли добавлен обработчик
+      if (!input._viewerConnectionWarningAdded) {
+        input._viewerConnectionWarningAdded = true
+        // Предотвращаем изменение до подключения вьювера
+        input.addEventListener('input', (event) => {
+          if (!globalThis.__current?.viewerConnected) {
+            event.stopImmediatePropagation()
+            event.preventDefault()
+            showViewerNotConnectedWarning()
+            // Возвращаем предыдущее значение
+            if (input._prevValue !== undefined) {
+              input.value = input._prevValue
+            }
+          } else {
+            // Сохраняем текущое значение как предыдущое
+            input._prevValue = input.value
           }
-        } else {
-          // Сохраняем текущее значение как предыдущее
-          input._prevValue = input.value
-        }
-      }, true)
+        }, true)
+      }
     })
   }
 
@@ -2540,6 +2612,7 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   globalThis.setBallSizeMultiplier = setBallSizeMultiplier
   globalThis.showViewerNotConnectedWarning = showViewerNotConnectedWarning
   globalThis.requireViewerConnection = requireViewerConnection
+  globalThis.reinitializeViewerConnectionWarnings = initViewerConnectionWarnings
 
   // Инициализация обработчиков предупреждений после загрузки DOM
   if (document.readyState === 'loading') {
