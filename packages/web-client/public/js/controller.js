@@ -525,9 +525,17 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     let lastPlayingState = false
     wsClient.on('open', (event) => {
-      // Only reset isInitializing on initial connection, not on reconnection
-      if (!event?.isReconnection && globalThis.__current) {
+      // isInitializing stays true until initial_state arrives (prevents warning on page open).
+      // On reconnection reset immediately — initial_state won't arrive again.
+      if (event?.isReconnection && globalThis.__current) {
         globalThis.__current.isInitializing = false
+      } else {
+        // Safety: if initial_state never arrives, unblock after 5s
+        setTimeout(() => {
+          if (globalThis.__current?.isInitializing) {
+            globalThis.__current.isInitializing = false
+          }
+        }, 5000)
       }
       updateConnectionStatus(true)
       // Lazy-load non-critical modules after connection established
@@ -651,6 +659,8 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       }
     })
     wsClient.on(WS_MSG.initialState, (state) => {
+      // Page is fully ready — allow warnings from now on
+      if (globalThis.__current) globalThis.__current.isInitializing = false
       lastServerState = state // Кэшируем состояние
       if (typeof state.viewerConnected === 'boolean') {
         globalThis.__current.viewerConnected = state.viewerConnected
@@ -2458,27 +2468,12 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       return
     }
 
-    // Получаем переводы с fallback на английский, если i18n не готова
-    let title = 'Viewer not connected'
-    let message = 'Share the viewer link with your client so they can join the session.'
-
-    // Если i18n система готова, используем переводы
-    if (globalThis.i18n && globalThis.i18n.isReady) {
-      const titleKey = 'controller.viewerNotConnectedWarning'
-      const messageKey = 'controller.viewerNotConnectedMessage'
-
-      const translatedTitle = globalThis.i18n.t(titleKey)
-      const translatedMessage = globalThis.i18n.t(messageKey)
-
-      // Убедимся что получили переведённый текст, а не ключ
-      // Если i18n вернул сам ключ, это значит перевода нет
-      if (translatedTitle && translatedTitle !== titleKey) {
-        title = translatedTitle
-      }
-      if (translatedMessage && translatedMessage !== messageKey) {
-        message = translatedMessage
-      }
+    const _t = (key, fallback) => {
+      const v = globalThis.i18n?.t(key)
+      return v && v !== key ? v : fallback
     }
+    const title = _t('controller.viewerNotConnectedWarning', 'Viewer not connected')
+    const message = _t('controller.viewerNotConnectedMessage', 'Share the viewer link with your client so they can join the session.')
 
     if (globalThis.notificationSystem?.show) {
       globalThis.notificationSystem.show({
