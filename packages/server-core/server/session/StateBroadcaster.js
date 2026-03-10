@@ -7,9 +7,11 @@ class StateBroadcaster {
     this.webSocketManager = webSocketManager
     this.logger = logger
     this.clientSimulationOnly = options.clientSimulationOnly === true
+    // Храним последнее отправленное состояние для delta compression
+    this._lastBroadcastedState = new Map() // sessionId -> lastState
   }
 
-  _buildStatePayload(session, stateType, payloadOverride = null) {
+  _buildStatePayload(session, stateType, payloadOverride = null, options = {}) {
     if (payloadOverride) {
       return {
         ...payloadOverride,
@@ -29,19 +31,65 @@ class StateBroadcaster {
       basePayload.clientSimulationOnly = true
     }
 
+    // Delta compression: отправляем только изменившиеся поля
+    if (options.deltaCompression && this._lastBroadcastedState.has(session.id)) {
+      return this._getDeltaPayload(session.id, basePayload)
+    }
+
     return basePayload
   }
 
-  broadcastState(sessionId, stateType = 'state_update', payload = null) {
+  /**
+   * Возвращает только изменившиеся поля по сравнению с последним broadcast
+   * Всегда включаем x, y, vx, vy для плавной интерполяции, остальное — только если изменилось
+   * @private
+   */
+  _getDeltaPayload(sessionId, currentPayload) {
+    const lastState = this._lastBroadcastedState.get(sessionId)
+    const delta = {
+      // Всегда отправляем позицию и скорость для интерполяции
+      x: currentPayload.x,
+      y: currentPayload.y,
+      vx: currentPayload.vx,
+      vy: currentPayload.vy
+    }
+
+    // Остальные поля — только если изменились
+    const fieldsToCheck = [
+      'paused', 'stopping', 'speed', 'dirX', 'dirY', 'radius',
+      'colorBall', 'colorBg', 'soundEnabled', 'soundType',
+      'viewerConnected', 'controllerConnected', 'clientSimulationOnly'
+    ]
+
+    for (const field of fieldsToCheck) {
+      if (currentPayload[field] !== lastState[field]) {
+        delta[field] = currentPayload[field]
+      }
+    }
+
+    // viewerScreenSize — проверяем глубоко
+    if (JSON.stringify(currentPayload.viewerScreenSize) !== JSON.stringify(lastState.viewerScreenSize)) {
+      delta.viewerScreenSize = currentPayload.viewerScreenSize
+    }
+
+    return delta
+  }
+
+  broadcastState(sessionId, options = {}) {
+    const stateType = options.stateType || 'state_update'
+    const payload = options.payload || null
+
     const session = this.sessionRepository.findById(sessionId)
     if (!session) {
       return false
     }
 
+    const fullPayload = this._buildStatePayload(session, stateType, payload, options)
+
     const eventData = {
       type: stateType,
       timestamp: Date.now(),
-      payload: this._buildStatePayload(session, stateType, payload)
+      payload: fullPayload
     }
 
     let sentCount = 0
@@ -62,10 +110,15 @@ class StateBroadcaster {
       }
     }
 
+    // Сохраняем состояние для следующей delta compression
+    if (options.deltaCompression) {
+      this._lastBroadcastedState.set(sessionId, { ...session.ballState })
+    }
+
     if (sentCount > 0 && DEBUG_MODE) {
       this.logger.logSession(
         sessionId,
-        `Broadcasted ${stateType} to ${sentCount} clients`
+        `Broadcasted ${stateType} to ${sentCount} clients${options.deltaCompression ? ' (delta)' : ''}`
       )
     }
 
@@ -77,11 +130,14 @@ class StateBroadcaster {
     if (!session) {
       return false
     }
-    return this.broadcastState(sessionId, 'viewer_status', {
-      connected: session.viewerConnected,
-      viewerConnected: session.viewerConnected,
-      controllerConnected: session.controllerConnected,
-      screenSize: session.viewerScreenSize
+    return this.broadcastState(sessionId, {
+      stateType: 'viewer_status',
+      payload: {
+        connected: session.viewerConnected,
+        viewerConnected: session.viewerConnected,
+        controllerConnected: session.controllerConnected,
+        screenSize: session.viewerScreenSize
+      }
     })
   }
 

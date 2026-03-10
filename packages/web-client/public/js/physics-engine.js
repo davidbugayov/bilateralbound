@@ -14,10 +14,23 @@ if (typeof PhysicsEngine === 'undefined') {
         minSpeed: 50,
         maxSpeed: 5000,
         smoothing: {
-          stiffness: 30, // k - Увеличено для быстрого следования за серверным состоянием
-          damping: 20, // c - Увеличено для устранения колебаний при получении обновлений
-          maxPredictSec: 0.02, // Уменьшено для более точной синхронизации (меньше предсказания)
-          snapDistance: 0.3 // авто-снап к цели в пикселях для устранения микроколебаний
+          // Hermite interpolation для плавной траектории между серверными апдейтами
+          interpolationMethod: 'hermite', // 'hermite' | 'linear'
+          // Adaptive jitter buffer для компенсации сетевых задержек
+          jitterBufferMs: 50, // начальный размер буфера
+          maxJitterBufferMs: 150, // максимальный размер при плохой сети
+          minJitterBufferMs: 16, // минимальный при хорошей сети
+          // Dead reckoning для предсказания между серверными апдейтами
+          deadReckoningEnabled: true,
+          maxExtrapolationMs: 100, // максимальное время предсказания вперёд
+          // Коррекция позиции только при получении новых данных
+          correctionThresholdPx: 5, // минимальное расхождение для коррекции (в пикселях)
+          correctionSmoothingAlpha: 0.15, // агрессивность коррекции (0.1-0.3 оптимально)
+          // Legacy параметры для обратной совместимости
+          stiffness: 30,
+          damping: 20,
+          maxPredictSec: 0.02,
+          snapDistance: 0.3
         },
         bounceCallback: null,
         ...options
@@ -65,6 +78,24 @@ if (typeof PhysicsEngine === 'undefined') {
         stopping: false, // deceleration phase active
         stoppingStartTs: 0, // performance.now() when stopping began
         stoppingDuration: 0.6 // seconds to decelerate to zero
+      }
+      // Jitter buffer для сглаживания сетевых задержек (только для viewer)
+      this._jitterBuffer = []
+      this._jitterBufferSize = this.options.smoothing.jitterBufferMs
+      this._lastServerUpdateTs = 0
+      this._serverUpdateIntervals = [] // история интервалов между серверными обновлениями
+      // Dead reckoning state для предсказания между серверными апдейтами
+      this._deadReckoning = {
+        baseX: this.centerX,
+        baseY: this.centerY,
+        baseVx: 0,
+        baseVy: 0,
+        baseTimestamp: performance.now(),
+        serverX: this.centerX,
+        serverY: this.centerY,
+        serverVx: 0,
+        serverVy: 0,
+        serverTimestamp: performance.now()
       }
       this.bounceCallback = this.options.bounceCallback
       this.sqrt = Math.sqrt
@@ -315,29 +346,27 @@ if (typeof PhysicsEngine === 'undefined') {
       }
     }
     /**
-     * ПРОДВИНУТАЯ интерполяция v4 с буферизацией состояний и экспоненциальным сглаживанием
+     * ПРОДВИНУТАЯ интерполяция v5 с jitter buffer и dead reckoning
+     * Основные улучшения:
+     * 1. Jitter buffer для компенсации неравномерности сетевых задержек
+     * 2. Dead reckoning (экстраполяция) для предсказания между серверными апдейтами
+     * 3. Hermite interpolation для плавных траекторий
+     * 4. Коррекция позиции только при получении новых данных (не каждый кадр)
      */
     updateViewerInterpolation(deltaTime) {
       if (!this._canInterpolate()) return
       const currentTime = performance.now()
-      this._updateStateBuffer(currentTime)
-      this._applyExponentialSmoothing()
-      const { clampedTargetX, clampedTargetY } =
-        this._calculateAdaptiveClamping()
-      this._applySpringPhysics(clampedTargetX, clampedTargetY, deltaTime)
-      const { stepX, stepY } = this._limitStepSize(
-        clampedTargetX,
-        clampedTargetY,
-        deltaTime
-      )
-      const oldX = this.ball.x
-      const oldY = this.ball.y
-      this._interpolatePositionWithSteps(stepX, stepY)
-      if (deltaTime > 0.0001) {
-        this.ball.vx = (this.ball.x - oldX) / deltaTime
-        this.ball.vy = (this.ball.y - oldY) / deltaTime
+
+      // Если есть данные в jitter buffer, используем их
+      if (this._jitterBuffer.length > 0) {
+        this._consumeJitterBuffer(currentTime, deltaTime)
+      } else if (this.options.smoothing.deadReckoningEnabled) {
+        // Иначе используем dead reckoning для предсказания
+        this._applyDeadReckoning(currentTime, deltaTime)
+      } else {
+        // Fallback на старую систему (только для обратной совместимости)
+        this._applyLegacyInterpolation(deltaTime, currentTime)
       }
-      this._autoSnapIfNeeded(clampedTargetX, clampedTargetY)
     }
     _interpolatePositionWithSteps(stepX, stepY) {
       this._applyInterpolationSmoothing(stepX, stepY)
@@ -478,6 +507,216 @@ if (typeof PhysicsEngine === 'undefined') {
           this.state.allowInterpWhenPaused = false
         }
       }
+    }
+    /**
+     * Добавляет серверное обновление в jitter buffer
+     * Вызывается из applyCommand при получении новых данных от сервера
+     * @private
+     */
+    _addToJitterBuffer(serverState) {
+      const now = performance.now()
+
+      // Адаптация размера jitter buffer на основе вариации задержек
+      if (this._lastServerUpdateTs > 0) {
+        const interval = now - this._lastServerUpdateTs
+        this._serverUpdateIntervals.push(interval)
+        if (this._serverUpdateIntervals.length > 20) {
+          this._serverUpdateIntervals.shift()
+        }
+
+        // Вычисляем jitter (стандартное отклонение интервалов)
+        if (this._serverUpdateIntervals.length >= 5) {
+          const avg = this._serverUpdateIntervals.reduce((a, b) => a + b, 0) / this._serverUpdateIntervals.length
+          const variance = this._serverUpdateIntervals.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / this._serverUpdateIntervals.length
+          const jitter = Math.sqrt(variance)
+
+          // Адаптивно изменяем размер буфера: больше jitter = больше буфер
+          const targetBufferSize = Math.max(
+            this.options.smoothing.minJitterBufferMs,
+            Math.min(this.options.smoothing.maxJitterBufferMs, jitter * 2)
+          )
+          // Плавное изменение размера буфера
+          this._jitterBufferSize = this._jitterBufferSize * 0.9 + targetBufferSize * 0.1
+        }
+      }
+
+      this._lastServerUpdateTs = now
+
+      // Добавляем в буфер с timestamp для delayed playback
+      this._jitterBuffer.push({
+        x: serverState.x,
+        y: serverState.y,
+        vx: serverState.vx,
+        vy: serverState.vy,
+        timestamp: now,
+        playbackTime: now + this._jitterBufferSize
+      })
+
+      // Ограничиваем размер буфера (храним максимум 3 состояния)
+      if (this._jitterBuffer.length > 3) {
+        this._jitterBuffer.shift()
+      }
+    }
+    /**
+     * Потребляет данные из jitter buffer с интерполяцией
+     * @private
+     */
+    _consumeJitterBuffer(currentTime, deltaTime) {
+      // Удаляем устаревшие состояния
+      while (this._jitterBuffer.length > 0 && this._jitterBuffer[0].playbackTime < currentTime) {
+        const state = this._jitterBuffer.shift()
+        // Обновляем dead reckoning base при получении нового состояния
+        this._deadReckoning.baseX = state.x
+        this._deadReckoning.baseY = state.y
+        this._deadReckoning.baseVx = state.vx || 0
+        this._deadReckoning.baseVy = state.vy || 0
+        this._deadReckoning.baseTimestamp = currentTime
+        this._deadReckoning.serverX = state.x
+        this._deadReckoning.serverY = state.y
+        this._deadReckoning.serverVx = state.vx || 0
+        this._deadReckoning.serverVy = state.vy || 0
+        this._deadReckoning.serverTimestamp = state.timestamp
+      }
+
+      // Интерполируем между двумя состояниями в буфере, если они есть
+      if (this._jitterBuffer.length >= 2) {
+        const state0 = this._jitterBuffer[0]
+        const state1 = this._jitterBuffer[1]
+
+        // Нормализованное время между двумя состояниями
+        const totalTime = state1.playbackTime - state0.playbackTime
+        const elapsed = currentTime - state0.playbackTime
+        const t = Math.max(0, Math.min(1, elapsed / totalTime))
+
+        // Hermite interpolation для плавной траектории
+        if (this.options.smoothing.interpolationMethod === 'hermite') {
+          this._hermiteInterpolate(state0, state1, t)
+        } else {
+          // Linear interpolation (fallback)
+          this._linearInterpolate(state0, state1, t)
+        }
+      } else if (this._jitterBuffer.length === 1) {
+        // Только одно состояние — используем dead reckoning
+        this._applyDeadReckoning(currentTime, deltaTime)
+      } else {
+        // Буфер пуст — используем dead reckoning
+        this._applyDeadReckoning(currentTime, deltaTime)
+      }
+    }
+    /**
+     * Hermite interpolation для плавной траектории с учетом скоростей
+     * Использует кубическую интерполяцию Hermite для учёта касательных (скоростей)
+     * @private
+     */
+    _hermiteInterpolate(state0, state1, t) {
+      // Hermite basis functions
+      const h00 = (1 + 2 * t) * (1 - t) * (1 - t)
+      const h10 = t * (1 - t) * (1 - t)
+      const h01 = t * t * (3 - 2 * t)
+      const h11 = t * t * (t - 1)
+
+      // Масштабируем касательные (скорости) по времени между состояниями
+      const dt = (state1.playbackTime - state0.playbackTime) / 1000 // в секундах
+      const tx0 = (state0.vx || 0) * dt
+      const ty0 = (state0.vy || 0) * dt
+      const tx1 = (state1.vx || 0) * dt
+      const ty1 = (state1.vy || 0) * dt
+
+      // Hermite interpolation
+      const newX = h00 * state0.x + h10 * tx0 + h01 * state1.x + h11 * tx1
+      const newY = h00 * state0.y + h10 * ty0 + h01 * state1.y + h11 * ty1
+
+      // Применяем с плавной коррекцией
+      this._applySmoothCorrection(newX, newY)
+
+      // Обновляем скорость для dead reckoning
+      this._deadReckoning.baseVx = state0.vx || 0
+      this._deadReckoning.baseVy = state0.vy || 0
+    }
+    /**
+     * Линейная интерполяция между двумя состояниями
+     * @private
+     */
+    _linearInterpolate(state0, state1, t) {
+      const newX = state0.x + (state1.x - state0.x) * t
+      const newY = state0.y + (state1.y - state0.y) * t
+      this._applySmoothCorrection(newX, newY)
+
+      // Обновляем скорость для dead reckoning (линейная интерполяция скоростей)
+      this._deadReckoning.baseVx = (state0.vx || 0) + ((state1.vx || 0) - (state0.vx || 0)) * t
+      this._deadReckoning.baseVy = (state0.vy || 0) + ((state1.vy || 0) - (state0.vy || 0)) * t
+    }
+    /**
+     * Применяет плавную коррекцию позиции (только если расхождение выше порога)
+     * @private
+     */
+    _applySmoothCorrection(targetX, targetY) {
+      const dx = targetX - this.ball.x
+      const dy = targetY - this.ball.y
+      const distance = Math.hypot(dx, dy)
+
+      // Коррекция только если расхождение выше порога (уменьшает jitter)
+      if (distance > this.options.smoothing.correctionThresholdPx) {
+        const alpha = this.options.smoothing.correctionSmoothingAlpha
+        this._prevPos.x = this.ball.x
+        this._prevPos.y = this.ball.y
+        this.ball.x += dx * alpha
+        this.ball.y += dy * alpha
+        this._currPos.x = this.ball.x
+        this._currPos.y = this.ball.y
+        this.clampBallWithinBounds()
+      }
+    }
+    /**
+     * Dead reckoning: предсказание позиции на основе последней известной скорости
+     * Используется между серверными обновлениями для плавного движения
+     * @private
+     */
+    _applyDeadReckoning(currentTime, deltaTime) {
+      const elapsedSinceServer = currentTime - this._deadReckoning.baseTimestamp
+      const maxExtrapolation = this.options.smoothing.maxExtrapolationMs
+
+      // Ограничиваем экстраполяцию максимальным временем
+      if (elapsedSinceServer > maxExtrapolation) {
+        // Слишком давно не было обновлений — используем старую систему
+        this._applyLegacyInterpolation(deltaTime, currentTime)
+        return
+      }
+
+      // Предсказываем позицию на основе последней известной скорости
+      const elapsedSec = elapsedSinceServer / 1000
+      const predictedX = this._deadReckoning.baseX + this._deadReckoning.baseVx * elapsedSec
+      const predictedY = this._deadReckoning.baseY + this._deadReckoning.baseVy * elapsedSec
+
+      // Применяем предсказанную позицию напрямую (без spring physics для устранения overshoot)
+      this._prevPos.x = this.ball.x
+      this._prevPos.y = this.ball.y
+      this.ball.x = predictedX
+      this.ball.y = predictedY
+      this.ball.vx = this._deadReckoning.baseVx
+      this.ball.vy = this._deadReckoning.baseVy
+      this._currPos.x = this.ball.x
+      this._currPos.y = this.ball.y
+      this.clampBallWithinBounds()
+    }
+    /**
+     * Fallback на старую систему интерполяции (для обратной совместимости)
+     * @private
+     */
+    _applyLegacyInterpolation(deltaTime, currentTime) {
+      this._updateStateBuffer(currentTime)
+      this._applyExponentialSmoothing()
+      const { clampedTargetX, clampedTargetY } = this._calculateAdaptiveClamping()
+      this._applySpringPhysics(clampedTargetX, clampedTargetY, deltaTime)
+      const { stepX, stepY } = this._limitStepSize(clampedTargetX, clampedTargetY, deltaTime)
+      const oldX = this.ball.x
+      const oldY = this.ball.y
+      this._interpolatePositionWithSteps(stepX, stepY)
+      if (deltaTime > 0.0001) {
+        this.ball.vx = (this.ball.x - oldX) / deltaTime
+        this.ball.vy = (this.ball.y - oldY) / deltaTime
+      }
+      this._autoSnapIfNeeded(clampedTargetX, clampedTargetY)
     }
     /**
      * Обновляет физику за указанное время
@@ -935,6 +1174,17 @@ if (typeof PhysicsEngine === 'undefined') {
         )
         this.state.targetX = cx
         this.state.targetY = cy
+
+        // Добавляем в jitter buffer для плавной интерполяции
+        if (this.isViewer && !this.state.paused) {
+          this._addToJitterBuffer({
+            x: cx,
+            y: cy,
+            vx: command.vx,
+            vy: command.vy
+          })
+        }
+
         if (command.paused === true) {
           this._handleViewerPositionPause(cx, cy)
         } else if (command.paused === false) {

@@ -649,6 +649,9 @@ class SessionManager {
 
     const PHYSICS_TICK_RATE = 60
     const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
+    // Увеличиваем частоту broadcast с 15Hz до 30Hz (каждый 2-й тик вместо 4-го)
+    // Это уменьшает интервал между обновлениями с 66ms до 33ms, что значительно снижает jitter
+    const BROADCAST_EVERY_N_TICKS = 2
     let _lastTickAt = Date.now()
 
     this._sharedPhysicsLoop = setInterval(() => {
@@ -689,9 +692,11 @@ class SessionManager {
           if (!session.ticks) session.ticks = 0
           session.ticks++
 
-          if (session.ticks % 4 === 0) {
+          // Увеличили частоту broadcast до 30Hz для уменьшения jitter
+          if (session.ticks % BROADCAST_EVERY_N_TICKS === 0) {
             session.lastStateUpdate = Date.now()
-            this.stateBroadcaster.broadcastState(session.id)
+            // Delta compression: отправляем только изменившиеся поля
+            this.stateBroadcaster.broadcastState(session.id, { deltaCompression: true })
           }
         } catch (error) {
           this.logger.error(`Shared physics loop error for session ${session.id}: ${error.message}`)

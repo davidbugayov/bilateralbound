@@ -319,7 +319,10 @@
       "marriageTherapy": "Thérapie de couple",
       "couplesTherapy": "Thérapie de couple",
       "dynamic": "Dynamique"
-    }
+    },
+    "viewerNotConnectedWarning": "⚠️ Impossible de modifier les paramètres",
+    "viewerNotConnectedMessage": "Veuillez attendre que le visualiseur se connecte. Partagez le lien du visualiseur avec le client pour qu'il rejoigne la session.",
+    "viewerNotConnectedShort": "Visualiseur non connecté"
   },
   "meta": {
     "controllerTitle": "BilateralBound - Contrôleur de thérapie EMDR",

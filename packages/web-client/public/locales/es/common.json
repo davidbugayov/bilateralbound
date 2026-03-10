@@ -319,7 +319,10 @@
       "marriageTherapy": "Terapia de pareja",
       "couplesTherapy": "Terapia de pareja",
       "dynamic": "Dinámica"
-    }
+    },
+    "viewerNotConnectedWarning": "⚠️ No se puede cambiar la configuración",
+    "viewerNotConnectedMessage": "Espere a que se conecte el visor. Comparta el enlace del visor con el cliente para que se una a la sesión.",
+    "viewerNotConnectedShort": "Visor no conectado"
   },
   "meta": {
     "controllerTitle": "BilateralBound - Controlador de terapia EMDR",

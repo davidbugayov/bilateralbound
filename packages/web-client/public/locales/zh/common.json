@@ -304,7 +304,10 @@
       "marriageTherapy": "伴侣治疗",
       "couplesTherapy": "伴侣治疗",
       "dynamic": "动态"
-    }
+    },
+    "viewerNotConnectedWarning": "⚠️ 无法更改设置",
+    "viewerNotConnectedMessage": "请等待查看器连接。与客户端共享查看器链接，以便他们加入会话。",
+    "viewerNotConnectedShort": "查看器未连接"
   },
   "meta": {
     "controllerTitle": "BilateralBound - EMDR疗法控制器",

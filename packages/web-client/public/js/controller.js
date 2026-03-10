@@ -2438,6 +2438,94 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       alert(message)
     }
   }
+  /**
+   * Отображает предупреждение о неподключенном вьювере
+   * Унифицированный обработчик для всех контролов
+   */
+  function showViewerNotConnectedWarning() {
+    const title = globalThis.i18n?.t('controller.viewerNotConnectedWarning') || '⚠️ Cannot change settings'
+    const message = globalThis.i18n?.t('controller.viewerNotConnectedMessage') ||
+      'Please wait for the viewer to connect. Share the viewer link with the client so they can join the session.'
+    showNotification(`${title}\n${message}`, 'warning')
+  }
+  /**
+   * Проверяет подключение вьювера перед выполнением действия
+   * @param {Function} action - Действие для выполнения, если вьювер подключен
+   * @param {boolean} showWarning - Показывать ли предупреждение при отсутствии подключения
+   * @returns {boolean} - true если вьювер подключен, false иначе
+   */
+  function requireViewerConnection(action, showWarning = true) {
+    if (!globalThis.__current?.viewerConnected) {
+      if (showWarning) {
+        showViewerNotConnectedWarning()
+      }
+      return false
+    }
+    if (typeof action === 'function') {
+      action()
+    }
+    return true
+  }
+
+  /**
+   * Инициализирует обработчики кликов для предупреждения о неподключенном вьювере
+   * Добавляет обработчики на все интерактивные контролы
+   */
+  function initViewerConnectionWarnings() {
+    // Селекторы всех контролов, которые требуют подключения вьювера
+    const controlSelectors = [
+      // Кнопки направления
+      '[data-mode]',
+      // Слайдер скорости
+      '#speedSlider',
+      // Переключатели звука
+      '#soundToggle',
+      '.sound-type-btn',
+      // Кнопки размера мяча
+      '.size-multiplier-btn',
+      // Color pickers
+      'input[type="color"]',
+      // Play/Pause кнопка
+      '#playPauseBtn',
+      // Fullscreen direction buttons
+      '#fsDirH', '#fsDirV', '#fsDirDL', '#fsDirDR', '#fsDirRandom'
+    ]
+
+    // Добавляем обработчики на все контролы
+    controlSelectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector)
+      elements.forEach(element => {
+        // Добавляем обработчик capture фазы, чтобы перехватить клик до других обработчиков
+        element.addEventListener('click', (event) => {
+          if (!globalThis.__current?.viewerConnected) {
+            event.stopImmediatePropagation() // Останавливаем все обработчики
+            event.preventDefault()
+            showViewerNotConnectedWarning()
+          }
+        }, true) // true = capture phase
+      })
+    })
+
+    // Специальная обработка для input элементов (color picker, range slider)
+    const inputElements = document.querySelectorAll('input[type="color"], input[type="range"]')
+    inputElements.forEach(input => {
+      // Предотвращаем изменение до подключения вьювера
+      input.addEventListener('input', (event) => {
+        if (!globalThis.__current?.viewerConnected) {
+          event.stopImmediatePropagation()
+          event.preventDefault()
+          showViewerNotConnectedWarning()
+          // Возвращаем предыдущее значение
+          if (input._prevValue !== undefined) {
+            input.value = input._prevValue
+          }
+        } else {
+          // Сохраняем текущее значение как предыдущее
+          input._prevValue = input.value
+        }
+      }, true)
+    })
+  }
 
   // Экспорт функций в глобальную область видимости для доступа из HTML onclick
   globalThis.togglePlayPause = togglePlayPause
@@ -2450,4 +2538,13 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   globalThis.setSoundEnabled = setSoundEnabled
   globalThis.setSoundType = setSoundType
   globalThis.setBallSizeMultiplier = setBallSizeMultiplier
+  globalThis.showViewerNotConnectedWarning = showViewerNotConnectedWarning
+  globalThis.requireViewerConnection = requireViewerConnection
+
+  // Инициализация обработчиков предупреждений после загрузки DOM
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initViewerConnectionWarnings)
+  } else {
+    initViewerConnectionWarnings()
+  }
 } // Конец защиты от повторной загрузки
