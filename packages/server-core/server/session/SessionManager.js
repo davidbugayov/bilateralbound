@@ -649,9 +649,9 @@ class SessionManager {
 
     const PHYSICS_TICK_RATE = 60
     const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
-    // Увеличиваем частоту broadcast с 15Hz до 30Hz (каждый 2-й тик вместо 4-го)
-    // Это уменьшает интервал между обновлениями с 66ms до 33ms, что значительно снижает jitter
-    const BROADCAST_EVERY_N_TICKS = 2
+    // Viewer uses pure client simulation — broadcasts are only for drift correction
+    // 5Hz (every 12th tick) is sufficient for periodic sync checks
+    const BROADCAST_EVERY_N_TICKS = 12
     let _lastTickAt = Date.now()
 
     this._sharedPhysicsLoop = setInterval(() => {
@@ -692,7 +692,6 @@ class SessionManager {
           if (!session.ticks) session.ticks = 0
           session.ticks++
 
-          // Увеличили частоту broadcast до 30Hz для уменьшения jitter
           if (session.ticks % BROADCAST_EVERY_N_TICKS === 0) {
             session.lastStateUpdate = Date.now()
             // Delta compression: отправляем только изменившиеся поля

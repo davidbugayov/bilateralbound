@@ -14,23 +14,12 @@ if (typeof PhysicsEngine === 'undefined') {
         minSpeed: 50,
         maxSpeed: 5000,
         smoothing: {
-          // Hermite interpolation для плавной траектории между серверными апдейтами
-          interpolationMethod: 'hermite', // 'hermite' | 'linear'
-          // Adaptive jitter buffer для компенсации сетевых задержек
-          jitterBufferMs: 50, // начальный размер буфера
-          maxJitterBufferMs: 150, // максимальный размер при плохой сети
-          minJitterBufferMs: 16, // минимальный при хорошей сети
-          // Dead reckoning для предсказания между серверными апдейтами
-          deadReckoningEnabled: true,
-          maxExtrapolationMs: 100, // максимальное время предсказания вперёд
-          // Коррекция позиции только при получении новых данных
-          correctionThresholdPx: 5, // минимальное расхождение для коррекции (в пикселях)
-          correctionSmoothingAlpha: 0.15, // агрессивность коррекции (0.1-0.3 оптимально)
-          // Legacy параметры для обратной совместимости
-          stiffness: 30,
-          damping: 20,
-          maxPredictSec: 0.02,
-          snapDistance: 0.3
+          // Drift correction threshold in pixels (only corrects if drift exceeds this)
+          driftThresholdPx: 50,
+          // Duration of drift correction animation in ms
+          driftCorrectionMs: 300,
+          // How often to check for drift (ms)
+          driftCheckIntervalMs: 3000
         },
         bounceCallback: null,
         ...options
@@ -79,29 +68,14 @@ if (typeof PhysicsEngine === 'undefined') {
         stoppingStartTs: 0, // performance.now() when stopping began
         stoppingDuration: 0.6 // seconds to decelerate to zero
       }
-      // Jitter buffer для сглаживания сетевых задержек (только для viewer)
-      this._jitterBuffer = []
-      this._jitterBufferSize = this.options.smoothing.jitterBufferMs
-      this._lastServerUpdateTs = 0
-      this._serverUpdateIntervals = [] // история интервалов между серверными обновлениями
-      // Dead reckoning state для предсказания между серверными апдейтами
-      this._deadReckoning = {
-        baseX: this.centerX,
-        baseY: this.centerY,
-        baseVx: 0,
-        baseVy: 0,
-        baseTimestamp: performance.now(),
-        serverX: this.centerX,
-        serverY: this.centerY,
-        serverVx: 0,
-        serverVy: 0,
-        serverTimestamp: performance.now()
-      }
+      // Drift correction state (for clientSimulation mode)
+      this._lastServerPos = null
+      this._lastDriftCheckTs = 0
+      this._driftCorrection = null
       this.bounceCallback = this.options.bounceCallback
       this.sqrt = Math.sqrt
       this.min = Math.min
       this.max = Math.max
-      this.applySmoothnessPreset(options.preset || 'default')
     }
     /**
      * Устанавливает рендерер для инвалидации кэша при изменении цвета
@@ -117,44 +91,6 @@ if (typeof PhysicsEngine === 'undefined') {
     setSmoothingOptions(opts = {}) {
       if (opts && typeof opts === 'object') {
         this.options.smoothing = { ...this.options.smoothing, ...opts }
-      }
-    }
-    /**
-     * Применяет пресет для плавности движения
-     */
-    applySmoothnessPreset(presetName) {
-      const presets = {
-        therapy: {
-          smoothing: {
-            stiffness: 20,
-            damping: 12,
-            maxPredictSec: 0.08,
-            snapDistance: 0.8
-          }
-        },
-        gaming: {
-          smoothing: {
-            stiffness: 30,
-            damping: 18,
-            maxPredictSec: 0.03,
-            snapDistance: 1.5
-          }
-        },
-        default: {
-          smoothing: {
-            stiffness: 25,
-            damping: 15,
-            maxPredictSec: 0.05,
-            snapDistance: 1
-          }
-        }
-      }
-      const preset = presets[presetName] || presets.default
-      if (preset.smoothing) {
-        this.options.smoothing = {
-          ...this.options.smoothing,
-          ...preset.smoothing
-        }
       }
     }
     /**
@@ -346,377 +282,55 @@ if (typeof PhysicsEngine === 'undefined') {
       }
     }
     /**
-     * ПРОДВИНУТАЯ интерполяция v5 с jitter buffer и dead reckoning
-     * Основные улучшения:
-     * 1. Jitter buffer для компенсации неравномерности сетевых задержек
-     * 2. Dead reckoning (экстраполяция) для предсказания между серверными апдейтами
-     * 3. Hermite interpolation для плавных траекторий
-     * 4. Коррекция позиции только при получении новых данных (не каждый кадр)
-     */
-    updateViewerInterpolation(deltaTime) {
-      if (!this._canInterpolate()) return
-      const currentTime = performance.now()
-
-      // Если есть данные в jitter buffer, используем их
-      if (this._jitterBuffer.length > 0) {
-        this._consumeJitterBuffer(currentTime, deltaTime)
-      } else if (this.options.smoothing.deadReckoningEnabled) {
-        // Иначе используем dead reckoning для предсказания
-        this._applyDeadReckoning(currentTime, deltaTime)
-      } else {
-        // Fallback на старую систему (только для обратной совместимости)
-        this._applyLegacyInterpolation(deltaTime, currentTime)
-      }
-    }
-    _interpolatePositionWithSteps(stepX, stepY) {
-      this._applyInterpolationSmoothing(stepX, stepY)
-    }
-    _applyInterpolationSmoothing(stepX, stepY) {
-      const smoothingFactor = this.options?.smoothing?.smoothingFactor ?? 0.25
-      const radius = this.ball.radius
-      const w = this.options.worldWidth
-      const h = this.options.worldHeight
-      this._prevPos.x = this.ball.x
-      this._prevPos.y = this.ball.y
-      const newX = this.ball.x + stepX
-      const newY = this.ball.y + stepY
-      this.ball.x =
-        this.ball.x * (1 - smoothingFactor) + newX * smoothingFactor
-      this.ball.y =
-        this.ball.y * (1 - smoothingFactor) + newY * smoothingFactor
-      this.ball.x = this.min(w - radius, this.max(radius, this.ball.x))
-      this.ball.y = this.min(h - radius, this.max(radius, this.ball.y))
-      this._currPos.x = this.ball.x
-      this._currPos.y = this.ball.y
-    }
-    _canInterpolate() {
-      const isActiveMovement =
-        this.state.allowInterpWhenPaused || this.state.paused === false
-      return isActiveMovement && Boolean(this.state?.targetX)
-    }
-    _updateStateBuffer(currentTime) {
-      if (!this._stateBuffer) {
-        this._stateBuffer = []
-        this._bufferSize = this.options.smoothing?.bufferSize || 15
-      }
-      this._stateBuffer.push({
-        x: this.ball.x,
-        y: this.ball.y,
-        vx: this.state.lastVx || 0,
-        vy: this.state.lastVy || 0,
-        timestamp: currentTime
-      })
-      if (this._stateBuffer.length > this._bufferSize) {
-        this._stateBuffer.shift()
-      }
-    }
-    _applyExponentialSmoothing() {
-      const alpha = this.options.smoothing?.velocitySmoothingAlpha || 0.08
-      const vx = this.state.lastVx || 0
-      const vy = this.state.lastVy || 0
-      if (this._smoothedVelocity) {
-        this._smoothedVelocity.x =
-          this._smoothedVelocity.x * (1 - alpha) + vx * alpha
-        this._smoothedVelocity.y =
-          this._smoothedVelocity.y * (1 - alpha) + vy * alpha
-      } else {
-        this._smoothedVelocity = { x: vx, y: vy }
-      }
-    }
-    _calculateAdaptiveClamping() {
-      const radius = this.ball.radius
-      const w = this.options.worldWidth
-      const h = this.options.worldHeight
-      const clampedTargetX = Math.min(
-        w - radius,
-        Math.max(radius, this.state.targetX)
-      )
-      const clampedTargetY = Math.min(
-        h - radius,
-        Math.max(radius, this.state.targetY)
-      )
-      return { clampedTargetX, clampedTargetY }
-    }
-    _applySpringPhysics(clampedTargetX, clampedTargetY, deltaTime) {
-      const dx = clampedTargetX - this.ball.x
-      const dy = clampedTargetY - this.ball.y
-      const distance = Math.hypot(dx, dy)
-      const baseStiffness = this.options?.smoothing?.stiffness ?? 25
-      const speed = Math.hypot(
-        this._smoothedVelocity.x,
-        this._smoothedVelocity.y
-      )
-      const adaptiveStiffness =
-        baseStiffness * (1 + Math.min(distance / 150, 3))
-      const baseDamping = this.options?.smoothing?.damping ?? 15
-      const adaptiveDamping = baseDamping * (1 + Math.min(speed / 800, 2))
-      const ax = adaptiveStiffness * dx - adaptiveDamping * this.state.smoothVx
-      const ay = adaptiveStiffness * dy - adaptiveDamping * this.state.smoothVy
-      const maxAcceleration = 8000
-      const clampedAx = Math.max(
-        -maxAcceleration,
-        Math.min(maxAcceleration, ax)
-      )
-      const clampedAy = Math.max(
-        -maxAcceleration,
-        Math.min(maxAcceleration, ay)
-      )
-      this.state.smoothVx += clampedAx * deltaTime
-      this.state.smoothVy += clampedAy * deltaTime
-    }
-    _limitStepSize(clampedTargetX, clampedTargetY, deltaTime) {
-      const dx = clampedTargetX - this.ball.x
-      const dy = clampedTargetY - this.ball.y
-      const distance = Math.hypot(dx, dy)
-      let stepX = this.state.smoothVx * deltaTime
-      let stepY = this.state.smoothVy * deltaTime
-      const stepMagnitude = Math.hypot(stepX, stepY)
-      const adaptiveMaxStep = Math.min(
-        distance * 2.5,
-        Math.abs(this._smoothedVelocity.x) * deltaTime * 4,
-        Math.abs(this._smoothedVelocity.y) * deltaTime * 4,
-        150
-      )
-      if (stepMagnitude > adaptiveMaxStep && adaptiveMaxStep > 0) {
-        const scale = adaptiveMaxStep / stepMagnitude
-        stepX *= scale
-        stepY *= scale
-        this.state.smoothVx *= scale
-        this.state.smoothVy *= scale
-      }
-      return { stepX, stepY }
-    }
-    _autoSnapIfNeeded(clampedTargetX, clampedTargetY) {
-      const dx = clampedTargetX - this.ball.x
-      const dy = clampedTargetY - this.ball.y
-      const distance = Math.hypot(dx, dy)
-      const snapDistance = this.options.smoothing.snapDistance || 0.2
-      const lowSpeedThreshold = 3
-      if (
-        distance < snapDistance &&
-        Math.abs(this.state.smoothVx) < lowSpeedThreshold &&
-        Math.abs(this.state.smoothVy) < lowSpeedThreshold
-      ) {
-        this.ball.x = clampedTargetX
-        this.ball.y = clampedTargetY
-        this._currPos.x = this.ball.x
-        this._currPos.y = this.ball.y
-        this.state.smoothVx = 0
-        this.state.smoothVy = 0
-        if (this.state.paused) {
-          this.state.allowInterpWhenPaused = false
-        }
-      }
-    }
-    /**
-     * Добавляет серверное обновление в jitter buffer
-     * Вызывается из applyCommand при получении новых данных от сервера
+     * Drift correction: smoothly corrects viewer position if it drifts too far from server
+     * Called periodically (every 3s) during clientSimulation, not every frame
      * @private
      */
-    _addToJitterBuffer(serverState) {
+    _checkDriftCorrection() {
+      if (!this._lastServerPos || this.state.paused) return
       const now = performance.now()
+      const checkInterval = this.options.smoothing.driftCheckIntervalMs || 3000
+      if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval) return
+      this._lastDriftCheckTs = now
 
-      // Адаптация размера jitter buffer на основе вариации задержек
-      if (this._lastServerUpdateTs > 0) {
-        const interval = now - this._lastServerUpdateTs
-        this._serverUpdateIntervals.push(interval)
-        if (this._serverUpdateIntervals.length > 20) {
-          this._serverUpdateIntervals.shift()
-        }
+      const dx = this._lastServerPos.x - this.ball.x
+      const dy = this._lastServerPos.y - this.ball.y
+      const drift = Math.hypot(dx, dy)
+      const threshold = this.options.smoothing.driftThresholdPx || 50
 
-        // Вычисляем jitter (стандартное отклонение интервалов)
-        if (this._serverUpdateIntervals.length >= 5) {
-          const avg = this._serverUpdateIntervals.reduce((a, b) => a + b, 0) / this._serverUpdateIntervals.length
-          const variance = this._serverUpdateIntervals.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / this._serverUpdateIntervals.length
-          const jitter = Math.sqrt(variance)
-
-          // Адаптивно изменяем размер буфера: больше jitter = больше буфер
-          const targetBufferSize = Math.max(
-            this.options.smoothing.minJitterBufferMs,
-            Math.min(this.options.smoothing.maxJitterBufferMs, jitter * 2)
-          )
-          // Плавное изменение размера буфера
-          this._jitterBufferSize = this._jitterBufferSize * 0.9 + targetBufferSize * 0.1
+      if (drift > threshold) {
+        this._driftCorrection = {
+          startX: this.ball.x,
+          startY: this.ball.y,
+          targetX: this._lastServerPos.x,
+          targetY: this._lastServerPos.y,
+          startTs: now,
+          duration: this.options.smoothing.driftCorrectionMs || 300
         }
       }
-
-      this._lastServerUpdateTs = now
-
-      // Добавляем в буфер с timestamp для delayed playback
-      this._jitterBuffer.push({
-        x: serverState.x,
-        y: serverState.y,
-        vx: serverState.vx,
-        vy: serverState.vy,
-        timestamp: now,
-        playbackTime: now + this._jitterBufferSize
-      })
-
-      // Ограничиваем размер буфера (храним максимум 3 состояния)
-      if (this._jitterBuffer.length > 3) {
-        this._jitterBuffer.shift()
-      }
     }
     /**
-     * Потребляет данные из jitter buffer с интерполяцией
+     * Applies active drift correction (smooth lerp over 300ms)
      * @private
      */
-    _consumeJitterBuffer(currentTime, deltaTime) {
-      // Удаляем устаревшие состояния
-      while (this._jitterBuffer.length > 0 && this._jitterBuffer[0].playbackTime < currentTime) {
-        const state = this._jitterBuffer.shift()
-        // Обновляем dead reckoning base при получении нового состояния
-        this._deadReckoning.baseX = state.x
-        this._deadReckoning.baseY = state.y
-        this._deadReckoning.baseVx = state.vx || 0
-        this._deadReckoning.baseVy = state.vy || 0
-        this._deadReckoning.baseTimestamp = currentTime
-        this._deadReckoning.serverX = state.x
-        this._deadReckoning.serverY = state.y
-        this._deadReckoning.serverVx = state.vx || 0
-        this._deadReckoning.serverVy = state.vy || 0
-        this._deadReckoning.serverTimestamp = state.timestamp
+    _applyDriftCorrection() {
+      if (!this._driftCorrection) return false
+      const now = performance.now()
+      const elapsed = now - this._driftCorrection.startTs
+      const t = Math.min(1, elapsed / this._driftCorrection.duration)
+
+      if (t >= 1) {
+        this._driftCorrection = null
+        return false
       }
 
-      // Интерполируем между двумя состояниями в буфере, если они есть
-      if (this._jitterBuffer.length >= 2) {
-        const state0 = this._jitterBuffer[0]
-        const state1 = this._jitterBuffer[1]
-
-        // Нормализованное время между двумя состояниями
-        const totalTime = state1.playbackTime - state0.playbackTime
-        const elapsed = currentTime - state0.playbackTime
-        const t = Math.max(0, Math.min(1, elapsed / totalTime))
-
-        // Hermite interpolation для плавной траектории
-        if (this.options.smoothing.interpolationMethod === 'hermite') {
-          this._hermiteInterpolate(state0, state1, t)
-        } else {
-          // Linear interpolation (fallback)
-          this._linearInterpolate(state0, state1, t)
-        }
-      } else if (this._jitterBuffer.length === 1) {
-        // Только одно состояние — используем dead reckoning
-        this._applyDeadReckoning(currentTime, deltaTime)
-      } else {
-        // Буфер пуст — используем dead reckoning
-        this._applyDeadReckoning(currentTime, deltaTime)
-      }
-    }
-    /**
-     * Hermite interpolation для плавной траектории с учетом скоростей
-     * Использует кубическую интерполяцию Hermite для учёта касательных (скоростей)
-     * @private
-     */
-    _hermiteInterpolate(state0, state1, t) {
-      // Hermite basis functions
-      const h00 = (1 + 2 * t) * (1 - t) * (1 - t)
-      const h10 = t * (1 - t) * (1 - t)
-      const h01 = t * t * (3 - 2 * t)
-      const h11 = t * t * (t - 1)
-
-      // Масштабируем касательные (скорости) по времени между состояниями
-      const dt = (state1.playbackTime - state0.playbackTime) / 1000 // в секундах
-      const tx0 = (state0.vx || 0) * dt
-      const ty0 = (state0.vy || 0) * dt
-      const tx1 = (state1.vx || 0) * dt
-      const ty1 = (state1.vy || 0) * dt
-
-      // Hermite interpolation
-      const newX = h00 * state0.x + h10 * tx0 + h01 * state1.x + h11 * tx1
-      const newY = h00 * state0.y + h10 * ty0 + h01 * state1.y + h11 * ty1
-
-      // Применяем с плавной коррекцией
-      this._applySmoothCorrection(newX, newY)
-
-      // Обновляем скорость для dead reckoning
-      this._deadReckoning.baseVx = state0.vx || 0
-      this._deadReckoning.baseVy = state0.vy || 0
-    }
-    /**
-     * Линейная интерполяция между двумя состояниями
-     * @private
-     */
-    _linearInterpolate(state0, state1, t) {
-      const newX = state0.x + (state1.x - state0.x) * t
-      const newY = state0.y + (state1.y - state0.y) * t
-      this._applySmoothCorrection(newX, newY)
-
-      // Обновляем скорость для dead reckoning (линейная интерполяция скоростей)
-      this._deadReckoning.baseVx = (state0.vx || 0) + ((state1.vx || 0) - (state0.vx || 0)) * t
-      this._deadReckoning.baseVy = (state0.vy || 0) + ((state1.vy || 0) - (state0.vy || 0)) * t
-    }
-    /**
-     * Применяет плавную коррекцию позиции (только если расхождение выше порога)
-     * @private
-     */
-    _applySmoothCorrection(targetX, targetY) {
-      const dx = targetX - this.ball.x
-      const dy = targetY - this.ball.y
-      const distance = Math.hypot(dx, dy)
-
-      // Коррекция только если расхождение выше порога (уменьшает jitter)
-      if (distance > this.options.smoothing.correctionThresholdPx) {
-        const alpha = this.options.smoothing.correctionSmoothingAlpha
-        this._prevPos.x = this.ball.x
-        this._prevPos.y = this.ball.y
-        this.ball.x += dx * alpha
-        this.ball.y += dy * alpha
-        this._currPos.x = this.ball.x
-        this._currPos.y = this.ball.y
-        this.clampBallWithinBounds()
-      }
-    }
-    /**
-     * Dead reckoning: предсказание позиции на основе последней известной скорости
-     * Используется между серверными обновлениями для плавного движения
-     * @private
-     */
-    _applyDeadReckoning(currentTime, deltaTime) {
-      const elapsedSinceServer = currentTime - this._deadReckoning.baseTimestamp
-      const maxExtrapolation = this.options.smoothing.maxExtrapolationMs
-
-      // Ограничиваем экстраполяцию максимальным временем
-      if (elapsedSinceServer > maxExtrapolation) {
-        // Слишком давно не было обновлений — используем старую систему
-        this._applyLegacyInterpolation(deltaTime, currentTime)
-        return
-      }
-
-      // Предсказываем позицию на основе последней известной скорости
-      const elapsedSec = elapsedSinceServer / 1000
-      const predictedX = this._deadReckoning.baseX + this._deadReckoning.baseVx * elapsedSec
-      const predictedY = this._deadReckoning.baseY + this._deadReckoning.baseVy * elapsedSec
-
-      // Применяем предсказанную позицию напрямую (без spring physics для устранения overshoot)
-      this._prevPos.x = this.ball.x
-      this._prevPos.y = this.ball.y
-      this.ball.x = predictedX
-      this.ball.y = predictedY
-      this.ball.vx = this._deadReckoning.baseVx
-      this.ball.vy = this._deadReckoning.baseVy
-      this._currPos.x = this.ball.x
-      this._currPos.y = this.ball.y
-      this.clampBallWithinBounds()
-    }
-    /**
-     * Fallback на старую систему интерполяции (для обратной совместимости)
-     * @private
-     */
-    _applyLegacyInterpolation(deltaTime, currentTime) {
-      this._updateStateBuffer(currentTime)
-      this._applyExponentialSmoothing()
-      const { clampedTargetX, clampedTargetY } = this._calculateAdaptiveClamping()
-      this._applySpringPhysics(clampedTargetX, clampedTargetY, deltaTime)
-      const { stepX, stepY } = this._limitStepSize(clampedTargetX, clampedTargetY, deltaTime)
-      const oldX = this.ball.x
-      const oldY = this.ball.y
-      this._interpolatePositionWithSteps(stepX, stepY)
-      if (deltaTime > 0.0001) {
-        this.ball.vx = (this.ball.x - oldX) / deltaTime
-        this.ball.vy = (this.ball.y - oldY) / deltaTime
-      }
-      this._autoSnapIfNeeded(clampedTargetX, clampedTargetY)
+      // Smooth ease-out lerp
+      const ease = 1 - (1 - t) * (1 - t)
+      const corrX = this._driftCorrection.startX + (this._driftCorrection.targetX - this._driftCorrection.startX) * ease
+      const corrY = this._driftCorrection.startY + (this._driftCorrection.targetY - this._driftCorrection.startY) * ease
+      this.ball.x = corrX
+      this.ball.y = corrY
+      return true
     }
     /**
      * Обновляет физику за указанное время
@@ -735,13 +349,15 @@ if (typeof PhysicsEngine === 'undefined') {
      * @private
      */
     _updateViewerPhysics(deltaTime) {
-      const canUpdate = !this.state.paused || this.state.allowInterpWhenPaused
-      if (canUpdate) {
-        if (this.state.paused || !this.options.clientSimulation) {
-          this.updateViewerInterpolation(deltaTime)
-        } else {
+      if (this.state.paused) return
+      if (this.options.clientSimulation) {
+        // Pure client simulation — local physics only, periodic drift check
+        if (!this._applyDriftCorrection()) {
           this.updateClientPhysics(deltaTime)
         }
+        this._checkDriftCorrection()
+      } else {
+        this.updateClientPhysics(deltaTime)
       }
     }
     /**
@@ -1175,14 +791,11 @@ if (typeof PhysicsEngine === 'undefined') {
         this.state.targetX = cx
         this.state.targetY = cy
 
-        // Добавляем в jitter buffer для плавной интерполяции
-        if (this.isViewer && !this.state.paused) {
-          this._addToJitterBuffer({
-            x: cx,
-            y: cy,
-            vx: command.vx,
-            vy: command.vy
-          })
+        // In clientSimulation mode, store server position for drift correction only
+        // Don't apply position — local physics is authoritative
+        if (this.options.clientSimulation) {
+          this._lastServerPos = { x: cx, y: cy, ts: performance.now() }
+          return
         }
 
         if (command.paused === true) {
@@ -1207,6 +820,7 @@ if (typeof PhysicsEngine === 'undefined') {
       this.state.lastVy = 0
     }
     _handleViewerVelocityUpdate(command) {
+      // clientSimulation: local physics is authoritative, ignore server velocity
       if (this.options.clientSimulation) {
         return
       }

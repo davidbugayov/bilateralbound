@@ -5,8 +5,6 @@
  */
 /* global PhysicsEngine, BallRenderer, debugWarn */
 let _previewPhysicsEngine = null
-let _physicsInterval = null
-const PHYSICS_DT = 1000 / 60 // 60 FPS
 let _callbacks = {
   onBounce: () => {},
   getLastServerState: () => null,
@@ -49,16 +47,14 @@ async function initializePreview(callbacks) {
     if (globalThis.BBConfig?.smoothing) {
       _previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
     }
-    if (_physicsInterval) clearInterval(_physicsInterval)
-    _physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
-    requestAnimationFrame(renderPreviewLoop)
     globalThis.__previewRenderer = new BallRenderer(
       canvas,
       _previewPhysicsEngine,
       {
-        localPhysics: false
+        localPhysics: true // Physics ticked inside BallRenderer's fixed-step rAF loop
       }
     )
+    globalThis.__previewRenderer.start()
     globalThis.__previewCanvas = canvas
     const canvasWidth = canvas.width
     const canvasHeight = canvas.height
@@ -79,31 +75,6 @@ async function initializePreview(callbacks) {
   } catch (error) {
     if (typeof debugWarn === 'function')
       debugWarn('Error initializing preview:', error)
-  }
-}
-/**
- * Physics loop
- */
-function physicsLoop() {
-  if (!_previewPhysicsEngine) return
-  _previewPhysicsEngine.update(PHYSICS_DT / 1000)
-}
-/**
- * Render loop
- */
-const _hiddenThrottleMs = 100
-let _lastRenderTime = 0
-function renderPreviewLoop(timestamp) {
-  requestAnimationFrame(renderPreviewLoop)
-  if (document.hidden) {
-    if (timestamp - _lastRenderTime < _hiddenThrottleMs) return
-  }
-  _lastRenderTime = timestamp
-  if (globalThis.__previewRenderer) {
-    globalThis.__previewRenderer.render()
-  }
-  if (globalThis.bbCounters?.tick) {
-    globalThis.bbCounters.tick(timestamp)
   }
 }
 /**
