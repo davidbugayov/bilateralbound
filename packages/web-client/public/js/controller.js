@@ -350,7 +350,7 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       await initializePreview()
       setupFullscreenListeners()
       await initializeWebSocketClient(sessionId)
-      if (globalThis.__current) globalThis.__current.isInitializing = false
+      // Note: isInitializing will be reset to false in websocket 'open' handler
     } catch (error) {
       if (globalThis.__current) globalThis.__current.isInitializing = false
       debugError('Error initializing controller:', error)
@@ -525,6 +525,10 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     let lastPlayingState = false
     wsClient.on('open', (event) => {
+      // Only reset isInitializing on initial connection, not on reconnection
+      if (!event?.isReconnection && globalThis.__current) {
+        globalThis.__current.isInitializing = false
+      }
       updateConnectionStatus(true)
       // Lazy-load non-critical modules after connection established
       if (!event?.isReconnection && !globalThis.__nonCriticalLoaded) {
@@ -1005,7 +1009,7 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   }
   function _syncUISpeed(ballState) {
     if (ballState.speed !== undefined) {
-      components.speed?.setSpeed(ballState.speed)
+      components.speed?.setSpeed(ballState.speed, true)
     }
   }
   function _syncUISize(ballState) {
@@ -1310,19 +1314,8 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     updateDirectionDisplay(1, 0)
   }
   function setControlsEnabled(enabled) {
-    const toggle = (id) => {
-      const el = document.getElementById(id)
-      if (!el) return
-      el.style.pointerEvents = enabled ? '' : 'none'
-      el.style.opacity = enabled ? '1' : '0.5'
-      el.querySelectorAll('button,input,select').forEach((node) => {
-        node.disabled = !enabled
-      })
-    }
-    toggle('ballColorControl')
-    toggle('bgColorControl')
-    toggle('sizeControl')
-    toggle('speedControl')
+    const main = document.querySelector('main.wrap')
+    if (main) main.classList.toggle('controls-locked', !enabled)
   }
   function safeSend(type, payload) {
     try {
@@ -1889,13 +1882,8 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       return
     }
     if (!globalThis.__current?.viewerConnected) {
-      if (shouldPlay) {
-        showNotification(
-          globalThis.i18n?.t('controller.clientNotConnected') ||
-            'Warning: client not connected, animation may not work',
-          'warning'
-        )
-      }
+      if (shouldPlay) showViewerNotConnectedWarning()
+      return
     }
     const payload = shouldPlay
       ? {
@@ -2471,8 +2459,8 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     }
 
     // Получаем переводы с fallback на английский, если i18n не готова
-    let title = '⚠️ Cannot change settings'
-    let message = 'Please wait for the viewer to connect. Share the viewer link with the client so they can join the session.'
+    let title = 'Viewer not connected'
+    let message = 'Share the viewer link with your client so they can join the session.'
 
     // Если i18n система готова, используем переводы
     if (globalThis.i18n && globalThis.i18n.isReady) {
@@ -2492,17 +2480,16 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       }
     }
 
-    // Используем notificationSystem API для корректного отображения title и message
     if (globalThis.notificationSystem?.show) {
       globalThis.notificationSystem.show({
         type: 'warning',
+        icon: '🔒',
         title: title,
         message: message,
-        duration: 6000 // Дольше показываем, т.к. текст длинный
+        duration: 4000
       })
     } else {
-      // Fallback для старых систем уведомлений
-      showNotification(`${title}\n\n${message}`, 'warning')
+      showNotification(`${title}: ${message}`, 'warning')
     }
   }
   /**
@@ -2525,78 +2512,30 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   }
 
   /**
-   * Инициализирует обработчики кликов для предупреждения о неподключенном вьювере
-   * Добавляет обработчики на все интерактивные контролы
+   * Single delegated handler on <main> — covers all controls including dynamically added ones.
+   * Idempotent: subsequent calls are no-ops (delegated handler is already active).
    */
   function initViewerConnectionWarnings() {
-    // Селекторы всех контролов, которые требуют подключения вьювера
-    const controlSelectors = [
-      // Кнопки направления (data-mode)
-      '[data-mode]',
-      // Переключатели звука из создаваемых компонентов
-      '.sound-type-btn',
-      // Кнопки размера мяча из создаваемых компонентов
-      '.size-btn',
-      '.size-multiplier-btn',
-      // Color pickers из создаваемых компонентов
-      '.color-btn',
-      // Play/Pause кнопка
-      '#playPauseBtn',
-      // Fullscreen direction buttons
-      '#fsDirH', '#fsDirV', '#fsDirDL', '#fsDirDR', '#fsDirRandom',
-      // Fullscreen size buttons
-      '#fsSize1', '#fsSize2', '#fsSize3', '#fsSize4',
-      // Fullscreen color buttons
-      '#fsBallCol1', '#fsBallCol2', '#fsBallCol3', '#fsBallCol4', '#fsBallCol5', '#fsBallCol6',
-      '#fsBallCol7', '#fsBallCol8', '#fsBallCol9', '#fsBallCol10', '#fsBallCol11', '#fsBallCol12',
-      '#fsBg1', '#fsBg2', '#fsBg3', '#fsBg4', '#fsBg5', '#fsBg6',
-      '#fsBg7', '#fsBg8', '#fsBg9', '#fsBg10', '#fsBg11', '#fsBg12',
-      // Кнопки пресетов (динамически добавляются)
-      '#presetControls button'
-    ]
-
-    // Добавляем обработчики на все контролы
-    controlSelectors.forEach(selector => {
-      const elements = document.querySelectorAll(selector)
-      elements.forEach(element => {
-        // Проверяем, уже ли добавлен обработчик (чтобы избежать дублирования)
-        if (!element._viewerConnectionWarningAdded) {
-          element._viewerConnectionWarningAdded = true
-          // Добавляем обработчик capture фазы, чтобы перехватить клик до других обработчиков
-          element.addEventListener('click', (event) => {
-            if (!globalThis.__current?.viewerConnected) {
-              event.stopImmediatePropagation() // Останавливаем все обработчики
-              event.preventDefault()
-              showViewerNotConnectedWarning()
-            }
-          }, true) // true = capture phase
-        }
-      })
-    })
-
-    // Специальная обработка для input элементов (color picker, range slider)
-    const inputElements = document.querySelectorAll('input[type="color"], input[type="range"]')
-    inputElements.forEach(input => {
-      // Проверяем, уже ли добавлен обработчик
-      if (!input._viewerConnectionWarningAdded) {
-        input._viewerConnectionWarningAdded = true
-        // Предотвращаем изменение до подключения вьювера
-        input.addEventListener('input', (event) => {
-          if (!globalThis.__current?.viewerConnected) {
-            event.stopImmediatePropagation()
-            event.preventDefault()
-            showViewerNotConnectedWarning()
-            // Возвращаем предыдущее значение
-            if (input._prevValue !== undefined) {
-              input.value = input._prevValue
-            }
-          } else {
-            // Сохраняем текущое значение как предыдущое
-            input._prevValue = input.value
-          }
-        }, true)
-      }
-    })
+    const main = document.querySelector('main.wrap')
+    if (!main || main._viewerGuardAdded) return
+    main._viewerGuardAdded = true
+    // Block clicks on controls that require viewer connection
+    main.addEventListener('click', (event) => {
+      if (globalThis.__current?.viewerConnected) return
+      if (globalThis.__current?.isInitializing) return
+      const t = event.target
+      const inControl = t.closest(
+        '.controls-card, .session-actions-row, #presetControls, .presets-details, #previewFsPanel'
+      )
+      if (!inControl) return
+      const isExempt = t.closest(
+        '.link-group, #autoStopRow, .session-stats-row, .drag-handle, #toggleDebugBtn, .fs-close-btn, .fs-panel-header'
+      )
+      if (isExempt) return
+      event.stopImmediatePropagation()
+      event.preventDefault()
+      showViewerNotConnectedWarning()
+    }, true)
   }
 
   // Экспорт функций в глобальную область видимости для доступа из HTML onclick

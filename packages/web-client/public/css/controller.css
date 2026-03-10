@@ -559,6 +559,43 @@ body.fullscreen-active .back-btn {
   }
 }
 
+/* ===== CONTROLS LOCKED (viewer not connected) ===== */
+
+main.controls-locked .controls-card,
+main.controls-locked .session-actions-row,
+main.controls-locked #presetControls,
+main.controls-locked .presets-details {
+  cursor: not-allowed;
+}
+
+main.controls-locked .controls-card button,
+main.controls-locked .controls-card input,
+main.controls-locked .controls-card select,
+main.controls-locked .session-start-btn,
+main.controls-locked .session-reset-btn,
+main.controls-locked #presetControls button,
+main.controls-locked .presets-details button {
+  pointer-events: none;
+  opacity: 0.38;
+  transition: opacity 0.2s ease;
+}
+
+/* Fullscreen panel locked */
+main.controls-locked #previewFsPanel .fs-btn-grid,
+main.controls-locked #previewFsPanel .fs-control-group,
+main.controls-locked #previewFsPanel .fs-slider-group {
+  cursor: not-allowed;
+}
+
+main.controls-locked #previewFsPanel .fs-btn-grid button,
+main.controls-locked #previewFsPanel .fs-control-group button,
+main.controls-locked #previewFsPanel .fs-control-group input,
+main.controls-locked #previewFsPanel .fs-slider-group input,
+main.controls-locked #previewFsPanel #fsPlayPauseBtn {
+  pointer-events: none;
+  opacity: 0.38;
+}
+
 /* ===== THREE-COLUMN CONTROLLER LAYOUT ===== */
 
 .controller-layout {

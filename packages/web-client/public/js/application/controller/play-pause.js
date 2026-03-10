@@ -51,12 +51,17 @@ function setPlayPauseState(shouldPlay) {
     showNotification,
     WS_MSG
   } = _deps
-  if (!globalThis.__current?.viewerConnected && shouldPlay) {
-    showNotification(
-      globalThis.i18n?.t('controller.clientNotConnected') ||
-        'Warning: client not connected, animation may not work',
-      'warning'
-    )
+  // Не показываем предупреждение во время инициализации
+  if (!globalThis.__current?.isInitializing && !globalThis.__current?.viewerConnected && shouldPlay) {
+    if (globalThis.showViewerNotConnectedWarning) {
+      globalThis.showViewerNotConnectedWarning()
+    } else {
+      showNotification(
+        globalThis.i18n?.t('controller.clientNotConnected') ||
+          'Viewer not connected',
+        'warning'
+      )
+    }
   }
   const payload = shouldPlay
     ? {

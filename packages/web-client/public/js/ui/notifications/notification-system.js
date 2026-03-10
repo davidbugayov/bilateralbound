@@ -81,8 +81,9 @@ class NotificationSystem {
         border-color: rgba(255, 255, 255, 0.2);
       }
       .bb-notification.warning {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%);
-        border-color: rgba(255, 255, 255, 0.2);
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.96) 0%, rgba(217, 70, 0, 0.96) 100%);
+        border-color: rgba(255, 255, 255, 0.15);
+        border-left: 3px solid rgba(255, 255, 255, 0.5);
       }
       .bb-notification.info {
         background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%);
@@ -144,6 +145,17 @@ class NotificationSystem {
       }
       .bb-notification.info .bb-notification-progress {
         background: rgba(255, 255, 255, 0.6);
+      }
+      /* Warning shake: plays after slide-in */
+      @keyframes warningShake {
+        0%, 100% { transform: translateX(0) }
+        15%  { transform: translateX(-5px) }
+        35%  { transform: translateX(5px) }
+        55%  { transform: translateX(-3px) }
+        75%  { transform: translateX(2px) }
+      }
+      .bb-notification.warning.show {
+        animation: warningShake 0.4s ease 0.3s;
       }
       /* Анимации */
       @keyframes iconBounce {
@@ -208,8 +220,11 @@ class NotificationSystem {
         color: #991b1b;
       }
       .light-theme .bb-notification.warning {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
-        color: #92400e;
+        background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        border-left: 4px solid #f97316;
+        border-color: #fed7aa;
+        color: #7c2d12;
+        box-shadow: 0 8px 24px rgba(249, 115, 22, 0.18);
       }
       .light-theme .bb-notification.info {
         background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);

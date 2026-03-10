@@ -18,7 +18,7 @@ if (typeof globalThis.UISync !== 'undefined') {
     }
     function syncSpeed(ballState) {
       if (ballState.speed !== undefined) {
-        _components.speed?.setSpeed(ballState.speed)
+        _components.speed?.setSpeed(ballState.speed, true)
       }
     }
     function syncSize(ballState) {

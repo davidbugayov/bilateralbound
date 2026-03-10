@@ -137,7 +137,7 @@ if (typeof SharedComponents === 'undefined') {
             activeElement.classList.add('active')
           }
         },
-        setSpeed(speed) {
+        setSpeed(speed, silent = false) {
           this.currentSpeed = Math.max(
             this.options.min,
             Math.min(this.options.max, speed)
@@ -185,7 +185,7 @@ if (typeof SharedComponents === 'undefined') {
             this.elements.fill.style.background = fillColor
           }
           this.updateActivePreset(this.currentSpeed)
-          if (this.options.onSpeedChange) {
+          if (!silent && this.options.onSpeedChange) {
             this.options.onSpeedChange(this.currentSpeed)
           }
         },
@@ -199,7 +199,7 @@ if (typeof SharedComponents === 'undefined') {
       component.render()
       // Refresh speed label on language change
       globalThis.addEventListener('i18nLanguageChanged', () => {
-        component.setSpeed(component.currentSpeed)
+        component.setSpeed(component.currentSpeed, true)
       })
       return component
     }

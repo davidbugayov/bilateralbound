@@ -274,7 +274,7 @@ if (typeof globalThis.FeatureManager === 'undefined') {
     }
     async _applySpeedSetting(speed) {
       if (speed && globalThis.components?.speed) {
-        globalThis.components.speed.setSpeed(speed)
+        globalThis.components.speed.setSpeed(speed, true)
         await this.sendUpdate({ speed: speed })
       }
     }
