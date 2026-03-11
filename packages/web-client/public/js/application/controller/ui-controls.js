@@ -157,7 +157,7 @@ function initializeComponents(callbacks) {
     callbacks?.getLastServerState,
     callbacks?.updateAudioIndicators
   )
-  setControlsEnabled(true)
+  // Don't enable controls here — viewer-status module handles enable/disable via CSS class
   if (callbacks?.updateDirectionDisplay) {
     callbacks.updateDirectionDisplay(1, 0)
   }

@@ -872,15 +872,12 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         delete localCommand.dirY
       }
       previewPhysicsEngine.applyCommand(localCommand)
-      // Position sync: on each state_update (~15Hz), correct drift toward server position.
+      // Store server position for drift correction (same mechanism as viewer)
       if (
         typeof state.x === 'number' &&
         typeof state.y === 'number' &&
         !previewPhysicsEngine.state.paused
       ) {
-        const dx = state.x - previewPhysicsEngine.ball.x
-        const dy = state.y - previewPhysicsEngine.ball.y
-        const dist = Math.sqrt(dx * dx + dy * dy)
         // First update after play: hard-snap to server position to start in sync
         if (!previewPhysicsEngine._hasReceivedFirstMovingUpdate) {
           previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
@@ -890,13 +887,9 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
           previewPhysicsEngine._prevPos.y = state.y
           previewPhysicsEngine._currPos.x = state.x
           previewPhysicsEngine._currPos.y = state.y
-        } else if (dist > 2) {
-          // Aggressive alpha: preview should closely track server/viewer
-          const alpha = dist > 80 ? 0.7 : dist > 30 ? 0.4 : 0.25
-          previewPhysicsEngine.ball.x += dx * alpha
-          previewPhysicsEngine.ball.y += dy * alpha
-          previewPhysicsEngine._currPos.x = previewPhysicsEngine.ball.x
-          previewPhysicsEngine._currPos.y = previewPhysicsEngine.ball.y
+        } else {
+          // Store server position for lightweight drift correction (checked every 3s by physics engine)
+          previewPhysicsEngine._lastServerPos = { x: state.x, y: state.y, ts: performance.now() }
         }
       }
     } else {
@@ -905,8 +898,8 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     const pausedState = previewPhysicsEngine.options.clientSimulation
       ? previewPhysicsEngine.state.paused
       : state.paused
-    // Apply paused state from server to preview physics engine
-    if (typeof state.paused === 'boolean') {
+    // Apply paused state from server only when it changes (avoids 15Hz velocity recalculation)
+    if (typeof state.paused === 'boolean' && previewPhysicsEngine.state.paused !== state.paused) {
       previewPhysicsEngine.setPaused(state.paused)
       // Reset first-update flag on pause so next play starts with hard-snap
       if (state.paused) {
@@ -1320,7 +1313,8 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     _initializeSizeControl()
     _initializeSoundControls()
     _initializeControllerAudio()
-    setControlsEnabled(true)
+    // Lock controls until viewer connects (updateViewerStatusUI will unlock when ready)
+    setControlsEnabled(false)
     updateDirectionDisplay(1, 0)
   }
   function setControlsEnabled(enabled) {

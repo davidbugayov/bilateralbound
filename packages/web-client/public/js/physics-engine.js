@@ -176,7 +176,10 @@ if (typeof PhysicsEngine === 'undefined') {
      * Устанавливает состояние паузы
      */
     setPaused(paused) {
+      const wasPaused = this.state.paused
       this.state.paused = Boolean(paused)
+      // Skip redundant state transitions (prevents 15Hz velocity recalculation)
+      if (wasPaused === this.state.paused) return
       this.state.stopping = false
       if (this.state.paused) {
         if (this.isViewer) {
@@ -299,38 +302,35 @@ if (typeof PhysicsEngine === 'undefined') {
       const threshold = this.options.smoothing.driftThresholdPx || 50
 
       if (drift > threshold) {
+        // Store offset to apply as decaying correction on top of physics
         this._driftCorrection = {
-          startX: this.ball.x,
-          startY: this.ball.y,
-          targetX: this._lastServerPos.x,
-          targetY: this._lastServerPos.y,
+          offsetX: dx,
+          offsetY: dy,
           startTs: now,
           duration: this.options.smoothing.driftCorrectionMs || 300
         }
       }
     }
     /**
-     * Applies active drift correction (smooth lerp over 300ms)
+     * Applies active drift correction as decaying offset on top of physics position.
+     * Physics always runs — correction blends ball toward server position without replacing physics.
      * @private
      */
     _applyDriftCorrection() {
-      if (!this._driftCorrection) return false
+      if (!this._driftCorrection) return
       const now = performance.now()
       const elapsed = now - this._driftCorrection.startTs
       const t = Math.min(1, elapsed / this._driftCorrection.duration)
 
       if (t >= 1) {
         this._driftCorrection = null
-        return false
+        return
       }
 
-      // Smooth ease-out lerp
+      // Apply increasing fraction of the offset (ease-out: fast start, slow finish)
       const ease = 1 - (1 - t) * (1 - t)
-      const corrX = this._driftCorrection.startX + (this._driftCorrection.targetX - this._driftCorrection.startX) * ease
-      const corrY = this._driftCorrection.startY + (this._driftCorrection.targetY - this._driftCorrection.startY) * ease
-      this.ball.x = corrX
-      this.ball.y = corrY
-      return true
+      this.ball.x += this._driftCorrection.offsetX * ease * 0.05
+      this.ball.y += this._driftCorrection.offsetY * ease * 0.05
     }
     /**
      * Обновляет физику за указанное время
@@ -351,10 +351,9 @@ if (typeof PhysicsEngine === 'undefined') {
     _updateViewerPhysics(deltaTime) {
       if (this.state.paused) return
       if (this.options.clientSimulation) {
-        // Pure client simulation — local physics only, periodic drift check
-        if (!this._applyDriftCorrection()) {
-          this.updateClientPhysics(deltaTime)
-        }
+        // Pure client simulation — always run local physics, then apply drift correction on top
+        this.updateClientPhysics(deltaTime)
+        this._applyDriftCorrection()
         this._checkDriftCorrection()
       } else {
         this.updateClientPhysics(deltaTime)
