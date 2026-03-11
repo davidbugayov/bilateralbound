@@ -898,8 +898,13 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     const pausedState = previewPhysicsEngine.options.clientSimulation
       ? previewPhysicsEngine.state.paused
       : state.paused
-    // Apply paused state from server only when it changes (avoids 15Hz velocity recalculation)
-    if (typeof state.paused === 'boolean' && previewPhysicsEngine.state.paused !== state.paused) {
+    // Apply paused state from server only when it changes AND user hasn't recently toggled play/pause.
+    // Without the timestamp guard, server's delayed response overrides user's stop action (double-space bug).
+    if (
+      typeof state.paused === 'boolean' &&
+      previewPhysicsEngine.state.paused !== state.paused &&
+      performance.now() >= __ignoreServerPausedUntilTs
+    ) {
       previewPhysicsEngine.setPaused(state.paused)
       // Reset first-update flag on pause so next play starts with hard-snap
       if (state.paused) {
