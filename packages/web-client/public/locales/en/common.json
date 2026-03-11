@@ -204,6 +204,7 @@
     "soundTypeSoft": "🎵 Soft (EMDR)",
     "soundTypeBeep": "📢 Beep",
     "enableSound": "Enable sound",
+    "soundEnabled": "Sound enabled",
     "viewerSoundOff": "Viewer sound off",
     "viewerHearingSound": "Viewer hearing sound",
     "viewerSoundReady": "Viewer sound ready",

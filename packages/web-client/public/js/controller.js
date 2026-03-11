@@ -419,7 +419,11 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       return
     }
     const key = e?.key?.toLowerCase()
-    if (key === 'f') {
+    if (key === ' ' || e?.code === 'Space') {
+      e.preventDefault()
+      e.stopPropagation()
+      togglePlayPause()
+    } else if (key === 'f') {
       e.preventDefault()
       e.stopPropagation()
       if (isPreviewFullscreen) {
@@ -828,29 +832,33 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         )
       }
     }
-    // First server update after play pressed — snap to server position and unpause
+    // First server update after play pressed — snap to server position and unpause.
+    // Respect __ignoreServerPausedUntilTs: if user pressed stop right after play,
+    // don't override their action with server's delayed paused:false.
     if (previewPhysicsEngine._pendingPlaySync && state.paused === false) {
       previewPhysicsEngine._pendingPlaySync = false
-      previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
-      if (typeof state.x === 'number' && typeof state.y === 'number') {
-        previewPhysicsEngine.ball.x = state.x
-        previewPhysicsEngine.ball.y = state.y
-        previewPhysicsEngine._prevPos.x = state.x
-        previewPhysicsEngine._prevPos.y = state.y
-        previewPhysicsEngine._currPos.x = state.x
-        previewPhysicsEngine._currPos.y = state.y
+      if (performance.now() >= __ignoreServerPausedUntilTs) {
+        previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
+        if (typeof state.x === 'number' && typeof state.y === 'number') {
+          previewPhysicsEngine.ball.x = state.x
+          previewPhysicsEngine.ball.y = state.y
+          previewPhysicsEngine._prevPos.x = state.x
+          previewPhysicsEngine._prevPos.y = state.y
+          previewPhysicsEngine._currPos.x = state.x
+          previewPhysicsEngine._currPos.y = state.y
+        }
+        if (state.dirX !== undefined)
+          previewPhysicsEngine.state.lastDirection.x = state.dirX
+        if (state.dirY !== undefined)
+          previewPhysicsEngine.state.lastDirection.y = state.dirY
+        if (state.speed !== undefined) previewPhysicsEngine.setSpeed(state.speed)
+        previewPhysicsEngine.setPaused(false)
+        if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall)
+        if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg)
+        isPlaying = true
+        updatePlayPauseButton()
+        bbCounters.start()
       }
-      if (state.dirX !== undefined)
-        previewPhysicsEngine.state.lastDirection.x = state.dirX
-      if (state.dirY !== undefined)
-        previewPhysicsEngine.state.lastDirection.y = state.dirY
-      if (state.speed !== undefined) previewPhysicsEngine.setSpeed(state.speed)
-      previewPhysicsEngine.setPaused(false)
-      if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall)
-      if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg)
-      isPlaying = true
-      updatePlayPauseButton()
-      bbCounters.start()
       return
     }
     if (previewPhysicsEngine.options.clientSimulation) {
@@ -1218,9 +1226,17 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       return
     }
     try {
+      const soundLabel = soundEnabledCheckbox.parentElement?.querySelector('span')
+      function _updateSoundLabel(enabled) {
+        if (!soundLabel) return
+        soundLabel.textContent = enabled
+          ? (globalThis.i18n?.t('controller.soundEnabled') || 'Sound enabled')
+          : (globalThis.i18n?.t('controller.enableSound') || 'Enable sound')
+      }
       soundEnabledCheckbox.addEventListener('change', (e) => {
         const enabled = e.target.checked
         setSoundEnabled(enabled)
+        _updateSoundLabel(enabled)
         if (enabled) {
           soundTypeControl.style.opacity = '1'
           soundTypeControl.style.pointerEvents = 'auto'
@@ -1243,6 +1259,7 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       if (lastServerState) {
         if (typeof lastServerState.soundEnabled === 'boolean') {
           soundEnabledCheckbox.checked = lastServerState.soundEnabled
+          _updateSoundLabel(lastServerState.soundEnabled)
           if (lastServerState.soundEnabled) {
             soundTypeControl.style.opacity = '1'
             soundTypeControl.style.pointerEvents = 'auto'
@@ -1924,6 +1941,7 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         previewPhysicsEngine._pendingPlaySync = true
         previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
       } else {
+        previewPhysicsEngine._pendingPlaySync = false
         previewPhysicsEngine.applyCommand(payload)
         centerBallInViewer()
       }

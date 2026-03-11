@@ -206,6 +206,7 @@
     "soundTypeSoft": "🎵 Мягкий (EMDR)",
     "soundTypeBeep": "📢 Бип",
     "enableSound": "Включить звук",
+    "soundEnabled": "Звук включён",
     "viewerSoundOff": "Звук у зрителя выключен",
     "viewerHearingSound": "Зритель слышит звук",
     "viewerSoundReady": "Звук вьювера готов",
