@@ -1224,11 +1224,15 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     }
     try {
       const soundLabel = soundEnabledCheckbox.parentElement?.querySelector('span')
+      function _i18nSafe(key, fallback) {
+        const val = globalThis.i18n?.t(key)
+        return val && val !== key ? val : fallback
+      }
       function _updateSoundLabel(enabled) {
         if (!soundLabel) return
         soundLabel.textContent = enabled
-          ? (globalThis.i18n?.t('controller.soundEnabled') || 'Sound enabled')
-          : (globalThis.i18n?.t('controller.enableSound') || 'Enable sound')
+          ? _i18nSafe('controller.soundEnabled', 'Sound enabled')
+          : _i18nSafe('controller.enableSound', 'Enable sound')
       }
       soundEnabledCheckbox.addEventListener('change', (e) => {
         const enabled = e.target.checked
