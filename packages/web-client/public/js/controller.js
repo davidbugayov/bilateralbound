@@ -916,8 +916,8 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
       }
     }
-    if (typeof pausedState === 'boolean') {
-      // Sync isPlaying with server state
+    if (typeof pausedState === 'boolean' && performance.now() >= __ignoreServerPausedUntilTs) {
+      // Sync isPlaying with server state (only when user hasn't recently toggled)
       const newIsPlaying = !state.paused
       if (isPlaying !== newIsPlaying) {
         isPlaying = newIsPlaying
