@@ -833,32 +833,29 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       }
     }
     // First server update after play pressed — snap to server position and unpause.
-    // Respect __ignoreServerPausedUntilTs: if user pressed stop right after play,
-    // don't override their action with server's delayed paused:false.
+    // Safe: if user pressed stop, _pendingPlaySync is already cleared in _setPlayPauseState.
     if (previewPhysicsEngine._pendingPlaySync && state.paused === false) {
       previewPhysicsEngine._pendingPlaySync = false
-      if (performance.now() >= __ignoreServerPausedUntilTs) {
-        previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
-        if (typeof state.x === 'number' && typeof state.y === 'number') {
-          previewPhysicsEngine.ball.x = state.x
-          previewPhysicsEngine.ball.y = state.y
-          previewPhysicsEngine._prevPos.x = state.x
-          previewPhysicsEngine._prevPos.y = state.y
-          previewPhysicsEngine._currPos.x = state.x
-          previewPhysicsEngine._currPos.y = state.y
-        }
-        if (state.dirX !== undefined)
-          previewPhysicsEngine.state.lastDirection.x = state.dirX
-        if (state.dirY !== undefined)
-          previewPhysicsEngine.state.lastDirection.y = state.dirY
-        if (state.speed !== undefined) previewPhysicsEngine.setSpeed(state.speed)
-        previewPhysicsEngine.setPaused(false)
-        if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall)
-        if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg)
-        isPlaying = true
-        updatePlayPauseButton()
-        bbCounters.start()
+      previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
+      if (typeof state.x === 'number' && typeof state.y === 'number') {
+        previewPhysicsEngine.ball.x = state.x
+        previewPhysicsEngine.ball.y = state.y
+        previewPhysicsEngine._prevPos.x = state.x
+        previewPhysicsEngine._prevPos.y = state.y
+        previewPhysicsEngine._currPos.x = state.x
+        previewPhysicsEngine._currPos.y = state.y
       }
+      if (state.dirX !== undefined)
+        previewPhysicsEngine.state.lastDirection.x = state.dirX
+      if (state.dirY !== undefined)
+        previewPhysicsEngine.state.lastDirection.y = state.dirY
+      if (state.speed !== undefined) previewPhysicsEngine.setSpeed(state.speed)
+      previewPhysicsEngine.setPaused(false)
+      if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall)
+      if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg)
+      isPlaying = true
+      updatePlayPauseButton()
+      bbCounters.start()
       return
     }
     if (previewPhysicsEngine.options.clientSimulation) {
