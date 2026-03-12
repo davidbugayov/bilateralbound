@@ -2572,6 +2572,15 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     )
   }
 
+  /**
+   * Переключает отображение отладочной информации на preview
+   */
+  function toggleDebugOverlay() {
+    if (globalThis.BBDebug && typeof globalThis.BBDebug.toggle === 'function') {
+      globalThis.BBDebug.toggle()
+    }
+  }
+
   // Экспорт функций в глобальную область видимости для доступа из HTML onclick
   globalThis.togglePlayPause = togglePlayPause
   globalThis.setDirection = setDirection
@@ -2587,6 +2596,7 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   globalThis.requireViewerConnection = requireViewerConnection
   globalThis.reinitializeViewerConnectionWarnings =
     initViewerConnectionWarnings
+  globalThis.toggleDebugOverlay = toggleDebugOverlay
 
   // Инициализация обработчиков предупреждений после загрузки DOM
   if (document.readyState === 'loading') {

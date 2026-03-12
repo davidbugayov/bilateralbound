@@ -40,7 +40,9 @@ if (typeof SharedComponents === 'undefined') {
     ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></div>` : ''}
     </div>
     <div class="speed-slider-container">
+    <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
     <input type="range"
+    id="speedRange"
     class="speed-range"
     min="${defaultOptions.min}"
     max="${defaultOptions.max}"
@@ -68,8 +70,10 @@ if (typeof SharedComponents === 'undefined') {
     <button class="speed-preset fast" data-speed="80">🚀<span>${globalThis.i18n?.t('controller.speedFast') || 'Fast'}</span></button>
     </div>
     <div class="speed-slider-container">
+    <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
     <div class="speed-track">
     <input type="range"
+    id="speedRange"
     class="speed-range"
     min="${defaultOptions.min}"
     max="${defaultOptions.max}"
@@ -238,7 +242,8 @@ if (typeof SharedComponents === 'undefined') {
     <button class="color-btn"
     data-color="${color}"
     style="background-color: ${color}"
-    title="${color}">
+    title="${color}"
+    aria-label="Color: ${color}">
     </button>
     `
       )
@@ -297,7 +302,8 @@ if (typeof SharedComponents === 'undefined') {
         (size, index) => `
     <button class="size-btn"
     data-size="${size}"
-    title="${size}px">
+    title="${size}px"
+    aria-label="Size: x${index + 1} (${size}px)">
     x${index + 1}
     </button>
     `
