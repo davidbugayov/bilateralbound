@@ -220,12 +220,24 @@ class SessionManager {
       return
     }
 
+    // Clear stuck stopping state when play request arrives (clientSimulationOnly: physics loop never
+    // runs on server, so stopping never completes — must clear manually on play)
+    if (
+      updates.paused === false &&
+      session.physicsEngine?.state?.stopping
+    ) {
+      session.physicsEngine.state.stopping = false
+    }
+
     // Smooth stop: intercept paused:true when currently playing — start deceleration instead
+    // Skip when clientSimulationOnly: server physics loop doesn't run, so stopping never completes
+    // and the engine would get permanently stuck in {paused:false, stopping:true}
     const isStopRequest =
       updates.paused === true &&
       session.physicsEngine &&
       !session.physicsEngine.state.paused &&
-      !session.physicsEngine.state.stopping
+      !session.physicsEngine.state.stopping &&
+      !this.clientSimulationOnly
 
     if (isStopRequest) {
       session.physicsEngine.startStopping()
