@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * @fileoverview UI module exports
  * Provides UI components and utilities

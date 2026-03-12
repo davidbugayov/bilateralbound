@@ -1,3 +1,4 @@
+/* jshint node: true, esversion: 11 */
 'use strict'
 const { logger, DEBUG_MODE } = require('../logger.js')
 
@@ -57,7 +58,17 @@ class StateBroadcaster {
       vy: currentPayload.vy
     }
 
-    // Остальные поля — только если изменились
+    this._addChangedFields(delta, currentPayload, lastState)
+    this._addScreenSizeIfChanged(delta, currentPayload, lastState)
+
+    return delta
+  }
+
+  /**
+   * Добавляет в delta только те поля, которые изменились
+   * @private
+   */
+  _addChangedFields(delta, currentPayload, lastState) {
     const fieldsToCheck = [
       'paused',
       'stopping',
@@ -79,16 +90,19 @@ class StateBroadcaster {
         delta[field] = currentPayload[field]
       }
     }
+  }
 
-    // viewerScreenSize — проверяем глубоко
+  /**
+   * Добавляет viewerScreenSize если изменился
+   * @private
+   */
+  _addScreenSizeIfChanged(delta, currentPayload, lastState) {
     if (
       JSON.stringify(currentPayload.viewerScreenSize) !==
       JSON.stringify(lastState.viewerScreenSize)
     ) {
       delta.viewerScreenSize = currentPayload.viewerScreenSize
     }
-
-    return delta
   }
 
   broadcastState(sessionId, options = {}) {

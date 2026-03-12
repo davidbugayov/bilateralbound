@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * @fileoverview i18n module exports
  * Provides internationalization support for the application
