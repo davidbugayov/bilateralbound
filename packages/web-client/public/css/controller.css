@@ -814,25 +814,25 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 8px 3px;
-  min-height: 52px;
+  gap: 2px;
+  padding: 5px 2px;
+  min-height: 40px;
   background: #1e293b;
   border: 1.5px solid #334155;
-  border-radius: 10px;
+  border-radius: 8px;
   color: #94a3b8;
   cursor: pointer;
   transition:
     background 0.15s,
     border-color 0.15s,
     color 0.15s;
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1.2;
   text-align: center;
 }
 
 .dir-btn .dir-icon {
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1;
   display: block;
 }
@@ -852,13 +852,13 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 }
 
 .dir-btn.active {
-  background: #1d4ed8;
-  border-color: #3b82f6;
-  color: #fff;
+  background: #1e3a6e;
+  border-color: #2563eb;
+  color: #e2e8f0;
 }
 
 .dir-btn.active .dir-lbl {
-  color: #bfdbfe;
+  color: #93c5fd;
 }
 
 /* Light theme */
@@ -875,9 +875,9 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 }
 
 .light-theme .dir-btn.active {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: #fff;
+  background: #1e3a6e;
+  border-color: #2563eb;
+  color: #e2e8f0;
 }
 
 /* Presets as collapsible <details> */
@@ -1047,13 +1047,13 @@ body {
   }
 
   .dir-btn {
-    padding: 7px 2px;
-    min-height: 48px;
+    padding: 5px 2px;
+    min-height: 40px;
     border-radius: 8px;
   }
 
   .dir-btn .dir-icon {
-    font-size: 16px;
+    font-size: 14px;
   }
 }
 
