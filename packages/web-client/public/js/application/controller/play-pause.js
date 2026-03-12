@@ -1,3 +1,4 @@
+/* jshint node: true, esversion: 11, strict: true */
 'use strict'
 /**
  * PlayPause Controller - управление воспроизведением
@@ -6,17 +7,21 @@
 let _isPlaying = false
 let _ignoreServerPausedUntilTs = 0
 let _deps = {}
+
 function init(deps) {
   _deps = deps
   _isPlaying = false
 }
+
 function getIsPlaying() {
   return _isPlaying
 }
+
 function setIsPlaying(v) {
   _isPlaying = v
   globalThis.__current.isPlaying = v
 }
+
 function updatePlayPauseButton() {
   const btn = document.getElementById('playPauseBtn')
   if (!btn) return
@@ -24,21 +29,25 @@ function updatePlayPauseButton() {
   btn.classList.toggle('playing', _isPlaying)
   btn.disabled = false
 }
+
 function syncFsPlayPauseButton() {
   const fsBtn = document.getElementById('fsPlayPauseBtn')
   if (!fsBtn) return
   fsBtn.textContent = _isPlaying ? '⏸' : '▶️'
   fsBtn.classList.toggle('playing', _isPlaying)
 }
+
 function updateAllButtons() {
   updatePlayPauseButton()
   syncFsPlayPauseButton()
 }
+
 function scheduleAnimations() {
   updateAllButtons()
   setTimeout(updateAllButtons, 150)
   setTimeout(updateAllButtons, 300)
 }
+
 function setPlayPauseState(shouldPlay) {
   const {
     previewPhysicsEngine,
@@ -51,6 +60,7 @@ function setPlayPauseState(shouldPlay) {
     showNotification,
     WS_MSG
   } = _deps
+
   // Не показываем предупреждение во время инициализации
   if (
     !globalThis.__current?.isInitializing &&
@@ -67,6 +77,7 @@ function setPlayPauseState(shouldPlay) {
       )
     }
   }
+
   const payload = shouldPlay
     ? {
         paused: false,
@@ -74,12 +85,18 @@ function setPlayPauseState(shouldPlay) {
         speed: Number(components.speed?.getSpeed?.() ?? 40)
       }
     : { paused: true, returnToCenter: true }
+
   safeSend(WS_MSG.controllerUpdate, payload)
   _isPlaying = shouldPlay
   globalThis.__current.isPlaying = shouldPlay
   globalThis.forcePauseUntilUserAction = false
-  if (shouldPlay) bbCounters.start()
-  else bbCounters.stop(true)
+
+  if (shouldPlay) {
+    bbCounters.start()
+  } else {
+    bbCounters.stop(true)
+  }
+
   if (previewPhysicsEngine) {
     if (shouldPlay) {
       // Reset first-update flag so first state_update hard-snaps position
@@ -88,27 +105,31 @@ function setPlayPauseState(shouldPlay) {
       centerBall()
     }
     previewPhysicsEngine.applyCommand(payload)
-    if (!shouldPlay) centerBall()
+    if (!shouldPlay) {
+      centerBall()
+    }
   }
+
   _ignoreServerPausedUntilTs = performance.now() + 800
   scheduleAnimations()
   return true
 }
+
 function togglePlayPause() {
   setPlayPauseState(!_isPlaying)
 }
+
 function shouldIgnoreServerPaused() {
   return performance.now() < _ignoreServerPausedUntilTs
 }
+
 if (typeof globalThis !== 'undefined') {
   globalThis.PlayPauseController = {
     init,
-    getIsPlaying,
     setIsPlaying,
     updateButton: updatePlayPauseButton,
     syncFsButton: syncFsPlayPauseButton,
     toggle: togglePlayPause,
-    setState: setPlayPauseState,
-    shouldIgnoreServerPaused
+    setState: setPlayPauseState
   }
 }
