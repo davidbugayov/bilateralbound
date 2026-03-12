@@ -1,4 +1,4 @@
-/* jshint node: true, esversion: 11 */
+/* jshint node: true, esversion: 11, strict: true */
 'use strict'
 const { logger, DEBUG_MODE } = require('../logger.js')
 
@@ -106,14 +106,13 @@ class StateBroadcaster {
   }
 
   broadcastState(sessionId, options = {}) {
-    const stateType = options.stateType || 'state_update'
-    const payload = options.payload || null
-
     const session = this.sessionRepository.findById(sessionId)
     if (!session) {
       return false
     }
 
+    const stateType = options.stateType || 'state_update'
+    const payload = options.payload || null
     const fullPayload = this._buildStatePayload(
       session,
       stateType,
@@ -127,37 +126,71 @@ class StateBroadcaster {
       payload: fullPayload
     }
 
+    const sentCount = this._sendMessageToClients(sessionId, eventData)
+    this._saveBroadcastStateIfNeeded(sessionId, session, options)
+    this._logBroadcastIfDebug(sessionId, stateType, sentCount, options)
+
+    return sentCount > 0
+  }
+
+  /**
+   * Отправляет сообщение всем готовым клиентам
+   * @private
+   */
+  _sendMessageToClients(sessionId, eventData) {
+    if (!this.webSocketManager) {
+      return 0
+    }
+
+    const message = JSON.stringify(eventData)
     let sentCount = 0
 
-    if (this.webSocketManager) {
-      const message = JSON.stringify(eventData)
-      for (const { client } of this.webSocketManager.getClients(sessionId)) {
-        if (this._isClientReady(client)) {
-          try {
-            client.send(message)
-            sentCount++
-          } catch (error) {
-            this.logger.error(
-              `Error broadcasting to WS client: ${error.message}`
-            )
-          }
-        }
+    for (const { client } of this.webSocketManager.getClients(sessionId)) {
+      if (this._isClientReady(client)) {
+        this._sendToClient(client, message)
+        sentCount++
       }
     }
 
-    // Сохраняем состояние для следующей delta compression
+    return sentCount
+  }
+
+  /**
+   * Отправляет сообщение одному клиенту
+   * @private
+   */
+  _sendToClient(client, message) {
+    try {
+      client.send(message)
+    } catch (error) {
+      this.logger.error(
+        `Error broadcasting to WS client: ${error.message}`
+      )
+    }
+  }
+
+  /**
+   * Сохраняет состояние для delta compression если требуется
+   * @private
+   */
+  _saveBroadcastStateIfNeeded(sessionId, session, options) {
     if (options.deltaCompression) {
       this._lastBroadcastedState.set(sessionId, { ...session.ballState })
     }
+  }
 
+  /**
+   * Логирует информацию о broadcast в режиме отладки
+   * @private
+   */
+  _logBroadcastIfDebug(sessionId, stateType, sentCount, options) {
     if (sentCount > 0 && DEBUG_MODE) {
+      const deltaInfo = options.deltaCompression ? ' (delta)' : ''
       this.logger.logSession(
         sessionId,
-        `Broadcasted ${stateType} to ${sentCount} clients${options.deltaCompression ? ' (delta)' : ''}`
+        `Broadcasted ${stateType} to ${sentCount} clients${deltaInfo}`
       )
     }
-
-    return sentCount > 0
   }
 
   broadcastViewerStatus(sessionId) {
