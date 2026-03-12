@@ -1,3 +1,4 @@
+/* jshint node: true, esversion: 11, strict: true */
 'use strict'
 const { WebSocketServer } = require('ws')
 const { logger, DEBUG_MODE } = require('../logger.js')
@@ -201,88 +202,11 @@ function setupWebSocketServer(server, sessionManager) {
     }
 
     ws.on('message', (message) => {
-      try {
-        const clientInfo = sessionManager.getClientInfo(ws)
-        if (!clientInfo) {
-          return
-        }
-
-        const data = JSON.parse(message)
-        if (data.type === 'heartbeat') {
-          return
-        }
-
-        if (DEBUG_MODE) {
-          logger.logSession(
-            clientInfo.sessionId,
-            `[MSG IN] ${clientInfo.role}:${data.type}`,
-            'debug'
-          )
-        }
-
-        const handler = messageHandlers[data.type]
-        if (handler) {
-          handler(data, clientInfo)
-        }
-      } catch (error) {
-        const clientInfoForError = sessionManager.getClientInfo(ws)
-        const sid = clientInfoForError
-          ? clientInfoForError.sessionId
-          : 'unknown'
-        if (DEBUG_MODE) {
-          logger.error(`WebSocket error from session ${sid}: ${error.message}`)
-        }
-      }
+      handleWebSocketMessage(message, ws, sessionManager, messageHandlers)
     })
 
     ws.on('close', () => {
-      if (role === 'viewer') {
-        analytics.recordViewerDisconnected()
-      } else if (role === 'controller') {
-        analytics.recordControllerDisconnected()
-      }
-      // Capture client info BEFORE disconnection removes ws from registry
-      const clientInfo = sessionManager.getClientInfo(ws)
-      sessionManager.handleWebSocketDisconnection(ws)
-
-      if (!clientInfo) return
-
-      const clients = sessionManager.webSocketManager.getClients(sessionId)
-      if (clientInfo.role === 'controller') {
-        const msg = JSON.stringify({
-          type: 'controller_disconnected',
-          payload: { controllerConnected: false },
-          timestamp: Date.now()
-        })
-        for (const { client } of clients) {
-          if (client !== ws && client.readyState === 1) {
-            try {
-              client.send(msg)
-            } catch (error) {
-              logger.error(
-                `Error sending controller_disconnected: ${error.message}`
-              )
-            }
-          }
-        }
-      } else if (clientInfo.role === 'viewer') {
-        const msg = JSON.stringify({
-          type: 'viewer_status',
-          payload: { connected: false, viewerConnected: false },
-          timestamp: Date.now()
-        })
-        for (const { client } of clients) {
-          if (client !== ws && client.readyState === 1) {
-            try {
-              client.send(msg)
-            } catch (error) {
-              logger.error(
-                `Error sending viewer_disconnected: ${error.message}`
-              )
-            }
-          }
-        }
-      }
+      handleWebSocketClose(ws, sessionId, role, sessionManager, analytics)
     })
 
     ws.on('error', (error) => {
@@ -303,6 +227,110 @@ function setupWebSocketServer(server, sessionManager) {
   }, 30000)
 
   return { wss, heartbeatInterval }
+}
+
+/**
+ * Обрабатывает входящие WebSocket сообщения
+ * @private
+ */
+function handleWebSocketMessage(message, ws, sessionManager, messageHandlers) {
+  try {
+    const clientInfo = sessionManager.getClientInfo(ws)
+    if (!clientInfo) {
+      return
+    }
+
+    const data = JSON.parse(message)
+    if (data.type === 'heartbeat') {
+      return
+    }
+
+    if (DEBUG_MODE) {
+      logger.logSession(
+        clientInfo.sessionId,
+        `[MSG IN] ${clientInfo.role}:${data.type}`,
+        'debug'
+      )
+    }
+
+    const handler = messageHandlers[data.type]
+    if (handler) {
+      handler(data, clientInfo)
+    }
+  } catch (error) {
+    const clientInfoForError = sessionManager.getClientInfo(ws)
+    const sid = clientInfoForError
+      ? clientInfoForError.sessionId
+      : 'unknown'
+    if (DEBUG_MODE) {
+      logger.error(`WebSocket error from session ${sid}: ${error.message}`)
+    }
+  }
+}
+
+/**
+ * Обрабатывает закрытие WebSocket соединения
+ * @private
+ */
+function handleWebSocketClose(ws, sessionId, role, sessionManager, analyticsModule) {
+  // Запись аналитики отключения
+  if (role === 'viewer') {
+    analyticsModule.recordViewerDisconnected()
+  } else if (role === 'controller') {
+    analyticsModule.recordControllerDisconnected()
+  }
+
+  // Захватываем информацию о клиенте ДО удаления из реестра
+  const clientInfo = sessionManager.getClientInfo(ws)
+  sessionManager.handleWebSocketDisconnection(ws)
+
+  if (!clientInfo) return
+
+  sendDisconnectionNotification(sessionId, clientInfo, ws, sessionManager)
+}
+
+/**
+ * Отправляет уведомление об отключении остальным клиентам
+ * @private
+ */
+function sendDisconnectionNotification(sessionId, clientInfo, ws, sessionManager) {
+  const clients = sessionManager.webSocketManager.getClients(sessionId)
+
+  if (clientInfo.role === 'controller') {
+    broadcastDisconnectionMessage(
+      clients,
+      ws,
+      'controller_disconnected',
+      { controllerConnected: false }
+    )
+  } else if (clientInfo.role === 'viewer') {
+    broadcastDisconnectionMessage(clients, ws, 'viewer_status', {
+      connected: false,
+      viewerConnected: false
+    })
+  }
+}
+
+/**
+ * Отправляет сообщение отключения всем готовым клиентам
+ * @private
+ */
+function broadcastDisconnectionMessage(clients, excludeWs, messageType, payload) {
+  const msg = JSON.stringify({
+    type: messageType,
+    payload,
+    timestamp: Date.now()
+  })
+
+  for (const { client } of clients) {
+    if (client !== excludeWs && client.readyState === 1) {
+      try {
+        client.send(msg)
+      } catch (error) {
+        logger.error(`Error sending ${messageType}: ${error.message}`)
+      }
+    }
+  }
 }
 
 module.exports = setupWebSocketServer
