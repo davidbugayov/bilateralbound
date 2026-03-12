@@ -361,6 +361,19 @@ if (typeof SharedComponents === 'undefined') {
             container.querySelector('.status-indicator')
           this.elements.icon = container.querySelector('.status-icon')
           this.elements.text = container.querySelector('.status-text')
+        },
+        setStatus(status, message) {
+          this.currentStatus = status
+          if (this.elements.text) {
+            this.elements.text.textContent = message || ''
+          }
+          if (this.elements.icon) {
+            const icons = { success: '✅', warning: '⚠️', error: '❌', waiting: '⏳', idle: '⏳' }
+            this.elements.icon.textContent = icons[status] || '⏳'
+          }
+          if (this.elements.container) {
+            this.elements.container.className = 'status-indicator status-' + status
+          }
         }
       }
       return component.render()
