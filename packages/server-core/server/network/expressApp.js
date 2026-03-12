@@ -1,61 +1,61 @@
-'use strict'
-const express = require('express')
-const cors = require('cors')
-const helmet = require('helmet')
-const compression = require('compression')
-const rateLimit = require('express-rate-limit')
-const os = require('node:os')
-const path = require('node:path')
-const fs = require('node:fs')
-const config = require('../config.js')
-const { DEBUG_MODE, logger } = require('../logger.js')
-const analytics = require('../analytics.js')
-const { v4: uuidv4 } = require('uuid')
+'use strict';
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+const os = require('node:os');
+const path = require('node:path');
+const fs = require('node:fs');
+const config = require('../config.js');
+const { DEBUG_MODE, logger } = require('../logger.js');
+const analytics = require('../analytics.js');
+const { v4: uuidv4 } = require('uuid');
 // Определяем доступные сетевые интерфейсы
 /**
  * Получает доступные сетевые интерфейсы
  * @returns {Object} Объект с интерфейсами и их IP адресами
  */
 const getNetworkInterfaces = () => {
-  const interfaces = os.networkInterfaces()
-  const result = {}
+  const interfaces = os.networkInterfaces();
+  const result = {};
 
   for (const key of Object.keys(interfaces)) {
     const iface = interfaces[key].find(
-      (alias) => alias.family === 'IPv4' && !alias.internal
-    )
+      (alias) => alias.family === 'IPv4' && !alias.internal,
+    );
     if (iface) {
-      result[key] = iface.address
+      result[key] = iface.address;
     }
   }
-  return result
-}
+  return result;
+};
 
 /**
  * Устанавливает заголовки для отключения кэширования
  * @param {Object} res - Express response объект
  */
 const setNoCacheHeaders = (res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-  res.setHeader('Pragma', 'no-cache')
-  res.setHeader('Expires', '0')
-}
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+};
 
 /**
  * Middleware для проверки существования сессии
  * @param sessionManager
  */
 const requireSession = (sessionManager) => (req, res, next) => {
-  const { sessionId } = req.params
-  const session = sessionManager.getSession(sessionId)
+  const { sessionId } = req.params;
+  const session = sessionManager.getSession(sessionId);
   if (!session) {
     return res
       .status(404)
-      .json({ error: 'Session not found', requestId: req.id })
+      .json({ error: 'Session not found', requestId: req.id });
   }
-  req.session = session
-  next()
-}
+  req.session = session;
+  next();
+};
 
 /**
  * Очищает кэш состояния сессии
@@ -63,8 +63,8 @@ const requireSession = (sessionManager) => (req, res, next) => {
  * @param {string} sessionId - ID сессии
  */
 const clearStateCache = (apiCache, sessionId) => {
-  apiCache.delete(`state_${sessionId}`)
-}
+  apiCache.delete(`state_${sessionId}`);
+};
 
 /**
  * Настраивает Express приложение
@@ -73,30 +73,30 @@ const clearStateCache = (apiCache, sessionId) => {
  * @returns {Object} Express приложение
  */
 // Supported languages matching locales/ directory
-const SUPPORTED_LANGS = ['en', 'ru', 'de', 'es', 'fr', 'pt', 'ja', 'zh']
+const SUPPORTED_LANGS = ['en', 'ru', 'de', 'es', 'fr', 'pt', 'ja', 'zh'];
 
 /**
  * Loads all locale JSON files at startup for server-side meta tag injection.
  * Returns Map<lang, parsedJSON>
  */
 function loadLocales(publicPath) {
-  const locales = new Map()
+  const locales = new Map();
   for (const lang of SUPPORTED_LANGS) {
-    const filePath = path.join(publicPath, 'locales', lang, 'common.json')
+    const filePath = path.join(publicPath, 'locales', lang, 'common.json');
     try {
-      locales.set(lang, JSON.parse(fs.readFileSync(filePath, 'utf8')))
+      locales.set(lang, JSON.parse(fs.readFileSync(filePath, 'utf8')));
     } catch (e) {
-      logger.error(`Failed to load locale ${lang}: ${e.message}`)
+      logger.error(`Failed to load locale ${lang}: ${e.message}`);
     }
   }
-  return locales
+  return locales;
 }
 
 /**
  * Resolves nested key like "viewer.title" from locale object
  */
 function getLocaleValue(locale, key) {
-  return key.split('.').reduce((obj, k) => obj?.[k], locale)
+  return key.split('.').reduce((obj, k) => obj?.[k], locale);
 }
 
 /**
@@ -104,18 +104,18 @@ function getLocaleValue(locale, key) {
  */
 function detectLanguage(req, session) {
   // 1. Explicit query param
-  const queryLang = req.query.lang
-  if (queryLang && SUPPORTED_LANGS.includes(queryLang)) return queryLang
+  const queryLang = req.query.lang;
+  if (queryLang && SUPPORTED_LANGS.includes(queryLang)) return queryLang;
 
   // 2. Session language (set by controller)
   if (session?.language && SUPPORTED_LANGS.includes(session.language))
-    return session.language
+    return session.language;
 
   // 3. Domain-based: .ru → ru, everything else → en
-  const host = req.get('host') || ''
-  if (host.endsWith('.ru')) return 'ru'
+  const host = req.get('host') || '';
+  if (host.endsWith('.ru')) return 'ru';
 
-  return 'en'
+  return 'en';
 }
 
 /**
@@ -124,40 +124,40 @@ function detectLanguage(req, session) {
  * an entry from metaMap, and replace content="..." inside.
  */
 function localizeHtml(html, lang, locale, metaMap) {
-  let result = html.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
+  let result = html.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`);
 
   // Match each <meta ... /> or <meta ... > tag (spanning multiple lines)
   result = result.replace(/<meta\b[^>]*?\/?>/g, (tag) => {
     for (const entry of metaMap) {
-      if (entry.isTitle) continue
+      if (entry.isTitle) continue;
       // Check if this tag has the right attribute (e.g. name="description" or property="og:title")
       const attrPattern = new RegExp(
-        `${entry.attr}=["']${entry.attrValue}["']`
-      )
-      if (!attrPattern.test(tag)) continue
+        `${entry.attr}=["']${entry.attrValue}["']`,
+      );
+      if (!attrPattern.test(tag)) continue;
 
-      const value = getLocaleValue(locale, entry.key)
+      const value = getLocaleValue(locale, entry.key);
       if (value) {
-        const escaped = value.replace(/"/g, '&quot;')
-        return tag.replace(/content="[^"]*"/, `content="${escaped}"`)
+        const escaped = value.replace(/"/g, '&quot;');
+        return tag.replace(/content="[^"]*"/, `content="${escaped}"`);
       }
     }
-    return tag
-  })
+    return tag;
+  });
 
   // Replace <title>...</title>
-  const titleEntry = metaMap.find((m) => m.isTitle)
+  const titleEntry = metaMap.find((m) => m.isTitle);
   if (titleEntry) {
-    const titleValue = getLocaleValue(locale, titleEntry.key)
+    const titleValue = getLocaleValue(locale, titleEntry.key);
     if (titleValue) {
       result = result.replace(
         /<title[^>]*>[^<]*<\/title>/,
-        `<title data-i18n="${titleEntry.key}">${titleValue}</title>`
-      )
+        `<title data-i18n="${titleEntry.key}">${titleValue}</title>`,
+      );
     }
   }
 
-  return result
+  return result;
 }
 
 /**
@@ -167,16 +167,16 @@ function localizeHtml(html, lang, locale, metaMap) {
  * .ru domain → emdrbilateral.ru; everything else → emdrbilateral.online
  */
 function injectCanonicalHreflang(html, host) {
-  const isRu = (host || '').endsWith('.ru')
-  const ruBase = 'https://emdrbilateral.ru'
-  const onlineBase = 'https://emdrbilateral.online'
-  const base = isRu ? ruBase : onlineBase
-  const canonicalUrl = `${base}/`
+  const isRu = (host || '').endsWith('.ru');
+  const ruBase = 'https://emdrbilateral.ru';
+  const onlineBase = 'https://emdrbilateral.online';
+  const base = isRu ? ruBase : onlineBase;
+  const canonicalUrl = `${base}/`;
 
   html = html.replace(
     /<link rel="canonical" href="[^"]*" \/>/,
-    `<link rel="canonical" href="${canonicalUrl}" />`
-  )
+    `<link rel="canonical" href="${canonicalUrl}" />`,
+  );
 
   const hreflang = [
     `<link rel="alternate" hreflang="ru" href="${ruBase}/" />`,
@@ -187,108 +187,106 @@ function injectCanonicalHreflang(html, host) {
     `<link rel="alternate" hreflang="pt" href="${onlineBase}/?lang=pt" />`,
     `<link rel="alternate" hreflang="ja" href="${onlineBase}/?lang=ja" />`,
     `<link rel="alternate" hreflang="zh" href="${onlineBase}/?lang=zh" />`,
-    `<link rel="alternate" hreflang="x-default" href="${onlineBase}/" />`
-  ].join('\n    ')
+    `<link rel="alternate" hreflang="x-default" href="${onlineBase}/" />`,
+  ].join('\n    ');
 
-  html = html.replace(
-    /(<link rel="canonical"[^>]*\/>)/,
-    `$1\n    ${hreflang}`
-  )
+  html = html.replace(/(<link rel="canonical"[^>]*\/>)/, `$1\n    ${hreflang}`);
 
   // Fix og:url
   html = html.replace(
     /(<meta property="og:url" content=")[^"]*(")/,
-    `$1${canonicalUrl}$2`
-  )
+    `$1${canonicalUrl}$2`,
+  );
 
   // Fix og:image (preserve path+query after domain)
   html = html.replace(
     /(<meta property="og:image" content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
-    `$1${base}$3`
-  )
+    `$1${base}$3`,
+  );
 
   // Fix twitter:image
   html = html.replace(
     /(<meta name="twitter:image" content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
-    `$1${base}$3`
-  )
+    `$1${base}$3`,
+  );
 
   // Fix og:locale
   html = html.replace(
     /(<meta property="og:locale" content=")[^"]*(")/,
-    `$1${isRu ? 'ru_RU' : 'en_US'}$2`
-  )
+    `$1${isRu ? 'ru_RU' : 'en_US'}$2`,
+  );
 
   // Fix preconnect link (domain-specific, not fonts)
   html = html.replace(
     /(<link\s+rel="preconnect"\s+href=")https:\/\/emdrbilateral\.(ru|online)("[^>]*>)/,
-    `$1${base}$3`
-  )
+    `$1${base}$3`,
+  );
 
   // Fix JSON-LD: replace wrong domain URLs in ld+json script blocks
-  const wrongBase = isRu ? onlineBase : ruBase
+  const wrongBase = isRu ? onlineBase : ruBase;
   html = html.replace(
     /(<script type="application\/ld\+json">[\s\S]*?<\/script>)/g,
-    (block) => block.split(wrongBase).join(base)
-  )
+    (block) => block.split(wrongBase).join(base),
+  );
 
-  return html
+  return html;
 }
 
 function setupExpressApp(sessionManager, apiCache) {
-  const networkInterfaces = getNetworkInterfaces()
-  const app = express()
+  const networkInterfaces = getNetworkInterfaces();
+  const app = express();
   // Request ID middleware for traceability
   app.use((req, res, next) => {
-    req.id = req.headers['x-request-id'] || uuidv4()
-    res.setHeader('X-Request-Id', req.id)
-    next()
-  })
+    req.id = req.headers['x-request-id'] || uuidv4();
+    res.setHeader('X-Request-Id', req.id);
+    next();
+  });
   // Улучшенная обработка безопасности с учетом сетевых интерфейсов
-  app.use((req, res, next) => { /* jshint unused: false */
-    const interfaceIP = networkInterfaces[Object.keys(networkInterfaces)[0]]
+  app.use((req, res, next) => {
+    /* jshint unused: false */
+    const interfaceIP = networkInterfaces[Object.keys(networkInterfaces)[0]];
 
-    req.interfaceIP = interfaceIP || '127.0.1'
-    next()
-  })
+    req.interfaceIP = interfaceIP || '127.0.1';
+    next();
+  });
   // Расширенная конфигурация Helmet
-  const isDev = process.env.NODE_ENV !== 'production'
+  const isDev = process.env.NODE_ENV !== 'production';
   app.use(
     helmet({
       contentSecurityPolicy: {
         directives: {
-          defaultSrc: ['\'self\''],
-          styleSrc: ['\'self\'', '\'unsafe-inline\''],
-          styleSrcAttr: ['\'self\'', '\'unsafe-inline\''],
-          styleSrcElem: ['\'self\'', '\'unsafe-inline\''],
-          scriptSrc: ['\'self\'', '\'unsafe-inline\''],
-          scriptSrcAttr: ['\'self\'', '\'unsafe-inline\''],
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          styleSrcAttr: ["'self'", "'unsafe-inline'"],
+          styleSrcElem: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrcAttr: ["'self'", "'unsafe-inline'"],
           scriptSrcElem: [
-            '\'self\'',
-            '\'unsafe-inline\'',
+            "'self'",
+            "'unsafe-inline'",
             'https://mc.yandex.ru',
             'https://mc.yandex.com',
-            'https://yastatic.net'
+            'https://yastatic.net',
           ],
-          imgSrc: ['\'self\'', 'data:', 'https:', 'https://*.mc.yandex.ru'],
+          imgSrc: ["'self'", 'data:', 'https:', 'https://*.mc.yandex.ru'],
           connectSrc: [
-            '\'self\'',
+            "'self'",
             'wss:',
             'https://mc.yandex.ru',
             'https://mc.yandex.com',
-            'wss://mc.yandex.com'
+            'wss://mc.yandex.com',
           ],
-          frameSrc: ['\'self\'', 'https://mc.yandex.md'],
+          frameSrc: ["'self'", 'https://mc.yandex.md'],
           // Disable upgrade-insecure-requests in dev (HTTP) to allow fetch on localhost
-          upgradeInsecureRequests: isDev ? null : []
-        }
+          upgradeInsecureRequests: isDev ? null : [],
+        },
       },
       crossOriginResourcePolicy: { policy: 'same-site' },
-      referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
-    })
-  )
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    }),
+  );
   // Rate limiting
-  const isLocal = process.env.NODE_ENV !== 'production'
+  const isLocal = process.env.NODE_ENV !== 'production';
   if (!isLocal) {
     const apiLimiter = rateLimit({
       windowMs: 60 * 1000,
@@ -297,9 +295,9 @@ function setupExpressApp(sessionManager, apiCache) {
       standardHeaders: true,
       legacyHeaders: false,
       // Behind nginx proxy — disable X-Forwarded-For validation
-      validate: { xForwardedForHeader: false }
-    })
-    app.use('/api/', apiLimiter)
+      validate: { xForwardedForHeader: false },
+    });
+    app.use('/api/', apiLimiter);
   }
   // CORS middleware
   app.use(
@@ -312,29 +310,30 @@ function setupExpressApp(sessionManager, apiCache) {
         'X-Requested-With',
         'Origin',
         'Accept',
-        'X-Request-Id'
+        'X-Request-Id',
       ],
       credentials: true,
-      optionsSuccessStatus: 200
-    })
-  )
+      optionsSuccessStatus: 200,
+    }),
+  );
 
   app.use(
     compression({
-      level: 6
-    })
-  )
+      level: 6,
+    }),
+  );
 
-  app.use(express.json())
+  app.use(express.json());
 
   // Analytics tracking middleware
-  app.use((req, res, next) => { /* jshint unused: false */
-    analytics.recordHttpRequest()
+  app.use((req, res, next) => {
+    /* jshint unused: false */
+    analytics.recordHttpRequest();
     res.on('finish', () => {
-      if (res.statusCode >= 400) analytics.recordHttpError(res.statusCode)
-    })
-    next()
-  })
+      if (res.statusCode >= 400) analytics.recordHttpError(res.statusCode);
+    });
+    next();
+  });
 
   // Static files path
   const publicPath = path.join(
@@ -343,19 +342,19 @@ function setupExpressApp(sessionManager, apiCache) {
     '..',
     '..',
     'web-client',
-    'public'
-  )
+    'public',
+  );
 
   // Cache locale files and HTML templates at startup for server-side meta tag localization
-  const locales = loadLocales(publicPath)
+  const locales = loadLocales(publicPath);
   const cachedViewerHtml = fs.readFileSync(
     path.join(publicPath, 'viewer.html'),
-    'utf8'
-  )
+    'utf8',
+  );
   const cachedControllerHtml = fs.readFileSync(
     path.join(publicPath, 'session-controller.html'),
-    'utf8'
-  )
+    'utf8',
+  );
 
   // Meta tag replacement uses attribute-level search (not full tag regex)
   // to avoid greedy multiline matching issues
@@ -366,38 +365,38 @@ function setupExpressApp(sessionManager, apiCache) {
     {
       attr: 'property',
       attrValue: 'og:description',
-      key: 'viewer.description'
-    }
-  ]
+      key: 'viewer.description',
+    },
+  ];
 
   const controllerMetaMap = [
     { isTitle: true, key: 'controller.meta.controllerTitle' },
     {
       attr: 'name',
       attrValue: 'description',
-      key: 'controller.meta.controllerDescription'
+      key: 'controller.meta.controllerDescription',
     },
     {
       attr: 'property',
       attrValue: 'og:title',
-      key: 'controller.meta.controllerTitle'
+      key: 'controller.meta.controllerTitle',
     },
     {
       attr: 'property',
       attrValue: 'og:description',
-      key: 'controller.meta.controllerDescription'
+      key: 'controller.meta.controllerDescription',
     },
     {
       attr: 'name',
       attrValue: 'twitter:title',
-      key: 'controller.meta.controllerTitle'
+      key: 'controller.meta.controllerTitle',
     },
     {
       attr: 'name',
       attrValue: 'twitter:description',
-      key: 'controller.meta.controllerDescription'
-    }
-  ]
+      key: 'controller.meta.controllerDescription',
+    },
+  ];
 
   const indexMetaMap = [
     { isTitle: true, key: 'home.pageTitle' },
@@ -406,18 +405,18 @@ function setupExpressApp(sessionManager, apiCache) {
     {
       attr: 'property',
       attrValue: 'og:description',
-      key: 'home.metaDescription'
+      key: 'home.metaDescription',
     },
     { attr: 'name', attrValue: 'twitter:title', key: 'home.pageTitle' },
     {
       attr: 'name',
       attrValue: 'twitter:description',
-      key: 'home.metaDescription'
-    }
-  ]
+      key: 'home.metaDescription',
+    },
+  ];
 
   // Pre-render localized HTML for all languages at startup (avoids regex per request)
-  const _htmlCache = new Map()
+  const _htmlCache = new Map();
 
   // Pre-render index.html with version at startup (avoid 2x sync fs reads per request)
   const packageJsonPath = path.join(
@@ -426,63 +425,75 @@ function setupExpressApp(sessionManager, apiCache) {
     '..',
     '..',
     '..',
-    'package.json'
-  )
+    'package.json',
+  );
   const appVersion = JSON.parse(
-    fs.readFileSync(packageJsonPath, 'utf8')
-  ).version
+    fs.readFileSync(packageJsonPath, 'utf8'),
+  ).version;
   const cachedIndexHtml = fs
     .readFileSync(path.join(publicPath, 'index.html'), 'utf8')
-    .replace(/⚡ BilateralBound v[\d.]+/, `⚡ BilateralBound v${appVersion}`)
+    .replace(/⚡ BilateralBound v[\d.]+/, `⚡ BilateralBound v${appVersion}`);
 
   // Build per-language HTML cache
   for (const lang of SUPPORTED_LANGS) {
-    const locale = locales.get(lang) || locales.get('en')
-    _htmlCache.set(`viewer_${lang}`, localizeHtml(cachedViewerHtml, lang, locale, viewerMetaMap))
-    _htmlCache.set(`controller_${lang}`, localizeHtml(cachedControllerHtml, lang, locale, controllerMetaMap))
-    _htmlCache.set(`index_${lang}`, localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap))
+    const locale = locales.get(lang) || locales.get('en');
+    _htmlCache.set(
+      `viewer_${lang}`,
+      localizeHtml(cachedViewerHtml, lang, locale, viewerMetaMap),
+    );
+    _htmlCache.set(
+      `controller_${lang}`,
+      localizeHtml(cachedControllerHtml, lang, locale, controllerMetaMap),
+    );
+    _htmlCache.set(
+      `index_${lang}`,
+      localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap),
+    );
   }
 
   // Root route - serve cached index.html with injected version and localized meta tags
   app.get('/', (req, res) => {
-    const lang = detectLanguage(req, null)
-    let html = _htmlCache.get(`index_${lang}`) || _htmlCache.get('index_en')
-    html = injectCanonicalHreflang(html, req.get('host') || '')
-    res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    setNoCacheHeaders(res)
-    res.send(html)
-  })
+    const lang = detectLanguage(req, null);
+    let html = _htmlCache.get(`index_${lang}`) || _htmlCache.get('index_en');
+    html = injectCanonicalHreflang(html, req.get('host') || '');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    setNoCacheHeaders(res);
+    res.send(html);
+  });
 
   // Routes
-  app.get('/health', (req, res) => { /* jshint unused: false */
+  app.get('/health', (req, res) => {
+    /* jshint unused: false */
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
       sessions: sessionManager.getSessionCount(),
-      uptime: process.uptime()
-    })
-  })
+      uptime: process.uptime(),
+    });
+  });
 
   // Analytics endpoint — localhost only
   app.get('/api/analytics', (req, res) => {
-    const remoteAddr = req.socket?.remoteAddress
+    const remoteAddr = req.socket?.remoteAddress;
     const isLocal =
       remoteAddr === '127.0.0.1' ||
       remoteAddr === '::1' ||
-      remoteAddr === '::ffff:127.0.0.1'
+      remoteAddr === '::ffff:127.0.0.1';
     if (!isLocal) {
-      return res.status(403).json({ error: 'Forbidden' })
+      return res.status(403).json({ error: 'Forbidden' });
     }
-    const count = sessionManager.getSessionCount()
-    analytics.updatePeak(count)
-    res.json(analytics.getStats(count))
-  })
+    const count = sessionManager.getSessionCount();
+    analytics.updatePeak(count);
+    res.json(analytics.getStats(count));
+  });
 
   // Dynamic robots.txt per domain (.ru gets Host directive, .online does not)
   app.get('/robots.txt', (req, res) => {
-    const host = req.get('host') || ''
-    const isRu = host.endsWith('.ru')
-    const base = isRu ? 'https://emdrbilateral.ru' : 'https://emdrbilateral.online'
+    const host = req.get('host') || '';
+    const isRu = host.endsWith('.ru');
+    const base = isRu
+      ? 'https://emdrbilateral.ru'
+      : 'https://emdrbilateral.online';
     const lines = [
       '# Robots.txt - BilateralBound EMDR Therapy',
       '',
@@ -553,32 +564,34 @@ function setupExpressApp(sessionManager, apiCache) {
       'User-agent: Google-Extended',
       'Disallow: /',
       '',
-      `Sitemap: ${base}/sitemap.xml`
-    ]
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.setHeader('Cache-Control', 'public, max-age=86400')
-    res.send(lines.join('\n'))
-  })
+      `Sitemap: ${base}/sitemap.xml`,
+    ];
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(lines.join('\n'));
+  });
 
   // Dynamic sitemap.xml per domain
   app.get('/sitemap.xml', (req, res) => {
-    const host = req.get('host') || ''
-    const isRu = host.endsWith('.ru')
-    const base = isRu ? 'https://emdrbilateral.ru' : 'https://emdrbilateral.online'
-    const today = new Date().toISOString().split('T')[0]
+    const host = req.get('host') || '';
+    const isRu = host.endsWith('.ru');
+    const base = isRu
+      ? 'https://emdrbilateral.ru'
+      : 'https://emdrbilateral.online';
+    const today = new Date().toISOString().split('T')[0];
     const imageTitle = isRu
       ? 'BilateralBound - EMDR терапия онлайн'
-      : 'BilateralBound - Online EMDR Therapy Platform'
+      : 'BilateralBound - Online EMDR Therapy Platform';
     const imageCaption = isRu
       ? 'Профессиональная платформа EMDR терапии с биодинамической стимуляцией'
-      : 'Professional EMDR therapy platform with bilateral stimulation'
+      : 'Professional EMDR therapy platform with bilateral stimulation';
     const verificationUrls = isRu
       ? [
-        '  <url>\n    <loc>https://emdrbilateral.ru/google0a8d78e57c19cb2f.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
-        '  <url>\n    <loc>https://emdrbilateral.ru/yandex_736ad8daf3553b6b.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
-        '  <url>\n    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>'
-      ].join('\n')
-      : ''
+          '  <url>\n    <loc>https://emdrbilateral.ru/google0a8d78e57c19cb2f.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
+          '  <url>\n    <loc>https://emdrbilateral.ru/yandex_736ad8daf3553b6b.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
+          '  <url>\n    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
+        ].join('\n')
+      : '';
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
@@ -594,15 +607,15 @@ function setupExpressApp(sessionManager, apiCache) {
     </image:image>
   </url>
 ${verificationUrls}
-</urlset>`
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8')
-    res.setHeader('Cache-Control', 'public, max-age=86400')
-    res.send(xml.trim())
-  })
+</urlset>`;
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(xml.trim());
+  });
 
   // Static files - only serve specific paths, not root using helper function
   // Assets use ?v=version query params → safe for immutable long-term cache
-  const staticDirectories = ['css', 'js', 'emdr-therapy', 'panel']
+  const staticDirectories = ['css', 'js', 'emdr-therapy', 'panel'];
   for (const dir of staticDirectories) {
     app.use(
       `/${dir}`,
@@ -610,10 +623,10 @@ ${verificationUrls}
         etag: true,
         lastModified: true,
         setHeaders: (res) => {
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
-        }
-      })
-    )
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        },
+      }),
+    );
   }
 
   // Catch-all for other static files (but not index.html)
@@ -626,7 +639,7 @@ ${verificationUrls}
       req.path.startsWith('/js/') ||
       req.path.startsWith('/emdr-therapy/')
     ) {
-      return next()
+      return next();
     }
 
     // For other static files, serve them
@@ -634,13 +647,13 @@ ${verificationUrls}
       index: false,
       etag: false,
       lastModified: false,
-      setHeaders: setNoCacheHeaders
-    })(req, res, next)
-  })
-  app.use('/test', express.static(path.join(__dirname, '..', '..')))
+      setHeaders: setNoCacheHeaders,
+    })(req, res, next);
+  });
+  app.use('/test', express.static(path.join(__dirname, '..', '..')));
 
   app.get('/rss.xml', (req, res) => {
-    const baseUrl = `${req.protocol}://${req.get('host')}`
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
     const rss = `
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -666,294 +679,296 @@ ${verificationUrls}
   </item>
 </channel>
 </rss>
-    `.trim()
-    res.type('application/xml').send(rss)
-  })
+    `.trim();
+    res.type('application/xml').send(rss);
+  });
   app.post('/api/session', async (req, res) => {
     try {
-      const session = await sessionManager.createSession()
+      const session = await sessionManager.createSession();
       if (DEBUG_MODE) {
-        logger.info(`[${req.id}] New session created: ${session.id}`)
+        logger.info(`[${req.id}] New session created: ${session.id}`);
       }
-      res.json({ sessionId: session.id })
+      res.json({ sessionId: session.id });
     } catch (error) {
       if (DEBUG_MODE) {
-        logger.error(`[${req.id}] Error creating session: ${error.message}`)
+        logger.error(`[${req.id}] Error creating session: ${error.message}`);
       }
-      res.status(500).json({ error: error.message, requestId: req.id })
+      res.status(500).json({ error: error.message, requestId: req.id });
     }
-  })
+  });
   // Резервирование/создание постоянной ссылки (идемпотентно)
   app.post('/api/session/:sessionId/reserve', (req, res) => {
-    const { sessionId } = req.params
+    const { sessionId } = req.params;
     try {
-      const session = sessionManager.findOrCreateSession(sessionId)
+      const session = sessionManager.findOrCreateSession(sessionId);
       if (!session) {
         return res
           .status(400)
-          .json({ error: 'Invalid session id', requestId: req.id })
+          .json({ error: 'Invalid session id', requestId: req.id });
       }
 
-      const baseUrl = `${req.protocol}://${req.get('host')}`
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
       res.json({
         sessionId: session.id,
         viewerUrl: `${baseUrl}/s/${session.id}`,
-        controllerUrl: `${baseUrl}/c/${session.id}`
-      })
+        controllerUrl: `${baseUrl}/c/${session.id}`,
+      });
     } catch (error) {
       if (DEBUG_MODE) {
-        logger.error(`[${req.id}] Error reserving session: ${error.message}`)
+        logger.error(`[${req.id}] Error reserving session: ${error.message}`);
       }
-      res.status(500).json({ error: error.message, requestId: req.id })
+      res.status(500).json({ error: error.message, requestId: req.id });
     }
-  })
+  });
   app.get(
     '/api/session/:sessionId',
     requireSession(sessionManager),
     (req, res) => {
-      const session = req.session
+      const session = req.session;
       res.json({
         id: session.id,
         controllerConnected: session.controllerConnected,
         viewerConnected: session.viewerConnected,
         language: session.language,
         createdAt: session.createdAt,
-        lastActivity: session.lastActivity
-      })
-    }
-  )
+        lastActivity: session.lastActivity,
+      });
+    },
+  );
   app.get(
     '/api/session/:sessionId/state',
     requireSession(sessionManager),
     (req, res) => {
-      const { sessionId } = req.params
-      const session = req.session
-      const cacheKey = `state_${sessionId}`
-      const cached = apiCache.get(cacheKey)
-      const adaptiveTTL = 50
+      const { sessionId } = req.params;
+      const session = req.session;
+      const cacheKey = `state_${sessionId}`;
+      const cached = apiCache.get(cacheKey);
+      const adaptiveTTL = 50;
       if (cached && Date.now() - cached.timestamp < adaptiveTTL) {
-        res.set('X-Cache-Status', 'HIT')
-        return res.json(cached.data)
+        res.set('X-Cache-Status', 'HIT');
+        return res.json(cached.data);
       }
 
       const responseData = {
         ...session.ballState,
         viewerConnected: session.viewerConnected,
         controllerConnected: session.controllerConnected,
-        viewerScreenSize: session.viewerScreenSize
-      }
+        viewerScreenSize: session.viewerScreenSize,
+      };
       // Нормализуем направление vx/vy кратковременно после смены размера/первого коннекта для стабильности API
       if (
         session.normalizeDirectionUntilTs &&
         Date.now() < session.normalizeDirectionUntilTs
       ) {
         const clamp01 = (v) =>
-          Math.max(-1, Math.min(1, typeof v === 'number' ? v : 0))
-        responseData.vx = clamp01(responseData.vx)
-        responseData.vy = clamp01(responseData.vy)
+          Math.max(-1, Math.min(1, typeof v === 'number' ? v : 0));
+        responseData.vx = clamp01(responseData.vx);
+        responseData.vy = clamp01(responseData.vy);
       }
 
       apiCache.set(cacheKey, {
         data: responseData,
         timestamp: Date.now(),
-        type: 'ball_state'
-      })
-      res.set('X-Cache-Status', 'MISS')
-      res.json(responseData)
-    }
-  )
+        type: 'ball_state',
+      });
+      res.set('X-Cache-Status', 'MISS');
+      res.json(responseData);
+    },
+  );
   app.post(
     '/api/session/:sessionId/controller/connect',
     requireSession(sessionManager),
     (req, res) => {
-      const { sessionId } = req.params
-      sessionManager.updateBallState(sessionId, req.body)
+      const { sessionId } = req.params;
+      sessionManager.updateBallState(sessionId, req.body);
       sessionManager.sessionRepository.update(sessionId, {
-        controllerConnected: true
-      })
-      clearStateCache(apiCache, sessionId)
+        controllerConnected: true,
+      });
+      clearStateCache(apiCache, sessionId);
 
-      sessionManager.broadcastControllerConnection(sessionId, true)
+      sessionManager.broadcastControllerConnection(sessionId, true);
 
-      res.json({ success: true, message: 'Controller connected' })
-    }
-  )
+      res.json({ success: true, message: 'Controller connected' });
+    },
+  );
 
   // Новый эндпоинт для обновлений от контроллера (замена WebSocket controller_update)
   app.post(
     '/api/session/:sessionId/controller/update',
     requireSession(sessionManager),
     (req, res) => {
-      const { sessionId } = req.params
-      const updates = req.body
+      const { sessionId } = req.params;
+      const updates = req.body;
 
       // Обновляем состояние шара
-      const success = sessionManager.updateBallState(sessionId, updates)
+      const success = sessionManager.updateBallState(sessionId, updates);
 
       if (success) {
-        clearStateCache(apiCache, sessionId)
+        clearStateCache(apiCache, sessionId);
         // Состояние автоматически рассылается через StateBroadcaster в updateBallState
-        res.json({ success: true })
+        res.json({ success: true });
       } else {
-        res.status(400).json({ error: 'Failed to update ball state' })
+        res.status(400).json({ error: 'Failed to update ball state' });
       }
-    }
-  )
+    },
+  );
   app.post(
     '/api/session/:sessionId/viewer/update',
     requireSession(sessionManager),
     (req, res) => {
-      const { sessionId } = req.params
-      sessionManager.updateBallState(sessionId, req.body)
+      const { sessionId } = req.params;
+      sessionManager.updateBallState(sessionId, req.body);
 
       // Рассылаем обновление всем WebSocket клиентам
-      sessionManager.stateBroadcaster.broadcastState(sessionId)
+      sessionManager.stateBroadcaster.broadcastState(sessionId);
 
-      res.json({ success: true, message: 'Viewer update processed' })
-    }
-  )
+      res.json({ success: true, message: 'Viewer update processed' });
+    },
+  );
 
   // Новый эндпоинт для уведомления об активации звука
   app.post(
     '/api/session/:sessionId/viewer/audio-activated',
     requireSession(sessionManager),
     (req, res) => {
-      const { sessionId } = req.params
-      const session = req.session
+      const { sessionId } = req.params;
+      const session = req.session;
 
-      session.viewerAudioActivated = req.body?.activated ?? true
+      session.viewerAudioActivated = req.body?.activated ?? true;
 
       sessionManager.stateBroadcaster.broadcastState(
         sessionId,
         'viewer_audio_activated',
         {
           activated: session.viewerAudioActivated,
-          timestamp: Date.now()
-        }
-      )
+          timestamp: Date.now(),
+        },
+      );
 
-      res.json({ success: true })
-    }
-  )
+      res.json({ success: true });
+    },
+  );
   // Bounce sync - viewer sends ball position for controller preview sync
   app.post(
     '/api/session/:sessionId/viewer/bounce',
     requireSession(sessionManager),
     (req, res) => {
-      const { sessionId } = req.params
-      const { side, x, y, dirX, dirY, timestamp } = req.body || {}
+      const { sessionId } = req.params;
+      const { side, x, y, dirX, dirY, timestamp } = req.body || {};
 
       // Broadcast bounce_sync to controllers via WebSocket
       const bounceMessage = JSON.stringify({
         type: 'bounce_sync',
-        payload: { side, x, y, dirX, dirY, timestamp }
-      })
+        payload: { side, x, y, dirX, dirY, timestamp },
+      });
       for (const { client, info } of sessionManager.webSocketManager.getClients(
-        sessionId
+        sessionId,
       )) {
         if (info.role === 'controller' && client.readyState === 1) {
           try {
-            client.send(bounceMessage)
+            client.send(bounceMessage);
           } catch {
             /* ignore */
           }
         }
       }
 
-      res.json({ success: true })
-    }
-  )
+      res.json({ success: true });
+    },
+  );
   app.post(
     '/api/session/:sessionId/viewer/connect',
     requireSession(sessionManager),
     (req, res) => {
-      const { sessionId } = req.params
-      const { screenSize } = req.body
+      const { sessionId } = req.params;
+      const { screenSize } = req.body;
       sessionManager.sessionRepository.update(sessionId, {
-        viewerConnected: true
-      })
+        viewerConnected: true,
+      });
       if (screenSize) {
-        sessionManager.setViewerScreenSize(sessionId, screenSize)
-        clearStateCache(apiCache, sessionId)
+        sessionManager.setViewerScreenSize(sessionId, screenSize);
+        clearStateCache(apiCache, sessionId);
       }
 
-      sessionManager.broadcastViewerConnection(sessionId, true, screenSize)
+      sessionManager.broadcastViewerConnection(sessionId, true, screenSize);
 
-      res.json({ success: true, message: 'Viewer connected' })
-    }
-  )
+      res.json({ success: true, message: 'Viewer connected' });
+    },
+  );
   app.post(
     '/api/session/:sessionId/viewer/screen-size',
     requireSession(sessionManager),
     (req, res) => {
-      const { sessionId } = req.params
-      const { width, height } = req.body || {}
+      const { sessionId } = req.params;
+      const { width, height } = req.body || {};
 
       if (typeof width === 'number' && typeof height === 'number') {
-        sessionManager.setViewerScreenSize(sessionId, { width, height })
-        clearStateCache(apiCache, sessionId)
-        return res.json({ success: true })
+        sessionManager.setViewerScreenSize(sessionId, { width, height });
+        clearStateCache(apiCache, sessionId);
+        return res.json({ success: true });
       }
 
       return res
         .status(400)
-        .json({ error: 'Invalid screen size', requestId: req.id })
-    }
-  )
+        .json({ error: 'Invalid screen size', requestId: req.id });
+    },
+  );
   app.post(
     '/api/session/:sessionId/language',
     requireSession(sessionManager),
     (req, res) => {
-      const { sessionId } = req.params
-      const { language } = req.body || {}
+      const { sessionId } = req.params;
+      const { language } = req.body || {};
 
       if (typeof language !== 'string' || !/^[a-z]{2,5}$/.test(language)) {
         return res
           .status(400)
-          .json({ error: 'Invalid language code', requestId: req.id })
+          .json({ error: 'Invalid language code', requestId: req.id });
       }
 
-      const success = sessionManager.setLanguage(sessionId, language)
+      const success = sessionManager.setLanguage(sessionId, language);
       if (!success) {
         return res
           .status(500)
-          .json({ error: 'Failed to set language', requestId: req.id })
+          .json({ error: 'Failed to set language', requestId: req.id });
       }
 
-      return res.json({ success: true, language })
-    }
-  )
+      return res.json({ success: true, language });
+    },
+  );
   // Static routes with server-side meta tag localization
   app.get('/s/:sessionId', (req, res) => {
-    const session = sessionManager.getSession(req.params.sessionId)
-    const lang = detectLanguage(req, session)
-    let html = _htmlCache.get(`viewer_${lang}`) || _htmlCache.get('viewer_en')
-    html = injectCanonicalHreflang(html, req.get('host') || '')
-    res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    setNoCacheHeaders(res)
-    res.send(html)
-  })
+    const session = sessionManager.getSession(req.params.sessionId);
+    const lang = detectLanguage(req, session);
+    let html = _htmlCache.get(`viewer_${lang}`) || _htmlCache.get('viewer_en');
+    html = injectCanonicalHreflang(html, req.get('host') || '');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    setNoCacheHeaders(res);
+    res.send(html);
+  });
   app.get('/c/:sessionId', (req, res) => {
-    const session = sessionManager.getSession(req.params.sessionId)
-    const lang = detectLanguage(req, session)
-    let html = _htmlCache.get(`controller_${lang}`) || _htmlCache.get('controller_en')
-    html = injectCanonicalHreflang(html, req.get('host') || '')
-    res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    setNoCacheHeaders(res)
-    res.send(html)
-  })
+    const session = sessionManager.getSession(req.params.sessionId);
+    const lang = detectLanguage(req, session);
+    let html =
+      _htmlCache.get(`controller_${lang}`) || _htmlCache.get('controller_en');
+    html = injectCanonicalHreflang(html, req.get('host') || '');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    setNoCacheHeaders(res);
+    res.send(html);
+  });
   // Therapist panel (React SPA) — serve index.html for any /panel/:sessionId path
-  app.get('/panel/:sessionId', (req, res) => { /* jshint unused: false */
-    setNoCacheHeaders(res)
-    res.sendFile(path.join(publicPath, 'panel', 'index.html'))
-  })
+  app.get('/panel/:sessionId', (req, res) => {
+    /* jshint unused: false */
+    setNoCacheHeaders(res);
+    res.sendFile(path.join(publicPath, 'panel', 'index.html'));
+  });
   app.get('/test/:file', (req, res) => {
-    const file = req.params.file
+    const file = req.params.file;
     // Валидация имени файла для предотвращения path traversal атак
     if (!file || typeof file !== 'string') {
       return res
         .status(400)
-        .json({ error: 'Invalid file parameter', requestId: req.id })
+        .json({ error: 'Invalid file parameter', requestId: req.id });
     }
     // Проверяем на опасные символы и паттерны
     if (
@@ -964,45 +979,46 @@ ${verificationUrls}
     ) {
       return res
         .status(400)
-        .json({ error: 'Invalid file name', requestId: req.id })
+        .json({ error: 'Invalid file name', requestId: req.id });
     }
     // Разрешаем только безопасные расширения файлов
-    const allowedExtensions = ['.html', '.css', '.js', '.json', '.txt', '.md']
+    const allowedExtensions = ['.html', '.css', '.js', '.json', '.txt', '.md'];
 
-    const fileExt = path.extname(file).toLowerCase()
+    const fileExt = path.extname(file).toLowerCase();
     if (!allowedExtensions.includes(fileExt)) {
       return res
         .status(400)
-        .json({ error: 'File type not allowed', requestId: req.id })
+        .json({ error: 'File type not allowed', requestId: req.id });
     }
     // Строим безопасный путь
-    const safePath = path.resolve(__dirname, '..', '..', 'test', file)
+    const safePath = path.resolve(__dirname, '..', '..', 'test', file);
     // Проверяем, что файл действительно находится в директории test
-    const testDir = path.resolve(__dirname, '..', '..', 'test')
+    const testDir = path.resolve(__dirname, '..', '..', 'test');
     if (!safePath.startsWith(testDir)) {
       return res
         .status(403)
-        .json({ error: 'Access denied', requestId: req.id })
+        .json({ error: 'Access denied', requestId: req.id });
     }
 
-    res.sendFile(safePath)
-  })
+    res.sendFile(safePath);
+  });
   // 404 handler
   app.use((req, res) => {
     res
       .status(404)
-      .json({ error: 'Not Found', path: req.path, requestId: req.id })
-  })
+      .json({ error: 'Not Found', path: req.path, requestId: req.id });
+  });
   // Centralized error handler
-  app.use((err, req, res, next) => { /* jshint unused: false */
-    const status = err.status || 500
-    const message = err.message || 'Internal Server Error'
+  app.use((err, req, res, next) => {
+    /* jshint unused: false */
+    const status = err.status || 500;
+    const message = err.message || 'Internal Server Error';
     if (DEBUG_MODE) {
-      logger.error(`[${req.id}] ${status} ${message}`)
+      logger.error(`[${req.id}] ${status} ${message}`);
     }
-    res.status(status).json({ error: message, requestId: req.id })
-  })
-  return app
+    res.status(status).json({ error: message, requestId: req.id });
+  });
+  return app;
 }
 
-module.exports = setupExpressApp
+module.exports = setupExpressApp;

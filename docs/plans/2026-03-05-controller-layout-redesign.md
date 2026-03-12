@@ -13,14 +13,17 @@
 ## Pre-flight
 
 Read these files before touching anything:
+
 - `packages/web-client/public/session-controller.html`
 - `packages/web-client/public/css/shared-components.css` (lines 2337–2580 — counters, sticky bar)
 - `packages/web-client/public/css/controller.css`
 
 Run existing tests to confirm green baseline:
+
 ```bash
 npm run test:local
 ```
+
 Expected: all 21 tests pass.
 
 ---
@@ -28,11 +31,13 @@ Expected: all 21 tests pass.
 ### Task 1: Remove sticky-control-bar from HTML
 
 **Files:**
+
 - Modify: `packages/web-client/public/session-controller.html`
 
 **Step 1: Delete the entire sticky-control-bar div**
 
 Find and remove this entire block (lines ~894–941):
+
 ```html
 <div
   aria-label="Session controls"
@@ -43,17 +48,21 @@ Find and remove this entire block (lines ~894–941):
   ...
 </div>
 ```
+
 Delete from `<div aria-label="Session controls"` to the closing `</div>`.
 
 **Step 2: Verify no broken references**
 
 The sticky bar's counter IDs (`stickyTimer`, `stickyPasses`, `stickySets`, `stickyPlayPauseBtn`) are synced from JS. Search for them:
+
 ```bash
 grep -r "stickyTimer\|stickyPasses\|stickySets\|stickyPlayPauseBtn" packages/
 ```
+
 Expected output: matches only in JS files under `packages/web-client/public/js/`. Those references will silently no-op when the elements don't exist (querySelector returns null) — this is safe.
 
 **Step 3: Commit**
+
 ```bash
 git add packages/web-client/public/session-controller.html
 git commit -m "feat: remove sticky-control-bar from controller HTML"
@@ -64,6 +73,7 @@ git commit -m "feat: remove sticky-control-bar from controller HTML"
 ### Task 2: Restructure HTML — wrap into left/right columns
 
 **Files:**
+
 - Modify: `packages/web-client/public/session-controller.html`
 
 The goal is to produce this structure inside `<main class="wrap controller-layout">`:
@@ -93,12 +103,15 @@ The goal is to produce this structure inside `<main class="wrap controller-layou
 **Step 1: Add `controller-layout` class to `<main>`**
 
 Change:
+
 ```html
-<main class="wrap">
+<main class="wrap"></main>
 ```
+
 To:
+
 ```html
-<main class="wrap controller-layout">
+<main class="wrap controller-layout"></main>
 ```
 
 **Step 2: Move `#previewOverlay` before the columns**
@@ -108,11 +121,13 @@ To:
 **Step 3: Wrap left-column sections**
 
 Wrap these existing sections inside `<div class="controller-left-col">`:
+
 1. The first `<section class="control-section" aria-labelledby="session-heading">` — but **remove** `#bbCounters` from it (it will move to right col). The session section should only contain: `<h3>`, `<p id="sessionInfo">`, and `.link-group`.
 2. The `<section aria-labelledby="appearance-heading">` (colors, bg, size)
 3. From `<section aria-labelledby="main-controls-heading">` — keep only Direction and Speed content (see Step 5)
 
 Wrap with:
+
 ```html
 <div class="controller-left-col">
   <!-- session section (link only) -->
@@ -125,6 +140,7 @@ Wrap with:
 **Step 4: Wrap right-column content**
 
 Create `<div class="controller-right-col">` containing in this order:
+
 1. `<aside id="previewWrap" ...>` (the preview canvas — currently has class `hidden`, JS will show it)
 2. `<div id="bbCounters" class="counters-container">` (extracted from session section)
 3. A new `<div class="right-col-actions">` containing:
@@ -136,6 +152,7 @@ Create `<div class="controller-right-col">` containing in this order:
 **Step 5: Restructure the main-controls section for left column**
 
 The current `<section aria-labelledby="main-controls-heading">` has:
+
 - "Действия" card: playPauseBtn, resetSession btn, autostop → these move to right col
 - Direction card: stays in left col
 - Speed card: stays in left col
@@ -152,7 +169,12 @@ After extracting play/pause + autostop to right col, the section in left col bec
       <!-- Direction content only (no actions-grid, no autostop) -->
       <p class="controls-title" style="margin-top: 0">
         <span data-i18n="controller.directionTitle">Direction</span>
-        <span class="direction-display" id="currentDirectionDisplay" style="margin-left: 8px; font-size: 1.2em">↔️</span>
+        <span
+          class="direction-display"
+          id="currentDirectionDisplay"
+          style="margin-left: 8px; font-size: 1.2em"
+          >↔️</span
+        >
       </p>
       <div class="direction-row">
         <fieldset class="segmented" id="directionSegmented">
@@ -175,6 +197,7 @@ Find `<div class="controls-card">` containing `<div id="presetControls"></div>` 
 **Step 7: Verify HTML is valid**
 
 Check all `id` attributes remain exactly once:
+
 - `playPauseBtn` — must appear exactly once (now in right-col-actions)
 - `bbCounters`, `bbTimer`, `bbPasses`, `bbSets`, `bbResetBtn` — in right col
 - `previewWrap`, `preview` — in right col
@@ -183,6 +206,7 @@ Check all `id` attributes remain exactly once:
 - `presetControls` — in left col
 
 **Step 8: Commit**
+
 ```bash
 git add packages/web-client/public/session-controller.html
 git commit -m "feat: restructure controller HTML into left/right columns"
@@ -193,6 +217,7 @@ git commit -m "feat: restructure controller HTML into left/right columns"
 ### Task 3: Add two-column CSS
 
 **Files:**
+
 - Modify: `packages/web-client/public/css/controller.css`
 
 **Step 1: Add controller layout rules to `controller.css`**
@@ -313,6 +338,7 @@ Add at the end of `controller.css`:
 Check in `packages/web-client/public/js/application/controller/preview-manager.js` that preview show/hide logic uses `#previewWrap` — it should be fine since we only changed positioning, not the element or its ID.
 
 **Step 4: Commit**
+
 ```bash
 git add packages/web-client/public/css/controller.css
 git commit -m "feat: add two-column CSS layout for controller page"
@@ -323,12 +349,14 @@ git commit -m "feat: add two-column CSS layout for controller page"
 ### Task 4: Remove sticky-control-bar CSS + deduplicate controller.css
 
 **Files:**
+
 - Modify: `packages/web-client/public/css/shared-components.css`
 - Modify: `packages/web-client/public/css/controller.css`
 
 **Step 1: Remove sticky-control-bar CSS from shared-components.css**
 
 Find and delete the entire block (around lines 2496–2580):
+
 ```css
 /* === STICKY CONTROL BAR (tablet / mobile) === */
 .sticky-control-bar {
@@ -352,6 +380,7 @@ Find and delete the entire block (around lines 2496–2580):
 ```
 
 **IMPORTANT:** Inside the `@media (width <= 900px)` block there are other rules besides sticky-bar. Only delete:
+
 - `.sticky-control-bar { ... }` rule
 - `.light-theme .sticky-control-bar { ... }` rule
 - `body { padding-bottom: 80px; }` comment + rule
@@ -359,6 +388,7 @@ Find and delete the entire block (around lines 2496–2580):
 Keep all other rules in that media block (`.back-btn`, `.theme-toggle-container`, etc.).
 
 Then delete the standalone rules outside the media query:
+
 - `.sticky-counters`, `.sticky-counter`, `.sticky-counter-label`, `.sticky-counter-value`, `.light-theme .sticky-counter-value`, `.sticky-counter-value--timer`, `.sticky-actions`, `.sticky-btn`
 
 **Step 2: Deduplicate viewer-audio-indicator in controller.css**
@@ -366,6 +396,7 @@ Then delete the standalone rules outside the media query:
 In `controller.css`, `.viewer-audio-indicator` is declared TWICE (lines ~476 and ~593). The second declaration has slightly different padding (8px vs 6px). Keep the second (more complete) one, delete the first block:
 
 Delete lines ~476–507:
+
 ```css
 /* Viewer Audio Indicators */
 .viewer-audio-indicator {
@@ -388,6 +419,7 @@ Delete lines ~476–507:
 ```
 
 And delete `.viewer-sound-playing-indicator` first block (lines ~509–550):
+
 ```css
 /* Viewer Sound Playing Indicator */
 .viewer-sound-playing-indicator { ... }
@@ -400,12 +432,15 @@ And delete `.viewer-sound-playing-indicator` first block (lines ~509–550):
 Keep the SECOND occurrence of each (lines ~593+) which is more complete.
 
 **Step 3: Verify no regressions with lint**
+
 ```bash
 npm run lint:css
 ```
+
 Expected: 0 errors.
 
 **Step 4: Commit**
+
 ```bash
 git add packages/web-client/public/css/shared-components.css
 git add packages/web-client/public/css/controller.css
@@ -417,6 +452,7 @@ git commit -m "refactor: remove sticky-control-bar CSS, deduplicate controller.c
 ### Task 5: Visual QA
 
 **Step 1: Start dev server**
+
 ```bash
 npm run dev
 ```
@@ -426,6 +462,7 @@ npm run dev
 Navigate to `http://localhost:3000/c/test123`
 
 Verify at full width (≥1000px):
+
 - [ ] Two columns visible: left (session link + appearance + direction + speed) | right (preview + timer + counters + Start button)
 - [ ] "START BLS" button is large (≥56px height), full-width in right col
 - [ ] Timer (0:00), Passes, Sets visible in right col
@@ -436,6 +473,7 @@ Verify at full width (≥1000px):
 **Step 3: Resize to 450px width**
 
 Verify:
+
 - [ ] Single column layout
 - [ ] Right col content appears FIRST (preview → timer → Start button)
 - [ ] Left col content appears BELOW (link → appearance → direction → speed)
@@ -445,6 +483,7 @@ Verify:
 **Step 4: Resize to 380px width**
 
 Verify:
+
 - [ ] Everything still usable
 - [ ] Start button not truncated
 
@@ -452,12 +491,15 @@ Verify:
 Toggle to light theme and repeat checks.
 
 **Step 6: Run E2E tests**
+
 ```bash
 npm run test:local
 ```
+
 Expected: all 21 tests pass. (Tests don't test layout, but verify no JS is broken by HTML restructure.)
 
 **Step 7: Final commit if any CSS tweaks made**
+
 ```bash
 git add -A
 git commit -m "fix: layout QA tweaks"

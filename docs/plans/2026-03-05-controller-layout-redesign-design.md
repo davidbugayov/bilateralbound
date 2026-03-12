@@ -108,11 +108,11 @@ Remove `#stickyControlBar` div entirely from HTML.
 
 ## Files to Modify
 
-| File | Change |
-|------|--------|
-| `packages/web-client/public/session-controller.html` | Wrap sections in left/right cols, remove sticky bar HTML |
-| `packages/web-client/public/css/shared-components.css` | Add two-col grid, remove sticky-bar CSS |
-| `packages/web-client/public/css/controller.css` | Remove duplicate rules, style right col |
+| File                                                   | Change                                                   |
+| ------------------------------------------------------ | -------------------------------------------------------- |
+| `packages/web-client/public/session-controller.html`   | Wrap sections in left/right cols, remove sticky bar HTML |
+| `packages/web-client/public/css/shared-components.css` | Add two-col grid, remove sticky-bar CSS                  |
+| `packages/web-client/public/css/controller.css`        | Remove duplicate rules, style right col                  |
 
 ## Out of Scope
 

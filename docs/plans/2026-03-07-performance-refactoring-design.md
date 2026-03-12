@@ -61,6 +61,7 @@ handleWebSocketDisconnection(ws):
 ```
 
 The shared physics loop checks `pendingDeleteAt`:
+
 ```
   if session.pendingDeleteAt && Date.now() > session.pendingDeleteAt:
     sessionRepository.delete(session.id)
@@ -111,6 +112,7 @@ Investigate why validation returns empty for valid payloads.
 Root cause: `_validateDirection` has a scoping bug — `if` block at line 68 wraps only `dirX`, but `dirY` check is outside the `if` (indentation error).
 
 Fix the validation so it passes legitimate fields, then remove the bypass block entirely:
+
 ```js
 // DELETE lines 174–181 in SessionManager.js
 ```
@@ -144,10 +146,10 @@ Call sites: `bounceCallback`, `_initializePhysicsEngine`, `_updatePhysicsEngineF
 
 ```js
 // BEFORE (in middleware, runs on every request):
-const { v4: uuidv4 } = await import('uuid')
+const { v4: uuidv4 } = await import("uuid");
 
 // AFTER (top of file):
-const { v4: uuidv4 } = require('uuid')
+const { v4: uuidv4 } = require("uuid");
 ```
 
 Remove `async` from the middleware function.
@@ -158,21 +160,30 @@ Pre-render all language × page combinations at startup:
 
 ```js
 // At startup, build cache:
-const htmlCache = new Map()
+const htmlCache = new Map();
 for (const lang of SUPPORTED_LANGS) {
-  const locale = locales.get(lang) || locales.get('en')
-  htmlCache.set(`viewer_${lang}`, localizeHtml(cachedViewerHtml, lang, locale, viewerMetaMap))
-  htmlCache.set(`controller_${lang}`, localizeHtml(cachedControllerHtml, lang, locale, controllerMetaMap))
-  htmlCache.set(`index_${lang}`, localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap))
+  const locale = locales.get(lang) || locales.get("en");
+  htmlCache.set(
+    `viewer_${lang}`,
+    localizeHtml(cachedViewerHtml, lang, locale, viewerMetaMap),
+  );
+  htmlCache.set(
+    `controller_${lang}`,
+    localizeHtml(cachedControllerHtml, lang, locale, controllerMetaMap),
+  );
+  htmlCache.set(
+    `index_${lang}`,
+    localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap),
+  );
 }
 
 // In route handlers:
-app.get('/s/:sessionId', (req, res) => {
-  const lang = detectLanguage(req, session)
-  let html = htmlCache.get(`viewer_${lang}`) || htmlCache.get('viewer_en')
-  html = injectCanonicalHreflang(html, req.get('host') || '')
-  res.send(html)
-})
+app.get("/s/:sessionId", (req, res) => {
+  const lang = detectLanguage(req, session);
+  let html = htmlCache.get(`viewer_${lang}`) || htmlCache.get("viewer_en");
+  html = injectCanonicalHreflang(html, req.get("host") || "");
+  res.send(html);
+});
 ```
 
 `injectCanonicalHreflang` remains per-request (host-dependent), but it's a simple string replace — much cheaper than the full regex localization pass.
@@ -180,6 +191,7 @@ app.get('/s/:sessionId', (req, res) => {
 ### 10. Remove Commented Console.logs
 
 Files affected:
+
 - `SessionManager.js` — ~15 commented lines
 - `webSocketServer.js` — ~5 commented lines
 - `expressApp.js` — ~10 commented lines
@@ -188,12 +200,12 @@ Files affected:
 
 ## Files Changed
 
-| File | Changes |
-|------|---------|
-| `server/session/SessionManager.js` | Shared loop, resource cleanup, bypass removal, sound helper, dead code |
-| `server/session/WebSocketManager.js` | Reverse map `_wsIndex` |
-| `server/network/webSocketServer.js` | Remove double broadcast, dead code |
-| `server/network/expressApp.js` | Error handler fix, uuid require, html cache, dead code |
+| File                                 | Changes                                                                |
+| ------------------------------------ | ---------------------------------------------------------------------- |
+| `server/session/SessionManager.js`   | Shared loop, resource cleanup, bypass removal, sound helper, dead code |
+| `server/session/WebSocketManager.js` | Reverse map `_wsIndex`                                                 |
+| `server/network/webSocketServer.js`  | Remove double broadcast, dead code                                     |
+| `server/network/expressApp.js`       | Error handler fix, uuid require, html cache, dead code                 |
 
 ---
 

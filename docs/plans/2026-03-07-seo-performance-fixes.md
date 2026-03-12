@@ -13,10 +13,12 @@
 ### Task 1: Fix robots.txt
 
 **Files:**
+
 - Modify: `packages/web-client/public/robots.txt`
 
 **Changes:**
 Remove these lines from global `User-agent: *` section:
+
 ```
 Disallow: /*.css$
 Disallow: /*.js$
@@ -55,10 +57,12 @@ Keep all security-sensitive Disallow rules (admin, private, .git, .env, etc.)
 ### Task 2: Fix sitemap.xml
 
 **Files:**
+
 - Modify: `packages/web-client/public/sitemap.xml`
 
 **Changes:**
 Remove these URL entries:
+
 - `/emdr-therapy/` (both domains)
 - `/session-controller.html` (both domains) — app page, not landing
 - `/viewer.html` (both domains) — app page, not landing
@@ -79,6 +83,7 @@ Keep: main pages `/` for both domains + verification files.
 ### Task 3: Fix index.html — duplicate preload + schema.org
 
 **Files:**
+
 - Modify: `packages/web-client/public/index.html`
 
 **Step 1: Remove duplicate preload**
@@ -98,22 +103,23 @@ Change `"dateModified": "2026-02-17"` → `"dateModified": "2026-03-07"`
 ### Task 4: Server-side canonical + hreflang injection
 
 **Files:**
+
 - Modify: `packages/server-core/server/network/expressApp.js`
 
 **Step 1: Add `injectCanonicalHreflang(html, host)` function** after `localizeHtml`:
 
 ```js
 function injectCanonicalHreflang(html, host) {
-  const isRu = host.endsWith('.ru')
-  const ruBase = 'https://emdrbilateral.ru'
-  const onlineBase = 'https://emdrbilateral.online'
-  const canonicalUrl = isRu ? `${ruBase}/` : `${onlineBase}/`
+  const isRu = host.endsWith(".ru");
+  const ruBase = "https://emdrbilateral.ru";
+  const onlineBase = "https://emdrbilateral.online";
+  const canonicalUrl = isRu ? `${ruBase}/` : `${onlineBase}/`;
 
   // Replace hardcoded canonical
   html = html.replace(
     /<link rel="canonical" href="[^"]*" \/>/,
-    `<link rel="canonical" href="${canonicalUrl}" />`
-  )
+    `<link rel="canonical" href="${canonicalUrl}" />`,
+  );
 
   // Inject hreflang tags after canonical
   const hreflang = [
@@ -126,29 +132,26 @@ function injectCanonicalHreflang(html, host) {
     `<link rel="alternate" hreflang="ja" href="${onlineBase}/?lang=ja" />`,
     `<link rel="alternate" hreflang="zh" href="${onlineBase}/?lang=zh" />`,
     `<link rel="alternate" hreflang="x-default" href="${onlineBase}/" />`,
-  ].join('\n    ')
+  ].join("\n    ");
 
-  html = html.replace(
-    /(<link rel="canonical"[^>]*\/>)/,
-    `$1\n    ${hreflang}`
-  )
+  html = html.replace(/(<link rel="canonical"[^>]*\/>)/, `$1\n    ${hreflang}`);
 
-  return html
+  return html;
 }
 ```
 
 **Step 2: Call it in the `/` route handler** (expressApp.js, `app.get('/', ...)`) after `localizeHtml`:
 
 ```js
-app.get('/', (req, res) => {
-  const lang = detectLanguage(req, null)
-  const locale = locales.get(lang) || locales.get('en')
-  let html = localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap)
-  html = injectCanonicalHreflang(html, req.get('host') || '')
-  res.setHeader('Content-Type', 'text/html; charset=utf-8')
-  setNoCacheHeaders(res)
-  res.send(html)
-})
+app.get("/", (req, res) => {
+  const lang = detectLanguage(req, null);
+  const locale = locales.get(lang) || locales.get("en");
+  let html = localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap);
+  html = injectCanonicalHreflang(html, req.get("host") || "");
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  setNoCacheHeaders(res);
+  res.send(html);
+});
 ```
 
 **Verify:** `curl -s https://emdrbilateral.online/ | grep -E "canonical|hreflang"`
@@ -160,16 +163,19 @@ app.get('/', (req, res) => {
 ### Task 5: Deploy to main and stable
 
 **Step 1: Push main**
+
 ```bash
 git push origin main
 ```
 
 **Step 2: Deploy to dev (main)**
+
 ```bash
 npm run deploy:dev
 ```
 
 **Step 3: Merge main → stable and push**
+
 ```bash
 git checkout stable
 git merge main --no-edit
@@ -178,11 +184,13 @@ git checkout main
 ```
 
 **Step 4: Deploy to prod (stable)**
+
 ```bash
 npm run deploy:prod
 ```
 
 **Step 5: Verify live**
+
 ```bash
 curl -s https://emdrbilateral.online/robots.txt | grep -c "Disallow"
 curl -s https://emdrbilateral.ru/ | grep "hreflang"
