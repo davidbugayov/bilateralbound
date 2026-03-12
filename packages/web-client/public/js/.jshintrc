@@ -66,6 +66,7 @@
     "bbCounters": true,
     "ControllerState": true,
     "ViewerState": true,
-    "BBConfig": true
+    "BBConfig": true,
+    "Direction": true
   }
 }

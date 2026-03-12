@@ -16,19 +16,18 @@ function getDirectionVector(directionMode) {
       return { dirX: 1, dirY: 0 }
     case 'vertical':
       return { dirX: 0, dirY: 1 }
-    case 'diagRL': {
-      const width = globalThis.__current?.viewerScreenSize?.width || 800
-      const height = globalThis.__current?.viewerScreenSize?.height || 600
-      const diagonal = Math.hypot(width, height)
-      return { dirX: width / diagonal, dirY: height / diagonal }
-    }
+    case 'diagRL':
     case 'diagRLL': {
+      // Extract screen dimensions once to avoid duplication
       const width = globalThis.__current?.viewerScreenSize?.width || 800
       const height = globalThis.__current?.viewerScreenSize?.height || 600
       const diagonal = Math.hypot(width, height)
-      return { dirX: width / diagonal, dirY: -height / diagonal }
+      const dirY = directionMode === 'diagRL' ? height / diagonal : -height / diagonal
+      return { dirX: width / diagonal, dirY }
     }
     case 'random': {
+      // Math.random() is safe here: used only for visual randomization of ball direction
+      // (not cryptographic or security-sensitive). No sensitive data depends on this randomness.
       const angle = Math.random() * 2 * Math.PI
       return { dirX: Math.cos(angle), dirY: Math.sin(angle) }
     }
