@@ -1,11 +1,9 @@
+/* jshint -W033, -W104, -W119 */
+/* global globalThis, Map, module */
 'use strict'
 /**
  * SharedComponents - переиспользуемые компоненты для BilateralBound
  * Содержит общую логику для controller и viewer
- */
-/**
- * @typedef {Object} StatusIndicatorComponent
- * @property {function(string, string): void} setStatus - Устанавливает статус индикатора
  */
 if (typeof SharedComponents === 'undefined') {
   class SharedComponents {
@@ -149,49 +147,36 @@ if (typeof SharedComponents === 'undefined') {
           if (this.elements.range) {
             this.elements.range.value = this.currentSpeed
           }
-          let speedCategory = ''
-          let speedColor = ''
-          const t = (key) => globalThis.i18n?.t(key) || key
-          if (this.currentSpeed <= 15) {
-            speedCategory = t('controller.speedVerySlow')
-            speedColor = '#22c55e'
-          } else if (this.currentSpeed <= 25) {
-            speedCategory = t('controller.speedSlow')
-            speedColor = '#3b82f6'
-          } else if (this.currentSpeed <= 35) {
-            speedCategory = t('controller.speedMedium')
-            speedColor = '#8b5cf6'
-          } else if (this.currentSpeed <= 50) {
-            speedCategory = t('controller.speedFast')
-            speedColor = '#f59e0b'
-          } else {
-            speedCategory = t('controller.speedVeryFast')
-            speedColor = '#ef4444'
-          }
+          // Get speed category and color based on current speed
+          const { category, color } = this._getSpeedCategoryAndColor(this.currentSpeed)
           if (this.elements.value) {
-            this.elements.value.textContent = speedCategory
-            this.elements.value.style.color = speedColor
+            this.elements.value.textContent = category
+            this.elements.value.style.color = color
           }
           if (this.elements.fill) {
             this.elements.fill.style.width = `${this.currentSpeed}%`
-            let fillColor = ''
-            if (this.currentSpeed <= 15) {
-              fillColor = '#22c55e'
-            } else if (this.currentSpeed <= 25) {
-              fillColor = '#3b82f6'
-            } else if (this.currentSpeed <= 35) {
-              fillColor = '#8b5cf6'
-            } else if (this.currentSpeed <= 50) {
-              fillColor = '#f59e0b'
-            } else {
-              fillColor = '#ef4444'
-            }
-            this.elements.fill.style.background = fillColor
+            this.elements.fill.style.background = color
           }
           this.updateActivePreset(this.currentSpeed)
           if (!silent && this.options.onSpeedChange) {
             this.options.onSpeedChange(this.currentSpeed)
           }
+        },
+        _getSpeedCategoryAndColor(speed) {
+          const t = (key) => globalThis.i18n?.t(key) || key
+          if (speed <= 15) {
+            return { category: t('controller.speedVerySlow'), color: '#22c55e' }
+          }
+          if (speed <= 25) {
+            return { category: t('controller.speedSlow'), color: '#3b82f6' }
+          }
+          if (speed <= 35) {
+            return { category: t('controller.speedMedium'), color: '#8b5cf6' }
+          }
+          if (speed <= 50) {
+            return { category: t('controller.speedFast'), color: '#f59e0b' }
+          }
+          return { category: t('controller.speedVeryFast'), color: '#ef4444' }
         },
         getSpeed() {
           return this.currentSpeed
@@ -343,7 +328,7 @@ if (typeof SharedComponents === 'undefined') {
      * Создает переиспользуемый компонент статуса
      * @param {HTMLElement} container - Контейнер для компонента
      * @param {Object} options - Опции компонента
-     * @returns {StatusIndicatorComponent} Объект компонента с методом setStatus
+     * @returns {StatusIndicatorComponent} Объект компонента
      */
     createStatusIndicator(container, options = {}) {
       const defaultOptions = {
@@ -376,56 +361,6 @@ if (typeof SharedComponents === 'undefined') {
             container.querySelector('.status-indicator')
           this.elements.icon = container.querySelector('.status-icon')
           this.elements.text = container.querySelector('.status-text')
-        },
-        /**
-         * Устанавливает статус индикатора
-         * @param {string} status - Тип статуса ('success', 'error', 'warning', 'loading', 'waiting', 'idle')
-         * @param {string} message - Текстовое сообщение статуса
-         */
-        setStatus(status, message) {
-          this.currentStatus = status
-          if (this.elements.text) {
-            this.elements.text.textContent = message
-          }
-          if (this.elements.icon) {
-            switch (status) {
-              case 'success':
-                this.elements.icon.textContent = '✅'
-                break
-              case 'error':
-                this.elements.icon.textContent = '❌'
-                break
-              case 'warning':
-                this.elements.icon.textContent = '⚠️'
-                break
-              case 'loading':
-                this.elements.icon.textContent = '⏳'
-                break
-              case 'waiting':
-                this.elements.icon.textContent = '⏳'
-                break
-              default:
-                this.elements.icon.textContent = '⏳'
-            }
-          }
-          if (this.elements.container) {
-            this.elements.container.classList.remove(
-              'status-success',
-              'status-error',
-              'status-warning',
-              'status-loading',
-              'status-waiting',
-              'status-idle'
-            )
-            this.elements.container.classList.add(`status-${status}`)
-          }
-          if (this.options.autoHide && status === 'success') {
-            setTimeout(() => {
-              if (this.elements.container) {
-                this.elements.container.style.display = 'none'
-              }
-            }, this.options.hideDelay)
-          }
         }
       }
       return component.render()
@@ -440,3 +375,5 @@ if (typeof SharedComponents === 'undefined') {
     module.exports = { SharedComponents, sharedComponents }
   }
 }
+
+

@@ -1,8 +1,10 @@
+/* jshint -W033, -W104, -W119, -W116, -W126, -W014, -W117 */
+/* global globalThis, Path2D, module, debugError */
 'use strict'
 /**
  * BallRenderer - оптимизированный модуль рендеринга для BilateralBound
  * Отвечает за отрисовку шарика и фона
- * Оптимизирован для производительности и переиспользуемости
+ * Оптимизирован для производительности и поддержки переиспользования
  */
 if (typeof BallRenderer === 'undefined') {
   class BallRenderer {
@@ -71,12 +73,6 @@ if (typeof BallRenderer === 'undefined') {
         cancelAnimationFrame(this.animationFrameId)
         this.animationFrameId = null
       }
-    }
-    /**
-     * Устанавливает callback для каждого кадра
-     */
-    setFrameCallback(callback) {
-      this.onFrameCallback = callback
     }
     _calculateDeltaTime(currentTime) {
       const deltaTime = currentTime - this.lastTime
@@ -323,8 +319,10 @@ if (typeof BallRenderer === 'undefined') {
      * Вызывается при изменении цвета или размера
      */
     invalidateBallCache() {
-      this.cachedBallGradient = null
-      this.cachedBallGeometry = null
+      this._cached.radius = null;
+      this._cached.color = null;
+      this._cached.gradient = null;
+      this._cached.path = null;
     }
     /**
      * Изменяет размеры canvas
