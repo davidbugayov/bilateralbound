@@ -29,37 +29,37 @@
     />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="version" content="2.39.267-7a5af33" />
+    <meta name="version" content="2.39.268-2ce570d" />
     <meta name="theme-color" content="#020617" />
     <title data-i18n="viewer.title">BilateralBound - EMDR Therapy Viewer</title>
     <meta name="therapy-type" content="EMDR Viewer" />
     <meta name="target-audience" content="EMDR Patients, Couples" />
     <link
       as="script"
-      href="/js/physics-engine.js?v=2.39.267-7a5af33"
+      href="/js/physics-engine.js?v=2.39.268-2ce570d"
       rel="preload"
     />
-    <link rel="preload" href="/js/renderer.js?v=2.39.267-7a5af33" as="script" />
+    <link rel="preload" href="/js/renderer.js?v=2.39.268-2ce570d" as="script" />
     <link
       as="script"
-      href="/js/websocket-client.js?v=2.39.267-7a5af33"
+      href="/js/websocket-client.js?v=2.39.268-2ce570d"
       rel="preload"
     />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-viewer.svg?v=2.39.267-7a5af33"
+      href="/favicon-viewer.svg?v=2.39.268-2ce570d"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-viewer.ico?v=2.39.267-7a5af33"
+      href="/favicon-viewer.ico?v=2.39.268-2ce570d"
     />
     <link
-      href="/favicon-viewer.svg?v=2.39.267-7a5af33"
+      href="/favicon-viewer.svg?v=2.39.268-2ce570d"
       rel="apple-touch-icon"
     />
-    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.267-7a5af33" />
+    <link rel="shortcut icon" href="/favicon-viewer.ico?v=2.39.268-2ce570d" />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -76,11 +76,11 @@
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="dns-prefetch" href="https://mc.yandex.com" />
     <link
-      href="/css/shared-components.css?v=2.39.267-7a5af33"
+      href="/css/shared-components.css?v=2.39.268-2ce570d"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.267-7a5af33" />
-    <link rel="stylesheet" href="/css/viewer.css?v=2.39.267-7a5af33" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.268-2ce570d" />
+    <link rel="stylesheet" href="/css/viewer.css?v=2.39.268-2ce570d" />
     <noscript
       ><div>
         <img
@@ -143,23 +143,23 @@
         </button>
       </div>
     </main>
-    <script src="/js/core/debug-logger.js?v=2.39.267-7a5af33"></script>
-    <script src="/js/common.js?v=2.39.267-7a5af33"></script>
+    <script src="/js/core/debug-logger.js?v=2.39.268-2ce570d"></script>
+    <script src="/js/common.js?v=2.39.268-2ce570d"></script>
     <script
       defer
-      src="/js/constants/i18n-constants.js?v=2.39.267-7a5af33"
+      src="/js/constants/i18n-constants.js?v=2.39.268-2ce570d"
     ></script>
-    <script src="/js/i18n/i18n.js?v=2.39.267-7a5af33" defer></script>
+    <script src="/js/i18n/i18n.js?v=2.39.268-2ce570d" defer></script>
     <script
       defer
-      src="/js/i18n/language-selector.js?v=2.39.267-7a5af33"
+      src="/js/i18n/language-selector.js?v=2.39.268-2ce570d"
     ></script>
-    <script src="/js/audio/audio-manager.js?v=2.39.267-7a5af33" defer></script>
-    <script src="/js/physics-engine.js?v=2.39.267-7a5af33" defer></script>
-    <script src="/js/renderer.js?v=2.39.267-7a5af33" defer></script>
-    <script src="/js/websocket-client.js?v=2.39.267-7a5af33" defer></script>
-    <script src="/js/realtime-client.js?v=2.39.267-7a5af33" defer></script>
-    <script src="/js/shared-components.js?v=2.39.267-7a5af33" defer></script>
+    <script src="/js/audio/audio-manager.js?v=2.39.268-2ce570d" defer></script>
+    <script src="/js/physics-engine.js?v=2.39.268-2ce570d" defer></script>
+    <script src="/js/renderer.js?v=2.39.268-2ce570d" defer></script>
+    <script src="/js/websocket-client.js?v=2.39.268-2ce570d" defer></script>
+    <script src="/js/realtime-client.js?v=2.39.268-2ce570d" defer></script>
+    <script src="/js/shared-components.js?v=2.39.268-2ce570d" defer></script>
     <script>
       "use strict";
       /**
@@ -661,14 +661,19 @@
           document.getElementById("viewerVolumeSlider");
         if (viewerVolumeSlider) {
           /**
-           * @param {Event & {target: HTMLInputElement}} event
+           * Обработчик изменения громкости
+           * @param {Event} event - Событие input от слайдера
            */
-          viewerVolumeSlider.addEventListener("input", (event) => {
-            const slider = event.target;
-            if (audioManager && slider.value) {
-              audioManager.setVolume(slider.value / 100);
+          const handleVolumeChange = (event) => {
+            const input = event.target;
+            if (input instanceof HTMLInputElement) {
+              const value = input.value;
+              if (audioManager && value) {
+                audioManager.setVolume(value / 100);
+              }
             }
-          });
+          };
+          viewerVolumeSlider.addEventListener("input", handleVolumeChange);
         }
       }
 
@@ -969,6 +974,12 @@
         wsClient.on("language_updated", onLanguageUpdate);
       }
 
+      /**
+       * Обрабатывает ошибки WebSocket соединения
+       * @param {Object} error - Объект ошибки
+       * @param {string} error.type - Тип ошибки
+       * @param {boolean} [error.isFirstAttempt] - Флаг первой попытки подключения
+       */
       function handleWebSocketError(error) {
         // Определяем тип ошибки
         const isConnectionClosed = error?.type === "connection_closed";
