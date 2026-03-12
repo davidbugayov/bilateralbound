@@ -1,3 +1,4 @@
+/* jshint node: true, esversion: 11, strict: true */
 'use strict'
 const PhysicsEngine = require('../../../web-client/public/js/physics-engine.js')
 const SessionRepository = require('./SessionRepository.js')

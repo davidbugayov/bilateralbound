@@ -1,3 +1,4 @@
+/* jshint node: true, esversion: 11, strict: true */
 'use strict'
 const config = {
   getServerConfig: () => ({

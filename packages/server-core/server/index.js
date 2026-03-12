@@ -1,3 +1,4 @@
+/* jshint node: true, esversion: 11, strict: true */
 'use strict'
 require('dotenv').config()
 const http = require('node:http')
