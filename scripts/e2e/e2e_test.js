@@ -320,6 +320,49 @@ async function main() {
     }
   })
 
+  // Тест возврата мяча в центр при паузе
+  await test('Viewer ball returns to center on pause', async () => {
+    // Ball is playing after the sync test — pause with returnToCenter
+    await ctrlPage.evaluate(async () => {
+      const sid = globalThis.__current?.sessionId
+      if (sid) {
+        await fetch(`/api/session/${sid}/controller/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paused: true, returnToCenter: true })
+        }).catch(() => {})
+      }
+    })
+
+    // Wait for: server broadcast (~200ms) + seek animation (400ms) + buffer (600ms)
+    await new Promise((r) => setTimeout(r, 1200))
+
+    const state = await viewPage.evaluate(() => {
+      const engine = globalThis.physicsEngine
+      if (!engine) return null
+      return {
+        x: engine.ball.x,
+        y: engine.ball.y,
+        centerX: engine.centerX,
+        centerY: engine.centerY,
+        paused: engine.state.paused,
+        seekingCenter: engine.state.seekingCenter
+      }
+    })
+
+    if (!state) throw new Error('physicsEngine not found on viewer')
+    if (!state.paused) throw new Error('Ball not paused after pause command')
+
+    const dist = Math.hypot(state.x - state.centerX, state.y - state.centerY)
+    if (dist > 10) {
+      throw new Error(
+        `Ball not at center: (${state.x.toFixed(1)}, ${state.y.toFixed(1)}) ` +
+          `vs center (${state.centerX}, ${state.centerY}), dist=${dist.toFixed(1)}, ` +
+          `seekingCenter=${state.seekingCenter}`
+      )
+    }
+  })
+
   // Тест мобильного viewport
   const mobilePage = await browser.newPage()
   await mobilePage.setViewport({ width: 375, height: 667 })
