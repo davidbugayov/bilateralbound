@@ -2175,6 +2175,11 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     if (!previewFsCanvas) return
     previewFsCanvas.width = globalThis.innerWidth
     previewFsCanvas.height = globalThis.innerHeight
+    // Override CSS 100vw/100vh with explicit px values so BallRenderer.renderLoop()
+    // sees clientWidth === canvas.width and doesn't call resize() which would
+    // overwrite the viewer world size with canvas dimensions, shifting the ball
+    previewFsCanvas.style.width = globalThis.innerWidth + 'px'
+    previewFsCanvas.style.height = globalThis.innerHeight + 'px'
     if (previewPhysicsEngine) {
       const vs = globalThis.__current?.viewerScreenSize
       if (vs && vs.width > 0 && vs.height > 0) {

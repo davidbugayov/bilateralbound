@@ -917,6 +917,165 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   color: #64748b;
 }
 
+/* === Preset Cards === */
+#presetControls {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.preset-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px 8px;
+  background: rgb(15 23 42 / 60%);
+  border: 1.5px solid #334155;
+  border-radius: 10px;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  text-align: center;
+  font-family: inherit;
+}
+
+.preset-card:hover {
+  background: rgb(30 41 59 / 90%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 35%);
+  color: #f1f5f9;
+}
+
+.preset-card:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.preset-icon {
+  font-size: 22px;
+  line-height: 1;
+  display: block;
+}
+
+.preset-name {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+/* Per-preset accent colors — border + hover glow */
+.preset-card[data-preset-id="relaxation"] {
+  border-color: rgb(13 148 136 / 50%);
+}
+
+.preset-card[data-preset-id="relaxation"]:hover {
+  border-color: #0d9488;
+  box-shadow: 0 4px 14px rgb(13 148 136 / 30%);
+}
+
+.preset-card[data-preset-id="activation"] {
+  border-color: rgb(217 119 6 / 50%);
+}
+
+.preset-card[data-preset-id="activation"]:hover {
+  border-color: #d97706;
+  box-shadow: 0 4px 14px rgb(217 119 6 / 30%);
+}
+
+.preset-card[data-preset-id="couplesTherapy"] {
+  border-color: rgb(124 58 237 / 50%);
+}
+
+.preset-card[data-preset-id="couplesTherapy"]:hover {
+  border-color: #7c3aed;
+  box-shadow: 0 4px 14px rgb(124 58 237 / 30%);
+}
+
+.preset-card[data-preset-id="dynamic"] {
+  border-color: rgb(37 99 235 / 50%);
+}
+
+.preset-card[data-preset-id="dynamic"]:hover {
+  border-color: #2563eb;
+  box-shadow: 0 4px 14px rgb(37 99 235 / 30%);
+}
+
+/* Light theme */
+.light-theme .preset-card {
+  background: #fff;
+  border-color: #e2e8f0;
+  color: #475569;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+}
+
+.light-theme .preset-card:hover {
+  background: #f8fafc;
+  color: #1e293b;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+}
+
+.light-theme .preset-card[data-preset-id="relaxation"] {
+  border-color: rgb(13 148 136 / 30%);
+}
+
+.light-theme .preset-card[data-preset-id="relaxation"]:hover {
+  border-color: #0d9488;
+  box-shadow: 0 4px 12px rgb(13 148 136 / 20%);
+}
+
+.light-theme .preset-card[data-preset-id="activation"] {
+  border-color: rgb(217 119 6 / 30%);
+}
+
+.light-theme .preset-card[data-preset-id="activation"]:hover {
+  border-color: #d97706;
+  box-shadow: 0 4px 12px rgb(217 119 6 / 20%);
+}
+
+.light-theme .preset-card[data-preset-id="couplesTherapy"] {
+  border-color: rgb(124 58 237 / 30%);
+}
+
+.light-theme .preset-card[data-preset-id="couplesTherapy"]:hover {
+  border-color: #7c3aed;
+  box-shadow: 0 4px 12px rgb(124 58 237 / 20%);
+}
+
+.light-theme .preset-card[data-preset-id="dynamic"] {
+  border-color: rgb(37 99 235 / 30%);
+}
+
+.light-theme .preset-card[data-preset-id="dynamic"]:hover {
+  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgb(37 99 235 / 20%);
+}
+
+/* Mobile: 2 columns on narrow screens */
+@media (width <= 480px) {
+  #presetControls {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .preset-card {
+    padding: 12px 4px 10px;
+  }
+
+  .preset-icon {
+    font-size: 24px;
+  }
+
+  .preset-name {
+    font-size: 11px;
+  }
+}
+
 /* Color palette: 6-col grid → 2 rows of 6, saves vertical space */
 .controller-left-col .color-palette {
   display: grid;

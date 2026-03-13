@@ -194,6 +194,10 @@ function createEventHandlers(deps) {
     // Bounce sync - snap preview to viewer's exact bounce position + direction
     onBounceSync(data) {
       if (!previewPhysicsEngine) return
+      // If preview is paused (user just stopped), ignore bounce — ball must stay at center.
+      // Race condition: bounce_sync can arrive after centerBallInViewer() already ran,
+      // overriding the center position with the edge position, leaving ball stuck.
+      if (previewPhysicsEngine.state.paused) return
       if (typeof data.x === 'number' && typeof data.y === 'number') {
         previewPhysicsEngine.ball.x = data.x
         previewPhysicsEngine.ball.y = data.y

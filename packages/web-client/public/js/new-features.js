@@ -93,34 +93,41 @@ if (typeof globalThis.FeatureManager === 'undefined') {
     addPresetControls() {
       const container = document.getElementById('presetControls')
       if (!container) return
-      container.innerHTML = ''
-      const presetGrid = document.createElement('div')
-      presetGrid.style.display = 'grid'
-      presetGrid.style.gridTemplateColumns =
-        'repeat(auto-fit, minmax(120px, 1fr))'
-      presetGrid.style.gap = '8px'
+      while (container.firstChild) container.removeChild(container.firstChild)
+      const iconMap = {
+        relaxation: '🌊',
+        activation: '⚡',
+        couplesTherapy: '🤝',
+        dynamic: '🌀'
+      }
       for (const [id, config] of Object.entries(this.presets)) {
         const btn = document.createElement('button')
-        btn.className = 'btn outline'
-        btn.style.padding = '8px'
-        btn.style.fontSize = '12px'
-        // Use data-i18n attribute for automatic translation
+        btn.className = 'preset-card'
+        if (iconMap[id]) btn.dataset.presetId = id
+
+        const icon = document.createElement('span')
+        icon.className = 'preset-icon'
+        icon.textContent = iconMap[id] || '✨'
+        icon.setAttribute('aria-hidden', 'true')
+
+        const name = document.createElement('span')
+        name.className = 'preset-name'
         if (config.i18nKey) {
-          btn.setAttribute('data-i18n', config.i18nKey)
-          btn.textContent =
+          name.setAttribute('data-i18n', config.i18nKey)
+          name.textContent =
             globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id
         } else {
-          btn.textContent = id
+          name.textContent = id
         }
+
+        btn.appendChild(icon)
+        btn.appendChild(name)
         btn.onclick = () => this.applyPreset(config)
-        presetGrid.appendChild(btn)
+        container.appendChild(btn)
       }
-      container.appendChild(presetGrid)
-      // Re-apply translations to newly added elements
       if (globalThis.i18n?.applyTranslations) {
         globalThis.i18n.applyTranslations()
       }
-      // Reinitialize viewer connection warnings for newly added buttons
       if (globalThis.reinitializeViewerConnectionWarnings) {
         globalThis.reinitializeViewerConnectionWarnings()
       }
