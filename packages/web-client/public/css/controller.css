@@ -1120,6 +1120,13 @@ body {
   background: #fff;
 }
 
+/* Settings card — fixed size, never resizes */
+.controller-left-col [aria-labelledby="settings-heading"] .controls-card {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Viewer audio indicator — compact in left col, always reserves space so card doesn't resize */
 .controller-left-col .viewer-audio-indicator {
   padding: 5px 8px;
