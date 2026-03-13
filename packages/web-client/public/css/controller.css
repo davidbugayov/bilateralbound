@@ -765,7 +765,6 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 /* Compact section padding in left col */
 .controller-left-col .control-section {
   padding: 8px 10px;
-  overflow: hidden;
 }
 
 /* Left col headings: more compact than default 1.5rem */
@@ -1070,16 +1069,148 @@ body {
   }
 }
 
-/* ===== SETTINGS SECTION COMPACT REDESIGN ===== */
+/* ===== SETTINGS SECTION REDESIGN ===== */
 
-/* Toggle switch — replace native checkbox */
+/* Settings card: row-based panel, no padding (rows handle their own) */
+.controller-left-col [aria-labelledby="settings-heading"] .controls-card {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* ── Row: Enable sound ── */
+.controller-left-col .controls-card > div[style*="margin-bottom"] {
+  margin: 0 !important;
+  padding: 9px 10px !important;
+  gap: 0 !important;
+  justify-content: space-between !important;
+}
+
+.controller-left-col .controls-card > div[style*="margin-bottom"] > label {
+  width: 100%;
+  justify-content: space-between !important;
+  gap: 0 !important;
+  margin: 0 !important;
+}
+
+/* Label text */
+.controller-left-col .controls-card > div[style*="margin-bottom"] span {
+  font-size: 0.82rem !important;
+  font-weight: 500;
+  color: #cbd5e1;
+}
+
+/* ── Row: Sound type ── */
+.controller-left-col #soundTypeControl {
+  padding: 9px 10px !important;
+  margin: 0 !important;
+  border-top: 1px solid rgb(255 255 255 / 5%) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.controller-left-col #soundTypeControl > label {
+  font-size: 0.78rem !important;
+  margin: 0 !important;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.controller-left-col #soundTypeSelect {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px !important;
+  font-size: 0.78rem !important;
+  border-radius: 5px !important;
+  height: 26px !important;
+  max-width: 100%;
+  box-sizing: border-box;
+  background: #0f172a;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1;
+}
+
+/* ── Row: Monitor sound ── */
+.controller-left-col #controllerMonitorControl {
+  margin: 0 !important;
+  padding: 0 !important;
+  border-top: 1px solid rgb(255 255 255 / 5%) !important;
+}
+
+.controller-left-col #controllerMonitorControl > label {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 9px 10px !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  cursor: pointer;
+}
+
+.controller-left-col #controllerMonitorControl > label span {
+  font-size: 0.82rem !important;
+  font-weight: 500;
+  color: #cbd5e1;
+}
+
+/* ── Row: Volume ── */
+.controller-left-col #controllerVolumeControl {
+  padding: 6px 10px !important;
+  gap: 6px !important;
+  border-top: 1px solid rgb(255 255 255 / 4%) !important;
+}
+
+.controller-left-col #controllerVolumeControl > span:first-child {
+  font-size: 0.75rem !important;
+  white-space: nowrap;
+  color: #64748b;
+  min-width: 44px;
+}
+
+.controller-left-col #controllerVolumeSlider {
+  min-width: 0;
+  flex: 1;
+}
+
+.controller-left-col #controllerVolumeValue {
+  font-size: 0.75rem !important;
+  min-width: 0 !important;
+  width: 26px !important;
+  text-align: right;
+  flex-shrink: 0;
+  color: #94a3b8;
+}
+
+/* ── Row: Viewer audio status (always reserves space) ── */
+.controller-left-col .viewer-audio-indicator {
+  padding: 7px 10px;
+  margin: 0;
+  font-size: 0.78rem;
+  border-radius: 0;
+  border-top: 1px solid rgb(255 255 255 / 5%);
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+}
+
+.controller-left-col .viewer-audio-indicator.hidden {
+  display: flex !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ── Toggle switch ── */
 .controller-left-col #soundEnabledCheckbox,
 .controller-left-col #controllerMonitorCheckbox {
   appearance: none !important;
   -webkit-appearance: none !important;
-  width: 30px !important;
-  height: 17px !important;
-  min-width: 30px !important;
+  width: 32px !important;
+  height: 18px !important;
+  min-width: 32px !important;
   border-radius: 9px !important;
   background: #1e293b !important;
   border: 1.5px solid #475569 !important;
@@ -1097,8 +1228,8 @@ body {
 .controller-left-col #controllerMonitorCheckbox::before {
   content: "";
   position: absolute;
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #475569;
   top: 2px;
@@ -1116,104 +1247,8 @@ body {
 
 .controller-left-col #soundEnabledCheckbox:checked::before,
 .controller-left-col #controllerMonitorCheckbox:checked::before {
-  transform: translateX(13px);
+  transform: translateX(14px);
   background: #fff;
-}
-
-/* Settings card — fixed size, never resizes */
-.controller-left-col [aria-labelledby="settings-heading"] .controls-card {
-  min-height: 200px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Viewer audio indicator — compact in left col, always reserves space so card doesn't resize */
-.controller-left-col .viewer-audio-indicator {
-  padding: 5px 8px;
-  margin-top: 8px;
-  margin-bottom: 0;
-  font-size: 0.78rem;
-}
-
-.controller-left-col .viewer-audio-indicator.hidden {
-  display: flex !important;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-/* Enable sound row — tighter */
-.controller-left-col #soundEnabledCheckbox + span {
-  font-size: 0.82rem !important;
-}
-
-/* Parent label wrapper for enable sound */
-.controller-left-col .controls-card > div > label:first-of-type {
-  gap: 6px !important;
-  margin-bottom: 0 !important;
-}
-
-/* Enable sound wrapper — less bottom margin */
-.controller-left-col .controls-card > div[style*="margin-bottom: 12px"] {
-  margin-bottom: 6px !important;
-  gap: 8px !important;
-}
-
-/* Sound type section */
-.controller-left-col #soundTypeControl {
-  margin-top: 5px !important;
-}
-
-.controller-left-col #soundTypeControl > label {
-  font-size: 0.75rem !important;
-  margin-bottom: 3px !important;
-  color: #64748b;
-}
-
-.controller-left-col #soundTypeSelect {
-  padding: 4px 7px !important;
-  font-size: 0.8rem !important;
-  border-radius: 5px !important;
-  height: 28px !important;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Monitor sound separator + content */
-.controller-left-col #controllerMonitorControl {
-  margin-top: 6px !important;
-  padding-top: 6px !important;
-}
-
-.controller-left-col #controllerMonitorControl > label {
-  gap: 6px !important;
-  margin-bottom: 5px !important;
-}
-
-.controller-left-col #controllerMonitorControl > label span {
-  font-size: 0.82rem !important;
-}
-
-/* Volume row — compact */
-.controller-left-col #controllerVolumeControl {
-  gap: 4px !important;
-}
-
-.controller-left-col #controllerVolumeControl > span:first-child {
-  font-size: 0.75rem !important;
-  white-space: nowrap;
-}
-
-.controller-left-col #controllerVolumeSlider {
-  min-width: 0;
-  flex-shrink: 1;
-}
-
-.controller-left-col #controllerVolumeValue {
-  font-size: 0.75rem !important;
-  min-width: 0 !important;
-  width: 24px !important;
-  text-align: right;
-  flex-shrink: 0;
 }
 
 /* ⌨️ Hotkeys */
@@ -1240,7 +1275,31 @@ body {
   color: #cbd5e1;
 }
 
-/* Light theme toggle */
+/* Light theme — sound card rows */
+.light-theme .controller-left-col [aria-labelledby="settings-heading"] .controls-card {
+  background: #f8fafc;
+}
+
+.light-theme .controller-left-col .controls-card > div[style*="margin-bottom"] span,
+.light-theme .controller-left-col #controllerMonitorControl > label span {
+  color: #334155;
+}
+
+.light-theme .controller-left-col #soundTypeSelect {
+  background: #fff;
+  border-color: #cbd5e1 !important;
+  color: #334155;
+}
+
+.light-theme .controller-left-col #controllerVolumeControl > span:first-child {
+  color: #94a3b8;
+}
+
+.light-theme .controller-left-col #controllerVolumeValue {
+  color: #64748b;
+}
+
+/* Light theme — toggle */
 .light-theme .controller-left-col #soundEnabledCheckbox,
 .light-theme .controller-left-col #controllerMonitorCheckbox {
   background: #e2e8f0 !important;
