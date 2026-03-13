@@ -920,16 +920,18 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 /* === Preset Cards === */
 #presetControls {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 280px;
 }
 
 .preset-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 10px 4px 8px;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 8px 12px;
   background: rgb(15 23 42 / 60%);
   border: 1.5px solid #334155;
   border-radius: 10px;
@@ -942,6 +944,7 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
     box-shadow 0.15s ease;
   text-align: center;
   font-family: inherit;
+  min-height: 80px;
 }
 
 .preset-card:hover {
@@ -957,16 +960,16 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 }
 
 .preset-icon {
-  font-size: 22px;
+  font-size: 28px;
   line-height: 1;
   display: block;
 }
 
 .preset-name {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.3;
   letter-spacing: 0.01em;
 }
 
@@ -1057,14 +1060,17 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   box-shadow: 0 4px 12px rgb(37 99 235 / 20%);
 }
 
-/* Mobile: 2 columns on narrow screens */
+/* Mobile: maintain 2 columns on narrow screens */
 @media (width <= 480px) {
   #presetControls {
     grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    max-width: 100%;
   }
 
   .preset-card {
-    padding: 12px 4px 10px;
+    padding: 12px 8px 10px;
+    min-height: 70px;
   }
 
   .preset-icon {
@@ -1072,7 +1078,7 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   }
 
   .preset-name {
-    font-size: 11px;
+    font-size: 10px;
   }
 }
 
