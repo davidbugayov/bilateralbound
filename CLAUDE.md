@@ -66,7 +66,7 @@ npm run deploy:prod      # Pull stable + restart on prod servers
 
 All push-based, NO polling:
 
-1. Server physics at 60Hz → broadcasts `state_update` every 4th tick (15Hz) via WebSocket
+1. Server physics at 60Hz → broadcasts `state_update` every 12th tick (5Hz) via WebSocket for drift correction; bounce events and API updates broadcast immediately
 2. Bounce events broadcast immediately (not throttled)
 3. Viewer runs local physics (`clientSimulation: true`) at 60Hz, receives server commands via `applyCommand()`
 4. Viewer broadcasts its state at 30Hz via `viewer_update` (only when moving)
@@ -90,9 +90,11 @@ All push-based, NO polling:
 - **Global state**: `globalThis.__current` holds session state (sessionId, isPlaying, viewerConnected, etc.)
 - **WebSocket endpoint**: `ws://host/?sessionId=:id&role=viewer|controller` — auto-reconnect, heartbeat every 30s
 - **Session IDs**: auto-generated 6-char UUID prefix, or custom 3-32 chars (alphanumeric/dash/underscore)
-- **E2E tests**: Puppeteer-based, 21 tests, use `domcontentloaded` (not `networkidle0`)
+- **E2E tests**: Puppeteer-based, 22 tests, use `domcontentloaded` (not `networkidle0`)
 - **No bundler**: vanilla JS loaded via `<script>` tags, order matters
 - **Play/pause guards**: `__ignoreServerPausedUntilTs` (800ms) and `__ignoreServerDirectionUntilTs` (1500ms) prevent server state from overriding recent user actions
+- **Viewer pause animation**: `seekingCenter` state triggers 400ms ease-out return-to-center when paused; ball does NOT snap immediately. `updatePhysicsFromState` fallback in `viewer.html` ensures animation starts even on redundant pause commands.
+- **`returnToCenter: true`** in `POST /api/session/:id/controller/update`: skips deceleration, snaps server ball to center immediately, broadcasts `{ paused: true }` — viewer then animates to center
 
 ## Deployment
 

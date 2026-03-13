@@ -758,7 +758,8 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 }
 
 .controller-left-col .controls-card {
-  padding: 6px 8px;
+  padding: 6px 10px;
+  min-width: 0;
 }
 
 /* Compact section padding in left col */
@@ -806,6 +807,9 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   display: flex;
   gap: 5px;
   width: 100%;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
 .dir-btn {
@@ -979,6 +983,7 @@ body {
   /* Clear fixed back-btn (top:20px, ~28px tall) */
   .controller-left-col {
     padding-top: 36px;
+    padding-right: 4px;
   }
 
   /* Compact right col: reduce gap and padding to avoid scroll */
@@ -1115,6 +1120,14 @@ body {
   background: #fff;
 }
 
+/* Viewer audio indicator — compact in left col */
+.controller-left-col .viewer-audio-indicator {
+  padding: 5px 8px;
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 0.78rem;
+}
+
 /* Enable sound row — tighter */
 .controller-left-col #soundEnabledCheckbox + span {
   font-size: 0.82rem !important;
@@ -1148,6 +1161,8 @@ body {
   font-size: 0.8rem !important;
   border-radius: 5px !important;
   height: 28px !important;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Monitor sound separator + content */
@@ -1175,9 +1190,17 @@ body {
   white-space: nowrap;
 }
 
+.controller-left-col #controllerVolumeSlider {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
 .controller-left-col #controllerVolumeValue {
   font-size: 0.75rem !important;
-  min-width: 26px !important;
+  min-width: 0 !important;
+  width: 24px !important;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 /* ⌨️ Hotkeys */
