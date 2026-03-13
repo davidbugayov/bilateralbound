@@ -1120,12 +1120,18 @@ body {
   background: #fff;
 }
 
-/* Viewer audio indicator — compact in left col */
+/* Viewer audio indicator — compact in left col, always reserves space so card doesn't resize */
 .controller-left-col .viewer-audio-indicator {
   padding: 5px 8px;
   margin-top: 0;
   margin-bottom: 6px;
   font-size: 0.78rem;
+}
+
+.controller-left-col .viewer-audio-indicator.hidden {
+  display: flex !important;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Enable sound row — tighter */
