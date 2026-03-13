@@ -312,5 +312,19 @@
   "meta": {
     "controllerTitle": "BilateralBound - EMDR疗法控制器",
     "controllerDescription": "用于管理双侧刺激的EMDR疗法控制器。EMDR治疗师在夫妻治疗会话期间使用的工具"
+  },
+  "features": {
+    "bilateral": "双侧刺激",
+    "bilateralDesc": "移动的球激活两个大脑半球，帮助处理创伤记忆",
+    "remote": "远程会话",
+    "remoteDesc": "治疗师控制，客户可从任何设备随时观看",
+    "realtime": "实时同步",
+    "realtimeDesc": "WebSocket连接，毫秒级精度，无延迟",
+    "audio": "双侧音频",
+    "audioDesc": "声音在左耳和右耳之间交替，实现完整的双侧效果",
+    "links": "永久链接",
+    "linksDesc": "保存会话链接，每次都可以与同一客户重复使用",
+    "free": "免费使用",
+    "freeDesc": "无需注册，无需订阅 — 向全球治疗师开放"
   }
 }

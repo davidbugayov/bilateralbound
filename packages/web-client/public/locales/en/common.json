@@ -314,5 +314,19 @@
     },
     "monitorSound": "Monitor sound",
     "volumeLabel": "Volume"
+  },
+  "features": {
+    "bilateral": "Bilateral stimulation",
+    "bilateralDesc": "Moving ball activates both brain hemispheres for trauma processing",
+    "remote": "Remote sessions",
+    "remoteDesc": "Therapist controls, client watches from any device anywhere",
+    "realtime": "Real-time sync",
+    "realtimeDesc": "WebSocket connection with millisecond precision, no lag",
+    "audio": "Bilateral audio",
+    "audioDesc": "Sound alternates between left and right ear for full bilateral effect",
+    "links": "Permanent links",
+    "linksDesc": "Save session links and reuse with the same client every time",
+    "free": "Free to use",
+    "freeDesc": "No registration, no subscription — open for therapists worldwide"
   }
 }

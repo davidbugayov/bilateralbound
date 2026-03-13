@@ -327,5 +327,19 @@
   "meta": {
     "controllerTitle": "BilateralBound - Controlador de terapia EMDR",
     "controllerDescription": "Controlador de terapia EMDR para gestionar estimulación bilateral. Herramienta para terapeuta EMDR durante sesiones de terapia de pareja"
+  },
+  "features": {
+    "bilateral": "Estimulación bilateral",
+    "bilateralDesc": "La pelota activa ambos hemisferios cerebrales para procesar traumas",
+    "remote": "Sesiones remotas",
+    "remoteDesc": "El terapeuta controla, el cliente observa desde cualquier dispositivo",
+    "realtime": "Sincronización en tiempo real",
+    "realtimeDesc": "Conexión WebSocket con precisión de milisegundos, sin retraso",
+    "audio": "Audio bilateral",
+    "audioDesc": "El sonido alterna entre oído izquierdo y derecho para efecto bilateral completo",
+    "links": "Enlaces permanentes",
+    "linksDesc": "Guarda los enlaces y reutilízalos con el mismo cliente siempre",
+    "free": "Gratis",
+    "freeDesc": "Sin registro ni suscripción — abierto para terapeutas de todo el mundo"
   }
 }

@@ -327,5 +327,19 @@
   "meta": {
     "controllerTitle": "BilateralBound - EMDR療法コントローラー",
     "controllerDescription": "両側性刺激を管理するためのEMDR療法コントローラー。カップルセラピーセッション中のEMDRセラピスト用ツール"
+  },
+  "features": {
+    "bilateral": "両側性刺激",
+    "bilateralDesc": "動くボールが両方の脳半球を活性化し、トラウマ処理を助けます",
+    "remote": "リモートセッション",
+    "remoteDesc": "セラピストが操作し、クライアントはどこからでも視聴できます",
+    "realtime": "リアルタイム同期",
+    "realtimeDesc": "ミリ秒単位の精度のWebSocket接続、遅延なし",
+    "audio": "両側性オーディオ",
+    "audioDesc": "音が左耳と右耳を交互に切り替わり、完全な両側性効果を実現",
+    "links": "永続リンク",
+    "linksDesc": "セッションリンクを保存し、同じクライアントと何度でも再利用できます",
+    "free": "無料",
+    "freeDesc": "登録不要、サブスクリプション不要 — 世界中のセラピストが利用できます"
   }
 }
