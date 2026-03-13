@@ -1123,8 +1123,8 @@ body {
 /* Viewer audio indicator — compact in left col, always reserves space so card doesn't resize */
 .controller-left-col .viewer-audio-indicator {
   padding: 5px 8px;
-  margin-top: 0;
-  margin-bottom: 6px;
+  margin-top: 8px;
+  margin-bottom: 0;
   font-size: 0.78rem;
 }
 
