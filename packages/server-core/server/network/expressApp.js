@@ -331,7 +331,7 @@ function setupExpressApp(sessionManager, apiCache) {
     /* jshint unused: false */
     analytics.recordHttpRequest()
     res.on('finish', () => {
-      if (res.statusCode >= 400) analytics.recordHttpError(res.statusCode)
+      if (res.statusCode >= 400) analytics.recordHttpError(res.statusCode, req.path)
     })
     next()
   })

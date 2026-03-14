@@ -7,7 +7,6 @@ const { logger } = require('./logger.js')
 const SessionManager = require('./session/SessionManager.js')
 const setupExpressApp = require('./network/expressApp.js')
 const setupWebSocketServer = require('./network/webSocketServer.js')
-console.log('\n\n--- SERVER STARTING (Modular Architecture) ---\n\n')
 // 1. Инициализация кэша и менеджера сессий
 const apiCache = new Map()
 const sessionManager = new SessionManager(apiCache)

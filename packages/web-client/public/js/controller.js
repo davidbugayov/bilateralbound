@@ -619,11 +619,9 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     })
     wsClient.on('error', () => {})
     wsClient.on(WS_MSG.viewerStatus, (data) => {
-      // console.log('[CONTROLLER] 📊 viewer_status event received:', JSON.stringify(data))
       const wasConnected = globalThis.__current.viewerConnected
       const isConnected =
         data.connected === true || data.viewerConnected === true
-      // console.log('[CONTROLLER] ✅ Setting viewerConnected to:', isConnected)
       globalThis.__current.viewerConnected = isConnected
       if (data.screenSize) {
         globalThis.__current.viewerScreenSize = data.screenSize

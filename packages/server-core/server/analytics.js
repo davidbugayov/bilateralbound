@@ -16,11 +16,15 @@ class Analytics {
     this.totalHttpRequests = 0
     this.errors4xx = 0
     this.errors5xx = 0
+    this.errors4xxPaths = {} // path -> count, top 50 kept
     this.completedSessionDurations = [] // last 200 durations in ms
     this.languageStats = {}
     this.totalPairedSessions = 0 // sessions where both viewer + controller connected
+    this.totalPairTimeMs = 0 // cumulative ms from controller connect → viewer connect
+    this.pairedWithTimeCount = 0 // how many paired sessions have timing data
     // In-memory session tracking
-    this._sessionMeta = new Map() // sessionId -> { startTs, viewerConnected, controllerConnected, hasPair }
+    // sessionId -> { startTs, viewerConnected, controllerConnected, hasPair, controllerTs, viewerTs }
+    this._sessionMeta = new Map()
     // Physics tick jitter tracking (last 120 intervals, ~2 seconds at 60Hz)
     this._physicsTickIntervals = []
     // Persist every N requests to reduce I/O
@@ -45,9 +49,12 @@ class Analytics {
         this.totalHttpRequests = data.totalHttpRequests || 0
         this.errors4xx = data.errors4xx || 0
         this.errors5xx = data.errors5xx || 0
+        this.errors4xxPaths = data.errors4xxPaths || {}
         this.completedSessionDurations = data.completedSessionDurations || []
         this.languageStats = data.languageStats || {}
         this.totalPairedSessions = data.totalPairedSessions || 0
+        this.totalPairTimeMs = data.totalPairTimeMs || 0
+        this.pairedWithTimeCount = data.pairedWithTimeCount || 0
       }
     } catch {
       /* ignore — fresh start */
@@ -64,9 +71,12 @@ class Analytics {
         totalHttpRequests: this.totalHttpRequests,
         errors4xx: this.errors4xx,
         errors5xx: this.errors5xx,
+        errors4xxPaths: this.errors4xxPaths,
         completedSessionDurations: this.completedSessionDurations.slice(-200),
         languageStats: this.languageStats,
         totalPairedSessions: this.totalPairedSessions,
+        totalPairTimeMs: this.totalPairTimeMs,
+        pairedWithTimeCount: this.pairedWithTimeCount,
         savedAt: Date.now()
       }
       fs.writeFileSync(this._persistPath, JSON.stringify(data), 'utf8')
@@ -81,7 +91,9 @@ class Analytics {
       startTs: Date.now(),
       viewerConnected: false,
       controllerConnected: false,
-      hasPair: false
+      hasPair: false,
+      controllerTs: null,
+      viewerTs: null
     })
     this._persist()
   }
@@ -105,9 +117,15 @@ class Analytics {
     const meta = this._sessionMeta.get(sessionId)
     if (meta && !meta.viewerConnected) {
       meta.viewerConnected = true
+      meta.viewerTs = Date.now()
       if (meta.controllerConnected && !meta.hasPair) {
         meta.hasPair = true
         this.totalPairedSessions++
+        // Track time from controller connect to viewer connect
+        if (meta.controllerTs) {
+          this.totalPairTimeMs += meta.viewerTs - meta.controllerTs
+          this.pairedWithTimeCount++
+        }
       }
     }
     this._persist()
@@ -123,9 +141,15 @@ class Analytics {
     const meta = this._sessionMeta.get(sessionId)
     if (meta && !meta.controllerConnected) {
       meta.controllerConnected = true
+      meta.controllerTs = Date.now()
       if (meta.viewerConnected && !meta.hasPair) {
         meta.hasPair = true
         this.totalPairedSessions++
+        // Viewer connected before controller (rare) — track time too
+        if (meta.viewerTs) {
+          this.totalPairTimeMs += meta.controllerTs - meta.viewerTs
+          this.pairedWithTimeCount++
+        }
       }
     }
     this._persist()
@@ -144,11 +168,20 @@ class Analytics {
     }
   }
 
-  recordHttpError(statusCode) {
+  recordHttpError(statusCode, path) {
     if (statusCode >= 500) {
       this.errors5xx++
     } else if (statusCode >= 400) {
       this.errors4xx++
+      if (path) {
+        this.errors4xxPaths[path] = (this.errors4xxPaths[path] || 0) + 1
+        // Keep only top 50 paths to cap memory
+        const entries = Object.entries(this.errors4xxPaths)
+        if (entries.length > 50) {
+          entries.sort((a, b) => b[1] - a[1])
+          this.errors4xxPaths = Object.fromEntries(entries.slice(0, 50))
+        }
+      }
     }
     this._persist()
   }
@@ -202,6 +235,19 @@ class Analytics {
         ) / 10
       : 0
 
+    const avgPairTimeMs =
+      this.pairedWithTimeCount > 0
+        ? Math.round(this.totalPairTimeMs / this.pairedWithTimeCount)
+        : 0
+
+    const sorted4xxPaths = Object.entries(this.errors4xxPaths)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .reduce((obj, [k, v]) => {
+        obj[k] = v
+        return obj
+      }, {})
+
     return {
       server: {
         startedAt: new Date(this.startedAt).toISOString(),
@@ -214,6 +260,12 @@ class Analytics {
         peakConcurrent: this.peakConcurrentSessions,
         completedCount: durations.length,
         pairedSessions: this.totalPairedSessions,
+        pairRate:
+          this.totalSessionsCreated > 0
+            ? `${Math.round((this.totalPairedSessions / this.totalSessionsCreated) * 100)}%`
+            : '0%',
+        avgTimeToViewerMs: avgPairTimeMs,
+        avgTimeToViewerHuman: this._formatDuration(avgPairTimeMs),
         avgDurationMs,
         maxDurationMs,
         avgDurationHuman: this._formatDuration(avgDurationMs),
@@ -228,7 +280,8 @@ class Analytics {
       http: {
         totalRequests: this.totalHttpRequests,
         errors4xx: this.errors4xx,
-        errors5xx: this.errors5xx
+        errors5xx: this.errors5xx,
+        errors4xxPaths: sorted4xxPaths
       },
       physics: {
         avgTickMs,

@@ -319,10 +319,10 @@ if (typeof BallRenderer === 'undefined') {
      * Вызывается при изменении цвета или размера
      */
     invalidateBallCache() {
-      this._cached.radius = null;
-      this._cached.color = null;
-      this._cached.gradient = null;
-      this._cached.path = null;
+      this._cached.radius = null
+      this._cached.color = null
+      this._cached.gradient = null
+      this._cached.path = null
     }
     /**
      * Изменяет размеры canvas
