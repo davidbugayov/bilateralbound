@@ -15,6 +15,17 @@ EMDR therapy platform — therapist (controller) controls a bouncing ball via bi
 - **Short commits**: concise commit messages, no verbose descriptions.
 - **Language**: respond in the language the user writes in.
 
+## Local Setup
+
+**Prerequisites**: Node.js v22+
+
+```bash
+npm install   # installs all workspace packages
+npm run dev   # starts dev server on port 3000
+```
+
+No `.env` file required — all config is in-process or via URL params.
+
 ## Commands
 
 ```bash
@@ -40,7 +51,7 @@ npm run deploy:prod      # Pull stable + restart on prod servers
 
 ## Architecture
 
-**Monorepo** with npm workspaces: `packages/server-core` (Node.js + Express) and `packages/web-client` (Vanilla JS, no framework).
+**Monorepo** with npm workspaces: `packages/server-core` (Node.js + Express) and `packages/web-client` (Vanilla JS, no framework). Run `npm install` from the repo root — workspace symlinks handle cross-package dependencies automatically.
 
 ### Server (`packages/server-core/server/`)
 
