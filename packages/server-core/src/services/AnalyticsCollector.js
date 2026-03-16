@@ -2,8 +2,9 @@
 'use strict'
 const fs = require('node:fs')
 
-class Analytics {
-  constructor() {
+class AnalyticsCollector {
+  constructor(logger) {
+    this.logger = logger
     this.startedAt = Date.now()
     // Counters (current session, reset on restart)
     this.currentWsViewers = 0
@@ -20,7 +21,7 @@ class Analytics {
     this.completedSessionDurations = [] // last 200 durations in ms
     this.languageStats = {}
     this.totalPairedSessions = 0 // sessions where both viewer + controller connected
-    this.totalPairTimeMs = 0 // cumulative ms from controller connect → viewer connect
+    this.totalPairTimeMs = 0 // cumulative ms from controller connect -> viewer connect
     this.pairedWithTimeCount = 0 // how many paired sessions have timing data
     // In-memory session tracking
     // sessionId -> { startTs, viewerConnected, controllerConnected, hasPair, controllerTs, viewerTs }
@@ -298,20 +299,20 @@ class Analytics {
     const h = Math.floor((sec % 86400) / 3600)
     const m = Math.floor((sec % 3600) / 60)
     const s = sec % 60
-    if (d > 0) return `${d}д ${h}ч ${m}м`
-    if (h > 0) return `${h}ч ${m}м`
-    if (m > 0) return `${m}м ${s}с`
-    return `${s}с`
+    if (d > 0) return `${d}d ${h}h ${m}m`
+    if (h > 0) return `${h}h ${m}m`
+    if (m > 0) return `${m}m ${s}s`
+    return `${s}s`
   }
 
   _formatDuration(ms) {
-    if (ms === 0) return 'н/д'
+    if (ms === 0) return 'n/a'
     const sec = Math.floor(ms / 1000)
     const min = Math.floor(sec / 60)
     const s = sec % 60
-    if (min > 0) return `${min}м ${s}с`
-    return `${sec}с`
+    if (min > 0) return `${min}m ${s}s`
+    return `${sec}s`
   }
 }
 
-module.exports = new Analytics()
+module.exports = AnalyticsCollector

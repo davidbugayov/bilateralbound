@@ -1,18 +1,22 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.287",
+  "version": "2.39.314",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
+    "packages/shared",
     "packages/server-core",
     "packages/web-client",
     "packages/therapist-panel"
   ],
   "scripts": {
     "start": "npm run start:server",
+    "prestart": "npm run build --workspace=packages/web-client",
     "start:server": "cd packages/server-core && npm start",
     "start:client": "cd packages/web-client && npm start",
-    "dev": "npm run dev:server",
+    "dev": "concurrently \"npm run dev --workspace=packages/server-core\" \"npm run watch --workspace=packages/web-client\"",
+    "build": "npm run build --workspace=packages/web-client",
+    "build:dev": "npm run build:dev --workspace=packages/web-client",
     "dev:server": "cd packages/server-core && npm run dev",
     "dev:client": "cd packages/web-client && npm run dev",
     "dev:panel": "cd packages/therapist-panel && npm run dev",
@@ -80,6 +84,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@stylistic/eslint-plugin": "^5.5.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eventsource": "^4.1.0",
     "globals": "^16.5.0",
@@ -92,6 +97,5 @@
     "stylelint": "^16.25.0",
     "stylelint-config-standard": "^39.0.1",
     "stylelint-prettier": "^5.0.3"
-  },
-  "dependencies": {}
+  }
 }

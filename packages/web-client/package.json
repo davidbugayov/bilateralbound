@@ -1,12 +1,14 @@
 {
   "name": "@emdr/web-client",
-  "version": "2.39.287",
+  "version": "2.39.314",
   "description": "EMDR therapy web client",
   "main": "public/index.html",
   "type": "commonjs",
   "scripts": {
     "start": "webpack --mode=development",
-    "build": "webpack --mode=production",
+    "build": "webpack --mode production",
+    "build:dev": "webpack --mode development",
+    "watch": "webpack --watch --mode development",
     "serve": "npx serve -s public",
     "lint": "eslint public/js --ext .js",
     "lint:fix": "eslint public/js --ext .js --fix",

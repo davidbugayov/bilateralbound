@@ -34,8 +34,6 @@ body {
 
   /* Разрешаем скролл в обоих направлениях для адаптивности */
   overflow: auto scroll; /* Принудительно показываем скроллбар */
-
-  /* overscroll-behavior: none; - УДАЛЕНО: может блокировать скролл */
   -webkit-overflow-scrolling: touch;
   min-height: 100vh;
   height: auto; /* Разрешаем расти по контенту */

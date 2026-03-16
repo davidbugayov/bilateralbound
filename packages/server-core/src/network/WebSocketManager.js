@@ -1,8 +1,7 @@
 'use strict'
-const { logger } = require('../logger.js')
 // Интерфейс для управления WebSocket соединениями
 class WebSocketManager {
-  constructor(sessionRepository) {
+  constructor(sessionRepository, logger) {
     this.sessionRepository = sessionRepository
     this.logger = logger
     this._wsIndex = new Map() // reverse map: ws → {sessionId, role}

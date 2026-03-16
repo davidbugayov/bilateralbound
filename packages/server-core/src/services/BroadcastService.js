@@ -1,13 +1,12 @@
 /* jshint node: true, esversion: 11, strict: true */
 'use strict'
-const { logger, DEBUG_MODE } = require('../logger.js')
 
-class StateBroadcaster {
-  constructor(sessionRepository, webSocketManager, options = {}) {
+class BroadcastService {
+  constructor(sessionRepository, webSocketManager, { clientSimulationOnly, logger }) {
     this.sessionRepository = sessionRepository
     this.webSocketManager = webSocketManager
     this.logger = logger
-    this.clientSimulationOnly = options.clientSimulationOnly === true
+    this.clientSimulationOnly = clientSimulationOnly === true
     // Храним последнее отправленное состояние для delta compression
     this._lastBroadcastedState = new Map() // sessionId -> lastState
   }
@@ -184,10 +183,10 @@ class StateBroadcaster {
    * @private
    */
   _logBroadcastIfDebug(sessionId, stateType, sentCount, options) {
-    if (sentCount > 0 && DEBUG_MODE) {
+    if (sentCount > 0) {
       const deltaInfo = options.deltaCompression ? ' (delta)' : ''
-      this.logger.logSession(
-        sessionId,
+      this.logger.debug(
+        { sessionId },
         `Broadcasted ${stateType} to ${sentCount} clients${deltaInfo}`
       )
     }
@@ -233,7 +232,10 @@ class StateBroadcaster {
     if (this._isClientReady(client)) {
       try {
         client.send(JSON.stringify(initialState))
-        this.logger.logSession(sessionId, 'Sent initial_state to WS client')
+        this.logger.debug(
+          { sessionId },
+          'Sent initial_state to WS client'
+        )
         return true
       } catch (error) {
         this.logger.error(`Error sending initial state: ${error.message}`)
@@ -281,12 +283,10 @@ class StateBroadcaster {
       }
     }
 
-    if (DEBUG_MODE) {
-      this.logger.logSession(
-        sessionId,
-        `Broadcasted controller_connection (connected=${isConnected}) to ${sentCount} viewers`
-      )
-    }
+    this.logger.debug(
+      { sessionId },
+      `Broadcasted controller_connection (connected=${isConnected}) to ${sentCount} viewers`
+    )
 
     return sentCount > 0
   }
@@ -327,14 +327,93 @@ class StateBroadcaster {
       }
     }
 
-    if (DEBUG_MODE) {
-      this.logger.logSession(
-        sessionId,
-        `Broadcasted viewer_connection (connected=${isConnected}) to ${sentCount} controllers`
-      )
-    }
+    this.logger.debug(
+      { sessionId },
+      `Broadcasted viewer_connection (connected=${isConnected}) to ${sentCount} controllers`
+    )
 
     return sentCount > 0
+  }
+
+  /**
+   * Рассылает обновление языка всем клиентам сессии
+   * @param {string} sessionId - ID сессии
+   * @param {string} language - Код языка
+   */
+  broadcastLanguageUpdate(sessionId, language) {
+    const eventData = {
+      type: 'language_updated',
+      timestamp: Date.now(),
+      payload: {
+        language
+      }
+    }
+
+    let sentCount = 0
+
+    if (this.webSocketManager) {
+      const message = JSON.stringify(eventData)
+      for (const { client } of this.webSocketManager.getClients(sessionId)) {
+        if (this._isClientReady(client)) {
+          try {
+            client.send(message)
+            sentCount++
+          } catch (error) {
+            this.logger.error(
+              `Error broadcasting language_updated to WS client: ${error.message}`
+            )
+          }
+        }
+      }
+    }
+
+    if (sentCount > 0) {
+      this.logger.debug(
+        { sessionId },
+        `Broadcasted language_updated to ${sentCount} clients`
+      )
+    }
+  }
+
+  /**
+   * Рассылает событие активации аудио вьювером только контроллерам
+   * @param {string} sessionId - ID сессии
+   * @param {boolean} activated - Активировано ли аудио
+   */
+  broadcastViewerAudioActivated(sessionId, activated) {
+    const eventData = {
+      type: 'viewer_audio_activated',
+      timestamp: Date.now(),
+      payload: {
+        activated,
+        timestamp: Date.now()
+      }
+    }
+
+    let sentCount = 0
+
+    if (this.webSocketManager) {
+      const message = JSON.stringify(eventData)
+      for (const { client, info } of this.webSocketManager.getClients(sessionId)) {
+        if (info.role === 'controller' && this._isClientReady(client)) {
+          try {
+            client.send(message)
+            sentCount++
+          } catch (error) {
+            this.logger.error(
+              `Error broadcasting viewer_audio_activated to WS controller: ${error.message}`
+            )
+          }
+        }
+      }
+    }
+
+    if (sentCount > 0) {
+      this.logger.debug(
+        { sessionId },
+        `Broadcasted viewer_audio_activated (activated=${activated}) to ${sentCount} controllers`
+      )
+    }
   }
 
   _isClientReady(client) {
@@ -342,4 +421,4 @@ class StateBroadcaster {
   }
 }
 
-module.exports = StateBroadcaster
+module.exports = BroadcastService
