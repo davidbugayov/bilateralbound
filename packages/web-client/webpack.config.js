@@ -1,65 +1,24 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require('path')
 
 module.exports = {
-  entry: './public/js/controller.js',
+  mode: 'development',
+  entry: {
+    viewer: './src/viewer.js',
+    controller: './src/controller.js'
+  },
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
-    publicPath: '/',
+    filename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'public', 'dist')
   },
-  mode: process.env.NODE_ENV || 'development',
-  devtool:
-    process.env.NODE_ENV === 'production' ? 'source-map' : 'eval-source-map',
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env'],
-          },
-        },
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
-      },
-      {
-        test: /\.(png|svg|jpg|jpeg|gif|ico)$/,
-        type: 'asset/resource',
-      },
-    ],
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './public/index.html',
-      filename: 'index.html',
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'public/css', to: 'css', noErrorOnMissing: true },
-        { from: 'public/sounds', to: 'sounds', noErrorOnMissing: true },
-      ],
-    }),
-  ],
   resolve: {
-    extensions: ['.js', '.json'],
+    modules: [
+      path.resolve(__dirname, 'src'),
+      path.resolve(__dirname, '..', '..', 'node_modules'),
+      'node_modules'
+    ],
     alias: {
-      '@emdr/server-core': path.resolve(__dirname, '../server-core'),
-      '@emdr/web-client': path.resolve(__dirname, '.'),
-    },
+      '@emdr/shared': path.resolve(__dirname, '..', 'shared')
+    }
   },
-  devServer: {
-    static: {
-      directory: path.join(__dirname, 'dist'),
-    },
-    compress: true,
-    port: 3001,
-    hot: true,
-    historyApiFallback: true,
-  },
-};
+  devtool: 'source-map'
+}
