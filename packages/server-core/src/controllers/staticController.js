@@ -23,7 +23,7 @@ function registerStaticRoutes(app, sessionService, localizationService, { setNoC
 
   // Static files - only serve specific paths (from expressApp L617-631)
   // Assets use ?v=version query params → safe for immutable long-term cache
-  const staticDirectories = ['css', 'js', 'emdr-therapy', 'panel']
+  const staticDirectories = ['css', 'js', 'dist', 'emdr-therapy', 'panel']
   for (const dir of staticDirectories) {
     app.use(
       `/${dir}`,
