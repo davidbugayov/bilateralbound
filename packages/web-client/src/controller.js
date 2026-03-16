@@ -1,4 +1,27 @@
 'use strict'
+// Require dependencies (side effects populate globalThis)
+require('./core/debug-logger')
+require('./config')
+require('./common')
+require('./domain/session-state')
+require('./domain/direction')
+require('./domain/counters')
+require('./audio/audio-manager')
+require('./i18n/constants')
+require('./i18n/i18n')
+require('./i18n/language-selector')
+require('./rendering/renderer')
+require('./ui/shared-components')
+require('./network/websocket-client')
+require('./network/realtime-client')
+require('./ui/notifications/notification-system')
+require('./ui/new-features')
+require('./application/controller/ui-controls')
+require('./application/controller/preview-manager')
+require('./application/controller/event-handlers')
+require('./application/controller/play-pause')
+require('./application/controller/ui-sync')
+require('./application/controller/viewer-status')
 /**
  * Controller - Логика управления сессией BilateralBound v2.1
  * Современная модульная архитектура с улучшенной обработкой ошибок
