@@ -22,6 +22,9 @@ require('./application/controller/event-handlers')
 require('./application/controller/play-pause')
 require('./application/controller/ui-sync')
 require('./application/controller/viewer-status')
+
+const PhysicsEngine = require('@emdr/shared/physics-engine')
+globalThis.PhysicsEngine = PhysicsEngine
 /**
  * Controller - Логика управления сессией BilateralBound v2.1
  * Современная модульная архитектура с улучшенной обработкой ошибок

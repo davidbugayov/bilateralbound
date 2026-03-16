@@ -14,6 +14,10 @@ require('./rendering/renderer')
 require('./network/websocket-client')
 require('./network/realtime-client')
 require('./ui/shared-components')
+require('./ui/notifications/notification-system')
+
+const PhysicsEngine = require('@emdr/shared/physics-engine')
+globalThis.PhysicsEngine = PhysicsEngine
 
 // ============================================================================
 // Viewer Application Logic (moved from viewer.html inline <script>)
@@ -31,6 +35,10 @@ function showError(message) {
     loading.textContent = '❌ ' + message
     loading.style.color = '#ef4444'
   }
+  globalThis.showErrorNotification?.(
+    globalThis.i18n?.t('viewer.errorTitle') || 'Error',
+    message
+  )
 }
 
 function hideLoading() {
@@ -642,10 +650,17 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     debugLog('📊 Controller disconnected event:', data)
     if (!globalThis.__current) globalThis.__current = {}
     globalThis.__current.controllerConnected = false
+
+    // Pause the ball when controller disconnects
+    if (physicsEngine) {
+      physicsEngine.applyCommand({ paused: true, returnToCenter: true })
+    }
+
+    const msg = globalThis.i18n?.t('viewer.controllerDisconnected') || 'Controller disconnected'
     if (components.status) {
-      const msg = globalThis.i18n?.t('viewer.controllerDisconnected') || 'Controller disconnected'
       components.status.setStatus('warning', msg)
     }
+    globalThis.showWarningNotification?.('⚠️', msg)
   })
 
   wsClient.on('state_update', onStateUpdate)

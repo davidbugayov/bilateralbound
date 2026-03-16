@@ -38,207 +38,196 @@ class NotificationSystem {
       .bb-notification-container {
         position: fixed;
         top: 20px;
-        right: 20px;
+        left: 50%;
+        transform: translateX(-50%);
         z-index: 10000;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        align-items: center;
+        gap: 8px;
         pointer-events: none;
-        max-width: 400px;
+        width: max-content;
+        max-width: calc(100vw - 32px);
       }
+
       .bb-notification {
-        background: rgba(0, 0, 0, 0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 16px 20px;
-        color: white;
-        font-size: 14px;
-        font-weight: 500;
         display: flex;
         align-items: center;
-        gap: 12px;
-        min-height: 50px;
+        gap: 9px;
+        padding: 9px 14px 9px 10px;
+        background: rgba(10, 14, 28, 0.86);
+        backdrop-filter: blur(28px) saturate(180%);
+        -webkit-backdrop-filter: blur(28px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 100px;
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 13px;
+        font-weight: 450;
+        letter-spacing: 0.01em;
         pointer-events: auto;
-        transform: translateX(100%);
+        position: relative;
+        overflow: hidden;
+        transform: translateY(-12px) scale(0.94);
         opacity: 0;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        transition:
+          transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+          opacity 0.22s ease;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.45),
+          0 1px 0 rgba(255, 255, 255, 0.05) inset;
+        white-space: nowrap;
       }
+
       .bb-notification.show {
-        transform: translateX(0);
+        transform: translateY(0) scale(1);
         opacity: 1;
       }
+
       .bb-notification.removing {
-        transform: translateX(100%);
+        transform: translateY(-8px) scale(0.96);
         opacity: 0;
-        transition: all 0.2s ease-in-out;
+        transition:
+          transform 0.22s ease-in,
+          opacity 0.18s ease-in;
       }
-      .bb-notification.success {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%);
-        border-color: rgba(255, 255, 255, 0.2);
-      }
-      .bb-notification.error {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%);
-        border-color: rgba(255, 255, 255, 0.2);
-      }
-      .bb-notification.warning {
-        background: linear-gradient(135deg, rgba(251, 146, 60, 0.96) 0%, rgba(217, 70, 0, 0.96) 100%);
-        border-color: rgba(255, 255, 255, 0.15);
-        border-left: 3px solid rgba(255, 255, 255, 0.5);
-      }
-      .bb-notification.info {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%);
-        border-color: rgba(255, 255, 255, 0.2);
-      }
+
+      /* Dot indicator */
       .bb-notification-icon {
-        font-size: 20px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
         flex-shrink: 0;
-        animation: iconBounce 0.5s ease-in-out;
+        font-size: 0;
+        line-height: 0;
       }
+
+      .bb-notification.success .bb-notification-icon {
+        background: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        animation: dotPulse 2.4s ease-in-out infinite;
+      }
+      .bb-notification.error .bb-notification-icon {
+        background: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        animation: dotPulse 1.6s ease-in-out infinite;
+      }
+      .bb-notification.warning .bb-notification-icon {
+        background: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        animation: dotPulse 1.8s ease-in-out infinite;
+      }
+      .bb-notification.info .bb-notification-icon {
+        background: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+        animation: dotPulse 2.4s ease-in-out infinite;
+      }
+
+      @keyframes dotPulse {
+        0%, 100% { box-shadow: 0 0 0 3px rgba(255,255,255,0.08); }
+        50%       { box-shadow: 0 0 0 6px rgba(255,255,255,0.0); }
+      }
+
+      /* Content */
       .bb-notification-content {
         flex: 1;
         display: flex;
-        flex-direction: column;
-        gap: 2px;
+        align-items: baseline;
+        gap: 5px;
       }
+
       .bb-notification-title {
         font-weight: 600;
-        font-size: 14px;
-        line-height: 1.3;
+        font-size: 13px;
+        line-height: 1;
+        opacity: 0.55;
       }
+
       .bb-notification-message {
         font-size: 13px;
-        opacity: 0.9;
-        line-height: 1.4;
+        line-height: 1;
+        opacity: 0.92;
       }
+
+      /* Only show title separator when both exist */
+      .bb-notification-title:not(:empty) + .bb-notification-message::before {
+        content: '·';
+        margin-right: 5px;
+        opacity: 0.35;
+      }
+
+      /* Close button */
       .bb-notification-close {
         background: none;
         border: none;
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 16px;
+        color: rgba(255, 255, 255, 0.25);
+        font-size: 14px;
+        line-height: 1;
         cursor: pointer;
-        padding: 4px 8px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
+        padding: 2px 4px;
+        border-radius: 50px;
+        transition: color 0.15s ease, background 0.15s ease;
         flex-shrink: 0;
+        margin-left: 2px;
       }
+
       .bb-notification-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
+        color: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.08);
       }
+
+      /* Progress line at bottom of pill */
       .bb-notification-progress {
         position: absolute;
         bottom: 0;
-        left: 0;
-        height: 3px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 0 0 12px 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        height: 2px;
+        border-radius: 0 0 100px 100px;
         transition: width 0.1s linear;
       }
-      .bb-notification.success .bb-notification-progress {
-        background: rgba(255, 255, 255, 0.6);
-      }
-      .bb-notification.error .bb-notification-progress {
-        background: rgba(255, 255, 255, 0.6);
-      }
-      .bb-notification.warning .bb-notification-progress {
-        background: rgba(255, 255, 255, 0.6);
-      }
-      .bb-notification.info .bb-notification-progress {
-        background: rgba(255, 255, 255, 0.6);
-      }
-      /* Warning shake: plays after slide-in */
-      @keyframes warningShake {
-        0%, 100% { transform: translateX(0) }
-        15%  { transform: translateX(-5px) }
-        35%  { transform: translateX(5px) }
-        55%  { transform: translateX(-3px) }
-        75%  { transform: translateX(2px) }
-      }
-      .bb-notification.warning.show {
-        animation: warningShake 0.4s ease 0.3s;
-      }
-      /* Анимации */
-      @keyframes iconBounce {
-        0%, 20%, 50%, 80%, 100% {
-          transform: translateY(0);
-        }
-        40% {
-          transform: translateY(-3px);
-        }
-        60% {
-          transform: translateY(-2px);
-        }
-      }
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-      @keyframes slideOut {
-        from {
-          transform: translateX(0);
-          opacity: 1;
-        }
-        to {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-      }
-      /* Адаптивность */
-      @media (max-width: 768px) {
+
+      .bb-notification.success .bb-notification-progress  { background: #10b981; }
+      .bb-notification.error .bb-notification-progress    { background: #ef4444; }
+      .bb-notification.warning .bb-notification-progress  { background: #f59e0b; }
+      .bb-notification.info .bb-notification-progress     { background: #60a5fa; }
+
+      /* Mobile */
+      @media (width <= 480px) {
         .bb-notification-container {
-          top: 10px;
-          right: 10px;
-          left: 10px;
-          max-width: none;
+          top: 12px;
+          max-width: calc(100vw - 24px);
         }
         .bb-notification {
-          padding: 12px 16px;
-          font-size: 13px;
-          min-height: 45px;
+          white-space: normal;
+          max-width: 320px;
         }
       }
-      /* Светлая тема */
+
+      /* Light theme */
       .light-theme .bb-notification {
-        background: #ffffff;
-        border-color: #e2e8f0;
-        color: #1e293b;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.9);
+        border-color: rgba(0, 0, 0, 0.07);
+        color: #0f172a;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.12),
+          0 1px 0 rgba(255, 255, 255, 0.9) inset;
       }
-      .light-theme .bb-notification.success {
-        background: #f0fdf4;
-        border-left: 4px solid #22c55e;
-        color: #166534;
+
+      .light-theme .bb-notification-title {
+        opacity: 0.45;
       }
-      .light-theme .bb-notification.error {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
-        color: #991b1b;
+
+      .light-theme .bb-notification-message {
+        opacity: 0.85;
       }
-      .light-theme .bb-notification.warning {
-        background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-        border-left: 4px solid #f97316;
-        border-color: #fed7aa;
-        color: #7c2d12;
-        box-shadow: 0 8px 24px rgba(249, 115, 22, 0.18);
-      }
-      .light-theme .bb-notification.info {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
-        color: #1e3a8a;
-      }
+
       .light-theme .bb-notification-close {
-        color: #94a3b8;
-        background: transparent;
+        color: rgba(0, 0, 0, 0.25);
       }
+
       .light-theme .bb-notification-close:hover {
-        background: #f1f5f9;
-        color: #475569;
+        color: rgba(0, 0, 0, 0.6);
+        background: rgba(0, 0, 0, 0.06);
       }
     `
     document.head.appendChild(styles)
@@ -292,13 +281,13 @@ class NotificationSystem {
   createNotification(config) {
     const element = document.createElement('div')
     element.className = `bb-notification ${config.type}`
-    const icon = this.getIcon(config.type, config.icon)
     const iconElement = document.createElement('div')
     iconElement.className = 'bb-notification-icon'
-    iconElement.textContent = icon
     const content = document.createElement('div')
     content.className = 'bb-notification-content'
-    if (config.title) {
+    // Skip emoji/symbol titles — dot indicator handles the type signal
+    const isSymbolTitle = config.title && /^[\u{1F000}-\u{1FFFF}⚠️❌✅ℹ️]/u.test(config.title)
+    if (config.title && !isSymbolTitle) {
       const title = document.createElement('div')
       title.className = 'bb-notification-title'
       title.textContent = config.title

@@ -99,8 +99,6 @@ if (typeof PhysicsEngine === 'undefined') {
      * Устанавливает размеры мира с пересчетом центра
      */
     setWorldSize(width, height) {
-      const oldCenterX = this.centerX
-      const oldCenterY = this.centerY
       this.options.worldWidth = width
       this.options.worldHeight = height
       this.centerX = width / 2
