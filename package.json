@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.316",
+  "version": "2.39.317",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -51,12 +51,12 @@
     "sonar": "SONAR_TOKEN=$SONAR_TOKEN sonar-scanner -Dsonar.projectKey=bound -Dsonar.host.url=http://localhost:9000",
     "deploy": "cd packages/server-core && npm start",
     "deploy:dev": "npm run deploy:dev:pull && npm run deploy:dev:restart",
-    "deploy:dev:pull": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/main && npm run build'",
+    "deploy:dev:pull": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/dev.emdrbilateral.online && git fetch --all && git reset --hard origin/main && npm install && npm run build'",
     "deploy:dev:restart": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl restart emdrbilateral-dev'",
     "deploy:dev:logs": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'journalctl -u emdrbilateral-dev -n 50 --no-pager'",
     "deploy:dev:status": "sshpass -p '9Ddc0BYKDavidqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl status emdrbilateral-dev --no-pager'",
     "deploy:prod": "npm run deploy:prod:pull && npm run deploy:prod:restart",
-    "deploy:prod:pull": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/emdrbilateral.online && git fetch --all && git reset --hard origin/stable && npm run build && cd /var/www/emdrbilateral.ru && git fetch --all && git reset --hard origin/stable && npm run build'",
+    "deploy:prod:pull": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'cd /var/www/emdrbilateral.online && git fetch --all && git reset --hard origin/stable && npm install && npm run build && cd /var/www/emdrbilateral.ru && git fetch --all && git reset --hard origin/stable && npm install && npm run build'",
     "deploy:prod:restart": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl restart emdrbilateral-online && systemctl restart emdrbilateral-ru'",
     "deploy:prod:logs": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'journalctl -u emdrbilateral-online -n 50 --no-pager'",
     "deploy:prod:status": "sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 'systemctl status emdrbilateral-online emdrbilateral-ru --no-pager'",
