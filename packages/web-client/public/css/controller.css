@@ -1378,8 +1378,8 @@ body {
   height: 20px !important;
   min-width: 36px !important;
   border-radius: 10px !important;
-  background: #334155 !important;
-  border: none !important;
+  background: #1e293b !important;
+  border: 1px solid #475569 !important;
   position: relative !important;
   cursor: pointer !important;
   flex-shrink: 0 !important;
