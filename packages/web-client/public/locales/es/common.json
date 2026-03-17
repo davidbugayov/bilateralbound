@@ -126,6 +126,7 @@
     "fullscreen": "⛶ Pantalla completa",
     "exitFullscreen": "⛶ Salir",
     "connecting": "Conectando...",
+    "errorTitle": "Error de conexión",
     "connectionEstablished": "Conexión establecida",
     "connectionDirect": "Conexión directa",
     "connectionRelay": "Retransmisión del servidor",

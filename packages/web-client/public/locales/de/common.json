@@ -126,6 +126,7 @@
     "fullscreen": "⛶ Vollbild",
     "exitFullscreen": "⛶ Beenden",
     "connecting": "Verbindung wird hergestellt...",
+    "errorTitle": "Verbindungsfehler",
     "connectionEstablished": "Verbindung hergestellt",
     "connectionDirect": "Direktverbindung",
     "connectionRelay": "Server-Relay",

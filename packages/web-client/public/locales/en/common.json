@@ -124,6 +124,7 @@
     "fullscreen": "⛶ Fullscreen",
     "exitFullscreen": "⛶ Exit",
     "connecting": "Connecting...",
+    "errorTitle": "Connection error",
     "connectionEstablished": "Connection established",
     "connectionDirect": "Direct connection",
     "connectionRelay": "Server relay",

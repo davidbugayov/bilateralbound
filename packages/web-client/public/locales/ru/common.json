@@ -126,6 +126,7 @@
     "fullscreen": "⛶ Полноэкранный",
     "exitFullscreen": "⛶ Выйти",
     "connecting": "Подключение...",
+    "errorTitle": "Ошибка соединения",
     "connectionEstablished": "Соединение установлено",
     "connectionDirect": "Прямое соединение",
     "connectionRelay": "Соединение через сервер",

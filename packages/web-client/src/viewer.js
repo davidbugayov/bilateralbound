@@ -316,7 +316,7 @@ function initializeComponents() {
     components.status = sharedComponents.createStatusIndicator(
       document.getElementById('statusContainer'),
       {
-        title: globalThis.i18n?.t('viewer.connecting') || 'Connecting...',
+        title: (globalThis.i18n?.isReady && globalThis.i18n.t('viewer.connecting')) || 'Connecting...',
         showIcon: true,
         autoHide: false
       }

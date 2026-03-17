@@ -126,6 +126,7 @@
     "fullscreen": "⛶ 全画面表示",
     "exitFullscreen": "⛶ 終了",
     "connecting": "接続中...",
+    "errorTitle": "接続エラー",
     "connectionEstablished": "接続が確立されました",
     "connectionDirect": "直接接続",
     "connectionRelay": "サーバー経由",

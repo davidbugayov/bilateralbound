@@ -111,6 +111,7 @@
     "fullscreen": "⛶ 全屏",
     "exitFullscreen": "⛶ 退出",
     "connecting": "正在连接...",
+    "errorTitle": "连接错误",
     "connectionEstablished": "连接已建立",
     "connectionDirect": "直接连接",
     "connectionRelay": "服务器中继",
