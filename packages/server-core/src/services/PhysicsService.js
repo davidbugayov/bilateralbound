@@ -69,6 +69,7 @@ class PhysicsService {
           `Bounce state broadcast error for session ${session.id}:`,
           err
         )
+        this.analytics.recordSessionError(session.id, 'bounce_broadcast_error')
       }
     }
   }

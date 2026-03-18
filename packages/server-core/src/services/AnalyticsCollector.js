@@ -26,6 +26,9 @@ class AnalyticsCollector {
     // In-memory session tracking
     // sessionId -> { startTs, viewerConnected, controllerConnected, hasPair, controllerTs, viewerTs }
     this._sessionMeta = new Map()
+    // Session error tracking
+    this.sessionErrors = 0
+    this.recentSessionErrors = [] // last 50: { ts, sessionId, type }
     // Physics tick jitter tracking (last 120 intervals, ~2 seconds at 60Hz)
     this._physicsTickIntervals = []
     // Persist every N requests to reduce I/O
@@ -56,6 +59,8 @@ class AnalyticsCollector {
         this.totalPairedSessions = data.totalPairedSessions || 0
         this.totalPairTimeMs = data.totalPairTimeMs || 0
         this.pairedWithTimeCount = data.pairedWithTimeCount || 0
+        this.sessionErrors = data.sessionErrors || 0
+        this.recentSessionErrors = data.recentSessionErrors || []
       }
     } catch {
       /* ignore — fresh start */
@@ -78,6 +83,8 @@ class AnalyticsCollector {
         totalPairedSessions: this.totalPairedSessions,
         totalPairTimeMs: this.totalPairTimeMs,
         pairedWithTimeCount: this.pairedWithTimeCount,
+        sessionErrors: this.sessionErrors,
+        recentSessionErrors: this.recentSessionErrors.slice(-50),
         savedAt: Date.now()
       }
       fs.writeFileSync(this._persistPath, JSON.stringify(data), 'utf8')
@@ -187,6 +194,13 @@ class AnalyticsCollector {
     this._persist()
   }
 
+  recordSessionError(sessionId, type) {
+    this.sessionErrors++
+    this.recentSessionErrors.push({ ts: Date.now(), sessionId, type })
+    if (this.recentSessionErrors.length > 50) this.recentSessionErrors.shift()
+    this._persist()
+  }
+
   recordPhysicsTick(actualIntervalMs) {
     this._physicsTickIntervals.push(actualIntervalMs)
     if (this._physicsTickIntervals.length > 120)
@@ -290,7 +304,11 @@ class AnalyticsCollector {
         jitterMs,
         sampleCount: ticks.length
       },
-      languages: sortedLangs
+      languages: sortedLangs,
+      sessionErrors: {
+        total: this.sessionErrors,
+        recent: this.recentSessionErrors.slice(-20)
+      }
     }
   }
 

@@ -178,7 +178,7 @@ function setupWebSocketServer(server, sessionService, webSocketManager, broadcas
     }
 
     ws.on('message', (message) => {
-      handleWebSocketMessage(message, ws, webSocketManager, messageHandlers, logger)
+      handleWebSocketMessage(message, ws, webSocketManager, messageHandlers, analytics, logger)
     })
 
     ws.on('close', () => {
@@ -187,6 +187,7 @@ function setupWebSocketServer(server, sessionService, webSocketManager, broadcas
 
     ws.on('error', (error) => {
       logger.error({ err: error, sessionId }, 'WebSocket error')
+      analytics.recordSessionError(sessionId, 'ws_error')
     })
   })
 
@@ -207,7 +208,7 @@ function setupWebSocketServer(server, sessionService, webSocketManager, broadcas
  * Handles incoming WebSocket messages
  * @private
  */
-function handleWebSocketMessage(message, ws, webSocketManager, messageHandlers, logger) {
+function handleWebSocketMessage(message, ws, webSocketManager, messageHandlers, analytics, logger) {
   try {
     const clientInfo = webSocketManager.getClientInfo(ws)
     if (!clientInfo) {
@@ -232,6 +233,7 @@ function handleWebSocketMessage(message, ws, webSocketManager, messageHandlers, 
     const clientInfoForError = webSocketManager.getClientInfo(ws)
     const sid = clientInfoForError ? clientInfoForError.sessionId : 'unknown'
     logger.error({ err: error, sessionId: sid }, 'WebSocket message processing error')
+    analytics.recordSessionError(sid, 'ws_message_error')
   }
 }
 

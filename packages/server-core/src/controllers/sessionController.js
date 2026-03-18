@@ -36,6 +36,7 @@ function registerSessionRoutes(app, sessionService, apiCache, analytics, { requi
       res.json({ sessionId: session.id })
     } catch (error) {
       logger.error({ err: error, requestId: req.id }, 'Error creating session')
+      analytics.recordSessionError('unknown', 'session_create_error')
       res.status(500).json({ error: error.message, requestId: req.id })
     }
   })
@@ -59,6 +60,7 @@ function registerSessionRoutes(app, sessionService, apiCache, analytics, { requi
       })
     } catch (error) {
       logger.error({ err: error, requestId: req.id }, 'Error reserving session')
+      analytics.recordSessionError(sessionId, 'session_reserve_error')
       res.status(500).json({ error: error.message, requestId: req.id })
     }
   })
