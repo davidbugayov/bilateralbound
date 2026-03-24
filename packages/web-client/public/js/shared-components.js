@@ -16,7 +16,7 @@ if (typeof SharedComponents === 'undefined') {
     createSpeedControl(container, options = {}) {
       const defaultOptions = {
         min: 5, // Новое минимальное значение - медленная скорость
-        max: 60, // Новое максимальное значение - быстрая скорость, но отслеживаемая глазами
+        max: 100, // Максимальное значение - быстрая скорость
         defaultValue: 30, // Установлено значение "Средне" (30)
         onSpeedChange: null,
         showValue: true,
