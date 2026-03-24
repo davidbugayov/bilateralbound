@@ -14,8 +14,9 @@ let ballRadius = 24
 const SIZE_RADII = [12, 18, 24, 32, 42]
 
 // Viewer screen size (sent by server in state_update.viewerScreenSize)
-let viewerW = 1920
-let viewerH = 1080
+// Use 0 as default to detect when size hasn't been received yet
+let viewerW = 0
+let viewerH = 0
 
 function resize() {
   canvas.width = window.innerWidth
@@ -72,14 +73,18 @@ function draw() {
   ctx.fillStyle = bgColor
   ctx.fillRect(0, 0, w, h)
 
-  // Scale ball position from viewer's screen to preview window size
-  const px = (bx / viewerW) * w
-  const py = (by / viewerH) * h
+  // Only draw ball if viewerScreenSize has been received from server
+  // This prevents incorrect scaling when using default values
+  if (viewerW > 0 && viewerH > 0) {
+    // Scale ball position from viewer's screen to preview window size
+    const px = (bx / viewerW) * w
+    const py = (by / viewerH) * h
 
-  ctx.beginPath()
-  ctx.arc(px, py, ballRadius, 0, Math.PI * 2)
-  ctx.fillStyle = ballColor
-  ctx.fill()
+    ctx.beginPath()
+    ctx.arc(px, py, ballRadius, 0, Math.PI * 2)
+    ctx.fillStyle = ballColor
+    ctx.fill()
+  }
 
   requestAnimationFrame(draw)
 }
