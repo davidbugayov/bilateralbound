@@ -254,6 +254,29 @@ class LocalizationService {
       `$1${isRu ? 'ru_RU' : 'en_US'}$2`
     )
 
+    // Fix og:title and twitter:title for .ru (static HTML defaults to English)
+    if (isRu) {
+      const ruTitle = 'BilateralBound - EMDR терапия онлайн'
+      const ruDesc =
+        'Бесплатная платформа EMDR терапии — сессии двусторонней стимуляции для лечения ПТСР, тревоги и травм. Без регистрации, доступно для всех.'
+      html = html.replace(
+        /(<meta property="og:title"[^>]*content=")[^"]*(")/,
+        `$1${ruTitle}$2`
+      )
+      html = html.replace(
+        /(<meta property="og:description"[^>]*content=")[^"]*(")/,
+        `$1${ruDesc}$2`
+      )
+      html = html.replace(
+        /(<meta name="twitter:title"[^>]*content=")[^"]*(")/,
+        `$1${ruTitle}$2`
+      )
+      html = html.replace(
+        /(<meta name="twitter:description"[^>]*content=")[^"]*(")/,
+        `$1${ruDesc}$2`
+      )
+    }
+
     // Fix preconnect link (domain-specific, not fonts)
     html = html.replace(
       /(<link\s+rel="preconnect"\s+href=")https:\/\/emdrbilateral\.(ru|online)("[^>]*>)/,

@@ -70,13 +70,13 @@ function registerSeoRoutes(app) {
       'Allow: /',
       '',
       'User-agent: GPTBot',
-      'Disallow: /',
+      'Allow: /',
       '',
       'User-agent: Claude-Web',
-      'Disallow: /',
+      'Allow: /',
       '',
       'User-agent: Google-Extended',
-      'Disallow: /',
+      'Allow: /',
       '',
       `Sitemap: ${base}/sitemap.xml`
     ]
@@ -125,6 +125,55 @@ ${verificationUrls}
     res.setHeader('Content-Type', 'application/xml; charset=utf-8')
     res.setHeader('Cache-Control', 'public, max-age=86400')
     res.send(xml.trim())
+  })
+
+  // llms.txt — structured summary for LLM crawlers (Perplexity, Claude, Gemini)
+  app.get('/llms.txt', (req, res) => {
+    const host = req.get('host') || ''
+    const isRu = host.endsWith('.ru')
+    const base = isRu ? 'https://emdrbilateral.ru' : 'https://emdrbilateral.online'
+    const content = `# BilateralBound
+
+> Free online EMDR therapy platform. Therapists control a bilateral stimulation ball in real-time; patients follow it with their eyes from any device via a permanent link. No registration required. Free to use.
+
+## What it does
+- Delivers real-time bilateral stimulation (eye movement) for EMDR therapy sessions
+- Therapist and patient connect via WebSocket — ball movement is synchronised with millisecond precision
+- Supports bilateral audio (alternating left/right ear) in addition to visual stimulation
+- Works on any device with a modern browser — no software installation required
+- Permanent session links: create once, reuse indefinitely
+
+## Who it is for
+- Licensed EMDR therapists conducting remote sessions
+- Patients receiving EMDR therapy online
+- Therapists who need a free, reliable bilateral stimulation tool
+
+## Conditions treated with EMDR
+- Post-Traumatic Stress Disorder (PTSD)
+- Anxiety and panic disorders
+- Depression
+- Phobias and OCD
+- Relationship trauma and couples therapy
+
+## Technical facts
+- WebSocket real-time sync (Node.js / Express)
+- 8 languages: English, Russian, German, Spanish, French, Portuguese, Japanese, Chinese
+- Fully free, no account required
+- Open to therapists worldwide
+
+## Key pages
+- ${base}/: Main page — start or restore a session
+- ${base}/c/:id: Therapist controller (bilateral stimulation controls)
+- ${base}/s/:id: Patient viewer (follows the moving ball)
+
+## About
+- Developer: David Bugaev
+- Project URL: ${base}
+- Contact: via GitHub https://github.com/davidbugayov
+`
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+    res.send(content)
   })
 
   // RSS feed
