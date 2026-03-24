@@ -364,6 +364,8 @@ if (typeof PhysicsEngine === 'undefined') {
      */
     _checkDriftCorrection() {
       if (!this._lastServerPos || this.state.paused) return
+      const posAge = performance.now() - this._lastServerPos.ts
+      if (posAge > 1500) return  // server position stale — skip correction
       const now = performance.now()
       const checkInterval = this.options.smoothing.driftCheckIntervalMs || 3000
       if (
