@@ -665,6 +665,38 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   wsClient.on('initial_state', onStateUpdate)
   wsClient.on('viewer_status', updateStatus)
   wsClient.on('language_updated', onLanguageUpdate)
+
+  // Handle network metrics for adaptive smoothing
+  wsClient.on('net_metrics', ({ jitterMs }) => {
+    if (!physicsEngine) return
+
+    // Update physics engine with current jitter for adaptive smoothing
+    physicsEngine.updateJitter(jitterMs)
+
+    const base = globalThis.BBConfig?.smoothing || {}
+    const adaptiveDamping = Math.min(
+      25,
+      Math.max(15, (base.damping || 20) + jitterMs / 20)
+    )
+    const adaptiveStiffness = Math.min(
+      35,
+      Math.max(25, (base.stiffness || 30) - jitterMs / 30)
+    )
+    const fixedPredictTime = base.maxPredictSec || 0.02
+    const adaptiveSnapDistance = Math.min(
+      0.4,
+      Math.max(0.2, (base.snapDistance || 0.3) + (jitterMs > 15 ? 0.05 : 0))
+    )
+    physicsEngine.setSmoothingOptions({
+      damping: adaptiveDamping,
+      stiffness: adaptiveStiffness,
+      maxPredictSec: fixedPredictTime,
+      snapDistance: adaptiveSnapDistance,
+      exponentialSmoothing: base.exponentialSmoothing,
+      stateBuffering: base.stateBuffering,
+      bufferSize: base.bufferSize
+    })
+  })
 }
 
 function handleWebSocketError(error) {

@@ -731,6 +731,10 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     })
     wsClient.on(WS_MSG.netMetrics, ({ jitterMs }) => {
       if (!previewPhysicsEngine) return
+
+      // Update physics engine with current jitter for adaptive smoothing
+      previewPhysicsEngine.updateJitter(jitterMs)
+
       const base = globalThis.BBConfig?.smoothing || {}
       const adaptiveDamping = Math.min(
         25,
@@ -748,7 +752,7 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       previewPhysicsEngine.setSmoothingOptions({
         damping: adaptiveDamping,
         stiffness: adaptiveStiffness,
-        maxPredictSec: fixedPredictTime, // Фиксированное значение для консистентности
+        maxPredictSec: fixedPredictTime,
         snapDistance: adaptiveSnapDistance,
         exponentialSmoothing: base.exponentialSmoothing,
         stateBuffering: base.stateBuffering,

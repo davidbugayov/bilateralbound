@@ -15,11 +15,20 @@ if (typeof PhysicsEngine === 'undefined') {
         maxSpeed: 5000,
         smoothing: {
           // Drift correction threshold in pixels (only corrects if drift exceeds this)
-          driftThresholdPx: 50,
+          driftThresholdPx: 25,
           // Duration of drift correction animation in ms
-          driftCorrectionMs: 300,
-          // How often to check for drift (ms)
-          driftCheckIntervalMs: 3000
+          driftCorrectionMs: 200,
+          // How often to check for drift (ms) - adaptive based on jitter
+          driftCheckIntervalMs: 1000,
+          // Adaptive smoothing parameters
+          adaptiveSmoothing: true,
+          minDriftCheckMs: 500,
+          maxDriftCheckMs: 3000,
+          minThresholdPx: 15,
+          maxThresholdPx: 50,
+          // Prediction parameters
+          predictionEnabled: true,
+          predictionLatencyMs: 100
         },
         bounceCallback: null,
         ...options
@@ -358,16 +367,73 @@ if (typeof PhysicsEngine === 'undefined') {
       }
     }
     /**
+     * Calculates adaptive drift check interval based on current jitter
+     * @private
+     */
+    _getAdaptiveDriftInterval() {
+      const base = this.options.smoothing.driftCheckIntervalMs || 1000
+      const min = this.options.smoothing.minDriftCheckMs || 500
+      const max = this.options.smoothing.maxDriftCheckMs || 3000
+      const jitter = this._currentJitterMs || 0
+
+      // Higher jitter = more frequent checks
+      if (jitter > 50) return min
+      if (jitter > 20) return Math.max(min, base * 0.5)
+      if (jitter > 10) return base * 0.75
+      return Math.min(max, base)
+    }
+
+    /**
+     * Calculates adaptive drift threshold based on current jitter
+     * @private
+     */
+    _getAdaptiveDriftThreshold() {
+      const base = this.options.smoothing.driftThresholdPx || 25
+      const min = this.options.smoothing.minThresholdPx || 15
+      const max = this.options.smoothing.maxThresholdPx || 50
+      const jitter = this._currentJitterMs || 0
+
+      // Higher jitter = larger threshold (allow more drift before correcting)
+      if (jitter > 50) return max
+      if (jitter > 20) return base * 1.5
+      if (jitter > 10) return base
+      return Math.max(min, base * 0.75)
+    }
+
+    /**
+     * Predicts ball position based on velocity and estimated latency
+     * @private
+     */
+    _predictPosition(x, y, vx, vy) {
+      if (!this.options.smoothing.predictionEnabled) {
+        return { x, y }
+      }
+      const latencySec = (this.options.smoothing.predictionLatencyMs || 100) / 1000
+      return {
+        x: x + vx * latencySec,
+        y: y + vy * latencySec
+      }
+    }
+
+    /**
+     * Updates jitter metric from external source (e.g., WebSocket client)
+     * @param {number} jitterMs - Current jitter in milliseconds
+     */
+    updateJitter(jitterMs) {
+      this._currentJitterMs = jitterMs
+    }
+
+    /**
      * Drift correction: smoothly corrects viewer position if it drifts too far from server
-     * Called periodically (every 3s) during clientSimulation, not every frame
+     * Adaptive based on network jitter
      * @private
      */
     _checkDriftCorrection() {
       if (!this._lastServerPos || this.state.paused) return
       const posAge = performance.now() - this._lastServerPos.ts
-      if (posAge > 1500) return  // server position stale — skip correction
+      if (posAge > 2000) return  // server position stale — skip correction
       const now = performance.now()
-      const checkInterval = this.options.smoothing.driftCheckIntervalMs || 3000
+      const checkInterval = this._getAdaptiveDriftInterval()
       if (
         this._lastDriftCheckTs &&
         now - this._lastDriftCheckTs < checkInterval
@@ -375,24 +441,37 @@ if (typeof PhysicsEngine === 'undefined') {
         return
       this._lastDriftCheckTs = now
 
-      const dx = this._lastServerPos.x - this.ball.x
-      const dy = this._lastServerPos.y - this.ball.y
+      // Predict where server ball should be based on velocity
+      const predicted = this._predictPosition(
+        this._lastServerPos.x,
+        this._lastServerPos.y,
+        this.ball.vx,
+        this.ball.vy
+      )
+
+      const dx = predicted.x - this.ball.x
+      const dy = predicted.y - this.ball.y
       const drift = Math.hypot(dx, dy)
-      const threshold = this.options.smoothing.driftThresholdPx || 50
+      const threshold = this._getAdaptiveDriftThreshold()
 
       if (drift > threshold) {
+        // Adaptive correction duration based on drift magnitude
+        const baseDuration = this.options.smoothing.driftCorrectionMs || 200
+        const adaptiveDuration = Math.min(400, baseDuration + drift * 2)
+
         // Store offset to apply as decaying correction on top of physics
         this._driftCorrection = {
           offsetX: dx,
           offsetY: dy,
           startTs: now,
-          duration: this.options.smoothing.driftCorrectionMs || 300
+          duration: adaptiveDuration
         }
       }
     }
     /**
      * Applies active drift correction as decaying offset on top of physics position.
      * Physics always runs — correction blends ball toward server position without replacing physics.
+     * Uses adaptive smoothing based on jitter.
      * @private
      */
     _applyDriftCorrection() {
@@ -406,10 +485,14 @@ if (typeof PhysicsEngine === 'undefined') {
         return
       }
 
+      // Adaptive blend factor: more aggressive correction at high jitter
+      const jitter = this._currentJitterMs || 0
+      const blendBase = jitter > 30 ? 0.08 : 0.05
+
       // Apply increasing fraction of the offset (ease-out: fast start, slow finish)
       const ease = 1 - (1 - t) * (1 - t)
-      this.ball.x += this._driftCorrection.offsetX * ease * 0.05
-      this.ball.y += this._driftCorrection.offsetY * ease * 0.05
+      this.ball.x += this._driftCorrection.offsetX * ease * blendBase
+      this.ball.y += this._driftCorrection.offsetY * ease * blendBase
     }
     /**
      * Обновляет физику за указанное время
