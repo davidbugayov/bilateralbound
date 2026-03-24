@@ -608,6 +608,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     debugLog('✅ WS connection established.')
     const connMsg = globalThis.i18n?.t('viewer.connectionEstablished') || 'Connection established'
     components.status?.setStatus('success', connMsg)
+    debugLog('🔄 Fetching state via REST (first connect or reconnect)')
     fetchAndApplyState()
     wsClient.send('viewer_connected', {
       timestamp: Date.now(),
