@@ -136,7 +136,8 @@
     "controllerConnected": "Contrôleur connecté",
     "controllerDisconnected": "Contrôleur déconnecté",
     "waitingForController": "Connexion établie, en attente du contrôleur...",
-    "enableSound": "Activer le son"
+    "enableSound": "Activer le son",
+    "initError": "Erreur d'initialisation: "
   },
   "test": {
     "title": "🌐 Sélecteur de Langue - Tests",

@@ -129,7 +129,8 @@
     "controllerConnected": "Controlador conectado",
     "controllerDisconnected": "Controlador desconectado",
     "waitingForController": "Conexão estabelecida, aguardando controlador...",
-    "enableSound": "Ativar som"
+    "enableSound": "Ativar som",
+    "initError": "Erro de inicialização: "
   },
   "test": {
     "title": "🌐 Seletor de Idioma - Testes",

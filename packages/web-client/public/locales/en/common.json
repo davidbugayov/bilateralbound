@@ -137,7 +137,8 @@
     "waitingForController": "Connection established, waiting for controller...",
     "enableSound": "Enable Sound",
     "hotkeysHint": "— Pause/Start",
-    "volumeLabel": "Volume"
+    "volumeLabel": "Volume",
+    "initError": "Initialization error: "
   },
   "test": {
     "title": "🌐 Language Selector - Testing",

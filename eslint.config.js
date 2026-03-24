@@ -290,4 +290,42 @@ module.exports = [
       'no-unused-vars': 'warn',
     },
   },
+
+  // 6. Therapist panel browser code
+  {
+    files: ['packages/therapist-panel/src/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        // Standard globals
+        globalThis: 'readonly',
+        Promise: 'readonly',
+        Map: 'readonly',
+        Set: 'readonly',
+        JSON: 'readonly',
+        console: 'readonly',
+
+        // Browser globals
+        document: 'readonly',
+        window: 'readonly',
+        navigator: 'readonly',
+        location: 'readonly',
+        URLSearchParams: 'readonly',
+        BroadcastChannel: 'readonly',
+        WebSocket: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        performance: 'readonly',
+      },
+    },
+    rules: {
+      ...commonRules,
+      'no-unused-vars': ['error', { args: 'none' }],
+    },
+  },
 ];

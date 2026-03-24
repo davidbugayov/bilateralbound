@@ -139,7 +139,8 @@
     "waitingForController": "Соединение установлено, ожидание контроллера...",
     "enableSound": "Включить звук",
     "hotkeysHint": "— Пауза/Старт",
-    "volumeLabel": "Громкость"
+    "volumeLabel": "Громкость",
+    "initError": "Ошибка инициализации: "
   },
   "test": {
     "title": "🌐 Language Selector - Тестирование",

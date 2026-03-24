@@ -68,28 +68,28 @@ function setupMiddleware(app, config) {
     helmet({
       contentSecurityPolicy: {
         directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          styleSrcAttr: ["'self'", "'unsafe-inline'"],
-          styleSrcElem: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrcAttr: ["'self'", "'unsafe-inline'"],
+          defaultSrc: ['\'self\''],
+          styleSrc: ['\'self\'', '\'unsafe-inline\''],
+          styleSrcAttr: ['\'self\'', '\'unsafe-inline\''],
+          styleSrcElem: ['\'self\'', '\'unsafe-inline\''],
+          scriptSrc: ['\'self\'', '\'unsafe-inline\''],
+          scriptSrcAttr: ['\'self\'', '\'unsafe-inline\''],
           scriptSrcElem: [
-            "'self'",
-            "'unsafe-inline'",
+            '\'self\'',
+            '\'unsafe-inline\'',
             'https://mc.yandex.ru',
             'https://mc.yandex.com',
             'https://yastatic.net'
           ],
-          imgSrc: ["'self'", 'data:', 'https:', 'https://*.mc.yandex.ru'],
+          imgSrc: ['\'self\'', 'data:', 'https:', 'https://*.mc.yandex.ru'],
           connectSrc: [
-            "'self'",
+            '\'self\'',
             'wss:',
             'https://mc.yandex.ru',
             'https://mc.yandex.com',
             'wss://mc.yandex.com'
           ],
-          frameSrc: ["'self'", 'https://mc.yandex.md'],
+          frameSrc: ['\'self\'', 'https://mc.yandex.md'],
           upgradeInsecureRequests: isDev ? null : []
         }
       },

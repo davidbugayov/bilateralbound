@@ -65,6 +65,7 @@
     "BBConfig": true,
     "togglePlayPause": true,
     "setDirection": true,
-    "debugError": true
+    "debugError": true,
+    "BroadcastChannel": true
   }
 }

@@ -121,7 +121,8 @@
     "controllerConnected": "控制器已连接",
     "controllerDisconnected": "控制器已断开",
     "waitingForController": "连接已建立，等待控制器...",
-    "enableSound": "启用声音"
+    "enableSound": "启用声音",
+    "initError": "初始化错误："
   },
   "test": {
     "title": "🌐 语言选择器 - 测试",

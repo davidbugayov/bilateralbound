@@ -136,7 +136,8 @@
     "controllerConnected": "コントローラーが接続されました",
     "controllerDisconnected": "コントローラーが切断されました",
     "waitingForController": "接続が確立されました。コントローラーを待っています...",
-    "enableSound": "サウンドを有効にする"
+    "enableSound": "サウンドを有効にする",
+    "initError": "初期化エラー: "
   },
   "test": {
     "title": "🌐 言語セレクター - テスト",

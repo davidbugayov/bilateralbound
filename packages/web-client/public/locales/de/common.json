@@ -136,7 +136,8 @@
     "controllerConnected": "Controller verbunden",
     "controllerDisconnected": "Controller getrennt",
     "waitingForController": "Verbindung hergestellt, warte auf Controller...",
-    "enableSound": "Ton aktivieren"
+    "enableSound": "Ton aktivieren",
+    "initError": "Initialisierungsfehler: "
   },
   "test": {
     "title": "🌐 Sprachauswahl - Tests",

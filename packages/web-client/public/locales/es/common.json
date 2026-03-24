@@ -136,7 +136,8 @@
     "controllerConnected": "Controlador conectado",
     "controllerDisconnected": "Controlador desconectado",
     "waitingForController": "Conexión establecida, esperando controlador...",
-    "enableSound": "Activar sonido"
+    "enableSound": "Activar sonido",
+    "initError": "Error de inicialización: "
   },
   "test": {
     "title": "🌐 Selector de Idioma - Pruebas",

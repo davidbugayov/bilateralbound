@@ -1,6 +1,6 @@
 // Preview popup — canvas ball animation
-const canvas = document.getElementById('c') as HTMLCanvasElement
-const ctx = canvas.getContext('2d')!
+const canvas = document.getElementById('c')
+const ctx = canvas.getContext('2d')
 
 const params = new URLSearchParams(location.search)
 const sessionId = params.get('s') ?? ''
@@ -25,7 +25,7 @@ function resize() {
 resize()
 window.addEventListener('resize', resize)
 
-function applyPayload(p: Record<string, unknown>) {
+function applyPayload(p) {
   // x/y are absolute px in viewer's coordinate space
   if (typeof p.x === 'number') bx = p.x
   if (typeof p.y === 'number') by = p.y
@@ -35,7 +35,7 @@ function applyPayload(p: Record<string, unknown>) {
     ballRadius = SIZE_RADII[p.ballSize - 1]
   }
   if (p.viewerScreenSize && typeof p.viewerScreenSize === 'object') {
-    const vs = p.viewerScreenSize as { width?: number; height?: number }
+    const vs = p.viewerScreenSize
     if (vs.width) viewerW = vs.width
     if (vs.height) viewerH = vs.height
   }
@@ -43,7 +43,7 @@ function applyPayload(p: Record<string, unknown>) {
 
 if (typeof BroadcastChannel !== 'undefined') {
   const bc = new BroadcastChannel('bb_preview')
-  bc.onmessage = (e: MessageEvent) => {
+  bc.onmessage = (e) => {
     if (e.data?.type === 'ball') {
       applyPayload(e.data)
     }
@@ -54,9 +54,9 @@ if (typeof BroadcastChannel !== 'undefined') {
 if (sessionId && typeof BroadcastChannel === 'undefined') {
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
   const ws = new WebSocket(`${protocol}://${location.host}/?sessionId=${sessionId}&role=controller`)
-  ws.onmessage = (e: MessageEvent) => {
+  ws.onmessage = (e) => {
     try {
-      const msg = JSON.parse(e.data as string)
+      const msg = JSON.parse(e.data)
       if ((msg.type === 'state_update' || msg.type === 'initial_state') && msg.payload) {
         applyPayload(msg.payload)
       }
