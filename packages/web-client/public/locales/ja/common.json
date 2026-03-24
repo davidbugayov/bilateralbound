@@ -1,7 +1,7 @@
 {
   "common": {
     "themeToggleLabel": "テーマを切替",
-    "themeToggleButton": "🌓 テーマ",
+    "themeToggleButton": "🌓",
     "languageSelectorLabel": "言語を切替",
     "languageSelectorButton": "🌐",
     "lang": {

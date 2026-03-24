@@ -1,7 +1,7 @@
 {
   "common": {
     "themeToggleLabel": "Toggle theme",
-    "themeToggleButton": "🌓 Theme",
+    "themeToggleButton": "🌓",
     "languageSelectorLabel": "Change language",
     "languageSelectorButton": "🌐",
     "lang": {

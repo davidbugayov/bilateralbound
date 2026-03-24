@@ -221,7 +221,7 @@
     updateThemeButton(text) {
       const btn = document.getElementById('themeToggleBtn')
       if (btn) {
-        btn.textContent = text
+        btn.innerHTML = text
       }
     }
     /**

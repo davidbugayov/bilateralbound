@@ -1,7 +1,7 @@
 {
   "common": {
     "themeToggleLabel": "Переключить тему оформления",
-    "themeToggleButton": "🌓 Тема",
+    "themeToggleButton": "🌓",
     "languageSelectorLabel": "Переключить язык",
     "languageSelectorButton": "🌐",
     "lang": {
