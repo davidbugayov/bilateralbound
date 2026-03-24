@@ -127,15 +127,32 @@ async function testNetworkProfile(browser, profile) {
   console.log(`Testing: ${profile.name}`)
   console.log('='.repeat(60))
 
-  // Open controller page
-  const controllerPage = await browser.newPage()
-  await controllerPage.goto(TEST_CONFIG.controllerUrl, { waitUntil: 'networkidle2' })
-  await controllerPage.waitForSelector('#playPauseBtn', { timeout: 10000 })
+  // Create a new session by clicking the create button
+  const homePage = await browser.newPage()
+  await homePage.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: 30000 })
+
+  // Click "Start EMDR Session" button
+  await homePage.waitForSelector('#createSessionBtn', { timeout: 15000 })
+  await homePage.click('#createSessionBtn')
+
+  // Wait for navigation to controller page
+  await homePage.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 })
+
+  // Extract session ID from URL (should be /c/{sessionId})
+  const sessionId = homePage.url().match(/\/c\/([^/]+)/)?.[1]
+  if (!sessionId) {
+    throw new Error('Failed to get session ID from URL: ' + homePage.url())
+  }
+  console.log(`Using session: ${sessionId}`)
+
+  // The home page is now the controller page
+  const controllerPage = homePage
+  await controllerPage.waitForSelector('#playPauseBtn', { timeout: 15000 })
 
   // Open viewer page
   const viewerPage = await browser.newPage()
-  await viewerPage.goto(TEST_CONFIG.viewerUrl, { waitUntil: 'networkidle2' })
-  await viewerPage.waitForSelector('#viewerCanvas', { timeout: 10000 })
+  await viewerPage.goto(`${BASE_URL}/s/${sessionId}`, { waitUntil: 'networkidle2', timeout: 30000 })
+  await viewerPage.waitForSelector('#viewerCanvas', { timeout: 15000 })
 
   // Wait for connection
   await new Promise(resolve => setTimeout(resolve, 2000))
@@ -153,18 +170,18 @@ async function testNetworkProfile(browser, profile) {
   const controllerMetrics = await measureBallJitter(controllerPage, 10000)
 
   console.log('\n📈 Results:')
-  console.log(`   Viewer:`)
+  console.log('   Viewer:')
   console.log(`     Avg Jitter: ${viewerMetrics.avgJitter.toFixed(2)}px`)
   console.log(`     Max Jitter: ${viewerMetrics.maxJitter.toFixed(2)}px`)
   console.log(`     Samples: ${viewerMetrics.samples}`)
-  console.log(`   Controller:`)
+  console.log('   Controller:')
   console.log(`     Avg Jitter: ${controllerMetrics.avgJitter.toFixed(2)}px`)
   console.log(`     Max Jitter: ${controllerMetrics.maxJitter.toFixed(2)}px`)
   console.log(`     Samples: ${controllerMetrics.samples}`)
 
   // Check for ball "jumping" (sudden position changes)
   const hasJumping = viewerMetrics.maxJitter > 100
-  console.log(`\n${hasJumping ? '❌' : '✅'} Ball jumping detected: ${hasJumping}`)
+  console.log('\n' + (hasJumping ? '❌' : '✅') + ' Ball jumping detected: ' + hasJumping)
 
   // Stop the ball
   await controllerPage.click('#playPauseBtn')
@@ -213,9 +230,9 @@ async function runStressTest() {
       console.log(`  Ball Jumping: ${result.hasJumping ? 'YES ❌' : 'NO ✅'}`)
     }
 
-    // Check if all tests passed
-    const allPassed = results.every(r => !r.hasJumping)
-    console.log(`\n${allPassed ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}`)
+  // Check if all tests passed
+  const allPassed = results.every(r => !r.hasJumping)
+  console.log(`\n${allPassed ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}`)
 
   } finally {
     await browser.close()
