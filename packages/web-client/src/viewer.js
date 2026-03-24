@@ -623,6 +623,10 @@ function setupWebSocketHandlers(wsClient, sessionId) {
 
   wsClient.on('close', () => {
     debugWarn('🔌 WS connection closed.')
+    // Center ball and pause on connection loss
+    if (physicsEngine) {
+      physicsEngine.applyCommand({ paused: true, returnToCenter: true })
+    }
     showError(globalThis.i18n?.t('viewer.connectionLost') || 'Connection lost. Reconnecting...')
   })
 

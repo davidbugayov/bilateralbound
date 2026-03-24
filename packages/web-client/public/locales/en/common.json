@@ -269,6 +269,7 @@
     "viewerNotConnectedMessage": "Please wait for the viewer to connect. Share the viewer link with the client so they can join the session.",
     "viewerNotConnectedShort": "Viewer not connected",
     "connectionFailed": "Cannot connect to server. Check your internet connection.",
+    "connectionLost": "Connection lost. Reconnecting...",
     "sessionLost": "Session expired. Please reload the page.",
     "sessionReset": "Session reset",
     "sessionResetError": "Error resetting session",

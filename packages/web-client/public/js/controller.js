@@ -5,6 +5,15 @@
  */
 /* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession, setSoundEnabled, setSoundType */
 /* global debugWarn, debugError, RealtimeClient */
+
+// Load notification system if not already loaded
+if (typeof globalThis.notificationSystem === 'undefined') {
+  const nsScript = document.createElement('script')
+  nsScript.src = '/js/ui/notifications/notification-system.js?v=' +
+    (document.querySelector('meta[name="version"]')?.content || '')
+  nsScript.async = false
+  document.head.appendChild(nsScript)
+}
 // Защита от повторной загрузки
 if (typeof globalThis.__controllerLoaded !== 'undefined') {
   console.warn('Controller already loaded, skipping')
@@ -599,21 +608,26 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     wsClient.on('close', (event) => {
       updateConnectionStatus(false)
       lastPlayingState = isPlaying
+      // Always center ball and pause on connection loss
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setPaused(true)
+        const centerX =
+          previewPhysicsEngine.centerX ||
+          (globalThis.__previewCanvas?.width || 500) / 2
+        const centerY =
+          previewPhysicsEngine.centerY ||
+          (globalThis.__previewCanvas?.height || 375) / 2
+        previewPhysicsEngine.setPosition(centerX, centerY)
+        previewPhysicsEngine.setVelocity(0, 0)
+      }
+      isPlaying = false
+      globalThis.__current.viewerConnected = false
+      updatePlayPauseButton()
+      // Show notification about connection loss
       if (event.code === 1006) {
-        if (previewPhysicsEngine) {
-          previewPhysicsEngine.setPaused(true)
-          const centerX =
-            previewPhysicsEngine.centerX ||
-            (globalThis.__previewCanvas?.width || 500) / 2
-          const centerY =
-            previewPhysicsEngine.centerY ||
-            (globalThis.__previewCanvas?.height || 375) / 2
-          previewPhysicsEngine.setPosition(centerX, centerY)
-          previewPhysicsEngine.setVelocity(0, 0)
-        }
-        isPlaying = false
-        globalThis.__current.viewerConnected = false
-        updatePlayPauseButton()
+        const msg = globalThis.i18n?.t('controller.connectionLost') ||
+          'Connection lost. Reconnecting...'
+        showNotification(msg, 'warning')
       }
       updateViewerStatusUI()
     })
