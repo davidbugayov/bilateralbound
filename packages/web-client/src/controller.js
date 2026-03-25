@@ -15,6 +15,7 @@ require('./ui/shared-components')
 require('./network/websocket-client')
 require('./network/realtime-client')
 require('./ui/notifications/notification-system')
+require('./ui/error-overlay')
 require('./ui/new-features')
 require('./application/controller/ui-controls')
 require('./application/controller/preview-manager')
@@ -362,7 +363,10 @@ async function initializeController() {
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
       debugError('ID сессии не найден в URL')
-      showNotification('ID сессии не найден в URL', 'error')
+      showCriticalError(
+        globalThis.i18n?.t('controller.errorTitle') || 'Error',
+        'ID сессии не найден в URL'
+      )
       if (globalThis.__current) globalThis.__current.isInitializing = false
       return
     }
@@ -391,7 +395,10 @@ async function initializeController() {
         globalThis.i18n?.t('controller.connectionError') ||
         'Failed to connect to session. Please reload the page and try again.'
     }
-    showNotification(errorMsg, 'error')
+    showCriticalError(
+      globalThis.i18n?.t('controller.errorTitle') || 'Error',
+      errorMsg
+    )
   }
 }
 async function registerControllerOnServer(sessionId, logger) {
@@ -815,18 +822,19 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   })
   wsClient.on('maxReconnectAttemptsReached', () => {
     logger.error('Max reconnect attempts reached')
-    showNotification(
-      globalThis.i18n?.t('controller.connectionFailed') ||
-        'Cannot connect to server. Check your internet connection.',
-      'error'
+    showCriticalError(
+      globalThis.i18n?.t('controller.connectionFailed') || 'Connection Failed',
+      globalThis.i18n?.t('controller.connectionFailedMsg') ||
+        'Cannot connect to server. Please check your internet connection and reload the page.'
     )
   })
   wsClient.on('session_lost', () => {
     logger.error('Session lost (evicted by server)')
-    const msg =
-      globalThis.i18n?.t('controller.sessionLost') ||
-      'Session expired. Please reload the page.'
-    showNotification(msg, 'error')
+    showCriticalError(
+      globalThis.i18n?.t('controller.sessionLost') || 'Session Expired',
+      globalThis.i18n?.t('controller.sessionLostMsg') ||
+        'Your session has expired or was removed from the server. Please reload the page.'
+    )
   })
 }
 /**
@@ -2496,6 +2504,18 @@ function resetSession() {
  * @param {string} message - Текст сообщения
  * @param {string} type - Тип уведомления ('info', 'success', 'warning', 'error')
  */
+function showCriticalError(title, message) {
+  if (globalThis.emdrErrorOverlay) {
+    globalThis.emdrErrorOverlay.show({
+      title,
+      message,
+      actionText: globalThis.i18n?.t('viewer.reload') || 'Reload page',
+      onAction: () => globalThis.location.reload()
+    })
+  } else {
+    alert(`${title}\n\n${message}`)
+  }
+}
 function showNotification(message, type = 'info') {
   try {
     if (globalThis.notificationSystem?.show) {

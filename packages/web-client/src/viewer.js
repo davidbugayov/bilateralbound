@@ -15,6 +15,7 @@ require('./network/websocket-client')
 require('./network/realtime-client')
 require('./ui/shared-components')
 require('./ui/notifications/notification-system')
+require('./ui/error-overlay')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 globalThis.PhysicsEngine = PhysicsEngine
@@ -28,17 +29,26 @@ globalThis.PhysicsEngine = PhysicsEngine
  * @property {function(string, string): void} setStatus
  */
 
-function showError(message) {
+function showError(message, critical = false) {
   console.error('❌ Viewer Error:', message)
   const loading = document.getElementById('loading')
   if (loading) {
     loading.textContent = '❌ ' + message
     loading.style.color = '#ef4444'
   }
-  globalThis.showErrorNotification?.(
-    globalThis.i18n?.t('viewer.errorTitle') || 'Error',
-    message
-  )
+  if (critical && globalThis.emdrErrorOverlay) {
+    globalThis.emdrErrorOverlay.show({
+      title: globalThis.i18n?.t('viewer.errorTitle') || 'Connection Error',
+      message,
+      actionText: globalThis.i18n?.t('viewer.reload') || 'Reload page',
+      onAction: () => globalThis.location.reload()
+    })
+  } else {
+    globalThis.showErrorNotification?.(
+      globalThis.i18n?.t('viewer.errorTitle') || 'Error',
+      message
+    )
+  }
 }
 
 function hideLoading() {
@@ -292,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   try {
     const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
-      showError('Session ID не найден в URL')
+      showError('Session ID не найден в URL', true)
       return
     }
     debugLog('📱 Session ID получен:', sessionId)
@@ -306,7 +316,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     } else if (errorMsg?.includes('Realtime connection')) {
       errorMsg = 'Failed to connect to session. Please reload the page and try again.'
     }
-    showError(errorMsg)
+    showError(errorMsg, true)
   }
 })
 
@@ -586,7 +596,8 @@ async function initializeViewer(sessionId) {
   } catch (error) {
     debugError('❌ Ошибка инициализации viewer:', error)
     showError(
-      (globalThis.i18n?.t('viewer.initError') || 'Initialization error: ') + error.message
+      (globalThis.i18n?.t('viewer.initError') || 'Initialization error: ') + error.message,
+      true
     )
   }
 }
@@ -632,6 +643,13 @@ function setupWebSocketHandlers(wsClient, sessionId) {
 
   wsClient.on('error', (error) => {
     handleWebSocketError(error)
+  })
+
+  wsClient.on('maxReconnectAttemptsReached', () => {
+    const msg =
+      globalThis.i18n?.t('viewer.connectionFailed') ||
+      'Cannot connect to the server. Please check your internet connection and reload the page.'
+    showError(msg, true)
   })
 
   wsClient.on('controller_status', (status) => {
