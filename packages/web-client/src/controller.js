@@ -529,8 +529,7 @@ async function initializeDOMElements(sessionId) {
   updateViewerLink(sessionId)
 }
 function buildViewerUrl(sessionId) {
-  const theme = localStorage.getItem('bb_theme') || 'dark'
-  return `${globalThis.location.origin}/s/${sessionId}?theme=${theme}`
+  return `${globalThis.location.origin}/s/${sessionId}`
 }
 function updateViewerLink(sessionId) {
   const viewLinkInput = document.getElementById('view')

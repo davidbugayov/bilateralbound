@@ -83,8 +83,18 @@ function setupWebSocketServer(server, sessionService, webSocketManager, broadcas
         }
       },
 
-      viewer_connected: () => {
+      viewer_connected: (data) => {
         if (role === 'viewer') {
+          // Save theme from viewer to session
+          const theme = data.payload?.theme
+          if (theme && (theme === 'dark' || theme === 'light')) {
+            const session = sessionService.getSession(sessionId)
+            if (session) {
+              session.theme = theme
+              logger.debug({ sessionId, theme }, 'Theme saved from viewer')
+            }
+          }
+
           const clients = webSocketManager.getClients(sessionId)
           for (const { client } of clients) {
             if (client !== ws && client.readyState === 1) {
@@ -95,7 +105,8 @@ function setupWebSocketServer(server, sessionService, webSocketManager, broadcas
                     payload: {
                       viewerConnected: true,
                       timestamp: Date.now(),
-                      sessionId
+                      sessionId,
+                      theme
                     },
                     timestamp: Date.now()
                   })

@@ -181,6 +181,7 @@ class ThemeManager {
   init() {
     this.setupThemeToggle()
     this.loadTheme()
+    this.setupThemeChangeListener()
   }
   /**
    * Loads the theme from localStorage and applies it to the body.
@@ -235,6 +236,15 @@ class ThemeManager {
     if (toggleBtn) {
       toggleBtn.addEventListener('click', () => this.toggleTheme())
     }
+  }
+  /**
+   * Listens for theme changes from WebSocket and updates the UI.
+   * @private
+   */
+  setupThemeChangeListener() {
+    globalThis.addEventListener('bb_theme_changed', () => {
+      this.loadTheme()
+    })
   }
 }
 /**

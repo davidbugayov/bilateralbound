@@ -5,7 +5,6 @@ if (!globalThis.__current) globalThis.__current = {}
 // Require dependencies (side effects populate globalThis)
 require('./core/debug-logger')
 require('./config')
-require('./common')
 require('./i18n/constants')
 require('./i18n/i18n')
 require('./i18n/language-selector')
@@ -744,6 +743,10 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     const hasControllerConnected = typeof data.controllerConnected === 'boolean'
     const statusData = hasControllerConnected ? data : { controllerConnected: true }
     updateStatus(statusData)
+  })
+
+  wsClient.on('viewer_connected', (data) => {
+    debugLog('📊 [VIEWER] viewer_connected event received:', data)
   })
 
   wsClient.on('controller_disconnected', (data) => {
