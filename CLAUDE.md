@@ -44,9 +44,11 @@ npm run lint:fix         # ESLint with auto-fix
 npm run lint:css         # Stylelint for CSS
 npm run format           # Prettier
 
-# Deployment
-npm run deploy:dev       # Pull main + restart on dev server
-npm run deploy:prod      # Pull stable + restart on prod servers
+# Deployment (requires DEPLOY_PASSWORD env var)
+npm run deploy:dev       # Pull main, build, restart dev server
+npm run deploy:prod      # Pull stable, build, restart prod (.online + .ru)
+npm run deploy:dev:logs  # Show dev service logs
+npm run deploy:prod:logs # Show prod service logs
 ```
 
 ## Architecture
@@ -109,10 +111,21 @@ All push-based, NO polling:
 
 ## Deployment
 
-- Dev: `dev.emdrbilateral.online` (branch: `main`) — `npm run deploy:dev`
-- Prod: `emdrbilateral.online` / `emdrbilateral.ru` (branch: `stable`) — `npm run deploy:prod`
-- **All development happens on `main`**; prod branch `stable` is updated manually when ready
-- UFW firewall: ports 22, 80, 443 (TCP), 500/udp, 4500/udp (VPN)
+**Setup**: Set `DEPLOY_PASSWORD` env var before deploying:
+```bash
+export DEPLOY_PASSWORD='password_here'
+# Or create .env file (it's in .gitignore):
+cp .env.example .env
+# Edit .env and add DEPLOY_PASSWORD
+```
+
+**Deploy**:
+- Dev: `npm run deploy:dev` — pulls `main` branch, builds, restarts
+- Prod: `npm run deploy:prod` — pulls `stable` branch from both .online and .ru, builds, restarts
+- Logs: `npm run deploy:dev:logs` or `npm run deploy:prod:logs`
+- Status: `npm run deploy:dev:status` or `npm run deploy:prod:status`
+
+**All development on `main`**; prod branch `stable` updated manually when ready. UFW: ports 22, 80, 443 (TCP), 500/udp, 4500/udp (VPN)
 
 ## VPS Server — 213.139.229.44
 
