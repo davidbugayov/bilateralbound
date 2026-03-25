@@ -13,7 +13,8 @@
       "pt": "Português",
       "ja": "日本語",
       "zh": "中文"
-    }
+    },
+    "closed": "Closed"
   },
   "home": {
     "title": "Free Online EMDR Therapy Tool",
@@ -138,7 +139,8 @@
     "enableSound": "Enable Sound",
     "hotkeysHint": "— Pause/Start",
     "volumeLabel": "Volume",
-    "initError": "Initialization error: "
+    "initError": "Initialization error: ",
+    "reload": "Reload page"
   },
   "test": {
     "title": "🌐 Language Selector - Testing",
@@ -316,7 +318,8 @@
       "dynamic": "Dynamic"
     },
     "monitorSound": "Monitor sound",
-    "volumeLabel": "Volume"
+    "volumeLabel": "Volume",
+    "sessionLostMsg": "Your session has expired or was removed from the server. Please reload the page."
   },
   "features": {
     "bilateral": "Bilateral stimulation",

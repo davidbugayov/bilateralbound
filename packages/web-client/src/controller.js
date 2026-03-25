@@ -836,7 +836,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     logger.error('Max reconnect attempts reached')
     showCriticalError(
       globalThis.i18n?.t('controller.connectionFailed') || 'Connection Failed',
-      globalThis.i18n?.t('controller.connectionFailedMsg') ||
+      globalThis.i18n?.t('controller.connectionFailed') ||
         'Cannot connect to server. Please check your internet connection and reload the page.'
     )
   })
