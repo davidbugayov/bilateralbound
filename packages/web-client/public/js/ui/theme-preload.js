@@ -3,6 +3,14 @@
     // Check local storage or system preference
     // NOTE: Must match the key used in ThemeManager (common.js)
     const themeKey = 'bb_theme'
+
+    // URL param ?theme=dark|light takes priority (set by controller when sharing viewer link)
+    const urlParams = new URLSearchParams(globalThis.location?.search || '')
+    const urlTheme = urlParams.get('theme')
+    if (urlTheme === 'light' || urlTheme === 'dark') {
+      localStorage.setItem(themeKey, urlTheme)
+    }
+
     const savedTheme = localStorage.getItem(themeKey)
 
     // Default to dark if no preference saved (matching ThemeManager logic)

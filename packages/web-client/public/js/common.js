@@ -213,6 +213,7 @@
         localStorage.setItem(this.themeKey, 'light')
         this.updateThemeButton('☀️')
       }
+      globalThis.dispatchEvent(new CustomEvent('bb_theme_changed'))
     }
     /**
      * Updates the theme toggle button text/icon

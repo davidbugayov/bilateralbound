@@ -179,11 +179,15 @@ body.light-theme .fullscreen-btn {
   border-color: rgb(148 163 184 / 30%);
   color: #1e293b;
   backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 body.light-theme .fullscreen-btn:hover {
   background: rgb(241 245 249 / 90%);
   border-color: rgb(148 163 184 / 50%);
+  color: #334155;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
+  transform: scale(1.03);
 }
 
 body.light-theme .loading {

@@ -352,6 +352,15 @@ document.addEventListener('DOMContentLoaded', () => {
       updatePreviewSize(size)
     }
   })
+  // Update viewer links when theme changes
+  globalThis.addEventListener('bb_theme_changed', () => {
+    const sid = globalThis.__current?.sessionId
+    if (sid) {
+      updateViewerLink(sid)
+      const fsLink = document.getElementById('fsViewLink')
+      if (fsLink) fsLink.value = buildViewerUrl(sid)
+    }
+  })
 })
 /**
  * Современная инициализация контроллера с улучшенной обработкой ошибок
@@ -519,10 +528,14 @@ async function initializeDOMElements(sessionId) {
   }
   updateViewerLink(sessionId)
 }
+function buildViewerUrl(sessionId) {
+  const theme = localStorage.getItem('bb_theme') || 'dark'
+  return `${globalThis.location.origin}/s/${sessionId}?theme=${theme}`
+}
 function updateViewerLink(sessionId) {
   const viewLinkInput = document.getElementById('view')
   if (viewLinkInput) {
-    viewLinkInput.value = `${globalThis.location.origin}/s/${sessionId}`
+    viewLinkInput.value = buildViewerUrl(sessionId)
   }
 }
 /**
@@ -2448,7 +2461,7 @@ function fillFsSessionInfo() {
     const fsSid = document.getElementById('fsCurSid')
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')
-    if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`
+    if (fsLink) fsLink.value = buildViewerUrl(sid)
     updateFullscreenViewerStatus()
   } catch (err) {
     debugWarn('Error in fillFsSessionInfo:', err)

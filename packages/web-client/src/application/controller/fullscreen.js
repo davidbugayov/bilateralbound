@@ -327,7 +327,10 @@ function fillFsSessionInfo() {
     const fsSid = document.getElementById('fsCurSid')
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')
-    if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`
+    if (fsLink) {
+      const theme = localStorage.getItem('bb_theme') || 'dark'
+      fsLink.value = `${globalThis.location.origin}/s/${sid}?theme=${theme}`
+    }
     updateFullscreenViewerStatus()
   } catch (err) {
     if (typeof debugWarn === 'function')

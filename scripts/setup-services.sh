@@ -34,8 +34,8 @@ Type=simple
 User=root
 WorkingDirectory=/var/www/dev.emdrbilateral.online/packages/server-core
 Environment=NODE_ENV=development
-Environment=PORT=3001
-ExecStart=/usr/bin/node server/index.js
+Environment=PORT=3004
+ExecStart=/usr/bin/node src/index.js
 Restart=always
 RestartSec=5
 
@@ -53,8 +53,8 @@ Type=simple
 User=root
 WorkingDirectory=/var/www/emdrbilateral.online/packages/server-core
 Environment=NODE_ENV=production
-Environment=PORT=8080
-ExecStart=/usr/bin/node server/index.js
+Environment=PORT=3000
+ExecStart=/usr/bin/node src/index.js
 Restart=always
 RestartSec=5
 
@@ -72,8 +72,8 @@ Type=simple
 User=root
 WorkingDirectory=/var/www/emdrbilateral.ru/packages/server-core
 Environment=NODE_ENV=production
-Environment=PORT=8081
-ExecStart=/usr/bin/node server/index.js
+Environment=PORT=3000
+ExecStart=/usr/bin/node src/index.js
 Restart=always
 RestartSec=5
 

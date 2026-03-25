@@ -215,6 +215,8 @@ class ThemeManager {
       localStorage.setItem(this.themeKey, 'light')
       this.updateThemeButton('☀️')
     }
+    // Notify controller to update viewer links with new theme
+    globalThis.dispatchEvent(new CustomEvent('bb_theme_changed'))
   }
   /**
    * Updates the theme toggle button text/icon
