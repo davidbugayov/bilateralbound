@@ -58,6 +58,83 @@ function hideLoading() {
   }
 }
 
+// Centered banner over canvas for transient connection states
+let _bannerEl = null
+
+function _clearBanner() {
+  if (_bannerEl) {
+    while (_bannerEl.firstChild) _bannerEl.removeChild(_bannerEl.firstChild)
+  }
+}
+
+function showConnectionBanner(message, icon = '⚠️') {
+  if (!_bannerEl) {
+    const style = document.createElement('style')
+    style.textContent = `
+      #viewerConnectionBanner {
+        position: fixed;
+        inset: 0;
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      #viewerConnectionBanner .vcb-card {
+        background: rgba(2, 6, 23, 0.88);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 16px;
+        padding: 28px 40px;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(239, 68, 68, 0.15), 0 8px 32px rgba(0,0,0,0.5);
+        animation: vcbFadeIn 0.3s ease;
+        max-width: 360px;
+      }
+      @keyframes vcbFadeIn {
+        from { opacity: 0; transform: scale(0.92) translateY(8px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      #viewerConnectionBanner .vcb-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        display: block;
+      }
+      #viewerConnectionBanner .vcb-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        line-height: 1.4;
+        letter-spacing: 0.01em;
+      }
+    `
+    document.head.appendChild(style)
+    _bannerEl = document.createElement('div')
+    _bannerEl.id = 'viewerConnectionBanner'
+    document.body.appendChild(_bannerEl)
+  }
+  _clearBanner()
+  const card = document.createElement('div')
+  card.className = 'vcb-card'
+  const iconEl = document.createElement('span')
+  iconEl.className = 'vcb-icon'
+  iconEl.textContent = icon
+  const textEl = document.createElement('span')
+  textEl.className = 'vcb-text'
+  textEl.textContent = message
+  card.appendChild(iconEl)
+  card.appendChild(textEl)
+  _bannerEl.appendChild(card)
+  _bannerEl.style.display = 'flex'
+}
+
+function hideConnectionBanner() {
+  if (_bannerEl) {
+    _bannerEl.style.display = 'none'
+    _clearBanner()
+  }
+}
+
 function resizeCanvas() {
   const canvas = document.getElementById('viewerCanvas')
   if (canvas) {
@@ -617,6 +694,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
 
   wsClient.on('open', (event) => {
     debugLog('✅ WS connection established.')
+    hideConnectionBanner()
     const connMsg = globalThis.i18n?.t('viewer.connectionEstablished') || 'Connection established'
     components.status?.setStatus('success', connMsg)
     debugLog('🔄 Fetching state via REST (first connect or reconnect)')
@@ -638,7 +716,8 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     if (physicsEngine) {
       physicsEngine.applyCommand({ paused: true, returnToCenter: true })
     }
-    showError(globalThis.i18n?.t('viewer.connectionLost') || 'Connection lost. Reconnecting...')
+    const lostMsg = globalThis.i18n?.t('viewer.connectionLost') || 'Connection lost. Reconnecting...'
+    showConnectionBanner(lostMsg, '🔄')
   })
 
   wsClient.on('error', (error) => {
@@ -660,6 +739,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   wsClient.on('controller_connected', (data) => {
     console.log('📊 [VIEWER] Controller connected event received:', JSON.stringify(data))
     debugLog('📊 Controller connected event:', data)
+    hideConnectionBanner()
     const hasControllerConnected = typeof data.controllerConnected === 'boolean'
     const statusData = hasControllerConnected ? data : { controllerConnected: true }
     updateStatus(statusData)
@@ -676,11 +756,11 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       physicsEngine.applyCommand({ paused: true, returnToCenter: true })
     }
 
-    const msg = globalThis.i18n?.t('viewer.controllerDisconnected') || 'Controller disconnected'
+    const msg = globalThis.i18n?.t('viewer.controllerDisconnected') || 'Therapist disconnected'
     if (components.status) {
       components.status.setStatus('warning', msg)
     }
-    globalThis.showWarningNotification?.('⚠️', msg)
+    showConnectionBanner(msg, '🔌')
   })
 
   wsClient.on('state_update', onStateUpdate)
