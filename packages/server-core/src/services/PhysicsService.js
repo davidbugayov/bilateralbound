@@ -284,7 +284,11 @@ class PhysicsService {
 
     this._sharedPhysicsLoop = setInterval(() => {
       const now = Date.now()
-      this.analytics.recordPhysicsTick(now - _lastTickAt)
+      const elapsed = now - _lastTickAt
+      this.analytics.recordPhysicsTick(elapsed)
+      // Use actual elapsed time (clamped to 3x nominal DT) so late-firing intervals
+      // don't cause server position to lag real time and trigger spurious drift corrections.
+      const actualDt = Math.min(elapsed, PHYSICS_DT * 3) / 1000
       _lastTickAt = now
 
       if (this.clientSimulationOnly) return
@@ -313,7 +317,7 @@ class PhysicsService {
         try {
           const { dirX: userDirX, dirY: userDirY } = session.ballState
           this._withSoundPreserved(session, () => {
-            session.physicsEngine.update(PHYSICS_DT / 1000)
+            session.physicsEngine.update(actualDt)
             Object.assign(session.ballState, session.physicsEngine.getState())
           })
           if (userDirX !== undefined && userDirY !== undefined) {

@@ -15,7 +15,7 @@ if (typeof PhysicsEngine === 'undefined') {
         maxSpeed: 5000,
         smoothing: {
           // Drift correction threshold in pixels (only corrects if drift exceeds this)
-          driftThresholdPx: 25,
+          driftThresholdPx: 40,
           // Duration of drift correction animation in ms
           driftCorrectionMs: 200,
           // How often to check for drift (ms) - adaptive based on jitter
@@ -405,14 +405,9 @@ if (typeof PhysicsEngine === 'undefined') {
      * @private
      */
     _predictPosition(x, y, vx, vy) {
-      if (!this.options.smoothing.predictionEnabled) {
-        return { x, y }
-      }
-      const latencySec = (this.options.smoothing.predictionLatencyMs || 100) / 1000
-      return {
-        x: x + vx * latencySec,
-        y: y + vy * latencySec
-      }
+      // Prediction disabled: fixed-latency overshoot causes false large drifts
+      // which trigger aggressive corrections visible as lurching.
+      return { x, y }
     }
 
     /**
@@ -521,6 +516,10 @@ if (typeof PhysicsEngine === 'undefined') {
         // Pure client simulation — always run local physics, then apply drift correction on top
         this.updateClientPhysics(deltaTime)
         this._applyDriftCorrection()
+        // Sync _currPos after correction so getInterpolatedBall sees the corrected position
+        // Without this, _prevPos jumps on the next tick causing a 1-frame visual jitter
+        this._currPos.x = this.ball.x
+        this._currPos.y = this.ball.y
         this._checkDriftCorrection()
       } else {
         this.updateClientPhysics(deltaTime)
@@ -688,6 +687,8 @@ if (typeof PhysicsEngine === 'undefined') {
      * @param {string} side - Сторона отскока: 'left', 'right', 'top', 'bottom'
      */
     handleBounce(side) {
+      // Cancel any active drift correction — its target is now stale (ball just reversed direction)
+      this._driftCorrection = null
       const speedPercent = this.ball.speed / 100
       const pixelsPerSecond = speedPercent * this.options.maxSpeed
       this.ball.vx = this.state.lastDirection.x * pixelsPerSecond
