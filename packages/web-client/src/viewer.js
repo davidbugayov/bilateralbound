@@ -716,7 +716,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     if (physicsEngine) {
       physicsEngine.applyCommand({ paused: true, returnToCenter: true })
     }
-    const lostMsg = globalThis.i18n?.t('viewer.connectionLost') || 'Connection lost. Reconnecting...'
+    const lostMsg = globalThis.i18n?.t('viewer.connectionLost') || 'Connection lost. Reconnecting…'
     showConnectionBanner(lostMsg, '🔄')
   })
 
@@ -756,7 +756,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       physicsEngine.applyCommand({ paused: true, returnToCenter: true })
     }
 
-    const msg = globalThis.i18n?.t('viewer.controllerDisconnected') || 'Therapist disconnected'
+    const msg = globalThis.i18n?.t('viewer.controllerDisconnected') || 'Controller disconnected'
     if (components.status) {
       components.status.setStatus('warning', msg)
     }
