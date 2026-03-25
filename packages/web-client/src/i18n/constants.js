@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * @fileoverview Shared i18n constants - Single Source of Truth
  * All language-related constants are defined here to avoid duplication

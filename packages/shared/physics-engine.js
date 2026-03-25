@@ -98,8 +98,6 @@ class PhysicsEngine {
    * Sets world dimensions and recalculates center
    */
   setWorldSize(width, height) {
-    const oldCenterX = this.centerX
-    const oldCenterY = this.centerY
     this.options.worldWidth = width
     this.options.worldHeight = height
     this.centerX = width / 2

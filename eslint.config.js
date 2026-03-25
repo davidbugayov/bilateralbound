@@ -3,6 +3,8 @@
 const globals = require('globals');
 const js = require('@eslint/js');
 const stylistic = require('@stylistic/eslint-plugin');
+const tsParser = require('@typescript-eslint/parser');
+const tsPlugin = require('@typescript-eslint/eslint-plugin');
 
 // Define common rules to be shared across configurations
 const commonRules = {
@@ -60,9 +62,7 @@ module.exports = [
       '.vscode/**',
       'test-results/**',
       'packages/web-client/dist/**',
-      'packages/web-client/public/panel/**',
       'packages/web-client/public/js/vendor/**',
-      'packages/therapist-panel/dist/**',
       'eslint.config.js',
       'webpack.config.js',
       'packages/web-client/.eslintrc.js',
@@ -291,12 +291,12 @@ module.exports = [
     },
   },
 
-  // 6. Therapist panel browser code
+  // 6. Web client src files (JavaScript)
   {
-    files: ['packages/therapist-panel/src/**/*.js'],
+    files: ['packages/web-client/src/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'module',
+      sourceType: 'script',
       globals: {
         // Standard globals
         globalThis: 'readonly',
@@ -305,15 +305,18 @@ module.exports = [
         Set: 'readonly',
         JSON: 'readonly',
         console: 'readonly',
+        module: 'readonly',
+        exports: 'writable',
+        require: 'readonly',
 
         // Browser globals
         document: 'readonly',
         window: 'readonly',
         navigator: 'readonly',
+        history: 'readonly',
         location: 'readonly',
-        URLSearchParams: 'readonly',
-        BroadcastChannel: 'readonly',
-        WebSocket: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',
@@ -321,10 +324,88 @@ module.exports = [
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',
         performance: 'readonly',
+        CustomEvent: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+        WebSocket: 'readonly',
+        fetch: 'readonly',
+        alert: 'readonly',
+        prompt: 'readonly',
+        confirm: 'readonly',
+        Blob: 'readonly',
+        Path2D: 'readonly',
+        crypto: 'readonly',
+        AudioContext: 'readonly',
+        webkitAudioContext: 'readonly',
+
+        // Project-specific globals
+        WebSocketClient: 'readonly',
+        WS_MSG: 'readonly',
+        getSessionIdFromUrl: 'readonly',
+        resetSession: 'readonly',
+        sharedComponents: 'readonly',
+        components: 'writable',
+        PhysicsEngine: 'readonly',
+        BallRenderer: 'readonly',
+        throttle: 'readonly',
+        createLogger: 'readonly',
+        logger: 'readonly',
+        AudioManager: 'readonly',
+        notificationSystem: 'readonly',
+        ThemeManager: 'readonly',
+        debugLog: 'readonly',
+        debugError: 'readonly',
+        debugWarn: 'readonly',
+        copy: 'readonly',
+        goBack: 'readonly',
+        toggleFullscreen: 'readonly',
+        bbCounters: 'readonly',
+        ControllerState: 'readonly',
+        ViewerState: 'readonly',
+        CommunicationFactory: 'readonly',
+        i18n: 'readonly',
+        getCommunicationMode: 'readonly',
+        togglePlayPause: 'readonly',
+        setDirection: 'readonly',
+        RealtimeClient: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLInputElement: 'readonly',
       },
     },
     rules: {
       ...commonRules,
+      'no-redeclare': 'off',
+      'no-unused-vars': ['error', { args: 'none' }],
+    },
+  },
+
+  // 7. Shared package (browser-compatible)
+  {
+    files: ['packages/shared/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      globals: {
+        // Standard globals
+        globalThis: 'readonly',
+        Promise: 'readonly',
+        Map: 'readonly',
+        Set: 'readonly',
+        JSON: 'readonly',
+        console: 'readonly',
+        module: 'readonly',
+        exports: 'writable',
+
+        // Browser globals
+        window: 'readonly',
+        performance: 'readonly',
+        CustomEvent: 'readonly',
+        Path2D: 'readonly',
+      },
+    },
+    rules: {
+      ...commonRules,
+      'no-redeclare': 'off',
       'no-unused-vars': ['error', { args: 'none' }],
     },
   },

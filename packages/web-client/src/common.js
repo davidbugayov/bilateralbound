@@ -1,8 +1,6 @@
 /* jshint esversion: 11, asi: true */
 'use strict'
 
-const debugLogger = require('./core/debug-logger')
-
 /**
  * Common utilities and functions for BilateralBound
  * Упрощенная версия с использованием общих утилит

@@ -286,7 +286,10 @@ class NotificationSystem {
     const content = document.createElement('div')
     content.className = 'bb-notification-content'
     // Skip emoji/symbol titles — dot indicator handles the type signal
-    const isSymbolTitle = config.title && /^[\u{1F000}-\u{1FFFF}⚠️❌✅ℹ️]/u.test(config.title)
+    const emojiPattern = /^[\u{1F000}-\u{1FFFF}]/u
+    // eslint-disable-next-line no-misleading-character-class
+    const symbolPattern = /^[⚠️❌✅ℹ️]/
+    const isSymbolTitle = config.title && (emojiPattern.test(config.title) || symbolPattern.test(config.title))
     if (config.title && !isSymbolTitle) {
       const title = document.createElement('div')
       title.className = 'bb-notification-title'

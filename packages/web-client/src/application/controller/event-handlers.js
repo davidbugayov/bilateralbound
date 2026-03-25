@@ -31,8 +31,6 @@ function createEventHandlers(deps) {
     setCanvasDimensions,
     centerBallInViewer,
     showWaitingForViewer,
-    updateDirectionDisplay,
-    updateDirectionButtons,
     updateFullscreenViewerStatus,
     showNotification,
     safeSend,

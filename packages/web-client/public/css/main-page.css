@@ -17,8 +17,8 @@
   --mp-muted: #64748b;
   --mp-subtle: #94a3b8;
   --mp-radius: 14px;
-  --mp-font-display: 'Syne', system-ui, sans-serif;
-  --mp-font-body: 'DM Sans', system-ui, sans-serif;
+  --mp-font-display: "Syne", system-ui, sans-serif;
+  --mp-font-body: "DM Sans", system-ui, sans-serif;
 
   /* Legacy vars kept for header/language-selector */
   --bg-card: var(--mp-surface);
@@ -205,9 +205,21 @@ body.light-theme {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 50% 50%, rgb(37 99 235 / 15%) 0%, transparent 55%),
-    radial-gradient(ellipse at 15% 110%, rgb(37 99 235 / 8%) 0%, transparent 45%),
-    radial-gradient(ellipse at 85% 80%, rgb(139 92 246 / 5%) 0%, transparent 40%);
+    radial-gradient(
+      circle at 50% 50%,
+      rgb(37 99 235 / 15%) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 15% 110%,
+      rgb(37 99 235 / 8%) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 85% 80%,
+      rgb(139 92 246 / 5%) 0%,
+      transparent 40%
+    );
   pointer-events: none;
 }
 
@@ -219,7 +231,13 @@ body.light-theme {
   left: 10%;
   right: 10%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(34 211 238 / 40%), rgb(59 130 246 / 40%), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(34 211 238 / 40%),
+    rgb(59 130 246 / 40%),
+    transparent
+  );
   pointer-events: none;
 }
 
@@ -249,15 +267,30 @@ body.light-theme {
 
 .hero__ball-svg {
   animation: heroBallBounce 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 10px #22d3ee) drop-shadow(0 0 22px rgb(34 211 238 / 55%));
+  filter: drop-shadow(0 0 10px #22d3ee)
+    drop-shadow(0 0 22px rgb(34 211 238 / 55%));
 }
 
 @keyframes heroBallBounce {
-  0%   { transform: translateX(-340px) translateY(0); }
-  25%  { transform: translateX(-90px)  translateY(-18px); }
-  50%  { transform: translateX(160px)  translateY(0); }
-  75%  { transform: translateX(340px)  translateY(-18px); }
-  100% { transform: translateX(-340px) translateY(0); }
+  0% {
+    transform: translateX(-340px) translateY(0);
+  }
+
+  25% {
+    transform: translateX(-90px) translateY(-18px);
+  }
+
+  50% {
+    transform: translateX(160px) translateY(0);
+  }
+
+  75% {
+    transform: translateX(340px) translateY(-18px);
+  }
+
+  100% {
+    transform: translateX(-340px) translateY(0);
+  }
 }
 
 .hero__brand {
@@ -270,9 +303,8 @@ body.light-theme {
   font-family: var(--mp-font-display);
   font-size: clamp(2rem, 5vw, 3.2rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #ffffff 0%, #22d3ee 55%, #60a5fa 100%);
+  background: linear-gradient(135deg, #fff 0%, #22d3ee 55%, #60a5fa 100%);
   background-clip: text;
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
   letter-spacing: -0.04em;
@@ -311,13 +343,15 @@ body.light-theme {
 }
 
 @keyframes ctaGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow:
       0 0 0 1px rgb(6 182 212 / 30%),
       0 0 32px rgb(37 99 235 / 50%),
       0 0 56px rgb(34 211 238 / 30%),
       0 4px 12px rgb(0 0 0 / 30%);
   }
+
   50% {
     box-shadow:
       0 0 0 1px rgb(34 211 238 / 45%),
@@ -347,8 +381,14 @@ body.light-theme {
 }
 
 @keyframes ctaShimmer {
-  0% { left: -80%; }
-  35%, 100% { left: 150%; }
+  0% {
+    left: -80%;
+  }
+
+  35%,
+  100% {
+    left: 150%;
+  }
 }
 
 /* Top glass highlight */
@@ -450,7 +490,9 @@ body.light-theme {
   gap: 16px;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .tool-card:hover {
@@ -465,7 +507,12 @@ body.light-theme {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(34 211 238 / 30%), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(34 211 238 / 30%),
+    transparent
+  );
   pointer-events: none;
 }
 
@@ -666,7 +713,10 @@ body.light-theme {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
   cursor: default;
   position: relative;
   overflow: hidden;
@@ -676,7 +726,11 @@ body.light-theme {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgb(37 99 235 / 8%) 0%, rgb(34 211 238 / 8%) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(37 99 235 / 8%) 0%,
+    rgb(34 211 238 / 8%) 100%
+  );
   border-radius: 18px;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -685,7 +739,9 @@ body.light-theme {
 .feature-item:hover {
   border-color: rgb(34 211 238 / 30%);
   transform: translateY(-5px);
-  box-shadow: 0 10px 36px rgb(34 211 238 / 10%), 0 2px 8px rgb(0 0 0 / 30%);
+  box-shadow:
+    0 10px 36px rgb(34 211 238 / 10%),
+    0 2px 8px rgb(0 0 0 / 30%);
 }
 
 .feature-item:hover::before {
@@ -842,13 +898,18 @@ body.light-theme {
 }
 
 .light-theme .hero::after {
-  background: linear-gradient(90deg, transparent, rgb(6 182 212 / 30%), rgb(37 99 235 / 30%), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(6 182 212 / 30%),
+    rgb(37 99 235 / 30%),
+    transparent
+  );
 }
 
 .light-theme .hero__brand h1 {
   background: linear-gradient(135deg, #0f172a 0%, #0891b2 50%, #1d4ed8 100%);
   background-clip: text;
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -998,8 +1059,7 @@ body.light-theme {
   }
 
   .hero-steps {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-flow: row wrap;
     align-items: stretch;
     gap: 5px;
     justify-content: center;

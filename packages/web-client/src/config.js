@@ -1,6 +1,6 @@
 'use strict'
-if (typeof globalThis === 'undefined') return
-globalThis.BBConfig = globalThis.BBConfig || {
+if (typeof globalThis !== 'undefined') {
+  globalThis.BBConfig = globalThis.BBConfig || {
   rendering: {
     hiddenThrottleMs: 100, // при скрытой вкладке ~10 FPS
     adaptiveFrameRate: true, // Адаптивная частота кадров
@@ -45,8 +45,9 @@ globalThis.BBConfig = globalThis.BBConfig || {
     worldHeight: 600, // Высота мира по умолчанию
     maxAcceleration: 5000 // Максимальное ускорение для предотвращения рывков
   }
-}
+  }
 
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = globalThis.BBConfig
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = globalThis.BBConfig
+  }
 }

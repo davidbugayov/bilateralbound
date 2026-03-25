@@ -23,7 +23,7 @@ function registerStaticRoutes(app, sessionService, localizationService, { setNoC
 
   // Static files - only serve specific paths (from expressApp L617-631)
   // Assets use ?v=version query params → safe for immutable long-term cache
-  const staticDirectories = ['css', 'js', 'dist', 'emdr-therapy', 'panel']
+  const staticDirectories = ['css', 'js', 'dist', 'emdr-therapy']
   for (const dir of staticDirectories) {
     app.use(
       `/${dir}`,
@@ -76,12 +76,6 @@ function registerStaticRoutes(app, sessionService, localizationService, { setNoC
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
-  })
-
-  // Therapist panel — React SPA (from expressApp L961-965)
-  app.get('/panel/:sessionId', (req, res) => {
-    setNoCacheHeaders(res)
-    res.sendFile(path.join(publicPath, 'panel', 'index.html'))
   })
 
   // Test file with path traversal guard (from expressApp L966-1005)

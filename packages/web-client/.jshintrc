@@ -1,7 +1,7 @@
 {
   "esversion": 11,
   "browser": true,
-  "node": false,
+  "node": true,
   "asi": true,
   "boss": true,
   "curly": false,
@@ -66,6 +66,16 @@
     "togglePlayPause": true,
     "setDirection": true,
     "debugError": true,
-    "BroadcastChannel": true
+    "BroadcastChannel": true,
+    "setBallColor": true,
+    "setBallSize": true,
+    "setBackgroundColor": true,
+    "setSoundEnabled": true,
+    "setSoundType": true,
+    "setBallSizeMultiplier": true,
+    "showViewerNotConnectedWarning": true,
+    "requireViewerConnection": true,
+    "reinitializeViewerConnectionWarnings": true,
+    "toggleDebugOverlay": true
   }
 }

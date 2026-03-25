@@ -52,9 +52,10 @@ if (typeof globalThis !== 'undefined') {
   globalThis.components = components
 }
 let lastServerState = null // Кэшируем последнее состояние от сервера
-let directionState = { dx: 1, dy: 0 }
 let isPlaying = false
 let currentDirectionMode = 'horizontal'
+// eslint-disable-next-line no-unused-vars
+let directionState = { dx: 1, dy: 0 }
 let wsClient
 let isInitialized = false // Флаг для предотвращения повторной инициализации
 let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
@@ -425,7 +426,7 @@ async function registerControllerOnServer(sessionId, logger) {
     } else {
       // Connection failed
     }
-  } catch (error) {
+  } catch {
     // Silently ignore connection errors
   }
 }
@@ -438,7 +439,6 @@ async function initializePreviewUI() {
 function setupFullscreenListeners() {
   const openFsBtn = document.getElementById('openPreviewFullscreenBtn')
   const exitFsBtn = document.getElementById('exitPreviewFullscreenBtn')
-  const overlay = document.getElementById('previewOverlay')
   previewFsCanvas = document.getElementById('previewFullscreenCanvas')
   document.addEventListener('keydown', handleFullscreenKeydown, true)
   globalThis.addEventListener('popstate', handlePopState)
@@ -621,7 +621,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
             if (!resp.ok) return
             const state = await resp.json()
             if (state.paused === true) return // Server is paused, don't restore
-          } catch (e) {
+          } catch {
             return // If fetch fails, don't restore
           }
           if (previewPhysicsEngine) {
@@ -1035,7 +1035,6 @@ function updateConnectionStatus(isConnected) {
  * Создание логгера для модуля
  */
 function createLogger(moduleName) {
-  const startTime = performance.now()
   return {
     info: () => {},
     success: () => {},
@@ -1410,7 +1409,7 @@ function safeSend(type, payload) {
         })
       }
     }
-  } catch (e) {
+  } catch {
     // Silently ignore errors in speed update
   }
 }
@@ -1494,7 +1493,7 @@ async function initializePreview() {
       previewPhysicsEngine.setPosition(canvasWidth / 2, canvasHeight / 2)
       previewPhysicsEngine.setVelocity(0, 0)
     }
-  } catch (error) {
+  } catch {
     // Silently ignore canvas size errors
   }
 }

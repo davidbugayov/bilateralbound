@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * @fileoverview Meta tags updater for i18n support
  * Updates page title and meta tags based on current language

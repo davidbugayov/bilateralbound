@@ -651,6 +651,7 @@ async function initializeViewer(sessionId) {
     physicsEngine.setRenderer(ballRenderer)
     await connectToSession(sessionId)
     wsClient = new RealtimeClient(sessionId, 'viewer')
+    // eslint-disable-next-line require-atomic-updates
     globalThis.wsClient = wsClient
     debugLog('✅ WebSocketClient создан')
     setupWebSocketHandlers(wsClient, sessionId)

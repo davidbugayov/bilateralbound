@@ -1,13 +1,12 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.345",
+  "version": "2.39.346",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
     "packages/shared",
     "packages/server-core",
-    "packages/web-client",
-    "packages/therapist-panel"
+    "packages/web-client"
   ],
   "scripts": {
     "start": "npm run start:server",
@@ -19,8 +18,6 @@
     "build:dev": "npm run build:dev --workspace=packages/web-client",
     "dev:server": "cd packages/server-core && npm run dev",
     "dev:client": "cd packages/web-client && npm run dev",
-    "dev:panel": "cd packages/therapist-panel && npm run dev",
-    "build:panel": "cd packages/therapist-panel && npm run build",
     "install:all": "npm install && cd packages/server-core && npm install && cd packages/web-client && npm install",
     "clean": "rm -rf node_modules packages/*/node_modules package-lock.json",
     "clean:cache": "npm cache clean --force && rm -rf node_modules/.cache",
@@ -85,6 +82,8 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@stylistic/eslint-plugin": "^5.5.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.2",
+    "@typescript-eslint/parser": "^8.57.2",
     "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eventsource": "^4.1.0",
@@ -97,6 +96,7 @@
     "sonarqube-scanner": "^4.3.4",
     "stylelint": "^16.25.0",
     "stylelint-config-standard": "^39.0.1",
-    "stylelint-prettier": "^5.0.3"
+    "stylelint-prettier": "^5.0.3",
+    "typescript": "^5.9.3"
   }
 }
