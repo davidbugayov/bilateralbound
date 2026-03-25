@@ -23,6 +23,8 @@ class AnalyticsCollector {
     this.totalPairedSessions = 0 // sessions where both viewer + controller connected
     this.totalPairTimeMs = 0 // cumulative ms from controller connect -> viewer connect
     this.pairedWithTimeCount = 0 // how many paired sessions have timing data
+    // Timestamps of session creations for today/week/month breakdown (last 90 days kept)
+    this.sessionTimestamps = []
     // In-memory session tracking
     // sessionId -> { startTs, viewerConnected, controllerConnected, hasPair, controllerTs, viewerTs }
     this._sessionMeta = new Map()
@@ -61,6 +63,7 @@ class AnalyticsCollector {
         this.pairedWithTimeCount = data.pairedWithTimeCount || 0
         this.sessionErrors = data.sessionErrors || 0
         this.recentSessionErrors = data.recentSessionErrors || []
+        this.sessionTimestamps = data.sessionTimestamps || []
       }
     } catch {
       /* ignore — fresh start */
@@ -85,6 +88,7 @@ class AnalyticsCollector {
         pairedWithTimeCount: this.pairedWithTimeCount,
         sessionErrors: this.sessionErrors,
         recentSessionErrors: this.recentSessionErrors.slice(-50),
+        sessionTimestamps: this._trimTimestamps(Date.now() - 90 * 24 * 3600 * 1000),
         savedAt: Date.now()
       }
       fs.writeFileSync(this._persistPath, JSON.stringify(data), 'utf8')
@@ -93,8 +97,22 @@ class AnalyticsCollector {
     }
   }
 
+  _trimTimestamps(cutoffMs) {
+    this.sessionTimestamps = this.sessionTimestamps.filter((ts) => ts >= cutoffMs)
+    return this.sessionTimestamps
+  }
+
+  _countSessionsSince(sinceMs) {
+    return this.sessionTimestamps.filter((ts) => ts >= sinceMs).length
+  }
+
   recordSessionCreated(sessionId) {
     this.totalSessionsCreated++
+    this.sessionTimestamps.push(Date.now())
+    // Trim entries older than 90 days to cap memory
+    if (this.sessionTimestamps.length > 5000) {
+      this._trimTimestamps(Date.now() - 90 * 24 * 3600 * 1000)
+    }
     this._sessionMeta.set(sessionId, {
       startTs: Date.now(),
       viewerConnected: false,
@@ -222,7 +240,10 @@ class AnalyticsCollector {
   }
 
   getStats(currentSessionCount = 0) {
-    const uptimeSec = Math.floor((Date.now() - this.startedAt) / 1000)
+    const now = Date.now()
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+    const uptimeSec = Math.floor((now - this.startedAt) / 1000)
     const durations = this.completedSessionDurations
     const avgDurationMs =
       durations.length > 0
@@ -271,6 +292,9 @@ class AnalyticsCollector {
       },
       sessions: {
         totalCreated: this.totalSessionsCreated,
+        today: this._countSessionsSince(startOfToday.getTime()),
+        last7days: this._countSessionsSince(now - 7 * 24 * 3600 * 1000),
+        last30days: this._countSessionsSince(now - 30 * 24 * 3600 * 1000),
         currentActive: currentSessionCount,
         peakConcurrent: this.peakConcurrentSessions,
         completedCount: durations.length,
