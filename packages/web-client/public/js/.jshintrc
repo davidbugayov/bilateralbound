@@ -27,6 +27,7 @@
   "laxbreak": true,
   "laxcomma": false,
   "devel": true,
+  "-W033": false,
 
   "globals": {
     "window": true,

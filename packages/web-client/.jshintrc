@@ -28,6 +28,7 @@
   "laxcomma": false,
   "strict": false,
   "devel": true,
+  "-W033": false,
 
   "globals": {
     "globalThis": true,
