@@ -2459,7 +2459,12 @@ function setupFullscreenBallColorControls() {
   ]
   for (let i = 1; i <= 12; i++) {
     const btn = document.getElementById(`fsBallCol${i}`)
-    if (btn) btn.onclick = () => setBallColor(ballColors[i - 1])
+    if (btn) {
+      // Устанавливаем background-color из data-color атрибута
+      const color = btn.dataset.color || ballColors[i - 1]
+      btn.style.backgroundColor = color
+      btn.onclick = () => setBallColor(color)
+    }
   }
 }
 function setupFullscreenBackgroundColorControls() {
@@ -2479,7 +2484,12 @@ function setupFullscreenBackgroundColorControls() {
   ]
   for (let i = 1; i <= 12; i++) {
     const btn = document.getElementById(`fsBg${i}`)
-    if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1])
+    if (btn) {
+      // Устанавливаем background-color из data-color атрибута
+      const color = btn.dataset.color || bgColors[i - 1]
+      btn.style.backgroundColor = color
+      btn.onclick = () => setBackgroundColor(color)
+    }
   }
 }
 function fillFsSessionInfo() {

@@ -1972,6 +1972,133 @@ body {
   border-color: rgb(251 146 60 / 50%);
 }
 
+/* ===== INLINE STYLE REPLACEMENTS ===== */
+
+/* Error states container - replaces inline style */
+.error-states-container {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  max-width: 350px;
+  z-index: 100;
+}
+
+/* Fullscreen button - replaces inline style */
+.fs-fullscreen-btn {
+  padding: 6px 10px;
+}
+
+/* Preview canvas wrapper - replaces inline style */
+.preview-canvas-wrapper {
+  position: relative;
+}
+
+/* Reset button in fullscreen - replaces inline style */
+.fs-reset-btn {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+/* Direction display - replaces inline style */
+.direction-display {
+  margin-left: 8px;
+  font-size: 1.2em;
+}
+
+/* Settings section rows - replaces inline styles */
+.settings-sound-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.settings-sound-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.settings-sound-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.settings-sound-text {
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.settings-sound-type-control {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.settings-sound-type-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.settings-sound-type-select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.95rem;
+}
+
+.settings-monitor-control {
+  margin-top: 12px;
+  border-top: 1px solid #1f2937;
+  padding-top: 12px;
+}
+
+.settings-monitor-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.settings-monitor-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.settings-monitor-text {
+  font-size: 0.9rem;
+}
+
+.settings-volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.settings-volume-label {
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.settings-volume-slider {
+  flex: 1;
+  cursor: pointer;
+}
+
+.settings-volume-value {
+  font-size: 0.85rem;
+  min-width: 35px;
+  text-align: right;
+}
+
 /* Disabled/error state for controls */
 .controls-card.disabled-state {
   opacity: 0.6;
