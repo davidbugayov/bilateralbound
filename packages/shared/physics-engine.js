@@ -73,6 +73,7 @@ class PhysicsEngine {
     this._lastServerPos = null
     this._lastDriftCheckTs = 0
     this._driftCorrection = null
+    this._currentJitterMs = 0
     this.bounceCallback = this.options.bounceCallback
     this.sqrt = Math.sqrt
     this.min = Math.min
@@ -93,6 +94,13 @@ class PhysicsEngine {
     if (opts && typeof opts === 'object') {
       this.options.smoothing = { ...this.options.smoothing, ...opts }
     }
+  }
+  /**
+   * Updates jitter metric from external source (e.g., WebSocket client)
+   * @param {number} jitterMs - Current jitter in milliseconds
+   */
+  updateJitter(jitterMs) {
+    this._currentJitterMs = jitterMs
   }
   /**
    * Sets world dimensions and recalculates center
