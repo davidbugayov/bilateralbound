@@ -1841,7 +1841,11 @@ body {
 /* Inline error message in control sections */
 .control-section.error-state {
   border-color: rgb(251, 146, 60 / 30%);
-  background: linear-gradient(135deg, rgb(217 119 6 / 5%) 0%, rgb(180 83 9 / 3%) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(217 119 6 / 5%) 0%,
+    rgb(180 83 9 / 3%) 100%
+  );
 }
 
 .control-section.error-state::before {
@@ -1854,7 +1858,11 @@ body {
 
 /* Error message block */
 .error-message {
-  background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(180, 83, 9, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(251 146 60 / 15%) 0%,
+    rgb(180 83 9 / 10%) 100%
+  );
   border: 1px solid rgb(251, 146, 60 / 25%);
   border-radius: 10px;
   padding: 12px 14px;
@@ -1886,8 +1894,8 @@ body {
 }
 
 .error-message-btn {
-  background: rgba(251, 146, 60, 0.2);
-  border: 1px solid rgba(251, 146, 60, 0.3);
+  background: rgb(251 146 60 / 20%);
+  border: 1px solid rgb(251 146 60 / 30%);
   color: #fed7aa;
   padding: 4px 10px;
   border-radius: 6px;
@@ -1899,13 +1907,17 @@ body {
 }
 
 .error-message-btn:hover {
-  background: rgba(251, 146, 60, 0.3);
-  border-color: rgba(251, 146, 60, 0.5);
+  background: rgb(251 146 60 / 30%);
+  border-color: rgb(251 146 60 / 50%);
 }
 
 /* Viewer connection error state */
 .preview-status-stack.error-state {
-  background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(180, 83, 9, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(251 146 60 / 10%) 0%,
+    rgb(180 83 9 / 8%) 100%
+  );
   border: 1px solid rgb(251, 146, 60 / 20%);
   border-radius: 10px;
   padding: 10px 12px;
@@ -1924,11 +1936,19 @@ body {
 /* Light theme — error states */
 .light-theme .control-section.error-state {
   border-color: rgb(251, 146, 60 / 40%);
-  background: linear-gradient(135deg, rgb(255, 237, 213, 0.6) 0%, rgb(255, 245, 230, 0.3) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(255 237 213 / 60%) 0%,
+    rgb(255 245 230 / 30%) 100%
+  );
 }
 
 .light-theme .error-message {
-  background: linear-gradient(135deg, rgba(251, 146, 60, 0.12) 0%, rgba(180, 83, 9, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(251 146 60 / 12%) 0%,
+    rgb(180 83 9 / 8%) 100%
+  );
   border-color: rgb(251, 146, 60 / 35%);
   color: #92400e;
 }
@@ -1942,14 +1962,14 @@ body {
 }
 
 .light-theme .error-message-btn {
-  background: rgba(251, 146, 60, 0.15);
-  border-color: rgba(251, 146, 60, 0.4);
+  background: rgb(251 146 60 / 15%);
+  border-color: rgb(251 146 60 / 40%);
   color: #92400e;
 }
 
 .light-theme .error-message-btn:hover {
-  background: rgba(251, 146, 60, 0.25);
-  border-color: rgba(251, 146, 60, 0.5);
+  background: rgb(251 146 60 / 25%);
+  border-color: rgb(251 146 60 / 50%);
 }
 
 /* Disabled/error state for controls */
@@ -1962,7 +1982,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgb(0 0 0 / 10%);
   border-radius: 8px;
   backdrop-filter: blur(2px);
 }

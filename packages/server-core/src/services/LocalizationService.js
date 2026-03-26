@@ -1,10 +1,10 @@
 /* jshint node: true, esversion: 11, strict: true */
-'use strict'
+'use strict';
 
-const path = require('node:path')
-const fs = require('node:fs')
+const path = require('node:path');
+const fs = require('node:fs');
 
-const SUPPORTED_LANGS = ['en', 'ru', 'de', 'es', 'fr', 'pt', 'ja', 'zh']
+const SUPPORTED_LANGS = ['en', 'ru', 'de', 'es', 'fr', 'pt', 'ja', 'zh'];
 
 const viewerMetaMap = [
   { isTitle: true, key: 'viewer.title' },
@@ -13,38 +13,38 @@ const viewerMetaMap = [
   {
     attr: 'property',
     attrValue: 'og:description',
-    key: 'viewer.description'
-  }
-]
+    key: 'viewer.description',
+  },
+];
 
 const controllerMetaMap = [
   { isTitle: true, key: 'controller.meta.controllerTitle' },
   {
     attr: 'name',
     attrValue: 'description',
-    key: 'controller.meta.controllerDescription'
+    key: 'controller.meta.controllerDescription',
   },
   {
     attr: 'property',
     attrValue: 'og:title',
-    key: 'controller.meta.controllerTitle'
+    key: 'controller.meta.controllerTitle',
   },
   {
     attr: 'property',
     attrValue: 'og:description',
-    key: 'controller.meta.controllerDescription'
+    key: 'controller.meta.controllerDescription',
   },
   {
     attr: 'name',
     attrValue: 'twitter:title',
-    key: 'controller.meta.controllerTitle'
+    key: 'controller.meta.controllerTitle',
   },
   {
     attr: 'name',
     attrValue: 'twitter:description',
-    key: 'controller.meta.controllerDescription'
-  }
-]
+    key: 'controller.meta.controllerDescription',
+  },
+];
 
 const indexMetaMap = [
   { isTitle: true, key: 'home.pageTitle' },
@@ -53,15 +53,15 @@ const indexMetaMap = [
   {
     attr: 'property',
     attrValue: 'og:description',
-    key: 'home.metaDescription'
+    key: 'home.metaDescription',
   },
   { attr: 'name', attrValue: 'twitter:title', key: 'home.pageTitle' },
   {
     attr: 'name',
     attrValue: 'twitter:description',
-    key: 'home.metaDescription'
-  }
-]
+    key: 'home.metaDescription',
+  },
+];
 
 class LocalizationService {
   /**
@@ -69,19 +69,19 @@ class LocalizationService {
    * @param {Object} logger - Logger instance
    */
   constructor(config, logger) {
-    this._config = config
-    this._logger = logger
+    this._config = config;
+    this._logger = logger;
     this._publicPath = path.join(
       __dirname,
       '..',
       '..',
       '..',
       'web-client',
-      'public'
-    )
-    this._locales = this._loadLocales(this._publicPath)
-    this._htmlCache = new Map()
-    this._buildHtmlCache()
+      'public',
+    );
+    this._locales = this._loadLocales(this._publicPath);
+    this._htmlCache = new Map();
+    this._buildHtmlCache();
   }
 
   /**
@@ -92,12 +92,12 @@ class LocalizationService {
    * @returns {string} Localized HTML with canonical/hreflang injected
    */
   getLocalizedHtml(type, req, session) {
-    const lang = this.detectLanguage(req, session)
+    const lang = this.detectLanguage(req, session);
     let html =
       this._htmlCache.get(`${type}_${lang}`) ||
-      this._htmlCache.get(`${type}_en`)
-    html = this._injectCanonicalHreflang(html, req.get('host') || '')
-    return html
+      this._htmlCache.get(`${type}_en`);
+    html = this._injectCanonicalHreflang(html, req.get('host') || '');
+    return html;
   }
 
   /**
@@ -108,18 +108,18 @@ class LocalizationService {
    */
   detectLanguage(req, session) {
     // 1. Explicit query param
-    const queryLang = req.query.lang
-    if (queryLang && SUPPORTED_LANGS.includes(queryLang)) return queryLang
+    const queryLang = req.query.lang;
+    if (queryLang && SUPPORTED_LANGS.includes(queryLang)) return queryLang;
 
     // 2. Session language (set by controller)
     if (session?.language && SUPPORTED_LANGS.includes(session.language))
-      return session.language
+      return session.language;
 
     // 3. Domain-based: .ru → ru, everything else → en
-    const host = req.get('host') || ''
-    if (host.endsWith('.ru')) return 'ru'
+    const host = req.get('host') || '';
+    if (host.endsWith('.ru')) return 'ru';
 
-    return 'en'
+    return 'en';
   }
 
   /**
@@ -128,16 +128,16 @@ class LocalizationService {
    * @returns {Map<string, Object>} Map of lang → parsed JSON
    */
   _loadLocales(publicPath) {
-    const locales = new Map()
+    const locales = new Map();
     for (const lang of SUPPORTED_LANGS) {
-      const filePath = path.join(publicPath, 'locales', lang, 'common.json')
+      const filePath = path.join(publicPath, 'locales', lang, 'common.json');
       try {
-        locales.set(lang, JSON.parse(fs.readFileSync(filePath, 'utf8')))
+        locales.set(lang, JSON.parse(fs.readFileSync(filePath, 'utf8')));
       } catch (e) {
-        this._logger.error(`Failed to load locale ${lang}: ${e.message}`)
+        this._logger.error(`Failed to load locale ${lang}: ${e.message}`);
       }
     }
-    return locales
+    return locales;
   }
 
   /**
@@ -147,7 +147,7 @@ class LocalizationService {
    * @returns {*} Resolved value or undefined
    */
   _getLocaleValue(locale, key) {
-    return key.split('.').reduce((obj, k) => obj?.[k], locale)
+    return key.split('.').reduce((obj, k) => obj?.[k], locale);
   }
 
   /**
@@ -159,39 +159,39 @@ class LocalizationService {
    * @returns {string} Localized HTML
    */
   _localizeHtml(html, lang, locale, metaMap) {
-    let result = html.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
+    let result = html.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`);
 
     // Match each <meta ... /> or <meta ... > tag
     result = result.replace(/<meta\b[^>]*?\/?>/g, (tag) => {
       for (const entry of metaMap) {
-        if (entry.isTitle) continue
+        if (entry.isTitle) continue;
         const attrPattern = new RegExp(
-          `${entry.attr}=["']${entry.attrValue}["']`
-        )
-        if (!attrPattern.test(tag)) continue
+          `${entry.attr}=["']${entry.attrValue}["']`,
+        );
+        if (!attrPattern.test(tag)) continue;
 
-        const value = this._getLocaleValue(locale, entry.key)
+        const value = this._getLocaleValue(locale, entry.key);
         if (value) {
-          const escaped = value.replace(/"/g, '&quot;')
-          return tag.replace(/content="[^"]*"/, `content="${escaped}"`)
+          const escaped = value.replace(/"/g, '&quot;');
+          return tag.replace(/content="[^"]*"/, `content="${escaped}"`);
         }
       }
-      return tag
-    })
+      return tag;
+    });
 
     // Replace <title>...</title>
-    const titleEntry = metaMap.find((m) => m.isTitle)
+    const titleEntry = metaMap.find((m) => m.isTitle);
     if (titleEntry) {
-      const titleValue = this._getLocaleValue(locale, titleEntry.key)
+      const titleValue = this._getLocaleValue(locale, titleEntry.key);
       if (titleValue) {
         result = result.replace(
           /<title[^>]*>[^<]*<\/title>/,
-          `<title data-i18n="${titleEntry.key}">${titleValue}</title>`
-        )
+          `<title data-i18n="${titleEntry.key}">${titleValue}</title>`,
+        );
       }
     }
 
-    return result
+    return result;
   }
 
   /**
@@ -202,16 +202,16 @@ class LocalizationService {
    * @returns {string} HTML with canonical/hreflang injected
    */
   _injectCanonicalHreflang(html, host) {
-    const isRu = (host || '').endsWith('.ru')
-    const ruBase = 'https://emdrbilateral.ru'
-    const onlineBase = 'https://emdrbilateral.online'
-    const base = isRu ? ruBase : onlineBase
-    const canonicalUrl = `${base}/`
+    const isRu = (host || '').endsWith('.ru');
+    const ruBase = 'https://emdrbilateral.ru';
+    const onlineBase = 'https://emdrbilateral.online';
+    const base = isRu ? ruBase : onlineBase;
+    const canonicalUrl = `${base}/`;
 
     html = html.replace(
       /<link rel="canonical" href="[^"]*" \/>/,
-      `<link rel="canonical" href="${canonicalUrl}" />`
-    )
+      `<link rel="canonical" href="${canonicalUrl}" />`,
+    );
 
     const hreflang = [
       `<link rel="alternate" hreflang="ru" href="${ruBase}/" />`,
@@ -222,75 +222,75 @@ class LocalizationService {
       `<link rel="alternate" hreflang="pt" href="${onlineBase}/?lang=pt" />`,
       `<link rel="alternate" hreflang="ja" href="${onlineBase}/?lang=ja" />`,
       `<link rel="alternate" hreflang="zh" href="${onlineBase}/?lang=zh" />`,
-      `<link rel="alternate" hreflang="x-default" href="${onlineBase}/" />`
-    ].join('\n    ')
+      `<link rel="alternate" hreflang="x-default" href="${onlineBase}/" />`,
+    ].join('\n    ');
 
     html = html.replace(
       /(<link rel="canonical"[^>]*\/>)/,
-      `$1\n    ${hreflang}`
-    )
+      `$1\n    ${hreflang}`,
+    );
 
     // Fix og:url
     html = html.replace(
       /(<meta property="og:url" content=")[^"]*(")/,
-      `$1${canonicalUrl}$2`
-    )
+      `$1${canonicalUrl}$2`,
+    );
 
     // Fix og:image (preserve path+query after domain)
     html = html.replace(
       /(<meta property="og:image" content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
-      `$1${base}$3`
-    )
+      `$1${base}$3`,
+    );
 
     // Fix twitter:image
     html = html.replace(
       /(<meta name="twitter:image" content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
-      `$1${base}$3`
-    )
+      `$1${base}$3`,
+    );
 
     // Fix og:locale
     html = html.replace(
       /(<meta property="og:locale" content=")[^"]*(")/,
-      `$1${isRu ? 'ru_RU' : 'en_US'}$2`
-    )
+      `$1${isRu ? 'ru_RU' : 'en_US'}$2`,
+    );
 
     // Fix og:title and twitter:title for .ru (static HTML defaults to English)
     if (isRu) {
-      const ruTitle = 'BilateralBound - EMDR терапия онлайн'
+      const ruTitle = 'BilateralBound - EMDR терапия онлайн';
       const ruDesc =
-        'Бесплатная платформа EMDR терапии — сессии двусторонней стимуляции для лечения ПТСР, тревоги и травм. Без регистрации, доступно для всех.'
+        'Бесплатная платформа EMDR терапии — сессии двусторонней стимуляции для лечения ПТСР, тревоги и травм. Без регистрации, доступно для всех.';
       html = html.replace(
         /(<meta property="og:title"[^>]*content=")[^"]*(")/,
-        `$1${ruTitle}$2`
-      )
+        `$1${ruTitle}$2`,
+      );
       html = html.replace(
         /(<meta property="og:description"[^>]*content=")[^"]*(")/,
-        `$1${ruDesc}$2`
-      )
+        `$1${ruDesc}$2`,
+      );
       html = html.replace(
         /(<meta name="twitter:title"[^>]*content=")[^"]*(")/,
-        `$1${ruTitle}$2`
-      )
+        `$1${ruTitle}$2`,
+      );
       html = html.replace(
         /(<meta name="twitter:description"[^>]*content=")[^"]*(")/,
-        `$1${ruDesc}$2`
-      )
+        `$1${ruDesc}$2`,
+      );
     }
 
     // Fix preconnect link (domain-specific, not fonts)
     html = html.replace(
       /(<link\s+rel="preconnect"\s+href=")https:\/\/emdrbilateral\.(ru|online)("[^>]*>)/,
-      `$1${base}$3`
-    )
+      `$1${base}$3`,
+    );
 
     // Fix JSON-LD: replace wrong domain URLs in ld+json script blocks
-    const wrongBase = isRu ? onlineBase : ruBase
+    const wrongBase = isRu ? onlineBase : ruBase;
     html = html.replace(
       /(<script type="application\/ld\+json">[\s\S]*?<\/script>)/g,
-      (block) => block.split(wrongBase).join(base)
-    )
+      (block) => block.split(wrongBase).join(base),
+    );
 
-    return html
+    return html;
   }
 
   /**
@@ -300,12 +300,12 @@ class LocalizationService {
   _buildHtmlCache() {
     const cachedViewerHtml = fs.readFileSync(
       path.join(this._publicPath, 'viewer.html'),
-      'utf8'
-    )
+      'utf8',
+    );
     const cachedControllerHtml = fs.readFileSync(
       path.join(this._publicPath, 'session-controller.html'),
-      'utf8'
-    )
+      'utf8',
+    );
 
     // Read version from package.json for index.html injection
     const packageJsonPath = path.join(
@@ -314,43 +314,40 @@ class LocalizationService {
       '..',
       '..',
       '..',
-      'package.json'
-    )
+      'package.json',
+    );
     const appVersion = JSON.parse(
-      fs.readFileSync(packageJsonPath, 'utf8')
-    ).version
+      fs.readFileSync(packageJsonPath, 'utf8'),
+    ).version;
     const cachedIndexHtml = fs
       .readFileSync(path.join(this._publicPath, 'index.html'), 'utf8')
-      .replace(
-        /⚡ BilateralBound v[\d.]+/,
-        `⚡ BilateralBound v${appVersion}`
-      )
+      .replace(/⚡ BilateralBound v[\d.]+/, `⚡ BilateralBound v${appVersion}`);
 
     // Build per-language HTML cache
     for (const lang of SUPPORTED_LANGS) {
-      const locale = this._locales.get(lang) || this._locales.get('en')
+      const locale = this._locales.get(lang) || this._locales.get('en');
       this._htmlCache.set(
         `viewer_${lang}`,
-        this._localizeHtml(cachedViewerHtml, lang, locale, viewerMetaMap)
-      )
+        this._localizeHtml(cachedViewerHtml, lang, locale, viewerMetaMap),
+      );
       this._htmlCache.set(
         `controller_${lang}`,
         this._localizeHtml(
           cachedControllerHtml,
           lang,
           locale,
-          controllerMetaMap
-        )
-      )
+          controllerMetaMap,
+        ),
+      );
       this._htmlCache.set(
         `index_${lang}`,
-        this._localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap)
-      )
+        this._localizeHtml(cachedIndexHtml, lang, locale, indexMetaMap),
+      );
     }
   }
 }
 
 // Expose for external use if needed
-LocalizationService.SUPPORTED_LANGS = SUPPORTED_LANGS
+LocalizationService.SUPPORTED_LANGS = SUPPORTED_LANGS;
 
-module.exports = LocalizationService
+module.exports = LocalizationService;

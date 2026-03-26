@@ -17,6 +17,7 @@
 ### Task 1: Create branch and shared package
 
 **Files:**
+
 - Create: `packages/shared/package.json`
 - Create: `packages/shared/physics-engine.js`
 - Modify: `package.json` (add workspace)
@@ -46,28 +47,31 @@ git checkout -b refactor/layered-architecture
 Copy `packages/web-client/public/js/physics-engine.js` to `packages/shared/physics-engine.js`.
 
 Modify the copy: remove the IIFE/globalThis wrapper. The file currently uses a pattern like:
+
 ```js
-;(function () {
-  'use strict'
+(function () {
+  "use strict";
   // ... class PhysicsEngine
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = PhysicsEngine
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = PhysicsEngine;
   } else {
-    globalThis.PhysicsEngine = PhysicsEngine
+    globalThis.PhysicsEngine = PhysicsEngine;
   }
-})()
+})();
 ```
 
 Change to:
+
 ```js
-'use strict'
+"use strict";
 // ... class PhysicsEngine (same code, no IIFE)
-module.exports = PhysicsEngine
+module.exports = PhysicsEngine;
 ```
 
 - [ ] **Step 4: Add `packages/shared` to root workspace**
 
 In root `package.json`, add `"packages/shared"` to the existing workspaces array (keep existing entries unchanged):
+
 ```json
 "workspaces": [
   "packages/server-core",
@@ -105,6 +109,7 @@ git commit -m "feat: create @emdr/shared package with physics-engine"
 ### Task 2: Server config (plain object, no dotenv)
 
 **Files:**
+
 - Create: `packages/server-core/src/config/index.js`
 
 - [ ] **Step 1: Create directory structure**
@@ -116,36 +121,36 @@ mkdir -p packages/server-core/src/config
 - [ ] **Step 2: Write `src/config/index.js`**
 
 ```js
-'use strict'
+"use strict";
 
 module.exports = {
   server: {
     PORT: process.env.NODE_PORT || process.env.PORT || 3000,
-    NODE_ENV: process.env.NODE_ENV || 'development'
+    NODE_ENV: process.env.NODE_ENV || "development",
   },
   runtime: {
     CLIENT_SIM_ONLY:
-      String(process.env.CLIENT_SIM_ONLY || 'true').toLowerCase() === 'true',
+      String(process.env.CLIENT_SIM_ONLY || "true").toLowerCase() === "true",
     DEAD_RECKON_EPS: Math.max(
       0,
-      Number.parseFloat(process.env.DEAD_RECKON_EPS || '1.5') || 1.5
-    )
+      Number.parseFloat(process.env.DEAD_RECKON_EPS || "1.5") || 1.5,
+    ),
   },
   cors: {
     origins: [
-      'https://emdrbilateral.ru',
-      'https://emdrbilateral.online',
-      'http://localhost:3000',
-      'http://localhost:3006',
-      'http://localhost:5000',
-      'http://localhost:8080',
-      'https://davidbugayov.github.io',
-      'https://bilateralbound.onrender.com'
-    ]
+      "https://emdrbilateral.ru",
+      "https://emdrbilateral.online",
+      "http://localhost:3000",
+      "http://localhost:3006",
+      "http://localhost:5000",
+      "http://localhost:8080",
+      "https://davidbugayov.github.io",
+      "https://bilateralbound.onrender.com",
+    ],
   },
-  logLevel: process.env.LOG_LEVEL || 'info',
-  isDev: (process.env.NODE_ENV || 'development') !== 'production'
-}
+  logLevel: process.env.LOG_LEVEL || "info",
+  isDev: (process.env.NODE_ENV || "development") !== "production",
+};
 ```
 
 - [ ] **Step 3: Commit**
@@ -160,6 +165,7 @@ git commit -m "feat: add plain-object config module"
 ### Task 3: Pino logger plugin
 
 **Files:**
+
 - Create: `packages/server-core/src/plugins/logger.js`
 - Create: `packages/server-core/src/plugins/index.js`
 
@@ -172,62 +178,62 @@ cd packages/server-core && npm install pino && npm install --save-dev pino-prett
 - [ ] **Step 2: Write `src/plugins/logger.js`**
 
 ```js
-'use strict'
-const pino = require('pino')
+"use strict";
+const pino = require("pino");
 
 module.exports = {
-  name: 'logger',
-  version: '1.0.0',
+  name: "logger",
+  version: "1.0.0",
   register(app, { config }) {
     const logger = pino({
       level: config.logLevel,
       transport: config.isDev
-        ? { target: 'pino-pretty', options: { colorize: true } }
-        : undefined
-    })
+        ? { target: "pino-pretty", options: { colorize: true } }
+        : undefined,
+    });
 
     // Compatibility method for session-scoped logging
     logger.logSession = (sessionId, msg) => {
-      logger.debug({ sessionId }, msg)
-    }
+      logger.debug({ sessionId }, msg);
+    };
 
     // HTTP request logging middleware
     app.use((req, res, next) => {
-      const start = Date.now()
-      res.on('finish', () => {
-        logger.info({
-          method: req.method,
-          url: req.url,
-          status: res.statusCode,
-          ms: Date.now() - start
-        }, 'HTTP request')
-      })
-      next()
-    })
+      const start = Date.now();
+      res.on("finish", () => {
+        logger.info(
+          {
+            method: req.method,
+            url: req.url,
+            status: res.statusCode,
+            ms: Date.now() - start,
+          },
+          "HTTP request",
+        );
+      });
+      next();
+    });
 
-    return logger
-  }
-}
+    return logger;
+  },
+};
 ```
 
 - [ ] **Step 3: Write `src/plugins/index.js`** (logger only for now, analytics added later)
 
 ```js
-'use strict'
-const loggerPlugin = require('./logger')
+"use strict";
+const loggerPlugin = require("./logger");
 
 function registerPlugins(app, config) {
-  const logger = loggerPlugin.register(app, { config })
+  const logger = loggerPlugin.register(app, { config });
 
-  logger.info(
-    { plugins: [loggerPlugin.name] },
-    'Plugins registered'
-  )
+  logger.info({ plugins: [loggerPlugin.name] }, "Plugins registered");
 
-  return { logger }
+  return { logger };
 }
 
-module.exports = { registerPlugins }
+module.exports = { registerPlugins };
 ```
 
 - [ ] **Step 4: Verify plugin loads**
@@ -257,6 +263,7 @@ git commit -m "feat: add Pino logger plugin"
 ### Task 4: Analytics plugin + AnalyticsCollector service
 
 **Files:**
+
 - Create: `packages/server-core/src/services/AnalyticsCollector.js`
 - Create: `packages/server-core/src/plugins/analytics.js`
 - Modify: `packages/server-core/src/plugins/index.js`
@@ -270,6 +277,7 @@ mkdir -p packages/server-core/src/services
 - [ ] **Step 2: Write `src/services/AnalyticsCollector.js`**
 
 Copy the Analytics class from `packages/server-core/server/analytics.js` (lines 6-315). Changes:
+
 - Class name: `Analytics` → `AnalyticsCollector`
 - Remove the singleton export `module.exports = new Analytics()`
 - Replace with `module.exports = AnalyticsCollector`
@@ -280,52 +288,53 @@ Copy the Analytics class from `packages/server-core/server/analytics.js` (lines 
 - [ ] **Step 3: Write `src/plugins/analytics.js`**
 
 ```js
-'use strict'
-const AnalyticsCollector = require('../services/AnalyticsCollector')
+"use strict";
+const AnalyticsCollector = require("../services/AnalyticsCollector");
 
 module.exports = {
-  name: 'analytics',
-  version: '1.0.0',
+  name: "analytics",
+  version: "1.0.0",
   register(app, { config, logger }) {
-    const analytics = new AnalyticsCollector(logger)
+    const analytics = new AnalyticsCollector(logger);
 
     // HTTP tracking middleware
     app.use((req, res, next) => {
-      analytics.recordHttpRequest()
-      res.on('finish', () => {
+      analytics.recordHttpRequest();
+      res.on("finish", () => {
         if (res.statusCode >= 400) {
-          analytics.recordHttpError(res.statusCode, req.path)
+          analytics.recordHttpError(res.statusCode, req.path);
         }
-      })
-      next()
-    })
+      });
+      next();
+    });
 
-    return analytics
-  }
-}
+    return analytics;
+  },
+};
 ```
 
 - [ ] **Step 4: Update `src/plugins/index.js`**
 
 Add analytics plugin:
+
 ```js
-'use strict'
-const loggerPlugin = require('./logger')
-const analyticsPlugin = require('./analytics')
+"use strict";
+const loggerPlugin = require("./logger");
+const analyticsPlugin = require("./analytics");
 
 function registerPlugins(app, config) {
-  const logger = loggerPlugin.register(app, { config })
-  const analytics = analyticsPlugin.register(app, { config, logger })
+  const logger = loggerPlugin.register(app, { config });
+  const analytics = analyticsPlugin.register(app, { config, logger });
 
   logger.info(
     { plugins: [loggerPlugin.name, analyticsPlugin.name] },
-    'Plugins registered'
-  )
+    "Plugins registered",
+  );
 
-  return { logger, analytics }
+  return { logger, analytics };
 }
 
-module.exports = { registerPlugins }
+module.exports = { registerPlugins };
 ```
 
 - [ ] **Step 5: Commit**
@@ -342,6 +351,7 @@ git commit -m "feat: add AnalyticsCollector service and analytics plugin"
 ### Task 5: SessionRepository (copy with minimal changes)
 
 **Files:**
+
 - Create: `packages/server-core/src/repositories/SessionRepository.js`
 
 - [ ] **Step 1: Create directory**
@@ -366,6 +376,7 @@ git commit -m "feat: add SessionRepository to new structure"
 ### Task 6: ValidationUtils (copy)
 
 **Files:**
+
 - Create: `packages/server-core/src/utils/validation.js`
 
 - [ ] **Step 1: Create directory and copy**
@@ -388,6 +399,7 @@ git commit -m "feat: add ValidationUtils to new structure"
 ### Task 7: WebSocketManager (DI logger)
 
 **Files:**
+
 - Create: `packages/server-core/src/network/WebSocketManager.js`
 
 - [ ] **Step 1: Create directory**
@@ -399,6 +411,7 @@ mkdir -p packages/server-core/src/network
 - [ ] **Step 2: Write WebSocketManager with DI logger**
 
 Copy from `packages/server-core/server/session/WebSocketManager.js`. Changes:
+
 - Remove `const { logger } = require('../logger.js')` at top
 - Constructor: `constructor(sessionRepository, logger)` — add `logger` param
 - `this.logger = logger`
@@ -416,6 +429,7 @@ git commit -m "feat: add WebSocketManager with DI logger"
 ### Task 8: BroadcastService
 
 **Files:**
+
 - Create: `packages/server-core/src/services/BroadcastService.js`
 
 - [ ] **Step 1: Write BroadcastService**
@@ -442,30 +456,36 @@ git commit -m "feat: add BroadcastService (from StateBroadcaster + SessionManage
 ### Task 9: PhysicsService
 
 **Files:**
+
 - Create: `packages/server-core/src/services/PhysicsService.js`
 
 - [ ] **Step 1: Write PhysicsService**
 
 Extract from `SessionManager.js` all physics-related methods. Source lines and target methods:
 
-| SessionManager method | PhysicsService method |
-|---|---|
-| `_initializePhysicsEngine` (L102-123) | `initializeEngine(session)` |
-| `_initPhysicsCallbacks` (L80-95) | `_initCallbacks(session)` |
-| `_applyPhysicsUpdates` (L195-275) | `applyUpdates(session, updates)` |
-| `_startSharedPhysicsLoop` (L691-757) | `_startSharedPhysicsLoop()` (constructor) |
-| `_withSoundPreserved` (L626-632) | `_withSoundPreserved(session, fn)` |
-| `_updatePhysicsEngineForNewScreen` (L547-579) | `updateScreenSize(session, size, hadPrevSize)` |
-| `_initializeBallPosition` (L585-591) | `_initializeBallPosition(session, size)` |
-| `_scaleBallPosition` (L597-617) | `_scaleBallPosition(session, state, size, wasPlaying)` |
-| `_shouldScaleBallPosition` (L649-655) | `_shouldScaleBallPosition(session, state)` |
-| `startPhysics` (L763-766) | removed (no-op) |
-| `stopPhysics` (L780-783) | `stopPhysics(session)` |
-| `_ensurePhysicsLoop` (L771-773) | removed (no-op) |
+| SessionManager method                         | PhysicsService method                                  |
+| --------------------------------------------- | ------------------------------------------------------ |
+| `_initializePhysicsEngine` (L102-123)         | `initializeEngine(session)`                            |
+| `_initPhysicsCallbacks` (L80-95)              | `_initCallbacks(session)`                              |
+| `_applyPhysicsUpdates` (L195-275)             | `applyUpdates(session, updates)`                       |
+| `_startSharedPhysicsLoop` (L691-757)          | `_startSharedPhysicsLoop()` (constructor)              |
+| `_withSoundPreserved` (L626-632)              | `_withSoundPreserved(session, fn)`                     |
+| `_updatePhysicsEngineForNewScreen` (L547-579) | `updateScreenSize(session, size, hadPrevSize)`         |
+| `_initializeBallPosition` (L585-591)          | `_initializeBallPosition(session, size)`               |
+| `_scaleBallPosition` (L597-617)               | `_scaleBallPosition(session, state, size, wasPlaying)` |
+| `_shouldScaleBallPosition` (L649-655)         | `_shouldScaleBallPosition(session, state)`             |
+| `startPhysics` (L763-766)                     | removed (no-op)                                        |
+| `stopPhysics` (L780-783)                      | `stopPhysics(session)`                                 |
+| `_ensurePhysicsLoop` (L771-773)               | removed (no-op)                                        |
 
 Constructor:
+
 ```js
-constructor(sessionRepository, broadcastService, webSocketManager, { clientSimulationOnly, logger, analytics })
+constructor(sessionRepository, broadcastService, webSocketManager, {
+  clientSimulationOnly,
+  logger,
+  analytics,
+});
 ```
 
 **CRITICAL:** `webSocketManager` is needed because the physics loop checks `this.webSocketManager.getClients(session.id).some(({info}) => info.role === 'viewer')` to only run physics when viewers are connected. Without it, the 60Hz loop runs for all sessions including those with zero clients.
@@ -486,6 +506,7 @@ git commit -m "feat: add PhysicsService (extracted from SessionManager)"
 ### Task 10: SessionService
 
 **Files:**
+
 - Create: `packages/server-core/src/services/SessionService.js`
 
 - [ ] **Step 1: Write SessionService**
@@ -525,10 +546,17 @@ class SessionService {
 **Important DI detail:** SessionService needs `webSocketManager` for `handleWebSocketConnection/Disconnection` and `getClientInfo`. Add it to constructor:
 
 ```js
-constructor(sessionRepository, physicsService, broadcastService, webSocketManager, { logger, analytics, apiCache })
+constructor(
+  sessionRepository,
+  physicsService,
+  broadcastService,
+  webSocketManager,
+  { logger, analytics, apiCache },
+);
 ```
 
 Source mapping from SessionManager:
+
 - `createSession` (L44-49)
 - `findOrCreateSession` (L58-74)
 - `getSession` (L130-132)
@@ -566,11 +594,13 @@ git commit -m "feat: add SessionService facade (extracted from SessionManager)"
 ### Task 11: LocalizationService
 
 **Files:**
+
 - Create: `packages/server-core/src/services/LocalizationService.js`
 
 - [ ] **Step 1: Write LocalizationService**
 
 Extract from `expressApp.js`:
+
 - `SUPPORTED_LANGS` constant (L77)
 - `loadLocales(publicPath)` (L83-94)
 - `getLocaleValue(locale, key)` (L99-101)
@@ -581,6 +611,7 @@ Extract from `expressApp.js`:
 - Meta maps: `viewerMetaMap`, `controllerMetaMap`, `indexMetaMap` (L362-417)
 
 Constructor:
+
 ```js
 constructor(config, logger) {
   this.config = config
@@ -592,9 +623,10 @@ constructor(config, logger) {
 ```
 
 Public API:
+
 ```js
-getLocalizedHtml(type, req, session)  // type = 'viewer' | 'controller' | 'index'
-detectLanguage(req, session)
+getLocalizedHtml(type, req, session); // type = 'viewer' | 'controller' | 'index'
+detectLanguage(req, session);
 ```
 
 - [ ] **Step 2: Commit**
@@ -611,6 +643,7 @@ git commit -m "feat: add LocalizationService (extracted from expressApp i18n log
 ### Task 12: Middleware
 
 **Files:**
+
 - Create: `packages/server-core/src/network/middleware.js`
 
 - [ ] **Step 1: Write middleware.js**
@@ -618,40 +651,42 @@ git commit -m "feat: add LocalizationService (extracted from expressApp i18n log
 Extract from `expressApp.js`:
 
 ```js
-'use strict'
-const cors = require('cors')
-const helmet = require('helmet')
-const compression = require('compression')
-const rateLimit = require('express-rate-limit')
-const express = require('express')
-const { v4: uuidv4 } = require('uuid')
+"use strict";
+const cors = require("cors");
+const helmet = require("helmet");
+const compression = require("compression");
+const rateLimit = require("express-rate-limit");
+const express = require("express");
+const { v4: uuidv4 } = require("uuid");
 
 function requestId(req, res, next) {
-  req.id = req.headers['x-request-id'] || uuidv4()
-  res.setHeader('X-Request-Id', req.id)
-  next()
+  req.id = req.headers["x-request-id"] || uuidv4();
+  res.setHeader("X-Request-Id", req.id);
+  next();
 }
 
 function requireSession(sessionService) {
   return (req, res, next) => {
-    const { sessionId } = req.params
-    const session = sessionService.getSession(sessionId)
+    const { sessionId } = req.params;
+    const session = sessionService.getSession(sessionId);
     if (!session) {
-      return res.status(404).json({ error: 'Session not found', requestId: req.id })
+      return res
+        .status(404)
+        .json({ error: "Session not found", requestId: req.id });
     }
-    req.session = session
-    next()
-  }
+    req.session = session;
+    next();
+  };
 }
 
 function setNoCacheHeaders(res) {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-  res.setHeader('Pragma', 'no-cache')
-  res.setHeader('Expires', '0')
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
 }
 
 function setupMiddleware(app, config) {
-  app.use(requestId)
+  app.use(requestId);
   // Helmet (from expressApp L253-288)
   // CORS (from expressApp L304-319)
   // Compression (from expressApp L321-325)
@@ -659,7 +694,7 @@ function setupMiddleware(app, config) {
   // Rate limiting (non-dev only, from expressApp L290-302)
 }
 
-module.exports = { setupMiddleware, requireSession, setNoCacheHeaders }
+module.exports = { setupMiddleware, requireSession, setNoCacheHeaders };
 ```
 
 - [ ] **Step 2: Commit**
@@ -674,6 +709,7 @@ git commit -m "feat: add middleware module (extracted from expressApp)"
 ### Task 13: sessionController
 
 **Files:**
+
 - Create: `packages/server-core/src/controllers/sessionController.js`
 
 - [ ] **Step 1: Create controllers directory**
@@ -685,6 +721,7 @@ mkdir -p packages/server-core/src/controllers
 - [ ] **Step 2: Write sessionController.js**
 
 Endpoints (from expressApp.js):
+
 - `POST /api/session` (L686-699)
 - `POST /api/session/:id/reserve` (L701-723)
 - `GET /api/session/:id` (L724-738)
@@ -696,10 +733,16 @@ Endpoints (from expressApp.js):
 - `GET /api/analytics` (L477-489) — localhost-only guard
 
 ```js
-function registerSessionRoutes(app, sessionService, apiCache, analytics, { requireSession, logger }) {
+function registerSessionRoutes(
+  app,
+  sessionService,
+  apiCache,
+  analytics,
+  { requireSession, logger },
+) {
   // ... routes
 }
-module.exports = { registerSessionRoutes }
+module.exports = { registerSessionRoutes };
 ```
 
 - [ ] **Step 3: Commit**
@@ -714,11 +757,13 @@ git commit -m "feat: add sessionController (session CRUD, state, health, analyti
 ### Task 14: viewerController
 
 **Files:**
+
 - Create: `packages/server-core/src/controllers/viewerController.js`
 
 - [ ] **Step 1: Write viewerController.js**
 
 Endpoints (from expressApp.js):
+
 - `POST /api/session/:id/viewer/connect` (L880-898)
 - `POST /api/session/:id/viewer/update` (L816-828)
 - `POST /api/session/:id/viewer/bounce` (L852-879) — needs webSocketManager for direct WS send
@@ -726,10 +771,16 @@ Endpoints (from expressApp.js):
 - `POST /api/session/:id/viewer/audio-activated` (L831-851) — uses broadcastService
 
 ```js
-function registerViewerRoutes(app, sessionService, webSocketManager, broadcastService, { requireSession, logger }) {
+function registerViewerRoutes(
+  app,
+  sessionService,
+  webSocketManager,
+  broadcastService,
+  { requireSession, logger },
+) {
   // ... routes
 }
-module.exports = { registerViewerRoutes }
+module.exports = { registerViewerRoutes };
 ```
 
 - [ ] **Step 2: Commit**
@@ -744,11 +795,13 @@ git commit -m "feat: add viewerController (viewer endpoints)"
 ### Task 15: seoController
 
 **Files:**
+
 - Create: `packages/server-core/src/controllers/seoController.js`
 
 - [ ] **Step 1: Write seoController.js**
 
 Endpoints (from expressApp.js):
+
 - `GET /robots.txt` (L492-573)
 - `GET /sitemap.xml` (L576-615)
 - `GET /rss.xml` (L656-685)
@@ -757,7 +810,7 @@ Endpoints (from expressApp.js):
 function registerSeoRoutes(app) {
   // ... routes (self-contained, no deps except req/res)
 }
-module.exports = { registerSeoRoutes }
+module.exports = { registerSeoRoutes };
 ```
 
 - [ ] **Step 2: Commit**
@@ -772,11 +825,13 @@ git commit -m "feat: add seoController (robots, sitemap, rss)"
 ### Task 16: staticController
 
 **Files:**
+
 - Create: `packages/server-core/src/controllers/staticController.js`
 
 - [ ] **Step 1: Write staticController.js**
 
 From expressApp.js:
+
 - `GET /` — localized index.html (L456-463)
 - `GET /s/:sessionId` — localized viewer.html (L941-949)
 - `GET /c/:sessionId` — localized controller.html (L950-959)
@@ -787,10 +842,15 @@ From expressApp.js:
 - Error handler (L1013-1021)
 
 ```js
-function registerStaticRoutes(app, sessionService, localizationService, { setNoCacheHeaders, logger }) {
+function registerStaticRoutes(
+  app,
+  sessionService,
+  localizationService,
+  { setNoCacheHeaders, logger },
+) {
   // ... routes
 }
-module.exports = { registerStaticRoutes }
+module.exports = { registerStaticRoutes };
 ```
 
 - [ ] **Step 2: Commit**
@@ -805,11 +865,13 @@ git commit -m "feat: add staticController (HTML serving, static files, panel, 40
 ### Task 17: webSocketServer
 
 **Files:**
+
 - Create: `packages/server-core/src/network/webSocketServer.js`
 
 - [ ] **Step 1: Write webSocketServer.js**
 
 Based on `packages/server-core/server/network/webSocketServer.js`. Changes:
+
 - Function signature: `setupWebSocketServer(server, sessionService, webSocketManager, broadcastService, analytics, logger)`
 - Remove `require('../logger.js')` and `require('../analytics.js')` — use injected deps
 - Message handlers use `sessionService` methods instead of `sessionManager.sessionRepository.findById()` directly
@@ -829,6 +891,7 @@ git commit -m "feat: add webSocketServer with DI (all message handlers preserved
 ### Task 18: Entry point (index.js) — DI assembly
 
 **Files:**
+
 - Create: `packages/server-core/src/index.js`
 - Modify: `packages/server-core/package.json` (change main)
 
@@ -837,92 +900,130 @@ git commit -m "feat: add webSocketServer with DI (all message handlers preserved
 Complete DI assembly as described in spec. Key order:
 
 ```js
-'use strict'
-const http = require('node:http')
-const express = require('express')
-const config = require('./config')
-const { registerPlugins } = require('./plugins')
-const SessionRepository = require('./repositories/SessionRepository')
-const WebSocketManager = require('./network/WebSocketManager')
-const BroadcastService = require('./services/BroadcastService')
-const PhysicsService = require('./services/PhysicsService')
-const SessionService = require('./services/SessionService')
-const LocalizationService = require('./services/LocalizationService')
-const { setupMiddleware, requireSession, setNoCacheHeaders } = require('./network/middleware')
-const { setupWebSocketServer } = require('./network/webSocketServer')
-const { registerSessionRoutes } = require('./controllers/sessionController')
-const { registerViewerRoutes } = require('./controllers/viewerController')
-const { registerSeoRoutes } = require('./controllers/seoController')
-const { registerStaticRoutes } = require('./controllers/staticController')
+"use strict";
+const http = require("node:http");
+const express = require("express");
+const config = require("./config");
+const { registerPlugins } = require("./plugins");
+const SessionRepository = require("./repositories/SessionRepository");
+const WebSocketManager = require("./network/WebSocketManager");
+const BroadcastService = require("./services/BroadcastService");
+const PhysicsService = require("./services/PhysicsService");
+const SessionService = require("./services/SessionService");
+const LocalizationService = require("./services/LocalizationService");
+const {
+  setupMiddleware,
+  requireSession,
+  setNoCacheHeaders,
+} = require("./network/middleware");
+const { setupWebSocketServer } = require("./network/webSocketServer");
+const { registerSessionRoutes } = require("./controllers/sessionController");
+const { registerViewerRoutes } = require("./controllers/viewerController");
+const { registerSeoRoutes } = require("./controllers/seoController");
+const { registerStaticRoutes } = require("./controllers/staticController");
 
 // 1. App + Plugins
-const app = express()
-const { logger, analytics } = registerPlugins(app, config)
+const app = express();
+const { logger, analytics } = registerPlugins(app, config);
 
 // 2. Repositories
-const sessionRepository = new SessionRepository()
+const sessionRepository = new SessionRepository();
 
 // 3. Network
-const webSocketManager = new WebSocketManager(sessionRepository, logger)
+const webSocketManager = new WebSocketManager(sessionRepository, logger);
 
 // 4. Services
-const apiCache = new Map()
-const broadcastService = new BroadcastService(sessionRepository, webSocketManager, {
-  clientSimulationOnly: config.runtime.CLIENT_SIM_ONLY, logger
-})
-const physicsService = new PhysicsService(sessionRepository, broadcastService, webSocketManager, {
-  clientSimulationOnly: config.runtime.CLIENT_SIM_ONLY, logger, analytics
-})
+const apiCache = new Map();
+const broadcastService = new BroadcastService(
+  sessionRepository,
+  webSocketManager,
+  {
+    clientSimulationOnly: config.runtime.CLIENT_SIM_ONLY,
+    logger,
+  },
+);
+const physicsService = new PhysicsService(
+  sessionRepository,
+  broadcastService,
+  webSocketManager,
+  {
+    clientSimulationOnly: config.runtime.CLIENT_SIM_ONLY,
+    logger,
+    analytics,
+  },
+);
 const sessionService = new SessionService(
-  sessionRepository, physicsService, broadcastService, webSocketManager,
-  { logger, analytics, apiCache }
-)
-const localizationService = new LocalizationService(config, logger)
+  sessionRepository,
+  physicsService,
+  broadcastService,
+  webSocketManager,
+  { logger, analytics, apiCache },
+);
+const localizationService = new LocalizationService(config, logger);
 
 // 5. HTTP
-const mw = { requireSession: requireSession(sessionService), logger }
-setupMiddleware(app, config)
-registerSessionRoutes(app, sessionService, apiCache, analytics, mw)
-registerViewerRoutes(app, sessionService, webSocketManager, broadcastService, mw)
-registerSeoRoutes(app)
-registerStaticRoutes(app, sessionService, localizationService, { setNoCacheHeaders, logger })
+const mw = { requireSession: requireSession(sessionService), logger };
+setupMiddleware(app, config);
+registerSessionRoutes(app, sessionService, apiCache, analytics, mw);
+registerViewerRoutes(
+  app,
+  sessionService,
+  webSocketManager,
+  broadcastService,
+  mw,
+);
+registerSeoRoutes(app);
+registerStaticRoutes(app, sessionService, localizationService, {
+  setNoCacheHeaders,
+  logger,
+});
 
 // 6. Server + WebSocket
-const server = http.createServer(app)
+const server = http.createServer(app);
 const { heartbeatInterval } = setupWebSocketServer(
-  server, sessionService, webSocketManager, broadcastService, analytics, logger
-)
+  server,
+  sessionService,
+  webSocketManager,
+  broadcastService,
+  analytics,
+  logger,
+);
 
 // 7. Start
-const PORT = config.server.PORT
-server.on('error', (err) => { /* EADDRINUSE handling from current index.js */ })
-server.listen(PORT, () => logger.info('Server started'))
+const PORT = config.server.PORT;
+server.on("error", (err) => {
+  /* EADDRINUSE handling from current index.js */
+});
+server.listen(PORT, () => logger.info("Server started"));
 
 // 8. Cleanup intervals
 const cleanupIntervals = [
   setInterval(() => sessionService.cleanupExpiredSessions(), 60000),
-  setInterval(() => { /* apiCache cleanup from current index.js L43-61 */ }, 30000)
-]
+  setInterval(() => {
+    /* apiCache cleanup from current index.js L43-61 */
+  }, 30000),
+];
 
 // 9. Graceful shutdown
 function gracefulShutdown() {
-  logger.info('Shutting down gracefully...')
-  clearInterval(heartbeatInterval)
-  for (const interval of cleanupIntervals) clearInterval(interval)
-  setTimeout(() => process.exit(0), 3000).unref()
-  server.closeAllConnections()
+  logger.info("Shutting down gracefully...");
+  clearInterval(heartbeatInterval);
+  for (const interval of cleanupIntervals) clearInterval(interval);
+  setTimeout(() => process.exit(0), 3000).unref();
+  server.closeAllConnections();
   server.close(() => {
-    logger.info('Server stopped.')
-    process.exit(0)
-  })
+    logger.info("Server stopped.");
+    process.exit(0);
+  });
 }
-process.on('SIGTERM', gracefulShutdown)
-process.on('SIGINT', gracefulShutdown)
+process.on("SIGTERM", gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
 ```
 
 - [ ] **Step 2: Update `packages/server-core/package.json`**
 
 Change `"main"` and scripts:
+
 ```json
 {
   "main": "src/index.js",
@@ -990,6 +1091,7 @@ git add -A && git commit -m "fix: resolve issues found in E2E smoke test"
 ### Task 21: Configure Webpack
 
 **Files:**
+
 - Modify: `packages/web-client/webpack.config.js`
 - Modify: `packages/web-client/package.json`
 
@@ -1002,27 +1104,27 @@ cd packages/web-client && npm install --save-dev webpack webpack-cli && cd ../..
 - [ ] **Step 2: Write webpack.config.js**
 
 ```js
-const path = require('path')
+const path = require("path");
 
 module.exports = {
-  mode: 'development',
+  mode: "development",
   entry: {
-    viewer: './src/viewer.js',
-    controller: './src/controller.js'
+    viewer: "./src/viewer.js",
+    controller: "./src/controller.js",
   },
   output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'public', 'dist')
+    filename: "[name].bundle.js",
+    path: path.resolve(__dirname, "public", "dist"),
   },
   resolve: {
     modules: [
-      path.resolve(__dirname, 'src'),
-      path.resolve(__dirname, '..', '..', 'node_modules'),
-      'node_modules'
-    ]
+      path.resolve(__dirname, "src"),
+      path.resolve(__dirname, "..", "..", "node_modules"),
+      "node_modules",
+    ],
   },
-  devtool: 'source-map'
-}
+  devtool: "source-map",
+};
 ```
 
 - [ ] **Step 3: Add build script to package.json**
@@ -1049,6 +1151,7 @@ git commit -m "feat: configure Webpack with viewer and controller entry points"
 ### Task 22: Migrate frontend JS to src/ with CommonJS modules
 
 **Files:**
+
 - Create: `packages/web-client/src/` (all JS files moved from `public/js/`)
 
 - [ ] **Step 1: Create src directory structure**
@@ -1060,6 +1163,7 @@ mkdir -p packages/web-client/src/{core,domain,network,rendering,audio,ui/notific
 - [ ] **Step 2: Migrate each file from public/js/ to src/**
 
 For each file:
+
 1. Copy to corresponding `src/` location
 2. Remove IIFE wrapper and `globalThis.ModuleName = { ... }` export pattern
 3. Replace with `module.exports = { ... }` or `module.exports = ClassName`
@@ -1068,6 +1172,7 @@ For each file:
 6. Preserve any `globalThis.__current` or `globalThis.i18n` assignments (these must stay global)
 
 File mapping:
+
 ```
 public/js/core/debug-logger.js      → src/core/debug-logger.js
 public/js/common.js                  → src/common.js
@@ -1109,33 +1214,35 @@ git commit -m "feat: migrate frontend JS to src/ with CommonJS modules"
 ### Task 23: Create entry points (viewer.js, controller.js)
 
 **Files:**
+
 - Create: `packages/web-client/src/viewer.js`
 - Modify: `packages/web-client/src/controller.js` (already moved, now becomes entry)
 
 - [ ] **Step 1: Write `src/viewer.js` entry point**
 
 This file must:
+
 1. Initialize `globalThis.__current` FIRST
 2. Require all viewer dependencies in correct order
 3. Move inline script content from `viewer.html` (lines 163-500+) into this file
 4. Set up DOMContentLoaded handler
 
 ```js
-'use strict'
+"use strict";
 // Initialize global state first
-if (!globalThis.__current) globalThis.__current = {}
+if (!globalThis.__current) globalThis.__current = {};
 
 // Require dependencies
-const DebugLogger = require('./core/debug-logger')
-const Common = require('./common')
-const PhysicsEngine = require('@emdr/shared/physics-engine')
-const BallRenderer = require('./rendering/renderer')
-const WebSocketClient = require('./network/websocket-client')
-const RealtimeClient = require('./network/realtime-client')
-const SharedComponents = require('./ui/shared-components')
-const AudioManager = require('./audio/audio-manager')
-const I18n = require('./i18n/i18n')
-const LanguageSelector = require('./i18n/language-selector')
+const DebugLogger = require("./core/debug-logger");
+const Common = require("./common");
+const PhysicsEngine = require("@emdr/shared/physics-engine");
+const BallRenderer = require("./rendering/renderer");
+const WebSocketClient = require("./network/websocket-client");
+const RealtimeClient = require("./network/realtime-client");
+const SharedComponents = require("./ui/shared-components");
+const AudioManager = require("./audio/audio-manager");
+const I18n = require("./i18n/i18n");
+const LanguageSelector = require("./i18n/language-selector");
 
 // ... all inline viewer logic from viewer.html <script> block
 ```
@@ -1145,6 +1252,7 @@ const LanguageSelector = require('./i18n/language-selector')
 Same pattern — initialize globals, require deps, move any inline logic from `session-controller.html`.
 
 The current `public/js/controller.js` already contains the main controller logic. It needs:
+
 1. Add requires for all dependencies at the top
 2. Remove globalThis export
 3. Ensure `globalThis.__current` initialization
@@ -1169,24 +1277,27 @@ git commit -m "feat: create Webpack entry points for viewer and controller"
 ### Task 24: Update HTML files to use bundles
 
 **Files:**
+
 - Modify: `packages/web-client/public/viewer.html`
 - Modify: `packages/web-client/public/session-controller.html`
 
 - [ ] **Step 1: Update viewer.html**
 
 Replace all `<script>` tags (lines 146-500+) with:
+
 ```html
-    <!-- Pre-loaders (NOT bundled — must run before bundle to prevent FOUC) -->
-    <script src="/js/i18n/lang-preload.js"></script>
-    <script src="/js/ui/theme-preload.js"></script>
+<!-- Pre-loaders (NOT bundled — must run before bundle to prevent FOUC) -->
+<script src="/js/i18n/lang-preload.js"></script>
+<script src="/js/ui/theme-preload.js"></script>
 
-    <!-- ... existing <head> content ... -->
+<!-- ... existing <head> content ... -->
 
-    <!-- Single bundle (replaces 12+ script tags) -->
-    <script src="/dist/viewer.bundle.js" defer></script>
+<!-- Single bundle (replaces 12+ script tags) -->
+<script src="/dist/viewer.bundle.js" defer></script>
 ```
 
 Remove:
+
 - All `<script src="/js/...">` tags (except lang-preload and theme-preload)
 - All `<script>` inline blocks (logic moved to `src/viewer.js`)
 - All `<link rel="preload" href="/js/..." as="script">` tags
@@ -1194,8 +1305,9 @@ Remove:
 - [ ] **Step 2: Update session-controller.html**
 
 Same pattern — replace all script tags with single bundle:
+
 ```html
-    <script src="/dist/controller.bundle.js" defer></script>
+<script src="/dist/controller.bundle.js" defer></script>
 ```
 
 Keep `lang-preload.js` and `theme-preload.js` as inline scripts in `<head>`.
@@ -1208,6 +1320,7 @@ npm run dev
 ```
 
 Open `http://localhost:3000/c/test123` and `http://localhost:3000/s/test123` in browser. Verify:
+
 - No console errors
 - Ball renders and moves
 - Controller can start/stop
@@ -1225,6 +1338,7 @@ git commit -m "feat: replace script tags with Webpack bundles in HTML"
 ### Task 25: Verify @emdr/shared imports in Webpack bundles
 
 **Files:**
+
 - Verify: all frontend `require('@emdr/shared/physics-engine')` resolve correctly
 
 - [ ] **Step 1: Search for physics-engine requires in src/**
@@ -1242,6 +1356,7 @@ cd packages/web-client && npm run build:dev && cd ../..
 ```
 
 Expected: successful build, no "Module not found" errors. If Webpack can't resolve `@emdr/shared`, add a resolve alias:
+
 ```js
 // In webpack.config.js
 resolve: {
@@ -1262,13 +1377,15 @@ git add -A && git commit -m "fix: ensure @emdr/shared resolves in Webpack"
 ### Task 26: Update server static file serving
 
 **Files:**
+
 - Modify: `packages/server-core/src/controllers/staticController.js`
 
 - [ ] **Step 1: Add `/dist` to static directories**
 
 In staticController.js, add `'dist'` to the static directories list:
+
 ```js
-const staticDirectories = ['css', 'js', 'dist', 'emdr-therapy', 'panel']
+const staticDirectories = ["css", "js", "dist", "emdr-therapy", "panel"];
 ```
 
 Note: `/js` stays temporarily for `lang-preload.js` and `theme-preload.js`.
@@ -1287,6 +1404,7 @@ git commit -m "feat: serve /dist directory for Webpack bundles"
 - [ ] **Step 1: Delete migrated files from public/js/**
 
 Delete everything from `public/js/` EXCEPT:
+
 - `i18n/lang-preload.js` (stays — loaded before bundle)
 - `ui/theme-preload.js` (stays — loaded before bundle)
 
@@ -1328,6 +1446,7 @@ git commit -m "refactor: remove old public/js/ files (migrated to src/ + Webpack
 ### Task 28: Update root package.json scripts
 
 **Files:**
+
 - Modify: `package.json`
 
 - [ ] **Step 1: Install concurrently and update dev script**
@@ -1337,6 +1456,7 @@ npm install --save-dev concurrently
 ```
 
 Update root `package.json` scripts:
+
 ```json
 {
   "scripts": {
@@ -1378,6 +1498,7 @@ Expected: all 22 tests pass.
 - [ ] **Step 3: Manual verification checklist**
 
 Open browser:
+
 - [ ] `http://localhost:3000/` — landing page loads, i18n works
 - [ ] `http://localhost:3000/c/test` — controller loads, can set speed/color/direction
 - [ ] `http://localhost:3000/s/test` — viewer loads, ball renders
@@ -1440,6 +1561,7 @@ git commit -m "refactor: remove old server/ directory (replaced by src/)"
 ### Task 31: Remove dotenv dependency
 
 **Files:**
+
 - Modify: `packages/server-core/package.json`
 
 - [ ] **Step 1: Uninstall dotenv**

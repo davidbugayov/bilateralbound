@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 /**
  * Controller - Логика управления сессией BilateralBound v2.1
  * Современная модульная архитектура с улучшенной обработкой ошибок
@@ -8,52 +8,53 @@
 
 // Load notification system if not already loaded
 if (typeof globalThis.notificationSystem === 'undefined') {
-  const nsScript = document.createElement('script')
-  nsScript.src = '/js/ui/notifications/notification-system.js?v=' +
-    (document.querySelector('meta[name="version"]')?.content || '')
-  nsScript.async = false
-  document.head.appendChild(nsScript)
+  const nsScript = document.createElement('script');
+  nsScript.src =
+    '/js/ui/notifications/notification-system.js?v=' +
+    (document.querySelector('meta[name="version"]')?.content || '');
+  nsScript.async = false;
+  document.head.appendChild(nsScript);
 }
 // Защита от повторной загрузки
 if (typeof globalThis.__controllerLoaded !== 'undefined') {
-  console.warn('Controller already loaded, skipping')
+  console.warn('Controller already loaded, skipping');
 } else {
-  globalThis.__controllerLoaded = true
+  globalThis.__controllerLoaded = true;
 
   if (typeof globalThis.BBDebug === 'undefined') {
-    globalThis.BBDebug = { isEnabled: false, log: () => {} }
+    globalThis.BBDebug = { isEnabled: false, log: () => {} };
   }
   globalThis.__current = globalThis.__current || {
     sessionId: null,
     viewerConnected: false,
     viewerScreenSize: { width: 0, height: 0 },
-    isInitializing: true // Глобальный флаг инициализации
-  }
-  globalThis.__previewRenderer = globalThis.__previewRenderer || null
-  globalThis.__previewScale = globalThis.__previewScale || 1 // Коэффициент масштабирования
-  const components = globalThis.components || {}
+    isInitializing: true, // Глобальный флаг инициализации
+  };
+  globalThis.__previewRenderer = globalThis.__previewRenderer || null;
+  globalThis.__previewScale = globalThis.__previewScale || 1; // Коэффициент масштабирования
+  const components = globalThis.components || {};
   if (typeof globalThis !== 'undefined') {
-    globalThis.components = components
+    globalThis.components = components;
   }
-  let lastServerState = null // Кэшируем последнее состояние от сервера
-  let directionState = { dx: 1, dy: 0 }
-  let isPlaying = false
-  let currentDirectionMode = 'horizontal'
-  let wsClient
-  let isInitialized = false // Флаг для предотвращения повторной инициализации
-  let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
-  let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
-  let previewPhysicsEngine = null // Локальный движок физики для превью
-  let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
+  let lastServerState = null; // Кэшируем последнее состояние от сервера
+  let directionState = { dx: 1, dy: 0 };
+  let isPlaying = false;
+  let currentDirectionMode = 'horizontal';
+  let wsClient;
+  let isInitialized = false; // Флаг для предотвращения повторной инициализации
+  let __ignoreServerPausedUntilTs = 0; // Кратковременная блокировка переопределения isPlaying сервером
+  let __ignoreServerDirectionUntilTs = 0; // Кратковременная блокировка переопределения направления сервером
+  let previewPhysicsEngine = null; // Локальный движок физики для превью
+  let hiddenThrottleMs = 100; // при скрытой вкладке обновляем ~10 FPS
   if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
-    hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
+    hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs;
   }
-  let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
-  let previewFsCanvas = null
-  let previewFsRenderer = null
-  let isPreviewFullscreen = false
-  let fsPanelHideTimer = null
-  const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
+  let physicsInterval = null; // Глобальный интервал физики для возможности остановки извне
+  let previewFsCanvas = null;
+  let previewFsRenderer = null;
+  let isPreviewFullscreen = false;
+  let fsPanelHideTimer = null;
+  const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 };
   const bbCounters = {
     timerMs: 0,
     passes: 0,
@@ -76,198 +77,198 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     autoStopSeconds: 0, // 0 = disabled
     _autoStopFired: false,
     initDom() {
-      this.$timer = document.getElementById('bbTimer')
-      this.$passes = document.getElementById('bbPasses')
-      this.$sets = document.getElementById('bbSets')
-      this.$passesPerSecond = document.getElementById('bbPassesPerSecond')
-      this.$speedInfo = document.getElementById('speedInfo')
+      this.$timer = document.getElementById('bbTimer');
+      this.$passes = document.getElementById('bbPasses');
+      this.$sets = document.getElementById('bbSets');
+      this.$passesPerSecond = document.getElementById('bbPassesPerSecond');
+      this.$speedInfo = document.getElementById('speedInfo');
       this.$autoStopPassesInput = document.getElementById(
-        'autoStopPassesInput'
-      )
+        'autoStopPassesInput',
+      );
       this.$autoStopSecondsInput = document.getElementById(
-        'autoStopSecondsInput'
-      )
-      const resetBtn = document.getElementById('bbResetBtn')
+        'autoStopSecondsInput',
+      );
+      const resetBtn = document.getElementById('bbResetBtn');
       if (resetBtn) {
-        resetBtn.addEventListener('click', () => this.resetAll())
+        resetBtn.addEventListener('click', () => this.resetAll());
       }
-      this.initSpeedMeasurement()
-      this.render()
+      this.initSpeedMeasurement();
+      this.render();
       // Drive timer accumulation independently of render loop
-      if (this._timerInterval) clearInterval(this._timerInterval)
+      if (this._timerInterval) clearInterval(this._timerInterval);
       this._timerInterval = setInterval(() => {
-        this.tick(performance.now())
-      }, 100)
+        this.tick(performance.now());
+      }, 100);
     },
     initSpeedMeasurement() {
       this._measurementInterval = setInterval(() => {
-        this.updatePassesPerSecond()
-      }, 2000)
+        this.updatePassesPerSecond();
+      }, 2000);
     },
     updatePassesPerSecond() {
       if (!this.running) {
-        this._currentPassesPerSecond = 0
-        return
+        this._currentPassesPerSecond = 0;
+        return;
       }
-      const now = performance.now()
+      const now = performance.now();
       this._passesHistory = this._passesHistory.filter(
-        (timestamp) => now - timestamp < 2000
-      )
-      const passesInLast2Seconds = this._passesHistory.length / 2 // Делим на 2, т.к. считаем за 2 секунды
-      this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10 // Округляем до 1 знака
-      this.renderSpeedInfo()
+        (timestamp) => now - timestamp < 2000,
+      );
+      const passesInLast2Seconds = this._passesHistory.length / 2; // Делим на 2, т.к. считаем за 2 секунды
+      this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10; // Округляем до 1 знака
+      this.renderSpeedInfo();
     },
     addPassMeasurement() {
-      this._passesHistory.push(performance.now())
-      this.updatePassesPerSecond()
+      this._passesHistory.push(performance.now());
+      this.updatePassesPerSecond();
     },
     start() {
-      this.running = true
-      this.lastTickTs = performance.now()
-      this._passesHistory = [] // Очищаем историю при старте
-      this._autoStopFired = false
+      this.running = true;
+      this.lastTickTs = performance.now();
+      this._passesHistory = []; // Очищаем историю при старте
+      this._autoStopFired = false;
     },
     stop(incrementSet = false) {
-      this.tick(performance.now())
-      this.running = false
+      this.tick(performance.now());
+      this.running = false;
       if (incrementSet) {
-        this.sets += 1
-        this.passes = 0
-        this.bounceHits = 0
-        this._lastBounceTs = 0
-        this._passesHistory = [] // Очищаем историю
+        this.sets += 1;
+        this.passes = 0;
+        this.bounceHits = 0;
+        this._lastBounceTs = 0;
+        this._passesHistory = []; // Очищаем историю
       }
-      this.timerMs = 0
-      this._restoreAutoStopInputs()
-      this.render()
+      this.timerMs = 0;
+      this._restoreAutoStopInputs();
+      this.render();
     },
     resetAll() {
-      this.timerMs = 0
-      this.passes = 0
-      this.sets = 0
-      this.bounceHits = 0
-      this._lastBounceTs = 0
-      this._passesHistory = []
-      this._currentPassesPerSecond = 0
-      this.render()
+      this.timerMs = 0;
+      this.passes = 0;
+      this.sets = 0;
+      this.bounceHits = 0;
+      this._lastBounceTs = 0;
+      this._passesHistory = [];
+      this._currentPassesPerSecond = 0;
+      this.render();
     },
     onBounce() {
-      if (!this.running) return
-      const now = performance.now()
-      if (now - this._lastBounceTs < 120) return
-      this._lastBounceTs = now
-      this.bounceHits += 1
+      if (!this.running) return;
+      const now = performance.now();
+      if (now - this._lastBounceTs < 120) return;
+      this._lastBounceTs = now;
+      this.bounceHits += 1;
       if (this.bounceHits % 2 === 0) {
-        this.passes += 1
-        this.addPassMeasurement()
+        this.passes += 1;
+        this.addPassMeasurement();
       }
-      this.render()
-      this._checkAutoStop()
+      this.render();
+      this._checkAutoStop();
     },
     _checkAutoStop() {
-      if (this._autoStopFired || !this.running) return
-      const passLimit = this.autoStopPasses
-      const secLimit = this.autoStopSeconds
-      const passHit = passLimit > 0 && this.passes >= passLimit
-      const secHit = secLimit > 0 && this.timerMs >= secLimit * 1000
+      if (this._autoStopFired || !this.running) return;
+      const passLimit = this.autoStopPasses;
+      const secLimit = this.autoStopSeconds;
+      const passHit = passLimit > 0 && this.passes >= passLimit;
+      const secHit = secLimit > 0 && this.timerMs >= secLimit * 1000;
       if (passHit || secHit) {
-        this._autoStopFired = true
+        this._autoStopFired = true;
         // Small delay so the last bounce registers visually
         setTimeout(() => {
           if (typeof globalThis.togglePlayPause === 'function') {
-            globalThis.togglePlayPause()
+            globalThis.togglePlayPause();
           }
-        }, 200)
+        }, 200);
       }
     },
     tick(nowTs) {
-      if (!this.running) return
-      const dt = nowTs - this.lastTickTs
+      if (!this.running) return;
+      const dt = nowTs - this.lastTickTs;
       if (dt > 0) {
-        this.timerMs += dt
-        this.lastTickTs = nowTs
+        this.timerMs += dt;
+        this.lastTickTs = nowTs;
         if (!this?._lastRenderTs || nowTs - (this._lastRenderTs || 0) > 100) {
-          this._lastRenderTs = nowTs
-          this.render()
+          this._lastRenderTs = nowTs;
+          this.render();
         }
-        this._checkAutoStop()
+        this._checkAutoStop();
       }
     },
     formatTime(ms) {
-      const totalSec = Math.floor(ms / 1000)
-      const m = Math.floor(totalSec / 60)
-      const s = totalSec % 60
-      return `${m}:${String(s).padStart(2, '0')}`
+      const totalSec = Math.floor(ms / 1000);
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      return `${m}:${String(s).padStart(2, '0')}`;
     },
     render() {
-      if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
-      if (this.$passes) this.$passes.textContent = String(this.passes)
-      if (this.$sets) this.$sets.textContent = String(this.sets)
-      this._renderAutoStopCountdown()
-      this.renderSpeedInfo()
+      if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs);
+      if (this.$passes) this.$passes.textContent = String(this.passes);
+      if (this.$sets) this.$sets.textContent = String(this.sets);
+      this._renderAutoStopCountdown();
+      this.renderSpeedInfo();
     },
     _renderAutoStopCountdown() {
-      if (!this.running) return
+      if (!this.running) return;
       if (this.$autoStopPassesInput && this.autoStopPasses > 0) {
         this.$autoStopPassesInput.value = Math.max(
           0,
-          this.autoStopPasses - this.passes
-        )
+          this.autoStopPasses - this.passes,
+        );
       }
       if (this.$autoStopSecondsInput && this.autoStopSeconds > 0) {
         this.$autoStopSecondsInput.value = Math.max(
           0,
-          this.autoStopSeconds - Math.floor(this.timerMs / 1000)
-        )
+          this.autoStopSeconds - Math.floor(this.timerMs / 1000),
+        );
       }
     },
     _restoreAutoStopInputs() {
       if (this.$autoStopPassesInput)
-        this.$autoStopPassesInput.value = this.autoStopPasses || 0
+        this.$autoStopPassesInput.value = this.autoStopPasses || 0;
       if (this.$autoStopSecondsInput)
-        this.$autoStopSecondsInput.value = this.autoStopSeconds || 0
+        this.$autoStopSecondsInput.value = this.autoStopSeconds || 0;
     },
     renderSpeedInfo() {
       if (this.$passesPerSecond) {
         this.$passesPerSecond.textContent =
-          this._currentPassesPerSecond.toString()
+          this._currentPassesPerSecond.toString();
       }
       if (components.speed && this.$speedInfo) {
-        const currentSpeed = components.speed.getSpeed()
-        let speedCategory = ''
-        let speedColor = ''
+        const currentSpeed = components.speed.getSpeed();
+        let speedCategory = '';
+        let speedColor = '';
         if (currentSpeed <= 15) {
-          speedCategory = 'Очень медленно'
-          speedColor = '#22c55e' // зеленый
+          speedCategory = 'Очень медленно';
+          speedColor = '#22c55e'; // зеленый
         } else if (currentSpeed <= 25) {
-          speedCategory = 'Медленно'
-          speedColor = '#3b82f6' // синий
+          speedCategory = 'Медленно';
+          speedColor = '#3b82f6'; // синий
         } else if (currentSpeed <= 35) {
-          speedCategory = 'Средне'
-          speedColor = '#8b5cf6' // фиолетовый
+          speedCategory = 'Средне';
+          speedColor = '#8b5cf6'; // фиолетовый
         } else if (currentSpeed <= 50) {
-          speedCategory = 'Быстро'
-          speedColor = '#f59e0b' // оранжевый
+          speedCategory = 'Быстро';
+          speedColor = '#f59e0b'; // оранжевый
         } else {
-          speedCategory = 'Очень быстро'
-          speedColor = '#ef4444' // красный
+          speedCategory = 'Очень быстро';
+          speedColor = '#ef4444'; // красный
         }
-        this.$speedInfo.textContent = speedCategory
-        this.$speedInfo.style.color = speedColor
+        this.$speedInfo.textContent = speedCategory;
+        this.$speedInfo.style.color = speedColor;
       }
-    }
-  }
-  let __lastBounceTs = 0
-  let __lastVxSign = 0
-  let __lastVySign = 0
+    },
+  };
+  let __lastBounceTs = 0;
+  let __lastVxSign = 0;
+  let __lastVySign = 0;
   function _hasBounced(currentVelocity, lastSign, minSpeed) {
-    const currentSign = Math.sign(currentVelocity)
+    const currentSign = Math.sign(currentVelocity);
     return (
       currentSign !== 0 &&
       lastSign !== 0 &&
       currentSign !== lastSign &&
       Math.abs(currentVelocity) > minSpeed
-    )
+    );
   }
   /**
    * Обнаруживает и подсчитывает отскоки на основе обновлений состояния сервера.
@@ -278,105 +279,105 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function detectAndCountBounceFromServer(prev, curr) {
     try {
       if (!prev || !curr || !bbCounters.running) {
-        return
+        return;
       }
-      const now = performance.now()
+      const now = performance.now();
       if (now - __lastBounceTs < 120) {
-        return
+        return;
       }
-      const minSpeed = 10
-      const currVx = curr?.vx || 0
-      const currVy = curr?.vy || 0
-      if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
-      if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
-      const bouncedX = _hasBounced(currVx, __lastVxSign, minSpeed)
-      const bouncedY = _hasBounced(currVy, __lastVySign, minSpeed)
+      const minSpeed = 10;
+      const currVx = curr?.vx || 0;
+      const currVy = curr?.vy || 0;
+      if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0);
+      if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0);
+      const bouncedX = _hasBounced(currVx, __lastVxSign, minSpeed);
+      const bouncedY = _hasBounced(currVy, __lastVySign, minSpeed);
       if (bouncedX || bouncedY) {
-        __lastBounceTs = now
-        bbCounters.onBounce()
+        __lastBounceTs = now;
+        bbCounters.onBounce();
       }
-      const currSignX = Math.sign(currVx)
+      const currSignX = Math.sign(currVx);
       if (currSignX !== 0) {
-        __lastVxSign = currSignX
+        __lastVxSign = currSignX;
       }
-      const currSignY = Math.sign(currVy)
+      const currSignY = Math.sign(currVy);
       if (currSignY !== 0) {
-        __lastVySign = currSignY
+        __lastVySign = currSignY;
       }
     } catch (err) {
-      debugWarn('Error in detectAndCountBounceFromServer:', err)
+      debugWarn('Error in detectAndCountBounceFromServer:', err);
     }
   }
   document.addEventListener('DOMContentLoaded', () => {
-    initializeController().catch(debugError)
-    bbCounters.initDom()
-    const autoStopPassesInput = document.getElementById('autoStopPassesInput')
+    initializeController().catch(debugError);
+    bbCounters.initDom();
+    const autoStopPassesInput = document.getElementById('autoStopPassesInput');
     const autoStopSecondsInput = document.getElementById(
-      'autoStopSecondsInput'
-    )
+      'autoStopSecondsInput',
+    );
     if (autoStopPassesInput) {
       autoStopPassesInput.addEventListener('input', () => {
         bbCounters.autoStopPasses = Math.max(
           0,
-          parseInt(autoStopPassesInput.value, 10) || 0
-        )
-      })
+          parseInt(autoStopPassesInput.value, 10) || 0,
+        );
+      });
     }
     if (autoStopSecondsInput) {
       autoStopSecondsInput.addEventListener('input', () => {
         bbCounters.autoStopSeconds = Math.max(
           0,
-          parseInt(autoStopSecondsInput.value, 10) || 0
-        )
-      })
+          parseInt(autoStopSecondsInput.value, 10) || 0,
+        );
+      });
     }
     globalThis.addEventListener('resize', () => {
-      const size = globalThis.__current?.viewerScreenSize
+      const size = globalThis.__current?.viewerScreenSize;
       if (size?.width > 0 && size?.height > 0) {
-        updatePreviewSize(size)
+        updatePreviewSize(size);
       }
-    })
-  })
+    });
+  });
   /**
    * Современная инициализация контроллера с улучшенной обработкой ошибок
    */
   async function initializeController() {
-    const logger = createLogger('Controller')
+    const logger = createLogger('Controller');
     try {
-      if (globalThis.__current) globalThis.__current.isInitializing = true
-      const sessionId = getSessionIdFromUrl()
+      if (globalThis.__current) globalThis.__current.isInitializing = true;
+      const sessionId = getSessionIdFromUrl();
       if (!sessionId) {
-        debugError('ID сессии не найден в URL')
-        showNotification('ID сессии не найден в URL', 'error')
-        if (globalThis.__current) globalThis.__current.isInitializing = false
-        return
+        debugError('ID сессии не найден в URL');
+        showNotification('ID сессии не найден в URL', 'error');
+        if (globalThis.__current) globalThis.__current.isInitializing = false;
+        return;
       }
-      globalThis.__current.sessionId = sessionId
-      await registerControllerOnServer(sessionId, logger)
-      await initializeDOMElements(sessionId)
-      await initializePreviewUI()
-      initializeComponents()
-      await initializePreview()
-      setupFullscreenListeners()
-      await initializeWebSocketClient(sessionId)
+      globalThis.__current.sessionId = sessionId;
+      await registerControllerOnServer(sessionId, logger);
+      await initializeDOMElements(sessionId);
+      await initializePreviewUI();
+      initializeComponents();
+      await initializePreview();
+      setupFullscreenListeners();
+      await initializeWebSocketClient(sessionId);
       // Note: isInitializing will be reset to false in websocket 'open' handler
     } catch (error) {
-      if (globalThis.__current) globalThis.__current.isInitializing = false
-      debugError('Error initializing controller:', error)
-      let errorMsg = error?.message || error
+      if (globalThis.__current) globalThis.__current.isInitializing = false;
+      debugError('Error initializing controller:', error);
+      let errorMsg = error?.message || error;
       if (
         errorMsg?.includes('Session with this ID not found') ||
         errorMsg?.includes('not found')
       ) {
         errorMsg =
           globalThis.i18n?.t('restore.notFound') ||
-          'Session with this ID not found. Please check the URL and try again.'
+          'Session with this ID not found. Please check the URL and try again.';
       } else if (errorMsg?.includes('Realtime connection')) {
         errorMsg =
           globalThis.i18n?.t('controller.connectionError') ||
-          'Failed to connect to session. Please reload the page and try again.'
+          'Failed to connect to session. Please reload the page and try again.';
       }
-      showNotification(errorMsg, 'error')
+      showNotification(errorMsg, 'error');
     }
   }
   async function registerControllerOnServer(sessionId, logger) {
@@ -386,9 +387,9 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        }
-      )
+          body: JSON.stringify({}),
+        },
+      );
       if (connectResponse.ok) {
         // Connection established
       } else {
@@ -399,58 +400,58 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     }
   }
   async function initializePreviewUI() {
-    const previewWrap = document.getElementById('previewWrap')
+    const previewWrap = document.getElementById('previewWrap');
     if (previewWrap) {
-      previewWrap.style.display = 'block'
+      previewWrap.style.display = 'block';
     }
   }
   function setupFullscreenListeners() {
-    const openFsBtn = document.getElementById('openPreviewFullscreenBtn')
-    const exitFsBtn = document.getElementById('exitPreviewFullscreenBtn')
-    const overlay = document.getElementById('previewOverlay')
-    previewFsCanvas = document.getElementById('previewFullscreenCanvas')
-    document.addEventListener('keydown', handleFullscreenKeydown, true)
-    globalThis.addEventListener('popstate', handlePopState)
+    const openFsBtn = document.getElementById('openPreviewFullscreenBtn');
+    const exitFsBtn = document.getElementById('exitPreviewFullscreenBtn');
+    const overlay = document.getElementById('previewOverlay');
+    previewFsCanvas = document.getElementById('previewFullscreenCanvas');
+    document.addEventListener('keydown', handleFullscreenKeydown, true);
+    globalThis.addEventListener('popstate', handlePopState);
     if (openFsBtn) {
       openFsBtn.addEventListener('click', () => {
-        openPreviewFullscreen()
-      })
+        openPreviewFullscreen();
+      });
     }
     if (exitFsBtn) {
-      exitFsBtn.addEventListener('click', closePreviewFullscreen)
+      exitFsBtn.addEventListener('click', closePreviewFullscreen);
     }
     globalThis.addEventListener('resize', () => {
-      if (isPreviewFullscreen) resizePreviewFullscreen()
-    })
+      if (isPreviewFullscreen) resizePreviewFullscreen();
+    });
   }
   function handleFullscreenKeydown(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      return
+      return;
     }
-    const key = e?.key?.toLowerCase()
+    const key = e?.key?.toLowerCase();
     if (key === ' ' || e?.code === 'Space') {
-      e.preventDefault()
-      e.stopPropagation()
-      togglePlayPause()
+      e.preventDefault();
+      e.stopPropagation();
+      togglePlayPause();
     } else if (key === 'f') {
-      e.preventDefault()
-      e.stopPropagation()
+      e.preventDefault();
+      e.stopPropagation();
       if (isPreviewFullscreen) {
-        closePreviewFullscreen()
+        closePreviewFullscreen();
       } else {
-        openPreviewFullscreen()
+        openPreviewFullscreen();
       }
     } else if (key === 'escape' && isPreviewFullscreen) {
-      e.preventDefault()
-      e.stopPropagation()
-      closePreviewFullscreen()
+      e.preventDefault();
+      e.stopPropagation();
+      closePreviewFullscreen();
     }
   }
   function handlePopState() {
     if (isPreviewFullscreen) {
-      closePreviewFullscreen()
+      closePreviewFullscreen();
     } else if (globalThis.location.hash === '#fullscreen-preview') {
-      openPreviewFullscreen()
+      openPreviewFullscreen();
     }
   }
   /**
@@ -458,311 +459,312 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    */
   async function completeInitialization() {
     if (isInitialized) {
-      return // Уже инициализировано
+      return; // Уже инициализировано
     }
-    isInitialized = true
-    const logger = createLogger('Controller')
+    isInitialized = true;
+    const logger = createLogger('Controller');
     try {
       // Initialization logic will be added here
     } catch (error) {
-      await handleInitializationError(error, logger)
+      await handleInitializationError(error, logger);
     }
   }
   /**
    * Современная инициализация DOM элементов
    */
   async function initializeDOMElements(sessionId) {
-    const curSidEl = document.getElementById('curSid')
+    const curSidEl = document.getElementById('curSid');
     if (curSidEl) {
-      curSidEl.textContent = sessionId
+      curSidEl.textContent = sessionId;
     }
-    const sessionInfoEl = document.getElementById('sessionInfo')
+    const sessionInfoEl = document.getElementById('sessionInfo');
     if (sessionInfoEl) {
-      const timestamp = new Date().toLocaleString()
-      sessionInfoEl.textContent = `Создана: ${timestamp}`
+      const timestamp = new Date().toLocaleString();
+      sessionInfoEl.textContent = `Создана: ${timestamp}`;
     }
-    const sessionTimestampEl = document.getElementById('sessionTimestamp')
+    const sessionTimestampEl = document.getElementById('sessionTimestamp');
     if (sessionTimestampEl) {
-      sessionTimestampEl.textContent = `Создана: ${new Date().toLocaleString()}`
+      sessionTimestampEl.textContent = `Создана: ${new Date().toLocaleString()}`;
     }
-    const viewerSessionIdEl = document.getElementById('viewerSessionId')
+    const viewerSessionIdEl = document.getElementById('viewerSessionId');
     if (viewerSessionIdEl) {
-      viewerSessionIdEl.textContent = sessionId
+      viewerSessionIdEl.textContent = sessionId;
     }
-    const viewerStatusEl = document.getElementById('viewerStatus')
+    const viewerStatusEl = document.getElementById('viewerStatus');
     if (viewerStatusEl) {
       viewerStatusEl.textContent =
-        globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
-      viewerStatusEl.classList.add('disconnected')
+        globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...';
+      viewerStatusEl.classList.add('disconnected');
     }
-    updateViewerLink(sessionId)
+    updateViewerLink(sessionId);
   }
   function updateViewerLink(sessionId) {
-    const viewLinkInput = document.getElementById('view')
+    const viewLinkInput = document.getElementById('view');
     if (viewLinkInput) {
-      viewLinkInput.value = `${globalThis.location.origin}/s/${sessionId}`
+      viewLinkInput.value = `${globalThis.location.origin}/s/${sessionId}`;
     }
   }
   /**
    * Современная инициализация RealtimeClient (WebSocket по умолчанию)
    */
   async function initializeWebSocketClient(sessionId) {
-    const logger = createLogger('RealtimeClient')
+    const logger = createLogger('RealtimeClient');
     wsClient = new RealtimeClient(sessionId, 'controller', {
       maxReconnectAttempts: 10,
       reconnectInterval: 2000,
       heartbeatInterval: 25000,
-      coalesceDelayMs: 8 // Уменьшаем задержку для большей плавности
-    })
-    globalThis.wsClient = wsClient
-    setupWebSocketEventHandlers(wsClient, logger, sessionId)
+      coalesceDelayMs: 8, // Уменьшаем задержку для большей плавности
+    });
+    globalThis.wsClient = wsClient;
+    setupWebSocketEventHandlers(wsClient, logger, sessionId);
     await Promise.race([
       (async () => {
         try {
-          await wsClient.connect()
+          await wsClient.connect();
         } catch (error) {
-          throw new Error(`Realtime connection failed: ${error.message}`)
+          throw new Error(`Realtime connection failed: ${error.message}`);
         }
       })(),
       new Promise((_resolve, reject) =>
         setTimeout(
           () => reject(new Error('Realtime connection timeout')),
-          15000
-        )
-      )
-    ])
+          15000,
+        ),
+      ),
+    ]);
   }
   /**
    * Настройка обработчиков RealtimeClient событий
    */
   function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
-    let lastPlayingState = false
+    let lastPlayingState = false;
     wsClient.on('open', (event) => {
       // isInitializing stays true until initial_state arrives (prevents warning on page open).
       // On reconnection reset immediately — initial_state won't arrive again.
       if (event?.isReconnection && globalThis.__current) {
-        globalThis.__current.isInitializing = false
+        globalThis.__current.isInitializing = false;
       } else {
         // Safety: if initial_state never arrives, unblock after 5s
         setTimeout(() => {
           if (globalThis.__current?.isInitializing) {
-            globalThis.__current.isInitializing = false
+            globalThis.__current.isInitializing = false;
           }
-        }, 5000)
+        }, 5000);
       }
-      updateConnectionStatus(true)
+      updateConnectionStatus(true);
       // Lazy-load non-critical modules after connection established
       if (!event?.isReconnection && !globalThis.__nonCriticalLoaded) {
-        globalThis.__nonCriticalLoaded = true
-        const s = document.createElement('script')
+        globalThis.__nonCriticalLoaded = true;
+        const s = document.createElement('script');
         s.src =
           '/js/new-features.js?v=' +
-          (document.querySelector('meta[name="version"]')?.content || '')
-        s.defer = true
-        document.body.appendChild(s)
+          (document.querySelector('meta[name="version"]')?.content || '');
+        s.defer = true;
+        document.body.appendChild(s);
       }
       // Sync current language to session so viewer gets the same locale
-      const currentLang = localStorage.getItem('emdr-language')
+      const currentLang = localStorage.getItem('emdr-language');
       if (currentLang && sessionId) {
         fetch(`/api/session/${sessionId}/language`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ language: currentLang })
-        }).catch(() => {})
+          body: JSON.stringify({ language: currentLang }),
+        }).catch(() => {});
       }
       if (event?.isReconnection) {
         safeSend('request_state_sync', {
           timestamp: Date.now(),
           sessionId: sessionId,
-          role: 'controller'
-        })
+          role: 'controller',
+        });
         if (lastPlayingState && globalThis.__current?.viewerConnected) {
           setTimeout(async () => {
             // Don't restore if user explicitly changed play state recently
-            if (performance.now() < __ignoreServerPausedUntilTs) return
+            if (performance.now() < __ignoreServerPausedUntilTs) return;
             // Verify server is actually playing before restoring local state
             try {
-              const resp = await fetch(`/api/session/${sessionId}/state`)
-              if (!resp.ok) return
-              const state = await resp.json()
-              if (state.paused === true) return // Server is paused, don't restore
+              const resp = await fetch(`/api/session/${sessionId}/state`);
+              if (!resp.ok) return;
+              const state = await resp.json();
+              if (state.paused === true) return; // Server is paused, don't restore
             } catch (e) {
-              return // If fetch fails, don't restore
+              return; // If fetch fails, don't restore
             }
             if (previewPhysicsEngine) {
-              previewPhysicsEngine.setPaused(false)
+              previewPhysicsEngine.setPaused(false);
             }
-            isPlaying = true
-            globalThis.__current.isPlaying = true
-            globalThis.isPlaying = true
-            updatePlayPauseButton()
-          }, 500)
+            isPlaying = true;
+            globalThis.__current.isPlaying = true;
+            globalThis.isPlaying = true;
+            updatePlayPauseButton();
+          }, 500);
         }
       }
       safeSend('controller_connected', {
         timestamp: Date.now(),
         sessionId: sessionId,
-        role: 'controller'
-      })
-    })
+        role: 'controller',
+      });
+    });
     wsClient.on('close', (event) => {
-      updateConnectionStatus(false)
-      lastPlayingState = isPlaying
+      updateConnectionStatus(false);
+      lastPlayingState = isPlaying;
       // Always center ball and pause on connection loss
       if (previewPhysicsEngine) {
-        previewPhysicsEngine.setPaused(true)
+        previewPhysicsEngine.setPaused(true);
         const centerX =
           previewPhysicsEngine.centerX ||
-          (globalThis.__previewCanvas?.width || 500) / 2
+          (globalThis.__previewCanvas?.width || 500) / 2;
         const centerY =
           previewPhysicsEngine.centerY ||
-          (globalThis.__previewCanvas?.height || 375) / 2
-        previewPhysicsEngine.setPosition(centerX, centerY)
-        previewPhysicsEngine.setVelocity(0, 0)
+          (globalThis.__previewCanvas?.height || 375) / 2;
+        previewPhysicsEngine.setPosition(centerX, centerY);
+        previewPhysicsEngine.setVelocity(0, 0);
       }
-      isPlaying = false
-      globalThis.__current.viewerConnected = false
-      updatePlayPauseButton()
+      isPlaying = false;
+      globalThis.__current.viewerConnected = false;
+      updatePlayPauseButton();
       // Show notification about connection loss
       if (event.code === 1006) {
-        const msg = globalThis.i18n?.t('controller.connectionLost') ||
-          'Connection lost. Reconnecting...'
-        showNotification(msg, 'warning')
+        const msg =
+          globalThis.i18n?.t('controller.connectionLost') ||
+          'Connection lost. Reconnecting...';
+        showNotification(msg, 'warning');
       }
-      updateViewerStatusUI()
-    })
-    wsClient.on('error', () => {})
+      updateViewerStatusUI();
+    });
+    wsClient.on('error', () => {});
     wsClient.on(WS_MSG.viewerStatus, (data) => {
-      const wasConnected = globalThis.__current.viewerConnected
+      const wasConnected = globalThis.__current.viewerConnected;
       const isConnected =
-        data.connected === true || data.viewerConnected === true
-      globalThis.__current.viewerConnected = isConnected
+        data.connected === true || data.viewerConnected === true;
+      globalThis.__current.viewerConnected = isConnected;
       if (data.screenSize) {
-        globalThis.__current.viewerScreenSize = data.screenSize
+        globalThis.__current.viewerScreenSize = data.screenSize;
       }
       if (isConnected) {
-        completeInitialization().catch(debugError)
-        updateViewerStatusUI()
+        completeInitialization().catch(debugError);
+        updateViewerStatusUI();
       }
       if (wasConnected && !isConnected) {
-        globalThis.__current.viewerAudioActivated = false
-        globalThis.__current.viewerScreenSize = null
-        isPlaying = false
-        globalThis.__current.isPlaying = false
+        globalThis.__current.viewerAudioActivated = false;
+        globalThis.__current.viewerScreenSize = null;
+        isPlaying = false;
+        globalThis.__current.isPlaying = false;
         if (previewPhysicsEngine) {
-          previewPhysicsEngine.setPaused(true)
+          previewPhysicsEngine.setPaused(true);
         }
-        directionState = { dx: 1, dy: 0 }
-        currentDirectionMode = 'horizontal'
-        updateDirectionDisplay(1, 0)
-        updateDirectionButtons()
+        directionState = { dx: 1, dy: 0 };
+        currentDirectionMode = 'horizontal';
+        updateDirectionDisplay(1, 0);
+        updateDirectionButtons();
         if (bbCounters && typeof bbCounters.resetAll === 'function') {
-          bbCounters.resetAll()
+          bbCounters.resetAll();
         }
-        lastServerState = null
-        const viewerStatusEl = document.getElementById('viewerStatus')
+        lastServerState = null;
+        const viewerStatusEl = document.getElementById('viewerStatus');
         if (viewerStatusEl) {
           viewerStatusEl.textContent =
-            globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
-          viewerStatusEl.classList.remove('connected')
-          viewerStatusEl.classList.add('disconnected')
-          viewerStatusEl.style.fontWeight = '400'
+            globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...';
+          viewerStatusEl.classList.remove('connected');
+          viewerStatusEl.classList.add('disconnected');
+          viewerStatusEl.style.fontWeight = '400';
         }
-        centerBallInViewer()
-        showWaitingForViewer()
-        updatePlayPauseButton()
-        updateViewerStatusUI()
+        centerBallInViewer();
+        showWaitingForViewer();
+        updatePlayPauseButton();
+        updateViewerStatusUI();
       }
-    })
+    });
     wsClient.on(WS_MSG.initialState, (state) => {
       // Page is fully ready — allow warnings from now on
-      if (globalThis.__current) globalThis.__current.isInitializing = false
-      lastServerState = state // Кэшируем состояние
+      if (globalThis.__current) globalThis.__current.isInitializing = false;
+      lastServerState = state; // Кэшируем состояние
       if (typeof state.viewerConnected === 'boolean') {
-        globalThis.__current.viewerConnected = state.viewerConnected
+        globalThis.__current.viewerConnected = state.viewerConnected;
       }
       if (typeof state.viewerAudioActivated === 'boolean') {
-        globalThis.__current.viewerAudioActivated = state.viewerAudioActivated
+        globalThis.__current.viewerAudioActivated = state.viewerAudioActivated;
       }
       if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
-        globalThis.__current.viewerScreenSize = state.viewerScreenSize
-        updatePreviewSize(state.viewerScreenSize)
-        updateViewerInfo(state.viewerScreenSize)
+        globalThis.__current.viewerScreenSize = state.viewerScreenSize;
+        updatePreviewSize(state.viewerScreenSize);
+        updateViewerInfo(state.viewerScreenSize);
       }
-      applyServerStateToPreview(state)
-      syncUIWithState(state)
-      updateViewerAudioIndicators() // Обновляем индикаторы звука
-      updateViewerStatusUI() // Update status UI with connection info
-    })
+      applyServerStateToPreview(state);
+      syncUIWithState(state);
+      updateViewerAudioIndicators(); // Обновляем индикаторы звука
+      updateViewerStatusUI(); // Update status UI with connection info
+    });
     wsClient.on(WS_MSG.stateUpdate, (state) => {
-      lastServerState = state // Кэшируем состояние
+      lastServerState = state; // Кэшируем состояние
       if (typeof state.viewerConnected === 'boolean') {
-        const wasConnected = globalThis.__current.viewerConnected
-        globalThis.__current.viewerConnected = state.viewerConnected
+        const wasConnected = globalThis.__current.viewerConnected;
+        globalThis.__current.viewerConnected = state.viewerConnected;
         if (wasConnected !== state.viewerConnected) {
-          updateViewerStatusUI()
+          updateViewerStatusUI();
         }
         if (previewPhysicsEngine) {
-          const serverSendsPositions = state.clientSimulationOnly === false
+          const serverSendsPositions = state.clientSimulationOnly === false;
           const shouldFollowViewer =
-            serverSendsPositions && state.viewerConnected
-          previewPhysicsEngine.options.clientSimulation = !shouldFollowViewer
+            serverSendsPositions && state.viewerConnected;
+          previewPhysicsEngine.options.clientSimulation = !shouldFollowViewer;
         }
       }
       if (state.viewerScreenSize?.width > 0) {
         const prevSize = globalThis.__current?.viewerScreenSize || {
           width: 0,
-          height: 0
-        }
-        const nextSize = state.viewerScreenSize
+          height: 0,
+        };
+        const nextSize = state.viewerScreenSize;
         const sizeChanged =
           !prevSize ||
           prevSize.width !== nextSize.width ||
-          prevSize.height !== nextSize.height
-        globalThis.__current.viewerConnected = true
-        globalThis.__current.viewerScreenSize = nextSize
+          prevSize.height !== nextSize.height;
+        globalThis.__current.viewerConnected = true;
+        globalThis.__current.viewerScreenSize = nextSize;
         if (sizeChanged) {
-          updatePhysicsEngineWorldSize(nextSize)
-          const canvas = document.getElementById('preview')
+          updatePhysicsEngineWorldSize(nextSize);
+          const canvas = document.getElementById('preview');
           if (canvas) {
             const { previewWidth, previewHeight } = calculatePreviewDimensions(
               canvas,
-              nextSize
-            )
-            setCanvasDimensions(canvas, previewWidth, previewHeight)
+              nextSize,
+            );
+            setCanvasDimensions(canvas, previewWidth, previewHeight);
           }
-          updateViewerInfo(nextSize)
-          updateViewerStatusUI()
+          updateViewerInfo(nextSize);
+          updateViewerStatusUI();
           if (isPreviewFullscreen) {
-            updateFullscreenViewerStatus()
+            updateFullscreenViewerStatus();
           }
         }
       }
-      applyServerStateToPreview(state)
-      updateViewerAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
-      _syncUIPause(state)
-      _syncUIDirection(state)
-    })
+      applyServerStateToPreview(state);
+      updateViewerAudioIndicators(); // Обновляем индикаторы звука при каждом обновлении состояния
+      _syncUIPause(state);
+      _syncUIDirection(state);
+    });
     wsClient.on(WS_MSG.netMetrics, ({ jitterMs }) => {
-      if (!previewPhysicsEngine) return
+      if (!previewPhysicsEngine) return;
 
       // Update physics engine with current jitter for adaptive smoothing
-      previewPhysicsEngine.updateJitter(jitterMs)
+      previewPhysicsEngine.updateJitter(jitterMs);
 
-      const base = globalThis.BBConfig?.smoothing || {}
+      const base = globalThis.BBConfig?.smoothing || {};
       const adaptiveDamping = Math.min(
         25,
-        Math.max(15, (base.damping || 20) + jitterMs / 20)
-      )
+        Math.max(15, (base.damping || 20) + jitterMs / 20),
+      );
       const adaptiveStiffness = Math.min(
         35,
-        Math.max(25, (base.stiffness || 30) - jitterMs / 30)
-      )
-      const fixedPredictTime = base.maxPredictSec || 0.02
+        Math.max(25, (base.stiffness || 30) - jitterMs / 30),
+      );
+      const fixedPredictTime = base.maxPredictSec || 0.02;
       const adaptiveSnapDistance = Math.min(
         0.4,
-        Math.max(0.2, (base.snapDistance || 0.3) + (jitterMs > 15 ? 0.05 : 0))
-      )
+        Math.max(0.2, (base.snapDistance || 0.3) + (jitterMs > 15 ? 0.05 : 0)),
+      );
       previewPhysicsEngine.setSmoothingOptions({
         damping: adaptiveDamping,
         stiffness: adaptiveStiffness,
@@ -770,65 +772,65 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         snapDistance: adaptiveSnapDistance,
         exponentialSmoothing: base.exponentialSmoothing,
         stateBuffering: base.stateBuffering,
-        bufferSize: base.bufferSize
-      })
-    })
+        bufferSize: base.bufferSize,
+      });
+    });
     wsClient.on(WS_MSG.viewerAudioActivated, (data) => {
       if (globalThis.__current) {
-        globalThis.__current.viewerAudioActivated = data.activated
+        globalThis.__current.viewerAudioActivated = data.activated;
       }
-      updateViewerAudioIndicators()
-    })
+      updateViewerAudioIndicators();
+    });
     // Bounce sync - snap preview to viewer's exact bounce position + direction
     wsClient.on(WS_MSG.bounceSync, (data) => {
-      if (!previewPhysicsEngine) return
+      if (!previewPhysicsEngine) return;
       if (typeof data.x === 'number' && typeof data.y === 'number') {
         // Snap position
-        previewPhysicsEngine.ball.x = data.x
-        previewPhysicsEngine.ball.y = data.y
-        previewPhysicsEngine._prevPos.x = data.x
-        previewPhysicsEngine._prevPos.y = data.y
-        previewPhysicsEngine._currPos.x = data.x
-        previewPhysicsEngine._currPos.y = data.y
+        previewPhysicsEngine.ball.x = data.x;
+        previewPhysicsEngine.ball.y = data.y;
+        previewPhysicsEngine._prevPos.x = data.x;
+        previewPhysicsEngine._prevPos.y = data.y;
+        previewPhysicsEngine._currPos.x = data.x;
+        previewPhysicsEngine._currPos.y = data.y;
         // Sync direction (was incorrectly writing to state.dirX instead of state.lastDirection.x)
         if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
-          previewPhysicsEngine.state.lastDirection.x = data.dirX
-          previewPhysicsEngine.state.lastDirection.y = data.dirY
+          previewPhysicsEngine.state.lastDirection.x = data.dirX;
+          previewPhysicsEngine.state.lastDirection.y = data.dirY;
           // Recalculate velocity from new direction
           const pps =
             (previewPhysicsEngine.ball.speed / 100) *
-            previewPhysicsEngine.options.maxSpeed
-          previewPhysicsEngine.ball.vx = data.dirX * pps
-          previewPhysicsEngine.ball.vy = data.dirY * pps
+            previewPhysicsEngine.options.maxSpeed;
+          previewPhysicsEngine.ball.vx = data.dirX * pps;
+          previewPhysicsEngine.ball.vy = data.dirY * pps;
         }
         // Sync side info for debugging
         if (data.side) {
-          previewPhysicsEngine._lastBounceSide = data.side
+          previewPhysicsEngine._lastBounceSide = data.side;
         }
       }
-    })
+    });
     wsClient.on('maxReconnectAttemptsReached', () => {
-      logger.error('Max reconnect attempts reached')
+      logger.error('Max reconnect attempts reached');
       showNotification(
         globalThis.i18n?.t('controller.connectionFailed') ||
           'Cannot connect to server. Check your internet connection.',
-        'error'
-      )
-    })
+        'error',
+      );
+    });
     wsClient.on('session_lost', () => {
-      logger.error('Session lost (evicted by server)')
+      logger.error('Session lost (evicted by server)');
       const msg =
         globalThis.i18n?.t('controller.sessionLost') ||
-        'Session expired. Please reload the page.'
-      showNotification(msg, 'error')
-    })
+        'Session expired. Please reload the page.';
+      showNotification(msg, 'error');
+    });
   }
   /**
    * Применяет состояние от viewer/сервера к превью контроллера
    * АРХИТЕКТУРА: Превью в viewer режиме (isViewer: true) следует за состоянием от viewer через WebSocket
    */
   function applyServerStateToPreview(state) {
-    if (!previewPhysicsEngine || !state) return
+    if (!previewPhysicsEngine || !state) return;
     if (
       state.viewerScreenSize &&
       typeof state.viewerScreenSize.width === 'number' &&
@@ -836,43 +838,43 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       state.viewerScreenSize.width > 0 &&
       state.viewerScreenSize.height > 0
     ) {
-      const currentW = previewPhysicsEngine.options.worldWidth
-      const currentH = previewPhysicsEngine.options.worldHeight
+      const currentW = previewPhysicsEngine.options.worldWidth;
+      const currentH = previewPhysicsEngine.options.worldHeight;
       if (
         currentW !== state.viewerScreenSize.width ||
         currentH !== state.viewerScreenSize.height
       ) {
         previewPhysicsEngine.setWorldSize(
           state.viewerScreenSize.width,
-          state.viewerScreenSize.height
-        )
+          state.viewerScreenSize.height,
+        );
       }
     }
     // First server update after play pressed — snap to server position and unpause.
     // Safe: if user pressed stop, _pendingPlaySync is already cleared in _setPlayPauseState.
     if (previewPhysicsEngine._pendingPlaySync && state.paused === false) {
-      previewPhysicsEngine._pendingPlaySync = false
-      previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
+      previewPhysicsEngine._pendingPlaySync = false;
+      previewPhysicsEngine._hasReceivedFirstMovingUpdate = true;
       if (typeof state.x === 'number' && typeof state.y === 'number') {
-        previewPhysicsEngine.ball.x = state.x
-        previewPhysicsEngine.ball.y = state.y
-        previewPhysicsEngine._prevPos.x = state.x
-        previewPhysicsEngine._prevPos.y = state.y
-        previewPhysicsEngine._currPos.x = state.x
-        previewPhysicsEngine._currPos.y = state.y
+        previewPhysicsEngine.ball.x = state.x;
+        previewPhysicsEngine.ball.y = state.y;
+        previewPhysicsEngine._prevPos.x = state.x;
+        previewPhysicsEngine._prevPos.y = state.y;
+        previewPhysicsEngine._currPos.x = state.x;
+        previewPhysicsEngine._currPos.y = state.y;
       }
       if (state.dirX !== undefined)
-        previewPhysicsEngine.state.lastDirection.x = state.dirX
+        previewPhysicsEngine.state.lastDirection.x = state.dirX;
       if (state.dirY !== undefined)
-        previewPhysicsEngine.state.lastDirection.y = state.dirY
-      if (state.speed !== undefined) previewPhysicsEngine.setSpeed(state.speed)
-      previewPhysicsEngine.setPaused(false)
-      if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall)
-      if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg)
-      isPlaying = true
-      updatePlayPauseButton()
-      bbCounters.start()
-      return
+        previewPhysicsEngine.state.lastDirection.y = state.dirY;
+      if (state.speed !== undefined) previewPhysicsEngine.setSpeed(state.speed);
+      previewPhysicsEngine.setPaused(false);
+      if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall);
+      if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg);
+      isPlaying = true;
+      updatePlayPauseButton();
+      bbCounters.start();
+      return;
     }
     if (previewPhysicsEngine.options.clientSimulation) {
       const localCommand = {
@@ -881,18 +883,18 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         speed: state.speed,
         colorBall: state.colorBall,
         colorBg: state.colorBg,
-        ballSize: state.ballSize
-      }
+        ballSize: state.ballSize,
+      };
       if (
         localCommand.dirX !== undefined &&
         localCommand.dirY !== undefined &&
         Math.abs(localCommand.dirX) < 1e-6 &&
         Math.abs(localCommand.dirY) < 1e-6
       ) {
-        delete localCommand.dirX
-        delete localCommand.dirY
+        delete localCommand.dirX;
+        delete localCommand.dirY;
       }
-      previewPhysicsEngine.applyCommand(localCommand)
+      previewPhysicsEngine.applyCommand(localCommand);
       // Store server position for drift correction (same mechanism as viewer)
       if (
         typeof state.x === 'number' &&
@@ -901,28 +903,28 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       ) {
         // First update after play: hard-snap to server position to start in sync
         if (!previewPhysicsEngine._hasReceivedFirstMovingUpdate) {
-          previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
-          previewPhysicsEngine.ball.x = state.x
-          previewPhysicsEngine.ball.y = state.y
-          previewPhysicsEngine._prevPos.x = state.x
-          previewPhysicsEngine._prevPos.y = state.y
-          previewPhysicsEngine._currPos.x = state.x
-          previewPhysicsEngine._currPos.y = state.y
+          previewPhysicsEngine._hasReceivedFirstMovingUpdate = true;
+          previewPhysicsEngine.ball.x = state.x;
+          previewPhysicsEngine.ball.y = state.y;
+          previewPhysicsEngine._prevPos.x = state.x;
+          previewPhysicsEngine._prevPos.y = state.y;
+          previewPhysicsEngine._currPos.x = state.x;
+          previewPhysicsEngine._currPos.y = state.y;
         } else {
           // Store server position for lightweight drift correction (checked every 3s by physics engine)
           previewPhysicsEngine._lastServerPos = {
             x: state.x,
             y: state.y,
-            ts: performance.now()
-          }
+            ts: performance.now(),
+          };
         }
       }
     } else {
-      previewPhysicsEngine.applyCommand(state)
+      previewPhysicsEngine.applyCommand(state);
     }
     const pausedState = previewPhysicsEngine.options.clientSimulation
       ? previewPhysicsEngine.state.paused
-      : state.paused
+      : state.paused;
     // Apply paused state from server only when it changes AND user hasn't recently toggled play/pause.
     // Without the timestamp guard, server's delayed response overrides user's stop action (double-space bug).
     if (
@@ -930,10 +932,10 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       previewPhysicsEngine.state.paused !== state.paused &&
       performance.now() >= __ignoreServerPausedUntilTs
     ) {
-      previewPhysicsEngine.setPaused(state.paused)
+      previewPhysicsEngine.setPaused(state.paused);
       // Reset first-update flag on pause so next play starts with hard-snap
       if (state.paused) {
-        previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
+        previewPhysicsEngine._hasReceivedFirstMovingUpdate = false;
       }
     }
     if (
@@ -941,74 +943,74 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       performance.now() >= __ignoreServerPausedUntilTs
     ) {
       // Sync isPlaying with server state (only when user hasn't recently toggled)
-      const newIsPlaying = !state.paused
+      const newIsPlaying = !state.paused;
       if (isPlaying !== newIsPlaying) {
-        isPlaying = newIsPlaying
-        updatePlayPauseButton()
+        isPlaying = newIsPlaying;
+        updatePlayPauseButton();
       }
       if (state.paused) {
-        bbCounters.stop(false)
+        bbCounters.stop(false);
       } else {
-        bbCounters.start()
+        bbCounters.start();
       }
     }
     if (lastServerState) {
-      detectAndCountBounceFromServer(lastServerState, state)
+      detectAndCountBounceFromServer(lastServerState, state);
     }
   }
   /**
    * Улучшенный рендер-цикл с лучшей интерполяцией
    */
-  const PHYSICS_TICK_RATE = 60 // Гц
-  const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
+  const PHYSICS_TICK_RATE = 60; // Гц
+  const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE;
   function physicsLoop() {
     if (previewPhysicsEngine) {
-      previewPhysicsEngine.update(PHYSICS_DT / 1000)
+      previewPhysicsEngine.update(PHYSICS_DT / 1000);
     }
   }
   function renderPreviewLoop(timestamp) {
     if (!previewPhysicsEngine || !globalThis.__previewRenderer) {
-      requestAnimationFrame(renderPreviewLoop)
-      return
+      requestAnimationFrame(renderPreviewLoop);
+      return;
     }
-    const now = performance.now()
+    const now = performance.now();
     const lastPhysicsUpdate =
-      previewPhysicsEngine?.__lastPhysicsUpdateTs ?? now
+      previewPhysicsEngine?.__lastPhysicsUpdateTs ?? now;
     const alpha = Math.max(
       0,
-      Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT)
-    )
-    const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
-    const stateToRender = getScaledState(interpolatedState)
-    globalThis.__previewRenderer?.drawFrame(stateToRender)
+      Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT),
+    );
+    const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha);
+    const stateToRender = getScaledState(interpolatedState);
+    globalThis.__previewRenderer?.drawFrame(stateToRender);
     if (document.hidden) {
       setTimeout(
         () => requestAnimationFrame(renderPreviewLoop),
-        hiddenThrottleMs
-      )
+        hiddenThrottleMs,
+      );
     } else {
-      requestAnimationFrame(renderPreviewLoop)
+      requestAnimationFrame(renderPreviewLoop);
     }
   }
   /**
    * Обновление статуса соединения
    */
   function updateConnectionStatus(isConnected) {
-    const wsStatus = document.getElementById('wsStatus')
+    const wsStatus = document.getElementById('wsStatus');
     if (wsStatus) {
       wsStatus.className = isConnected
         ? 'status-indicator connected'
-        : 'status-indicator disconnected'
+        : 'status-indicator disconnected';
       wsStatus.textContent = isConnected
         ? globalThis.i18n?.t('controller.connected') || 'Connected'
-        : globalThis.i18n?.t('controller.disconnected') || 'Disconnected'
+        : globalThis.i18n?.t('controller.disconnected') || 'Disconnected';
     }
   }
   /**
    * Создание логгера для модуля
    */
   function createLogger(moduleName) {
-    const startTime = performance.now()
+    const startTime = performance.now();
     return {
       info: () => {},
       success: () => {},
@@ -1018,34 +1020,34 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
           data?.type === 'connection_closed' ||
           message.includes('соединение')
         )
-          return
-        console.error(`[${moduleName}] ${message}`, data || '')
-      }
-    }
+          return;
+        console.error(`[${moduleName}] ${message}`, data || '');
+      },
+    };
   }
   /**
    * Кастомная ошибка приложения
    */
   class AppError extends Error {
     constructor(code, message) {
-      super(message)
-      this.name = 'AppError'
-      this.code = code
-      this.timestamp = new Date().toISOString()
+      super(message);
+      this.name = 'AppError';
+      this.code = code;
+      this.timestamp = new Date().toISOString();
     }
   }
   /**
    * Обработка ошибок инициализации
    */
   async function handleInitializationError(error, logger) {
-    logger.error('Критическая ошибка инициализации:', error)
+    logger.error('Критическая ошибка инициализации:', error);
     if (error instanceof AppError) {
       // AppError already logged with context
     }
   }
   function _syncUISpeed(ballState) {
     if (ballState.speed !== undefined) {
-      components.speed?.setSpeed(ballState.speed, true)
+      components.speed?.setSpeed(ballState.speed, true);
     }
   }
   function _syncUISize(ballState) {
@@ -1054,15 +1056,15 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       components.size &&
       typeof components.size.setSize === 'function'
     ) {
-      const sizes = [20, 40, 80, 100]
+      const sizes = [20, 40, 80, 100];
       const closestSize = sizes.reduce(
         (prev, curr) =>
           Math.abs(curr - ballState.radius) < Math.abs(prev - ballState.radius)
             ? curr
             : prev,
-        sizes[0] // initial value
-      )
-      components.size.setSize(closestSize)
+        sizes[0], // initial value
+      );
+      components.size.setSize(closestSize);
     }
   }
   function _syncUIColors(ballState) {
@@ -1071,107 +1073,107 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       components.ballColor &&
       typeof components.ballColor.setColor === 'function'
     ) {
-      components.ballColor.setColor(ballState.colorBall)
+      components.ballColor.setColor(ballState.colorBall);
     }
     if (
       ballState.colorBg &&
       components.bgColor &&
       typeof components.bgColor.setColor === 'function'
     ) {
-      components.bgColor.setColor(ballState.colorBg)
+      components.bgColor.setColor(ballState.colorBg);
     }
   }
   function _syncUIPause(ballState) {
     if (ballState.paused !== undefined) {
-      const now = performance.now()
+      const now = performance.now();
       if (now >= __ignoreServerPausedUntilTs) {
-        isPlaying = !ballState.paused
-        updatePlayPauseButton()
-        syncFsPlayPauseButton() // Синхронизируем и полноэкранную кнопку
+        isPlaying = !ballState.paused;
+        updatePlayPauseButton();
+        syncFsPlayPauseButton(); // Синхронизируем и полноэкранную кнопку
       }
     }
   }
   function _getDirectionMode(dirX, dirY) {
-    const ax = Math.abs(dirX)
-    const ay = Math.abs(dirY)
-    if (ax > 0.9 && ay < 0.2) return 'horizontal'
-    if (ay > 0.9 && ax < 0.2) return 'vertical'
-    if (ax > ay * 2) return 'horizontal'
-    if (ay > ax * 2) return 'vertical'
-    if (dirX > 0 && dirY > 0) return 'diagRL' // TL→BR
-    if (dirX > 0 && dirY < 0) return 'diagRLL' // BL→TR
-    return null
+    const ax = Math.abs(dirX);
+    const ay = Math.abs(dirY);
+    if (ax > 0.9 && ay < 0.2) return 'horizontal';
+    if (ay > 0.9 && ax < 0.2) return 'vertical';
+    if (ax > ay * 2) return 'horizontal';
+    if (ay > ax * 2) return 'vertical';
+    if (dirX > 0 && dirY > 0) return 'diagRL'; // TL→BR
+    if (dirX > 0 && dirY < 0) return 'diagRLL'; // BL→TR
+    return null;
   }
   function _syncUIDirection(ballState) {
     if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
-      const now = performance.now()
+      const now = performance.now();
       if (now < __ignoreServerDirectionUntilTs) {
-        return
+        return;
       }
-      const mode = _getDirectionMode(ballState.dirX, ballState.dirY)
+      const mode = _getDirectionMode(ballState.dirX, ballState.dirY);
       if (mode && mode !== currentDirectionMode) {
-        directionState = { dx: ballState.dirX, dy: ballState.dirY }
-        currentDirectionMode = mode
-        updateDirectionButtons()
-        updateDirectionDisplay(ballState.dirX, ballState.dirY)
+        directionState = { dx: ballState.dirX, dy: ballState.dirY };
+        currentDirectionMode = mode;
+        updateDirectionButtons();
+        updateDirectionDisplay(ballState.dirX, ballState.dirY);
       }
     }
   }
   function syncUIWithState(ballState) {
     try {
-      if (!ballState) return
-      updatePreviewSize(ballState.viewerScreenSize)
-      globalThis.__current.viewerConnected = ballState.viewerConnected
-      globalThis.__current.viewerScreenSize = ballState.viewerScreenSize
-      updateViewerStatusUI()
-      _syncUISpeed(ballState)
-      _syncUISize(ballState)
-      _syncUIColors(ballState)
-      _syncUIPause(ballState)
-      _syncUIDirection(ballState)
+      if (!ballState) return;
+      updatePreviewSize(ballState.viewerScreenSize);
+      globalThis.__current.viewerConnected = ballState.viewerConnected;
+      globalThis.__current.viewerScreenSize = ballState.viewerScreenSize;
+      updateViewerStatusUI();
+      _syncUISpeed(ballState);
+      _syncUISize(ballState);
+      _syncUIColors(ballState);
+      _syncUIPause(ballState);
+      _syncUIDirection(ballState);
       if (ballState.soundEnabled !== undefined) {
         const soundEnabledCheckbox = document.getElementById(
-          'soundEnabledCheckbox'
-        )
+          'soundEnabledCheckbox',
+        );
         if (soundEnabledCheckbox) {
-          soundEnabledCheckbox.checked = Boolean(ballState.soundEnabled)
-          const soundTypeControl = document.getElementById('soundTypeControl')
+          soundEnabledCheckbox.checked = Boolean(ballState.soundEnabled);
+          const soundTypeControl = document.getElementById('soundTypeControl');
           if (soundTypeControl) {
             if (ballState.soundEnabled) {
-              soundTypeControl.style.opacity = '1'
-              soundTypeControl.style.pointerEvents = 'auto'
+              soundTypeControl.style.opacity = '1';
+              soundTypeControl.style.pointerEvents = 'auto';
             } else {
-              soundTypeControl.style.opacity = '0.5'
-              soundTypeControl.style.pointerEvents = 'none'
+              soundTypeControl.style.opacity = '0.5';
+              soundTypeControl.style.pointerEvents = 'none';
             }
           }
         }
       }
       if (ballState.soundType) {
-        const soundTypeSelect = document.getElementById('soundTypeSelect')
+        const soundTypeSelect = document.getElementById('soundTypeSelect');
         if (soundTypeSelect) {
-          soundTypeSelect.value = ballState.soundType
+          soundTypeSelect.value = ballState.soundType;
         }
       }
     } catch (err) {
-      debugWarn('Error in syncUIWithState:', err)
+      debugWarn('Error in syncUIWithState:', err);
     }
   }
   function _initializeSpeedControl() {
-    const container = document.getElementById('speedControl')
+    const container = document.getElementById('speedControl');
     if (!container) {
-      return
+      return;
     }
     components.speed = sharedComponents.createSpeedControl(container, {
       onSpeedChange: throttle((speed) => {
-        updateSpeed(speed)
-      }, 100)
-    })
+        updateSpeed(speed);
+      }, 100),
+    });
   }
   function _initializeBallColorControl() {
-    const container = document.getElementById('ballColorControl')
+    const container = document.getElementById('ballColorControl');
     if (!container) {
-      return
+      return;
     }
     components.ballColor = sharedComponents.createColorControl(container, {
       colors: [
@@ -1186,19 +1188,19 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         '#fb7185',
         '#ffffff',
         '#a855f7',
-        '#14b8a6'
+        '#14b8a6',
       ],
       defaultValue: '#60a5fa',
       title: '',
       onColorChange: (color) => {
-        setBallColor(color)
-      }
-    })
+        setBallColor(color);
+      },
+    });
   }
   function _initializeBgColorControl() {
-    const container = document.getElementById('bgColorControl')
+    const container = document.getElementById('bgColorControl');
     if (!container) {
-      return
+      return;
     }
     components.bgColor = sharedComponents.createColorControl(container, {
       colors: [
@@ -1213,174 +1215,174 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         '#fce7f3',
         '#f3f4f6',
         '#e5e7eb',
-        '#d1d5db'
+        '#d1d5db',
       ],
       defaultValue: '#020617',
       title: '',
       onColorChange: (color) => {
-        setBackgroundColor(color)
-      }
-    })
+        setBackgroundColor(color);
+      },
+    });
   }
   function _initializeSizeControl() {
-    const container = document.getElementById('sizeControl')
+    const container = document.getElementById('sizeControl');
     if (!container) {
-      return
+      return;
     }
     components.size = sharedComponents.createSizeControl(container, {
       sizes: [20, 40, 80, 100],
       defaultValue: 20,
       title: '',
       onSizeChange: (size) => {
-        setBallSize(size)
-      }
-    })
+        setBallSize(size);
+      },
+    });
   }
   function _initializeSoundControls() {
     const soundEnabledCheckbox = document.getElementById(
-      'soundEnabledCheckbox'
-    )
-    const soundTypeSelect = document.getElementById('soundTypeSelect')
-    const soundTypeControl = document.getElementById('soundTypeControl')
+      'soundEnabledCheckbox',
+    );
+    const soundTypeSelect = document.getElementById('soundTypeSelect');
+    const soundTypeControl = document.getElementById('soundTypeControl');
     if (!soundEnabledCheckbox || !soundTypeSelect || !soundTypeControl) {
-      return
+      return;
     }
     try {
       const soundLabel =
-        soundEnabledCheckbox.parentElement?.querySelector('span')
+        soundEnabledCheckbox.parentElement?.querySelector('span');
       function _i18nSafe(key, fallback) {
-        const val = globalThis.i18n?.t(key)
-        return val && val !== key ? val : fallback
+        const val = globalThis.i18n?.t(key);
+        return val && val !== key ? val : fallback;
       }
       function _updateSoundLabel(enabled) {
-        if (!soundLabel) return
+        if (!soundLabel) return;
         soundLabel.textContent = enabled
           ? _i18nSafe('controller.soundEnabled', 'Sound enabled')
-          : _i18nSafe('controller.enableSound', 'Enable sound')
+          : _i18nSafe('controller.enableSound', 'Enable sound');
       }
       soundEnabledCheckbox.addEventListener('change', (e) => {
-        const enabled = e.target.checked
-        setSoundEnabled(enabled)
-        _updateSoundLabel(enabled)
+        const enabled = e.target.checked;
+        setSoundEnabled(enabled);
+        _updateSoundLabel(enabled);
         if (enabled) {
-          soundTypeControl.style.opacity = '1'
-          soundTypeControl.style.pointerEvents = 'auto'
+          soundTypeControl.style.opacity = '1';
+          soundTypeControl.style.pointerEvents = 'auto';
         } else {
-          soundTypeControl.style.opacity = '0.5'
-          soundTypeControl.style.pointerEvents = 'none'
+          soundTypeControl.style.opacity = '0.5';
+          soundTypeControl.style.pointerEvents = 'none';
         }
         if (lastServerState) {
-          lastServerState.soundEnabled = enabled
+          lastServerState.soundEnabled = enabled;
         }
-        updateViewerAudioIndicators()
-      })
+        updateViewerAudioIndicators();
+      });
       soundTypeSelect.addEventListener('change', (e) => {
-        const soundType = e.target.value
-        setSoundType(soundType)
+        const soundType = e.target.value;
+        setSoundType(soundType);
         if (lastServerState) {
-          lastServerState.soundType = soundType
+          lastServerState.soundType = soundType;
         }
-      })
+      });
       if (lastServerState) {
         if (typeof lastServerState.soundEnabled === 'boolean') {
-          soundEnabledCheckbox.checked = lastServerState.soundEnabled
-          _updateSoundLabel(lastServerState.soundEnabled)
+          soundEnabledCheckbox.checked = lastServerState.soundEnabled;
+          _updateSoundLabel(lastServerState.soundEnabled);
           if (lastServerState.soundEnabled) {
-            soundTypeControl.style.opacity = '1'
-            soundTypeControl.style.pointerEvents = 'auto'
+            soundTypeControl.style.opacity = '1';
+            soundTypeControl.style.pointerEvents = 'auto';
           }
         }
         if (lastServerState.soundType) {
-          soundTypeSelect.value = lastServerState.soundType
+          soundTypeSelect.value = lastServerState.soundType;
         }
       }
     } catch (error) {
-      console.error('Error initializing sound controls:', error)
+      console.error('Error initializing sound controls:', error);
     }
   }
-  let _controllerAudioManager = null
+  let _controllerAudioManager = null;
   function _initializeControllerAudio() {
     const monitorCheckbox = document.getElementById(
-      'controllerMonitorCheckbox'
-    )
-    const volumeSlider = document.getElementById('controllerVolumeSlider')
-    const volumeValue = document.getElementById('controllerVolumeValue')
-    const volumeControl = document.getElementById('controllerVolumeControl')
-    if (!monitorCheckbox) return
+      'controllerMonitorCheckbox',
+    );
+    const volumeSlider = document.getElementById('controllerVolumeSlider');
+    const volumeValue = document.getElementById('controllerVolumeValue');
+    const volumeControl = document.getElementById('controllerVolumeControl');
+    if (!monitorCheckbox) return;
 
     monitorCheckbox.addEventListener('change', (e) => {
-      const enabled = e.target.checked
+      const enabled = e.target.checked;
       if (enabled) {
         if (!_controllerAudioManager && typeof AudioManager !== 'undefined') {
-          _controllerAudioManager = new AudioManager()
-          _controllerAudioManager.init(true)
-          _controllerAudioManager.setVolume((volumeSlider?.value ?? 50) / 100)
+          _controllerAudioManager = new AudioManager();
+          _controllerAudioManager.init(true);
+          _controllerAudioManager.setVolume((volumeSlider?.value ?? 50) / 100);
           _controllerAudioManager.setSoundType(
-            lastServerState?.soundType || 'soft'
-          )
+            lastServerState?.soundType || 'soft',
+          );
         } else if (_controllerAudioManager) {
-          _controllerAudioManager.init()
+          _controllerAudioManager.init();
         }
-        if (_controllerAudioManager) _controllerAudioManager.setEnabled(true)
+        if (_controllerAudioManager) _controllerAudioManager.setEnabled(true);
         if (volumeControl) {
-          volumeControl.style.opacity = '1'
-          volumeControl.style.pointerEvents = 'auto'
+          volumeControl.style.opacity = '1';
+          volumeControl.style.pointerEvents = 'auto';
         }
       } else {
-        if (_controllerAudioManager) _controllerAudioManager.setEnabled(false)
+        if (_controllerAudioManager) _controllerAudioManager.setEnabled(false);
         if (volumeControl) {
-          volumeControl.style.opacity = '0.5'
-          volumeControl.style.pointerEvents = 'none'
+          volumeControl.style.opacity = '0.5';
+          volumeControl.style.pointerEvents = 'none';
         }
       }
-    })
+    });
 
     if (volumeSlider) {
       volumeSlider.addEventListener('input', () => {
-        if (volumeValue) volumeValue.textContent = `${volumeSlider.value}%`
+        if (volumeValue) volumeValue.textContent = `${volumeSlider.value}%`;
         if (_controllerAudioManager)
-          _controllerAudioManager.setVolume(volumeSlider.value / 100)
-      })
+          _controllerAudioManager.setVolume(volumeSlider.value / 100);
+      });
     }
 
     // Play sound on bounce when monitoring is active
     globalThis.addEventListener('bb_bounce', () => {
-      if (!_controllerAudioManager?.enabled) return
-      const soundType = lastServerState?.soundType || 'soft'
+      if (!_controllerAudioManager?.enabled) return;
+      const soundType = lastServerState?.soundType || 'soft';
       if (_controllerAudioManager.soundType !== soundType) {
-        _controllerAudioManager.setSoundType(soundType)
+        _controllerAudioManager.setSoundType(soundType);
       }
-      _controllerAudioManager.playTick()
-    })
+      _controllerAudioManager.playTick();
+    });
   }
   function initializeComponents() {
-    _initializeSpeedControl()
-    _initializeBallColorControl()
-    _initializeBgColorControl()
-    _initializeSizeControl()
-    _initializeSoundControls()
-    _initializeControllerAudio()
+    _initializeSpeedControl();
+    _initializeBallColorControl();
+    _initializeBgColorControl();
+    _initializeSizeControl();
+    _initializeSoundControls();
+    _initializeControllerAudio();
     // Lock controls until viewer connects (updateViewerStatusUI will unlock when ready)
-    setControlsEnabled(false)
-    updateDirectionDisplay(1, 0)
+    setControlsEnabled(false);
+    updateDirectionDisplay(1, 0);
   }
   function setControlsEnabled(enabled) {
-    const main = document.querySelector('main.wrap')
-    if (main) main.classList.toggle('controls-locked', !enabled)
+    const main = document.querySelector('main.wrap');
+    if (main) main.classList.toggle('controls-locked', !enabled);
   }
   function safeSend(type, payload) {
     try {
       if (typeof wsClient?.send === 'function') {
-        const result = wsClient.send(type, payload)
+        const result = wsClient.send(type, payload);
         if (result && typeof result.catch === 'function') {
           result.catch((err) => {
             if (err.message === 'Session not found') {
               const msg =
                 globalThis.i18n?.t('controller.sessionLost') ||
-                'Session expired. Please reload the page.'
-              showNotification(msg, 'error')
+                'Session expired. Please reload the page.';
+              showNotification(msg, 'error');
             }
-          })
+          });
         }
       }
     } catch (e) {
@@ -1389,111 +1391,111 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   }
   function updateSpeed(speed) {
     if (globalThis.__current?.isInitializing) {
-      return
+      return;
     }
     if (!globalThis.__current?.viewerConnected) {
-      showViewerNotConnectedWarning()
-      return
+      showViewerNotConnectedWarning();
+      return;
     }
     try {
-      safeSend(WS_MSG.controllerUpdate, { speed })
+      safeSend(WS_MSG.controllerUpdate, { speed });
     } catch (err) {
-      debugWarn('Error updating speed:', err)
+      debugWarn('Error updating speed:', err);
     }
   }
   async function initializePreview() {
-    showWaitingForViewer()
-    const previewWrap = document.getElementById('previewWrap')
+    showWaitingForViewer();
+    const previewWrap = document.getElementById('previewWrap');
     if (previewWrap) {
-      previewWrap.style.display = 'block'
+      previewWrap.style.display = 'block';
     }
-    const canvas = document.getElementById('preview')
+    const canvas = document.getElementById('preview');
     if (!canvas) {
-      return
+      return;
     }
     if (canvas.width === 0 || canvas.height === 0) {
-      const container = canvas.parentElement
-      const containerRect = container.getBoundingClientRect()
-      const initialWidth = Math.min(containerRect.width - 40, 500)
-      const initialHeight = Math.min(400, initialWidth * 0.75)
-      canvas.width = initialWidth
-      canvas.height = initialHeight
-      canvas.style.width = canvas.width + 'px'
-      canvas.style.height = canvas.height + 'px'
+      const container = canvas.parentElement;
+      const containerRect = container.getBoundingClientRect();
+      const initialWidth = Math.min(containerRect.width - 40, 500);
+      const initialHeight = Math.min(400, initialWidth * 0.75);
+      canvas.width = initialWidth;
+      canvas.height = initialHeight;
+      canvas.style.width = canvas.width + 'px';
+      canvas.style.height = canvas.height + 'px';
     }
     try {
       previewPhysicsEngine = new PhysicsEngine({
         sessionId: 'preview',
         isViewer: true,
-        clientSimulation: true // Start with local simulation (failsafe)
-      })
+        clientSimulation: true, // Start with local simulation (failsafe)
+      });
       try {
-        globalThis.__previewPhysics = previewPhysicsEngine
+        globalThis.__previewPhysics = previewPhysicsEngine;
       } catch (err) {
-        debugWarn('Unable to export preview physics engine:', err)
+        debugWarn('Unable to export preview physics engine:', err);
       }
-      previewPhysicsEngine.setPaused(true)
-      globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce())
+      previewPhysicsEngine.setPaused(true);
+      globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce());
       if (globalThis.BBConfig?.smoothing) {
-        previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
+        previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing);
       }
-      if (physicsInterval) clearInterval(physicsInterval)
-      physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
-      requestAnimationFrame(renderPreviewLoop)
+      if (physicsInterval) clearInterval(physicsInterval);
+      physicsInterval = setInterval(physicsLoop, PHYSICS_DT);
+      requestAnimationFrame(renderPreviewLoop);
       globalThis.__previewRenderer = new BallRenderer(
         canvas,
         previewPhysicsEngine,
         {
-          localPhysics: false // Превью следует за состоянием от viewer через WebSocket
-        }
-      )
-      globalThis.__previewCanvas = canvas
-      const canvasWidth = canvas.width
-      const canvasHeight = canvas.height
+          localPhysics: false, // Превью следует за состоянием от viewer через WebSocket
+        },
+      );
+      globalThis.__previewCanvas = canvas;
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
       if (
         globalThis.__current.viewerScreenSize &&
         globalThis.__current.viewerScreenSize.width > 0
       ) {
         previewPhysicsEngine.setWorldSize(
           globalThis.__current.viewerScreenSize.width,
-          globalThis.__current.viewerScreenSize.height
-        )
-        const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
-        const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
-        previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
-        previewPhysicsEngine.setVelocity(0, 0)
+          globalThis.__current.viewerScreenSize.height,
+        );
+        const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2;
+        const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2;
+        previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY);
+        previewPhysicsEngine.setVelocity(0, 0);
       } else {
-        previewPhysicsEngine.setWorldSize(canvasWidth, canvasHeight)
-        previewPhysicsEngine.setPosition(canvasWidth / 2, canvasHeight / 2)
-        previewPhysicsEngine.setVelocity(0, 0)
+        previewPhysicsEngine.setWorldSize(canvasWidth, canvasHeight);
+        previewPhysicsEngine.setPosition(canvasWidth / 2, canvasHeight / 2);
+        previewPhysicsEngine.setVelocity(0, 0);
       }
     } catch (error) {
       // Silently ignore canvas size errors
     }
   }
   function showWaitingForViewer() {
-    const viewerInfo = document.getElementById('viewerInfo')
+    const viewerInfo = document.getElementById('viewerInfo');
     if (viewerInfo) {
       viewerInfo.textContent =
         globalThis.i18n?.t('controller.waitingForViewerConnection') ||
-        '⏳ Waiting for viewer connection'
-      viewerInfo.style.display = 'block'
+        '⏳ Waiting for viewer connection';
+      viewerInfo.style.display = 'block';
     }
     if (previewPhysicsEngine) {
-      const canvas = document.getElementById('preview')
+      const canvas = document.getElementById('preview');
       if (canvas) {
-        const centerX = canvas.width / 2
-        const centerY = canvas.height / 2
-        previewPhysicsEngine.setPosition(centerX, centerY)
-        previewPhysicsEngine.setVelocity(0, 0)
-        previewPhysicsEngine.setPaused(true)
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        previewPhysicsEngine.setPosition(centerX, centerY);
+        previewPhysicsEngine.setVelocity(0, 0);
+        previewPhysicsEngine.setPaused(true);
       }
     }
   }
   function hideWaitingForViewer() {
-    const viewerInfo = document.getElementById('viewerInfo')
+    const viewerInfo = document.getElementById('viewerInfo');
     if (viewerInfo) {
-      viewerInfo.style.display = 'none'
+      viewerInfo.style.display = 'none';
     }
   }
   /**
@@ -1503,7 +1505,7 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function isDiagonalMode() {
     return (
       currentDirectionMode === 'diagRL' || currentDirectionMode === 'diagRLL'
-    )
+    );
   }
   /**
    * Пересчитывает и применяет диагональное направление при изменении размера экрана
@@ -1511,75 +1513,75 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    */
   function recalculateDiagonalDirectionIfNeeded() {
     if (!isDiagonalMode()) {
-      return
+      return;
     }
-    const directionVector = getDirectionVector(currentDirectionMode)
+    const directionVector = getDirectionVector(currentDirectionMode);
     if (!directionVector) {
-      return
+      return;
     }
-    const { dirX, dirY } = directionVector
-    directionState = { dx: dirX, dy: dirY }
+    const { dirX, dirY } = directionVector;
+    directionState = { dx: dirX, dy: dirY };
     if (isPlaying) {
       safeSend(WS_MSG.controllerUpdate, {
         paused: true,
-        returnToCenter: true
-      })
+        returnToCenter: true,
+      });
       setTimeout(() => {
         safeSend(WS_MSG.controllerUpdate, {
           paused: false,
           dirX,
-          dirY
-        })
-      }, 200)
+          dirY,
+        });
+      }, 200);
     } else {
       safeSend(WS_MSG.controllerUpdate, {
         dirX,
-        dirY
-      })
+        dirY,
+      });
     }
   }
   function updatePreviewSize(viewerScreenSize) {
     if (canUpdatePreview(viewerScreenSize)) {
-      const canvas = document.getElementById('preview')
-      if (!canvas) return
+      const canvas = document.getElementById('preview');
+      if (!canvas) return;
       const { previewWidth, previewHeight } = calculatePreviewDimensions(
         canvas,
-        viewerScreenSize
-      )
-      setCanvasDimensions(canvas, previewWidth, previewHeight)
-      updatePhysicsEngineWorldSize(viewerScreenSize)
-      recalculateDiagonalDirectionIfNeeded()
-      applyServerStateOrCenter()
-      updateViewerInfo(viewerScreenSize)
+        viewerScreenSize,
+      );
+      setCanvasDimensions(canvas, previewWidth, previewHeight);
+      updatePhysicsEngineWorldSize(viewerScreenSize);
+      recalculateDiagonalDirectionIfNeeded();
+      applyServerStateOrCenter();
+      updateViewerInfo(viewerScreenSize);
     } else {
-      showWaitingForViewer()
-      centerBallInViewer()
+      showWaitingForViewer();
+      centerBallInViewer();
     }
   }
   function canUpdatePreview(viewerScreenSize) {
     const isReady =
-      viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine
-    return Boolean(isReady)
+      viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine;
+    return Boolean(isReady);
   }
   function calculatePreviewDimensions(canvas, viewerScreenSize) {
-    const container = canvas.parentElement
-    const containerRect = container.getBoundingClientRect()
-    const maxWidth = Math.min(containerRect.width - 40, 500)
-    const maxHeight = Math.min(400, maxWidth * 0.75)
-    const viewerRatio = viewerScreenSize.width / viewerScreenSize.height
-    let previewWidth = maxWidth
-    let previewHeight = previewWidth / viewerRatio
+    const container = canvas.parentElement;
+    const containerRect = container.getBoundingClientRect();
+    const maxWidth = Math.min(containerRect.width - 40, 500);
+    const maxHeight = Math.min(400, maxWidth * 0.75);
+    const viewerRatio = viewerScreenSize.width / viewerScreenSize.height;
+    let previewWidth = maxWidth;
+    let previewHeight = previewWidth / viewerRatio;
     if (previewHeight > maxHeight) {
-      previewHeight = maxHeight
-      previewWidth = previewHeight * viewerRatio
+      previewHeight = maxHeight;
+      previewWidth = previewHeight * viewerRatio;
     }
-    return { previewWidth, previewHeight }
+    return { previewWidth, previewHeight };
   }
   function setCanvasDimensions(canvas, previewWidth, previewHeight) {
-    canvas.width = previewWidth
-    canvas.height = previewHeight
-    canvas.style.width = canvas.width + 'px'
-    canvas.style.height = canvas.height + 'px'
+    canvas.width = previewWidth;
+    canvas.height = previewHeight;
+    canvas.style.width = canvas.width + 'px';
+    canvas.style.height = canvas.height + 'px';
   }
   function updatePhysicsEngineWorldSize(viewerScreenSize) {
     if (
@@ -1590,42 +1592,42 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     ) {
       previewPhysicsEngine.setWorldSize(
         viewerScreenSize.width,
-        viewerScreenSize.height
-      )
+        viewerScreenSize.height,
+      );
     }
   }
   function applyServerStateOrCenter() {
     if (lastServerState) {
-      previewPhysicsEngine.applyCommand(lastServerState)
+      previewPhysicsEngine.applyCommand(lastServerState);
     } else {
-      centerBallInViewer()
+      centerBallInViewer();
     }
   }
   function centerBallInViewer() {
-    if (!previewPhysicsEngine) return
+    if (!previewPhysicsEngine) return;
     if (globalThis.__current?.viewerScreenSize?.width > 0) {
-      const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
-      const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
-      previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
-      previewPhysicsEngine.setVelocity(0, 0)
+      const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2;
+      const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2;
+      previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY);
+      previewPhysicsEngine.setVelocity(0, 0);
     } else if (isPreviewFullscreen && previewFsCanvas) {
-      const centerX = previewFsCanvas.width / 2
-      const centerY = previewFsCanvas.height / 2
-      previewPhysicsEngine.setPosition(centerX, centerY)
-      previewPhysicsEngine.setVelocity(0, 0)
+      const centerX = previewFsCanvas.width / 2;
+      const centerY = previewFsCanvas.height / 2;
+      previewPhysicsEngine.setPosition(centerX, centerY);
+      previewPhysicsEngine.setVelocity(0, 0);
     } else if (globalThis.__previewCanvas) {
-      const centerX = globalThis.__previewCanvas.width / 2
-      const centerY = globalThis.__previewCanvas.height / 2
-      previewPhysicsEngine.setPosition(centerX, centerY)
-      previewPhysicsEngine.setVelocity(0, 0)
+      const centerX = globalThis.__previewCanvas.width / 2;
+      const centerY = globalThis.__previewCanvas.height / 2;
+      previewPhysicsEngine.setPosition(centerX, centerY);
+      previewPhysicsEngine.setVelocity(0, 0);
     }
   }
   function updateViewerInfo(viewerScreenSize) {
-    const viewerInfo = document.getElementById('viewerInfo')
+    const viewerInfo = document.getElementById('viewerInfo');
     if (viewerInfo) {
-      const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer'
-      viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`
-      viewerInfo.style.display = 'block'
+      const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer';
+      viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`;
+      viewerInfo.style.display = 'block';
     }
   }
   /**
@@ -1636,27 +1638,27 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function getDirectionVector(directionMode) {
     switch (directionMode) {
       case 'horizontal':
-        return { dirX: 1, dirY: 0 }
+        return { dirX: 1, dirY: 0 };
       case 'vertical':
-        return { dirX: 0, dirY: 1 }
+        return { dirX: 0, dirY: 1 };
       case 'diagRL': {
-        const width = globalThis.__current?.viewerScreenSize?.width || 800
-        const height = globalThis.__current?.viewerScreenSize?.height || 600
-        const diagonal = Math.hypot(width, height)
-        return { dirX: width / diagonal, dirY: height / diagonal }
+        const width = globalThis.__current?.viewerScreenSize?.width || 800;
+        const height = globalThis.__current?.viewerScreenSize?.height || 600;
+        const diagonal = Math.hypot(width, height);
+        return { dirX: width / diagonal, dirY: height / diagonal };
       }
       case 'diagRLL': {
-        const width = globalThis.__current?.viewerScreenSize?.width || 800
-        const height = globalThis.__current?.viewerScreenSize?.height || 600
-        const diagonal = Math.hypot(width, height)
-        return { dirX: width / diagonal, dirY: -height / diagonal }
+        const width = globalThis.__current?.viewerScreenSize?.width || 800;
+        const height = globalThis.__current?.viewerScreenSize?.height || 600;
+        const diagonal = Math.hypot(width, height);
+        return { dirX: width / diagonal, dirY: -height / diagonal };
       }
       case 'random': {
-        const angle = Math.random() * 2 * Math.PI
-        return { dirX: Math.cos(angle), dirY: Math.sin(angle) }
+        const angle = Math.random() * 2 * Math.PI;
+        return { dirX: Math.cos(angle), dirY: Math.sin(angle) };
       }
       default:
-        return null
+        return null;
     }
   }
   /**
@@ -1669,26 +1671,26 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function _applyDirectionChangeWhenPlaying(dirX, dirY) {
     safeSend(WS_MSG.controllerUpdate, {
       paused: true,
-      returnToCenter: true
-    })
+      returnToCenter: true,
+    });
     if (previewPhysicsEngine) {
       // Center first, then pause — setPosition cancels seekingCenter so
       // the manual centering won't be overridden by the animation
-      centerBallInViewer()
-      previewPhysicsEngine.setPaused(true)
+      centerBallInViewer();
+      previewPhysicsEngine.setPaused(true);
     }
     // 400ms: enough for server to process + broadcast + viewer to receive & center
     setTimeout(() => {
       safeSend(WS_MSG.controllerUpdate, {
         paused: false,
         dirX,
-        dirY
-      })
+        dirY,
+      });
       if (previewPhysicsEngine) {
-        previewPhysicsEngine.setDirection(dirX, dirY)
-        previewPhysicsEngine.setPaused(false)
+        previewPhysicsEngine.setDirection(dirX, dirY);
+        previewPhysicsEngine.setPaused(false);
       }
-    }, 400)
+    }, 400);
   }
   /**
    * @private
@@ -1700,38 +1702,38 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function _applyDirectionChangeWhenPaused(dirX, dirY) {
     safeSend(WS_MSG.controllerUpdate, {
       dirX,
-      dirY
-    })
+      dirY,
+    });
   }
   /**
    * Устанавливает направление движения шарика.
    * @param {string} directionMode - Режим направления для установки.
    */
   function setDirection(directionMode) {
-    if (!directionMode) return
+    if (!directionMode) return;
     // Во время инициализации просто обновляем локальное состояние
     if (globalThis.__current?.isInitializing) {
-      return
+      return;
     }
     try {
-      const directionVector = getDirectionVector(directionMode)
-      if (!directionVector) return
-      const { dirX, dirY } = directionVector
-      directionState = { dx: dirX, dy: dirY }
-      currentDirectionMode = directionMode
-      __ignoreServerDirectionUntilTs = performance.now() + 1500
+      const directionVector = getDirectionVector(directionMode);
+      if (!directionVector) return;
+      const { dirX, dirY } = directionVector;
+      directionState = { dx: dirX, dy: dirY };
+      currentDirectionMode = directionMode;
+      __ignoreServerDirectionUntilTs = performance.now() + 1500;
       if (isPlaying) {
-        _applyDirectionChangeWhenPlaying(dirX, dirY)
+        _applyDirectionChangeWhenPlaying(dirX, dirY);
       } else {
         if (previewPhysicsEngine) {
-          previewPhysicsEngine.setDirection(dirX, dirY)
+          previewPhysicsEngine.setDirection(dirX, dirY);
         }
-        _applyDirectionChangeWhenPaused(dirX, dirY)
+        _applyDirectionChangeWhenPaused(dirX, dirY);
       }
-      updateDirectionButtons()
-      updateDirectionDisplay(dirX, dirY)
+      updateDirectionButtons();
+      updateDirectionDisplay(dirX, dirY);
     } catch (error) {
-      console.error('Ошибка установки направления:', error)
+      console.error('Ошибка установки направления:', error);
     }
   }
   function setBallColor(color) {
@@ -1740,100 +1742,100 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     }
     if (globalThis.__current?.isInitializing) {
       if (lastServerState) {
-        lastServerState.colorBall = color
+        lastServerState.colorBall = color;
       }
-      return
+      return;
     }
     if (!globalThis.__current?.viewerConnected) {
       if (lastServerState) {
-        lastServerState.colorBall = color
+        lastServerState.colorBall = color;
       }
-      return
+      return;
     }
-    safeSend(WS_MSG.controllerUpdate, { colorBall: color })
+    safeSend(WS_MSG.controllerUpdate, { colorBall: color });
   }
   function setBallSize(size) {
     // Всегда обновляем локальное состояние и превью
     if (lastServerState) {
-      lastServerState.radius = size
+      lastServerState.radius = size;
     }
     if (previewPhysicsEngine) {
-      previewPhysicsEngine.ball.radius = size
+      previewPhysicsEngine.ball.radius = size;
     }
     if (globalThis.__current?.isInitializing) {
-      return
+      return;
     }
-    safeSend(WS_MSG.controllerUpdate, { radius: size })
+    safeSend(WS_MSG.controllerUpdate, { radius: size });
   }
   function setSoundEnabled(enabled) {
     if (globalThis.__current?.isInitializing) {
-      return
+      return;
     }
     if (!globalThis.__current?.viewerConnected) {
-      showViewerNotConnectedWarning()
-      return
+      showViewerNotConnectedWarning();
+      return;
     }
-    safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) })
+    safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) });
     if (lastServerState) {
-      lastServerState.soundEnabled = Boolean(enabled)
+      lastServerState.soundEnabled = Boolean(enabled);
     }
-    updateViewerAudioIndicators()
+    updateViewerAudioIndicators();
   }
   function setSoundType(soundType) {
     if (globalThis.__current?.isInitializing) {
-      return
+      return;
     }
     if (!globalThis.__current?.viewerConnected) {
-      showViewerNotConnectedWarning()
-      return
+      showViewerNotConnectedWarning();
+      return;
     }
-    safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
+    safeSend(WS_MSG.controllerUpdate, { soundType: soundType });
   }
   function setBallSizeMultiplier(multiplier) {
-    const baseSize = 20
-    const newSize = baseSize * multiplier
-    setBallSize(newSize)
+    const baseSize = 20;
+    const newSize = baseSize * multiplier;
+    setBallSize(newSize);
   }
   function setBackgroundColor(color) {
     if (globalThis.__previewRenderer) {
-      globalThis.__previewRenderer.setBackgroundColor(color)
+      globalThis.__previewRenderer.setBackgroundColor(color);
     }
     if (previewFsRenderer) {
-      previewFsRenderer.setBackgroundColor(color)
+      previewFsRenderer.setBackgroundColor(color);
     }
     if (globalThis.__current?.isInitializing) {
       if (lastServerState) {
-        lastServerState.colorBg = color
+        lastServerState.colorBg = color;
       }
-      return
+      return;
     }
     if (!globalThis.__current?.viewerConnected) {
       if (lastServerState) {
-        lastServerState.colorBg = color
+        lastServerState.colorBg = color;
       }
-      return
+      return;
     }
-    safeSend(WS_MSG.controllerUpdate, { colorBg: color })
+    safeSend(WS_MSG.controllerUpdate, { colorBg: color });
   }
   function updateDirectionButtons() {
-    const directionButtons = document.querySelectorAll('[data-mode]')
+    const directionButtons = document.querySelectorAll('[data-mode]');
     for (const button of directionButtons) {
       button.classList.toggle(
         'active',
-        button.dataset.mode === currentDirectionMode
-      )
+        button.dataset.mode === currentDirectionMode,
+      );
     }
     const fsDirectionButtons = {
       fsDirH: 'horizontal',
       fsDirV: 'vertical',
       fsDirDL: 'diagRLL',
       fsDirDR: 'diagRL',
-      fsDirRandom: 'random'
-    }
+      fsDirRandom: 'random',
+    };
     for (const [id, mode] of Object.entries(fsDirectionButtons)) {
-      const button = document.getElementById(id)
+      const button = document.getElementById(id);
       if (button) {
-        button.classList.toggle('active', mode === currentDirectionMode)
+        button.classList.toggle('active', mode === currentDirectionMode);
       }
     }
   }
@@ -1846,34 +1848,34 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         return {
           text:
             globalThis.i18n?.t('controller.horizontalFull') || '↔️ Horizontal',
-          icon: '↔️'
-        }
+          icon: '↔️',
+        };
       case 'vertical':
         return {
           text: globalThis.i18n?.t('controller.verticalFull') || '↕️ Vertical',
-          icon: '↕️'
-        }
+          icon: '↕️',
+        };
       case 'diagRL':
         return {
           text: globalThis.i18n?.t('controller.diagLTRB') || '↘️ Diagonal',
-          icon: '↘️'
-        }
+          icon: '↘️',
+        };
       case 'diagRLL':
         return {
           text: globalThis.i18n?.t('controller.diagLBRT') || '↗️ Diagonal',
-          icon: '↗️'
-        }
+          icon: '↗️',
+        };
       case 'random':
         return {
           text: globalThis.i18n?.t('controller.randomFull') || '🎲 Random',
-          icon: '🎲'
-        }
+          icon: '🎲',
+        };
       default:
         return {
           text:
             globalThis.i18n?.t('controller.unknownDirection') || '❓ Unknown',
-          icon: '❓'
-        }
+          icon: '❓',
+        };
     }
   }
   /**
@@ -1885,42 +1887,42 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function updateDirectionDisplay(dirX, dirY, customText = null) {
     try {
       const directionDisplay = document.getElementById(
-        'currentDirectionDisplay'
-      )
-      let directionText = customText || 'Неизвестно'
-      let directionIcon
+        'currentDirectionDisplay',
+      );
+      let directionText = customText || 'Неизвестно';
+      let directionIcon;
       if (!customText) {
-        const directionInfo = getDirectionInfo(currentDirectionMode)
-        directionText = directionInfo.text
-        directionIcon = directionInfo.icon
+        const directionInfo = getDirectionInfo(currentDirectionMode);
+        directionText = directionInfo.text;
+        directionIcon = directionInfo.icon;
       }
       if (directionDisplay) {
-        directionDisplay.textContent = directionIcon || '❓'
-        directionDisplay.title = directionText
+        directionDisplay.textContent = directionIcon || '❓';
+        directionDisplay.title = directionText;
       }
-      const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
+      const fsDirectionDisplay = document.getElementById('fsCurrentDirection');
       if (fsDirectionDisplay) {
         fsDirectionDisplay.innerHTML = directionDisplay
           ? directionDisplay.textContent
-          : `${directionIcon || '❓'}`
+          : `${directionIcon || '❓'}`;
       }
     } catch (error) {
-      console.error('Ошибка обновления отображения направления:', error)
+      console.error('Ошибка обновления отображения направления:', error);
     }
   }
   function updatePlayPauseButton() {
-    const button = document.getElementById('playPauseBtn')
+    const button = document.getElementById('playPauseBtn');
     if (button) {
       if (isPlaying) {
-        const stopText = globalThis.i18n?.t('controller.stop') || '⏸ Stop'
-        button.textContent = stopText
-        button.classList.add('playing')
-        button.disabled = false // Кнопка активна при воспроизведении
+        const stopText = globalThis.i18n?.t('controller.stop') || '⏸ Stop';
+        button.textContent = stopText;
+        button.classList.add('playing');
+        button.disabled = false; // Кнопка активна при воспроизведении
       } else {
-        const startText = globalThis.i18n?.t('controller.start') || '▶️ Start'
-        button.textContent = startText
-        button.classList.remove('playing')
-        button.disabled = false
+        const startText = globalThis.i18n?.t('controller.start') || '▶️ Start';
+        button.textContent = startText;
+        button.classList.remove('playing');
+        button.disabled = false;
       }
     }
   }
@@ -1933,74 +1935,74 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function _setPlayPauseState(shouldPlay) {
     // Не отправляем команды во время инициализации
     if (globalThis.__current?.isInitializing) {
-      return
+      return;
     }
     if (!globalThis.__current?.viewerConnected) {
-      if (shouldPlay) showViewerNotConnectedWarning()
-      return
+      if (shouldPlay) showViewerNotConnectedWarning();
+      return;
     }
     const payload = shouldPlay
       ? {
           paused: false,
           ...(getDirectionVector(currentDirectionMode) || { dirX: 1, dirY: 0 }),
-          speed: Number(components.speed?.getSpeed() ?? 40)
+          speed: Number(components.speed?.getSpeed() ?? 40),
         }
       : {
           paused: true,
-          returnToCenter: true
-        }
-    safeSend(WS_MSG.controllerUpdate, payload)
-    isPlaying = shouldPlay
-    globalThis.__current.isPlaying = shouldPlay
-    globalThis.isPlaying = shouldPlay
-    globalThis.forcePauseUntilUserAction = false
+          returnToCenter: true,
+        };
+    safeSend(WS_MSG.controllerUpdate, payload);
+    isPlaying = shouldPlay;
+    globalThis.__current.isPlaying = shouldPlay;
+    globalThis.isPlaying = shouldPlay;
+    globalThis.forcePauseUntilUserAction = false;
     if (shouldPlay) {
-      bbCounters.start()
+      bbCounters.start();
     } else {
-      bbCounters.stop(true)
+      bbCounters.stop(true);
     }
     if (previewPhysicsEngine) {
       if (shouldPlay) {
         // Don't unpause preview yet — wait for first server state_update to sync position.
         // This prevents jitter caused by preview moving ahead of server during network latency.
-        const dirOnly = { ...payload }
-        delete dirOnly.paused
-        previewPhysicsEngine.applyCommand(dirOnly)
-        previewPhysicsEngine._pendingPlaySync = true
-        previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
+        const dirOnly = { ...payload };
+        delete dirOnly.paused;
+        previewPhysicsEngine.applyCommand(dirOnly);
+        previewPhysicsEngine._pendingPlaySync = true;
+        previewPhysicsEngine._hasReceivedFirstMovingUpdate = false;
       } else {
-        previewPhysicsEngine._pendingPlaySync = false
-        previewPhysicsEngine.applyCommand(payload)
-        centerBallInViewer()
+        previewPhysicsEngine._pendingPlaySync = false;
+        previewPhysicsEngine.applyCommand(payload);
+        centerBallInViewer();
       }
     }
-    __ignoreServerPausedUntilTs = performance.now() + 800
-    _schedulePlayPauseAnimations()
-    return true
+    __ignoreServerPausedUntilTs = performance.now() + 800;
+    _schedulePlayPauseAnimations();
+    return true;
   }
   /**
    * Переключает состояние воспроизведения/паузы сессии.
    * Отправляет соответствующие команды на сервер и обновляет UI.
    */
   function togglePlayPause() {
-    _setPlayPauseState(!isPlaying)
+    _setPlayPauseState(!isPlaying);
   }
   /**
    * Обновляет все кнопки Play/Pause (основную и полноэкранную).
    * @private
    */
   function _updateAllPlayPauseButtons() {
-    updatePlayPauseButton()
-    syncFsPlayPauseButton()
+    updatePlayPauseButton();
+    syncFsPlayPauseButton();
   }
   /**
    * Планирует обновления кнопок с анимацией.
    * @private
    */
   function _schedulePlayPauseAnimations() {
-    _updateAllPlayPauseButtons()
-    setTimeout(() => _updateAllPlayPauseButtons(), 150)
-    setTimeout(() => _updateAllPlayPauseButtons(), 300)
+    _updateAllPlayPauseButtons();
+    setTimeout(() => _updateAllPlayPauseButtons(), 150);
+    setTimeout(() => _updateAllPlayPauseButtons(), 300);
   }
   /**
    * Нормализует координату, проверяя, является ли она конечным числом.
@@ -2012,7 +2014,7 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function _normalizeCoordinate(coord, fallback) {
     return typeof coord === 'number' && Number.isFinite(coord)
       ? coord
-      : fallback
+      : fallback;
   }
   /**
    * Масштабирует состояние мяча из координат вьювера в координаты превью.
@@ -2023,127 +2025,127 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
     const canScale =
       globalThis.__current.viewerScreenSize &&
       globalThis.__previewCanvas &&
-      state
+      state;
     if (canScale) {
-      const viewerSize = globalThis.__current.viewerScreenSize
+      const viewerSize = globalThis.__current.viewerScreenSize;
       const previewSize = {
         width: globalThis.__previewCanvas.width,
-        height: globalThis.__previewCanvas.height
-      }
+        height: globalThis.__previewCanvas.height,
+      };
       if (viewerSize.width > 0 && viewerSize.height > 0) {
-        const scaleX = previewSize.width / viewerSize.width
-        const scaleY = previewSize.height / viewerSize.height
-        const scaleRadius = Math.min(scaleX, scaleY)
-        const scaledState = { ...state }
-        const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2)
-        const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2)
-        scaledState.x = rawX * scaleX
-        scaledState.y = rawY * scaleY
+        const scaleX = previewSize.width / viewerSize.width;
+        const scaleY = previewSize.height / viewerSize.height;
+        const scaleRadius = Math.min(scaleX, scaleY);
+        const scaledState = { ...state };
+        const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2);
+        const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2);
+        scaledState.x = rawX * scaleX;
+        scaledState.y = rawY * scaleY;
         if (typeof scaledState.radius === 'number') {
-          scaledState.radius *= scaleRadius
+          scaledState.radius *= scaleRadius;
         }
-        return scaledState
+        return scaledState;
       }
     }
-    return state
+    return state;
   }
   function updateViewerStatusUI() {
-    const viewerStatusEl = document.getElementById('viewerStatus')
+    const viewerStatusEl = document.getElementById('viewerStatus');
     if (viewerStatusEl) {
       if (globalThis.__current.viewerConnected) {
         viewerStatusEl.textContent =
-          globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
-        viewerStatusEl.classList.add('connected')
-        viewerStatusEl.classList.remove('disconnected')
-        viewerStatusEl.style.fontWeight = '600'
-        hideWaitingForViewer()
+          globalThis.i18n?.t('controller.viewerConnected') || 'Connected';
+        viewerStatusEl.classList.add('connected');
+        viewerStatusEl.classList.remove('disconnected');
+        viewerStatusEl.style.fontWeight = '600';
+        hideWaitingForViewer();
         if (globalThis.__current.viewerScreenSize?.width > 0) {
-          updatePreviewSize(globalThis.__current.viewerScreenSize)
+          updatePreviewSize(globalThis.__current.viewerScreenSize);
         }
-        setControlsEnabled(true)
+        setControlsEnabled(true);
       } else {
         viewerStatusEl.textContent =
-          globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
-        viewerStatusEl.classList.add('disconnected')
-        viewerStatusEl.classList.remove('connected')
-        viewerStatusEl.style.fontWeight = '400'
-        showWaitingForViewer()
-        setControlsEnabled(false)
+          globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...';
+        viewerStatusEl.classList.add('disconnected');
+        viewerStatusEl.classList.remove('connected');
+        viewerStatusEl.style.fontWeight = '400';
+        showWaitingForViewer();
+        setControlsEnabled(false);
       }
     }
-    updateViewerAudioIndicators()
-    updateViewerLinkVisualState()
+    updateViewerAudioIndicators();
+    updateViewerLinkVisualState();
   }
   /**
    * Обновляет визуальное состояние ссылки для клиента в зависимости от подключения вьювера
    */
   function updateViewerLinkVisualState() {
-    const viewInput = document.getElementById('view')
-    if (!viewInput) return
+    const viewInput = document.getElementById('view');
+    if (!viewInput) return;
     if (globalThis.__current.viewerConnected) {
-      viewInput.style.borderColor = '#94a3b8'
-      viewInput.style.backgroundColor = '#ffffff'
-      viewInput.style.color = '#1f2937'
-      viewInput.placeholder = ''
+      viewInput.style.borderColor = '#94a3b8';
+      viewInput.style.backgroundColor = '#ffffff';
+      viewInput.style.color = '#1f2937';
+      viewInput.placeholder = '';
     } else {
-      viewInput.style.borderColor = '#ef4444'
-      viewInput.style.backgroundColor = '#fef2f2'
-      viewInput.style.color = '#ef4444'
+      viewInput.style.borderColor = '#ef4444';
+      viewInput.style.backgroundColor = '#fef2f2';
+      viewInput.style.color = '#ef4444';
       viewInput.placeholder =
         (globalThis.i18n?.t('controller.waitingViewer') ||
-          'Waiting for viewer') + '...'
+          'Waiting for viewer') + '...';
     }
   }
   /**
    * Обновляет индикаторы звука зрителя на основе состояния
    */
   function updateViewerAudioIndicators() {
-    const audioIndicator = document.getElementById('viewerAudioIndicator')
-    const audioText = document.getElementById('viewerAudioText')
-    if (!audioIndicator || !audioText) return
-    const soundEnabled = lastServerState?.soundEnabled ?? false
+    const audioIndicator = document.getElementById('viewerAudioIndicator');
+    const audioText = document.getElementById('viewerAudioText');
+    if (!audioIndicator || !audioText) return;
+    const soundEnabled = lastServerState?.soundEnabled ?? false;
     const viewerAudioActivated =
-      globalThis.__current?.viewerAudioActivated ?? false
-    const currentState = `${soundEnabled}-${viewerAudioActivated}`
-    if (updateViewerAudioIndicators._lastState === currentState) return
-    updateViewerAudioIndicators._lastState = currentState
+      globalThis.__current?.viewerAudioActivated ?? false;
+    const currentState = `${soundEnabled}-${viewerAudioActivated}`;
+    if (updateViewerAudioIndicators._lastState === currentState) return;
+    updateViewerAudioIndicators._lastState = currentState;
     if (soundEnabled) {
       if (!viewerAudioActivated) {
-        audioIndicator.classList.remove('hidden', 'ready')
-        audioIndicator.classList.add('warning')
+        audioIndicator.classList.remove('hidden', 'ready');
+        audioIndicator.classList.add('warning');
         audioText.textContent =
           globalThis.i18n?.t('controller.viewerSoundNotActivated') ||
-          'Waiting: viewer must click "Enable sound"'
+          'Waiting: viewer must click "Enable sound"';
       } else {
-        audioIndicator.classList.remove('hidden', 'warning')
-        audioIndicator.classList.add('ready')
+        audioIndicator.classList.remove('hidden', 'warning');
+        audioIndicator.classList.add('ready');
         audioText.textContent =
           globalThis.i18n?.t('controller.viewerHearingSound') ||
-          'Viewer sound activated'
+          'Viewer sound activated';
       }
     } else {
-      audioIndicator.classList.add('hidden')
+      audioIndicator.classList.add('hidden');
     }
   }
   function _initializeFullscreenRenderer() {
     try {
       if (!previewPhysicsEngine) {
-        return
+        return;
       }
       if (previewFsRenderer) {
-        previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
+        previewFsRenderer.setPhysicsEngine(previewPhysicsEngine);
       } else {
         previewFsRenderer = new BallRenderer(
           previewFsCanvas,
           previewPhysicsEngine,
           {
-            localPhysics: false
-          }
-        )
-        previewFsRenderer.start()
+            localPhysics: false,
+          },
+        );
+        previewFsRenderer.start();
       }
     } catch (err) {
-      debugError('Error initializing fullscreen preview:', err)
+      debugError('Error initializing fullscreen preview:', err);
     }
   }
   /**
@@ -2151,135 +2153,135 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    * Рефакторинг для снижения когнитивной сложности.
    */
   function openPreviewFullscreen() {
-    const overlay = document.getElementById('previewOverlay')
+    const overlay = document.getElementById('previewOverlay');
     if (!overlay || !previewFsCanvas) {
-      return
+      return;
     }
-    const currentUrl = globalThis.location.href
-    const fullscreenUrl = currentUrl.split('#')[0] + '#fullscreen-preview'
+    const currentUrl = globalThis.location.href;
+    const fullscreenUrl = currentUrl.split('#')[0] + '#fullscreen-preview';
     history.pushState(
       { fullscreen: true, returnUrl: currentUrl },
       '',
-      fullscreenUrl
-    )
-    overlay.style.display = 'block'
-    isPreviewFullscreen = true
-    document.body.classList.add('fullscreen-active')
-    _initializeFullscreenRenderer()
-    resizePreviewFullscreen()
-    setupFsPanelAutoHide()
-    setupFsPanelDrag()
-    setupFullscreenGestures()
-    syncFsPlayPauseButton()
-    wireFullscreenControls()
-    fillFsSessionInfo()
+      fullscreenUrl,
+    );
+    overlay.style.display = 'block';
+    isPreviewFullscreen = true;
+    document.body.classList.add('fullscreen-active');
+    _initializeFullscreenRenderer();
+    resizePreviewFullscreen();
+    setupFsPanelAutoHide();
+    setupFsPanelDrag();
+    setupFullscreenGestures();
+    syncFsPlayPauseButton();
+    wireFullscreenControls();
+    fillFsSessionInfo();
     if (!globalThis.__current?.viewerConnected && previewPhysicsEngine) {
-      centerBallInViewer()
+      centerBallInViewer();
     }
   }
   function closePreviewFullscreen() {
-    const overlay = document.getElementById('previewOverlay')
-    if (!overlay) return
-    const currentUrl = globalThis.location.href
-    const baseUrl = currentUrl.split('#')[0]
-    history.replaceState(null, '', baseUrl)
-    overlay.style.display = 'none'
-    isPreviewFullscreen = false
-    document.body.classList.remove('fullscreen-active')
+    const overlay = document.getElementById('previewOverlay');
+    if (!overlay) return;
+    const currentUrl = globalThis.location.href;
+    const baseUrl = currentUrl.split('#')[0];
+    history.replaceState(null, '', baseUrl);
+    overlay.style.display = 'none';
+    isPreviewFullscreen = false;
+    document.body.classList.remove('fullscreen-active');
   }
   function resizePreviewFullscreen() {
-    if (!previewFsCanvas) return
-    previewFsCanvas.width = globalThis.innerWidth
-    previewFsCanvas.height = globalThis.innerHeight
+    if (!previewFsCanvas) return;
+    previewFsCanvas.width = globalThis.innerWidth;
+    previewFsCanvas.height = globalThis.innerHeight;
     // Override CSS 100vw/100vh with explicit px values so BallRenderer.renderLoop()
     // sees clientWidth === canvas.width and doesn't call resize() which would
     // overwrite the viewer world size with canvas dimensions, shifting the ball
-    previewFsCanvas.style.width = globalThis.innerWidth + 'px'
-    previewFsCanvas.style.height = globalThis.innerHeight + 'px'
+    previewFsCanvas.style.width = globalThis.innerWidth + 'px';
+    previewFsCanvas.style.height = globalThis.innerHeight + 'px';
     if (previewPhysicsEngine) {
-      const vs = globalThis.__current?.viewerScreenSize
+      const vs = globalThis.__current?.viewerScreenSize;
       if (vs && vs.width > 0 && vs.height > 0) {
-        previewPhysicsEngine.setWorldSize(vs.width, vs.height)
+        previewPhysicsEngine.setWorldSize(vs.width, vs.height);
       } else {
         previewPhysicsEngine.setWorldSize(
           globalThis.innerWidth,
-          globalThis.innerHeight
-        )
+          globalThis.innerHeight,
+        );
         if (!globalThis.__current?.viewerConnected) {
-          centerBallInViewer()
+          centerBallInViewer();
         }
       }
     }
   }
   function setupFsPanelAutoHide() {
-    const panel = document.getElementById('previewFsPanel')
-    const overlay = document.getElementById('previewOverlay')
-    if (!panel || !overlay) return
+    const panel = document.getElementById('previewFsPanel');
+    const overlay = document.getElementById('previewOverlay');
+    if (!panel || !overlay) return;
     const show = () => {
-      panel.style.opacity = '1'
-    }
+      panel.style.opacity = '1';
+    };
     const hide = () => {
-      panel.style.opacity = '0'
-    }
+      panel.style.opacity = '0';
+    };
     const scheduleHide = () => {
-      clearTimeout(fsPanelHideTimer)
-      fsPanelHideTimer = setTimeout(hide, 2000)
-    }
+      clearTimeout(fsPanelHideTimer);
+      fsPanelHideTimer = setTimeout(hide, 2000);
+    };
     overlay.addEventListener('mousemove', () => {
-      show()
-      scheduleHide()
-    })
+      show();
+      scheduleHide();
+    });
     overlay.addEventListener('click', () => {
-      show()
-      scheduleHide()
-    })
-    show()
-    scheduleHide()
+      show();
+      scheduleHide();
+    });
+    show();
+    scheduleHide();
   }
   function setupFsPanelDrag() {
-    const panel = document.getElementById('previewFsPanel')
-    const overlay = document.getElementById('previewOverlay')
-    if (!panel || !overlay) return
+    const panel = document.getElementById('previewFsPanel');
+    const overlay = document.getElementById('previewOverlay');
+    if (!panel || !overlay) return;
     const onDown = (x, y) => {
-      const rect = panel.getBoundingClientRect()
-      fsPanelDrag.active = true
-      fsPanelDrag.offsetX = x - rect.left
-      fsPanelDrag.offsetY = y - rect.top
-    }
+      const rect = panel.getBoundingClientRect();
+      fsPanelDrag.active = true;
+      fsPanelDrag.offsetX = x - rect.left;
+      fsPanelDrag.offsetY = y - rect.top;
+    };
     const onMove = (x, y) => {
       if (fsPanelDrag.active) {
-        panel.style.left = `${x - fsPanelDrag.offsetX}px`
-        panel.style.top = `${y - fsPanelDrag.offsetY}px`
-        panel.style.transform = 'translateX(0)'
+        panel.style.left = `${x - fsPanelDrag.offsetX}px`;
+        panel.style.top = `${y - fsPanelDrag.offsetY}px`;
+        panel.style.transform = 'translateX(0)';
       }
-    }
+    };
     const onUp = () => {
-      fsPanelDrag.active = false
-    }
+      fsPanelDrag.active = false;
+    };
     panel.addEventListener('mousedown', (e) => {
-      onDown(e.clientX, e.clientY)
-    })
+      onDown(e.clientX, e.clientY);
+    });
     overlay.addEventListener('mousemove', (e) => {
-      onMove(e.clientX, e.clientY)
-    })
-    globalThis.addEventListener('mouseup', onUp)
+      onMove(e.clientX, e.clientY);
+    });
+    globalThis.addEventListener('mouseup', onUp);
     panel.addEventListener(
       'touchstart',
       (e) => {
-        const t = e.touches[0]
-        onDown(t.clientX, t.clientY)
+        const t = e.touches[0];
+        onDown(t.clientX, t.clientY);
       },
-      { passive: true }
-    )
+      { passive: true },
+    );
     overlay.addEventListener(
       'touchmove',
       (e) => {
-        const t = e.touches[0]
-        onMove(t.clientX, t.clientY)
+        const t = e.touches[0];
+        onMove(t.clientX, t.clientY);
       },
-      { passive: true }
-    )
-    globalThis.addEventListener('touchend', onUp, { passive: true })
+      { passive: true },
+    );
+    globalThis.addEventListener('touchend', onUp, { passive: true });
   }
   /**
    * Обрабатывает свайп-жесты в полноэкранном режиме для управления направлением и воспроизведением.
@@ -2291,15 +2293,15 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function _handleFullscreenSwipe(dx, dy, threshold) {
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
       if (dx > 0) {
-        setDirection('horizontal')
+        setDirection('horizontal');
       } else {
-        setDirection('vertical')
+        setDirection('vertical');
       }
     } else if (Math.abs(dy) > threshold) {
-      const isSwipedUp = dy < 0
-      const isSwipedDown = dy > 0
+      const isSwipedUp = dy < 0;
+      const isSwipedDown = dy > 0;
       if ((isSwipedUp && !isPlaying) || (isSwipedDown && isPlaying)) {
-        togglePlayPause()
+        togglePlayPause();
       }
     }
   }
@@ -2307,86 +2309,86 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    * Настраивает обработку жестов в полноэкранном режиме.
    */
   function setupFullscreenGestures() {
-    const overlay = document.getElementById('previewOverlay')
-    if (!overlay) return
-    let startX = 0
-    let startY = 0
-    let swiping = false
-    const threshold = 40
+    const overlay = document.getElementById('previewOverlay');
+    if (!overlay) return;
+    let startX = 0;
+    let startY = 0;
+    let swiping = false;
+    const threshold = 40;
     const handleTouchStart = (e) => {
-      const t = e.touches[0]
-      startX = t.clientX
-      startY = t.clientY
-      swiping = true
-    }
+      const t = e.touches[0];
+      startX = t.clientX;
+      startY = t.clientY;
+      swiping = true;
+    };
     const handleTouchEnd = (e) => {
       if (swiping) {
-        swiping = false
-        const t = e.changedTouches[0]
-        const dx = t.clientX - startX
-        const dy = t.clientY - startY
-        _handleFullscreenSwipe(dx, dy, threshold)
+        swiping = false;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - startX;
+        const dy = t.clientY - startY;
+        _handleFullscreenSwipe(dx, dy, threshold);
       }
-    }
-    overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
-    overlay.addEventListener('touchend', handleTouchEnd, { passive: true })
+    };
+    overlay.addEventListener('touchstart', handleTouchStart, { passive: true });
+    overlay.addEventListener('touchend', handleTouchEnd, { passive: true });
   }
   function syncFsPlayPauseButton() {
-    const btn = document.getElementById('fsPlayPauseBtn')
-    if (!btn) return
+    const btn = document.getElementById('fsPlayPauseBtn');
+    if (!btn) return;
     if (isPlaying) {
-      btn.textContent = '⏸ Стоп'
+      btn.textContent = '⏸ Стоп';
     } else {
-      btn.textContent = '▶️ Старт'
+      btn.textContent = '▶️ Старт';
     }
   }
   function wireFullscreenControls() {
-    setupFullscreenSpeedControl()
-    setupFullscreenSizeControls()
-    setupFullscreenDirectionControls()
-    setupFullscreenColorControls()
+    setupFullscreenSpeedControl();
+    setupFullscreenSizeControls();
+    setupFullscreenDirectionControls();
+    setupFullscreenColorControls();
   }
   function setupFullscreenSpeedControl() {
-    const speed = document.getElementById('fsSpeed')
+    const speed = document.getElementById('fsSpeed');
     if (speed) {
       if (components.speed?.getSpeed) {
-        speed.value = components.speed.getSpeed()
+        speed.value = components.speed.getSpeed();
       } else {
-        speed.value = 40
+        speed.value = 40;
       }
       speed.oninput = (e) => {
-        const target = e?.target
+        const target = e?.target;
         if (target?.value !== undefined) {
-          updateSpeed(Number(target.value))
+          updateSpeed(Number(target.value));
         }
-      }
+      };
     }
   }
   function setupFullscreenSizeControls() {
-    const size1 = document.getElementById('fsSize1')
-    const size2 = document.getElementById('fsSize2')
-    const size3 = document.getElementById('fsSize3')
-    const size4 = document.getElementById('fsSize4')
-    if (size1) size1.onclick = () => setBallSizeMultiplier(1)
-    if (size2) size2.onclick = () => setBallSizeMultiplier(2)
-    if (size3) size3.onclick = () => setBallSizeMultiplier(3)
-    if (size4) size4.onclick = () => setBallSizeMultiplier(4)
+    const size1 = document.getElementById('fsSize1');
+    const size2 = document.getElementById('fsSize2');
+    const size3 = document.getElementById('fsSize3');
+    const size4 = document.getElementById('fsSize4');
+    if (size1) size1.onclick = () => setBallSizeMultiplier(1);
+    if (size2) size2.onclick = () => setBallSizeMultiplier(2);
+    if (size3) size3.onclick = () => setBallSizeMultiplier(3);
+    if (size4) size4.onclick = () => setBallSizeMultiplier(4);
   }
   function setupFullscreenDirectionControls() {
-    const dH = document.getElementById('fsDirH')
-    const dV = document.getElementById('fsDirV')
-    const dDL = document.getElementById('fsDirDL')
-    const dDR = document.getElementById('fsDirDR')
-    const dRandom = document.getElementById('fsDirRandom')
-    if (dH) dH.onclick = () => setDirection('horizontal')
-    if (dV) dV.onclick = () => setDirection('vertical')
-    if (dDL) dDL.onclick = () => setDirection('diagRLL')
-    if (dDR) dDR.onclick = () => setDirection('diagRL')
-    if (dRandom) dRandom.onclick = () => setDirection('random')
+    const dH = document.getElementById('fsDirH');
+    const dV = document.getElementById('fsDirV');
+    const dDL = document.getElementById('fsDirDL');
+    const dDR = document.getElementById('fsDirDR');
+    const dRandom = document.getElementById('fsDirRandom');
+    if (dH) dH.onclick = () => setDirection('horizontal');
+    if (dV) dV.onclick = () => setDirection('vertical');
+    if (dDL) dDL.onclick = () => setDirection('diagRLL');
+    if (dDR) dDR.onclick = () => setDirection('diagRL');
+    if (dRandom) dRandom.onclick = () => setDirection('random');
   }
   function setupFullscreenColorControls() {
-    setupFullscreenBallColorControls()
-    setupFullscreenBackgroundColorControls()
+    setupFullscreenBallColorControls();
+    setupFullscreenBackgroundColorControls();
   }
   function setupFullscreenBallColorControls() {
     const ballColors = [
@@ -2401,11 +2403,11 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       '#fb7185',
       '#ffffff',
       '#a855f7',
-      '#14b8a6'
-    ]
+      '#14b8a6',
+    ];
     for (let i = 1; i <= 12; i++) {
-      const btn = document.getElementById(`fsBallCol${i}`)
-      if (btn) btn.onclick = () => setBallColor(ballColors[i - 1])
+      const btn = document.getElementById(`fsBallCol${i}`);
+      if (btn) btn.onclick = () => setBallColor(ballColors[i - 1]);
     }
   }
   function setupFullscreenBackgroundColorControls() {
@@ -2421,41 +2423,41 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
       '#fce7f3',
       '#f3f4f6',
       '#e5e7eb',
-      '#d1d5db'
-    ]
+      '#d1d5db',
+    ];
     for (let i = 1; i <= 12; i++) {
-      const btn = document.getElementById(`fsBg${i}`)
-      if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1])
+      const btn = document.getElementById(`fsBg${i}`);
+      if (btn) btn.onclick = () => setBackgroundColor(bgColors[i - 1]);
     }
   }
   function fillFsSessionInfo() {
     try {
-      const sid = globalThis.__current?.sessionId ?? '...'
-      const fsSid = document.getElementById('fsCurSid')
-      if (fsSid) fsSid.textContent = `SID: ${sid}`
-      const fsLink = document.getElementById('fsViewLink')
-      if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`
-      updateFullscreenViewerStatus()
+      const sid = globalThis.__current?.sessionId ?? '...';
+      const fsSid = document.getElementById('fsCurSid');
+      if (fsSid) fsSid.textContent = `SID: ${sid}`;
+      const fsLink = document.getElementById('fsViewLink');
+      if (fsLink) fsLink.value = `${globalThis.location.origin}/s/${sid}`;
+      updateFullscreenViewerStatus();
     } catch (err) {
-      debugWarn('Error in fillFsSessionInfo:', err)
+      debugWarn('Error in fillFsSessionInfo:', err);
     }
   }
   /**
    * Обновляет индикатор статуса вьювера в полноэкранном режиме
    */
   function updateFullscreenViewerStatus() {
-    const fsViewerStatus = document.getElementById('fsViewerStatus')
-    if (!fsViewerStatus) return
-    const statusText = fsViewerStatus.querySelector('.fs-status-text')
-    if (!statusText) return
+    const fsViewerStatus = document.getElementById('fsViewerStatus');
+    if (!fsViewerStatus) return;
+    const statusText = fsViewerStatus.querySelector('.fs-status-text');
+    if (!statusText) return;
     if (globalThis.__current?.viewerConnected) {
-      fsViewerStatus.classList.add('connected')
+      fsViewerStatus.classList.add('connected');
       statusText.textContent =
-        globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
+        globalThis.i18n?.t('controller.viewerConnected') || 'Connected';
     } else {
-      fsViewerStatus.classList.remove('connected')
+      fsViewerStatus.classList.remove('connected');
       statusText.textContent =
-        globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
+        globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...';
     }
   }
   /**
@@ -2463,26 +2465,26 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    */
   function resetSession() {
     try {
-      bbCounters.resetAll()
+      bbCounters.resetAll();
       if (isPlaying) {
-        _setPlayPauseState(false)
+        _setPlayPauseState(false);
       }
       safeSend(WS_MSG.controllerUpdate, {
         paused: true,
-        returnToCenter: true
-      })
-      setDirection('horizontal')
+        returnToCenter: true,
+      });
+      setDirection('horizontal');
       showNotification(
         globalThis.i18n?.t('controller.sessionReset') || 'Session reset',
-        'info'
-      )
+        'info',
+      );
     } catch (error) {
-      console.error('Session reset error:', error)
+      console.error('Session reset error:', error);
       showNotification(
         globalThis.i18n?.t('controller.sessionResetError') ||
           'Error resetting session',
-        'error'
-      )
+        'error',
+      );
     }
   }
   /**
@@ -2493,19 +2495,19 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function showNotification(message, type = 'info') {
     try {
       if (globalThis.notificationSystem?.show) {
-        globalThis.notificationSystem.show({ message, type })
+        globalThis.notificationSystem.show({ message, type });
       } else if (globalThis.showSuccessNotification && type === 'success') {
-        globalThis.showSuccessNotification('Успех', message)
+        globalThis.showSuccessNotification('Успех', message);
       } else if (globalThis.showErrorNotification && type === 'error') {
-        globalThis.showErrorNotification('Ошибка', message)
+        globalThis.showErrorNotification('Ошибка', message);
       } else {
         if (type === 'error') {
-          alert(`Ошибка: ${message}`)
+          alert(`Ошибка: ${message}`);
         }
       }
     } catch (error) {
-      console.error('Error showing notification:', error)
-      alert(message)
+      console.error('Error showing notification:', error);
+      alert(message);
     }
   }
   /**
@@ -2515,21 +2517,21 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function showViewerNotConnectedWarning() {
     // Не показываем варнинг во время инициализации
     if (globalThis.__current?.isInitializing) {
-      return
+      return;
     }
 
     const _t = (key, fallback) => {
-      const v = globalThis.i18n?.t(key)
-      return v && v !== key ? v : fallback
-    }
+      const v = globalThis.i18n?.t(key);
+      return v && v !== key ? v : fallback;
+    };
     const title = _t(
       'controller.viewerNotConnectedWarning',
-      'Viewer not connected'
-    )
+      'Viewer not connected',
+    );
     const message = _t(
       'controller.viewerNotConnectedMessage',
-      'Share the viewer link with your client so they can join the session.'
-    )
+      'Share the viewer link with your client so they can join the session.',
+    );
 
     if (globalThis.notificationSystem?.show) {
       globalThis.notificationSystem.show({
@@ -2537,10 +2539,10 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
         icon: '🔒',
         title: title,
         message: message,
-        duration: 4000
-      })
+        duration: 4000,
+      });
     } else {
-      showNotification(`${title}: ${message}`, 'warning')
+      showNotification(`${title}: ${message}`, 'warning');
     }
   }
   /**
@@ -2552,14 +2554,14 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
   function requireViewerConnection(action, showWarning = true) {
     if (!globalThis.__current?.viewerConnected) {
       if (showWarning) {
-        showViewerNotConnectedWarning()
+        showViewerNotConnectedWarning();
       }
-      return false
+      return false;
     }
     if (typeof action === 'function') {
-      action()
+      action();
     }
-    return true
+    return true;
   }
 
   /**
@@ -2567,30 +2569,30 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    * Idempotent: subsequent calls are no-ops (delegated handler is already active).
    */
   function initViewerConnectionWarnings() {
-    const main = document.querySelector('main.wrap')
-    if (!main || main._viewerGuardAdded) return
-    main._viewerGuardAdded = true
+    const main = document.querySelector('main.wrap');
+    if (!main || main._viewerGuardAdded) return;
+    main._viewerGuardAdded = true;
     // Block clicks on controls that require viewer connection
     main.addEventListener(
       'click',
       (event) => {
-        if (globalThis.__current?.viewerConnected) return
-        if (globalThis.__current?.isInitializing) return
-        const t = event.target
+        if (globalThis.__current?.viewerConnected) return;
+        if (globalThis.__current?.isInitializing) return;
+        const t = event.target;
         const inControl = t.closest(
-          '.controls-card, .session-actions-row, #presetControls, .presets-details, #previewFsPanel'
-        )
-        if (!inControl) return
+          '.controls-card, .session-actions-row, #presetControls, .presets-details, #previewFsPanel',
+        );
+        if (!inControl) return;
         const isExempt = t.closest(
-          '.link-group, #autoStopRow, .session-stats-row, .drag-handle, #toggleDebugBtn, .fs-close-btn, .fs-panel-header'
-        )
-        if (isExempt) return
-        event.stopImmediatePropagation()
-        event.preventDefault()
-        showViewerNotConnectedWarning()
+          '.link-group, #autoStopRow, .session-stats-row, .drag-handle, #toggleDebugBtn, .fs-close-btn, .fs-panel-header',
+        );
+        if (isExempt) return;
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        showViewerNotConnectedWarning();
       },
-      true
-    )
+      true,
+    );
   }
 
   /**
@@ -2598,31 +2600,31 @@ if (typeof globalThis.__controllerLoaded !== 'undefined') {
    */
   function toggleDebugOverlay() {
     if (globalThis.BBDebug && typeof globalThis.BBDebug.toggle === 'function') {
-      globalThis.BBDebug.toggle()
+      globalThis.BBDebug.toggle();
     }
   }
 
   // Экспорт функций в глобальную область видимости для доступа из HTML onclick
-  globalThis.togglePlayPause = togglePlayPause
-  globalThis.setDirection = setDirection
-  globalThis.updateSpeed = updateSpeed
-  globalThis.setBallColor = setBallColor
-  globalThis.setBallSize = setBallSize
-  globalThis.setBackgroundColor = setBackgroundColor
-  globalThis.resetSession = resetSession
-  globalThis.setSoundEnabled = setSoundEnabled
-  globalThis.setSoundType = setSoundType
-  globalThis.setBallSizeMultiplier = setBallSizeMultiplier
-  globalThis.showViewerNotConnectedWarning = showViewerNotConnectedWarning
-  globalThis.requireViewerConnection = requireViewerConnection
+  globalThis.togglePlayPause = togglePlayPause;
+  globalThis.setDirection = setDirection;
+  globalThis.updateSpeed = updateSpeed;
+  globalThis.setBallColor = setBallColor;
+  globalThis.setBallSize = setBallSize;
+  globalThis.setBackgroundColor = setBackgroundColor;
+  globalThis.resetSession = resetSession;
+  globalThis.setSoundEnabled = setSoundEnabled;
+  globalThis.setSoundType = setSoundType;
+  globalThis.setBallSizeMultiplier = setBallSizeMultiplier;
+  globalThis.showViewerNotConnectedWarning = showViewerNotConnectedWarning;
+  globalThis.requireViewerConnection = requireViewerConnection;
   globalThis.reinitializeViewerConnectionWarnings =
-    initViewerConnectionWarnings
-  globalThis.toggleDebugOverlay = toggleDebugOverlay
+    initViewerConnectionWarnings;
+  globalThis.toggleDebugOverlay = toggleDebugOverlay;
 
   // Инициализация обработчиков предупреждений после загрузки DOM
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initViewerConnectionWarnings)
+    document.addEventListener('DOMContentLoaded', initViewerConnectionWarnings);
   } else {
-    initViewerConnectionWarnings()
+    initViewerConnectionWarnings();
   }
 } // Конец защиты от повторной загрузки

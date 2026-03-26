@@ -112,6 +112,7 @@ All push-based, NO polling:
 ## Deployment
 
 **Setup**: Set `DEPLOY_PASSWORD` env var before deploying:
+
 ```bash
 export DEPLOY_PASSWORD='password_here'
 # Or create .env file (it's in .gitignore):
@@ -120,6 +121,7 @@ cp .env.example .env
 ```
 
 **Deploy**:
+
 - Dev: `npm run deploy:dev` — pulls `main` branch, builds, restarts
 - Prod: `npm run deploy:prod` — pulls `stable` branch from both .online and .ru, builds, restarts
 - Logs: `npm run deploy:dev:logs` or `npm run deploy:prod:logs`

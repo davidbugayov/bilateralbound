@@ -1,4 +1,5 @@
 # Viewer Smooth Movement — Design Spec
+
 **Date:** 2026-03-24
 **Status:** Approved
 
@@ -16,7 +17,7 @@ The controller preview is unaffected because it does not receive server position
 
 ### Bug B — "2 bounces normal, 3rd freezes" / "sticks to edge on pause"
 
-**Root cause:** With high latency (500ms+), the pause command from the controller arrives late. The viewer ball has bounced locally 2 times in that interval. On the 3rd bounce the pause arrives → `setPaused(true)` → `seekingCenter` animation starts. This is *correct behavior* but looks like the ball "froze."
+**Root cause:** With high latency (500ms+), the pause command from the controller arrives late. The viewer ball has bounced locally 2 times in that interval. On the 3rd bounce the pause arrives → `setPaused(true)` → `seekingCenter` animation starts. This is _correct behavior_ but looks like the ball "froze."
 
 "Sticks to edge" occurs when the ball happens to be near a wall when the pause arrives. `seekingCenter` should start and animate the ball to center. A secondary fallback in `updatePhysicsFromState` (viewer.js) catches the case where `wasPaused === true` prevents `setPaused` from starting the animation.
 
@@ -36,11 +37,11 @@ In `_checkDriftCorrection`, add a freshness check before running the drift compa
 
 ```js
 // Existing:
-if (!this._lastServerPos || this.state.paused) return
+if (!this._lastServerPos || this.state.paused) return;
 
 // Add after existing guard:
-const posAge = performance.now() - this._lastServerPos.ts
-if (posAge > 1500) return  // server position stale — skip correction
+const posAge = performance.now() - this._lastServerPos.ts;
+if (posAge > 1500) return; // server position stale — skip correction
 ```
 
 **Why 1500ms:** With `clientSimulationOnly: true`, the server only broadcasts on explicit controller actions. During normal play, no broadcasts happen → position becomes stale in <200ms. 1500ms provides a generous window while ensuring that if the server ever does run physics (5Hz = update every 200ms), drift correction remains fully active.
@@ -56,11 +57,11 @@ Change the `wsClient.on('open', ...)` handler to always send `request_state_sync
 ```js
 // Before:
 if (event?.isReconnection) {
-  fetchAndApplyState()
+  fetchAndApplyState();
 }
 
 // After:
-fetchAndApplyState()  // always — handles both first connect and reconnect
+fetchAndApplyState(); // always — handles both first connect and reconnect
 ```
 
 **Why:** On first connect the server sends `initial_state` automatically, but it can be missed if timing is off or the connection had a hiccup. Calling `fetchAndApplyState()` (REST GET `/api/session/:id/state`) is idempotent and cheap (50ms cache on server). This guarantees the viewer always has the correct state after any WS open event.
@@ -69,11 +70,11 @@ fetchAndApplyState()  // always — handles both first connect and reconnect
 
 ## Files changed
 
-| File | Change |
-|------|--------|
-| `packages/shared/physics-engine.js` | +1 line in `_checkDriftCorrection` |
-| `packages/web-client/public/js/physics-engine.js` | +1 line in `_checkDriftCorrection` (same) |
-| `packages/web-client/src/viewer.js` | remove `if (event?.isReconnection)` guard around `fetchAndApplyState()` |
+| File                                              | Change                                                                  |
+| ------------------------------------------------- | ----------------------------------------------------------------------- |
+| `packages/shared/physics-engine.js`               | +1 line in `_checkDriftCorrection`                                      |
+| `packages/web-client/public/js/physics-engine.js` | +1 line in `_checkDriftCorrection` (same)                               |
+| `packages/web-client/src/viewer.js`               | remove `if (event?.isReconnection)` guard around `fetchAndApplyState()` |
 
 Total: ~3 lines changed.
 

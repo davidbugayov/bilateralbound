@@ -1,5 +1,5 @@
-'use strict'
-const pino = require('pino')
+'use strict';
+const pino = require('pino');
 
 module.exports = {
   name: 'logger',
@@ -9,27 +9,30 @@ module.exports = {
       level: config.logLevel,
       transport: config.isDev
         ? { target: 'pino-pretty', options: { colorize: true } }
-        : undefined
-    })
+        : undefined,
+    });
 
     logger.logSession = (sessionId, msg) => {
-      logger.debug({ sessionId }, msg)
-    }
+      logger.debug({ sessionId }, msg);
+    };
 
     // HTTP request logging middleware
     app.use((req, res, next) => {
-      const start = Date.now()
+      const start = Date.now();
       res.on('finish', () => {
-        logger.info({
-          method: req.method,
-          url: req.url,
-          status: res.statusCode,
-          ms: Date.now() - start
-        }, 'HTTP request')
-      })
-      next()
-    })
+        logger.info(
+          {
+            method: req.method,
+            url: req.url,
+            status: res.statusCode,
+            ms: Date.now() - start,
+          },
+          'HTTP request',
+        );
+      });
+      next();
+    });
 
-    return logger
-  }
-}
+    return logger;
+  },
+};

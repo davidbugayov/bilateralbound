@@ -2,7 +2,6 @@
 
 /* NOTE: Most base styles have been moved to shared-components.css for consistency */
 
-
 /* === SPECIFIC COMPONENTS === */
 .preview-canvas-wrapper {
   text-align: center;
@@ -31,7 +30,6 @@
   align-items: center;
   gap: 8px;
 }
-
 
 /* Dark theme session info */
 body:not(.light-theme) .session-info {
@@ -181,4 +179,3 @@ body:not(.light-theme) .session-info {
   color: #dc2626;
   background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
 }
-

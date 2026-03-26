@@ -6,18 +6,18 @@
 
 ## Decisions
 
-| Question | Answer |
-|----------|--------|
-| Scope | Full: server + frontend + shared |
-| Language | JavaScript, CommonJS |
-| Frontend bundling | Webpack (2 entry points) |
-| Unit tests | No |
-| Logger | Pino (plugin) |
-| Physics engine | Separate `packages/shared` |
-| Plugin system | Light (logger, analytics only) |
-| Structure | Adaptive (no empty layers) |
-| Refactoring approach | Big Bang in separate branch |
-| dotenv | Dropped — not needed (CLAUDE.md: "No .env file required") |
+| Question             | Answer                                                    |
+| -------------------- | --------------------------------------------------------- |
+| Scope                | Full: server + frontend + shared                          |
+| Language             | JavaScript, CommonJS                                      |
+| Frontend bundling    | Webpack (2 entry points)                                  |
+| Unit tests           | No                                                        |
+| Logger               | Pino (plugin)                                             |
+| Physics engine       | Separate `packages/shared`                                |
+| Plugin system        | Light (logger, analytics only)                            |
+| Structure            | Adaptive (no empty layers)                                |
+| Refactoring approach | Big Bang in separate branch                               |
+| dotenv               | Dropped — not needed (CLAUDE.md: "No .env file required") |
 
 ## Post-refactoring (separate phase)
 
@@ -143,11 +143,11 @@ No class creates its own dependencies. Everything injected via constructors.
 
 ## SessionManager Decomposition
 
-| Current (SessionManager 893 lines) | New |
-|-------------------------------------|-----|
+| Current (SessionManager 893 lines)                                                                                                                                                                   | New                                                      |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | `createSession`, `findOrCreateSession`, `getSession`, `updateBallState`, `setViewerScreenSize`, `setLanguage`, `handleWebSocketConnection`, `handleWebSocketDisconnection`, `cleanupExpiredSessions` | **SessionService** (~200 lines) — facade for controllers |
-| `_initializePhysicsEngine`, `_initPhysicsCallbacks`, `_applyPhysicsUpdates`, `_startSharedPhysicsLoop`, `_withSoundPreserved`, `_updatePhysicsEngineForNewScreen`, `startPhysics`, `stopPhysics` | **PhysicsService** (~250 lines) — physics loop + engines |
-| `broadcastControllerConnection`, `broadcastViewerConnection`, `broadcastLanguageUpdate` + all of StateBroadcaster | **BroadcastService** (~250 lines) — all WS broadcasting |
+| `_initializePhysicsEngine`, `_initPhysicsCallbacks`, `_applyPhysicsUpdates`, `_startSharedPhysicsLoop`, `_withSoundPreserved`, `_updatePhysicsEngineForNewScreen`, `startPhysics`, `stopPhysics`     | **PhysicsService** (~250 lines) — physics loop + engines |
+| `broadcastControllerConnection`, `broadcastViewerConnection`, `broadcastLanguageUpdate` + all of StateBroadcaster                                                                                    | **BroadcastService** (~250 lines) — all WS broadcasting  |
 
 ### BroadcastService API (explicit)
 
@@ -169,18 +169,19 @@ class BroadcastService {
 
 ## expressApp.js Decomposition
 
-| Current (expressApp.js 1026 lines) | New |
-|-------------------------------------|-----|
-| Session API routes (POST/GET /api/session/...) | **sessionController.js** (~100 lines) |
-| Viewer API routes (POST /api/session/:id/viewer/...) | **viewerController.js** (~70 lines) |
-| robots.txt, sitemap.xml, rss.xml | **seoController.js** (~120 lines) |
-| HTML serving, static files, panel, 404/error handlers | **staticController.js** (~70 lines) |
-| helmet, cors, compression, rate-limit, requestId | **middleware.js** (~50 lines) |
-| loadLocales, detectLanguage, localizeHtml, injectCanonicalHreflang, _htmlCache | **LocalizationService** (~120 lines) |
+| Current (expressApp.js 1026 lines)                                              | New                                   |
+| ------------------------------------------------------------------------------- | ------------------------------------- |
+| Session API routes (POST/GET /api/session/...)                                  | **sessionController.js** (~100 lines) |
+| Viewer API routes (POST /api/session/:id/viewer/...)                            | **viewerController.js** (~70 lines)   |
+| robots.txt, sitemap.xml, rss.xml                                                | **seoController.js** (~120 lines)     |
+| HTML serving, static files, panel, 404/error handlers                           | **staticController.js** (~70 lines)   |
+| helmet, cors, compression, rate-limit, requestId                                | **middleware.js** (~50 lines)         |
+| loadLocales, detectLanguage, localizeHtml, injectCanonicalHreflang, \_htmlCache | **LocalizationService** (~120 lines)  |
 
 ### Complete endpoint mapping
 
 **sessionController.js:**
+
 ```
 POST   /api/session                          → createSession
 POST   /api/session/:id/reserve              → reserveSession
@@ -194,6 +195,7 @@ GET    /api/analytics                        → getAnalytics (localhost-only IP
 ```
 
 **viewerController.js:**
+
 ```
 POST   /api/session/:id/viewer/connect           → viewerConnect
 POST   /api/session/:id/viewer/update            → viewerUpdate
@@ -203,6 +205,7 @@ POST   /api/session/:id/viewer/audio-activated   → audioActivated
 ```
 
 **seoController.js:**
+
 ```
 GET    /robots.txt     → dynamic per domain
 GET    /sitemap.xml    → dynamic per domain
@@ -210,6 +213,7 @@ GET    /rss.xml        → RSS feed
 ```
 
 **staticController.js:**
+
 ```
 GET    /              → index.html (localized)
 GET    /s/:sessionId  → viewer.html (localized)
@@ -230,18 +234,18 @@ The new `webSocketServer.js` receives: `sessionService`, `webSocketManager`, `br
 
 Complete handler mapping (all preserved from current code):
 
-| Message Type | Role | Handler |
-|--------------|------|---------|
-| `request_state_sync` | any | `sessionService.getSession()` → send `initial_state` |
-| `controller_connected` | controller | broadcast to other clients via `webSocketManager` |
-| `viewer_connected` | viewer | broadcast to other clients via `webSocketManager` |
-| `viewer_audio_activated` | viewer | store on session, forward to controllers via `broadcastService` |
-| `controller_update` | controller | `sessionService.updateBallState()` |
-| `bounce` | viewer | forward `bounce_sync` to controllers via `webSocketManager` |
-| `viewer_screen_size` | viewer | `sessionService.setViewerScreenSize()` |
-| `language` | any | `sessionService.setLanguage()` |
-| `viewer_update` | viewer | `sessionService.updateBallState()` |
-| `heartbeat` | any | ignored (no-op) |
+| Message Type             | Role       | Handler                                                         |
+| ------------------------ | ---------- | --------------------------------------------------------------- |
+| `request_state_sync`     | any        | `sessionService.getSession()` → send `initial_state`            |
+| `controller_connected`   | controller | broadcast to other clients via `webSocketManager`               |
+| `viewer_connected`       | viewer     | broadcast to other clients via `webSocketManager`               |
+| `viewer_audio_activated` | viewer     | store on session, forward to controllers via `broadcastService` |
+| `controller_update`      | controller | `sessionService.updateBallState()`                              |
+| `bounce`                 | viewer     | forward `bounce_sync` to controllers via `webSocketManager`     |
+| `viewer_screen_size`     | viewer     | `sessionService.setViewerScreenSize()`                          |
+| `language`               | any        | `sessionService.setLanguage()`                                  |
+| `viewer_update`          | viewer     | `sessionService.updateBallState()`                              |
+| `heartbeat`              | any        | ignored (no-op)                                                 |
 
 **DI note:** `webSocketServer.js` needs direct access to both `sessionService` (for business operations) and `webSocketManager` (for targeted message sending to specific roles). This is intentional — the WS handler is a network layer that needs to route messages, not pure business logic.
 
@@ -252,6 +256,7 @@ Complete handler mapping (all preserved from current code):
 Light plugin system — only for extensible infrastructure (logger, analytics).
 
 Interface:
+
 ```js
 {
   name: String,
@@ -261,6 +266,7 @@ Interface:
 ```
 
 Plugins:
+
 - **logger** — Pino with pino-pretty (dev), `logSession()` compat method, HTTP request logging middleware
 - **analytics** — AnalyticsCollector instance + HTTP tracking middleware
 
@@ -275,17 +281,18 @@ Express middleware (helmet, cors, etc.) stays as middleware — NOT wrapped in p
 ### Webpack Config
 
 Two entry points:
+
 - `src/viewer.js` → `public/dist/viewer.bundle.js`
 - `src/controller.js` → `public/dist/controller.bundle.js`
 
 ### Module Migration
 
-| Before | After |
-|--------|-------|
-| `globalThis.ModuleName = { ... }` (IIFE) | `module.exports = { ... }` |
-| `if (typeof globalThis.X !== 'undefined')` guard | removed |
-| `<script>` tag ordering | `require()` in entry points |
-| 15-20+ script tags per HTML | 1 bundle per HTML |
+| Before                                           | After                       |
+| ------------------------------------------------ | --------------------------- |
+| `globalThis.ModuleName = { ... }` (IIFE)         | `module.exports = { ... }`  |
+| `if (typeof globalThis.X !== 'undefined')` guard | removed                     |
+| `<script>` tag ordering                          | `require()` in entry points |
+| 15-20+ script tags per HTML                      | 1 bundle per HTML           |
 
 ### Preserved
 
@@ -316,6 +323,7 @@ Current HTML files (`viewer.html`, `session-controller.html`) contain inline `<s
 ```
 
 Consumers:
+
 - Server: `require('@emdr/shared/physics-engine')` (workspace symlink)
 - Client: `require('@emdr/shared/physics-engine')` (Webpack resolves via workspace)
 

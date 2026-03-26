@@ -410,12 +410,16 @@ body.light-theme .hotkeys-hint kbd {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(90deg, rgba(217, 119, 6, 0.95) 0%, rgba(180, 83, 9, 0.95) 100%);
+  background: linear-gradient(
+    90deg,
+    rgb(217 119 6 / 95%) 0%,
+    rgb(180 83 9 / 95%) 100%
+  );
   color: #fef3c7;
   padding: 12px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgb(255 255 255 / 10%);
   backdrop-filter: blur(12px);
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -2px 12px rgb(0 0 0 / 30%);
   display: none;
   align-items: center;
   gap: 12px;
@@ -438,6 +442,7 @@ body.light-theme .hotkeys-hint kbd {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -475,8 +480,8 @@ body.light-theme .hotkeys-hint kbd {
 }
 
 .error-bar-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgb(255 255 255 / 15%);
+  border: 1px solid rgb(255 255 255 / 20%);
   color: #fef3c7;
   padding: 4px 12px;
   border-radius: 6px;
@@ -488,8 +493,8 @@ body.light-theme .hotkeys-hint kbd {
 }
 
 .error-bar-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgb(255 255 255 / 25%);
+  border-color: rgb(255 255 255 / 30%);
 }
 
 .error-bar-btn:active {
@@ -499,7 +504,7 @@ body.light-theme .hotkeys-hint kbd {
 .error-bar-close {
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgb(255 255 255 / 50%);
   cursor: pointer;
   padding: 4px 8px;
   font-size: 16px;
@@ -508,14 +513,18 @@ body.light-theme .hotkeys-hint kbd {
 }
 
 .error-bar-close:hover {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgb(255 255 255 / 80%);
 }
 
 /* Light theme error bar */
 body.light-theme .error-bar {
-  background: linear-gradient(90deg, rgba(251, 146, 60, 0.95) 0%, rgba(234, 88, 12, 0.95) 100%);
+  background: linear-gradient(
+    90deg,
+    rgb(251 146 60 / 95%) 0%,
+    rgb(234 88 12 / 95%) 100%
+  );
   color: #7c2d12;
-  border-color: rgba(251, 146, 60, 0.2);
+  border-color: rgb(251 146 60 / 20%);
 }
 
 body.light-theme .error-bar-title {
@@ -527,17 +536,17 @@ body.light-theme .error-bar-message {
 }
 
 body.light-theme .error-bar-btn {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
+  background: rgb(0 0 0 / 10%);
+  border-color: rgb(0 0 0 / 20%);
   color: #7c2d12;
 }
 
 body.light-theme .error-bar-btn:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgb(0 0 0 / 15%);
 }
 
 body.light-theme .error-bar-close {
-  color: rgba(124, 45, 18, 0.6);
+  color: rgb(124 45 18 / 60%);
 }
 
 body.light-theme .error-bar-close:hover {

@@ -12,18 +12,20 @@
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `packages/shared/physics-engine.js` | +2 lines in `_checkDriftCorrection` (line 367) |
-| `packages/web-client/public/js/physics-engine.js` | +2 lines in `_checkDriftCorrection` (line 365) — same change |
-| `packages/web-client/src/viewer.js` | Remove `if (event?.isReconnection)` guard around `fetchAndApplyState()` (lines 611–614) |
+| File                                              | Change                                                                                  |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `packages/shared/physics-engine.js`               | +2 lines in `_checkDriftCorrection` (line 367)                                          |
+| `packages/web-client/public/js/physics-engine.js` | +2 lines in `_checkDriftCorrection` (line 365) — same change                            |
+| `packages/web-client/src/viewer.js`               | Remove `if (event?.isReconnection)` guard around `fetchAndApplyState()` (lines 611–614) |
 
 **Note on two physics-engine files:**
+
 - `packages/shared/physics-engine.js` — compiled by Webpack into `public/dist/viewer.bundle.js` (used by viewer page)
 - `packages/web-client/public/js/physics-engine.js` — loaded directly via `<script>` tag by controller (no bundler)
-Both files must receive the same fix.
+  Both files must receive the same fix.
 
 **Note on viewer.js:**
+
 - `packages/web-client/src/viewer.js` — compiled by Webpack, source of truth for viewer logic
 - `public/js/viewer.js` does NOT exist; do not touch it
 
@@ -32,6 +34,7 @@ Both files must receive the same fix.
 ## Task 1: Staleness gate in `packages/shared/physics-engine.js`
 
 **Files:**
+
 - Modify: `packages/shared/physics-engine.js:367`
 
 ### Background
@@ -45,6 +48,7 @@ The fix: before computing drift, check how old `_lastServerPos` is. If it's olde
 - [ ] **Step 1: Verify current code**
 
 Read `packages/shared/physics-engine.js` lines 366–375 and confirm:
+
 ```js
 _checkDriftCorrection() {
   if (!this._lastServerPos || this.state.paused) return
@@ -56,11 +60,12 @@ _checkDriftCorrection() {
 In `packages/shared/physics-engine.js`, after line 367 (`if (!this._lastServerPos || this.state.paused) return`), insert:
 
 ```js
-    const posAge = performance.now() - this._lastServerPos.ts
-    if (posAge > 1500) return  // server position stale — skip correction
+const posAge = performance.now() - this._lastServerPos.ts;
+if (posAge > 1500) return; // server position stale — skip correction
 ```
 
 The result should be:
+
 ```js
   _checkDriftCorrection() {
     if (!this._lastServerPos || this.state.paused) return
@@ -79,6 +84,7 @@ Read `packages/shared/physics-engine.js` lines 366–380. Confirm the two new li
 ## Task 2: Staleness gate in `packages/web-client/public/js/physics-engine.js`
 
 **Files:**
+
 - Modify: `packages/web-client/public/js/physics-engine.js:365`
 
 This is the same fix as Task 1, applied to the standalone file used by the controller page. The structure is identical — only the indentation style may differ (4 spaces vs 2 spaces).
@@ -92,8 +98,8 @@ Read `packages/web-client/public/js/physics-engine.js` lines 365–374. Confirm 
 After the null guard line (`if (!this._lastServerPos || this.state.paused) return`), insert:
 
 ```js
-      const posAge = performance.now() - this._lastServerPos.ts
-      if (posAge > 1500) return  // server position stale — skip correction
+const posAge = performance.now() - this._lastServerPos.ts;
+if (posAge > 1500) return; // server position stale — skip correction
 ```
 
 Match the existing indentation style of the surrounding code.
@@ -114,6 +120,7 @@ git commit -m "fix: skip drift correction when server position is stale (>1500ms
 ## Task 3: Always fetch state on WS open in `packages/web-client/src/viewer.js`
 
 **Files:**
+
 - Modify: `packages/web-client/src/viewer.js:611–614`
 
 ### Background
@@ -123,6 +130,7 @@ Currently `fetchAndApplyState()` (REST GET `/api/session/:id/state`) is only cal
 - [ ] **Step 1: Verify current code**
 
 Read `packages/web-client/src/viewer.js` lines 607–625. Confirm:
+
 ```js
   wsClient.on('open', (event) => {
     debugLog('✅ WS connection established.')
@@ -140,16 +148,18 @@ Read `packages/web-client/src/viewer.js` lines 607–625. Confirm:
 Replace the guarded block with an unconditional call:
 
 **Before:**
+
 ```js
-    if (event?.isReconnection) {
-      debugWarn('🔄 WS reconnected - fetching state via REST')
-      fetchAndApplyState()
-    }
+if (event?.isReconnection) {
+  debugWarn("🔄 WS reconnected - fetching state via REST");
+  fetchAndApplyState();
+}
 ```
 
 **After:**
+
 ```js
-    fetchAndApplyState()
+fetchAndApplyState();
 ```
 
 - [ ] **Step 3: Verify the edit**
@@ -168,6 +178,7 @@ git commit -m "fix: always fetch state on WS open, not only on reconnect"
 ## Task 4: Build and verify
 
 **Files:**
+
 - Run: `npm run build` (Webpack compiles `src/viewer.js` → `public/dist/viewer.bundle.js`)
 
 The changes to `src/viewer.js` and `packages/shared/physics-engine.js` only take effect after rebuilding the bundle.
@@ -249,10 +260,10 @@ npm run dev
 
 ## Summary
 
-| Fix | File(s) | Lines changed |
-|-----|---------|---------------|
-| Staleness gate on drift correction | `packages/shared/physics-engine.js` + `packages/web-client/public/js/physics-engine.js` | +2 lines each |
-| Always fetch state on connect | `packages/web-client/src/viewer.js` | -3 lines (remove guard) |
-| Rebuild | `packages/web-client/public/dist/viewer.bundle.js` | generated |
+| Fix                                | File(s)                                                                                 | Lines changed           |
+| ---------------------------------- | --------------------------------------------------------------------------------------- | ----------------------- |
+| Staleness gate on drift correction | `packages/shared/physics-engine.js` + `packages/web-client/public/js/physics-engine.js` | +2 lines each           |
+| Always fetch state on connect      | `packages/web-client/src/viewer.js`                                                     | -3 lines (remove guard) |
+| Rebuild                            | `packages/web-client/public/dist/viewer.bundle.js`                                      | generated               |
 
 Total source changes: ~1 line net added across 3 files.
