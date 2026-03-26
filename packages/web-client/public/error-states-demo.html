@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error States Demo - BilateralBound</title>
+    <link rel="stylesheet" href="/css/shared-components.css" />
+    <link rel="stylesheet" href="/css/light-theme.css" />
+    <link rel="stylesheet" href="/css/viewer.css" />
+    <link rel="stylesheet" href="/css/controller.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 40px;
+        background: #020617;
+        color: #e2e8f0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+
+      body.light-theme {
+        background: #f8fafc;
+        color: #1e293b;
+      }
+
+      .demo-section {
+        margin-bottom: 60px;
+        padding: 30px;
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 16px;
+      }
+
+      body.light-theme .demo-section {
+        background: #fff;
+        border-color: #e2e8f0;
+      }
+
+      .demo-section h2 {
+        margin-top: 0;
+        font-size: 20px;
+        margin-bottom: 20px;
+        color: #60a5fa;
+      }
+
+      body.light-theme .demo-section h2 {
+        color: #3b82f6;
+      }
+
+      .demo-item {
+        margin-bottom: 40px;
+        padding: 20px;
+        background: #1a2332;
+        border-radius: 12px;
+        border: 1px solid #334155;
+      }
+
+      body.light-theme .demo-item {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+      }
+
+      .demo-item h3 {
+        margin-top: 0;
+        font-size: 14px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 16px;
+      }
+
+      .demo-item p {
+        margin: 0 0 12px 0;
+        font-size: 13px;
+        color: #cbd5e1;
+      }
+
+      body.light-theme .demo-item p {
+        color: #64748b;
+      }
+
+      .preview-box {
+        position: relative;
+        height: 300px;
+        background: #0a0e27;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 16px;
+      }
+
+      body.light-theme .preview-box {
+        background: #fff;
+        border-color: #e2e8f0;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      button {
+        padding: 8px 16px;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        background: #1e293b;
+        color: #e2e8f0;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      button:hover {
+        background: #334155;
+      }
+
+      body.light-theme button {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #1e293b;
+      }
+
+      body.light-theme button:hover {
+        background: #e2e8f0;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 16px;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        color: #e2e8f0;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        z-index: 1000;
+      }
+
+      body.light-theme .theme-toggle {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #1e293b;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+
+      .control-item {
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+
+      body.light-theme .control-item {
+        background: rgba(0, 0, 0, 0.03);
+        border-color: rgba(0, 0, 0, 0.1);
+      }
+
+      .control-item label {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .color-box {
+        width: 100%;
+        height: 60px;
+        border-radius: 6px;
+        margin-top: 8px;
+      }
+
+      .color-code {
+        font-size: 10px;
+        opacity: 0.7;
+        margin-top: 8px;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Light Theme</button>
+
+    <h1 style="margin-top: 0">Error States Design System</h1>
+    <p style="opacity: 0.7; margin-bottom: 40px">
+      Interactive demo of integrated error messaging for BilateralBound therapy platform.
+    </p>
+
+    <!-- VIEWER ERROR BAR DEMO -->
+    <div class="demo-section">
+      <h2>📱 Viewer Error Bar</h2>
+      <p>Single persistent banner at bottom of viewer screen. Calm, non-intrusive feedback.</p>
+
+      <div class="demo-item">
+        <h3>Connection Lost</h3>
+        <p>Critical connection error with retry action.</p>
+        <div class="preview-box" id="viewerErrorDemo1"></div>
+        <div class="button-group">
+          <button onclick="showViewerError1()">Show Error</button>
+          <button onclick="clearViewerErrors()">Clear</button>
+        </div>
+      </div>
+
+      <div class="demo-item">
+        <h3>Loading Failed</h3>
+        <p>Session load failure with retry option.</p>
+        <div class="preview-box" id="viewerErrorDemo2"></div>
+        <div class="button-group">
+          <button onclick="showViewerError2()">Show Error</button>
+          <button onclick="clearViewerErrors()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLLER ERROR STATES DEMO -->
+    <div class="demo-section">
+      <h2>⚙️ Controller Error States</h2>
+      <p>Inline error cards at bottom-left, stacking vertically. Contextual and actionable.</p>
+
+      <div class="demo-item">
+        <h3>Connection Status</h3>
+        <p>Viewer not connected yet. Informational state.</p>
+        <div class="preview-box" id="controllerErrorDemo1" style="position: relative"></div>
+        <div class="button-group">
+          <button onclick="showControllerError1()">Show Error</button>
+          <button onclick="clearControllerErrors()">Clear</button>
+        </div>
+      </div>
+
+      <div class="demo-item">
+        <h3>Settings Update Failed</h3>
+        <p>Error with actionable retry button.</p>
+        <div class="preview-box" id="controllerErrorDemo2" style="position: relative"></div>
+        <div class="button-group">
+          <button onclick="showControllerError2()">Show Error</button>
+          <button onclick="clearControllerErrors()">Clear</button>
+        </div>
+      </div>
+
+      <div class="demo-item">
+        <h3>Multiple Errors</h3>
+        <p>Multiple errors displayed simultaneously, each dismissible.</p>
+        <div class="preview-box" id="controllerErrorDemo3" style="position: relative"></div>
+        <div class="button-group">
+          <button onclick="showControllerError3()">Show Multiple</button>
+          <button onclick="clearControllerErrors()">Clear All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLOR PALETTE -->
+    <div class="demo-section">
+      <h2>🎨 Color Palette</h2>
+      <div class="controls">
+        <div class="control-item">
+          <label>Dark Theme Primary</label>
+          <div class="color-box" style="background: linear-gradient(90deg, rgba(217, 119, 6, 0.95) 0%, rgba(180, 83, 9, 0.95) 100%)"></div>
+          <span class="color-code">#d97706 → #b45309</span>
+        </div>
+
+        <div class="control-item">
+          <label>Light Theme Primary</label>
+          <div class="color-box" style="background: linear-gradient(90deg, rgba(251, 146, 60, 0.95) 0%, rgba(234, 88, 12, 0.95) 100%)"></div>
+          <span class="color-code">#fb923c → #ea580c</span>
+        </div>
+
+        <div class="control-item">
+          <label>Text (Dark)</label>
+          <div class="color-box" style="background: #fef3c7"></div>
+          <span class="color-code">#fef3c7</span>
+        </div>
+
+        <div class="control-item">
+          <label>Text Muted (Dark)</label>
+          <div class="color-box" style="background: #fed7aa"></div>
+          <span class="color-code">#fed7aa</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/ui/error-states.js"></script>
+    <script>
+      // Theme toggle
+      function toggleTheme() {
+        document.body.classList.toggle('light-theme')
+        document.querySelector('.theme-toggle').textContent = document.body.classList.contains('light-theme')
+          ? '🌙 Dark Theme'
+          : '🌙 Light Theme'
+        localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark')
+      }
+
+      // Restore theme
+      if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-theme')
+        document.querySelector('.theme-toggle').textContent = '🌙 Dark Theme'
+      }
+
+      // Create viewer error bar in container
+      function createViewerErrorBar(containerId) {
+        const container = document.querySelector(`#${containerId}`)
+        let bar = container.querySelector('.error-bar')
+        if (!bar) {
+          bar = document.createElement('div')
+          bar.className = 'error-bar'
+          bar.style.cssText = 'position: absolute; bottom: 0; left: 0; right: 0; margin: 0;'
+          container.appendChild(bar)
+
+          const icon = document.createElement('div')
+          icon.className = 'error-bar-icon'
+          icon.textContent = '⚠️'
+
+          const content = document.createElement('div')
+          content.className = 'error-bar-content'
+
+          const title = document.createElement('div')
+          title.className = 'error-bar-title'
+          const message = document.createElement('div')
+          message.className = 'error-bar-message'
+
+          content.appendChild(title)
+          content.appendChild(message)
+
+          const actions = document.createElement('div')
+          actions.className = 'error-bar-actions'
+
+          const retryBtn = document.createElement('button')
+          retryBtn.className = 'error-bar-btn'
+          retryBtn.textContent = 'Retry'
+
+          const closeBtn = document.createElement('button')
+          closeBtn.className = 'error-bar-btn error-bar-close'
+          closeBtn.textContent = '×'
+          closeBtn.onclick = () => {
+            bar.classList.remove('show')
+          }
+
+          actions.appendChild(retryBtn)
+          actions.appendChild(closeBtn)
+
+          bar.appendChild(icon)
+          bar.appendChild(content)
+          bar.appendChild(actions)
+        }
+
+        return bar
+      }
+
+      function showViewerError1() {
+        const bar = createViewerErrorBar('viewerErrorDemo1')
+        bar.querySelector('.error-bar-title').textContent = 'Connection Lost'
+        bar.querySelector('.error-bar-message').textContent = 'Retrying connection to therapist...'
+        bar.classList.add('show')
+      }
+
+      function showViewerError2() {
+        const bar = createViewerErrorBar('viewerErrorDemo2')
+        bar.querySelector('.error-bar-title').textContent = 'Session Failed to Load'
+        bar.querySelector('.error-bar-message').textContent = 'Unable to load session. Check your connection and try again.'
+        bar.classList.add('show')
+      }
+
+      function clearViewerErrors() {
+        document.querySelectorAll('.error-bar').forEach((bar) => {
+          bar.classList.remove('show')
+        })
+      }
+
+      // Controller error demos
+      function createControllerError(containerId, title, message, showDismiss = true) {
+        const container = document.querySelector(`#${containerId}`)
+        let wrapper = container.querySelector('[data-error-wrapper]')
+        if (!wrapper) {
+          wrapper = document.createElement('div')
+          wrapper.setAttribute('data-error-wrapper', 'true')
+          wrapper.style.cssText = 'position: absolute; bottom: 20px; left: 20px; max-width: 300px; display: flex; flex-direction: column; gap: 12px;'
+          container.appendChild(wrapper)
+        }
+
+        const msg = document.createElement('div')
+        msg.className = 'error-message'
+        msg.setAttribute('role', 'alert')
+
+        const msgTitle = document.createElement('div')
+        msgTitle.className = 'error-message-title'
+        const msgTitleIcon = document.createElement('span')
+        msgTitleIcon.textContent = '⚠️'
+        const msgTitleText = document.createElement('span')
+        msgTitleText.textContent = title
+        msgTitle.appendChild(msgTitleIcon)
+        msgTitle.appendChild(msgTitleText)
+
+        const msgText = document.createElement('div')
+        msgText.className = 'error-message-text'
+        msgText.textContent = message
+
+        const msgActions = document.createElement('div')
+        msgActions.className = 'error-message-actions'
+
+        const dismissBtn = document.createElement('button')
+        dismissBtn.className = 'error-message-btn'
+        dismissBtn.textContent = 'Dismiss'
+        dismissBtn.onclick = () => {
+          msg.classList.remove('show')
+          setTimeout(() => msg.remove(), 200)
+        }
+        msgActions.appendChild(dismissBtn)
+
+        msg.appendChild(msgTitle)
+        msg.appendChild(msgText)
+        msg.appendChild(msgActions)
+
+        wrapper.appendChild(msg)
+
+        requestAnimationFrame(() => {
+          msg.classList.add('show')
+        })
+      }
+
+      function showControllerError1() {
+        createControllerError('controllerErrorDemo1', 'Viewer Not Connected', 'Waiting for patient to join. Share the link to continue.')
+      }
+
+      function showControllerError2() {
+        createControllerError('controllerErrorDemo2', 'Failed to Update Settings', 'Unable to save ball color. Please try again.')
+      }
+
+      function showControllerError3() {
+        createControllerError('controllerErrorDemo3', 'Audio Initialization Failed', 'Microphone not available. Check permissions.')
+        setTimeout(() => {
+          createControllerError('controllerErrorDemo3', 'Sync Lost', 'Trying to resync with viewer...')
+        }, 200)
+      }
+
+      function clearControllerErrors() {
+        document.querySelectorAll('[data-error-wrapper]').forEach((wrapper) => {
+          wrapper.querySelectorAll('.error-message').forEach((msg) => {
+            msg.classList.remove('show')
+            setTimeout(() => msg.remove(), 200)
+          })
+        })
+      }
+    </script>
+  </body>
+</html>
