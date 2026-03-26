@@ -5,6 +5,7 @@ if (!globalThis.__current) globalThis.__current = {}
 // Require dependencies (side effects populate globalThis)
 require('./core/debug-logger')
 require('./config')
+require('./common')
 require('./i18n/constants')
 require('./i18n/i18n')
 require('./i18n/language-selector')

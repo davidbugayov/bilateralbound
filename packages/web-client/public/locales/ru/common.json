@@ -142,7 +142,8 @@
     "hotkeysHint": "— Пауза/Старт",
     "volumeLabel": "Громкость",
     "initError": "Ошибка инициализации: ",
-    "reload": "Перезагрузить страницу"
+    "reload": "Перезагрузить страницу",
+    "errorTitle": "Ошибка соединения"
   },
   "test": {
     "title": "🌐 Language Selector - Тестирование",

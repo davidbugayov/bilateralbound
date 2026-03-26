@@ -140,7 +140,8 @@
     "hotkeysHint": "— Pause/Start",
     "volumeLabel": "Volume",
     "initError": "Initialization error: ",
-    "reload": "Reload page"
+    "reload": "Reload page",
+    "errorTitle": "Connection Error"
   },
   "test": {
     "title": "🌐 Language Selector - Testing",
