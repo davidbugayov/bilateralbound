@@ -174,11 +174,13 @@ class ViewerErrorBar {
     }
 
     this.bar.classList.remove('hidden')
+    this.bar.classList.add('show')
     this.currentError = { title, message }
   }
 
   hide() {
     if (this.bar) {
+      this.bar.classList.remove('show')
       this.bar.classList.add('hidden')
       this.currentError = null
     }

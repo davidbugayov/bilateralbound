@@ -1,3 +1,5 @@
+/* jshint esversion: 11, browser: true, undef: true, unused: false */
+/* global globalThis, performance, CustomEvent, module */
 'use strict'
 /**
  * PhysicsEngine - оптимизированный движок физики для BilateralBound
@@ -266,19 +268,6 @@ if (typeof PhysicsEngine === 'undefined') {
       this.state.lastVy = this.ball.vy
     }
     /**
-     * Сбрасывает мяч в центр с нулевой скоростью
-     * @private
-     */
-    _resetBallToCenter() {
-      this.ball.x = this.centerX
-      this.ball.y = this.centerY
-      this.ball.vx = 0
-      this.ball.vy = 0
-      this.state.targetX = this.centerX
-      this.state.targetY = this.centerY
-      this.clampBallWithinBounds()
-    }
-    /**
      * Snaps ball to center and syncs all position state (prevents interpolation jitter)
      * @private
      */
@@ -293,6 +282,14 @@ if (typeof PhysicsEngine === 'undefined') {
       this._currPos.y = this.centerY
       this.state.targetX = this.centerX
       this.state.targetY = this.centerY
+    }
+    /**
+     * Сбрасывает мяч в центр с нулевой скоростью
+     * @private
+     */
+    _resetBallToCenter() {
+      this._snapToCenter()
+      this.clampBallWithinBounds()
     }
     /**
      * Smoothly animates ball toward center while paused (ease-out)
@@ -336,22 +333,23 @@ if (typeof PhysicsEngine === 'undefined') {
      * Устанавливает цвет шарика
      */
     setBallColor(color) {
-      if (typeof color === 'string' && color.length > 0) {
-        this.colors.ball = color
-        if (
-          this.renderer &&
-          typeof this.renderer.invalidateBallCache === 'function'
-        ) {
-          this.renderer.invalidateBallCache()
-        }
-      }
+      this._setColor('ball', color)
     }
     /**
      * Устанавливает цвет фона
      */
     setBgColor(color) {
+      this._setColor('bg', color)
+    }
+    /**
+     * Sets a color property and invalidates renderer cache if needed.
+     * @param {string} prop - 'ball' or 'bg'
+     * @param {string} color - Color value
+     * @private
+     */
+    _setColor(prop, color) {
       if (typeof color === 'string' && color.length > 0) {
-        this.colors.bg = color
+        this.colors[prop] = color
         if (
           this.renderer &&
           typeof this.renderer.invalidateBallCache === 'function'
@@ -797,21 +795,13 @@ if (typeof PhysicsEngine === 'undefined') {
       return this._interpBall
     }
     /**
-     * Validates viewer-specific commands, ensuring coordinates and velocities are finite numbers.
+     * Validates direction and speed fields common to both viewer and server commands.
      * @param {object} command - The command object to validate.
-     * @returns {object} A new object with validated properties.
+     * @returns {object} A new object with validated direction and speed properties.
      * @private
      */
-    _validateViewerCommand(command) {
+    _validateDirectionAndSpeed(command) {
       const validated = {}
-      if (typeof command.x === 'number' && Number.isFinite(command.x))
-        validated.x = command.x
-      if (typeof command.y === 'number' && Number.isFinite(command.y))
-        validated.y = command.y
-      if (typeof command.vx === 'number' && Number.isFinite(command.vx))
-        validated.vx = command.vx
-      if (typeof command.vy === 'number' && Number.isFinite(command.vy))
-        validated.vy = command.vy
       if (
         typeof command.dirX === 'number' &&
         Math.abs(command.dirX) <= 1.001 &&
@@ -837,36 +827,31 @@ if (typeof PhysicsEngine === 'undefined') {
       return validated
     }
     /**
+     * Validates viewer-specific commands, ensuring coordinates and velocities are finite numbers.
+     * @param {object} command - The command object to validate.
+     * @returns {object} A new object with validated properties.
+     * @private
+     */
+    _validateViewerCommand(command) {
+      const validated = { ...this._validateDirectionAndSpeed(command) }
+      if (typeof command.x === 'number' && Number.isFinite(command.x))
+        validated.x = command.x
+      if (typeof command.y === 'number' && Number.isFinite(command.y))
+        validated.y = command.y
+      if (typeof command.vx === 'number' && Number.isFinite(command.vx))
+        validated.vx = command.vx
+      if (typeof command.vy === 'number' && Number.isFinite(command.vy))
+        validated.vy = command.vy
+      return validated
+    }
+    /**
      * Validates server-specific commands, ensuring direction vectors are finite numbers.
      * @param {object} command - The command object to validate.
      * @returns {object} A new object with validated properties.
      * @private
      */
     _validateServerCommand(command) {
-      const validated = {}
-      if (
-        typeof command.dirX === 'number' &&
-        Math.abs(command.dirX) <= 1.001 &&
-        Number.isFinite(command.dirX)
-      ) {
-        validated.dirX = command.dirX
-      }
-      if (
-        typeof command.dirY === 'number' &&
-        Math.abs(command.dirY) <= 1.001 &&
-        Number.isFinite(command.dirY)
-      ) {
-        validated.dirY = command.dirY
-      }
-      if (
-        typeof command.speed === 'number' &&
-        command.speed >= 0 &&
-        command.speed <= 100 &&
-        !Number.isNaN(command.speed)
-      ) {
-        validated.speed = command.speed
-      }
-      return validated
+      return this._validateDirectionAndSpeed(command)
     }
     /**
      * @param {object} command - Команда для валидации.
@@ -966,7 +951,7 @@ if (typeof PhysicsEngine === 'undefined') {
         }
 
         if (command.paused === true) {
-          this._handleViewerPositionPause(cx, cy)
+          this._handleViewerPositionPause()
         } else if (command.paused === false) {
           if (command.vx !== undefined) {
             this.state.lastVx = command.vx
@@ -977,7 +962,7 @@ if (typeof PhysicsEngine === 'undefined') {
         }
       }
     }
-    _handleViewerPositionPause(cx, cy) {
+    _handleViewerPositionPause() {
       // Don't snap ball to server position — ball is animating to center or already there
       // Just clear velocities; seek-to-center animation handles position
       this.state.allowInterpWhenPaused = false
