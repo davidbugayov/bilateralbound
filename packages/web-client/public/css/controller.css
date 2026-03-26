@@ -42,10 +42,11 @@
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 50px;
+  width: 44px;
   height: 24px;
   margin-right: 10px;
   vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .toggle-switch input {
@@ -58,31 +59,38 @@
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background-color: #ccc;
-  transition: 0.4s;
+  background-color: #334155;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 40%);
 }
 
 .slider::before {
   position: absolute;
   content: "";
-  height: 16px;
-  width: 16px;
-  left: 4px;
-  bottom: 4px;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
   background-color: #fff;
-  transition: 0.4s;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 1px 4px rgb(0 0 0 / 35%),
+    0 0 0 1px rgb(0 0 0 / 10%);
 }
 
 input:checked + .slider {
-  background-color: #2196f3;
+  background-color: #22d3ee;
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 20%);
 }
 
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196f3;
+input:focus-visible + .slider {
+  outline: 2px solid rgb(34 211 238 / 55%);
+  outline-offset: 2px;
 }
 
 input:checked + .slider::before {
-  transform: translateX(26px);
+  transform: translateY(-50%) translateX(20px);
 }
 
 .slider.round {
@@ -1839,29 +1847,26 @@ body {
 }
 
 /* Settings section rows - replaces inline styles */
-.settings-sound-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.settings-sound-label {
+.settings-sound-label,
+.settings-monitor-label {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  padding: 0;
-  margin: 0;
+  margin-bottom: 10px;
 }
 
-.settings-sound-checkbox {
+.settings-sound-checkbox,
+.settings-monitor-checkbox {
   width: 18px;
   height: 18px;
   cursor: pointer;
+  margin: 0;
+  flex-shrink: 0;
 }
 
-.settings-sound-text {
+.settings-sound-text,
+.settings-monitor-text {
   font-size: 0.9rem;
 }
 
@@ -1890,23 +1895,6 @@ body {
   padding-top: 12px;
 }
 
-.settings-monitor-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  margin-bottom: 10px;
-}
-
-.settings-monitor-checkbox {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.settings-monitor-text {
-  font-size: 0.9rem;
-}
 
 .settings-volume-control {
   display: flex;
