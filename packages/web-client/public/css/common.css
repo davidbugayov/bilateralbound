@@ -2,29 +2,12 @@
 
 /* NOTE: Most base styles have been moved to shared-components.css for consistency */
 
-/* === UNIQUE UTILITY CLASSES === */
-.kbd {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  background: #1f2937;
-  border: 1px solid #374151;
-  border-bottom-width: 3px;
-  border-radius: 6px;
-  padding: 2px 6px;
-}
 
 /* === SPECIFIC COMPONENTS === */
 .preview-canvas-wrapper {
   text-align: center;
   position: relative;
   padding-bottom: 0;
-}
-
-.preview-status-stack {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: center;
 }
 
 /* === SESSION INFO STYLING === */
@@ -49,30 +32,12 @@
   gap: 8px;
 }
 
-.session-info-timestamp {
-  color: #475569;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-}
-
-.session-info-timestamp::before {
-  content: "⏰";
-  font-size: 1.2em;
-  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 10%));
-}
 
 /* Dark theme session info */
 body:not(.light-theme) .session-info {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border-color: #334155;
   box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
-}
-
-body:not(.light-theme) .session-info-timestamp {
-  color: #94a3b8;
 }
 
 /* === VIEWER STATUS STYLES === */
@@ -217,25 +182,3 @@ body:not(.light-theme) .session-info-timestamp {
   background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
 }
 
-/* === DIRECTION DISPLAY === */
-.direction-display {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  transition: all 0.3s ease;
-}
-
-.light-theme .direction-display {
-  background: #fff;
-  border-color: #e5e7eb;
-}
-
-/* Dark theme */
-.direction-display {
-  background: #1f2937;
-  border-color: #374151;
-  color: #f3f4f6;
-}
