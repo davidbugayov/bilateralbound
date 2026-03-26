@@ -1309,17 +1309,21 @@ body {
 }
 
 .controller-left-col .controls-card > div[style*="margin-bottom"] > label {
+  display: flex !important;
+  align-items: center !important;
   width: 100%;
   justify-content: space-between !important;
   gap: 0 !important;
   margin: 0 !important;
 }
 
-/* Label text */
+/* Label text - Enable sound */
 .controller-left-col .controls-card > div[style*="margin-bottom"] span {
   font-size: 0.82rem !important;
   font-weight: 500;
   color: #cbd5e1;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* ── Row: Sound type ── */
@@ -1427,10 +1431,10 @@ body {
 .controller-left-col #soundEnabledCheckbox,
 .controller-left-col #controllerMonitorCheckbox {
   appearance: none !important;
-  width: 36px !important;
-  height: 20px !important;
-  min-width: 36px !important;
-  border-radius: 10px !important;
+  width: 32px !important;
+  height: 18px !important;
+  min-width: 32px !important;
+  border-radius: 9px !important;
   background: #1e293b !important;
   border: 1px solid #475569 !important;
   position: relative !important;
@@ -1449,8 +1453,8 @@ body {
   height: 16px;
   border-radius: 50%;
   background: #94a3b8;
-  top: 2px;
-  left: 2px;
+  top: 1px;
+  left: 1px;
   box-shadow: 0 1px 3px rgb(0 0 0 / 35%);
   transition:
     transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -1464,7 +1468,7 @@ body {
 
 .controller-left-col #soundEnabledCheckbox:checked::before,
 .controller-left-col #controllerMonitorCheckbox:checked::before {
-  transform: translateX(16px);
+  transform: translateX(15px);
   background: #fff;
   box-shadow: 0 1px 4px rgb(0 0 0 / 25%);
 }
@@ -1665,9 +1669,6 @@ body {
 }
 
 /* ===== DESIGN ENHANCEMENTS (BB React Design System) ===== */
-/* Note: These styles are already defined above, this section removed to avoid duplicates */
-
-/* Error State Designs — Integrated into UI */
 
 /* Inline error message in control sections */
 .control-section.error-state {
@@ -1850,17 +1851,18 @@ body {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  padding: 0;
+  margin: 0;
 }
 
 .settings-sound-checkbox {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
 }
 
 .settings-sound-text {
-  font-size: 0.95rem;
-  white-space: nowrap;
+  font-size: 0.9rem;
 }
 
 .settings-sound-type-control {
