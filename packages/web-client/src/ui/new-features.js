@@ -168,7 +168,7 @@ class FeatureManager {
     const _key = 'controller.presetApplied'
     const _appliedLabel =
       _i?.isReady && _i.t(_key) !== _key ? _i.t(_key) : 'Preset applied'
-    globalThis.notificationSystem?.success(
+    globalThis.successToast?.success(
       '',
       `${presetName} — ${_appliedLabel}`
     )
@@ -191,7 +191,7 @@ class FeatureManager {
     }
     this.savePresets()
     this.addPresetControls()
-    globalThis.notificationSystem?.success('', `Preset "${name}" saved`)
+    globalThis.successToast?.success('', `Preset "${name}" saved`)
   }
   savePresets() {
     try {
@@ -244,7 +244,7 @@ class FeatureManager {
     link.download = `bilateralbound-session-${new Date().toISOString().split('T')[0]}.json`
     link.click()
     URL.revokeObjectURL(url)
-    globalThis.notificationSystem?.success('', 'Session exported')
+    globalThis.successToast?.success('', 'Session exported')
   }
   /**
    * Импорт сессии из JSON файла
@@ -260,7 +260,7 @@ class FeatureManager {
       if (sessionData.counters) {
         this.applyCounters(sessionData.counters)
       }
-      globalThis.notificationSystem?.success('', 'Session imported')
+      globalThis.successToast?.success('', 'Session imported')
     } catch (error) {
       debugError('Import error:', error)
       globalThis.notificationSystem?.error(
@@ -406,7 +406,7 @@ class FeatureManager {
     this.sessionHistory.pop()
     const previousState = this.sessionHistory.at(-1)
     await this.applyState(previousState)
-    globalThis.notificationSystem?.success('', 'Change undone')
+    globalThis.successToast?.success('', 'Change undone')
   }
   /**
    * Применяет сохраненное состояние
@@ -640,7 +640,7 @@ class FeatureManager {
     this.saveSessions()
     this.renderSessionsList()
     this.updateHeaderSessionName()
-    globalThis.notificationSystem?.success('', `Session "${name}" saved`)
+    globalThis.successToast?.success('', `Session "${name}" saved`)
   }
   async loadSessionById(id) {
     const session = this.sessions.find((s) => s.id === id)
@@ -651,7 +651,7 @@ class FeatureManager {
     if (input) input.value = session.name
     this.updateHeaderSessionName()
     this.renderSessionsList()
-    globalThis.notificationSystem?.success(
+    globalThis.successToast?.success(
       '',
       `Session "${session.name}" loaded`
     )
@@ -685,7 +685,7 @@ class FeatureManager {
     this.saveSessions()
     this.renderSessionsList()
     this.updateHeaderSessionName()
-    globalThis.notificationSystem?.success(
+    globalThis.successToast?.success(
       '',
       `Сессия "${removed?.name || ''}" удалена`
     )

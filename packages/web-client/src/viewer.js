@@ -14,7 +14,7 @@ require('./rendering/renderer')
 require('./network/websocket-client')
 require('./network/realtime-client')
 require('./ui/shared-components')
-require('./ui/notifications/notification-system')
+require('./ui/success-toast')
 require('./ui/error-overlay')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
