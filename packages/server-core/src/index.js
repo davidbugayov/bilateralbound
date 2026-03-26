@@ -1,45 +1,45 @@
-'use strict';
-const http = require('node:http');
-const express = require('express');
-const config = require('./config');
-const { registerPlugins } = require('./plugins');
-const SessionRepository = require('./repositories/SessionRepository');
-const WebSocketManager = require('./network/WebSocketManager');
-const BroadcastService = require('./services/BroadcastService');
-const PhysicsService = require('./services/PhysicsService');
-const SessionService = require('./services/SessionService');
-const LocalizationService = require('./services/LocalizationService');
+'use strict'
+const http = require('node:http')
+const express = require('express')
+const config = require('./config')
+const { registerPlugins } = require('./plugins')
+const SessionRepository = require('./repositories/SessionRepository')
+const WebSocketManager = require('./network/WebSocketManager')
+const BroadcastService = require('./services/BroadcastService')
+const PhysicsService = require('./services/PhysicsService')
+const SessionService = require('./services/SessionService')
+const LocalizationService = require('./services/LocalizationService')
 const {
   setupMiddleware,
   requireSession,
-  setNoCacheHeaders,
-} = require('./network/middleware');
-const { setupWebSocketServer } = require('./network/webSocketServer');
-const { registerSessionRoutes } = require('./controllers/sessionController');
-const { registerViewerRoutes } = require('./controllers/viewerController');
-const { registerSeoRoutes } = require('./controllers/seoController');
-const { registerStaticRoutes } = require('./controllers/staticController');
+  setNoCacheHeaders
+} = require('./network/middleware')
+const { setupWebSocketServer } = require('./network/webSocketServer')
+const { registerSessionRoutes } = require('./controllers/sessionController')
+const { registerViewerRoutes } = require('./controllers/viewerController')
+const { registerSeoRoutes } = require('./controllers/seoController')
+const { registerStaticRoutes } = require('./controllers/static_routes_controller')
 
 // 1. App + Plugins
-const app = express();
-const { logger, analytics } = registerPlugins(app, config);
+const app = express()
+const { logger, analytics } = registerPlugins(app, config)
 
 // 2. Repositories
-const sessionRepository = new SessionRepository();
+const sessionRepository = new SessionRepository()
 
 // 3. Network
-const webSocketManager = new WebSocketManager(sessionRepository, logger);
+const webSocketManager = new WebSocketManager(sessionRepository, logger)
 
 // 4. Services
-const apiCache = new Map();
+const apiCache = new Map()
 const broadcastService = new BroadcastService(
   sessionRepository,
   webSocketManager,
   {
     clientSimulationOnly: config.runtime.CLIENT_SIM_ONLY,
-    logger,
-  },
-);
+    logger
+  }
+)
 const physicsService = new PhysicsService(
   sessionRepository,
   broadcastService,
@@ -47,120 +47,120 @@ const physicsService = new PhysicsService(
   {
     clientSimulationOnly: config.runtime.CLIENT_SIM_ONLY,
     logger,
-    analytics,
-  },
-);
+    analytics
+  }
+)
 const sessionService = new SessionService(
   sessionRepository,
   physicsService,
   broadcastService,
   webSocketManager,
-  { logger, analytics, apiCache },
-);
-const localizationService = new LocalizationService(config, logger);
+  { logger, analytics, apiCache }
+)
+const localizationService = new LocalizationService(config, logger)
 
 // 5. HTTP Middleware + Routes
-const boundRequireSession = requireSession(sessionService);
-const mw = { requireSession: boundRequireSession, logger };
-setupMiddleware(app, config);
+const boundRequireSession = requireSession(sessionService)
+const mw = { requireSession: boundRequireSession, logger }
+setupMiddleware(app, config)
 
 // Analytics tracking middleware (HTTP request counting + error tracking)
 app.use((req, res, next) => {
-  analytics.recordHttpRequest();
+  analytics.recordHttpRequest()
   res.on('finish', () => {
     if (res.statusCode >= 400)
-      analytics.recordHttpError(res.statusCode, req.path);
-  });
-  next();
-});
+      analytics.recordHttpError(res.statusCode, req.path)
+  })
+  next()
+})
 
-registerSessionRoutes(app, sessionService, apiCache, analytics, mw);
+registerSessionRoutes(app, sessionService, apiCache, analytics, mw)
 registerViewerRoutes(
   app,
   sessionService,
   webSocketManager,
   broadcastService,
-  mw,
-);
-registerSeoRoutes(app);
+  mw
+)
+registerSeoRoutes(app)
 registerStaticRoutes(app, sessionService, localizationService, {
   setNoCacheHeaders,
-  logger,
-});
+  logger
+})
 
 // 6. Server + WebSocket
-const server = http.createServer(app);
+const server = http.createServer(app)
 const { heartbeatInterval } = setupWebSocketServer(
   server,
   sessionService,
   webSocketManager,
   broadcastService,
   analytics,
-  logger,
-);
+  logger
+)
 
 // 7. Start
-const PORT = config.server.PORT;
+const PORT = config.server.PORT
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     logger.error(
       { port: PORT },
-      `Port ${PORT} is already in use. Waiting before retry...`,
-    );
+      `Port ${PORT} is already in use. Waiting before retry...`
+    )
     setTimeout(() => {
       logger.info(
         { port: PORT },
-        `Attempting to restart server on port ${PORT}...`,
-      );
+        `Attempting to restart server on port ${PORT}...`
+      )
       server.close(() => {
-        server.listen(PORT);
-      });
-    }, 3000);
+        server.listen(PORT)
+      })
+    }, 3000)
   } else {
-    logger.error({ err }, 'Server error');
-    process.exit(1);
+    logger.error({ err }, 'Server error')
+    process.exit(1)
   }
-});
+})
 server.listen(PORT, () => {
-  logger.info('Modular server architecture is ready.');
-});
+  logger.info('Modular server architecture is ready.')
+})
 
 // 8. Cleanup intervals
 const cleanupIntervals = [
   setInterval(() => {
-    sessionService.cleanupExpiredSessions();
+    sessionService.cleanupExpiredSessions()
   }, 60000),
   setInterval(() => {
-    const now = Date.now();
-    let removedCount = 0;
+    const now = Date.now()
+    let removedCount = 0
     for (const [key, cached] of apiCache) {
-      const adaptiveTTL = cached.type === 'ball_state' ? 50 : 500;
+      const adaptiveTTL = cached.type === 'ball_state' ? 50 : 500
       if (now - cached.timestamp > adaptiveTTL) {
-        apiCache.delete(key);
-        removedCount += 1;
+        apiCache.delete(key)
+        removedCount += 1
       }
     }
     if (removedCount > 0) {
-      logger.debug({ removedCount }, 'API cache cleanup');
+      logger.debug({ removedCount }, 'API cache cleanup')
     }
-  }, 30 * 1000),
-];
+  }, 30 * 1000)
+]
 
 // 9. Graceful shutdown
 function gracefulShutdown() {
-  logger.info('Shutting down gracefully...');
-  clearInterval(heartbeatInterval);
+  logger.info('Shutting down gracefully...')
+  clearInterval(heartbeatInterval)
   for (const interval of cleanupIntervals) {
-    clearInterval(interval);
+    clearInterval(interval)
   }
-  setTimeout(() => process.exit(0), 3000).unref();
-  server.closeAllConnections();
+  setTimeout(() => process.exit(0), 3000).unref()
+  server.closeAllConnections()
   server.close(() => {
-    logger.info('Server stopped.');
-    process.exit(0);
-  });
+    logger.info('Server stopped.')
+    process.exit(0)
+  })
 }
 
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
-logger.info('BilateralBound modular server started successfully');
+process.on('SIGTERM', gracefulShutdown)
+process.on('SIGINT', gracefulShutdown)
+logger.info('BilateralBound modular server started successfully')
