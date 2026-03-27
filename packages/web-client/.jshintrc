@@ -67,6 +67,8 @@
     "togglePlayPause": true,
     "setDirection": true,
     "debugError": true,
+    "debugLog": true,
+    "debugWarn": true,
     "BroadcastChannel": true,
     "setBallColor": true,
     "setBallSize": true,
@@ -77,6 +79,7 @@
     "showViewerNotConnectedWarning": true,
     "requireViewerConnection": true,
     "reinitializeViewerConnectionWarnings": true,
-    "toggleDebugOverlay": true
+    "toggleDebugOverlay": true,
+    "RealtimeClient": true
   }
 }

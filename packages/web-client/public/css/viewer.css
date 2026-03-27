@@ -605,3 +605,80 @@ body.light-theme .error-bar-close:hover {
 .unmute-btn:active {
   transform: scale(0.95);
 }
+
+/* Error states container */
+#errorStatesContainer,
+.error-states-container {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  max-width: 350px;
+  z-index: 100;
+}
+
+/* Error message block */
+.error-message {
+  background: linear-gradient(
+    135deg,
+    rgb(251 146 60 / 15%) 0%,
+    rgb(180 83 9 / 10%) 100%
+  );
+  border: 1px solid rgb(251 146 60 / 25%);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #fed7aa;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.error-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.error-message-title {
+  font-weight: 600;
+  color: #fb923c;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.error-message-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #fcd34d;
+}
+
+.error-message-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.error-message-btn {
+  background: rgb(251 146 60 / 20%);
+  border: 1px solid rgb(251 146 60 / 30%);
+  color: #fcd34d;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.error-message-btn:hover {
+  background: rgb(251 146 60 / 30%);
+  border-color: rgb(251 146 60 / 40%);
+}
+

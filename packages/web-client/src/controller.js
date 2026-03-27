@@ -27,53 +27,9 @@ require('./application/controller/ui-sync')
 require('./application/controller/viewer-status')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
+const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
 globalThis.PhysicsEngine = PhysicsEngine
 
-// =============================================================================
-// КОНСТАНТЫ
-// =============================================================================
-
-/** @type {Object} Пороги категорий скорости */
-const SPEED_THRESHOLDS = Object.freeze({
-  VERY_SLOW: 15,
-  SLOW: 25,
-  MEDIUM: 35,
-  FAST: 50
-})
-
-/** @type {Object} Цвета категорий скорости */
-const SPEED_COLORS = Object.freeze({
-  VERY_SLOW: '#22c55e',
-  SLOW: '#3b82f6',
-  MEDIUM: '#8b5cf6',
-  FAST: '#f59e0b',
-  VERY_FAST: '#ef4444'
-})
-
-// =============================================================================
-// УТИЛИТЫ
-// =============================================================================
-
-/**
- * Получает категорию скорости и её цвет
- * @param {number} speed - Текущая скорость
- * @returns {{category: string, color: string}}
- */
-function getSpeedCategory(speed) { // eslint-disable-line no-unused-vars
-  if (speed <= SPEED_THRESHOLDS.VERY_SLOW) {
-    return { category: 'Очень медленно', color: SPEED_COLORS.VERY_SLOW }
-  }
-  if (speed <= SPEED_THRESHOLDS.SLOW) {
-    return { category: 'Медленно', color: SPEED_COLORS.SLOW }
-  }
-  if (speed <= SPEED_THRESHOLDS.MEDIUM) {
-    return { category: 'Средне', color: SPEED_COLORS.MEDIUM }
-  }
-  if (speed <= SPEED_THRESHOLDS.FAST) {
-    return { category: 'Быстро', color: SPEED_COLORS.FAST }
-  }
-  return { category: 'Очень быстро', color: SPEED_COLORS.VERY_FAST }
-}
 
 /**
  * Controller - Логика управления сессией BilateralBound v2.2
@@ -817,30 +773,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     _syncUIDirection(state)
   })
   wsClient.on(WS_MSG.netMetrics, ({ jitterMs }) => {
-    if (!previewPhysicsEngine) return
-    const base = globalThis.BBConfig?.smoothing || {}
-    const adaptiveDamping = Math.min(
-      25,
-      Math.max(15, (base.damping || 20) + jitterMs / 20)
-    )
-    const adaptiveStiffness = Math.min(
-      35,
-      Math.max(25, (base.stiffness || 30) - jitterMs / 30)
-    )
-    const fixedPredictTime = base.maxPredictSec || 0.02
-    const adaptiveSnapDistance = Math.min(
-      0.4,
-      Math.max(0.2, (base.snapDistance || 0.3) + (jitterMs > 15 ? 0.05 : 0))
-    )
-    previewPhysicsEngine.setSmoothingOptions({
-      damping: adaptiveDamping,
-      stiffness: adaptiveStiffness,
-      maxPredictSec: fixedPredictTime, // Фиксированное значение для консистентности
-      snapDistance: adaptiveSnapDistance,
-      exponentialSmoothing: base.exponentialSmoothing,
-      stateBuffering: base.stateBuffering,
-      bufferSize: base.bufferSize
-    })
+    applyAdaptiveSmoothing(previewPhysicsEngine, jitterMs)
   })
   wsClient.on(WS_MSG.viewerAudioActivated, (data) => {
     if (globalThis.__current) {
@@ -2555,7 +2488,16 @@ function resetSession() {
  * @param {string} type - Тип уведомления ('info', 'success', 'warning', 'error')
  */
 function showCriticalError(title, message) {
-  if (globalThis.emdrErrorOverlay) {
+  if (globalThis.errorStateManager?.show) {
+    globalThis.errorStateManager.show('critical-error', {
+      title: title,
+      message: message,
+      actions: [{
+        label: globalThis.i18n?.t('viewer.reload') || 'Reload page',
+        callback: () => globalThis.location.reload()
+      }]
+    })
+  } else if (globalThis.emdrErrorOverlay) {
     globalThis.emdrErrorOverlay.show({
       title,
       message,
@@ -2711,6 +2653,49 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initViewerConnectionWarnings)
 } else {
   initViewerConnectionWarnings()
+}
+
+/**
+ * Эмулирует ошибку WebSocket "Max reconnection attempts reached"
+ * Закрывает соединение и устанавливает максимальное количество попыток переподключения в 0
+ */
+globalThis.simulateReconnectError = function () {
+  console.log('🔌 [TEST] Эмуляция ошибки WebSocket: Max reconnection attempts reached')
+
+  // Проверяем, что wsClient существует (используем globalThis.wsClient вместо локальной переменной)
+  const client = globalThis.wsClient
+  if (!client || typeof client !== 'object') {
+    console.error('❌ [TEST] WebSocket клиент не инициализирован')
+    showCriticalError(
+      globalThis.i18n?.t('controller.connectionFailed') || 'Connection Failed',
+      'WebSocket клиент не инициализирован. Пожалуйста, подождите инициализации.'
+    )
+    return
+  }
+
+  try {
+    // Закрываем текущее соединение
+    client.close()
+
+    // Устанавливаем максимальное количество попыток в 0
+    if (client.config) {
+      client.config.maxReconnectAttempts = 0
+    }
+    if (client._stats) {
+      client._stats.reconnectCount = 0
+    }
+
+    // Вызываем обработчик ошибки (он покажет диалог через showCriticalError)
+    client._emit('maxReconnectAttemptsReached')
+
+    console.log('✅ [TEST] Ошибка WebSocket успешно эмулирована')
+  } catch (error) {
+    console.error('❌ [TEST] Ошибка при эмуляции:', error)
+    showCriticalError(
+      globalThis.i18n?.t('controller.connectionFailed') || 'Connection Failed',
+      error.message || 'Ошибка при эмуляции WebSocket ошибки'
+    )
+  }
 }
 
 module.exports = { initializeController }
