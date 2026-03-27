@@ -2568,20 +2568,32 @@ function showCriticalError(title, message) {
 }
 function showNotification(message, type = 'info') {
   try {
-    if (globalThis.notificationSystem?.show) {
-      globalThis.notificationSystem.show({ message, type })
-    } else if (globalThis.showSuccessNotification && type === 'success') {
-      globalThis.showSuccessNotification('Успех', message)
-    } else if (globalThis.showErrorNotification && type === 'error') {
-      globalThis.showErrorNotification('Ошибка', message)
+    // Используем errorStateManager для отображения уведомлений
+    if (globalThis.errorStateManager?.show) {
+      const titles = {
+        info: 'Info',
+        success: 'Success',
+        warning: 'Warning',
+        error: 'Error'
+      }
+      globalThis.errorStateManager.show(`notification-${type}`, {
+        title: titles[type] || 'Info',
+        message: message,
+        duration: type === 'error' ? 0 : 4000 // Ошибки не исчезают автоматически
+      })
+    } else if (globalThis.showSuccessToast && type === 'success') {
+      globalThis.showSuccessToast(message)
     } else {
+      // Fallback: показываем через alert для ошибок
       if (type === 'error') {
         alert(`Ошибка: ${message}`)
       }
     }
   } catch (error) {
     console.error('Error showing notification:', error)
-    alert(message)
+    if (type === 'error') {
+      alert(message)
+    }
   }
 }
 /**
@@ -2607,15 +2619,15 @@ function showViewerNotConnectedWarning() {
     'Share the viewer link with your client so they can join the session.'
   )
 
-  if (globalThis.notificationSystem?.show) {
-    globalThis.notificationSystem.show({
-      type: 'warning',
-      icon: '🔒',
+  // Используем errorStateManager для отображения предупреждения
+  if (globalThis.errorStateManager?.show) {
+    globalThis.errorStateManager.show('viewer-not-connected', {
       title: title,
       message: message,
-      duration: 4000
+      duration: 8000 // Увеличиваем время отображения до 8 секунд
     })
   } else {
+    // Fallback: показываем через alert если errorStateManager недоступен
     showNotification(`${title}: ${message}`, 'warning')
   }
 }

@@ -288,7 +288,7 @@ class NotificationSystem {
     // Skip emoji/symbol titles — dot indicator handles the type signal
     const emojiPattern = /^[\u{1F000}-\u{1FFFF}]/u;
     // eslint-disable-next-line no-misleading-character-class
-    const symbolPattern = /^[⚠️❌✅ℹ️]/;
+    const symbolPattern = /^[❌✅ℹ️]/;
     const isSymbolTitle =
       config.title &&
       (emojiPattern.test(config.title) || symbolPattern.test(config.title));

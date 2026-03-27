@@ -1711,6 +1711,16 @@ body {
   line-height: 1.5;
   color: #fed7aa;
   backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.error-message.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .error-message-title {
@@ -1894,7 +1904,6 @@ body {
   border-top: 1px solid #1f2937;
   padding-top: 12px;
 }
-
 
 .settings-volume-control {
   display: flex;
