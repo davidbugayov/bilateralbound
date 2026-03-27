@@ -10,12 +10,7 @@ BRANCH="stable"
 MAX_RETRIES=30
 RETRY_INTERVAL=2
 
-# Source password from local env
-if [ -z "$DEPLOY_PASSWORD" ]; then
-    echo "❌ Error: DEPLOY_PASSWORD env var not set"
-    echo "   Set it in .env or: export DEPLOY_PASSWORD='your_password'"
-    exit 1
-fi
+# SSH connection uses key auth (no password needed)
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') ℹ️  $1"
@@ -35,7 +30,7 @@ wait_for_service() {
     log "⏳ Waiting for $service to be healthy..."
     RETRY_COUNT=0
     while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-        if sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@$SERVER "systemctl is-active $service >/dev/null 2>&1"; then
+        if ssh root@$SERVER "systemctl is-active $service >/dev/null 2>&1"; then
             log_success "$service is running"
             return 0
         fi
@@ -52,7 +47,7 @@ log "🚀 Starting production deployment ($BRANCH branch)..."
 # 1. Deploy emdrbilateral.online
 log "📍 Deploying emdrbilateral.online..."
 log "  📥 Pulling code..."
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .online failed"
+ssh root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .online failed"
 set -e
 cd /var/www/emdrbilateral.online
 git fetch --all
@@ -60,14 +55,14 @@ git reset --hard origin/stable
 ENDSSH
 
 log "  📦 Installing dependencies..."
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "npm install for .online failed"
+ssh root@$SERVER bash << 'ENDSSH' || log_error "npm install for .online failed"
 set -e
 cd /var/www/emdrbilateral.online
 npm install
 ENDSSH
 
 log "  🔨 Building..."
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build for .online failed"
+ssh root@$SERVER bash << 'ENDSSH' || log_error "Build for .online failed"
 set -e
 cd /var/www/emdrbilateral.online
 npm run build
@@ -77,7 +72,7 @@ log_success "emdrbilateral.online built and ready"
 # 2. Deploy emdrbilateral.ru
 log "📍 Deploying emdrbilateral.ru..."
 log "  📥 Pulling code..."
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .ru failed"
+ssh root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .ru failed"
 set -e
 cd /var/www/emdrbilateral.ru
 git fetch --all
@@ -85,14 +80,14 @@ git reset --hard origin/stable
 ENDSSH
 
 log "  📦 Installing dependencies..."
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "npm install for .ru failed"
+ssh root@$SERVER bash << 'ENDSSH' || log_error "npm install for .ru failed"
 set -e
 cd /var/www/emdrbilateral.ru
 npm install
 ENDSSH
 
 log "  🔨 Building..."
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build for .ru failed"
+ssh root@$SERVER bash << 'ENDSSH' || log_error "Build for .ru failed"
 set -e
 cd /var/www/emdrbilateral.ru
 npm run build
@@ -101,7 +96,7 @@ log_success "emdrbilateral.ru built and ready"
 
 # 3. Restart both services
 log "🔄 Restarting services..."
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Service restart failed"
+ssh root@$SERVER bash << 'ENDSSH' || log_error "Service restart failed"
 systemctl restart emdrbilateral-online emdrbilateral-ru
 sleep 2
 ENDSSH
@@ -113,7 +108,7 @@ wait_for_service "emdrbilateral-ru"
 
 # 5. Verify deployment
 log "📊 Deployment Info:"
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH'
+ssh root@$SERVER bash << 'ENDSSH'
 echo "  emdrbilateral.online:"
 cd /var/www/emdrbilateral.online && git log --oneline -1 | sed 's/^/    /'
 systemctl status emdrbilateral-online --no-pager | grep -E "Active|Main PID" | sed 's/^/    /'
