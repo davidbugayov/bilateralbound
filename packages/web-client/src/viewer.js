@@ -1,5 +1,5 @@
 /* jshint esversion: 11, browser: true, node: true */
-/* global globalThis, Promise, fetch, localStorage, sessionStorage, requestAnimationFrame, cancelAnimationFrame, CustomEvent, XMLHttpRequest, WebSocket, console, window, document, navigator, performance, module, exports, crypto, Path2D, PhysicsEngine, BallRenderer, WebSocketClient, WS_MSG, AudioManager, sharedComponents, CommunicationFactory, throttle, getSessionIdFromUrl, logger, bbCounters, ControllerState, ViewerState, BBConfig, togglePlayPause, setDirection, debugError, debugLog, debugWarn, BroadcastChannel, setBallColor, setBallSize, setBackgroundColor, setSoundEnabled, setSoundType, setBallSizeMultiplier, showViewerNotConnectedWarning, requireViewerConnection, reinitializeViewerConnectionWarnings, toggleDebugOverlay, RealtimeClient */
+/* global globalThis, fetch, localStorage, console, document, performance, PhysicsEngine, BallRenderer, WebSocketClient, WS_MSG, AudioManager, sharedComponents, getSessionIdFromUrl, logger, debugError, debugLog, debugWarn, RealtimeClient */
 'use strict'
 // Initialize global state first
 if (!globalThis.__current) globalThis.__current = {}
