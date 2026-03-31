@@ -18,7 +18,7 @@ require('./network/websocket-client')
 require('./network/realtime-client')
 require('./ui/success-toast')
 require('./ui/error-overlay')
-require('./ui/new-features')
+require('./ui/controller-settings')
 require('./application/controller/ui-controls')
 require('./application/controller/preview-manager')
 require('./application/controller/event-handlers')
@@ -590,7 +590,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       globalThis.__nonCriticalLoaded = true
       const s = document.createElement('script')
       s.src =
-        '/js/new-features.js?v=' +
+        '/js/controller-settings.js?v=' +
         (document.querySelector('meta[name="version"]')?.content || '')
       s.defer = true
       document.body.appendChild(s)
