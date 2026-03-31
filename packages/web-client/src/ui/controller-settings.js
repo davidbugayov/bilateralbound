@@ -1,9 +1,10 @@
+/* jshint esversion: 11 */
 'use strict'
 /**
  * Генерирует уникальный идентификатор сессии
  * @returns {string} Уникальный ID сессии
  */
-/* global debugWarn, debugError */
+/* global debugWarn, debugError, globalThis, crypto, togglePlayPause, setDirection, document, Blob, URL, localStorage, prompt */
 
 function _generateId() {
   if (crypto?.randomUUID) {
@@ -93,7 +94,7 @@ class ControllerSettingsManager {
   addPresetControls() {
     const container = document.getElementById('presetControls')
     if (!container) return
-    while (container.firstChild) container.removeChild(container.firstChild)
+    while (container.firstChild) container.firstChild.remove()
     const iconMap = {
       relaxation: '🌊',
       activation: '⚡',
@@ -113,7 +114,7 @@ class ControllerSettingsManager {
       const name = document.createElement('span')
       name.className = 'preset-name'
       if (config.i18nKey) {
-        name.setAttribute('data-i18n', config.i18nKey)
+        name.dataset.i18n = config.i18nKey
         name.textContent =
           globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id
       } else {
@@ -159,12 +160,16 @@ class ControllerSettingsManager {
     const presetEntry = Object.entries(this.presets).find(
       ([, v]) => v === preset
     )
-    const presetName = presetEntry
-      ? presetEntry[1].i18nKey
-        ? globalThis.i18n?.t(presetEntry[1].i18nKey) ||
+    let presetName = ''
+    if (presetEntry) {
+      if (presetEntry[1].i18nKey) {
+        presetName =
+          globalThis.i18n?.t(presetEntry[1].i18nKey) ||
           presetEntry[1].fallbackName
-        : presetEntry[0]
-      : ''
+      } else {
+        presetName = presetEntry[0]
+      }
+    }
     const i18n = globalThis.i18n
     const appliedKey = 'controller.presetApplied'
     const appliedLabel =
@@ -687,8 +692,9 @@ class ControllerSettingsManager {
       if (!el) return
       const current = this.sessions.find((s) => s.id === this.currentSessionId)
       const nameTxt = current?.name ? `Название: ${current.name}` : ''
+      const separator = nameTxt ? ' • ' : ''
       const createdTxt = current?.createdAt
-        ? `${nameTxt ? ' • ' : ''}Создана: ${new Date(current.createdAt).toLocaleString()}`
+        ? `${separator}Создана: ${new Date(current.createdAt).toLocaleString()}`
         : ''
       el.textContent = `${nameTxt}${createdTxt}`
     } catch (err) {
