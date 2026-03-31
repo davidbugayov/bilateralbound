@@ -315,7 +315,7 @@
       "couplesTherapy": "Terapia de casal",
       "dynamic": "Dinâmica"
     },
-    "viewerNotConnectedWarning": "⚠️ Não é possível alterar as configurações",
+    "viewerNotConnectedWarning": "Não é possível alterar as configurações",
     "viewerNotConnectedMessage": "Aguarde a conexão do visualizador. Compartilhe o link do visualizador com o cliente para que ele participe da sessão.",
     "viewerNotConnectedShort": "Visualizador não conectado"
   },

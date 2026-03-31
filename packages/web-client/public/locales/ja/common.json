@@ -322,7 +322,7 @@
       "couplesTherapy": "カップルセラピー",
       "dynamic": "ダイナミック"
     },
-    "viewerNotConnectedWarning": "⚠️ 設定を変更できません",
+    "viewerNotConnectedWarning": "設定を変更できません",
     "viewerNotConnectedMessage": "ビューアの接続をお待ちください。クライアントとビューアリンクを共有して、セッションに参加してもらってください。",
     "viewerNotConnectedShort": "ビューアが接続されていません"
   },

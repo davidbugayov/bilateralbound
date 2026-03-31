@@ -291,6 +291,9 @@
     "directionDiagRL": "Диаг1",
     "directionDiagRR": "Диаг2",
     "linkCopied": "Ссылка скопирована!",
+    "info": "Информация",
+    "success": "Успешно",
+    "warning": "Внимание",
     "fsPlayPauseBtn": "▶️ Старт",
     "fsResetBtn": "🔄 Сброс",
     "fsSizeLabel": "Размер",
@@ -339,7 +342,7 @@
     },
     "monitorSound": "Мониторинг звука",
     "volumeLabel": "Громкость",
-    "viewerNotConnectedWarning": "⚠️ Невозможно изменить настройки",
+    "viewerNotConnectedWarning": "Невозможно изменить настройки",
     "viewerNotConnectedMessage": "Дождитесь подключения вьювера. Отправьте ссылку вьювера клиенту, чтобы он присоединился к сессии.",
     "viewerNotConnectedShort": "Вьювер не подключен",
     "sessionLostMsg": "Ваша сессия истекла или была удалена с сервера. Пожалуйста, перезагрузите страницу."

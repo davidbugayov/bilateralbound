@@ -268,7 +268,7 @@
     "waitingViewer": "Waiting for viewer",
     "close": "Close",
     "clientNotConnected": "Warning: client not connected, animation may not work",
-    "viewerNotConnectedWarning": "⚠️ Cannot change settings",
+    "viewerNotConnectedWarning": "Cannot change settings",
     "viewerNotConnectedMessage": "Please wait for the viewer to connect. Share the viewer link with the client so they can join the session.",
     "viewerNotConnectedShort": "Viewer not connected",
     "connectionFailed": "Cannot connect to server. Check your internet connection.",
