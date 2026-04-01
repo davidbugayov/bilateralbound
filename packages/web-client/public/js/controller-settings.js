@@ -722,3 +722,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 })
 
+module.exports = { ControllerSettingsManager }
+
