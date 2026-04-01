@@ -718,15 +718,24 @@ globalThis.importSession = (file) =>
   globalThis.controllerSettingsManager?.importSession?.(file)
 // Initialize when DOM is ready
 function initControllerSettings() {
+  console.log('[ControllerSettings] initControllerSettings called, document.readyState:', document.readyState)
+  console.log('[ControllerSettings] presetControls element:', document.getElementById('presetControls'))
   if (!globalThis.controllerSettingsManager) {
+    console.log('[ControllerSettings] Creating new ControllerSettingsManager')
     globalThis.controllerSettingsManager = new globalThis.ControllerSettingsManager()
+    console.log('[ControllerSettings] ControllerSettingsManager created:', globalThis.controllerSettingsManager)
+  } else {
+    console.log('[ControllerSettings] ControllerSettingsManager already exists')
   }
 }
 
 // Check if DOM is already loaded
+console.log('[ControllerSettings] Script loaded, document.readyState:', document.readyState)
 if (document.readyState === 'loading') {
+  console.log('[ControllerSettings] DOM is loading, adding DOMContentLoaded listener')
   document.addEventListener('DOMContentLoaded', initControllerSettings)
 } else {
   // DOM is already loaded, initialize immediately
+  console.log('[ControllerSettings] DOM is already loaded, initializing immediately')
   initControllerSettings()
 }
