@@ -16,18 +16,20 @@ require('./rendering/renderer')
 require('./ui/shared-components')
 require('./network/websocket-client')
 require('./network/realtime-client')
-require('./ui/success-toast')
-require('./ui/error-overlay')
-require('./ui/controller-settings')
-require('./application/controller/ui-controls')
-require('./application/controller/preview-manager')
-require('./application/controller/event-handlers')
-require('./application/controller/play-pause')
-require('./application/controller/ui-sync')
-require('./application/controller/viewer-status')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
+const {
+  getDirectionVector,
+  getDirectionMode,
+  isDiagonalMode,
+  getCurrentDirectionMode,
+  setCurrentDirectionMode,
+  getDirectionState,
+  setDirectionState,
+  recalculateDiagonalDirection
+} = require('./domain/direction')
+const { bbCounters, detectAndCountBounceFromServer } = require('./domain/counters')
 globalThis.PhysicsEngine = PhysicsEngine
 
 
@@ -60,9 +62,6 @@ if (typeof globalThis !== 'undefined') {
 }
 let lastServerState = null // Кэшируем последнее состояние от сервера
 let isPlaying = false
-let currentDirectionMode = 'horizontal'
-// eslint-disable-next-line no-unused-vars
-let directionState = { dx: 1, dy: 0 }
 let wsClient
 let isInitialized = false // Флаг для предотвращения повторной инициализации
 let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
@@ -78,257 +77,6 @@ let previewFsRenderer = null
 let isPreviewFullscreen = false
 let fsPanelHideTimer = null
 const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
-const bbCounters = {
-  timerMs: 0,
-  passes: 0,
-  sets: 0,
-  running: false,
-  lastTickTs: 0,
-  _timerInterval: null,
-  $timer: null,
-  $passes: null,
-  $sets: null,
-  $passesPerSecond: null,
-  $speedInfo: null,
-  _lastBounceTs: 0,
-  bounceHits: 0, // количество отдельных стуков (2 стука = 1 пасс)
-  _passesHistory: [], // История пассов для расчета скорости
-  _lastSpeedMeasurement: 0,
-  _measurementInterval: null,
-  _currentPassesPerSecond: 0,
-  autoStopPasses: 0, // 0 = disabled
-  autoStopSeconds: 0, // 0 = disabled
-  _autoStopFired: false,
-  initDom() {
-    this.$timer = document.getElementById('bbTimer')
-    this.$passes = document.getElementById('bbPasses')
-    this.$sets = document.getElementById('bbSets')
-    this.$passesPerSecond = document.getElementById('bbPassesPerSecond')
-    this.$speedInfo = document.getElementById('speedInfo')
-    this.$autoStopPassesInput = document.getElementById('autoStopPassesInput')
-    this.$autoStopSecondsInput = document.getElementById(
-      'autoStopSecondsInput'
-    )
-    const resetBtn = document.getElementById('bbResetBtn')
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => this.resetAll())
-    }
-    this.initSpeedMeasurement()
-    this.render()
-    // Drive timer accumulation independently of render loop
-    if (this._timerInterval) clearInterval(this._timerInterval)
-    this._timerInterval = setInterval(() => {
-      this.tick(performance.now())
-    }, 100)
-  },
-  initSpeedMeasurement() {
-    this._measurementInterval = setInterval(() => {
-      this.updatePassesPerSecond()
-    }, 2000)
-  },
-  updatePassesPerSecond() {
-    if (!this.running) {
-      this._currentPassesPerSecond = 0
-      return
-    }
-    const now = performance.now()
-    this._passesHistory = this._passesHistory.filter(
-      (timestamp) => now - timestamp < 2000
-    )
-    const passesInLast2Seconds = this._passesHistory.length / 2 // Делим на 2, т.к. считаем за 2 секунды
-    this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10 // Округляем до 1 знака
-    this.renderSpeedInfo()
-  },
-  addPassMeasurement() {
-    this._passesHistory.push(performance.now())
-    this.updatePassesPerSecond()
-  },
-  start() {
-    this.running = true
-    this.lastTickTs = performance.now()
-    this._passesHistory = [] // Очищаем историю при старте
-    this._autoStopFired = false
-  },
-  stop(incrementSet = false) {
-    this.tick(performance.now())
-    this.running = false
-    if (incrementSet) {
-      this.sets += 1
-      this.passes = 0
-      this.bounceHits = 0
-      this._lastBounceTs = 0
-      this._passesHistory = [] // Очищаем историю
-    }
-    this.timerMs = 0
-    this._restoreAutoStopInputs()
-    this.render()
-  },
-  resetAll() {
-    this.timerMs = 0
-    this.passes = 0
-    this.sets = 0
-    this.bounceHits = 0
-    this._lastBounceTs = 0
-    this._passesHistory = []
-    this._currentPassesPerSecond = 0
-    this.render()
-  },
-  onBounce() {
-    if (!this.running) return
-    const now = performance.now()
-    if (now - this._lastBounceTs < 120) return
-    this._lastBounceTs = now
-    this.bounceHits += 1
-    if (this.bounceHits % 2 === 0) {
-      this.passes += 1
-      this.addPassMeasurement()
-    }
-    this.render()
-    this._checkAutoStop()
-  },
-  _checkAutoStop() {
-    if (this._autoStopFired || !this.running) return
-    const passLimit = this.autoStopPasses
-    const secLimit = this.autoStopSeconds
-    const passHit = passLimit > 0 && this.passes >= passLimit
-    const secHit = secLimit > 0 && this.timerMs >= secLimit * 1000
-    if (passHit || secHit) {
-      this._autoStopFired = true
-      // Small delay so the last bounce registers visually
-      setTimeout(() => {
-        if (typeof globalThis.togglePlayPause === 'function') {
-          globalThis.togglePlayPause()
-        }
-      }, 200)
-    }
-  },
-  tick(nowTs) {
-    if (!this.running) return
-    const dt = nowTs - this.lastTickTs
-    if (dt > 0) {
-      this.timerMs += dt
-      this.lastTickTs = nowTs
-      if (!this?._lastRenderTs || nowTs - (this._lastRenderTs || 0) > 100) {
-        this._lastRenderTs = nowTs
-        this.render()
-      }
-      this._checkAutoStop()
-    }
-  },
-  formatTime(ms) {
-    const totalSec = Math.floor(ms / 1000)
-    const m = Math.floor(totalSec / 60)
-    const s = totalSec % 60
-    return `${m}:${String(s).padStart(2, '0')}`
-  },
-  render() {
-    if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
-    if (this.$passes) this.$passes.textContent = String(this.passes)
-    if (this.$sets) this.$sets.textContent = String(this.sets)
-    this._renderAutoStopCountdown()
-    this.renderSpeedInfo()
-  },
-  _renderAutoStopCountdown() {
-    if (!this.running) return
-    if (this.$autoStopPassesInput && this.autoStopPasses > 0) {
-      this.$autoStopPassesInput.value = Math.max(
-        0,
-        this.autoStopPasses - this.passes
-      )
-    }
-    if (this.$autoStopSecondsInput && this.autoStopSeconds > 0) {
-      this.$autoStopSecondsInput.value = Math.max(
-        0,
-        this.autoStopSeconds - Math.floor(this.timerMs / 1000)
-      )
-    }
-  },
-  _restoreAutoStopInputs() {
-    if (this.$autoStopPassesInput)
-      this.$autoStopPassesInput.value = this.autoStopPasses || 0
-    if (this.$autoStopSecondsInput)
-      this.$autoStopSecondsInput.value = this.autoStopSeconds || 0
-  },
-  renderSpeedInfo() {
-    if (this.$passesPerSecond) {
-      this.$passesPerSecond.textContent =
-        this._currentPassesPerSecond.toString()
-    }
-    if (components.speed && this.$speedInfo) {
-      const currentSpeed = components.speed.getSpeed()
-      let speedCategory = ''
-      let speedColor = ''
-      if (currentSpeed <= 15) {
-        speedCategory = 'Очень медленно'
-        speedColor = '#22c55e' // зеленый
-      } else if (currentSpeed <= 25) {
-        speedCategory = 'Медленно'
-        speedColor = '#3b82f6' // синий
-      } else if (currentSpeed <= 35) {
-        speedCategory = 'Средне'
-        speedColor = '#8b5cf6' // фиолетовый
-      } else if (currentSpeed <= 50) {
-        speedCategory = 'Быстро'
-        speedColor = '#f59e0b' // оранжевый
-      } else {
-        speedCategory = 'Очень быстро'
-        speedColor = '#ef4444' // красный
-      }
-      this.$speedInfo.textContent = speedCategory
-      this.$speedInfo.style.color = speedColor
-    }
-  }
-}
-let __lastBounceTs = 0
-let __lastVxSign = 0
-let __lastVySign = 0
-function _hasBounced(currentVelocity, lastSign, minSpeed) {
-  const currentSign = Math.sign(currentVelocity)
-  return (
-    currentSign !== 0 &&
-    lastSign !== 0 &&
-    currentSign !== lastSign &&
-    Math.abs(currentVelocity) > minSpeed
-  )
-}
-/**
- * Обнаруживает и подсчитывает отскоки на основе обновлений состояния сервера.
- * Рефакторинг для снижения когнитивной сложности.
- * @param {object} prev - Предыдущее состояние.
- * @param {object} curr - Текущее состояние.
- */
-function detectAndCountBounceFromServer(prev, curr) {
-  try {
-    if (!prev || !curr || !bbCounters.running) {
-      return
-    }
-    const now = performance.now()
-    if (now - __lastBounceTs < 120) {
-      return
-    }
-    const minSpeed = 10
-    const currVx = curr?.vx || 0
-    const currVy = curr?.vy || 0
-    if (__lastVxSign === 0) __lastVxSign = Math.sign(prev?.vx || 0)
-    if (__lastVySign === 0) __lastVySign = Math.sign(prev?.vy || 0)
-    const bouncedX = _hasBounced(currVx, __lastVxSign, minSpeed)
-    const bouncedY = _hasBounced(currVy, __lastVySign, minSpeed)
-    if (bouncedX || bouncedY) {
-      __lastBounceTs = now
-      bbCounters.onBounce()
-    }
-    const currSignX = Math.sign(currVx)
-    if (currSignX !== 0) {
-      __lastVxSign = currSignX
-    }
-    const currSignY = Math.sign(currVy)
-    if (currSignY !== 0) {
-      __lastVySign = currSignY
-    }
-  } catch (err) {
-    debugWarn('Error in detectAndCountBounceFromServer:', err)
-  }
-}
 document.addEventListener('DOMContentLoaded', () => {
   initializeController().catch(debugError)
   bbCounters.initDom()
@@ -681,8 +429,8 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       if (previewPhysicsEngine) {
         previewPhysicsEngine.setPaused(true)
       }
-      directionState = { dx: 1, dy: 0 }
-      currentDirectionMode = 'horizontal'
+      setDirectionState(1, 0)
+      setCurrentDirectionMode('horizontal')
       updateDirectionDisplay(1, 0)
       updateDirectionButtons()
       if (bbCounters && typeof bbCounters.resetAll === 'function') {
@@ -1107,9 +855,10 @@ function _syncUIDirection(ballState) {
       return
     }
     const mode = _getDirectionMode(ballState.dirX, ballState.dirY)
-    if (mode && mode !== currentDirectionMode) {
-      directionState = { dx: ballState.dirX, dy: ballState.dirY }
-      currentDirectionMode = mode
+    const currentMode = getCurrentDirectionMode()
+    if (mode && mode !== currentMode) {
+      setDirectionState(ballState.dirX, ballState.dirY)
+      setCurrentDirectionMode(mode)
       updateDirectionButtons()
       updateDirectionDisplay(ballState.dirX, ballState.dirY)
     }
@@ -1491,15 +1240,6 @@ function hideWaitingForViewer() {
   }
 }
 /**
- * Проверяет, является ли текущий режим направления диагональным
- * @returns {boolean} true если режим diagRL или diagRLL
- */
-function isDiagonalMode() {
-  return (
-    currentDirectionMode === 'diagRL' || currentDirectionMode === 'diagRLL'
-  )
-}
-/**
  * Пересчитывает и применяет диагональное направление при изменении размера экрана
  * Центрирует мяч и возобновляет движение с новым направлением от центра
  */
@@ -1507,12 +1247,11 @@ function recalculateDiagonalDirectionIfNeeded() {
   if (!isDiagonalMode()) {
     return
   }
-  const directionVector = getDirectionVector(currentDirectionMode)
+  const directionVector = recalculateDiagonalDirection()
   if (!directionVector) {
     return
   }
   const { dirX, dirY } = directionVector
-  directionState = { dx: dirX, dy: dirY }
   if (isPlaying) {
     safeSend(WS_MSG.controllerUpdate, {
       paused: true,
@@ -1623,37 +1362,6 @@ function updateViewerInfo(viewerScreenSize) {
   }
 }
 /**
- * Преобразует текстовый режим в вектор направления.
- * @param {string} directionMode - Режим направления ('horizontal', 'vertical', 'diagRL', 'diagRLL', 'random').
- * @returns {{dirX: number, dirY: number}|null} Возвращает объект с вектором направления или null, если режим неизвестен.
- */
-function getDirectionVector(directionMode) {
-  switch (directionMode) {
-    case 'horizontal':
-      return { dirX: 1, dirY: 0 }
-    case 'vertical':
-      return { dirX: 0, dirY: 1 }
-    case 'diagRL': {
-      const width = globalThis.__current?.viewerScreenSize?.width || 800
-      const height = globalThis.__current?.viewerScreenSize?.height || 600
-      const diagonal = Math.hypot(width, height)
-      return { dirX: width / diagonal, dirY: height / diagonal }
-    }
-    case 'diagRLL': {
-      const width = globalThis.__current?.viewerScreenSize?.width || 800
-      const height = globalThis.__current?.viewerScreenSize?.height || 600
-      const diagonal = Math.hypot(width, height)
-      return { dirX: width / diagonal, dirY: -height / diagonal }
-    }
-    case 'random': {
-      const angle = Math.random() * 2 * Math.PI
-      return { dirX: Math.cos(angle), dirY: Math.sin(angle) }
-    }
-    default:
-      return null
-  }
-}
-/**
  * @private
  * Handles the direction change logic when the session is active.
  * It smoothly transitions by pausing, centering, and then resuming with the new direction.
@@ -1711,8 +1419,8 @@ function setDirection(directionMode) {
     const directionVector = getDirectionVector(directionMode)
     if (!directionVector) return
     const { dirX, dirY } = directionVector
-    directionState = { dx: dirX, dy: dirY }
-    currentDirectionMode = directionMode
+    setDirectionState(dirX, dirY)
+    setCurrentDirectionMode(directionMode)
     __ignoreServerDirectionUntilTs = performance.now() + 1500
     if (isPlaying) {
       _applyDirectionChangeWhenPlaying(dirX, dirY)
@@ -1810,11 +1518,12 @@ function setBackgroundColor(color) {
   safeSend(WS_MSG.controllerUpdate, { colorBg: color })
 }
 function updateDirectionButtons() {
+  const currentMode = getCurrentDirectionMode()
   const directionButtons = document.querySelectorAll('[data-mode]')
   for (const button of directionButtons) {
     button.classList.toggle(
       'active',
-      button.dataset.mode === currentDirectionMode
+      button.dataset.mode === currentMode
     )
   }
   const fsDirectionButtons = {
@@ -1827,7 +1536,7 @@ function updateDirectionButtons() {
   for (const [id, mode] of Object.entries(fsDirectionButtons)) {
     const button = document.getElementById(id)
     if (button) {
-      button.classList.toggle('active', mode === currentDirectionMode)
+      button.classList.toggle('active', mode === currentMode)
     }
   }
 }
@@ -1881,7 +1590,8 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     let directionText = customText || 'Неизвестно'
     let directionIcon
     if (!customText) {
-      const directionInfo = getDirectionInfo(currentDirectionMode)
+      const currentMode = getCurrentDirectionMode()
+      const directionInfo = getDirectionInfo(currentMode)
       directionText = directionInfo.text
       directionIcon = directionInfo.icon
     }
@@ -1928,10 +1638,11 @@ function _setPlayPauseState(shouldPlay) {
     if (shouldPlay) showViewerNotConnectedWarning()
     return
   }
+  const currentMode = getCurrentDirectionMode()
   const payload = shouldPlay
     ? {
         paused: false,
-        ...(getDirectionVector(currentDirectionMode) || { dirX: 1, dirY: 0 }),
+        ...(getDirectionVector(currentMode) || { dirX: 1, dirY: 0 }),
         speed: Number(components.speed?.getSpeed() ?? 40)
       }
     : {
@@ -2653,49 +2364,6 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initViewerConnectionWarnings)
 } else {
   initViewerConnectionWarnings()
-}
-
-/**
- * Эмулирует ошибку WebSocket "Max reconnection attempts reached"
- * Закрывает соединение и устанавливает максимальное количество попыток переподключения в 0
- */
-globalThis.simulateReconnectError = function () {
-  console.log('🔌 [TEST] Эмуляция ошибки WebSocket: Max reconnection attempts reached')
-
-  // Проверяем, что wsClient существует (используем globalThis.wsClient вместо локальной переменной)
-  const client = globalThis.wsClient
-  if (!client || typeof client !== 'object') {
-    console.error('❌ [TEST] WebSocket клиент не инициализирован')
-    showCriticalError(
-      globalThis.i18n?.t('controller.connectionFailed') || 'Connection Failed',
-      'WebSocket клиент не инициализирован. Пожалуйста, подождите инициализации.'
-    )
-    return
-  }
-
-  try {
-    // Закрываем текущее соединение
-    client.close()
-
-    // Устанавливаем максимальное количество попыток в 0
-    if (client.config) {
-      client.config.maxReconnectAttempts = 0
-    }
-    if (client._stats) {
-      client._stats.reconnectCount = 0
-    }
-
-    // Вызываем обработчик ошибки (он покажет диалог через showCriticalError)
-    client._emit('maxReconnectAttemptsReached')
-
-    console.log('✅ [TEST] Ошибка WebSocket успешно эмулирована')
-  } catch (error) {
-    console.error('❌ [TEST] Ошибка при эмуляции:', error)
-    showCriticalError(
-      globalThis.i18n?.t('controller.connectionFailed') || 'Connection Failed',
-      error.message || 'Ошибка при эмуляции WebSocket ошибки'
-    )
-  }
 }
 
 module.exports = { initializeController }

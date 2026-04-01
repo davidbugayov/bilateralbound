@@ -30,7 +30,6 @@ class BallRenderer {
     this.onFrameCallback = null
     this.options = {
       localPhysics: false, // Флаг для локальной физики (для вьювера)
-      dirtyRegions: false, // Частичная перерисовка по регионам
       ...options
     }
     this.adaptiveFrameRate =
@@ -160,41 +159,7 @@ class BallRenderer {
     this.renderBall(ballState)
   }
   /**
-   * Renders the scene using a dirty regions strategy to minimize repaint areas.
-   * @param {number} alpha - The interpolation factor.
-   * @private
-   */
-  _renderDirty(alpha) {
-    const padding = 4
-    const prev = this._prevBall || { x: -1, y: -1, radius: 0 }
-    const curr = this.physics.getInterpolatedBall
-      ? this.physics.getInterpolatedBall(alpha)
-      : this.physics.ball
-    if (prev.x >= 0) {
-      const w = prev.radius * 2 + padding * 2
-      const h = prev.radius * 2 + padding * 2
-      this.ctx.fillStyle = this.colors.bg
-      this.fillRect(
-        prev.x - prev.radius - padding,
-        prev.y - prev.radius - padding,
-        w,
-        h
-      )
-    }
-    const w2 = curr.radius * 2 + padding * 2
-    const h2 = curr.radius * 2 + padding * 2
-    this.ctx.fillStyle = this.colors.bg
-    this.fillRect(
-      curr.x - curr.radius - padding,
-      curr.y - curr.radius - padding,
-      w2,
-      h2
-    )
-    this.renderBall(curr)
-    this._prevBall = { x: curr.x, y: curr.y, radius: curr.radius }
-  }
-  /**
-   * Renders the scene, choosing the optimal strategy (full or dirty regions).
+   * Renders the scene.
    * @param {number} [alpha=1] - The interpolation factor for smooth animation.
    */
   render(alpha = 1) {
@@ -203,8 +168,6 @@ class BallRenderer {
     }
     const worldW = this.physics.options.worldWidth
     const worldH = this.physics.options.worldHeight
-    // Scale canvas context when canvas size differs from physics world (e.g. controller preview)
-    // This makes ball appear at correct relative position on both preview and viewer
     const needsScale =
       worldW > 0 &&
       worldH > 0 &&
@@ -214,11 +177,7 @@ class BallRenderer {
         this.ctx.save()
         this.ctx.scale(this.canvas.width / worldW, this.canvas.height / worldH)
       }
-      if (this.options.dirtyRegions) {
-        this._renderDirty(alpha)
-      } else {
-        this._renderFull(alpha)
-      }
+      this._renderFull(alpha)
       if (needsScale) {
         this.ctx.restore()
       }
