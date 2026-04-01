@@ -716,9 +716,18 @@ globalThis.createCustomPreset = () =>
 globalThis.exportSession = () => globalThis.controllerSettingsManager?.exportSession?.()
 globalThis.importSession = (file) =>
   globalThis.controllerSettingsManager?.importSession?.(file)
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize when DOM is ready
+function initControllerSettings() {
   if (!globalThis.controllerSettingsManager) {
     globalThis.controllerSettingsManager = new globalThis.ControllerSettingsManager()
   }
-})
+}
+
+// Check if DOM is already loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initControllerSettings)
+} else {
+  // DOM is already loaded, initialize immediately
+  initControllerSettings()
+}
 
