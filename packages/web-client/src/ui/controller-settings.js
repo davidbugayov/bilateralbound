@@ -721,5 +721,3 @@ document.addEventListener('DOMContentLoaded', () => {
     globalThis.controllerSettingsManager = new globalThis.ControllerSettingsManager()
   }
 })
-
-module.exports = { ControllerSettingsManager }
