@@ -18,14 +18,13 @@ require('./network/websocket-client')
 require('./network/realtime-client')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
+const _PreviewManager = require('./application/controller/preview-manager')
 const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
 const {
   getDirectionVector,
-  getDirectionMode,
   isDiagonalMode,
   getCurrentDirectionMode,
   setCurrentDirectionMode,
-  getDirectionState,
   setDirectionState,
   recalculateDiagonalDirection
 } = require('./domain/direction')

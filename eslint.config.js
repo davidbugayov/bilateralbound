@@ -370,12 +370,13 @@ module.exports = [
         RealtimeClient: 'readonly',
         HTMLElement: 'readonly',
         HTMLInputElement: 'readonly',
+        PreviewManager: 'readonly',
       },
     },
     rules: {
       ...commonRules,
       'no-redeclare': 'off',
-      'no-unused-vars': ['error', { args: 'none' }],
+      'no-unused-vars': ['error', { args: 'none', varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
     },
   },
 
