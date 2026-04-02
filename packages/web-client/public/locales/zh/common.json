@@ -309,7 +309,11 @@
     },
     "viewerNotConnectedWarning": "无法更改设置",
     "viewerNotConnectedMessage": "请等待查看器连接。与客户端共享查看器链接，以便他们加入会话。",
-    "viewerNotConnectedShort": "查看器未连接"
+    "viewerNotConnectedShort": "查看器未连接",
+    "monitorSound": "控制器音频",
+    "monitorDesc": "在治疗师设备上播放声音",
+    "soundDesc": "会话期间播放音频提示",
+    "volumeLabel": "音量"
   },
   "meta": {
     "controllerTitle": "BilateralBound - EMDR疗法控制器",

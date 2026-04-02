@@ -21,7 +21,7 @@
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="language" content="multilingual" />
-    <meta name="version" content="2.39.394-5e6b7a35" />
+    <meta name="version" content="2.39.395-2a41f23c" />
     <meta name="theme-color" content="#2563eb" />
     <meta name="therapy-type" content="EMDR Controller" />
     <meta
@@ -31,27 +31,27 @@
     <link rel="canonical" href="https://emdrbilateral.ru/" />
 
     <!-- Preload Critical Resources -->
-    <link rel="preload" href="/css/shared-components.css?v=2.39.394-5e6b7a35" as="style" />
-    <link rel="preload" href="/css/light-theme.css?v=2.39.394-5e6b7a35" as="style" />
-    <link rel="preload" href="/css/controller.css?v=2.39.394-5e6b7a35" as="style" />
+    <link rel="preload" href="/css/shared-components.css?v=2.39.395-2a41f23c" as="style" />
+    <link rel="preload" href="/css/light-theme.css?v=2.39.395-2a41f23c" as="style" />
+    <link rel="preload" href="/css/controller.css?v=2.39.395-2a41f23c" as="style" />
     <link rel="preconnect" href="https://emdrbilateral.ru" crossorigin="anonymous" />
     <link rel="dns-prefetch" href="//mc.yandex.ru" />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-controller.svg?v=2.39.394-5e6b7a35"
+      href="/favicon-controller.svg?v=2.39.395-2a41f23c"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-controller.ico?v=2.39.394-5e6b7a35"
+      href="/favicon-controller.ico?v=2.39.395-2a41f23c"
     />
     <link
       rel="apple-touch-icon"
-      href="/favicon-controller.svg?v=2.39.394-5e6b7a35"
+      href="/favicon-controller.svg?v=2.39.395-2a41f23c"
     />
     <link
-      href="/favicon-controller.ico?v=2.39.394-5e6b7a35"
+      href="/favicon-controller.ico?v=2.39.395-2a41f23c"
       rel="shortcut icon"
     />
     <meta property="og:type" content="website" />
@@ -67,7 +67,7 @@
     />
     <meta
       property="og:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.394-5e6b7a35"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.395-2a41f23c"
     />
     <meta property="og:url" content="https://emdrbilateral.ru/" />
     <meta property="og:site_name" content="BilateralBound" />
@@ -85,7 +85,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.394-5e6b7a35"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.395-2a41f23c"
     />
     <meta name="twitter:site" content="@bilateralbound" />
     <script type="application/ld+json">
@@ -104,12 +104,12 @@
       }
     </script>
     <link
-      href="/css/shared-components.css?v=2.39.394-5e6b7a35"
+      href="/css/shared-components.css?v=2.39.395-2a41f23c"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/css/common.css?v=2.39.394-5e6b7a35" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.394-5e6b7a35" />
-    <link rel="stylesheet" href="/css/controller.css?v=2.39.394-5e6b7a35" />
+    <link rel="stylesheet" href="/css/common.css?v=2.39.395-2a41f23c" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.395-2a41f23c" />
+    <link rel="stylesheet" href="/css/controller.css?v=2.39.395-2a41f23c" />
     <noscript
       ><div>
         <img
@@ -429,93 +429,115 @@
             🛠️ Settings
           </h3>
           <div class="appearance-grid">
-            <div class="controls-card">
-              <label class="settings-sound-label">
-                <input
-                  type="checkbox"
-                  id="soundEnabledCheckbox"
-                  class="settings-sound-checkbox"
-                />
-                <span
-                  data-i18n="controller.enableSound"
-                  class="settings-sound-text"
-                  >Enable sound</span
-                >
-              </label>
+            <div class="controls-card settings-card">
+              <div class="settings-row settings-row--toggle">
+                <div class="settings-row__content">
+                  <span class="settings-row__icon" aria-hidden="true">🔊</span>
+                  <div class="settings-row__text">
+                    <span
+                      data-i18n="controller.enableSound"
+                      class="settings-row__title"
+                      >Enable sound</span
+                    >
+                    <span class="settings-row__desc" data-i18n="controller.soundDesc"
+                      >Play audio cues during session</span
+                    >
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    id="soundEnabledCheckbox"
+                  />
+                  <span class="slider round"></span>
+                </label>
+              </div>
               <div
                 id="soundTypeControl"
-                class="settings-sound-type-control"
+                class="settings-row settings-row--select"
               >
                 <label
                   data-i18n="controller.soundTypeLabel"
                   for="soundTypeSelect"
-                  class="settings-sound-type-label"
+                  class="settings-row__label"
                 >
-                  Sound type:
+                  Sound type
                 </label>
-                <select
-                  id="soundTypeSelect"
-                  class="settings-sound-type-select"
-                >
-                  <option data-i18n="controller.soundTypeSoft" value="soft">
-                    🎵 Soft (EMDR)
-                  </option>
-                  <option data-i18n="controller.soundTypeTick" value="tick">
-                    ⏱️ Tick
-                  </option>
-                  <option data-i18n="controller.soundTypeTone" value="tone">
-                    🎹 Tone
-                  </option>
-                  <option data-i18n="controller.soundTypeClick" value="click">
-                    🖱️ Click
-                  </option>
-                  <option data-i18n="controller.soundTypeBounce" value="bounce">
-                    🎾 Bounce
-                  </option>
-                  <option data-i18n="controller.soundTypeBeep" value="beep">
-                    📢 Beep
-                  </option>
-                </select>
+                <div class="select-wrapper">
+                  <select
+                    id="soundTypeSelect"
+                    class="settings-select"
+                  >
+                    <option data-i18n="controller.soundTypeSoft" value="soft">
+                      🎵 Soft (EMDR)
+                    </option>
+                    <option data-i18n="controller.soundTypeTick" value="tick">
+                      ⏱️ Tick
+                    </option>
+                    <option data-i18n="controller.soundTypeTone" value="tone">
+                      🎹 Tone
+                    </option>
+                    <option data-i18n="controller.soundTypeClick" value="click">
+                      🖱️ Click
+                    </option>
+                    <option data-i18n="controller.soundTypeBounce" value="bounce">
+                      🎾 Bounce
+                    </option>
+                    <option data-i18n="controller.soundTypeBeep" value="beep">
+                      📢 Beep
+                    </option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true">▾</span>
+                </div>
               </div>
               <div
                 id="controllerMonitorControl"
-                class="settings-monitor-control"
+                class="settings-row settings-row--divider"
               >
-                <label class="settings-monitor-label">
+                <div class="settings-row__content">
+                  <span class="settings-row__icon" aria-hidden="true">🖥️</span>
+                  <div class="settings-row__text">
+                    <span
+                      data-i18n="controller.monitorSound"
+                      class="settings-row__title"
+                      >Monitor sound</span
+                    >
+                    <span class="settings-row__desc" data-i18n="controller.monitorDesc"
+                      >Play sound on controller device</span
+                    >
+                  </div>
+                </div>
+                <label class="toggle-switch">
                   <input
                     id="controllerMonitorCheckbox"
-                    class="settings-monitor-checkbox"
                     type="checkbox"
                   />
-                  <span
-                    data-i18n="controller.monitorSound"
-                    class="settings-monitor-text"
-                    >Monitor sound</span
-                  >
+                  <span class="slider round"></span>
                 </label>
-                <div
-                  id="controllerVolumeControl"
-                  class="settings-volume-control"
+              </div>
+              <div
+                id="controllerVolumeControl"
+                class="settings-row settings-row--volume"
+              >
+                <span class="settings-row__icon volume-icon" aria-hidden="true">🔈</span>
+                <span
+                  data-i18n="controller.volumeLabel"
+                  class="settings-row__label--compact"
+                  >Volume</span
                 >
-                  <span
-                    data-i18n="controller.volumeLabel"
-                    class="settings-volume-label"
-                    >Volume</span
-                  >
-                  <input
-                    id="controllerVolumeSlider"
-                    max="100"
-                    min="0"
-                    class="settings-volume-slider"
-                    type="range"
-                    value="50"
-                  />
-                  <span
-                    id="controllerVolumeValue"
-                    class="settings-volume-value"
-                    >50%</span
-                  >
-                </div>
+                <input
+                  id="controllerVolumeSlider"
+                  max="100"
+                  min="0"
+                  class="settings-volume-slider"
+                  type="range"
+                  value="50"
+                />
+                <span
+                  id="controllerVolumeValue"
+                  class="settings-volume-value"
+                  >50%</span
+                >
               </div>
               <div
                 class="viewer-audio-indicator hidden"
@@ -852,6 +874,6 @@
     </main>
     <script src="/js/ui/error-states.js" defer></script>
     <script src="/js/ui/success-toast.js" defer></script>
-    <script src="/dist/controller.bundle.js?v=2.39.394-5e6b7a35" defer></script>
+    <script src="/dist/controller.bundle.js?v=2.39.395-2a41f23c" defer></script>
   </body>
 </html>

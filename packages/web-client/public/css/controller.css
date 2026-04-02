@@ -1299,134 +1299,332 @@ body {
 
 /* ===== SETTINGS SECTION REDESIGN ===== */
 
-/* Settings card: row-based panel, no padding (rows handle their own) */
-.controller-left-col [aria-labelledby="settings-heading"] .controls-card {
+/* Settings card: row-based panel with modern styling */
+.controller-left-col [aria-labelledby="settings-heading"] .controls-card.settings-card,
+.controls-card.settings-card {
+  background: linear-gradient(135deg, rgb(15 23 42 / 80%) 0%, rgb(30 41 59 / 80%) 100%);
+  border: 1px solid rgb(51 65 85 / 70%);
+  border-radius: 14px;
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
   overflow: hidden;
+  box-shadow:
+    0 4px 16px rgb(0 0 0 / 20%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-/* ── Row: Enable sound ── */
-.controller-left-col .controls-card > div[style*="margin-bottom"] {
-  margin: 0 !important;
-  padding: 9px 10px !important;
-  gap: 0 !important;
-  justify-content: space-between !important;
+.controls-card.settings-card:hover {
+  border-color: rgb(59 130 246 / 40%);
+  box-shadow:
+    0 4px 20px rgb(37 99 235 / 15%),
+    inset 0 1px 0 rgb(255 255 255 / 8%);
 }
 
-.controller-left-col .controls-card > div[style*="margin-bottom"] > label {
-  display: flex !important;
-  align-items: center !important;
-  width: 100%;
-  justify-content: space-between !important;
-  gap: 0 !important;
-  margin: 0 !important;
+/* Settings row base */
+.settings-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  gap: 10px;
+  transition: background 0.15s ease;
 }
 
-/* Label text - Enable sound */
-.controller-left-col .controls-card > div[style*="margin-bottom"] span {
-  font-size: 0.82rem !important;
-  font-weight: 500;
-  color: #cbd5e1;
-  padding: 0 !important;
-  margin: 0 !important;
+.settings-row:hover {
+  background: rgb(255 255 255 / 3%);
 }
 
-/* ── Row: Sound type ── */
-.controller-left-col #soundTypeControl {
-  padding: 9px 10px !important;
-  margin: 0 !important;
-  border-top: 1px solid rgb(255 255 255 / 5%) !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
+/* Row with divider */
+.settings-row--divider {
+  border-top: 1px solid rgb(255 255 255 / 5%);
 }
 
-.controller-left-col #soundTypeControl > label {
-  font-size: 0.78rem !important;
-  margin: 0 !important;
-  color: #64748b;
-  white-space: nowrap;
-  flex-shrink: 0;
+/* Row: Toggle layout */
+.settings-row--toggle {
+  justify-content: space-between;
+  padding: 14px;
 }
 
-.controller-left-col #soundTypeSelect {
+.settings-row__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex: 1;
   min-width: 0;
-  padding: 4px 6px !important;
-  font-size: 0.78rem !important;
-  border-radius: 5px !important;
-  height: 26px !important;
-  max-width: 100%;
-  box-sizing: border-box;
-  background: #0f172a;
-  border: 1px solid #334155 !important;
-  color: #cbd5e1;
 }
 
-/* ── Row: Monitor sound ── */
-.controller-left-col #controllerMonitorControl {
-  margin: 0 !important;
-  padding: 0 !important;
-  border-top: 1px solid rgb(255 255 255 / 5%) !important;
-}
-
-.controller-left-col #controllerMonitorControl > label {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  padding: 9px 10px !important;
-  gap: 0 !important;
-  margin: 0 !important;
-  cursor: pointer;
-}
-
-.controller-left-col #controllerMonitorControl > label span {
-  font-size: 0.82rem !important;
-  font-weight: 500;
-  color: #cbd5e1;
-}
-
-/* ── Row: Volume ── */
-.controller-left-col #controllerVolumeControl {
-  padding: 6px 10px !important;
-  gap: 6px !important;
-  border-top: 1px solid rgb(255 255 255 / 4%) !important;
-}
-
-.controller-left-col #controllerVolumeControl > span:first-child {
-  font-size: 0.75rem !important;
-  white-space: nowrap;
-  color: #64748b;
-  min-width: 44px;
-}
-
-.controller-left-col #controllerVolumeSlider {
-  min-width: 0;
-  flex: 1;
-}
-
-.controller-left-col #controllerVolumeValue {
-  font-size: 0.75rem !important;
-  min-width: 0 !important;
-  width: 26px !important;
-  text-align: right;
+.settings-row__icon {
+  font-size: 20px;
+  line-height: 1;
   flex-shrink: 0;
-  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgb(255 255 255 / 6%);
+  border-radius: 10px;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
 
-/* ── Row: Viewer audio status (always reserves space) ── */
-.controller-left-col .viewer-audio-indicator {
-  padding: 7px 10px;
-  margin: 0;
+.settings-row:hover .settings-row__icon {
+  background: rgb(255 255 255 / 10%);
+}
+
+.settings-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-row__title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  line-height: 1.3;
+  transition: color 0.2s ease;
+}
+
+.settings-row__desc {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.3;
+  transition: color 0.2s ease;
+}
+
+/* Row: Select layout */
+.settings-row--select {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  border-top: 1px solid rgb(255 255 255 / 5%);
+  padding: 14px;
+}
+
+.settings-row__label {
   font-size: 0.78rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.settings-row__label--compact {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #94a3b8;
+  min-width: 50px;
+}
+
+/* Select wrapper */
+.select-wrapper {
+  position: relative;
+}
+
+.settings-select {
+  appearance: none;
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  background: rgb(15 23 42 / 60%);
+  border: 1px solid rgb(51 65 85 / 80%);
+  border-radius: 10px;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.settings-select:hover {
+  border-color: #475569;
+  background: rgb(30 41 59 / 60%);
+}
+
+.settings-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 15%);
+}
+
+.settings-select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 8px;
+}
+
+.select-arrow {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+  font-size: 14px;
+}
+
+/* Row: Volume */
+.settings-row--volume {
+  border-top: 1px solid rgb(255 255 255 / 5%);
+  padding: 12px 14px;
+  gap: 8px;
+}
+
+.volume-icon {
+  animation: volume-pulse 2s ease-in-out infinite;
+}
+
+@keyframes volume-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+#controllerVolumeSlider {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  outline: none;
+  cursor: pointer;
+  border: 1px solid rgb(51 65 85 / 50%);
+  transition: border-color 0.2s ease;
+}
+
+#controllerVolumeSlider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: 2px solid #fff;
+  box-shadow:
+    0 2px 6px rgb(0 0 0 / 30%),
+    0 0 0 2px rgb(59 130 246 / 20%);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#controllerVolumeSlider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow:
+    0 3px 10px rgb(0 0 0 / 40%),
+    0 0 0 4px rgb(59 130 246 / 30%);
+}
+
+#controllerVolumeSlider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: 2px solid #fff;
+  box-shadow:
+    0 2px 6px rgb(0 0 0 / 30%),
+    0 0 0 2px rgb(59 130 246 / 20%);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.settings-volume-value {
+  font-size: 0.82rem !important;
+  font-weight: 600;
+  color: #60a5fa;
+  min-width: 40px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.2s ease;
+}
+
+/* ── Toggle switch (enhanced) ── */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #334155;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 26px;
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 30%),
+    0 1px 2px rgb(0 0 0 / 10%);
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #e2e8f0;
+  border-radius: 50%;
+  transition:
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow:
+    0 1px 4px rgb(0 0 0 / 25%),
+    0 0 0 1px rgb(0 0 0 / 5%);
+}
+
+.toggle-switch input:checked + .slider {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 20%),
+    0 1px 4px rgb(37 99 235 / 30%);
+}
+
+.toggle-switch input:checked + .slider::before {
+  transform: translateY(-50%) translateX(22px);
+  background-color: #fff;
+  box-shadow:
+    0 2px 6px rgb(0 0 0 / 20%),
+    0 0 8px rgb(59 130 246 / 30%);
+}
+
+.toggle-switch input:focus-visible + .slider {
+  outline: 2px solid rgb(59 130 246 / 60%);
+  outline-offset: 2px;
+}
+
+/* ── Viewer audio status ── */
+.controller-left-col .viewer-audio-indicator {
+  padding: 10px 14px;
+  margin: 0;
+  font-size: 0.8rem;
   border-radius: 0;
   border-top: 1px solid rgb(255 255 255 / 5%);
   border-left: none;
   border-right: none;
   border-bottom: none;
+  background: rgb(234 179 8 / 8%);
 }
 
 .controller-left-col .viewer-audio-indicator.hidden {
@@ -1435,50 +1633,141 @@ body {
   pointer-events: none;
 }
 
-/* ── Toggle switch ── */
-.controller-left-col #soundEnabledCheckbox,
-.controller-left-col #controllerMonitorCheckbox {
-  appearance: none !important;
-  width: 32px !important;
-  height: 18px !important;
-  min-width: 32px !important;
-  border-radius: 9px !important;
-  background: #1e293b !important;
-  border: 1px solid #475569 !important;
-  position: relative !important;
-  cursor: pointer !important;
-  flex-shrink: 0 !important;
-  transition: background 0.2s ease !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.controller-left-col #soundEnabledCheckbox::before,
-.controller-left-col #controllerMonitorCheckbox::before {
-  content: "";
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #94a3b8;
-  top: 1px;
-  left: 1px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 35%);
+/* ── Sound type control visibility ── */
+#soundTypeControl {
+  opacity: 0.5;
+  pointer-events: none;
   transition:
-    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease,
     background 0.2s ease;
 }
 
-.controller-left-col #soundEnabledCheckbox:checked,
-.controller-left-col #controllerMonitorCheckbox:checked {
-  background: #2563eb !important;
+#soundTypeControl.enabled {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.controller-left-col #soundEnabledCheckbox:checked::before,
-.controller-left-col #controllerMonitorCheckbox:checked::before {
-  transform: translateX(15px);
+#controllerVolumeControl {
+  opacity: 0.5;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+#controllerVolumeControl.enabled {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ===== LIGHT THEME: SETTINGS SECTION ===== */
+
+.light-theme .controls-card.settings-card {
+  background: linear-gradient(135deg, rgb(255 255 255 / 95%) 0%, rgb(248 250 252 / 95%) 100%);
+  border-color: rgb(203 213 225 / 60%);
+  box-shadow:
+    0 4px 16px rgb(0 0 0 / 8%),
+    inset 0 1px 0 rgb(255 255 255);
+}
+
+.light-theme .controls-card.settings-card:hover {
+  border-color: rgb(59 130 246 / 40%);
+  box-shadow:
+    0 4px 20px rgb(59 130 246 / 12%),
+    inset 0 1px 0 rgb(255 255 255);
+}
+
+.light-theme .settings-row:hover {
+  background: rgb(0 0 0 / 2%);
+}
+
+.light-theme .settings-row__icon {
+  background: rgb(0 0 0 / 5%);
+}
+
+.light-theme .settings-row:hover .settings-row__icon {
+  background: rgb(0 0 0 / 8%);
+}
+
+.light-theme .settings-row__title {
+  color: #1e293b;
+}
+
+.light-theme .settings-row__desc {
+  color: #64748b;
+}
+
+.light-theme .settings-row--divider {
+  border-top-color: rgb(0 0 0 / 6%);
+}
+
+.light-theme .settings-row__label {
+  color: #64748b;
+}
+
+.light-theme .settings-row__label--compact {
+  color: #475569;
+}
+
+.light-theme .settings-select {
   background: #fff;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 25%);
+  border-color: rgb(203 213 225 / 80%);
+  color: #334155;
+}
+
+.light-theme .settings-select:hover {
+  background: rgb(248 250 252 / 80%);
+  border-color: #94a3b8;
+}
+
+.light-theme .settings-select:focus {
+  border-color: #3b82f6;
+}
+
+.light-theme .settings-select option {
+  background-color: #fff;
+  color: #334155;
+}
+
+.light-theme .select-arrow {
+  color: #94a3b8;
+}
+
+.light-theme .slider {
+  background-color: #cbd5e1;
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 15%),
+    0 1px 2px rgb(0 0 0 / 5%);
+}
+
+.light-theme .slider::before {
+  background-color: #fff;
+  box-shadow:
+    0 1px 4px rgb(0 0 0 / 15%);
+}
+
+.light-theme .toggle-switch input:checked + .slider {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.light-theme .toggle-switch input:checked + .slider::before {
+  background-color: #fff;
+  box-shadow:
+    0 2px 6px rgb(0 0 0 / 15%);
+}
+
+.light-theme #controllerVolumeSlider {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  border-color: rgb(203 213 225 / 60%);
+}
+
+.light-theme .settings-volume-value {
+  color: #3b82f6;
+}
+
+.light-theme .viewer-audio-indicator {
+  background: rgb(234 179 8 / 10%);
+  border-top-color: rgb(0 0 0 / 6%);
 }
 
 /* ⌨️ Hotkeys */

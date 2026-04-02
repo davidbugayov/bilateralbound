@@ -318,8 +318,10 @@
       "couplesTherapy": "Couples Therapy",
       "dynamic": "Dynamic"
     },
-    "monitorSound": "Monitor sound",
+    "monitorSound": "Controller audio",
+    "monitorDesc": "Play sound on therapist's device",
     "volumeLabel": "Volume",
+    "soundDesc": "Play audio cues during the session",
     "sessionLostMsg": "Your session has expired or was removed from the server. Please reload the page."
   },
   "features": {

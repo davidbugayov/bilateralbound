@@ -104,6 +104,7 @@ All push-based, NO polling:
 - **WebSocket endpoint**: `ws://host/?sessionId=:id&role=viewer|controller` — auto-reconnect, heartbeat every 30s
 - **Session IDs**: auto-generated 6-char UUID prefix, or custom 3-32 chars (alphanumeric/dash/underscore)
 - **E2E tests**: Puppeteer-based, 22 tests, use `domcontentloaded` (not `networkidle0`)
+- **Browser testing**: Use chrome mcp (`@anthropic/mcp-chrome`) for web testing. browser-use-mcp is deprecated and non-functional.
 - **No bundler**: vanilla JS loaded via `<script>` tags, order matters
 - **Play/pause guards**: `__ignoreServerPausedUntilTs` (800ms) and `__ignoreServerDirectionUntilTs` (1500ms) prevent server state from overriding recent user actions
 - **Viewer pause animation**: `seekingCenter` state triggers 400ms ease-out return-to-center when paused; ball does NOT snap immediately. `updatePhysicsFromState` fallback in `viewer.html` ensures animation starts even on redundant pause commands.

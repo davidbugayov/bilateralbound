@@ -73,8 +73,11 @@ function syncSound(ballState) {
       cb.checked = Boolean(ballState.soundEnabled);
       const tc = document.getElementById('soundTypeControl');
       if (tc) {
-        tc.style.opacity = ballState.soundEnabled ? '1' : '0.5';
-        tc.style.pointerEvents = ballState.soundEnabled ? 'auto' : 'none';
+        if (ballState.soundEnabled) {
+          tc.classList.add('enabled');
+        } else {
+          tc.classList.remove('enabled');
+        }
       }
     }
   }

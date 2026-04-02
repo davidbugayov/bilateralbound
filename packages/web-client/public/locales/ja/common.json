@@ -324,7 +324,11 @@
     },
     "viewerNotConnectedWarning": "設定を変更できません",
     "viewerNotConnectedMessage": "ビューアの接続をお待ちください。クライアントとビューアリンクを共有して、セッションに参加してもらってください。",
-    "viewerNotConnectedShort": "ビューアが接続されていません"
+    "viewerNotConnectedShort": "ビューアが接続されていません",
+    "monitorSound": "コントローラーオーディオ",
+    "monitorDesc": "セラピストのデバイスでサウンドを再生",
+    "soundDesc": "セッション中にオーディオキューを再生",
+    "volumeLabel": "音量"
   },
   "meta": {
     "controllerTitle": "BilateralBound - EMDR療法コントローラー",

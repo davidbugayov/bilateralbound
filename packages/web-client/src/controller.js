@@ -874,11 +874,9 @@ function syncUIWithState(ballState) {
         const soundTypeControl = document.getElementById('soundTypeControl')
         if (soundTypeControl) {
           if (ballState.soundEnabled) {
-            soundTypeControl.style.opacity = '1'
-            soundTypeControl.style.pointerEvents = 'auto'
+            soundTypeControl.classList.add('enabled')
           } else {
-            soundTypeControl.style.opacity = '0.5'
-            soundTypeControl.style.pointerEvents = 'none'
+            soundTypeControl.classList.remove('enabled')
           }
         }
       }
@@ -997,11 +995,9 @@ function _initializeSoundControls() {
       setSoundEnabled(enabled)
       _updateSoundLabel(enabled)
       if (enabled) {
-        soundTypeControl.style.opacity = '1'
-        soundTypeControl.style.pointerEvents = 'auto'
+        soundTypeControl.classList.add('enabled')
       } else {
-        soundTypeControl.style.opacity = '0.5'
-        soundTypeControl.style.pointerEvents = 'none'
+        soundTypeControl.classList.remove('enabled')
       }
       if (lastServerState) {
         lastServerState.soundEnabled = enabled
@@ -1020,8 +1016,9 @@ function _initializeSoundControls() {
         soundEnabledCheckbox.checked = lastServerState.soundEnabled
         _updateSoundLabel(lastServerState.soundEnabled)
         if (lastServerState.soundEnabled) {
-          soundTypeControl.style.opacity = '1'
-          soundTypeControl.style.pointerEvents = 'auto'
+          soundTypeControl.classList.add('enabled')
+        } else {
+          soundTypeControl.classList.remove('enabled')
         }
       }
       if (lastServerState.soundType) {

@@ -324,7 +324,11 @@
     },
     "viewerNotConnectedWarning": "Impossible de modifier les paramètres",
     "viewerNotConnectedMessage": "Veuillez attendre que le visualiseur se connecte. Partagez le lien du visualiseur avec le client pour qu'il rejoigne la session.",
-    "viewerNotConnectedShort": "Visualiseur non connecté"
+    "viewerNotConnectedShort": "Visualiseur non connecté",
+    "monitorSound": "Audio du contrôleur",
+    "monitorDesc": "Jouer le son sur l'appareil du thérapeute",
+    "soundDesc": "Jouer des signaux audio pendant la séance",
+    "volumeLabel": "Volume"
   },
   "meta": {
     "controllerTitle": "BilateralBound - Contrôleur de thérapie EMDR",

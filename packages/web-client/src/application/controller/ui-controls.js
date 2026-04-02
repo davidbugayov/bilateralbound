@@ -105,12 +105,15 @@ function _initializeSoundControls(
     soundEnabledCheckbox.addEventListener('change', (e) => {
       const enabled = e.target.checked;
       if (onSoundEnabledChange) onSoundEnabledChange(enabled);
+      // Toggle enabled class for CSS transitions
       if (enabled) {
-        soundTypeControl.style.opacity = '1';
-        soundTypeControl.style.pointerEvents = 'auto';
+        soundTypeControl.classList.add('enabled');
+        soundTypeControl.style.opacity = '';
+        soundTypeControl.style.pointerEvents = '';
       } else {
-        soundTypeControl.style.opacity = '0.5';
-        soundTypeControl.style.pointerEvents = 'none';
+        soundTypeControl.classList.remove('enabled');
+        soundTypeControl.style.opacity = '';
+        soundTypeControl.style.pointerEvents = '';
       }
       const lastState = getLastServerState ? getLastServerState() : null;
       if (lastState) {
@@ -131,8 +134,9 @@ function _initializeSoundControls(
       if (typeof lastState.soundEnabled === 'boolean') {
         soundEnabledCheckbox.checked = lastState.soundEnabled;
         if (lastState.soundEnabled) {
-          soundTypeControl.style.opacity = '1';
-          soundTypeControl.style.pointerEvents = 'auto';
+          soundTypeControl.classList.add('enabled');
+        } else {
+          soundTypeControl.classList.remove('enabled');
         }
       }
       if (lastState.soundType) {
