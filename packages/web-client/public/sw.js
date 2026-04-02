@@ -6,31 +6,34 @@
  * Provides offline support and caching
  */
 
-const CACHE_NAME = 'bilateralbound-v2';
+const CACHE_NAME = 'bilateralbound-v3-2.39.395';
+const CACHE_VERSION = '2.39.395';
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
-  '/session-controller.html',
-  '/viewer.html',
-  '/css/main-page.css',
-  '/css/session-controller.css',
-  '/css/viewer.css',
-  '/css/shared-components.css',
-  '/js/physics-engine.js',
-  '/js/renderer.js',
-  '/js/common.js',
-  '/js/shared-components.js',
-  '/js/i18n/i18n.js',
-  '/js/i18n/lang-preload.js',
-  '/js/i18n/language-selector.js',
-  '/locales/en/common.json',
-  '/locales/ru/common.json',
-  '/locales/de/common.json',
-  '/locales/es/common.json',
-  '/locales/fr/common.json',
-  '/locales/pt/common.json',
-  '/locales/ja/common.json',
-  '/locales/zh/common.json',
+  '/index.html?v=' + CACHE_VERSION,
+  '/session-controller.html?v=' + CACHE_VERSION,
+  '/viewer.html?v=' + CACHE_VERSION,
+  '/css/common.css?v=' + CACHE_VERSION,
+  '/css/controller.css?v=' + CACHE_VERSION,
+  '/css/main-page.css?v=' + CACHE_VERSION,
+  '/css/session-controller.css?v=' + CACHE_VERSION,
+  '/css/viewer.css?v=' + CACHE_VERSION,
+  '/css/shared-components.css?v=' + CACHE_VERSION,
+  '/js/physics-engine.js?v=' + CACHE_VERSION,
+  '/js/renderer.js?v=' + CACHE_VERSION,
+  '/js/common.js?v=' + CACHE_VERSION,
+  '/js/shared-components.js?v=' + CACHE_VERSION,
+  '/js/i18n/i18n.js?v=' + CACHE_VERSION,
+  '/js/i18n/lang-preload.js?v=' + CACHE_VERSION,
+  '/js/i18n/language-selector.js?v=' + CACHE_VERSION,
+  '/locales/en/common.json?v=' + CACHE_VERSION,
+  '/locales/ru/common.json?v=' + CACHE_VERSION,
+  '/locales/de/common.json?v=' + CACHE_VERSION,
+  '/locales/es/common.json?v=' + CACHE_VERSION,
+  '/locales/fr/common.json?v=' + CACHE_VERSION,
+  '/locales/pt/common.json?v=' + CACHE_VERSION,
+  '/locales/ja/common.json?v=' + CACHE_VERSION,
+  '/locales/zh/common.json?v=' + CACHE_VERSION,
 ];
 
 // Install - cache static assets
