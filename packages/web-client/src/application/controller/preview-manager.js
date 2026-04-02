@@ -74,22 +74,6 @@ async function initializePreview(callbacks) {
 }
 
 /**
- * Инициализация превью с внешним physics engine и renderer (из controller.js)
- * @param {Object} physicsEngine - Экземпляр PhysicsEngine
- * @param {Object} renderer - Экземпляр BallRenderer
- * @param {HTMLCanvasElement} canvas - Canvas элемент
- * @param {Object} callbacks - Callback функции
- */
-function _initializeFromController(physicsEngine, renderer, canvas, callbacks) {
-  _physicsEngine = physicsEngine
-  _renderer = renderer
-  _canvas = canvas
-  if (callbacks) {
-    Object.assign(_callbacks, callbacks)
-  }
-}
-
-/**
  * Полная инициализация превью (standalone)
  * @returns {Promise<boolean>}
  */
@@ -357,22 +341,6 @@ function getPreviewPhysicsEngine() {
   return _physicsEngine
 }
 
-/**
- * Получить renderer
- * @returns {Object|null}
- */
-function getPreviewRenderer() {
-  return _renderer
-}
-
-/**
- * Получить canvas
- * @returns {HTMLCanvasElement|null}
- */
-function getPreviewCanvas() {
-  return _canvas
-}
-
 // ============================================================================
 // Экспорт API
 // ============================================================================
@@ -380,10 +348,7 @@ function getPreviewCanvas() {
 if (typeof globalThis !== 'undefined') {
   globalThis.PreviewManager = {
     init: initializePreview,
-    initFromController: _initializeFromController,
     getPhysicsEngine: getPreviewPhysicsEngine,
-    getRenderer: getPreviewRenderer,
-    getCanvas: getPreviewCanvas,
     updateSize: updatePreviewSize,
     centerBall: centerBallInViewer,
     showWaiting: showWaitingForViewer,
@@ -395,8 +360,6 @@ if (typeof globalThis !== 'undefined') {
 module.exports = {
   initializePreview,
   getPreviewPhysicsEngine,
-  getPreviewRenderer,
-  getPreviewCanvas,
   updatePreviewSize,
   centerBallInViewer,
   showWaitingForViewer,
@@ -406,6 +369,5 @@ module.exports = {
   setCanvasDimensions,
   updatePhysicsEngineWorldSize,
   canUpdatePreview,
-  applyServerStateOrCenter,
-  initializeFromController: _initializeFromController
+  applyServerStateOrCenter
 }
