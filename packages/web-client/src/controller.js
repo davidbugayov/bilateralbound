@@ -1225,9 +1225,10 @@ function showWaitingForViewer() {
   if (previewPhysicsEngine) {
     const canvas = document.getElementById('preview')
     if (canvas) {
-      const centerX = canvas.width / 2
-      const centerY = canvas.height / 2
-      previewPhysicsEngine.setPosition(centerX, centerY)
+      // Ensure canvas has valid dimensions before centering
+      const width = canvas.width || 500
+      const height = canvas.height || 375
+      previewPhysicsEngine.setPosition(width / 2, height / 2)
       previewPhysicsEngine.setVelocity(0, 0)
       previewPhysicsEngine.setPaused(true)
     }
@@ -1347,9 +1348,11 @@ function centerBallInViewer() {
     previewPhysicsEngine.setPosition(centerX, centerY)
     previewPhysicsEngine.setVelocity(0, 0)
   } else if (globalThis.__previewCanvas) {
-    const centerX = globalThis.__previewCanvas.width / 2
-    const centerY = globalThis.__previewCanvas.height / 2
-    previewPhysicsEngine.setPosition(centerX, centerY)
+    // Ensure canvas has valid dimensions before centering
+    const canvas = globalThis.__previewCanvas
+    const width = canvas.width || 500
+    const height = canvas.height || 375
+    previewPhysicsEngine.setPosition(width / 2, height / 2)
     previewPhysicsEngine.setVelocity(0, 0)
   }
 }
