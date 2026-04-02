@@ -26,7 +26,8 @@ const {
   getCurrentDirectionMode,
   setCurrentDirectionMode,
   setDirectionState,
-  recalculateDiagonalDirection
+  recalculateDiagonalDirection,
+  getDirectionMode
 } = require('./domain/direction')
 const { bbCounters, detectAndCountBounceFromServer } = require('./domain/counters')
 globalThis.PhysicsEngine = PhysicsEngine
@@ -836,24 +837,13 @@ function _syncUIPause(ballState) {
     }
   }
 }
-function _getDirectionMode(dirX, dirY) {
-  const ax = Math.abs(dirX)
-  const ay = Math.abs(dirY)
-  if (ax > 0.9 && ay < 0.2) return 'horizontal'
-  if (ay > 0.9 && ax < 0.2) return 'vertical'
-  if (ax > ay * 2) return 'horizontal'
-  if (ay > ax * 2) return 'vertical'
-  if (dirX > 0 && dirY > 0) return 'diagRL' // TL→BR
-  if (dirX > 0 && dirY < 0) return 'diagRLL' // BL→TR
-  return null
-}
 function _syncUIDirection(ballState) {
   if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
     const now = performance.now()
     if (now < __ignoreServerDirectionUntilTs) {
       return
     }
-    const mode = _getDirectionMode(ballState.dirX, ballState.dirY)
+    const mode = getDirectionMode(ballState.dirX, ballState.dirY)
     const currentMode = getCurrentDirectionMode()
     if (mode && mode !== currentMode) {
       setDirectionState(ballState.dirX, ballState.dirY)

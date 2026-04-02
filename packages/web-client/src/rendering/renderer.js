@@ -157,6 +157,142 @@ class BallRenderer {
       ? this.physics.getInterpolatedBall(alpha)
       : this.physics.ball
     this.renderBall(ballState)
+    // Render debug overlay if enabled
+    if (this.options.showDebug) {
+      this._renderDebugOverlay()
+    }
+  }
+
+  /**
+   * Renders a debug overlay with jitter/smoothing diagnostics.
+   * Shows FPS, frame time, damping/stiffness from physics engine.
+   * @private
+   */
+  _renderDebugOverlay() {
+    const ctx = this.ctx
+    const padding = 8
+    const lineH = 16
+    const lines = this._buildDebugLines()
+    const boxW = this._estimateDebugBoxWidth(lines)
+    const boxH = lines.length * lineH + padding * 2
+
+    // Position: top-right corner in world coords
+    const worldW = this.physics.options.worldWidth || this.canvas.width
+    const worldH = this.physics.options.worldHeight || this.canvas.height
+    const x = worldW - boxW - padding
+    const y = padding
+
+    ctx.save()
+    ctx.font = '12px monospace'
+    ctx.textBaseline = 'top'
+
+    // Background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)'
+    ctx.fillRect(x, y, boxW, boxH)
+
+    // Border
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+    ctx.lineWidth = 1
+    ctx.strokeRect(x, y, boxW, boxH)
+
+    // Text
+    const jitterClass = this._getJitterLevel()
+    ctx.fillStyle = jitterClass === 'bad' ? '#ff6b6b' : jitterClass === 'warn' ? '#ffd93d' : '#6bff6b'
+    for (let i = 0; i < lines.length; i++) {
+      ctx.fillStyle = i === 0
+        ? (jitterClass === 'bad' ? '#ff6b6b' : jitterClass === 'warn' ? '#ffd93d' : '#6bff6b')
+        : '#ffffff'
+      ctx.fillText(lines[i], x + padding, y + padding + i * lineH)
+    }
+    ctx.restore()
+  }
+
+  /**
+   * Builds debug lines for the overlay.
+   * Returns array of strings.
+   * @returns {string[]}
+   */
+  _buildDebugLines() {
+    const lines = []
+    const fps = this._getRealFps()
+    const frameMs = this._getLastFrameTime()
+    const smoothing = this.physics.options.smoothing || {}
+
+    lines.push(`${fps.toFixed(0)} FPS | ${frameMs.toFixed(1)}ms`)
+
+    if (smoothing.damping !== undefined || smoothing.stiffness !== undefined) {
+      const damping = smoothing.damping != null ? smoothing.damping : '-'
+      const stiffness = smoothing.stiffness != null ? smoothing.stiffness : '-'
+      lines.push(`damp:${damping} stiff:${stiffness}`)
+    }
+
+    if (smoothing.driftThresholdPx != null) {
+      lines.push(`drift: >${smoothing.driftThresholdPx}px`)
+    }
+
+    // Show jitter level
+    const jitter = this._getEstimatedJitterMs()
+    lines.push(`jitter: ~${jitter.toFixed(0)}ms (${this._getJitterLevel()})`)
+
+    return lines
+  }
+
+  /**
+   * Estimates the box width for debug overlay based on text.
+   * @param {string[]} lines
+   * @returns {number}
+   * @private
+   */
+  _estimateDebugBoxWidth(lines) {
+    // Approximate: ~7px per character in 12px monospace
+    let maxChars = 0
+    for (const line of lines) {
+      if (line.length > maxChars) maxChars = line.length
+    }
+    return maxChars * 7.5 + 16
+  }
+
+  /**
+   * Calculates a rolling average frames per second.
+   * @returns {number} Average FPS over recent frames.
+   */
+  _getRealFps() {
+    if (!this.frameTimeHistory || this.frameTimeHistory.length === 0) return 60
+    const total = this.frameTimeHistory.reduce((sum, v) => sum + v, 0)
+    return 1000 / (total / this.frameTimeHistory.length)
+  }
+
+  /**
+   * Returns the last frame time in ms.
+   * @returns {number}
+   */
+  _getLastFrameTime() {
+    if (!this.frameTimeHistory || this.frameTimeHistory.length === 0) return 16
+    return this.frameTimeHistory[this.frameTimeHistory.length - 1]
+  }
+
+  /**
+   * Heuristic estimate of network jitter from frame time variance.
+   * Uses standard deviation of recent frame times.
+   * @returns {number} Estimated jitter in ms.
+   */
+  _getEstimatedJitterMs() {
+    if (!this.frameTimeHistory || this.frameTimeHistory.length < 4) return 0
+    const recent = this.frameTimeHistory.slice(-8)
+    const mean = recent.reduce((s, v) => s + v, 0) / recent.length
+    const variance = recent.reduce((s, v) => s + (v - mean) ** 2, 0) / recent.length
+    return Math.sqrt(variance)
+  }
+
+  /**
+   * Classifies jitter level: 'good', 'warn', or 'bad'.
+   * @returns {string}
+   */
+  _getJitterLevel() {
+    const jitter = this._getEstimatedJitterMs()
+    if (jitter > 15) return 'bad'
+    if (jitter > 8) return 'warn'
+    return 'good'
   }
   /**
    * Renders the scene.

@@ -8,18 +8,28 @@ if (typeof globalThis !== 'undefined') {
       targetFrameTime: 16, // Целевое время кадра для 60 FPS
     },
     smoothing: {
-      stiffness: 50, // Максимальная жесткость для мгновенной реакции
-      damping: 30, // Агрессивное демпфирование для устранения колебаний
-      maxPredictSec: 0.05, // Минимальное время предикции для стабильности
-      snapDistance: 0.1, // Минимальная дистанция снапа для точности
+      // Base parameters (адаптивно меняются через smoothing-utils.js)
+      damping: 22, // Base damping (15-25) — чем больше, тем мягче
+      stiffness: 28, // Base stiffness (25-35) — чем меньше, тем плавнее
+      maxPredictSec: 0.02, // Max prediction time (0.01-0.05)
+      snapDistance: 0.3, // Snap distance threshold (0.2-0.4)
+      // Adaptive smoothing factors
+      dampingJitterFactor: 20, // jitterMs / factor для damping
+      stiffnessJitterFactor: 30, // jitterMs / factor для stiffness
+      highJitterThreshold: 15, // Порог для snapDistance increase
+      // Drift correction
+      driftThresholdPx: 50, // Порог дрейфа в пикселях (20-100)
+      driftCorrectionMs: 400, // Время коррекции дрейфа (100-500, больше = плавнее)
+      driftCheckIntervalMs: 3000, // Интервал проверки дрейфа
+      // Legacy flags (сохранены для совместимости)
       predictionEnabled: true, // Включена предикция движения
       adaptiveStiffness: true, // Адаптивная жесткость на основе расстояния
       adaptiveDamping: true, // Адаптивное демпфирование на основе скорости
       exponentialSmoothing: true, // Включено экспоненциальное сглаживание
       stateBuffering: true, // Буферизация состояний для интерполяции
-      bufferSize: 10, // ОЧЕНЬ большой буфер для максимального сглаживания
-      smoothingFactor: 0.35, // Очень высокий коэффициент сглаживания позиции
-      velocitySmoothingAlpha: 0.1, // Очень низкий коэффициент сглаживания скорости
+      bufferSize: 10, // Буфер для интерполяции
+      smoothingFactor: 0.35, // Коэффициент сглаживания позиции
+      velocitySmoothingAlpha: 0.1, // Коэффициент сглаживания скорости
     },
     network: {
       heartbeatInterval: 25000, // 25 секунд

@@ -3,7 +3,28 @@
  * PhysicsEngine - optimized physics engine for BilateralBound
  * Manages movement, bounces, and ball scaling
  * Optimized for performance and reusability
+ *
+ * NOTE: Uses shared direction-utils and bounce-utils to avoid duplication.
+ * See packages/shared/direction-utils.js and packages/shared/bounce-utils.js
  */
+
+// Import shared utilities (avoid duplication)
+const {
+  DIRECTION_EPSILON,
+  isVerticalDirection,
+  isHorizontalDirection,
+  normalizeDirection,
+  isValidDirection,
+  calculateVelocity,
+  getFallbackDirection
+} = require('./direction-utils')
+
+const {
+  createBounceMessage,
+  createBounceEventDetail,
+  createBouncePhysicsData,
+  dispatchBounceEvent
+} = require('./bounce-utils')
 
 // ============================================
 // CONSTANTS
@@ -47,11 +68,9 @@ const DEFAULT_COLORS = {
   bg: '#020617'
 }
 
-const DIRECTION_EPSILON = 1e-6
 const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/
 const MAX_RADIUS = 500
 const MAX_COMMAND_RADIUS = 1000
-const MAX_DIRECTION_ABS = 1.001
 
 // ============================================
 // VALIDATION HELPERS
@@ -64,15 +83,6 @@ const MAX_DIRECTION_ABS = 1.001
  */
 function isFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value)
-}
-
-/**
- * Validates direction component
- * @param {number} value - Direction value
- * @returns {boolean}
- */
-function isValidDirection(value) {
-  return isFiniteNumber(value) && Math.abs(value) <= MAX_DIRECTION_ABS
 }
 
 /**
@@ -189,39 +199,9 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
 }
 
-/**
- * Checks if direction is vertical (no horizontal component)
- * @param {number} dirX - X direction
- * @returns {boolean}
- */
-function isVerticalDirection(dirX) {
-  return Math.abs(dirX) < DIRECTION_EPSILON
-}
+// NOTE: isVerticalDirection and isHorizontalDirection are imported from direction-utils.js
+// They are available via destructured import at top of file
 
-/**
- * Checks if direction is horizontal (no vertical component)
- * @param {number} dirY - Y direction
- * @returns {boolean}
- */
-function isHorizontalDirection(dirY) {
-  return Math.abs(dirY) < DIRECTION_EPSILON
-}
-
-/**
- * Normalizes direction vector
- * @param {number} vx - Velocity X
- * @param {number} vy - Velocity Y
- * @returns {{x: number, y: number}|null}
- */
-function normalizeDirection(vx, vy) {
-  const speed = Math.hypot(vx, vy)
-  if (speed > 0) {
-    return { x: vx / speed, y: vy / speed }
-  }
-  return null
-}
-
-// ============================================
 // PHYSICS ENGINE CLASS
 // ============================================
 
@@ -735,15 +715,8 @@ class PhysicsEngine {
   _triggerBounceCallback(side) {
     if (!this.bounceCallback) return
 
-    this.bounceCallback({
-      side,
-      x: this.ball.x,
-      y: this.ball.y,
-      vx: this.ball.vx,
-      vy: this.ball.vy,
-      dirX: this.state.lastDirection.x,
-      dirY: this.state.lastDirection.y
-    })
+    const data = createBouncePhysicsData(side, this.ball, this.state.lastDirection)
+    this.bounceCallback(data)
   }
 
   /**
@@ -752,20 +725,7 @@ class PhysicsEngine {
    * @private
    */
   _dispatchBounceEvent(side) {
-    try {
-      if (typeof globalThis !== 'undefined') {
-        const ev = new CustomEvent('bb_bounce', {
-          detail: {
-            side,
-            x: this.ball.x,
-            y: this.ball.y
-          }
-        })
-        globalThis.dispatchEvent(ev)
-      }
-    } catch {
-      // Silently ignore event dispatch errors
-    }
+    dispatchBounceEvent(side, this.ball)
   }
 
   /**
@@ -798,10 +758,9 @@ class PhysicsEngine {
       this.ball.vx = Math.sign(dirX) * this.options.minSpeed
       this.ball.vy = 0
     } else {
-      const fallbackDirX = this.ball.x < this.centerX ? 1 : -1
-      const fallbackDirY = this.ball.y < this.centerY ? 1 : -1
-      this.ball.vx = fallbackDirX * this.options.minSpeed
-      this.ball.vy = fallbackDirY * this.options.minSpeed
+      const fallback = getFallbackDirection(this.ball.x, this.ball.y, this.centerX, this.centerY)
+      this.ball.vx = fallback.x * this.options.minSpeed
+      this.ball.vy = fallback.y * this.options.minSpeed
     }
   }
 
