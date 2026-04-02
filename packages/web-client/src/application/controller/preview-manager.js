@@ -3,7 +3,8 @@
  * PreviewManager — единый модуль управления превью контроллера
  * @module application/controller/preview-manager
  */
-/* global PhysicsEngine, BallRenderer, debugWarn */
+/* jshint esversion: 11, browser: true, node: true */
+/* global PhysicsEngine, BallRenderer, debugWarn, globalThis, BBConfig, __current, i18n */
 
 // ============================================================================
 // Приватное состояние
