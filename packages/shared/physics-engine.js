@@ -42,9 +42,10 @@ const DEFAULT_OPTIONS = {
   centerCheckThreshold: 10,
   driftStaleMs: 1500,
   smoothing: {
-    driftThresholdPx: 30,
+    // Increased from 30 to 60 — prevents spring from activating on small jitter
+    // At 30% speed, ball moves ~100px per server update; 30px threshold caused visible correction
+    driftThresholdPx: 60,
     driftCorrectionMs: 200,
-    // Reduced for more responsive drift correction (15Hz server updates = 66ms per update)
     driftCheckIntervalMs: 100
   }
 }
@@ -1203,8 +1204,10 @@ class PhysicsEngine {
 
     const dt = 1 / 60 // Assume 60fps for stable correction
     // Spring-damper: F = -k * (pos - target) - d * velocity
-    const stiffness = 8 // Higher = tighter correction
-    const damping = 4 // Higher = smoother, less oscillation
+    // Reduced stiffness: 8 → 3 (softer correction, less visible jerk)
+    // Reduced damping: 4 → 2 (less drag on velocity, smoother feel)
+    const stiffness = 3
+    const damping = 2
 
     const dx = this._springState.targetX - this.ball.x
     const dy = this._springState.targetY - this.ball.y
@@ -1222,7 +1225,8 @@ class PhysicsEngine {
     const correctionY = (springForceY + dampForceY) * dt
 
     // Clamp correction to prevent overshoot
-    const maxCorrection = 15 // px per frame
+    // Reduced: 15 → 5 (imperceptible at 60fps, still catches large drift over ~10 frames)
+    const maxCorrection = 5
     const clampedX = clamp(correctionX, -maxCorrection, maxCorrection)
     const clampedY = clamp(correctionY, -maxCorrection, maxCorrection)
 
