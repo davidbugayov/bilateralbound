@@ -479,12 +479,11 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       if (wasConnected !== state.viewerConnected) {
         updateViewerStatusUI()
       }
-      if (previewPhysicsEngine) {
-        const serverSendsPositions = state.clientSimulationOnly === false
-        const shouldFollowViewer =
-          serverSendsPositions && state.viewerConnected
-        previewPhysicsEngine.options.clientSimulation = !shouldFollowViewer
-      }
+      // FIXED: Always keep preview in clientSimulation mode for consistent physics.
+      // The viewer also runs in clientSimulation: true — both sides use the same physics
+      // engine with the same speed/direction params. Drift correction keeps them in sync.
+      // Previously, we toggled clientSimulation which caused mode-switching artifacts
+      // (preview would jump from local physics to "follow server" without interpolation).
     }
     if (state.viewerScreenSize?.width > 0) {
       const prevSize = globalThis.__current?.viewerScreenSize || {
@@ -536,14 +535,23 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     // Don't interrupt seekingCenter animation (return-to-center on pause)
     if (previewPhysicsEngine.state?.seekingCenter) return
     if (typeof data.x === 'number' && typeof data.y === 'number') {
-      // Snap position on physics engine
-      previewPhysicsEngine.ball.x = data.x
-      previewPhysicsEngine.ball.y = data.y
-      previewPhysicsEngine._prevPos.x = data.x
-      previewPhysicsEngine._prevPos.y = data.y
-      previewPhysicsEngine._currPos.x = data.x
-      previewPhysicsEngine._currPos.y = data.y
-      // Sync direction (was incorrectly writing to state.dirX instead of state.lastDirection.x)
+      // FIXED: Only snap if drift is significant (> 50px).
+      // Small drifts are handled by the spring-damper drift correction which is smoother.
+      // Hard-snapping on every bounce causes visible jitter when network jitter is low.
+      const drift = Math.hypot(
+        data.x - previewPhysicsEngine.ball.x,
+        data.y - previewPhysicsEngine.ball.y
+      )
+      if (drift > 50) {
+        // Snap position on physics engine
+        previewPhysicsEngine.ball.x = data.x
+        previewPhysicsEngine.ball.y = data.y
+        previewPhysicsEngine._prevPos.x = data.x
+        previewPhysicsEngine._prevPos.y = data.y
+        previewPhysicsEngine._currPos.x = data.x
+        previewPhysicsEngine._currPos.y = data.y
+      }
+      // Always sync direction on bounce (direction is critical for post-bounce movement)
       if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
         previewPhysicsEngine.state.lastDirection.x = data.dirX
         previewPhysicsEngine.state.lastDirection.y = data.dirY

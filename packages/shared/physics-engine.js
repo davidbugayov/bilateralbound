@@ -44,8 +44,8 @@ const DEFAULT_OPTIONS = {
   smoothing: {
     driftThresholdPx: 30,
     driftCorrectionMs: 200,
-    // Reduced from 3000ms to 1000ms for more frequent drift checks
-    driftCheckIntervalMs: 1000
+    // Reduced for more responsive drift correction (15Hz server updates = 66ms per update)
+    driftCheckIntervalMs: 100
   }
 }
 
@@ -1163,8 +1163,9 @@ class PhysicsEngine {
     }
 
     const now = performance.now()
-    // Reduced from 1000ms to 200ms for more responsive correction
-    const checkInterval = 200
+    // Check drift every 100ms — fast enough to catch drift before it grows large,
+    // but not so fast that it fights with bounce events near walls.
+    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 100
 
     if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval) return
 
