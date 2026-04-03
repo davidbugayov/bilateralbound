@@ -19,7 +19,6 @@ require('./ui/shared-components')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
-const { PreviewSmoother } = require('@emdr/shared/preview-smoother')
 globalThis.PhysicsEngine = PhysicsEngine
 
 // ============================================================================
@@ -230,18 +229,6 @@ function onStateUpdate(state) {
 function updatePhysicsFromState(state) {
   debugLog('📥 [VIEWER] Received state update:', state)
   physicsEngine.applyCommand(state)
-
-  // Feed server position to smoother for Hermite interpolation
-  // Smoother receives server positions at ~15Hz and interpolates at 60Hz
-  // WHY: Without smoothing, ball snaps to server position every 67ms causing jitter.
-  // Viewer smoother uses Hermite spline (C1-continuous) so velocity stays smooth.
-  if (viewerSmoother && typeof state.x === 'number' && typeof state.y === 'number' && !state.paused) {
-    const pps = ((state.speed ?? 40) / 100) * 5000
-    const vx = (state.dirX ?? 0) * pps
-    const vy = (state.dirY ?? 0) * pps
-    viewerSmoother.addServerUpdate(performance.now(), state.x, state.y, vx, vy)
-  }
-
   const isPaused = physicsEngine.state.paused
   const isNotSeeking = !physicsEngine.state.seekingCenter
   const isNotStopping = !physicsEngine.state.stopping
@@ -390,7 +377,6 @@ let audioActivated = false
 let pendingSoundEnabled = false
 const components = {}
 let resizeTimeout = null
-let viewerSmoother = null // Smoother for viewer ball interpolation (Hermite + Spring-Damper)
 
 if (typeof globalThis !== 'undefined') {
   globalThis.audioManager = audioManager
@@ -644,10 +630,6 @@ function onBounce(side, dirX, dirY) {
   if (audioManager && audioManager.enabled && audioActivated) {
     audioManager.playTick()
   }
-  // Reset smoother spring-damper on viewer bounce to prevent correction pulling ball back
-  if (viewerSmoother && physicsEngine) {
-    viewerSmoother.snapToPosition(physicsEngine.ball.x, physicsEngine.ball.y)
-  }
   if (wsClient && physicsEngine) {
     const ball = physicsEngine.ball
     wsClient
@@ -682,19 +664,6 @@ async function initializeViewer(sessionId) {
     const bounceCallback = (bounceData) => {
       onBounce(bounceData.side, bounceData.dirX, bounceData.dirY)
     }
-    // Initialize viewer smoother for Hermite interpolation of server positions
-    // WHY: Server sends state_update at 15Hz; smoother interpolates between them
-    // using cubic Hermite splines (velocity as tangents) for C1-continuous curves.
-    // Spring-damper corrects drift gradually without visible snaps.
-    viewerSmoother = new PreviewSmoother({
-      bufferCapacity: 6,
-      bufferDelayMs: 60,
-      springStiffness: 10,
-      springDamping: 5,
-      driftThreshold: 12
-    })
-    window.__viewerSmoother = viewerSmoother
-
     physicsEngine = new PhysicsEngine({
       worldWidth: globalThis.innerWidth,
       worldHeight: globalThis.innerHeight,
@@ -703,31 +672,6 @@ async function initializeViewer(sessionId) {
       bounceCallback: bounceCallback
     })
     globalThis.physicsEngine = physicsEngine
-
-    // Override getInterpolatedBall to use smoother position when available
-    // WHY: BallRenderer.render() calls this method. By overriding it, smoother
-    // position is used for rendering without modifying BallRenderer itself.
-    // When paused, fall back to physics engine position (seekingCenter uses this).
-    const _origGetInterpolatedBall = physicsEngine.getInterpolatedBall.bind(physicsEngine)
-    physicsEngine.getInterpolatedBall = function(alpha) {
-      // During pause + seekingCenter, use physics engine position for smooth centering
-      if (physicsEngine.state.paused && physicsEngine.state.seekingCenter) {
-        return _origGetInterpolatedBall(alpha)
-      }
-      if (viewerSmoother && !physicsEngine.state.paused) {
-        const now = performance.now()
-        const dt = 1 / 60
-        const predicted = viewerSmoother.getPredictedPosition(now, physicsEngine.ball.x, physicsEngine.ball.y, dt)
-        return {
-          x: predicted.x,
-          y: predicted.y,
-          radius: physicsEngine.ball.radius,
-          colorBall: physicsEngine.colors.ball
-        }
-      }
-      return _origGetInterpolatedBall(alpha)
-    }
-
     physicsEngine.setWorldSize(globalThis.innerWidth, globalThis.innerHeight)
     physicsEngine.setPaused(true)
     ballRenderer = new BallRenderer(canvas, physicsEngine, {
@@ -881,9 +825,6 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   // Handle network metrics for adaptive smoothing
   wsClient.on('net_metrics', ({ jitterMs }) => {
     applyAdaptiveSmoothing(physicsEngine, jitterMs)
-    if (viewerSmoother) {
-      viewerSmoother.updateAdaptiveParams(jitterMs)
-    }
   })
 }
 
