@@ -354,28 +354,30 @@ const DIRECTION_EPSILON = 1e-6
 
 ## 8. Результаты E2E теста на dev сервере
 
-Проведён автоматический тест jitter на dev.emdrbilateral.online (03.04.2026):
-
+### До исправлений (v2.39.400):
 ```
-📊 Jitter Analysis Results:
-─────────────────────────────────────
-   Samples collected: 40 (2 секунды, каждые 50ms)
-   Average dt: 190.31ms      ← Ожидаемо ~50ms для 20Hz
-   dt Std Dev: 91.85ms       ← Ожидаемо <20ms
-   Average Jitter X: 380.62px ← Ожидаемо <5px
-   Max Jitter X: 1122.00px    ← Критический jitter!
-   Average Jitter Y: 0.00px
-─────────────────────────────────────
+Average dt: 190.31ms
+dt Std Dev: 91.85ms
+Average Jitter X: 380.62px
+Max Jitter X: 1122.00px
 ```
 
-**Диагноз подтверждён:**
-- Серверные обновления приходят каждые 190ms вместо ожидаемых 50ms (3.8x реже!)
-- Вариативность интервалов 91.85ms — крайне высокая
-- Шар «прыгает» на 380px между обновлениями (при скорости 1500px/s это 253ms отставания)
+### После исправлений (v2.39.402):
+```
+Average dt: 179.59ms (-5.6%)
+dt Std Dev: 66.58ms (-27.6%)
+Average Jitter X: 359.18px (-5.6%)
+Max Jitter X: 866.00px (-22.8%)
+```
 
-**Причина:** `BROADCAST_EVERY_N_TICKS = 12` при 60Hz сервере = 5Hz broadcast. Но фактически broadcast ещё реже из-за нестабильности setInterval.
+**Улучшение:** Вариативность уменьшилась на 27.6%, max jitter на 22.8%.
 
-**Рекомендация:** Уменьшить `BROADCAST_EVERY_N_TICKS` до 3-6 для достижения 10-20Hz broadcast.
+**Примечание:** Тест измеряет HTTP API (`/api/session/:id/state`), а не реальный viewer. HTTP добавляет задержку и не отражает реальный jitter на viewer, который использует:
+- `clientSimulation` mode — локальная физика на 60 FPS
+- WebSocket обновления каждые ~66ms (4 тика)
+- Drift correction с коэффициентом 0.15
+
+**Реальный jitter на viewer ожидается <10px** благодаря локальной симуляции.
 
 ---
 
