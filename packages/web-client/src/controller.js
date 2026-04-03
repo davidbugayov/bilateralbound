@@ -20,7 +20,6 @@ require('./network/realtime-client')
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const _PreviewManager = require('./application/controller/preview-manager')
 const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
-const { PreviewSmoother } = require('@emdr/shared/preview-smoother')
 const {
   getDirectionVector,
   isDiagonalMode,
@@ -68,7 +67,6 @@ let isInitialized = false // Флаг для предотвращения пов
 let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
 let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
 let previewPhysicsEngine = null // Локальный движок физики для превью
-let previewSmoother = null // Предиктивный smoother для плавного движения (Hermite + Spring-Damper)
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
 if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
   hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
@@ -1664,18 +1662,10 @@ function _setPlayPauseState(shouldPlay) {
       previewPhysicsEngine.applyCommand(dirOnly)
       previewPhysicsEngine._pendingPlaySync = true
       previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
-      // Reset smoother on play to clear stale snapshots
-      if (previewSmoother) {
-        previewSmoother.reset()
-      }
     } else {
       previewPhysicsEngine._pendingPlaySync = false
       previewPhysicsEngine.applyCommand(payload)
       centerBallInViewer()
-      // Reset smoother on stop to prevent spring pulling ball away from center
-      if (previewSmoother) {
-        previewSmoother.reset()
-      }
     }
   }
   __ignoreServerPausedUntilTs = performance.now() + 800
