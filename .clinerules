@@ -1,57 +1,262 @@
 # .clinerules — Rules for Claude Code
 
-## Project Identity
+## Project
 
-**EMDR BilateralBound** — web-платформа для EMDR-терапии. Терапевт (controller) управляет движением шара, пациент (viewer) наблюдает в реальном времени через WebSocket.
+**EMDR BilateralBound** — web-платформа для EMDR-терапии. Терапевт (controller) управляет движением шара через bilateral stimulation; пациент (viewer) наблюдает в реальном времени через WebSocket.
 
 ## Language
 
-- Respond in Russian (user's preferred language)
+- Отвечай на русском (предпочтительный язык пользователя)
 - Code comments in English
 - UI strings via i18n, never hardcoded
 
-## Code Rules
+## Code Principles
 
-1. **No dead code** — удаляй неиспользуемый код, импорты, переменные
-2. **No over-engineering** — реализуй только то, что явно требуется
-3. **Comment "why" not "what"** — объясняй причины, а не действия
-4. **Short commits** — concise messages
-5. **No .md reports** — unless explicitly asked
+1. **Write only used code** — no unused functions, variables, imports, dead code paths
+2. **No over-engineering** — implement only what's explicitly required
+3. **Comment "why" not "what"** — explain physics sync decisions, WebSocket edge cases, workarounds
+4. **No .md reports** — don't create report files unless asked
+5. **Short commits** — concise commit messages
+
+## Local Setup
+
+**Prerequisites**: Node.js v22+
+
+```bash
+npm install   # installs all workspace packages
+npm run dev   # starts dev server on port 3000
+```
+
+No `.env` file required — all config is in-process or via URL params.
+
+## Commands
+
+```bash
+# Development
+npm run dev              # Start dev server (nodemon, port 3000)
+npm start                # Start production server
+
+# Testing
+npm test                 # E2E tests against dev.emdrbilateral.online
+npm run test:local       # E2E tests against localhost:3000
+npm run test:dev         # E2E tests against dev server
+
+# Linting & Formatting
+npm run lint             # ESLint (flat config)
+npm run lint:fix         # ESLint with auto-fix
+npm run lint:css         # Stylelint for CSS
+npm run format           # Prettier
+
+# Deployment (requires DEPLOY_PASSWORD env var)
+npm run deploy:dev       # Pull main, build, restart dev server
+npm run deploy:prod      # Pull stable, build, restart prod (.online + .ru)
+npm run deploy:dev:logs  # Show dev service logs
+npm run deploy:prod:logs # Show prod service logs
+```
 
 ## Architecture
 
-- **Monorepo**: `packages/server-core` (Node.js + Express) и `packages/web-client` (Vanilla JS)
-- **No bundler** для основного кода — script tags, порядок важен
-- **Module pattern**: IIFE с `globalThis.ModuleName = { ... }`
-- **i18n**: `globalThis.i18n?.t('key') || 'fallback'`
+**Monorepo** with npm workspaces: `packages/server-core` (Node.js + Express) and `packages/web-client` (Vanilla JS, no framework). Run `npm install` from the repo root — workspace symlinks handle cross-package dependencies automatically.
 
-## Testing with Playwright
+### Server (`packages/server-core/server/`)
 
-Use Playwright MCP for browser automation and E2E testing:
+- `index.js` — entry: creates SessionManager, Express app, WebSocket server
+- `network/expressApp.js` — all HTTP routes, compression
+- `network/webSocketServer.js` — WebSocket server, message routing, heartbeat
+- `session/SessionManager.js` — orchestrator: physics loop (60Hz tick, 15Hz broadcast), WS, broadcast
+- `session/StateBroadcaster.js` — sends events to WS clients (viewer-only, controller-only, or both)
+- `session/SessionRepository.js` — in-memory Map, LRU eviction, MAX_SESSIONS=1000
 
-### Quick Reference
-| Tool | Purpose |
-|------|---------|
-| `playwright_navigate` | Open URL |
-| `playwright_click` | Click element |
-| `playwright_fill` | Fill input |
-| `playwright_screenshot` | Capture screenshot |
-| `playwright_console_logs` | Check for errors |
-| `playwright_evaluate` | Run JS in page |
-| `playwright_get_visible_text` | Get page text |
+### Frontend (`packages/web-client/public/`)
 
-### Example Workflow
+- `viewer.html` / `session-controller.html` — patient and therapist views
+- `js/physics-engine.js` — shared physics (used server-side AND client-side), two modes: `_updateServerPhysics` (server/controller) and `_updateViewerPhysics` (viewer interpolation or client simulation)
+- `js/websocket-client.js` — WebSocket client with auto-reconnect
+- `js/realtime-client.js` — transport wrapper (WebSocket)
+- `js/controller.js` — controller UI logic (wires event handlers, manages state, preview physics)
+- `js/renderer.js` — canvas ball rendering with `BallRenderer` (fixed-step loop, interpolation)
+- `js/application/controller/` — modular controller components (viewer-status, fullscreen, event-handlers, etc.)
+- `locales/` — 8 languages (en, ru, de, es, fr, pt, ja, zh)
+
+### Synchronization (critical path)
+
+All push-based, NO polling:
+
+1. Server physics at 60Hz → broadcasts `state_update` every 12th tick (5Hz) via WebSocket for drift correction; bounce events and API updates broadcast immediately
+2. Bounce events broadcast immediately (not throttled)
+3. Viewer runs local physics (`clientSimulation: true`) at 60Hz, receives server commands via `applyCommand()`
+4. Viewer broadcasts its state at 30Hz via `viewer_update` (only when moving)
+5. Controller preview runs local physics at 60Hz with event-based drift correction on `state_update` arrival (not per-frame)
+6. `bounce_sync` snaps controller preview to viewer position on wall bounce
+
+**Key sync rule**: never correct position on every render frame (causes jitter). Only correct when new server data arrives (~15Hz) with dead zone and adaptive alpha.
+
+### Data Flow
+
+1. Therapist opens `/c/:id` → WebSocket as controller
+2. Patient opens `/s/:id` → WebSocket as viewer, sends screen size
+3. Server physics ticks at 60Hz, broadcasts state ~15/sec
+4. Controller adjusts settings via `POST /api/session/:id/controller/update`
+5. Viewer bounces sync back via `POST /api/session/:id/viewer/bounce`
+
+## Key Conventions
+
+- **i18n pattern**: `globalThis.i18n?.t('key') || 'English fallback'` — never hardcode user-facing strings
+- **Module pattern**: IIFE with `globalThis.ModuleName = { ... }` export, guarded by `if (typeof globalThis.ModuleName !== 'undefined')` to prevent double-load
+- **Global state**: `globalThis.__current` holds session state (sessionId, isPlaying, viewerConnected, etc.)
+- **WebSocket endpoint**: `ws://host/?sessionId=:id&role=viewer|controller` — auto-reconnect, heartbeat every 30s
+- **Session IDs**: auto-generated 6-char UUID prefix, or custom 3-32 chars (alphanumeric/dash/underscore)
+- **E2E tests**: Puppeteer-based, 22 tests, use `domcontentloaded` (not `networkidle0`)
+- **No bundler**: vanilla JS loaded via `<script>` tags, order matters
+- **Play/pause guards**: `__ignoreServerPausedUntilTs` (800ms) and `__ignoreServerDirectionUntilTs` (1500ms) prevent server state from overriding recent user actions
+- **Viewer pause animation**: `seekingCenter` state triggers 400ms ease-out return-to-center when paused; ball does NOT snap immediately. `updatePhysicsFromState` fallback in `viewer.html` ensures animation starts even on redundant pause commands.
+- **`returnToCenter: true`** in `POST /api/session/:id/controller/update`: skips deceleration, snaps server ball to center immediately, broadcasts `{ paused: true }` — viewer then animates to center
+
+## Deployment
+
+**Setup**: Set `DEPLOY_PASSWORD` env var before deploying:
+
+```bash
+export DEPLOY_PASSWORD='password_here'
+# Or create .env file (it's in .gitignore):
+cp .env.example .env
+# Edit .env and add DEPLOY_PASSWORD
 ```
-1. playwright_navigate url="http://localhost:3000/c/test"
-2. playwright_click selector="#playPauseBtn"
-3. playwright_screenshot name="started"
-4. playwright_console_logs type="error"
-5. playwright_close
+
+**Deploy**:
+
+- Dev: `npm run deploy:dev` — pulls `main` branch, builds, restarts
+- Prod: `npm run deploy:prod` — pulls `stable` branch from both .online and .ru, builds, restarts
+- Logs: `npm run deploy:dev:logs` or `npm run deploy:prod:logs`
+- Status: `npm run deploy:dev:status` or `npm run deploy:prod:status`
+
+**All development on `main`**; prod branch `stable` updated manually when ready. UFW: ports 22, 80, 443 (TCP), 500/udp, 4500/udp (VPN)
+
+## VPS Server — 213.139.229.44
+
+**OS**: Ubuntu, Linux 6.18, Node.js v22.22.0, RAM 4GB
+
+### Systemd Services
+
+| Service                        | Port | Path                                | Branch | Status         |
+| ------------------------------ | ---- | ----------------------------------- | ------ | -------------- |
+| `emdrbilateral-online.service` | 8080 | `/var/www/emdrbilateral.online`     | stable | prod (.online) |
+| `emdrbilateral-ru.service`     | 8081 | `/var/www/emdrbilateral.ru`         | stable | prod (.ru)     |
+| `emdrbilateral-dev.service`    | 3003 | `/var/www/dev.emdrbilateral.online` | main   | dev            |
+
+**⚠ Important**: `emdrbilateral.service` (legacy) has been **permanently deleted** (`rm /etc/systemd/system/emdrbilateral.service`). If it somehow reappears — delete it again. It caused 42000+ restart loops by conflicting with `emdrbilateral-online.service` on port 8080.
+
+### Nginx
+
+- `/etc/nginx/sites-enabled/emdrbilateral` — .online (→ 8080) and .ru (→ 8080)
+- `/etc/nginx/sites-enabled/dev.emdrbilateral.online` — dev (→ 3003)
+
+### Manage services
+
+```bash
+ssh root@213.139.229.44
+
+systemctl status emdrbilateral-online.service
+systemctl restart emdrbilateral-online.service
+journalctl -u emdrbilateral-online -n 50 --no-pager
+
+systemctl list-units --type=service | grep emdr
+ss -tlnp | grep node
 ```
+
+## VPN — StrongSwan IKEv2
+
+**Protocol**: IKEv2/IPsec (StrongSwan 6.0.1), macOS and iOS clients.
+
+```bash
+ipsec status       # active connections
+ipsec statusall    # verbose
+
+# strongswan-starter.service shows "inactive/dead" — NORMAL
+# charon runs as background process
+
+# User creds: /etc/ipsec.secrets
+# Config: /etc/ipsec.conf or /etc/ipsec.d/
+```
+
+VPN users (9): Swetlana, Sergey, Yulia, David, DavidMac1, DavidMac2, Elena, DavidDeck, Bogdan.
+
+**⚠ After VPS reboot**: iptables NAT rules are lost. Restore:
+
+```bash
+iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o eth0 -j MASQUERADE
+iptables -A FORWARD -s 10.10.10.0/24 -j ACCEPT
+iptables -A FORWARD -d 10.10.10.0/24 -j ACCEPT
+# Rules are also saved to /etc/iptables.rules and auto-restored via
+# /etc/networkd-dispatcher/routable.d/50-iptables-restore
+```
+
+## Playwright Testing
+
+Use Playwright MCP server for browser automation and E2E testing. Available tools:
+
+### Navigation & Pages
+- `playwright_navigate` — open URL in browser (chromium/firefox/webkit)
+- `playwright_go_back` / `playwright_go_forward` — browser history
+- `playwright_close` — close browser
+
+### Interaction
+- `playwright_click` — click element by CSS selector
+- `playwright_fill` — fill input field
+- `playwright_select` — select dropdown option
+- `playwright_hover` — hover over element
+- `playwright_press_key` — press keyboard key (Enter, Tab, etc.)
+- `playwright_upload_file` — upload file to input[type=file]
+- `playwright_drag` — drag element to target
+
+### Assertions & Inspection
+- `playwright_get_visible_text` — get page text content
+- `playwright_get_visible_html` — get page HTML
+- `playwright_screenshot` — capture screenshot (base64 or PNG file)
+- `playwright_console_logs` — retrieve browser console logs
+
+### Network & API
+- `playwright_get` / `playwright_post` / `playwright_put` / `playwright_patch` / `playwright_delete` — HTTP requests from browser context
+- `playwright_expect_response` + `playwright_assert_response` — wait for and validate HTTP responses
+
+### Advanced
+- `playwright_evaluate` — execute JavaScript in page context
+- `playwright_resize` — resize viewport (supports device presets: iPhone, iPad, etc.)
+- `playwright_custom_user_agent` — set custom User-Agent
+- `playwright_save_as_pdf` — save page as PDF
 
 ### Code Generation
-- `start_codegen_session` → record actions
-- `end_codegen_session` → generate test file
+- `start_codegen_session` — record Playwright actions
+- `end_codegen_session` — generate test file from recorded actions
+- `get_codegen_session` — view session info
+- `clear_codegen_session` — discard session
+
+### Usage Example
+```
+# Open controller page
+playwright_navigate url="http://localhost:3000/c/test123"
+
+# Click start button
+playwright_click selector="#playPauseBtn"
+
+# Take screenshot
+playwright_screenshot name="controller-started"
+
+# Check console for errors
+playwright_console_logs type="error"
+```
+
+## Plugin Configuration
+
+Use plugins proactively for relevant tasks:
+
+- **context7** — Express, WebSocket, Puppeteer, Node.js APIs. Check docs first before guessing.
+- **playwright** — E2E testing, browser automation. Use for `scripts/e2e/` work and manual browser testing.
+- **frontend-design** — when modifying `viewer.html`, `session-controller.html`, `index.html`. Goals: accessibility, therapeutic UX, correct i18n.
+- **feature-dev** — guided feature development spanning multiple files.
+- **code-simplifier** — refactoring, reducing complexity, cleaning dead code.
+- **typescript-lsp** — type checking, references, navigation (useful even in JS codebase).
+- **Security review** — run before merging changes to `session/`, `network/`, `js/websocket-client.js`, `js/realtime-client.js`, controller API endpoints.
 
 ## File Operations
 
@@ -66,9 +271,3 @@ Do not modify without explicit instruction:
 - `network/webSocketServer.js` — WebSocket routing
 - `js/websocket-client.js` — client reconnection logic
 - `.env` files
-
-## Deployment
-
-- Dev: `main` branch → `dev.emdrbilateral.online`
-- Prod: `stable` branch → `.online` + `.ru`
-- Never deploy without user confirmation
