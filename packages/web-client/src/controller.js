@@ -530,8 +530,11 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     updateViewerAudioIndicators()
   })
   // Bounce sync - snap preview to viewer's exact bounce position + direction
+  // Skip if preview is doing seekingCenter animation to prevent interrupting return-to-center
   wsClient.on(WS_MSG.bounceSync, (data) => {
     if (!previewPhysicsEngine) return
+    // Don't interrupt seekingCenter animation (return-to-center on pause)
+    if (previewPhysicsEngine.state?.seekingCenter) return
     if (typeof data.x === 'number' && typeof data.y === 'number') {
       // Snap position
       previewPhysicsEngine.ball.x = data.x
@@ -1173,7 +1176,7 @@ async function initializePreview() {
       canvas,
       previewPhysicsEngine,
       {
-        localPhysics: false // Превью следует за состоянием от viewer через WebSocket
+        localPhysics: true // Use accumulator-based alpha for smoother interpolation
       }
     )
     globalThis.__previewCanvas = canvas
