@@ -20,6 +20,7 @@ require('./network/realtime-client')
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const _PreviewManager = require('./application/controller/preview-manager')
 const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
+const { PreviewSmoother } = require('@emdr/shared/preview-smoother')
 const {
   getDirectionVector,
   isDiagonalMode,
@@ -67,6 +68,7 @@ let isInitialized = false // Флаг для предотвращения пов
 let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
 let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
 let previewPhysicsEngine = null // Локальный движок физики для превью
+let previewSmoother = null // Предиктивный smoother для плавного движения (Hermite + Spring-Damper)
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
 if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
   hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
@@ -473,6 +475,15 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   })
   wsClient.on(WS_MSG.stateUpdate, (state) => {
     lastServerState = state // Кэшируем состояние
+    // Feed server position + velocity to smoother for Hermite interpolation
+    // WHY: Smoother needs velocity (not just position) to compute Hermite tangents.
+    // Velocity is derived from direction * speed percentage.
+    if (previewSmoother && typeof state.x === 'number' && typeof state.y === 'number' && !state.paused) {
+      const pps = ((state.speed ?? 40) / 100) * (previewPhysicsEngine?.options.maxSpeed ?? 5000)
+      const vx = (state.dirX ?? 0) * pps
+      const vy = (state.dirY ?? 0) * pps
+      previewSmoother.addServerUpdate(performance.now(), state.x, state.y, vx, vy)
+    }
     if (typeof state.viewerConnected === 'boolean') {
       const wasConnected = globalThis.__current.viewerConnected
       globalThis.__current.viewerConnected = state.viewerConnected
@@ -522,6 +533,9 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   })
   wsClient.on(WS_MSG.netMetrics, ({ jitterMs }) => {
     applyAdaptiveSmoothing(previewPhysicsEngine, jitterMs)
+    if (previewSmoother) {
+      previewSmoother.updateAdaptiveParams(jitterMs)
+    }
   })
   wsClient.on(WS_MSG.viewerAudioActivated, (data) => {
     if (globalThis.__current) {
@@ -536,7 +550,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     // Don't interrupt seekingCenter animation (return-to-center on pause)
     if (previewPhysicsEngine.state?.seekingCenter) return
     if (typeof data.x === 'number' && typeof data.y === 'number') {
-      // Snap position
+      // Snap position on physics engine
       previewPhysicsEngine.ball.x = data.x
       previewPhysicsEngine.ball.y = data.y
       previewPhysicsEngine._prevPos.x = data.x
@@ -553,6 +567,10 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
           previewPhysicsEngine.options.maxSpeed
         previewPhysicsEngine.ball.vx = data.dirX * pps
         previewPhysicsEngine.ball.vy = data.dirY * pps
+      }
+      // Reset smoother spring state to prevent spring from pulling ball back
+      if (previewSmoother) {
+        previewSmoother.snapToPosition(data.x, data.y)
       }
       // Sync side info for debugging
       if (data.side) {
@@ -711,7 +729,11 @@ function applyServerStateToPreview(state) {
   }
 }
 /**
- * Улучшенный рендер-цикл с лучшей интерполяцией
+ * Улучшенный рендер-цикл с предиктивным сглаживанием (Hermite + Spring-Damper).
+ * WHY: Standard linear interpolation causes visible jitter at wall bounces because
+ * server position "snaps" to the new direction. PreviewSmoother uses cubic Hermite
+ * splines (velocity-aware) for C1-continuous curves, plus spring-damper for drift
+ * correction that's invisible to the user.
  */
 const PHYSICS_TICK_RATE = 60 // Гц
 const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
@@ -726,13 +748,36 @@ function renderPreviewLoop(timestamp) {
     return
   }
   const now = performance.now()
-  const lastPhysicsUpdate = previewPhysicsEngine?.__lastPhysicsUpdateTs ?? now
-  const alpha = Math.max(
-    0,
-    Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT)
-  )
-  const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
-  const stateToRender = getScaledState(interpolatedState)
+  const dt = PHYSICS_DT / 1000
+
+  // Use PreviewSmoother for predictive interpolation when available
+  let stateToRender
+  if (previewSmoother && isPlaying) {
+    const predicted = previewSmoother.getPredictedPosition(
+      now,
+      previewPhysicsEngine.ball.x,
+      previewPhysicsEngine.ball.y,
+      dt
+    )
+    stateToRender = getScaledState({
+      x: predicted.x,
+      y: predicted.y,
+      vx: previewPhysicsEngine.ball.vx,
+      vy: previewPhysicsEngine.ball.vy,
+      radius: previewPhysicsEngine.ball.radius,
+      colorBall: previewPhysicsEngine.colors.ball
+    })
+  } else {
+    // Fallback: use physics engine's built-in interpolation
+    const lastPhysicsUpdate = previewPhysicsEngine?.__lastPhysicsUpdateTs ?? now
+    const alpha = Math.max(
+      0,
+      Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT)
+    )
+    const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
+    stateToRender = getScaledState(interpolatedState)
+  }
+
   globalThis.__previewRenderer?.drawFrame(stateToRender)
   if (document.hidden) {
     setTimeout(
@@ -1154,6 +1199,17 @@ async function initializePreview() {
     canvas.style.height = canvas.height + 'px'
   }
   try {
+    // Initialize PreviewSmoother for predictive smooth movement
+    // WHY: Smoother combines dead reckoning, Hermite interpolation, and spring-damper
+    // to eliminate jitter caused by 15Hz server updates and wall-bounce position snaps.
+    previewSmoother = new PreviewSmoother({
+      bufferCapacity: 3,
+      bufferDelayMs: 50,
+      springStiffness: 12,
+      springDamping: 6,
+      driftThreshold: 15
+    })
+
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
       isViewer: true,
@@ -1660,10 +1716,18 @@ function _setPlayPauseState(shouldPlay) {
       previewPhysicsEngine.applyCommand(dirOnly)
       previewPhysicsEngine._pendingPlaySync = true
       previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
+      // Reset smoother on play to clear stale snapshots
+      if (previewSmoother) {
+        previewSmoother.reset()
+      }
     } else {
       previewPhysicsEngine._pendingPlaySync = false
       previewPhysicsEngine.applyCommand(payload)
       centerBallInViewer()
+      // Reset smoother on stop to prevent spring pulling ball away from center
+      if (previewSmoother) {
+        previewSmoother.reset()
+      }
     }
   }
   __ignoreServerPausedUntilTs = performance.now() + 800
