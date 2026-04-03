@@ -648,9 +648,10 @@ class PhysicsEngine {
 
   /**
    * Handles boundary collisions
-   * Respects axis lock: in horizontal mode, vertical bounces are ignored;
-   * in vertical mode, horizontal bounces are ignored.
-   * Prevents jitter when moving slowly near walls.
+   * Respects axis lock: in horizontal mode only, vertical bounces are ignored;
+   * in vertical mode only, horizontal bounces are ignored.
+   * Diagonal mode always bounces on all sides.
+   * Prevents the ball from leaving the screen.
    */
   handleBoundaryCollisions() {
     const { ball, options, state } = this
@@ -661,12 +662,15 @@ class PhysicsEngine {
     const dirX = state.lastDirection.x || 0
     const dirY = state.lastDirection.y || 0
 
-    // Determine axis lock mode: if one direction component is near-zero,
-    // movement is constrained to the other axis only.
-    const isPureHorizontal = isVerticalDirection(dirX) && Math.abs(dirY) > 0
-    const isPureVertical = isHorizontalDirection(dirY) && Math.abs(dirX) > 0
+    // Check if movement is locked to a single axis
+    // Pure horizontal: dirY ≈ 0 and dirX ≠ 0 → skip vertical wall checks
+    const isPureHorizontal =
+      Math.abs(dirY) < DIRECTION_EPSILON && Math.abs(dirX) >= DIRECTION_EPSILON
+    // Pure vertical: dirX ≈ 0 and dirY ≠ 0 → skip horizontal wall checks
+    const isPureVertical =
+      Math.abs(dirX) < DIRECTION_EPSILON && Math.abs(dirY) >= DIRECTION_EPSILON
 
-    // Horizontal bounds — skip if locked to vertical-only movement
+    // Horizontal bounds — check unless locked to pure vertical movement
     if (!isPureVertical) {
       if (ball.x <= radius) {
         ball.x = radius
@@ -683,7 +687,7 @@ class PhysicsEngine {
       }
     }
 
-    // Vertical bounds — skip if locked to horizontal-only movement
+    // Vertical bounds — check unless locked to pure horizontal movement
     if (!isPureHorizontal) {
       if (ball.y <= radius) {
         ball.y = radius

@@ -346,10 +346,11 @@ const DEFAULT_OPTIONS = {
   centerCheckThreshold: 10,
   driftStaleMs: 1500,
   smoothing: {
-    driftThresholdPx: 30,
+    // Increased from 30 to 60 — prevents spring from activating on small jitter
+    // At 30% speed, ball moves ~100px per server update; 30px threshold caused visible correction
+    driftThresholdPx: 60,
     driftCorrectionMs: 200,
-    // Reduced from 3000ms to 1000ms for more frequent drift checks
-    driftCheckIntervalMs: 1000
+    driftCheckIntervalMs: 100
   }
 }
 
@@ -951,6 +952,10 @@ class PhysicsEngine {
 
   /**
    * Handles boundary collisions
+   * Respects axis lock: in horizontal mode only, vertical bounces are ignored;
+   * in vertical mode only, horizontal bounces are ignored.
+   * Diagonal mode always bounces on all sides.
+   * Prevents the ball from leaving the screen.
    */
   handleBoundaryCollisions() {
     const { ball, options, state } = this
@@ -961,33 +966,45 @@ class PhysicsEngine {
     const dirX = state.lastDirection.x || 0
     const dirY = state.lastDirection.y || 0
 
-    // Horizontal bounds
-    if (ball.x <= radius) {
-      ball.x = radius
-      if (dirX < 0) {
-        state.lastDirection.x = Math.abs(dirX)
-        bounceSide = 'left'
-      }
-    } else if (ball.x >= worldWidth - radius) {
-      ball.x = worldWidth - radius
-      if (dirX > 0) {
-        state.lastDirection.x = -Math.abs(dirX)
-        bounceSide = 'right'
+    // Check if movement is locked to a single axis
+    // Pure horizontal: dirY ≈ 0 and dirX ≠ 0 → skip vertical wall checks
+    const isPureHorizontal =
+      Math.abs(dirY) < DIRECTION_EPSILON && Math.abs(dirX) >= DIRECTION_EPSILON
+    // Pure vertical: dirX ≈ 0 and dirY ≠ 0 → skip horizontal wall checks
+    const isPureVertical =
+      Math.abs(dirX) < DIRECTION_EPSILON && Math.abs(dirY) >= DIRECTION_EPSILON
+
+    // Horizontal bounds — check unless locked to pure vertical movement
+    if (!isPureVertical) {
+      if (ball.x <= radius) {
+        ball.x = radius
+        if (dirX < 0) {
+          state.lastDirection.x = Math.abs(dirX)
+          bounceSide = 'left'
+        }
+      } else if (ball.x >= worldWidth - radius) {
+        ball.x = worldWidth - radius
+        if (dirX > 0) {
+          state.lastDirection.x = -Math.abs(dirX)
+          bounceSide = 'right'
+        }
       }
     }
 
-    // Vertical bounds
-    if (ball.y <= radius) {
-      ball.y = radius
-      if (dirY < 0) {
-        state.lastDirection.y = Math.abs(dirY)
-        bounceSide = bounceSide || 'top'
-      }
-    } else if (ball.y >= worldHeight - radius) {
-      ball.y = worldHeight - radius
-      if (dirY > 0) {
-        state.lastDirection.y = -Math.abs(dirY)
-        bounceSide = bounceSide || 'bottom'
+    // Vertical bounds — check unless locked to pure horizontal movement
+    if (!isPureHorizontal) {
+      if (ball.y <= radius) {
+        ball.y = radius
+        if (dirY < 0) {
+          state.lastDirection.y = Math.abs(dirY)
+          bounceSide = bounceSide || 'top'
+        }
+      } else if (ball.y >= worldHeight - radius) {
+        ball.y = worldHeight - radius
+        if (dirY > 0) {
+          state.lastDirection.y = -Math.abs(dirY)
+          bounceSide = bounceSide || 'bottom'
+        }
       }
     }
 
@@ -1467,8 +1484,9 @@ class PhysicsEngine {
     }
 
     const now = performance.now()
-    // Reduced from 1000ms to 200ms for more responsive correction
-    const checkInterval = 200
+    // Check drift every 100ms — fast enough to catch drift before it grows large,
+    // but not so fast that it fights with bounce events near walls.
+    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 100
 
     if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval) return
 
@@ -1506,8 +1524,10 @@ class PhysicsEngine {
 
     const dt = 1 / 60 // Assume 60fps for stable correction
     // Spring-damper: F = -k * (pos - target) - d * velocity
-    const stiffness = 8 // Higher = tighter correction
-    const damping = 4 // Higher = smoother, less oscillation
+    // Reduced stiffness: 8 → 3 (softer correction, less visible jerk)
+    // Reduced damping: 4 → 2 (less drag on velocity, smoother feel)
+    const stiffness = 3
+    const damping = 2
 
     const dx = this._springState.targetX - this.ball.x
     const dy = this._springState.targetY - this.ball.y
@@ -1525,7 +1545,8 @@ class PhysicsEngine {
     const correctionY = (springForceY + dampForceY) * dt
 
     // Clamp correction to prevent overshoot
-    const maxCorrection = 15 // px per frame
+    // Reduced: 15 → 5 (imperceptible at 60fps, still catches large drift over ~10 frames)
+    const maxCorrection = 5
     const clampedX = clamp(correctionX, -maxCorrection, maxCorrection)
     const clampedY = clamp(correctionY, -maxCorrection, maxCorrection)
 
