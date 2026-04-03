@@ -648,6 +648,9 @@ class PhysicsEngine {
 
   /**
    * Handles boundary collisions
+   * Respects axis lock: in horizontal mode, vertical bounces are ignored;
+   * in vertical mode, horizontal bounces are ignored.
+   * Prevents jitter when moving slowly near walls.
    */
   handleBoundaryCollisions() {
     const { ball, options, state } = this
@@ -658,33 +661,42 @@ class PhysicsEngine {
     const dirX = state.lastDirection.x || 0
     const dirY = state.lastDirection.y || 0
 
-    // Horizontal bounds
-    if (ball.x <= radius) {
-      ball.x = radius
-      if (dirX < 0) {
-        state.lastDirection.x = Math.abs(dirX)
-        bounceSide = 'left'
-      }
-    } else if (ball.x >= worldWidth - radius) {
-      ball.x = worldWidth - radius
-      if (dirX > 0) {
-        state.lastDirection.x = -Math.abs(dirX)
-        bounceSide = 'right'
+    // Determine axis lock mode: if one direction component is near-zero,
+    // movement is constrained to the other axis only.
+    const isPureHorizontal = isVerticalDirection(dirX) && Math.abs(dirY) > 0
+    const isPureVertical = isHorizontalDirection(dirY) && Math.abs(dirX) > 0
+
+    // Horizontal bounds — skip if locked to vertical-only movement
+    if (!isPureVertical) {
+      if (ball.x <= radius) {
+        ball.x = radius
+        if (dirX < 0) {
+          state.lastDirection.x = Math.abs(dirX)
+          bounceSide = 'left'
+        }
+      } else if (ball.x >= worldWidth - radius) {
+        ball.x = worldWidth - radius
+        if (dirX > 0) {
+          state.lastDirection.x = -Math.abs(dirX)
+          bounceSide = 'right'
+        }
       }
     }
 
-    // Vertical bounds
-    if (ball.y <= radius) {
-      ball.y = radius
-      if (dirY < 0) {
-        state.lastDirection.y = Math.abs(dirY)
-        bounceSide = bounceSide || 'top'
-      }
-    } else if (ball.y >= worldHeight - radius) {
-      ball.y = worldHeight - radius
-      if (dirY > 0) {
-        state.lastDirection.y = -Math.abs(dirY)
-        bounceSide = bounceSide || 'bottom'
+    // Vertical bounds — skip if locked to horizontal-only movement
+    if (!isPureHorizontal) {
+      if (ball.y <= radius) {
+        ball.y = radius
+        if (dirY < 0) {
+          state.lastDirection.y = Math.abs(dirY)
+          bounceSide = bounceSide || 'top'
+        }
+      } else if (ball.y >= worldHeight - radius) {
+        ball.y = worldHeight - radius
+        if (dirY > 0) {
+          state.lastDirection.y = -Math.abs(dirY)
+          bounceSide = bounceSide || 'bottom'
+        }
       }
     }
 
