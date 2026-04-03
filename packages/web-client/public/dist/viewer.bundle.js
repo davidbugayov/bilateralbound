@@ -119,7 +119,10 @@ module.exports = {
  * Used by PhysicsEngine, controller, and viewer.
  */
 
-const DIRECTION_EPSILON = 1e-6
+// Increased from 1e-6 to 1e-4 to prevent micro-drift
+// At 1e-6, direction {x: 0.0000001, y: 1.0} is treated as vertical
+// but causes visible X-axis drift
+const DIRECTION_EPSILON = 1e-4
 const MAX_DIRECTION_ABS = 1.001
 
 // ============================================
@@ -343,9 +346,10 @@ const DEFAULT_OPTIONS = {
   centerCheckThreshold: 10,
   driftStaleMs: 1500,
   smoothing: {
-    driftThresholdPx: 50,
-    driftCorrectionMs: 300,
-    driftCheckIntervalMs: 3000
+    driftThresholdPx: 30,
+    driftCorrectionMs: 200,
+    // Reduced from 3000ms to 1000ms for more frequent drift checks
+    driftCheckIntervalMs: 1000
   }
 }
 
@@ -558,12 +562,14 @@ class PhysicsEngine {
     // Physics state
     this.state = this._createInitialState()
 
-    // Drift correction state
+    // Drift correction state (spring-damper model)
     this._lastServerPos = null
     this._lastDriftCheckTs = 0
     this._driftCorrection = null
     this._currentJitterMs = 0
     this._seekCenterStart = null
+    // Spring-damper state for continuous drift correction
+    this._springState = { active: false, targetX: 0, targetY: 0, lastDt: 0 }
 
     // Callbacks
     this.bounceCallback = this.options.bounceCallback
@@ -1294,6 +1300,7 @@ class PhysicsEngine {
 
   /**
    * Calculates speed factor based on stopping state
+   * Uses cubic ease-out for smooth deceleration (industry standard)
    * @returns {number}
    * @private
    */
@@ -1301,9 +1308,9 @@ class PhysicsEngine {
     if (!this.state.stopping) return 1.0
 
     const elapsed = (performance.now() - this.state.stoppingStartTs) / 1000
-    const speedFactor = Math.max(0, 1 - elapsed / this.state.stoppingDuration)
-
-    return speedFactor
+    const t = Math.min(1, elapsed / this.state.stoppingDuration)
+    // Cubic ease-out: 1 - (1-t)^3 creates smooth deceleration curve
+    return 1 - (1 - t) * (1 - t) * (1 - t)
   }
 
   /**
@@ -1423,17 +1430,45 @@ class PhysicsEngine {
   // ============================================
 
   /**
-   * Checks and applies drift correction
+   * Checks if ball is near a wall boundary (within margin)
+   * Skips drift correction near walls to prevent fighting with bounce events
+   * @private
+   * @returns {boolean} true if near wall
+   */
+  _isNearWall() {
+    const margin = this.ball.radius + this.options.bounceWallMargin + 5
+    const { worldWidth, worldHeight } = this.options
+    return (
+      this.ball.x <= margin ||
+      this.ball.x >= worldWidth - margin ||
+      this.ball.y <= margin ||
+      this.ball.y >= worldHeight - margin
+    )
+  }
+
+  /**
+   * Checks and activates spring-damper drift correction
+   * Uses continuous correction instead of periodic bursts
    * @private
    */
   _checkDriftCorrection() {
     if (!this._lastServerPos || this.state.paused) return
 
     const posAge = performance.now() - this._lastServerPos.ts
-    if (posAge > this.options.driftStaleMs) return
+    if (posAge > this.options.driftStaleMs) {
+      this._springState.active = false
+      return
+    }
+
+    // Skip drift correction near walls to prevent fighting with bounce
+    if (this._isNearWall()) {
+      this._springState.active = false
+      return
+    }
 
     const now = performance.now()
-    const checkInterval = this.options.smoothing.driftCheckIntervalMs
+    // Reduced from 1000ms to 200ms for more responsive correction
+    const checkInterval = 200
 
     if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval) return
 
@@ -1445,36 +1480,57 @@ class PhysicsEngine {
     const threshold = this.options.smoothing.driftThresholdPx
 
     if (drift > threshold) {
-      this._driftCorrection = {
-        offsetX: dx,
-        offsetY: dy,
-        startTs: now,
-        duration: this.options.smoothing.driftCorrectionMs
-      }
+      // Activate spring-damper correction
+      this._springState.active = true
+      this._springState.targetX = this._lastServerPos.x
+      this._springState.targetY = this._lastServerPos.y
+    } else if (drift < threshold * 0.3) {
+      // Deactivate when close enough
+      this._springState.active = false
     }
   }
 
   /**
-   * Applies drift correction offset
+   * Applies spring-damper drift correction (industry-standard model)
+   * Creates smooth, natural-feeling position correction
    * @private
    */
   _applyDriftCorrection() {
-    if (!this._driftCorrection) return
+    if (!this._springState.active || !this._lastServerPos) return
 
-    const now = performance.now()
-    const elapsed = now - this._driftCorrection.startTs
-    const t = Math.min(1, elapsed / this._driftCorrection.duration)
-
-    if (t >= 1) {
-      this._driftCorrection = null
+    // Skip near walls to prevent fighting with bounce
+    if (this._isNearWall()) {
+      this._springState.active = false
       return
     }
 
-    const ease = 1 - (1 - t) * (1 - t)
-    const correctionFactor = 0.05
+    const dt = 1 / 60 // Assume 60fps for stable correction
+    // Spring-damper: F = -k * (pos - target) - d * velocity
+    const stiffness = 8 // Higher = tighter correction
+    const damping = 4 // Higher = smoother, less oscillation
 
-    this.ball.x += this._driftCorrection.offsetX * ease * correctionFactor
-    this.ball.y += this._driftCorrection.offsetY * ease * correctionFactor
+    const dx = this._springState.targetX - this.ball.x
+    const dy = this._springState.targetY - this.ball.y
+
+    // Spring force pulls toward target
+    const springForceX = stiffness * dx
+    const springForceY = stiffness * dy
+
+    // Damping force resists current velocity
+    const dampForceX = -damping * this.ball.vx * dt
+    const dampForceY = -damping * this.ball.vy * dt
+
+    // Apply combined force
+    const correctionX = (springForceX + dampForceX) * dt
+    const correctionY = (springForceY + dampForceY) * dt
+
+    // Clamp correction to prevent overshoot
+    const maxCorrection = 15 // px per frame
+    const clampedX = clamp(correctionX, -maxCorrection, maxCorrection)
+    const clampedY = clamp(correctionY, -maxCorrection, maxCorrection)
+
+    this.ball.x += clampedX
+    this.ball.y += clampedY
   }
 
   // ============================================
@@ -3197,7 +3253,15 @@ const I18n = {
       return;
     }
 
-    // 3. Check domain (third priority) - только для новых пользователей
+    // 3. Check browser language
+    const browserLang = navigator.language.split('-')[0].toLowerCase();
+    if (this.supportedLanguages.includes(browserLang)) {
+      this.currentLanguage = browserLang;
+      localStorage.setItem('emdr-language', browserLang);
+      return;
+    }
+
+    // 4. Check domain (lower priority) - только для новых пользователей без сохраненного выбора
     // Russian domain → Russian language
     // English domain → English language
     const hostname =
@@ -3213,14 +3277,6 @@ const I18n = {
     } else if (hostname.includes('emdrbilateral.online')) {
       this.currentLanguage = 'en';
       localStorage.setItem('emdr-language', 'en');
-      return;
-    }
-
-    // 4. Check browser language
-    const browserLang = navigator.language.split('-')[0].toLowerCase();
-    if (this.supportedLanguages.includes(browserLang)) {
-      this.currentLanguage = browserLang;
-      localStorage.setItem('emdr-language', browserLang);
       return;
     }
 

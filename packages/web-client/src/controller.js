@@ -475,14 +475,16 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   })
   wsClient.on(WS_MSG.stateUpdate, (state) => {
     lastServerState = state // Кэшируем состояние
-    // Feed server position + velocity to smoother for Hermite interpolation
-    // WHY: Smoother needs velocity (not just position) to compute Hermite tangents.
-    // Velocity is derived from direction * speed percentage.
-    if (previewSmoother && typeof state.x === 'number' && typeof state.y === 'number' && !state.paused) {
-      const pps = ((state.speed ?? 40) / 100) * (previewPhysicsEngine?.options.maxSpeed ?? 5000)
+    // Feed server position + velocity to viewer smoother (Hermite interpolation)
+    // WHY: Viewer receives server positions at 15Hz; smoother interpolates between them
+    // using velocity as tangents for C1-continuous curves (smooth movement without snaps).
+    // Controller does NOT get server positions — it uses clientSimulation, so smoother
+    // is not applicable for controller preview (which already runs at 60Hz locally).
+    if (typeof window !== 'undefined' && window.__viewerSmoother && typeof state.x === 'number' && typeof state.y === 'number' && !state.paused) {
+      const pps = ((state.speed ?? 40) / 100) * 5000
       const vx = (state.dirX ?? 0) * pps
       const vy = (state.dirY ?? 0) * pps
-      previewSmoother.addServerUpdate(performance.now(), state.x, state.y, vx, vy)
+      window.__viewerSmoother.addServerUpdate(performance.now(), state.x, state.y, vx, vy)
     }
     if (typeof state.viewerConnected === 'boolean') {
       const wasConnected = globalThis.__current.viewerConnected
