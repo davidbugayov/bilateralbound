@@ -672,7 +672,7 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   border-radius: 16px;
   padding: 12px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .session-unified-block::before {
@@ -736,7 +736,9 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   background: #0f172a;
   border: 1px solid #334155;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 .light-theme .session-stats-row {
