@@ -1209,6 +1209,8 @@ async function initializePreview() {
       springDamping: 6,
       driftThreshold: 15
     })
+    // Expose to globalThis for debugging/inspection
+    globalThis.__previewSmoother = previewSmoother
 
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',

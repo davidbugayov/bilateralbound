@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.409",
+  "version": "2.39.410",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -87,6 +87,7 @@
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",
     "lint-staged": "^16.2.6",
+    "playwright": "^1.59.1",
     "prettier": "^3.6.2",
     "puppeteer": "^24.35.0",
     "sonarqube-scanner": "^4.3.4",
