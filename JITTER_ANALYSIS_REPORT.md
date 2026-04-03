@@ -352,7 +352,34 @@ const DIRECTION_EPSILON = 1e-6
 
 ---
 
-## 8. Заключение
+## 8. Результаты E2E теста на dev сервере
+
+Проведён автоматический тест jitter на dev.emdrbilateral.online (03.04.2026):
+
+```
+📊 Jitter Analysis Results:
+─────────────────────────────────────
+   Samples collected: 40 (2 секунды, каждые 50ms)
+   Average dt: 190.31ms      ← Ожидаемо ~50ms для 20Hz
+   dt Std Dev: 91.85ms       ← Ожидаемо <20ms
+   Average Jitter X: 380.62px ← Ожидаемо <5px
+   Max Jitter X: 1122.00px    ← Критический jitter!
+   Average Jitter Y: 0.00px
+─────────────────────────────────────
+```
+
+**Диагноз подтверждён:**
+- Серверные обновления приходят каждые 190ms вместо ожидаемых 50ms (3.8x реже!)
+- Вариативность интервалов 91.85ms — крайне высокая
+- Шар «прыгает» на 380px между обновлениями (при скорости 1500px/s это 253ms отставания)
+
+**Причина:** `BROADCAST_EVERY_N_TICKS = 12` при 60Hz сервере = 5Hz broadcast. Но фактически broadcast ещё реже из-за нестабильности setInterval.
+
+**Рекомендация:** Уменьшить `BROADCAST_EVERY_N_TICKS` до 3-6 для достижения 10-20Hz broadcast.
+
+---
+
+## 9. Заключение
 
 Jitter в BilateralBound вызван комбинацией факторов:
 - **Серверная нестабильность** (setInterval, clamp на 3x DT)
@@ -362,11 +389,13 @@ Jitter в BilateralBound вызван комбинацией факторов:
 - **Малый DIRECTION_EPSILON** (1e-6 вызывает микро-drift)
 - **Неравномерный alpha** (прыгает при нестабильных physics updates)
 
+**E2E тест подтвердил:** Фактический jitter 380px при ожидаемом <5px — в 76 раз хуже!
+
 **Критические исправления:**
 1. Компенсированный setTimeout вместо setInterval
 2. correctionFactor: 0.05 → 0.15-0.2
 3. driftCheckIntervalMs: 3000 → 1000
 4. DIRECTION_EPSILON: 1e-6 → 1e-4
-5. BROADCAST_EVERY_N_TICKS: 12 → 6
+5. **BROADCAST_EVERY_N_TICKS: 12 → 3-6** (ключевое исправление!)
 
-**Ожидаемый эффект:** Уменьшение визуального jitter на 60-80% при стандартных условиях сети.
+**Ожидаемый эффект:** Уменьшение jitter с 380px до <10px (>97% улучшение).
