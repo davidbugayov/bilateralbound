@@ -364,13 +364,13 @@ Max Jitter X: 1122.00px
 
 ### После исправлений (v2.39.402):
 ```
-Average dt: 179.59ms (-5.6%)
-dt Std Dev: 66.58ms (-27.6%)
-Average Jitter X: 359.18px (-5.6%)
-Max Jitter X: 866.00px (-22.8%)
+Average dt: 188.72ms (-0.8%)
+dt Std Dev: 51.51ms (-44.0%)
+Average Jitter X: 377.44px (-0.8%)
+Max Jitter X: 686.00px (-38.9%)
 ```
 
-**Улучшение:** Вариативность уменьшилась на 27.6%, max jitter на 22.8%.
+**Улучшение:** Вариативность уменьшилась на **44%**, max jitter на **38.9%**.
 
 **Примечание:** Тест измеряет HTTP API (`/api/session/:id/state`), а не реальный viewer. HTTP добавляет задержку и не отражает реальный jitter на viewer, который использует:
 - `clientSimulation` mode — локальная физика на 60 FPS
