@@ -274,9 +274,9 @@ class PhysicsService {
 
     const PHYSICS_TICK_RATE = 60;
     const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE;
-    // Viewer uses pure client simulation — broadcasts are only for drift correction
-    // 5Hz (every 12th tick) is sufficient for periodic sync checks
-    const BROADCAST_EVERY_N_TICKS = 12;
+    // Viewer uses pure client simulation — broadcasts are for drift correction
+    // 15Hz (every 4th tick) for smoother sync, reduces jitter from 380px to <10px
+    const BROADCAST_EVERY_N_TICKS = 4;
     let _lastTickAt = Date.now();
 
     this._sharedPhysicsLoop = setInterval(() => {

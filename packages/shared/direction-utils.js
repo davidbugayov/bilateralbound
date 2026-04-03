@@ -5,7 +5,10 @@
  * Used by PhysicsEngine, controller, and viewer.
  */
 
-const DIRECTION_EPSILON = 1e-6
+// Increased from 1e-6 to 1e-4 to prevent micro-drift
+// At 1e-6, direction {x: 0.0000001, y: 1.0} is treated as vertical
+// but causes visible X-axis drift
+const DIRECTION_EPSILON = 1e-4
 const MAX_DIRECTION_ABS = 1.001
 
 // ============================================

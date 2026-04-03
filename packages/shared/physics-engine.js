@@ -42,9 +42,10 @@ const DEFAULT_OPTIONS = {
   centerCheckThreshold: 10,
   driftStaleMs: 1500,
   smoothing: {
-    driftThresholdPx: 50,
-    driftCorrectionMs: 300,
-    driftCheckIntervalMs: 3000
+    driftThresholdPx: 30,
+    driftCorrectionMs: 200,
+    // Reduced from 3000ms to 1000ms for more frequent drift checks
+    driftCheckIntervalMs: 1000
   }
 }
 
@@ -1170,7 +1171,9 @@ class PhysicsEngine {
     }
 
     const ease = 1 - (1 - t) * (1 - t)
-    const correctionFactor = 0.05
+    // Increased from 0.05 to 0.15 for faster drift correction
+    // At 0.05 only 2.5px corrected per 300ms out of 50px drift
+    const correctionFactor = 0.15
 
     this.ball.x += this._driftCorrection.offsetX * ease * correctionFactor
     this.ball.y += this._driftCorrection.offsetY * ease * correctionFactor
