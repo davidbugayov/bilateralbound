@@ -21,7 +21,7 @@
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="language" content="multilingual" />
-    <meta name="version" content="2.39.398-36ff9973" />
+    <meta name="version" content="2.39.400-fff3f0df" />
     <meta name="theme-color" content="#2563eb" />
     <meta name="therapy-type" content="EMDR Controller" />
     <meta
@@ -31,27 +31,27 @@
     <link rel="canonical" href="https://emdrbilateral.ru/" />
 
     <!-- Preload Critical Resources -->
-    <link rel="preload" href="/css/shared-components.css?v=2.39.398-36ff9973" as="style" />
-    <link rel="preload" href="/css/light-theme.css?v=2.39.398-36ff9973" as="style" />
-    <link rel="preload" href="/css/controller.css?v=2.39.398-36ff9973" as="style" />
+    <link rel="preload" href="/css/shared-components.css?v=2.39.400-fff3f0df" as="style" />
+    <link rel="preload" href="/css/light-theme.css?v=2.39.400-fff3f0df" as="style" />
+    <link rel="preload" href="/css/controller.css?v=2.39.400-fff3f0df" as="style" />
     <link rel="preconnect" href="https://emdrbilateral.ru" crossorigin="anonymous" />
     <link rel="dns-prefetch" href="//mc.yandex.ru" />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-controller.svg?v=2.39.398-36ff9973"
+      href="/favicon-controller.svg?v=2.39.400-fff3f0df"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-controller.ico?v=2.39.398-36ff9973"
+      href="/favicon-controller.ico?v=2.39.400-fff3f0df"
     />
     <link
       rel="apple-touch-icon"
-      href="/favicon-controller.svg?v=2.39.398-36ff9973"
+      href="/favicon-controller.svg?v=2.39.400-fff3f0df"
     />
     <link
-      href="/favicon-controller.ico?v=2.39.398-36ff9973"
+      href="/favicon-controller.ico?v=2.39.400-fff3f0df"
       rel="shortcut icon"
     />
     <meta property="og:type" content="website" />
@@ -67,7 +67,7 @@
     />
     <meta
       property="og:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.398-36ff9973"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.400-fff3f0df"
     />
     <meta property="og:url" content="https://emdrbilateral.ru/" />
     <meta property="og:site_name" content="BilateralBound" />
@@ -85,7 +85,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.398-36ff9973"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.400-fff3f0df"
     />
     <meta name="twitter:site" content="@bilateralbound" />
     <script type="application/ld+json">
@@ -104,12 +104,12 @@
       }
     </script>
     <link
-      href="/css/shared-components.css?v=2.39.398-36ff9973"
+      href="/css/shared-components.css?v=2.39.400-fff3f0df"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/css/common.css?v=2.39.398-36ff9973" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.398-36ff9973" />
-    <link rel="stylesheet" href="/css/controller.css?v=2.39.398-36ff9973" />
+    <link rel="stylesheet" href="/css/common.css?v=2.39.400-fff3f0df" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.400-fff3f0df" />
+    <link rel="stylesheet" href="/css/controller.css?v=2.39.400-fff3f0df" />
     <noscript
       ><div>
         <img
@@ -124,7 +124,7 @@
       <a
         class="back-btn"
         href="/"
-        aria-label="Вернуться на главную страницу"
+        aria-label="Return to main page"
         data-i18n="controller.backToMain"
       ></a>
       <div class="theme-toggle-container">
@@ -140,8 +140,8 @@
         <button
           class="fs-close-btn"
           id="exitPreviewFullscreenBtn"
-          title="Закрыть полноэкранный режим"
-          aria-label="Закрыть полноэкранный режим"
+        title="Close fullscreen mode"
+        aria-label="Close fullscreen mode"
         >
           ✕
         </button>
@@ -171,7 +171,7 @@
               />
               <button
                 class="copy-btn fs-btn"
-                onclick="copy('fsViewLink', 'Ссылка для клиента скопирована!')"
+                onclick="copy('fsViewLink', 'Client link copied!')"
                 data-i18n="controller.copyClientLink"
               >
                 📋
@@ -183,52 +183,38 @@
             onclick="togglePlayPause()"
             id="fsPlayPauseBtn"
             data-i18n="controller.start"
-          >
-            ▶️ Старт
-          </button>
+          ></button>
           <button
             class="btn outline fs-btn fs-reset-btn"
             onclick="resetSession()"
             data-i18n="controller.reset"
-          >
-            🔄 Сброс
-          </button>
+          ></button>
           <div class="fs-btn-grid">
             <button
               class="seg-btn fs-seg-btn"
               id="fsDirH"
               data-i18n="controller.horizontal"
-            >
-              ↔️ Гориз
-            </button>
+            ></button>
             <button
               class="seg-btn fs-seg-btn"
               id="fsDirV"
               data-i18n="controller.vertical"
-            >
-              ↕️ Вертик
-            </button>
+            ></button>
             <button
               class="seg-btn fs-seg-btn"
               id="fsDirDL"
               data-i18n="controller.diagRTL"
-            >
-              ↙️↘️ Диаг1
-            </button>
+            ></button>
             <button
               class="seg-btn fs-seg-btn"
               id="fsDirDR"
               data-i18n="controller.diagRBL"
-            >
-              ↖️↗️ Диаг2
-            </button>
+            ></button>
             <button
               class="seg-btn fs-seg-btn"
               id="fsDirRandom"
               data-i18n="controller.random"
-            >
-              🎲 Случайное
-            </button>
+            ></button>
           </div>
           <div class="fs-slider-group">
             <label
@@ -416,9 +402,7 @@
               <div id="bgColorControl"></div>
             </div>
             <div class="controls-card">
-              <p class="controls-title" data-i18n="controller.ballSizeTitle">
-                Размер шарика
-              </p>
+              <p class="controls-title" data-i18n="controller.ballSizeTitle"></p>
               <div id="sizeControl"></div>
             </div>
           </div>
@@ -430,18 +414,17 @@
           </h3>
           <div class="appearance-grid">
             <div class="controls-card settings-card">
+              <div class="settings-sound-header">
+                <span class="settings-sound-header__icon" aria-hidden="true">🔊</span>
+                <span
+                  data-i18n="controller.enableSound"
+                  class="settings-sound-header__title"
+                ></span>
+              </div>
               <div class="settings-row settings-row--toggle">
                 <div class="settings-row__content">
-                  <span class="settings-row__icon" aria-hidden="true">🔊</span>
                   <div class="settings-row__text">
-                    <span
-                      data-i18n="controller.enableSound"
-                      class="settings-row__title"
-                      >Включить звук</span
-                    >
-                    <span class="settings-row__desc" data-i18n="controller.soundDesc"
-                      >Воспроизводить звуковые подсказки во время сессии</span
-                    >
+                    <span class="settings-row__desc" data-i18n="controller.soundDesc"></span>
                   </div>
                 </div>
                 <label class="toggle-switch">
@@ -460,9 +443,7 @@
                   data-i18n="controller.soundTypeLabel"
                   for="soundTypeSelect"
                   class="settings-row__label"
-                >
-                  Тип звука
-                </label>
+                ></label>
                 <div class="select-wrapper">
                   <select
                     id="soundTypeSelect"
@@ -500,11 +481,8 @@
                     <span
                       data-i18n="controller.monitorSound"
                       class="settings-row__title"
-                      >Мониторинг звука</span
-                    >
-                    <span class="settings-row__desc" data-i18n="controller.monitorDesc"
-                      >Воспроизводить звук на устройстве терапевта</span
-                    >
+                    ></span>
+                    <span class="settings-row__desc" data-i18n="controller.monitorDesc"></span>
                   </div>
                 </div>
                 <label class="toggle-switch">
@@ -523,8 +501,7 @@
                 <span
                   data-i18n="controller.volumeLabel"
                   class="settings-row__label--compact"
-                  >Громкость</span
-                >
+                ></span>
                 <input
                   id="controllerVolumeSlider"
                   max="100"
@@ -544,9 +521,7 @@
                 id="viewerAudioIndicator"
               >
                 <span class="icon">🔊</span>
-                <span data-i18n="controller.viewerSoundOff" id="viewerAudioText"
-                  >Viewer sound off</span
-                >
+                <span data-i18n="controller.viewerSoundOff" id="viewerAudioText"></span>
               </div>
             </div>
           </div>
@@ -604,7 +579,7 @@
                 onclick="copy('view', i18n.t('controller.linkCopied'))"
                 data-i18n-attr="aria-label:controller.copyClientLink"
               >
-                <span data-i18n="controller.copyClientLink">📋 Копировать</span>
+                <span data-i18n="controller.copyClientLink"></span>
               </button>
             </div>
           </div>
@@ -662,16 +637,13 @@
               class="btn primary session-start-btn"
               onclick="togglePlayPause()"
               data-i18n="controller.start"
-            >
-              ▶️ Старт
-            </button>
+            ></button>
             <button
               class="btn outline session-reset-btn"
               onclick="resetSession()"
               aria-label="Reset session"
-            >
-              🔄
-            </button>
+              data-i18n="controller.reset"
+            ></button>
           </div>
           <div id="bbCounters" class="session-stats-row">
             <div class="session-stat session-stat--timer">
@@ -773,9 +745,7 @@
               data-i18n-attr="title:controller.horizontalFull"
             >
               <span class="dir-icon">↔️</span>
-              <span class="dir-lbl" data-i18n="controller.dirHShort"
-                >Гориз.</span
-              >
+              <span class="dir-lbl" data-i18n="controller.dirHShort"></span>
             </button>
             <button
               class="dir-btn"
@@ -784,9 +754,7 @@
               data-i18n-attr="title:controller.verticalFull"
             >
               <span class="dir-icon">↕️</span>
-              <span class="dir-lbl" data-i18n="controller.dirVShort"
-                >Вертик.</span
-              >
+              <span class="dir-lbl" data-i18n="controller.dirVShort"></span>
             </button>
             <button
               class="dir-btn"
@@ -813,9 +781,7 @@
               data-i18n-attr="title:controller.randomFull"
             >
               <span class="dir-icon">🎲</span>
-              <span class="dir-lbl" data-i18n="controller.randomShort"
-                >Случ.</span
-              >
+              <span class="dir-lbl" data-i18n="controller.randomShort"></span>
             </button>
           </fieldset>
         </div>
@@ -825,9 +791,7 @@
           <p
             class="controls-title"
             data-i18n="controller.speedTitle"
-          >
-            Скорость
-          </p>
+          ></p>
           <div id="speedControl"></div>
         </div>
 
@@ -874,6 +838,6 @@
     </main>
     <script src="/js/ui/error-states.js" defer></script>
     <script src="/js/ui/success-toast.js" defer></script>
-    <script src="/dist/controller.bundle.js?v=2.39.398-36ff9973" defer></script>
+    <script src="/dist/controller.bundle.js?v=2.39.400-fff3f0df" defer></script>
   </body>
 </html>

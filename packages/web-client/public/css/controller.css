@@ -1297,6 +1297,42 @@ body {
   }
 }
 
+/* Sound header within settings card */
+.settings-sound-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 8px;
+}
+
+.settings-sound-header__icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 6%);
+  border-radius: 10px;
+}
+
+.settings-sound-header__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  line-height: 1.3;
+}
+
+.light-theme .settings-sound-header__icon {
+  background: rgb(0 0 0 / 5%);
+}
+
+.light-theme .settings-sound-header__title {
+  color: #1e293b;
+}
+
 /* ===== SETTINGS SECTION REDESIGN ===== */
 
 /* Settings card: row-based panel with modern styling */
