@@ -334,12 +334,67 @@ EOF
 4. Copilot token expired → re-run device auth above or switch to Anthropic
 5. Gateway won't start → `rm -f /tmp/clawdbot-0/*.lock` then restart service
 
+## Playwright Testing
+
+Use Playwright MCP server for browser automation and E2E testing. Available tools:
+
+### Navigation & Pages
+- `playwright_navigate` — open URL in browser (chromium/firefox/webkit)
+- `playwright_go_back` / `playwright_go_forward` — browser history
+- `playwright_close` — close browser
+
+### Interaction
+- `playwright_click` — click element by CSS selector
+- `playwright_fill` — fill input field
+- `playwright_select` — select dropdown option
+- `playwright_hover` — hover over element
+- `playwright_press_key` — press keyboard key (Enter, Tab, etc.)
+- `playwright_upload_file` — upload file to input[type=file]
+- `playwright_drag` — drag element to target
+
+### Assertions & Inspection
+- `playwright_get_visible_text` — get page text content
+- `playwright_get_visible_html` — get page HTML
+- `playwright_screenshot` — capture screenshot (base64 or PNG file)
+- `playwright_console_logs` — retrieve browser console logs
+
+### Network & API
+- `playwright_get` / `playwright_post` / `playwright_put` / `playwright_patch` / `playwright_delete` — HTTP requests from browser context
+- `playwright_expect_response` + `playwright_assert_response` — wait for and validate HTTP responses
+
+### Advanced
+- `playwright_evaluate` — execute JavaScript in page context
+- `playwright_resize` — resize viewport (supports device presets: iPhone, iPad, etc.)
+- `playwright_custom_user_agent` — set custom User-Agent
+- `playwright_save_as_pdf` — save page as PDF
+
+### Code Generation
+- `start_codegen_session` — record Playwright actions
+- `end_codegen_session` — generate test file from recorded actions
+- `get_codegen_session` — view session info
+- `clear_codegen_session` — discard session
+
+### Usage Example
+```
+# Open controller page
+playwright_navigate url="http://localhost:3000/c/test123"
+
+# Click start button
+playwright_click selector="#playPauseBtn"
+
+# Take screenshot
+playwright_screenshot name="controller-started"
+
+# Check console for errors
+playwright_console_logs type="error"
+```
+
 ## Plugin Configuration
 
 Use plugins proactively for relevant tasks:
 
 - **context7** — Express, WebSocket, Puppeteer, Node.js APIs. Check docs first before guessing.
-- **playwright** — E2E testing, browser automation. Use for `scripts/e2e/` work.
+- **playwright** — E2E testing, browser automation. Use for `scripts/e2e/` work and manual browser testing.
 - **frontend-design** — when modifying `viewer.html`, `session-controller.html`, `index.html`. Goals: accessibility, therapeutic UX, correct i18n.
 - **feature-dev** — guided feature development spanning multiple files.
 - **code-simplifier** — refactoring, reducing complexity, cleaning dead code.

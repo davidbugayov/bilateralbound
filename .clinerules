@@ -1,0 +1,74 @@
+# .clinerules — Rules for Claude Code
+
+## Project Identity
+
+**EMDR BilateralBound** — web-платформа для EMDR-терапии. Терапевт (controller) управляет движением шара, пациент (viewer) наблюдает в реальном времени через WebSocket.
+
+## Language
+
+- Respond in Russian (user's preferred language)
+- Code comments in English
+- UI strings via i18n, never hardcoded
+
+## Code Rules
+
+1. **No dead code** — удаляй неиспользуемый код, импорты, переменные
+2. **No over-engineering** — реализуй только то, что явно требуется
+3. **Comment "why" not "what"** — объясняй причины, а не действия
+4. **Short commits** — concise messages
+5. **No .md reports** — unless explicitly asked
+
+## Architecture
+
+- **Monorepo**: `packages/server-core` (Node.js + Express) и `packages/web-client` (Vanilla JS)
+- **No bundler** для основного кода — script tags, порядок важен
+- **Module pattern**: IIFE с `globalThis.ModuleName = { ... }`
+- **i18n**: `globalThis.i18n?.t('key') || 'fallback'`
+
+## Testing with Playwright
+
+Use Playwright MCP for browser automation and E2E testing:
+
+### Quick Reference
+| Tool | Purpose |
+|------|---------|
+| `playwright_navigate` | Open URL |
+| `playwright_click` | Click element |
+| `playwright_fill` | Fill input |
+| `playwright_screenshot` | Capture screenshot |
+| `playwright_console_logs` | Check for errors |
+| `playwright_evaluate` | Run JS in page |
+| `playwright_get_visible_text` | Get page text |
+
+### Example Workflow
+```
+1. playwright_navigate url="http://localhost:3000/c/test"
+2. playwright_click selector="#playPauseBtn"
+3. playwright_screenshot name="started"
+4. playwright_console_logs type="error"
+5. playwright_close
+```
+
+### Code Generation
+- `start_codegen_session` → record actions
+- `end_codegen_session` → generate test file
+
+## File Operations
+
+- Prefer `replace_in_file` for small edits
+- Use `write_to_file` for new files or major rewrites
+- Always wait for confirmation after each tool use
+
+## Sensitive Files
+
+Do not modify without explicit instruction:
+- `session/SessionManager.js` — physics loop
+- `network/webSocketServer.js` — WebSocket routing
+- `js/websocket-client.js` — client reconnection logic
+- `.env` files
+
+## Deployment
+
+- Dev: `main` branch → `dev.emdrbilateral.online`
+- Prod: `stable` branch → `.online` + `.ru`
+- Never deploy without user confirmation
