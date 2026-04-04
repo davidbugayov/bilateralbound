@@ -834,6 +834,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   })
 
   // Bounce ack - server sends back authoritative position for drift correction
+  // Use smooth spring-damper correction instead of instant snap to avoid visual jitter
   wsClient.on('bounce_ack', (data) => {
     if (!physicsEngine) return
     const serverX = data.serverX
@@ -851,23 +852,22 @@ function setupWebSocketHandlers(wsClient, sessionId) {
         serverX - physicsEngine.ball.x,
         serverY - physicsEngine.ball.y
       )
-      // Only correct if drift is significant (>30px) — small drifts are normal
-      if (drift > 30) {
-        // Snap to server position immediately (bounce is a discrete event, not continuous movement)
-        physicsEngine.ball.x = serverX
-        physicsEngine.ball.y = serverY
-        physicsEngine._prevPos.x = serverX
-        physicsEngine._prevPos.y = serverY
-        physicsEngine._currPos.x = serverX
-        physicsEngine._currPos.y = serverY
-        // Sync direction from server
+      // Only correct if drift is significant (>25px) — small drifts are normal
+      if (drift > 25) {
+        // Store server position for spring-damper drift correction (smooth, no jitter)
+        physicsEngine._lastServerPos = {
+          x: serverX,
+          y: serverY,
+          ts: performance.now()
+        }
+        // Sync direction from server (critical for correct post-bounce movement)
         physicsEngine.state.lastDirection.x = serverDirX
         physicsEngine.state.lastDirection.y = serverDirY
         // Recalculate velocity
         const pps = (physicsEngine.ball.speed / 100) * physicsEngine.options.maxSpeed
         physicsEngine.ball.vx = serverDirX * pps
         physicsEngine.ball.vy = serverDirY * pps
-        debugLog(`🎯 Bounce drift correction: drift=${drift.toFixed(1)}px, snapped to server`)
+        debugLog(`🎯 Bounce drift correction: drift=${drift.toFixed(1)}px, spring-damper active`)
       }
     }
   })
