@@ -103,6 +103,7 @@ module.exports = {
   dispatchBounceEvent
 }
 
+
 /***/ },
 
 /***/ "../shared/direction-utils.js"
@@ -154,7 +155,10 @@ function isHorizontalDirection(dirY) {
  * @returns {boolean}
  */
 function isZeroDirection(dirX, dirY) {
-  return Math.abs(dirX || 0) < DIRECTION_EPSILON && Math.abs(dirY || 0) < DIRECTION_EPSILON
+  return (
+    Math.abs(dirX || 0) < DIRECTION_EPSILON &&
+    Math.abs(dirY || 0) < DIRECTION_EPSILON
+  )
 }
 
 // ============================================
@@ -181,7 +185,11 @@ function normalizeDirection(vx, vy) {
  * @returns {boolean} True if value is valid
  */
 function isValidDirection(value) {
-  return typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= MAX_DIRECTION_ABS
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    Math.abs(value) <= MAX_DIRECTION_ABS
+  )
 }
 
 // ============================================
@@ -207,7 +215,7 @@ function getDirectionMode(dirX, dirY) {
   if (ay > ax * 2) return 'vertical'
 
   // Diagonal modes
-  if (dirX > 0 && dirY > 0) return 'diagRL'  // Top-left to bottom-right
+  if (dirX > 0 && dirY > 0) return 'diagRL' // Top-left to bottom-right
   if (dirX > 0 && dirY < 0) return 'diagRLL' // Bottom-left to top-right
 
   return null
@@ -293,6 +301,7 @@ module.exports = {
   getFallbackDirection
 }
 
+
 /***/ },
 
 /***/ "../shared/physics-engine.js"
@@ -319,13 +328,13 @@ const {
   isHorizontalDirection,
   normalizeDirection,
   isValidDirection,
-  calculateVelocity,
+  // calculateVelocity — unused, kept for API compatibility
   getFallbackDirection
 } = __webpack_require__(/*! ./direction-utils */ "../shared/direction-utils.js")
 
 const {
-  createBounceMessage,
-  createBounceEventDetail,
+  // createBounceMessage — unused, kept for API compatibility
+  // createBounceEventDetail — unused, kept for API compatibility
   createBouncePhysicsData,
   dispatchBounceEvent
 } = __webpack_require__(/*! ./bounce-utils */ "../shared/bounce-utils.js")
@@ -346,11 +355,14 @@ const DEFAULT_OPTIONS = {
   centerCheckThreshold: 10,
   driftStaleMs: 1500,
   smoothing: {
-    // Increased from 30 to 60 — prevents spring from activating on small jitter
-    // At 30% speed, ball moves ~100px per server update; 30px threshold caused visible correction
-    driftThresholdPx: 60,
+    // Base threshold reduced from 60 to 40px for tighter sync at low speeds
+    // At 10% speed: was 65px (3.4% of 1920px), now 43px (2.2%)
+    driftThresholdPx: 40,
     driftCorrectionMs: 200,
-    driftCheckIntervalMs: 100
+    driftCheckIntervalMs: 50,
+    // Adaptive spring-damper parameters (used by _applyDriftCorrection)
+    stiffness: 3,
+    damping: 2
   }
 }
 
@@ -474,7 +486,8 @@ function validateCommonCommand(command) {
     validated.stopping = command.stopping
   if (command.reset === true) validated.reset = true
   if (isValidRadius(command.radius)) validated.radius = command.radius
-  if (isValidHexColor(command.colorBall)) validated.colorBall = command.colorBall
+  if (isValidHexColor(command.colorBall))
+    validated.colorBall = command.colorBall
   if (isValidHexColor(command.colorBg)) validated.colorBg = command.colorBg
 
   return validated
@@ -725,7 +738,10 @@ class PhysicsEngine {
     this.state.lastDirection.y = dirY
 
     if (!this.isViewer || this.options.clientSimulation) {
-      const pps = calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed)
+      const pps = calculatePixelsPerSecond(
+        this.ball.speed,
+        this.options.maxSpeed
+      )
       this.ball.vx = dirX * pps
       this.ball.vy = dirY * pps
     }
@@ -1039,7 +1055,10 @@ class PhysicsEngine {
    * @param {string} side - Bounce side: 'left', 'right', 'top', 'bottom'
    */
   handleBounce(side) {
-    const pps = calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed)
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
     this.ball.vx = this.state.lastDirection.x * pps
     this.ball.vy = this.state.lastDirection.y * pps
 
@@ -1060,7 +1079,11 @@ class PhysicsEngine {
   _triggerBounceCallback(side) {
     if (!this.bounceCallback) return
 
-    const data = createBouncePhysicsData(side, this.ball, this.state.lastDirection)
+    const data = createBouncePhysicsData(
+      side,
+      this.ball,
+      this.state.lastDirection
+    )
     this.bounceCallback(data)
   }
 
@@ -1103,7 +1126,12 @@ class PhysicsEngine {
       this.ball.vx = Math.sign(dirX) * this.options.minSpeed
       this.ball.vy = 0
     } else {
-      const fallback = getFallbackDirection(this.ball.x, this.ball.y, this.centerX, this.centerY)
+      const fallback = getFallbackDirection(
+        this.ball.x,
+        this.ball.y,
+        this.centerX,
+        this.centerY
+      )
       this.ball.vx = fallback.x * this.options.minSpeed
       this.ball.vy = fallback.y * this.options.minSpeed
     }
@@ -1153,8 +1181,10 @@ class PhysicsEngine {
   getInterpolatedBall(alpha) {
     const a = clamp(typeof alpha === 'number' ? alpha : 1, 0, 1)
 
-    this._interpBall.x = this._prevPos.x + (this._currPos.x - this._prevPos.x) * a
-    this._interpBall.y = this._prevPos.y + (this._currPos.y - this._prevPos.y) * a
+    this._interpBall.x =
+      this._prevPos.x + (this._currPos.x - this._prevPos.x) * a
+    this._interpBall.y =
+      this._prevPos.y + (this._currPos.y - this._prevPos.y) * a
     this._interpBall.radius = this.ball.radius
     this._interpBall.colorBall = this.ball.colorBall || null
 
@@ -1241,7 +1271,10 @@ class PhysicsEngine {
       this.state.lastDirection.y = 0
     }
 
-    const pps = calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed)
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
     this.ball.vx = this.state.lastDirection.x * pps
     this.ball.vy = this.state.lastDirection.y * pps
     this.state.lastVx = this.ball.vx
@@ -1320,7 +1353,9 @@ class PhysicsEngine {
       return
     }
 
-    const pps = calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed) * speedFactor
+    const pps =
+      calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed) *
+      speedFactor
     this.ball.vx = this.state.lastDirection.x * pps
     this.ball.vy = this.state.lastDirection.y * pps
 
@@ -1373,7 +1408,10 @@ class PhysicsEngine {
    * @private
    */
   _calculateClientVelocity() {
-    const pps = calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed)
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
     return {
       vx: (this.state.lastDirection.x || 0) * pps,
       vy: (this.state.lastDirection.y || 0) * pps
@@ -1388,7 +1426,10 @@ class PhysicsEngine {
   _applyAxisLock(velocity) {
     const dirX = this.state.lastDirection.x || 0
     const dirY = this.state.lastDirection.y || 0
-    const pps = calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed)
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
 
     const isVertical = isVerticalDirection(dirX) && Math.abs(dirY) > 0
     const isHorizontal = isHorizontalDirection(dirY) && Math.abs(dirX) > 0
@@ -1446,8 +1487,10 @@ class PhysicsEngine {
     const t = Math.min(1, elapsed / this.state.seekingCenterDuration)
     const ease = 1 - (1 - t) * (1 - t)
 
-    const newX = this._seekCenterStart.x + (this.centerX - this._seekCenterStart.x) * ease
-    const newY = this._seekCenterStart.y + (this.centerY - this._seekCenterStart.y) * ease
+    const newX =
+      this._seekCenterStart.x + (this.centerX - this._seekCenterStart.x) * ease
+    const newY =
+      this._seekCenterStart.y + (this.centerY - this._seekCenterStart.y) * ease
 
     this._prevPos.x = newX
     this._prevPos.y = newY
@@ -1487,6 +1530,7 @@ class PhysicsEngine {
   /**
    * Checks and activates spring-damper drift correction
    * Uses continuous correction instead of periodic bursts
+   * Adaptive threshold based on ball speed — faster ball = larger threshold
    * @private
    */
   _checkDriftCorrection() {
@@ -1505,33 +1549,65 @@ class PhysicsEngine {
     }
 
     const now = performance.now()
-    // Check drift every 100ms — fast enough to catch drift before it grows large,
-    // but not so fast that it fights with bounce events near walls.
-    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 100
+    // Check drift every 50ms — fast enough to catch drift before it grows large.
+    // Reduced from 100ms to react faster on poor connections.
+    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 50
 
-    if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval) return
+    if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval)
+      return
 
     this._lastDriftCheckTs = now
 
     const dx = this._lastServerPos.x - this.ball.x
     const dy = this._lastServerPos.y - this.ball.y
     const drift = Math.hypot(dx, dy)
-    const threshold = this.options.smoothing.driftThresholdPx
 
-    if (drift > threshold) {
+    // Adaptive threshold: ball at 30% speed moves ~100px per server update.
+    // Base threshold 60px + speed scaling (0.5 * speedPercent) gives dynamic range.
+    // For speed 30: threshold ≈ 60 + 15 = 75px
+    // For speed 80: threshold ≈ 60 + 40 = 100px
+    const baseThreshold = this.options.smoothing.driftThresholdPx || 60
+    const speedPercent = this.ball.speed || 30
+    const adaptiveThreshold = baseThreshold + speedPercent * 0.5
+
+    if (drift > adaptiveThreshold) {
+      // Track persistent desync for hard recovery
+      if (!this._springState._desyncStartTs) {
+        this._springState._desyncStartTs = now
+      }
+      const desyncDuration = now - this._springState._desyncStartTs
+
+      // Hard snap recovery: if drift > 150px for > 3 seconds, teleport to server position
+      if (drift > 150 && desyncDuration > 3000) {
+        this.ball.x = this._lastServerPos.x
+        this.ball.y = this._lastServerPos.y
+        this._springState.active = false
+        this._springState.driftMagnitude = 0
+        this._springState._desyncStartTs = null
+        return
+      }
+
       // Activate spring-damper correction
       this._springState.active = true
       this._springState.targetX = this._lastServerPos.x
       this._springState.targetY = this._lastServerPos.y
-    } else if (drift < threshold * 0.3) {
-      // Deactivate when close enough
-      this._springState.active = false
+      // Store drift magnitude for adaptive maxCorrection
+      this._springState.driftMagnitude = drift
+    } else {
+      // Reset desync tracker when within threshold
+      this._springState._desyncStartTs = null
+      if (drift < baseThreshold * 0.3) {
+        // Deactivate when close enough
+        this._springState.active = false
+        this._springState.driftMagnitude = 0
+      }
     }
   }
 
   /**
    * Applies spring-damper drift correction (industry-standard model)
    * Creates smooth, natural-feeling position correction
+   * Adaptive maxCorrection: increases for large drift to catch up faster
    * @private
    */
   _applyDriftCorrection() {
@@ -1543,12 +1619,17 @@ class PhysicsEngine {
       return
     }
 
-    const dt = 1 / 60 // Assume 60fps for stable correction
-    // Spring-damper: F = -k * (pos - target) - d * velocity
-    // Reduced stiffness: 8 → 3 (softer correction, less visible jerk)
-    // Reduced damping: 4 → 2 (less drag on velocity, smoother feel)
-    const stiffness = 3
-    const damping = 2
+    // Use real delta time instead of hardcoded 1/60
+    // Cap at 33ms (30fps) to prevent instability on hidden tabs
+    const now = performance.now()
+    const lastTs = this._springState._lastCorrectionTs || now
+    const dt = Math.min(33, now - lastTs) / 1000
+    this._springState._lastCorrectionTs = now
+
+    // Adaptive spring-damper: read from config (fallback to defaults)
+    const sm = this.options.smoothing || {}
+    const stiffness = sm.stiffness !== undefined ? sm.stiffness : 3
+    const damping = sm.damping !== undefined ? sm.damping : 2
 
     const dx = this._springState.targetX - this.ball.x
     const dy = this._springState.targetY - this.ball.y
@@ -1565,9 +1646,17 @@ class PhysicsEngine {
     const correctionX = (springForceX + dampForceX) * dt
     const correctionY = (springForceY + dampForceY) * dt
 
-    // Clamp correction to prevent overshoot
-    // Reduced: 15 → 5 (imperceptible at 60fps, still catches large drift over ~10 frames)
-    const maxCorrection = 5
+    // Adaptive maxCorrection: larger for big drift to catch up faster,
+    // smaller for minor drift to avoid visible jitter.
+    // driftMagnitude set in _checkDriftCorrection when activating correction.
+    const driftMag = this._springState.driftMagnitude || 0
+    const baseMaxCorrection = 5
+    const adaptiveMaxCorrection =
+      driftMag > 100
+        ? Math.min(15, baseMaxCorrection + (driftMag - 100) * 0.05)
+        : baseMaxCorrection
+    const maxCorrection = Math.min(15, adaptiveMaxCorrection)
+
     const clampedX = clamp(correctionX, -maxCorrection, maxCorrection)
     const clampedY = clamp(correctionY, -maxCorrection, maxCorrection)
 
@@ -1685,8 +1774,16 @@ class PhysicsEngine {
   _handleViewerPositionUpdate(command) {
     if (command.x === undefined || command.y === undefined) return
 
-    const cx = clamp(command.x, this.ball.radius, this.options.worldWidth - this.ball.radius)
-    const cy = clamp(command.y, this.ball.radius, this.options.worldHeight - this.ball.radius)
+    const cx = clamp(
+      command.x,
+      this.ball.radius,
+      this.options.worldWidth - this.ball.radius
+    )
+    const cy = clamp(
+      command.y,
+      this.ball.radius,
+      this.options.worldHeight - this.ball.radius
+    )
 
     this.state.targetX = cx
     this.state.targetY = cy
@@ -1761,7 +1858,8 @@ class PhysicsEngine {
     if (newVy !== undefined) {
       const wallMargin = this.ball.radius + this.options.bounceWallMargin
       const nearTopWall = this.ball.y <= wallMargin
-      const nearBottomWall = this.ball.y >= this.options.worldHeight - wallMargin
+      const nearBottomWall =
+        this.ball.y >= this.options.worldHeight - wallMargin
       const serverMovingUp = newVy < 0
       const serverMovingDown = newVy > 0
       const localMovingUp = this.ball.vy < 0
@@ -1813,8 +1911,10 @@ class PhysicsEngine {
 
     if (this.options.clientSimulation && !this.state.paused) {
       const atCenter =
-        Math.abs(this.ball.x - this.centerX) < this.options.centerCheckThreshold &&
-        Math.abs(this.ball.y - this.centerY) < this.options.centerCheckThreshold
+        Math.abs(this.ball.x - this.centerX) <
+          this.options.centerCheckThreshold &&
+        Math.abs(this.ball.y - this.centerY) <
+          this.options.centerCheckThreshold
 
       if (!atCenter) return
     }
@@ -1822,7 +1922,10 @@ class PhysicsEngine {
     let newDx = command.dirX ?? this.state.lastDirection.x
     let newDy = command.dirY ?? this.state.lastDirection.y
 
-    if (Math.abs(newDx) < DIRECTION_EPSILON && Math.abs(newDy) < DIRECTION_EPSILON) {
+    if (
+      Math.abs(newDx) < DIRECTION_EPSILON &&
+      Math.abs(newDy) < DIRECTION_EPSILON
+    ) {
       if (
         Math.abs(this.state.lastDirection.x) > DIRECTION_EPSILON ||
         Math.abs(this.state.lastDirection.y) > DIRECTION_EPSILON
@@ -1839,7 +1942,10 @@ class PhysicsEngine {
     this.state.lastDirection.y = newDy
 
     if (this.options.clientSimulation) {
-      const pps = calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed)
+      const pps = calculatePixelsPerSecond(
+        this.ball.speed,
+        this.options.maxSpeed
+      )
       this.ball.vx = newDx * pps
       this.ball.vy = newDy * pps
     }
@@ -1854,7 +1960,10 @@ class PhysicsEngine {
    * @private
    */
   _updatePredictionBase() {
-    const pps = calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed)
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
     const dx = this.state.lastDirection.x || 0
     const dy = this.state.lastDirection.y || 0
 
@@ -1910,7 +2019,8 @@ class PhysicsEngine {
    * @private
    */
   _handleServerUnpause(command) {
-    const willBeUnpaused = command.paused === false || this.state.paused === false
+    const willBeUnpaused =
+      command.paused === false || this.state.paused === false
     if (willBeUnpaused) {
       this._restoreServerVelocity()
     }
@@ -1921,7 +2031,10 @@ class PhysicsEngine {
    * @private
    */
   _restoreServerVelocity() {
-    const pps = calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed)
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
     let dirX = this.state.lastDirection.x || 0
     let dirY = this.state.lastDirection.y || 0
 
@@ -1936,6 +2049,7 @@ class PhysicsEngine {
 }
 
 module.exports = PhysicsEngine
+
 
 /***/ },
 
@@ -1970,20 +2084,20 @@ module.exports = PhysicsEngine
  */
 const DEFAULT_SMOOTHING_CONFIG = {
   // Base smoothing parameters
-  damping: 20,              // Base damping (15-25 range) — higher = smoother
-  stiffness: 30,            // Base stiffness (25-35 range) — lower = smoother
-  maxPredictSec: 0.02,      // Max prediction time in seconds
-  snapDistance: 0.3,        // Snap distance threshold (0.2-0.4)
+  damping: 20, // Base damping (15-25 range) — higher = smoother
+  stiffness: 30, // Base stiffness (25-35 range) — lower = smoother
+  maxPredictSec: 0.02, // Max prediction time in seconds
+  snapDistance: 0.3, // Snap distance threshold (0.2-0.4)
 
   // Adaptive factors — how much jitter affects each parameter
-  dampingJitterFactor: 20,      // jitterMs / factor added to damping
-  stiffnessJitterFactor: 30,    // jitterMs / factor subtracted from stiffness
-  highJitterThreshold: 15,      // Threshold for snapDistance increase
+  dampingJitterFactor: 20, // jitterMs / factor added to damping
+  stiffnessJitterFactor: 30, // jitterMs / factor subtracted from stiffness
+  highJitterThreshold: 15, // Threshold for snapDistance increase
 
   // Exponential smoothing
-  exponentialSmoothing: false,  // Use exponential smoothing
-  stateBuffering: false,        // Use state buffering
-  bufferSize: 10                // Buffer size for state buffering
+  exponentialSmoothing: false, // Use exponential smoothing
+  stateBuffering: false, // Use state buffering
+  bufferSize: 10 // Buffer size for state buffering
 }
 
 // ============================================
@@ -1995,9 +2109,10 @@ const DEFAULT_SMOOTHING_CONFIG = {
  * @returns {object} Resolved smoothing configuration
  */
 function resolveSmoothingConfig() {
-  const globalConfig = typeof globalThis !== 'undefined' && globalThis.BBConfig
-    ? globalThis.BBConfig.smoothing || globalThis.BBConfig
-    : {}
+  const globalConfig =
+    typeof globalThis !== 'undefined' && globalThis.BBConfig
+      ? globalThis.BBConfig.smoothing || globalThis.BBConfig
+      : {}
 
   return { ...DEFAULT_SMOOTHING_CONFIG, ...globalConfig }
 }
@@ -2030,35 +2145,40 @@ function calculateAdaptiveSmoothing(jitterMs, customConfig) {
   // Extract adaptive factors
   const baseDamping = config.damping || DEFAULT_SMOOTHING_CONFIG.damping
   const baseStiffness = config.stiffness || DEFAULT_SMOOTHING_CONFIG.stiffness
-  const dampingFactor = config.dampingJitterFactor || DEFAULT_SMOOTHING_CONFIG.dampingJitterFactor
-  const stiffnessFactor = config.stiffnessJitterFactor || DEFAULT_SMOOTHING_CONFIG.stiffnessJitterFactor
-  const highJitterThreshold = config.highJitterThreshold || DEFAULT_SMOOTHING_CONFIG.highJitterThreshold
-  const baseSnapDistance = config.snapDistance || DEFAULT_SMOOTHING_CONFIG.snapDistance
+  const dampingFactor =
+    config.dampingJitterFactor || DEFAULT_SMOOTHING_CONFIG.dampingJitterFactor
+  const stiffnessFactor =
+    config.stiffnessJitterFactor ||
+    DEFAULT_SMOOTHING_CONFIG.stiffnessJitterFactor
+  const highJitterThreshold =
+    config.highJitterThreshold || DEFAULT_SMOOTHING_CONFIG.highJitterThreshold
+  const baseSnapDistance =
+    config.snapDistance || DEFAULT_SMOOTHING_CONFIG.snapDistance
 
   // Calculate adaptive values with clamping
   // Damping: increases with jitter → more smoothing when network is bad
   const adaptiveDamping = Math.min(
-    25,  // max clamp
+    25, // max clamp
     Math.max(
-      15,  // min clamp
-      baseDamping + (jitterMs / dampingFactor)
+      15, // min clamp
+      baseDamping + jitterMs / dampingFactor
     )
   )
 
   // Stiffness: decreases with jitter → gentler correction when network is bad
   const adaptiveStiffness = Math.min(
-    35,  // max clamp
+    35, // max clamp
     Math.max(
-      25,  // min clamp
-      baseStiffness - (jitterMs / stiffnessFactor)
+      25, // min clamp
+      baseStiffness - jitterMs / stiffnessFactor
     )
   )
 
   // Snap distance: increases when jitter is high → wider catch zone
   const adaptiveSnapDistance = Math.min(
-    0.4,  // max clamp
+    0.4, // max clamp
     Math.max(
-      0.2,  // min clamp
+      0.2, // min clamp
       baseSnapDistance + (jitterMs > highJitterThreshold ? 0.05 : 0)
     )
   )
@@ -2066,7 +2186,8 @@ function calculateAdaptiveSmoothing(jitterMs, customConfig) {
   return {
     damping: adaptiveDamping,
     stiffness: adaptiveStiffness,
-    maxPredictSec: config.maxPredictSec || DEFAULT_SMOOTHING_CONFIG.maxPredictSec,
+    maxPredictSec:
+      config.maxPredictSec || DEFAULT_SMOOTHING_CONFIG.maxPredictSec,
     snapDistance: adaptiveSnapDistance,
     exponentialSmoothing: config.exponentialSmoothing,
     stateBuffering: config.stateBuffering,
@@ -2121,6 +2242,7 @@ module.exports = {
   resolveSmoothingConfig,
   getSmoothingConfigString
 }
+
 
 /***/ },
 
@@ -4671,7 +4793,7 @@ class BallRenderer {
 
     // Position: top-right corner in world coords
     const worldW = this.physics.options.worldWidth || this.canvas.width
-    const worldH = this.physics.options.worldHeight || this.canvas.height
+    const _worldH = this.physics.options.worldHeight || this.canvas.height // reserved for future use
     const x = worldW - boxW - padding
     const y = padding
 
@@ -4690,11 +4812,21 @@ class BallRenderer {
 
     // Text
     const jitterClass = this._getJitterLevel()
-    ctx.fillStyle = jitterClass === 'bad' ? '#ff6b6b' : jitterClass === 'warn' ? '#ffd93d' : '#6bff6b'
+    ctx.fillStyle =
+      jitterClass === 'bad'
+        ? '#ff6b6b'
+        : jitterClass === 'warn'
+          ? '#ffd93d'
+          : '#6bff6b'
     for (let i = 0; i < lines.length; i++) {
-      ctx.fillStyle = i === 0
-        ? (jitterClass === 'bad' ? '#ff6b6b' : jitterClass === 'warn' ? '#ffd93d' : '#6bff6b')
-        : '#ffffff'
+      ctx.fillStyle =
+        i === 0
+          ? jitterClass === 'bad'
+            ? '#ff6b6b'
+            : jitterClass === 'warn'
+              ? '#ffd93d'
+              : '#6bff6b'
+          : '#ffffff'
       ctx.fillText(lines[i], x + padding, y + padding + i * lineH)
     }
     ctx.restore()
@@ -4773,7 +4905,8 @@ class BallRenderer {
     if (!this.frameTimeHistory || this.frameTimeHistory.length < 4) return 0
     const recent = this.frameTimeHistory.slice(-8)
     const mean = recent.reduce((s, v) => s + v, 0) / recent.length
-    const variance = recent.reduce((s, v) => s + (v - mean) ** 2, 0) / recent.length
+    const variance =
+      recent.reduce((s, v) => s + (v - mean) ** 2, 0) / recent.length
     return Math.sqrt(variance)
   }
 
@@ -5509,10 +5642,12 @@ function showError(message) {
     globalThis.errorStateManager.show('critical-error', {
       title: globalThis.i18n?.t('viewer.errorTitle') || 'Connection Error',
       message: message,
-      actions: [{
-        label: globalThis.i18n?.t('viewer.reload') || 'Reload page',
-        callback: () => globalThis.location.reload()
-      }]
+      actions: [
+        {
+          label: globalThis.i18n?.t('viewer.reload') || 'Reload page',
+          callback: () => globalThis.location.reload()
+        }
+      ]
     })
   } else if (globalThis.emdrErrorOverlay) {
     globalThis.emdrErrorOverlay.show({
@@ -5522,7 +5657,9 @@ function showError(message) {
       onAction: () => globalThis.location.reload()
     })
   } else {
-    alert(`${globalThis.i18n?.t('viewer.errorTitle') || 'Connection Error'}\n\n${message}`)
+    alert(
+      `${globalThis.i18n?.t('viewer.errorTitle') || 'Connection Error'}\n\n${message}`
+    )
   }
 }
 
@@ -6074,7 +6211,9 @@ function checkAudioOverlay() {
 
   if (typeof logger !== 'undefined') {
     if (shouldShow) {
-      logger.audio('Показываем unmute overlay - звук включен, но не активирован')
+      logger.audio(
+        'Показываем unmute overlay - звук включен, но не активирован'
+      )
     } else {
       const reason = !audioManager
         ? 'audioManager не инициализирован'
@@ -6292,6 +6431,45 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   // Handle network metrics for adaptive smoothing
   wsClient.on('net_metrics', ({ jitterMs }) => {
     applyAdaptiveSmoothing(physicsEngine, jitterMs)
+  })
+
+  // Bounce ack - server sends back authoritative position for drift correction
+  wsClient.on('bounce_ack', (data) => {
+    if (!physicsEngine) return
+    const serverX = data.serverX
+    const serverY = data.serverY
+    const serverDirX = data.serverDirX
+    const serverDirY = data.serverDirY
+    if (
+      typeof serverX === 'number' &&
+      typeof serverY === 'number' &&
+      typeof serverDirX === 'number' &&
+      typeof serverDirY === 'number'
+    ) {
+      // Calculate drift between viewer and server
+      const drift = Math.hypot(
+        serverX - physicsEngine.ball.x,
+        serverY - physicsEngine.ball.y
+      )
+      // Only correct if drift is significant (>30px) — small drifts are normal
+      if (drift > 30) {
+        // Snap to server position immediately (bounce is a discrete event, not continuous movement)
+        physicsEngine.ball.x = serverX
+        physicsEngine.ball.y = serverY
+        physicsEngine._prevPos.x = serverX
+        physicsEngine._prevPos.y = serverY
+        physicsEngine._currPos.x = serverX
+        physicsEngine._currPos.y = serverY
+        // Sync direction from server
+        physicsEngine.state.lastDirection.x = serverDirX
+        physicsEngine.state.lastDirection.y = serverDirY
+        // Recalculate velocity
+        const pps = (physicsEngine.ball.speed / 100) * physicsEngine.options.maxSpeed
+        physicsEngine.ball.vx = serverDirX * pps
+        physicsEngine.ball.vy = serverDirY * pps
+        debugLog(`🎯 Bounce drift correction: drift=${drift.toFixed(1)}px, snapped to server`)
+      }
+    }
   })
 }
 

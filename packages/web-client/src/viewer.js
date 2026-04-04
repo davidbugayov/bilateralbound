@@ -832,6 +832,45 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   wsClient.on('net_metrics', ({ jitterMs }) => {
     applyAdaptiveSmoothing(physicsEngine, jitterMs)
   })
+
+  // Bounce ack - server sends back authoritative position for drift correction
+  wsClient.on('bounce_ack', (data) => {
+    if (!physicsEngine) return
+    const serverX = data.serverX
+    const serverY = data.serverY
+    const serverDirX = data.serverDirX
+    const serverDirY = data.serverDirY
+    if (
+      typeof serverX === 'number' &&
+      typeof serverY === 'number' &&
+      typeof serverDirX === 'number' &&
+      typeof serverDirY === 'number'
+    ) {
+      // Calculate drift between viewer and server
+      const drift = Math.hypot(
+        serverX - physicsEngine.ball.x,
+        serverY - physicsEngine.ball.y
+      )
+      // Only correct if drift is significant (>30px) — small drifts are normal
+      if (drift > 30) {
+        // Snap to server position immediately (bounce is a discrete event, not continuous movement)
+        physicsEngine.ball.x = serverX
+        physicsEngine.ball.y = serverY
+        physicsEngine._prevPos.x = serverX
+        physicsEngine._prevPos.y = serverY
+        physicsEngine._currPos.x = serverX
+        physicsEngine._currPos.y = serverY
+        // Sync direction from server
+        physicsEngine.state.lastDirection.x = serverDirX
+        physicsEngine.state.lastDirection.y = serverDirY
+        // Recalculate velocity
+        const pps = (physicsEngine.ball.speed / 100) * physicsEngine.options.maxSpeed
+        physicsEngine.ball.vx = serverDirX * pps
+        physicsEngine.ball.vy = serverDirY * pps
+        debugLog(`🎯 Bounce drift correction: drift=${drift.toFixed(1)}px, snapped to server`)
+      }
+    }
+  })
 }
 
 function handleWebSocketError(error) {

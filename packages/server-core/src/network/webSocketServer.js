@@ -163,12 +163,39 @@ function setupWebSocketServer(
               timestamp: data.payload.timestamp
             }
           })
+          // Send bounce_sync to controller
           for (const { client, info: clientInfo } of clients) {
             if (clientInfo.role === 'controller' && client.readyState === 1) {
               try {
                 client.send(bounceMessage)
               } catch (error) {
                 logger.error({ err: error }, 'Error sending bounce_sync')
+              }
+            }
+          }
+          // Send bounce_ack back to viewer for drift correction
+          const session = sessionService.getSession(sessionId)
+          if (session) {
+            const ackMessage = JSON.stringify({
+              type: 'bounce_ack',
+              payload: {
+                side: data.payload.side,
+                x: data.payload.x,
+                y: data.payload.y,
+                dirX: data.payload.dirX,
+                dirY: data.payload.dirY,
+                serverX: session.ballState?.x ?? data.payload.x,
+                serverY: session.ballState?.y ?? data.payload.y,
+                serverDirX: session.ballState?.dirX ?? data.payload.dirX,
+                serverDirY: session.ballState?.dirY ?? data.payload.dirY,
+                ts: Date.now()
+              }
+            })
+            if (ws.readyState === 1) {
+              try {
+                ws.send(ackMessage)
+              } catch (error) {
+                logger.error({ err: error }, 'Error sending bounce_ack')
               }
             }
           }

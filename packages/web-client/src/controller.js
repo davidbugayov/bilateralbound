@@ -530,22 +530,21 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
     updateViewerAudioIndicators()
   })
-  // Bounce sync - snap preview to viewer's exact bounce position + direction
+  // Bounce sync - snap controller preview to viewer's bounce position + direction
   // Skip if preview is doing seekingCenter animation to prevent interrupting return-to-center
   wsClient.on(WS_MSG.bounceSync, (data) => {
     if (!previewPhysicsEngine) return
     // Don't interrupt seekingCenter animation (return-to-center on pause)
     if (previewPhysicsEngine.state?.seekingCenter) return
     if (typeof data.x === 'number' && typeof data.y === 'number') {
-      // FIXED: Only snap if drift is significant (> 50px).
-      // Small drifts are handled by the spring-damper drift correction which is smoother.
-      // Hard-snapping on every bounce causes visible jitter when network jitter is low.
       const drift = Math.hypot(
         data.x - previewPhysicsEngine.ball.x,
         data.y - previewPhysicsEngine.ball.y
       )
+      // Large drift (>50px): instant snap to prevent visible desync on controller preview
+      // Small drifts are acceptable — the controller preview is for therapist monitoring,
+      // not pixel-perfect sync. Viewer uses spring-damper for smooth correction.
       if (drift > 50) {
-        // Snap position on physics engine
         previewPhysicsEngine.ball.x = data.x
         previewPhysicsEngine.ball.y = data.y
         previewPhysicsEngine._prevPos.x = data.x
