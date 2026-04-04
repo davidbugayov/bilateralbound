@@ -2,38 +2,38 @@
  * Улучшенная система уведомлений для BilateralBound
  * Поддержка разных типов уведомлений с красивыми анимациями
  */
-'use strict';
+'use strict'
 
 class NotificationSystem {
   constructor() {
-    this.autoHideTimeout = 5000;
-    this.container = null;
-    this.notifications = [];
-    this.init();
+    this.autoHideTimeout = 5000
+    this.container = null
+    this.notifications = []
+    this.init()
   }
   /**
    * Инициализация системы уведомлений
    */
   init() {
-    this.createContainer();
-    this.setupStyles();
+    this.createContainer()
+    this.setupStyles()
   }
   /**
    * Создает контейнер для уведомлений
    */
   createContainer() {
-    if (this.container) return;
-    this.container = document.createElement('div');
-    this.container.className = 'bb-notification-container';
-    document.body.appendChild(this.container);
+    if (this.container) return
+    this.container = document.createElement('div')
+    this.container.className = 'bb-notification-container'
+    document.body.appendChild(this.container)
   }
   /**
    * Устанавливает стили для уведомлений
    */
   setupStyles() {
-    if (document.getElementById('bb-notification-styles')) return;
-    const styles = document.createElement('style');
-    styles.id = 'bb-notification-styles';
+    if (document.getElementById('bb-notification-styles')) return
+    const styles = document.createElement('style')
+    styles.id = 'bb-notification-styles'
     styles.textContent = `
       .bb-notification-container {
         position: fixed;
@@ -229,8 +229,8 @@ class NotificationSystem {
         color: rgba(0, 0, 0, 0.6);
         background: rgba(0, 0, 0, 0.06);
       }
-    `;
-    document.head.appendChild(styles);
+    `
+    document.head.appendChild(styles)
   }
   /**
    * Показывает уведомление
@@ -244,136 +244,136 @@ class NotificationSystem {
       closable: true,
       showProgress: true,
       icon: null,
-      position: 'top-right',
-    };
-    const config = { ...defaults, ...options };
+      position: 'top-right'
+    }
+    const config = { ...defaults, ...options }
     const duplicate = this.notifications.find(
-      (n) => n.config?.message === config.message,
-    );
+      (n) => n.config?.message === config.message
+    )
     if (duplicate) {
       if (
         duplicate.config?.type === config.type &&
         (duplicate.config?.title || '') === (config.title || '')
       ) {
-        return;
+        return
       }
-      this.hide(duplicate);
+      this.hide(duplicate)
     }
-    const notification = this.createNotification(config);
-    this.notifications.push(notification);
-    this.container.appendChild(notification.element);
+    const notification = this.createNotification(config)
+    this.notifications.push(notification)
+    this.container.appendChild(notification.element)
     setTimeout(() => {
-      notification.element.classList.add('show');
-    }, 10);
+      notification.element.classList.add('show')
+    }, 10)
     if (config.duration > 0) {
       notification.hideTimeout = setTimeout(() => {
-        this.hide(notification);
-      }, config.duration);
+        this.hide(notification)
+      }, config.duration)
     }
     if (config.showProgress) {
-      this.startProgress(notification);
+      this.startProgress(notification)
     }
-    return notification;
+    return notification
   }
   /**
    * Создает элемент уведомления
    */
   createNotification(config) {
-    const element = document.createElement('div');
-    element.className = `bb-notification ${config.type}`;
-    const iconElement = document.createElement('div');
-    iconElement.className = 'bb-notification-icon';
-    const content = document.createElement('div');
-    content.className = 'bb-notification-content';
+    const element = document.createElement('div')
+    element.className = `bb-notification ${config.type}`
+    const iconElement = document.createElement('div')
+    iconElement.className = 'bb-notification-icon'
+    const content = document.createElement('div')
+    content.className = 'bb-notification-content'
     // Skip emoji/symbol titles — dot indicator handles the type signal
-    const emojiPattern = /^[\u{1F000}-\u{1FFFF}]/u;
+    const emojiPattern = /^[\u{1F000}-\u{1FFFF}]/u
     // eslint-disable-next-line no-misleading-character-class
-    const symbolPattern = /^[❌✅ℹ️]/;
+    const symbolPattern = /^[❌✅ℹ️]/
     const isSymbolTitle =
       config.title &&
-      (emojiPattern.test(config.title) || symbolPattern.test(config.title));
+      (emojiPattern.test(config.title) || symbolPattern.test(config.title))
     if (config.title && !isSymbolTitle) {
-      const title = document.createElement('div');
-      title.className = 'bb-notification-title';
-      title.textContent = config.title;
-      content.appendChild(title);
+      const title = document.createElement('div')
+      title.className = 'bb-notification-title'
+      title.textContent = config.title
+      content.appendChild(title)
     }
     if (config.message) {
-      const message = document.createElement('div');
-      message.className = 'bb-notification-message';
-      message.textContent = config.message;
-      content.appendChild(message);
+      const message = document.createElement('div')
+      message.className = 'bb-notification-message'
+      message.textContent = config.message
+      content.appendChild(message)
     }
-    const close = document.createElement('button');
-    close.className = 'bb-notification-close';
-    close.textContent = '\u00D7';
-    const progress = document.createElement('div');
-    progress.className = 'bb-notification-progress';
+    const close = document.createElement('button')
+    close.className = 'bb-notification-close'
+    close.textContent = '\u00D7'
+    const progress = document.createElement('div')
+    progress.className = 'bb-notification-progress'
     const notification = {
       element,
       config,
       progress,
-      hideTimeout: null,
-    };
-    close.onclick = () => {
-      this.hide(notification);
-    };
-    element.appendChild(iconElement);
-    element.appendChild(content);
-    if (config.closable) {
-      element.appendChild(close);
+      hideTimeout: null
     }
-    element.appendChild(progress);
-    return notification;
+    close.onclick = () => {
+      this.hide(notification)
+    }
+    element.appendChild(iconElement)
+    element.appendChild(content)
+    if (config.closable) {
+      element.appendChild(close)
+    }
+    element.appendChild(progress)
+    return notification
   }
   /**
    * Возвращает иконку для типа уведомления
    */
   getIcon(type, customIcon) {
-    if (customIcon) return customIcon;
+    if (customIcon) return customIcon
     const icons = {
       success: '✅',
       error: '❌',
       warning: '⚠️',
-      info: 'ℹ️',
-    };
-    return icons[type] || icons.info;
+      info: 'ℹ️'
+    }
+    return icons[type] || icons.info
   }
   /**
    * Запускает прогресс-бар
    */
   startProgress(notification) {
-    const duration = notification.config.duration;
-    const startTime = Date.now();
+    const duration = notification.config.duration
+    const startTime = Date.now()
     const updateProgress = () => {
       if (!notification.element.parentElement) {
-        return;
+        return
       }
-      const elapsed = Date.now() - startTime;
-      const progress = Math.max(0, 100 - (elapsed / duration) * 100);
-      notification.progress.style.width = `${progress}%`;
+      const elapsed = Date.now() - startTime
+      const progress = Math.max(0, 100 - (elapsed / duration) * 100)
+      notification.progress.style.width = `${progress}%`
       if (progress > 0) {
-        requestAnimationFrame(updateProgress);
+        requestAnimationFrame(updateProgress)
       }
-    };
-    requestAnimationFrame(updateProgress);
+    }
+    requestAnimationFrame(updateProgress)
   }
   /**
    * Скрывает уведомление
    */
   hide(notification) {
-    if (!notification?.element) return;
-    clearTimeout(notification.hideTimeout);
-    notification.element.classList.add('removing');
+    if (!notification?.element) return
+    clearTimeout(notification.hideTimeout)
+    notification.element.classList.add('removing')
     setTimeout(() => {
       if (notification.element?.parentElement) {
-        notification.element.remove();
+        notification.element.remove()
       }
-      const index = this.notifications.indexOf(notification);
+      const index = this.notifications.indexOf(notification)
       if (index > -1) {
-        this.notifications.splice(index, 1);
+        this.notifications.splice(index, 1)
       }
-    }, 200);
+    }, 200)
   }
   /**
    * Показывает успешное уведомление
@@ -382,8 +382,8 @@ class NotificationSystem {
     return this.show({
       type: 'success',
       title,
-      message,
-    });
+      message
+    })
   }
   /**
    * Показывает уведомление об ошибке
@@ -392,8 +392,8 @@ class NotificationSystem {
     return this.show({
       type: 'error',
       title,
-      message,
-    });
+      message
+    })
   }
   /**
    * Показывает предупреждение
@@ -402,8 +402,8 @@ class NotificationSystem {
     return this.show({
       type: 'warning',
       title,
-      message,
-    });
+      message
+    })
   }
   /**
    * Показывает информационное уведомление
@@ -412,20 +412,20 @@ class NotificationSystem {
     return this.show({
       type: 'info',
       title,
-      message,
-    });
+      message
+    })
   }
 }
 if (typeof globalThis !== 'undefined') {
-  globalThis.notificationSystem = new NotificationSystem();
+  globalThis.notificationSystem = new NotificationSystem()
   globalThis.showSuccessNotification = (title, message) =>
-    globalThis.notificationSystem.success(title, message);
+    globalThis.notificationSystem.success(title, message)
   globalThis.showErrorNotification = (title, message) =>
-    globalThis.notificationSystem.error(title, message);
+    globalThis.notificationSystem.error(title, message)
   globalThis.showWarningNotification = (title, message) =>
-    globalThis.notificationSystem.warning(title, message);
+    globalThis.notificationSystem.warning(title, message)
   globalThis.showInfoNotification = (title, message) =>
-    globalThis.notificationSystem.info(title, message);
+    globalThis.notificationSystem.info(title, message)
 }
 
-module.exports = NotificationSystem;
+module.exports = NotificationSystem

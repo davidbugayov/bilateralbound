@@ -178,7 +178,7 @@ class BallRenderer {
 
     // Position: top-right corner in world coords
     const worldW = this.physics.options.worldWidth || this.canvas.width
-    const worldH = this.physics.options.worldHeight || this.canvas.height
+    const _worldH = this.physics.options.worldHeight || this.canvas.height // reserved for future use
     const x = worldW - boxW - padding
     const y = padding
 

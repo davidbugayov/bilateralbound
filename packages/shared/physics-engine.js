@@ -15,13 +15,13 @@ const {
   isHorizontalDirection,
   normalizeDirection,
   isValidDirection,
-  calculateVelocity,
+  // calculateVelocity — unused, kept for API compatibility
   getFallbackDirection
 } = require('./direction-utils')
 
 const {
-  createBounceMessage,
-  createBounceEventDetail,
+  // createBounceMessage — unused, kept for API compatibility
+  // createBounceEventDetail — unused, kept for API compatibility
   createBouncePhysicsData,
   dispatchBounceEvent
 } = require('./bounce-utils')
@@ -544,10 +544,31 @@ class PhysicsEngine {
   }
 
   /**
-   * Public method for returning to center
+   * Public method for returning to center.
+   * For viewer mode: starts smooth seek-center animation (like pause).
+   * For server mode: instant snap to center.
    */
   returnToCenter() {
-    this._resetBallToCenter()
+    if (this.isViewer) {
+      const dx = this.centerX - this.ball.x
+      const dy = this.centerY - this.ball.y
+      const distanceFromCenter = Math.hypot(dx, dy)
+
+      if (distanceFromCenter > this.options.centerSnapThreshold) {
+        this.state.seekingCenter = true
+        this._seekCenterStart = {
+          x: this.ball.x,
+          y: this.ball.y,
+          ts: performance.now()
+        }
+      } else {
+        this.state.seekingCenter = false
+        this._snapToCenter()
+      }
+      this.clampBallWithinBounds()
+    } else {
+      this._resetBallToCenter()
+    }
   }
 
   // ============================================
@@ -1295,6 +1316,19 @@ class PhysicsEngine {
 
       if (this.isViewer && wasPaused && command.paused === false) {
         this._handleViewerUnpause(command)
+      }
+    }
+
+    if (command.returnToCenter) {
+      // _handleViewerPause (called via setPaused above) already starts seekingCenter.
+      // Only call returnToCenter if seekingCenter wasn't already started by the pause handler.
+      if (this.isViewer && !this.state.seekingCenter) {
+        this.returnToCenter()
+      } else if (!this.isViewer) {
+        this.returnToCenter()
+      }
+      if (this.options.clientSimulation) {
+        this._hasReceivedFirstMovingUpdate = false
       }
     }
 

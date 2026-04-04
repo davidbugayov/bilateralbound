@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * @fileoverview i18n module exports
  * Provides internationalization support for the application
@@ -10,4 +10,4 @@
 // - globalThis.i18n - Main i18n instance with translations
 // - globalThis.LanguageSelector - Language selector UI component
 
-module.exports = {};
+module.exports = {}

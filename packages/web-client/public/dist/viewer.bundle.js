@@ -848,10 +848,31 @@ class PhysicsEngine {
   }
 
   /**
-   * Public method for returning to center
+   * Public method for returning to center.
+   * For viewer mode: starts smooth seek-center animation (like pause).
+   * For server mode: instant snap to center.
    */
   returnToCenter() {
-    this._resetBallToCenter()
+    if (this.isViewer) {
+      const dx = this.centerX - this.ball.x
+      const dy = this.centerY - this.ball.y
+      const distanceFromCenter = Math.hypot(dx, dy)
+
+      if (distanceFromCenter > this.options.centerSnapThreshold) {
+        this.state.seekingCenter = true
+        this._seekCenterStart = {
+          x: this.ball.x,
+          y: this.ball.y,
+          ts: performance.now()
+        }
+      } else {
+        this.state.seekingCenter = false
+        this._snapToCenter()
+      }
+      this.clampBallWithinBounds()
+    } else {
+      this._resetBallToCenter()
+    }
   }
 
   // ============================================
@@ -1602,6 +1623,19 @@ class PhysicsEngine {
       }
     }
 
+    if (command.returnToCenter) {
+      // _handleViewerPause (called via setPaused above) already starts seekingCenter.
+      // Only call returnToCenter if seekingCenter wasn't already started by the pause handler.
+      if (this.isViewer && !this.state.seekingCenter) {
+        this.returnToCenter()
+      } else if (!this.isViewer) {
+        this.returnToCenter()
+      }
+      if (this.options.clientSimulation) {
+        this._hasReceivedFirstMovingUpdate = false
+      }
+    }
+
     if (command.reset) this.reset()
     if (command.radius !== undefined) this.setBallSize(command.radius)
     if (command.colorBall !== undefined) this.setBallColor(command.colorBall)
@@ -2105,24 +2139,24 @@ module.exports = {
  */
 class AudioManager {
   constructor() {
-    this.enabled = false;
-    this.volume = 0.5;
-    this.audioContext = null;
-    this.oscillatorType = 'sine'; // sine, square, sawtooth, triangle
-    this.frequency = 180; // Hz - low frequency for soft wooden sound
-    this.duration = 0.12; // seconds - soft knock duration
-    this.soundType = 'soft'; // soft (EMDR default), tick, tone, click, bounce, beep
-    this.audioBuffers = new Map();
-    this.loadingPromises = new Map();
+    this.enabled = false
+    this.volume = 0.5
+    this.audioContext = null
+    this.oscillatorType = 'sine' // sine, square, sawtooth, triangle
+    this.frequency = 180 // Hz - low frequency for soft wooden sound
+    this.duration = 0.12 // seconds - soft knock duration
+    this.soundType = 'soft' // soft (EMDR default), tick, tone, click, bounce, beep
+    this.audioBuffers = new Map()
+    this.loadingPromises = new Map()
     this.soundFiles = {
       tick: '/sounds/tick.wav',
       click: '/sounds/click.wav',
       bounce: '/sounds/bounce.wav',
       tone: '/sounds/tone.wav',
-      beep: '/sounds/beep.wav',
-    };
-    this.useAudioFiles = true;
-    this.filesLoaded = false;
+      beep: '/sounds/beep.wav'
+    }
+    this.useAudioFiles = true
+    this.filesLoaded = false
   }
   /**
    * Initializes the AudioContext. Must be called after a user gesture.
@@ -2131,21 +2165,21 @@ class AudioManager {
   init(preload = false) {
     if (!this.audioContext) {
       const AudioContext =
-        globalThis.AudioContext || globalThis.webkitAudioContext;
+        globalThis.AudioContext || globalThis.webkitAudioContext
       if (AudioContext) {
-        this.audioContext = new AudioContext();
+        this.audioContext = new AudioContext()
       } else {
         if (typeof logger !== 'undefined') {
-          logger.warn('Web Audio API is not supported in this browser.');
+          logger.warn('Web Audio API is not supported in this browser.')
         }
       }
     }
     if (this.audioContext?.state === 'suspended') {
       this.audioContext.resume().catch((err) => {
         if (typeof logger !== 'undefined') {
-          logger.warn('Failed to resume AudioContext:', err);
+          logger.warn('Failed to resume AudioContext:', err)
         }
-      });
+      })
     }
     // Lazy loading: only preload when explicitly requested or when sound is enabled
     if (preload && this.useAudioFiles && !this.filesLoaded) {
@@ -2153,11 +2187,11 @@ class AudioManager {
         if (typeof logger !== 'undefined') {
           logger.warn(
             'Failed to load audio files, falling back to synthesis:',
-            err,
-          );
+            err
+          )
         }
-        this.useAudioFiles = false;
-      });
+        this.useAudioFiles = false
+      })
     }
   }
   /**
@@ -2167,33 +2201,33 @@ class AudioManager {
    */
   async loadSound(url) {
     if (!this.audioContext) {
-      throw new Error('AudioContext not initialized');
+      throw new Error('AudioContext not initialized')
     }
     if (this.audioBuffers.has(url)) {
-      return this.audioBuffers.get(url);
+      return this.audioBuffers.get(url)
     }
     if (this.loadingPromises.has(url)) {
-      return await this.loadingPromises.get(url);
+      return await this.loadingPromises.get(url)
     }
     const loadPromise = fetch(url)
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`)
         }
-        return response.arrayBuffer();
+        return response.arrayBuffer()
       })
       .then((arrayBuffer) => this.audioContext.decodeAudioData(arrayBuffer))
       .then((audioBuffer) => {
-        this.audioBuffers.set(url, audioBuffer);
-        this.loadingPromises.delete(url);
-        return audioBuffer;
+        this.audioBuffers.set(url, audioBuffer)
+        this.loadingPromises.delete(url)
+        return audioBuffer
       })
       .catch((err) => {
-        this.loadingPromises.delete(url);
-        throw err;
-      });
-    this.loadingPromises.set(url, loadPromise);
-    return await loadPromise;
+        this.loadingPromises.delete(url)
+        throw err
+      })
+    this.loadingPromises.set(url, loadPromise)
+    return await loadPromise
   }
   /**
    * Предзагружает все звуковые файлы
@@ -2201,32 +2235,32 @@ class AudioManager {
    */
   async preloadSounds() {
     if (!this.audioContext) {
-      return;
+      return
     }
-    logger?.log('🔊 Starting audio files preload...');
+    logger?.log('🔊 Starting audio files preload...')
     const loadPromises = Object.values(this.soundFiles).map((url) =>
       this.loadSound(url)
         .then(() => true)
-        .catch(() => null),
-    );
-    const results = await Promise.all(loadPromises);
-    const loadedCount = results.filter((r) => r === true).length;
-    this.filesLoaded = loadedCount > 0;
+        .catch(() => null)
+    )
+    const results = await Promise.all(loadPromises)
+    const loadedCount = results.filter((r) => r === true).length
+    this.filesLoaded = loadedCount > 0
     if (loadedCount === Object.keys(this.soundFiles).length) {
       logger?.log(
-        `✅ Audio files preloaded: ${loadedCount}/${Object.keys(this.soundFiles).length}`,
-      );
+        `✅ Audio files preloaded: ${loadedCount}/${Object.keys(this.soundFiles).length}`
+      )
     } else if (loadedCount > 0) {
       logger?.warn(
-        `⚠️ Partially loaded: ${loadedCount}/${Object.keys(this.soundFiles).length} (using synthesis for missing)`,
-      );
+        `⚠️ Partially loaded: ${loadedCount}/${Object.keys(this.soundFiles).length} (using synthesis for missing)`
+      )
     } else {
-      logger?.warn('⚠️ No audio files loaded, using synthesis fallback');
-      this.useAudioFiles = false;
+      logger?.warn('⚠️ No audio files loaded, using synthesis fallback')
+      this.useAudioFiles = false
     }
   }
   setEnabled(enabled) {
-    this.enabled = !!enabled;
+    this.enabled = !!enabled
     // Lazy load sounds when user enables sound for the first time
     if (
       enabled &&
@@ -2236,49 +2270,49 @@ class AudioManager {
     ) {
       this.preloadSounds().catch((err) => {
         if (typeof logger !== 'undefined') {
-          logger.warn('Failed to load audio files:', err);
+          logger.warn('Failed to load audio files:', err)
         }
-        this.useAudioFiles = false;
-      });
+        this.useAudioFiles = false
+      })
     }
   }
   setVolume(volume) {
-    this.volume = Math.max(0, Math.min(1, volume));
+    this.volume = Math.max(0, Math.min(1, volume))
   }
   setSoundType(type) {
-    this.soundType = type;
+    this.soundType = type
     switch (type) {
       case 'tone':
-        this.oscillatorType = 'sine';
-        this.frequency = 440;
-        this.duration = 0.15;
-        break;
+        this.oscillatorType = 'sine'
+        this.frequency = 440
+        this.duration = 0.15
+        break
       case 'click':
-        this.oscillatorType = 'square';
-        this.frequency = 800;
-        this.duration = 0.03;
-        break;
+        this.oscillatorType = 'square'
+        this.frequency = 800
+        this.duration = 0.03
+        break
       case 'bounce':
-        this.oscillatorType = 'sine';
-        this.frequency = 220;
-        this.duration = 0.08;
-        break;
+        this.oscillatorType = 'sine'
+        this.frequency = 220
+        this.duration = 0.08
+        break
       case 'beep':
-        this.oscillatorType = 'sine';
-        this.frequency = 880;
-        this.duration = 0.06;
-        break;
+        this.oscillatorType = 'sine'
+        this.frequency = 880
+        this.duration = 0.06
+        break
       case 'soft':
-        this.oscillatorType = 'sine';
-        this.frequency = 180;
-        this.duration = 0.12;
-        break;
+        this.oscillatorType = 'sine'
+        this.frequency = 180
+        this.duration = 0.12
+        break
       case 'tick':
       default:
-        this.oscillatorType = 'sine';
-        this.frequency = 600;
-        this.duration = 0.05;
-        break;
+        this.oscillatorType = 'sine'
+        this.frequency = 600
+        this.duration = 0.05
+        break
     }
   }
   /**
@@ -2287,24 +2321,24 @@ class AudioManager {
    */
   playTick(overrideType) {
     if (!this.enabled || !this.audioContext) {
-      return;
+      return
     }
     if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(() => {});
-      return;
+      this.audioContext.resume().catch(() => {})
+      return
     }
-    const soundType = overrideType || this.soundType;
+    const soundType = overrideType || this.soundType
     if (overrideType && overrideType !== this.soundType) {
-      this.setSoundType(overrideType);
+      this.setSoundType(overrideType)
     }
     if (this.useAudioFiles && this.filesLoaded) {
-      const url = this.soundFiles[soundType];
+      const url = this.soundFiles[soundType]
       if (url && this.audioBuffers.has(url)) {
-        this.playBufferedSound(url);
-        return;
+        this.playBufferedSound(url)
+        return
       }
     }
-    this.playSynthesizedSound();
+    this.playSynthesizedSound()
   }
   /**
    * Воспроизводит загруженный звук из буфера
@@ -2312,22 +2346,22 @@ class AudioManager {
    */
   playBufferedSound(url) {
     try {
-      const buffer = this.audioBuffers.get(url);
+      const buffer = this.audioBuffers.get(url)
       if (!buffer) {
-        return;
+        return
       }
-      const source = this.audioContext.createBufferSource();
-      const gainNode = this.audioContext.createGain();
-      source.buffer = buffer;
-      gainNode.gain.value = this.volume;
-      source.connect(gainNode);
-      gainNode.connect(this.audioContext.destination);
-      source.start();
+      const source = this.audioContext.createBufferSource()
+      const gainNode = this.audioContext.createGain()
+      source.buffer = buffer
+      gainNode.gain.value = this.volume
+      source.connect(gainNode)
+      gainNode.connect(this.audioContext.destination)
+      source.start()
     } catch (error) {
       if (typeof logger !== 'undefined') {
-        logger.error('Error playing buffered sound:', error);
+        logger.error('Error playing buffered sound:', error)
       }
-      this.playSynthesizedSound();
+      this.playSynthesizedSound()
     }
   }
   /**
@@ -2336,32 +2370,32 @@ class AudioManager {
   playSynthesizedSound() {
     try {
       if (this.soundType === 'soft') {
-        this.playSoftWoodenSound();
-        return;
+        this.playSoftWoodenSound()
+        return
       }
-      const oscillator = this.audioContext.createOscillator();
-      const gainNode = this.audioContext.createGain();
-      oscillator.type = this.oscillatorType;
+      const oscillator = this.audioContext.createOscillator()
+      const gainNode = this.audioContext.createGain()
+      oscillator.type = this.oscillatorType
       oscillator.frequency.setValueAtTime(
         this.frequency,
-        this.audioContext.currentTime,
-      );
-      gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        this.audioContext.currentTime
+      )
+      gainNode.gain.setValueAtTime(0, this.audioContext.currentTime)
       gainNode.gain.linearRampToValueAtTime(
         this.volume,
-        this.audioContext.currentTime + 0.005,
-      );
+        this.audioContext.currentTime + 0.005
+      )
       gainNode.gain.exponentialRampToValueAtTime(
         0.001,
-        this.audioContext.currentTime + this.duration,
-      );
-      oscillator.connect(gainNode);
-      gainNode.connect(this.audioContext.destination);
-      oscillator.start();
-      oscillator.stop(this.audioContext.currentTime + this.duration);
+        this.audioContext.currentTime + this.duration
+      )
+      oscillator.connect(gainNode)
+      gainNode.connect(this.audioContext.destination)
+      oscillator.start()
+      oscillator.stop(this.audioContext.currentTime + this.duration)
     } catch (error) {
       if (typeof logger !== 'undefined') {
-        logger.error('Error playing synthesized sound:', error);
+        logger.error('Error playing synthesized sound:', error)
       }
     }
   }
@@ -2371,33 +2405,33 @@ class AudioManager {
    */
   playSoftWoodenSound() {
     try {
-      const now = this.audioContext.currentTime;
-      const duration = 0.16;
-      const osc = this.audioContext.createOscillator();
-      const gain = this.audioContext.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.exponentialRampToValueAtTime(60, now + duration);
+      const now = this.audioContext.currentTime
+      const duration = 0.16
+      const osc = this.audioContext.createOscillator()
+      const gain = this.audioContext.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(120, now)
+      osc.frequency.exponentialRampToValueAtTime(60, now + duration)
       // Short linear attack to avoid click artifact, then smooth decay
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(this.volume * 0.8, now + 0.004);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-      osc.connect(gain);
-      gain.connect(this.audioContext.destination);
-      osc.start(now);
-      osc.stop(now + duration);
+      gain.gain.setValueAtTime(0, now)
+      gain.gain.linearRampToValueAtTime(this.volume * 0.8, now + 0.004)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
+      osc.connect(gain)
+      gain.connect(this.audioContext.destination)
+      osc.start(now)
+      osc.stop(now + duration)
     } catch (error) {
       if (typeof logger !== 'undefined') {
-        logger.error('Error playing soft wooden sound:', error);
+        logger.error('Error playing soft wooden sound:', error)
       }
     }
   }
 }
 if (typeof globalThis !== 'undefined') {
-  globalThis.AudioManager = AudioManager;
+  globalThis.AudioManager = AudioManager
 }
 
-module.exports = AudioManager;
+module.exports = AudioManager
 
 
 /***/ },
@@ -2423,7 +2457,7 @@ module.exports = AudioManager;
 const debugLog =
   typeof globalThis !== 'undefined' && globalThis.debugLog
     ? globalThis.debugLog
-    : () => {};
+    : () => {}
 /**
  * Логирует ошибки в режиме разработки.
  * @param {...*} args - Аргументы для логирования.
@@ -2431,7 +2465,7 @@ const debugLog =
 const debugError =
   typeof globalThis !== 'undefined' && globalThis.debugError
     ? globalThis.debugError
-    : () => {};
+    : () => {}
 /**
  * Логирует предупреждения в режиме разработки.
  * @param {...*} args - Аргументы для логирования.
@@ -2439,7 +2473,7 @@ const debugError =
 const debugWarn =
   typeof globalThis !== 'undefined' && globalThis.debugWarn
     ? globalThis.debugWarn
-    : () => {};
+    : () => {}
 /**
  * Извлекает ID сессии из URL.
  * @returns {string|null} ID сессии или null, если не найден.
@@ -2449,35 +2483,35 @@ const getSessionIdFromUrl =
   typeof globalThis.CommonUtils.getSessionIdFromUrl === 'function'
     ? globalThis.CommonUtils.getSessionIdFromUrl
     : function () {
-        const path = globalThis.location.pathname;
-        const parts = path.split('/');
+        const path = globalThis.location.pathname
+        const parts = path.split('/')
         if ((parts[1] === 'c' || parts[1] === 's') && parts[2]) {
-          return parts[2];
+          return parts[2]
         }
-        const urlParams = new URLSearchParams(globalThis.location.search);
-        return urlParams.get('sessionId');
-      };
+        const urlParams = new URLSearchParams(globalThis.location.search)
+        return urlParams.get('sessionId')
+      }
 const toggleFullscreen =
   globalThis.CommonUtils?.toggleFullscreen &&
   typeof globalThis.CommonUtils.toggleFullscreen === 'function'
     ? globalThis.CommonUtils.toggleFullscreen
     : (function () {
         const canFullscreen = () => {
-          const docEl = document.documentElement;
+          const docEl = document.documentElement
           return !!(
             docEl.requestFullscreen ||
             docEl.webkitRequestFullscreen ||
             docEl.msRequestFullscreen ||
             docEl.mozRequestFullScreen
-          );
-        };
+          )
+        }
         const isFs = () =>
           !!(
             document.fullscreenElement ||
             document.webkitFullscreenElement ||
             document.msFullscreenElement ||
             document.mozFullScreenElement
-          );
+          )
         /**
          * Toggles fullscreen mode for a given element or the entire page.
          * Uses the Fullscreen API with fallbacks for different browsers.
@@ -2487,31 +2521,31 @@ const toggleFullscreen =
         return async function toggleFullscreen(el) {
           try {
             if (!canFullscreen()) {
-              return false;
+              return false
             }
             if (isFs()) {
               const exitFullscreen =
                 document.exitFullscreen ||
                 document.webkitExitFullscreen ||
                 document.msExitFullscreen ||
-                document.mozCancelFullScreen;
-              await exitFullscreen?.call(document);
+                document.mozCancelFullScreen
+              await exitFullscreen?.call(document)
             } else {
-              const target = el || document.documentElement;
+              const target = el || document.documentElement
               const requestFullscreen =
                 target.requestFullscreen ||
                 target.webkitRequestFullscreen ||
                 target.msRequestFullscreen ||
-                target.mozRequestFullScreen;
-              await requestFullscreen?.call(target);
+                target.mozRequestFullScreen
+              await requestFullscreen?.call(target)
             }
-            return true;
+            return true
           } catch (err) {
-            debugError('Fullscreen API error:', err);
-            return false;
+            debugError('Fullscreen API error:', err)
+            return false
           }
-        };
-      })();
+        }
+      })()
 /**
  * Создает throttled-функцию, которая вызывает fn не чаще одного раза за указанный период.
  * @param {Function} fn - Функция для throttling.
@@ -2524,39 +2558,39 @@ const throttle =
     ? globalThis.CommonUtils.throttle
     : function throttleImplementation(fn, wait = 100) {
         if (typeof fn !== 'function') {
-          return () => {};
+          return () => {}
         }
-        let last = 0;
-        let timeoutId = null;
-        let trailingArgs = null;
+        let last = 0
+        let timeoutId = null
+        let trailingArgs = null
         return function throttled(...args) {
-          const now = Date.now();
-          const remaining = wait - (now - last);
-          trailingArgs = args;
+          const now = Date.now()
+          const remaining = wait - (now - last)
+          trailingArgs = args
           if (remaining <= 0 || remaining > wait) {
             if (timeoutId) {
-              clearTimeout(timeoutId);
-              timeoutId = null;
+              clearTimeout(timeoutId)
+              timeoutId = null
             }
-            last = now;
-            fn.apply(this, args);
+            last = now
+            fn.apply(this, args)
           } else if (timeoutId === null) {
             timeoutId = setTimeout(() => {
-              last = Date.now();
-              timeoutId = null;
-              fn.apply(this, trailingArgs);
-              trailingArgs = null;
-            }, remaining);
+              last = Date.now()
+              timeoutId = null
+              fn.apply(this, trailingArgs)
+              trailingArgs = null
+            }, remaining)
           }
-        };
-      };
+        }
+      }
 if (typeof globalThis !== 'undefined') {
-  globalThis.debugLog = debugLog;
-  globalThis.debugError = debugError;
-  globalThis.debugWarn = debugWarn;
-  globalThis.getSessionIdFromUrl = getSessionIdFromUrl;
-  globalThis.toggleFullscreen = toggleFullscreen;
-  globalThis.throttle = throttle;
+  globalThis.debugLog = debugLog
+  globalThis.debugError = debugError
+  globalThis.debugWarn = debugWarn
+  globalThis.getSessionIdFromUrl = getSessionIdFromUrl
+  globalThis.toggleFullscreen = toggleFullscreen
+  globalThis.throttle = throttle
   globalThis.WS_MSG = Object.freeze({
     controllerUpdate: 'controller_update',
     heartbeat: 'heartbeat',
@@ -2565,8 +2599,8 @@ if (typeof globalThis !== 'undefined') {
     viewerStatus: 'viewer_status',
     viewerAudioActivated: 'viewer_audio_activated',
     netMetrics: 'net_metrics',
-    bounceSync: 'bounce_sync',
-  });
+    bounceSync: 'bounce_sync'
+  })
 }
 /**
  * Manages the theme (light/dark) of the application.
@@ -2582,60 +2616,60 @@ class ThemeManager {
    * Initializes the ThemeManager
    */
   constructor() {
-    this.themeKey = 'bb_theme';
-    this.init();
+    this.themeKey = 'bb_theme'
+    this.init()
   }
   /**
    * Loads the saved theme and sets up the theme toggle button.
    * @private
    */
   init() {
-    this.setupThemeToggle();
-    this.loadTheme();
-    this.setupThemeChangeListener();
+    this.setupThemeToggle()
+    this.loadTheme()
+    this.setupThemeChangeListener()
   }
   /**
    * Loads the theme from localStorage and applies it to the body.
    * @private
    */
   loadTheme() {
-    const savedTheme = localStorage.getItem(this.themeKey) || 'dark';
-    document.body.classList.remove('dark-theme', 'light-theme');
+    const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
+    document.body.classList.remove('dark-theme', 'light-theme')
     if (savedTheme === 'light') {
-      document.body.classList.add('light-theme');
-      this.updateThemeButton('☀️');
+      document.body.classList.add('light-theme')
+      this.updateThemeButton('☀️')
     } else {
-      document.body.classList.add('dark-theme');
-      this.updateThemeButton('🌙');
+      document.body.classList.add('dark-theme')
+      this.updateThemeButton('🌙')
     }
   }
   /**
    * Cycles through themes: dark -> light -> dark
    */
   toggleTheme() {
-    const body = document.body;
-    const hasLightClass = body.classList.contains('light-theme');
-    body.classList.remove('dark-theme', 'light-theme');
+    const body = document.body
+    const hasLightClass = body.classList.contains('light-theme')
+    body.classList.remove('dark-theme', 'light-theme')
     if (hasLightClass) {
-      body.classList.add('dark-theme');
-      localStorage.setItem(this.themeKey, 'dark');
-      this.updateThemeButton('🌙');
+      body.classList.add('dark-theme')
+      localStorage.setItem(this.themeKey, 'dark')
+      this.updateThemeButton('🌙')
     } else {
-      body.classList.add('light-theme');
-      localStorage.setItem(this.themeKey, 'light');
-      this.updateThemeButton('☀️');
+      body.classList.add('light-theme')
+      localStorage.setItem(this.themeKey, 'light')
+      this.updateThemeButton('☀️')
     }
     // Notify controller to update viewer links with new theme
-    globalThis.dispatchEvent(new CustomEvent('bb_theme_changed'));
+    globalThis.dispatchEvent(new CustomEvent('bb_theme_changed'))
   }
   /**
    * Updates the theme toggle button text/icon
    * @private
    */
   updateThemeButton(text) {
-    const btn = document.getElementById('themeToggleBtn');
+    const btn = document.getElementById('themeToggleBtn')
     if (btn) {
-      btn.textContent = text;
+      btn.textContent = text
     }
   }
   /**
@@ -2643,9 +2677,9 @@ class ThemeManager {
    * @private
    */
   setupThemeToggle() {
-    const toggleBtn = document.getElementById('themeToggleBtn');
+    const toggleBtn = document.getElementById('themeToggleBtn')
     if (toggleBtn) {
-      toggleBtn.addEventListener('click', () => this.toggleTheme());
+      toggleBtn.addEventListener('click', () => this.toggleTheme())
     }
   }
   /**
@@ -2654,8 +2688,8 @@ class ThemeManager {
    */
   setupThemeChangeListener() {
     globalThis.addEventListener('bb_theme_changed', () => {
-      this.loadTheme();
-    });
+      this.loadTheme()
+    })
   }
 }
 /**
@@ -2664,30 +2698,30 @@ class ThemeManager {
  * @param {string} successMessage - Сообщение, отображаемое при успешном копировании.
  */
 async function copy(elementId, successMessage) {
-  const element = document.getElementById(elementId);
+  const element = document.getElementById(elementId)
   if (!element?.value) {
     if (globalThis.showErrorNotification) {
       globalThis.showErrorNotification(
         'Ошибка',
-        'Элемент для копирования не найден.',
-      );
+        'Элемент для копирования не найден.'
+      )
     } else {
-      debugError('Элемент для копирования не найден:', elementId);
+      debugError('Элемент для копирования не найден:', elementId)
     }
-    return;
+    return
   }
   try {
-    await navigator.clipboard.writeText(element.value);
+    await navigator.clipboard.writeText(element.value)
     if (globalThis.showSuccessNotification) {
-      globalThis.showSuccessNotification(successMessage || 'Текст скопирован!');
+      globalThis.showSuccessNotification(successMessage || 'Текст скопирован!')
     }
   } catch (err) {
-    debugError('Ошибка копирования:', err);
+    debugError('Ошибка копирования:', err)
     if (globalThis.showErrorNotification) {
       globalThis.showErrorNotification(
         'Ошибка копирования',
-        'Не удалось скопировать текст.',
-      );
+        'Не удалось скопировать текст.'
+      )
     }
   }
 }
@@ -2695,14 +2729,14 @@ async function copy(elementId, successMessage) {
  * Navigates the user to the main page.
  */
 function goBack() {
-  globalThis.location.href = '/';
+  globalThis.location.href = '/'
 }
 document.addEventListener('DOMContentLoaded', () => {
-  globalThis.themeManager = new ThemeManager();
-});
+  globalThis.themeManager = new ThemeManager()
+})
 if (typeof globalThis !== 'undefined') {
-  globalThis.copy = copy;
-  globalThis.goBack = goBack;
+  globalThis.copy = copy
+  globalThis.goBack = goBack
 }
 
 module.exports = {
@@ -2711,8 +2745,8 @@ module.exports = {
   goBack,
   getSessionIdFromUrl,
   toggleFullscreen,
-  throttle,
-};
+  throttle
+}
 
 
 /***/ },
@@ -2731,7 +2765,7 @@ if (typeof globalThis !== 'undefined') {
       hiddenThrottleMs: 100, // при скрытой вкладке ~10 FPS
       adaptiveFrameRate: true, // Адаптивная частота кадров
       maxFrameTime: 32, // Максимальное время кадра в ms (для предотвращения спирали)
-      targetFrameTime: 16, // Целевое время кадра для 60 FPS
+      targetFrameTime: 16 // Целевое время кадра для 60 FPS
     },
     smoothing: {
       // Base parameters (адаптивно меняются через smoothing-utils.js)
@@ -2755,7 +2789,7 @@ if (typeof globalThis !== 'undefined') {
       stateBuffering: true, // Буферизация состояний для интерполяции
       bufferSize: 10, // Буфер для интерполяции
       smoothingFactor: 0.35, // Коэффициент сглаживания позиции
-      velocitySmoothingAlpha: 0.1, // Коэффициент сглаживания скорости
+      velocitySmoothingAlpha: 0.1 // Коэффициент сглаживания скорости
     },
     network: {
       heartbeatInterval: 25000, // 25 секунд
@@ -2764,14 +2798,14 @@ if (typeof globalThis !== 'undefined') {
       maxReconnectAttempts: 10, // Увеличено количество попыток
       coalesceTypes: ['controller_update'], // Типы сообщений для коалесцирования
       coalesceDelayMs: 8, // Уменьшена задержка для большей плавности
-      priorityTypes: ['controller_update', 'heartbeat'], // Приоритетные типы сообщений
+      priorityTypes: ['controller_update', 'heartbeat'] // Приоритетные типы сообщений
     },
     performance: {
       deadReckonEps: 1, // Уменьшен порог dead reckoning для точности
       throttleDelay: 16, // Задержка throttling для 60 FPS
       adaptiveThrottling: true, // Адаптивное throttling
       maxFrameSteps: 3, // Максимальное количество шагов физики за кадр
-      stepCapping: true, // Включено ограничение шага для предотвращения рывков
+      stepCapping: true // Включено ограничение шага для предотвращения рывков
     },
     physics: {
       minSpeed: 50, // Минимальная скорость после отскока
@@ -2779,12 +2813,12 @@ if (typeof globalThis !== 'undefined') {
       ballRadius: 20, // Радиус мяча по умолчанию
       worldWidth: 800, // Ширина мира по умолчанию
       worldHeight: 600, // Высота мира по умолчанию
-      maxAcceleration: 5000, // Максимальное ускорение для предотвращения рывков
-    },
-  };
+      maxAcceleration: 5000 // Максимальное ускорение для предотвращения рывков
+    }
+  }
 
   if ( true && module.exports) {
-    module.exports = globalThis.BBConfig;
+    module.exports = globalThis.BBConfig
   }
 }
 
@@ -2821,118 +2855,118 @@ const CATEGORY_COLORS = {
   command: '#FF006E',
   movement: '#06FFA5',
   bounce: '#C77DFF',
-  audio: '#FFD700',
-};
+  audio: '#FFD700'
+}
 class DebugLogger {
   constructor() {
-    this.enabled = this._checkDebugMode();
-    this.categories = this._getEnabledCategories();
-    this.throttles = new Map();
+    this.enabled = this._checkDebugMode()
+    this.categories = this._getEnabledCategories()
+    this.throttles = new Map()
     if (this.enabled) {
-      this._logStats();
+      this._logStats()
     }
   }
   _checkDebugMode() {
     if (globalThis.window === undefined) {
-      return false;
+      return false
     }
-    const params = new URLSearchParams(globalThis.location.search);
-    return params.get('debug') === '1' || params.get('bbdebug') === '1';
+    const params = new URLSearchParams(globalThis.location.search)
+    return params.get('debug') === '1' || params.get('bbdebug') === '1'
   }
   _getEnabledCategories() {
     if (!this.enabled) {
-      return new Set();
+      return new Set()
     }
-    const params = new URLSearchParams(globalThis.location.search);
-    const categories = params.get('debug-cat') || params.get('categories');
+    const params = new URLSearchParams(globalThis.location.search)
+    const categories = params.get('debug-cat') || params.get('categories')
     return categories
       ? new Set(categories.split(',').map((c) => c.trim()))
-      : new Set(Object.keys(CATEGORY_COLORS));
+      : new Set(Object.keys(CATEGORY_COLORS))
   }
   _logStats() {
     console.log(
       '%c[DEBUG MODE ENABLED]',
-      'background: #0A0; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;',
-    );
+      'background: #0A0; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;'
+    )
     console.log(
       '📊 Enabled categories:',
-      Array.from(this.categories).join(', '),
-    );
+      Array.from(this.categories).join(', ')
+    )
   }
   _isEnabled(category) {
-    return this.enabled && this.categories.has(category);
+    return this.enabled && this.categories.has(category)
   }
   _log(category, message, data) {
     if (!this._isEnabled(category)) {
-      return;
+      return
     }
-    const color = CATEGORY_COLORS[category] || '#999';
-    const time = new Date().toISOString().split('T')[1].slice(0, -1);
+    const color = CATEGORY_COLORS[category] || '#999'
+    const time = new Date().toISOString().split('T')[1].slice(0, -1)
     console.log(
       `%c[${category.toUpperCase()}] ${time} - ${message}`,
       `color: ${color}; font-weight: bold;`,
-      data ?? '',
-    );
+      data ?? ''
+    )
   }
   sync(msg, data) {
-    this._log('sync', msg, data);
+    this._log('sync', msg, data)
   }
   sse(msg, data) {
-    this._log('sse', msg, data);
+    this._log('sse', msg, data)
   }
   physics(msg, data) {
-    this._log('physics', msg, data);
+    this._log('physics', msg, data)
   }
   network(msg, data) {
-    this._log('network', msg, data);
+    this._log('network', msg, data)
   }
   state(msg, data) {
-    this._log('state', msg, data);
+    this._log('state', msg, data)
   }
   command(msg, data) {
-    this._log('command', msg, data);
+    this._log('command', msg, data)
   }
   movement(msg, data) {
-    this._log('movement', msg, data);
+    this._log('movement', msg, data)
   }
   bounce(msg, data) {
-    this._log('bounce', msg, data);
+    this._log('bounce', msg, data)
   }
   audio(msg, data) {
-    this._log('audio', msg, data);
+    this._log('audio', msg, data)
   }
   throttle(key, intervalMs, category, message, data) {
-    const now = Date.now();
-    const last = this.throttles.get(key);
+    const now = Date.now()
+    const last = this.throttles.get(key)
     if (last && now - last < intervalMs) {
-      return;
+      return
     }
-    this.throttles.set(key, now);
-    this._log(category, message, data);
+    this.throttles.set(key, now)
+    this._log(category, message, data)
   }
   error(msg, err) {
     console.error(
       `%c[ERROR] ${msg}`,
       'color: #F00; font-weight: bold;',
-      err ?? '',
-    );
+      err ?? ''
+    )
   }
   warn(msg, data) {
     console.warn(
       `%c[WARN] ${msg}`,
       'color: #FA0; font-weight: bold;',
-      data ?? '',
-    );
+      data ?? ''
+    )
   }
   info(msg, data) {
     console.info(
       `%cℹ️ ${msg}`,
       'color: #4A9EFF; font-weight: bold;',
-      data ?? '',
-    );
+      data ?? ''
+    )
   }
   log(msg, data) {
-    console.log(msg, data ?? '');
+    console.log(msg, data ?? '')
   }
   /**
    * Creates a scoped logger for a specific module
@@ -2956,42 +2990,42 @@ class DebugLogger {
       error: (msg, err) => this.error(`[${moduleName}] ${msg}`, err),
       warn: (msg, data) => this.warn(`[${moduleName}] ${msg}`, data),
       info: (msg, data) => this.info(`[${moduleName}] ${msg}`, data),
-      log: (msg, data) => this.log(`[${moduleName}] ${msg}`, data),
-    };
+      log: (msg, data) => this.log(`[${moduleName}] ${msg}`, data)
+    }
   }
 }
-const debugLogger = new DebugLogger();
+const debugLogger = new DebugLogger()
 if ( true && module?.exports) {
-  module.exports = debugLogger;
+  module.exports = debugLogger
 }
 if (globalThis !== undefined) {
-  globalThis.debugLogger = debugLogger;
-  globalThis.logger = debugLogger;
-  globalThis.createScopedLogger = (moduleName) => debugLogger.scope(moduleName);
+  globalThis.debugLogger = debugLogger
+  globalThis.logger = debugLogger
+  globalThis.createScopedLogger = (moduleName) => debugLogger.scope(moduleName)
   globalThis.debugLog = (...args) => {
     if (!debugLogger.enabled) {
-      return;
+      return
     }
     if (args.length === 1 && typeof args[0] === 'string') {
-      console.log(args[0]);
+      console.log(args[0])
     } else if (args.length === 2) {
-      console.log(args[0], args[1]);
+      console.log(args[0], args[1])
     } else {
-      console.log(...args);
+      console.log(...args)
     }
-  };
+  }
   globalThis.debugError = (...args) => {
     if (!debugLogger.enabled) {
-      return;
+      return
     }
-    debugLogger.error(args[0], args[1]);
-  };
+    debugLogger.error(args[0], args[1])
+  }
   globalThis.debugWarn = (...args) => {
     if (!debugLogger.enabled) {
-      return;
+      return
     }
-    debugLogger.warn(args[0], args[1]);
-  };
+    debugLogger.warn(args[0], args[1])
+  }
 }
 
 
@@ -3016,7 +3050,7 @@ if (globalThis !== undefined) {
  * List of supported languages
  * @constant {string[]}
  */
-const SUPPORTED_LANGUAGES = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh'];
+const SUPPORTED_LANGUAGES = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh']
 
 /**
  * Human-readable language names
@@ -3030,20 +3064,20 @@ const LANGUAGE_NAMES = {
   de: 'Deutsch',
   pt: 'Português',
   ja: '日本語',
-  zh: '中文',
-};
+  zh: '中文'
+}
 
 /**
  * LocalStorage key for language preference
  * @constant {string}
  */
-const STORAGE_KEY = 'emdr-language';
+const STORAGE_KEY = 'emdr-language'
 
 /**
  * Default language fallback
  * @constant {string}
  */
-const DEFAULT_LANGUAGE = 'en';
+const DEFAULT_LANGUAGE = 'en'
 
 /**
  * Check if a language code is supported
@@ -3051,7 +3085,7 @@ const DEFAULT_LANGUAGE = 'en';
  * @returns {boolean}
  */
 function isSupported(lang) {
-  return SUPPORTED_LANGUAGES.includes(lang);
+  return SUPPORTED_LANGUAGES.includes(lang)
 }
 
 /**
@@ -3060,20 +3094,20 @@ function isSupported(lang) {
  */
 function detectFromDomain() {
   // Safe access to location.hostname
-  let hostname = 'localhost';
+  let hostname = 'localhost'
   if (typeof globalThis !== 'undefined' && globalThis.location) {
-    hostname = globalThis.location.hostname;
+    hostname = globalThis.location.hostname
   }
 
   // Check domain for language detection (emdrbilateral is project name, not a typo)
   if (hostname.includes('emdrbilateral.ru')) {
-    return 'ru';
+    return 'ru'
   }
   if (hostname.includes('emdrbilateral.online')) {
-    return 'en';
+    return 'en'
   }
 
-  return DEFAULT_LANGUAGE;
+  return DEFAULT_LANGUAGE
 }
 
 /**
@@ -3083,13 +3117,13 @@ function detectFromDomain() {
 function saveLanguage(lang) {
   // Early return if not supported
   if (!isSupported(lang)) {
-    return;
+    return
   }
 
   // Save to localStorage if available
   if (typeof globalThis !== 'undefined' && globalThis.localStorage) {
     try {
-      globalThis.localStorage.setItem(STORAGE_KEY, lang);
+      globalThis.localStorage.setItem(STORAGE_KEY, lang)
     } catch {
       // Ignore storage errors
     }
@@ -3104,25 +3138,25 @@ const I18nConstants = {
   DEFAULT_LANGUAGE,
   isSupported,
   detectFromDomain,
-  saveLanguage,
-};
+  saveLanguage
+}
 
 // Freeze to prevent accidental mutation
-Object.freeze(I18nConstants);
-Object.freeze(SUPPORTED_LANGUAGES);
-Object.freeze(LANGUAGE_NAMES);
+Object.freeze(I18nConstants)
+Object.freeze(SUPPORTED_LANGUAGES)
+Object.freeze(LANGUAGE_NAMES)
 
 // Export to global scope (browser)
 if (typeof globalThis !== 'undefined' && globalThis) {
-  globalThis.I18nConstants = I18nConstants;
+  globalThis.I18nConstants = I18nConstants
 }
 
 // CommonJS export (Node.js)
 if ( true && module && module.exports) {
-  module.exports = I18nConstants;
+  module.exports = I18nConstants
 }
 
-module.exports = I18nConstants;
+module.exports = I18nConstants
 
 
 /***/ },
@@ -3145,12 +3179,12 @@ const constants = globalThis.I18nConstants || {
   DEFAULT_LANGUAGE: 'en',
   STORAGE_KEY: 'emdr-language',
   detectFromDomain: () => {
-    const hostname = typeof location !== 'undefined' ? location.hostname : '';
-    if (hostname.includes('emdrbilateral.ru')) return 'ru';
-    if (hostname.includes('emdrbilateral.online')) return 'en';
-    return 'en';
-  },
-};
+    const hostname = typeof location !== 'undefined' ? location.hostname : ''
+    if (hostname.includes('emdrbilateral.ru')) return 'ru'
+    if (hostname.includes('emdrbilateral.online')) return 'en'
+    return 'en'
+  }
+}
 
 // Simple i18n manager for client-side
 const I18n = {
@@ -3162,38 +3196,38 @@ const I18n = {
   _readyCallbacks: [],
 
   ready(callback) {
-    if (typeof callback !== 'function') return;
+    if (typeof callback !== 'function') return
     if (this.isReady) {
-      callback();
-      return;
+      callback()
+      return
     }
-    this._readyCallbacks.push(callback);
+    this._readyCallbacks.push(callback)
   },
 
   _notifyReady() {
     // Remove anti-flash cloak
     if (typeof document !== 'undefined') {
-      const cloak = document.getElementById('i18n-cloak');
-      if (cloak) cloak.remove();
-      document.documentElement.classList.add('i18n-ready');
+      const cloak = document.getElementById('i18n-cloak')
+      if (cloak) cloak.remove()
+      document.documentElement.classList.add('i18n-ready')
     }
 
-    if (this.isReady) return;
-    this.isReady = true;
+    if (this.isReady) return
+    this.isReady = true
     while (this._readyCallbacks.length) {
       try {
-        const cb = this._readyCallbacks.shift();
-        cb();
+        const cb = this._readyCallbacks.shift()
+        cb()
       } catch (err) {
         // Silently ignore callback errors to prevent initialization blocking
         if (typeof globalThis !== 'undefined' && globalThis.debugError) {
-          globalThis.debugError('i18n.ready callback error:', err);
+          globalThis.debugError('i18n.ready callback error:', err)
         }
       }
     }
     if (typeof window !== 'undefined' && typeof Event === 'function') {
       // eslint-disable-next-line no-undef
-      globalThis.dispatchEvent(new Event('i18nReady'));
+      globalThis.dispatchEvent(new Event('i18nReady'))
     }
   },
 
@@ -3201,23 +3235,23 @@ const I18n = {
    * Initialize i18n system
    */
   init: async function () {
-    this.detectLanguage();
+    this.detectLanguage()
     if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
-      globalThis.debugLog('[i18n] Detected language:', this.currentLanguage);
+      globalThis.debugLog('[i18n] Detected language:', this.currentLanguage)
     }
 
     // Update document language immediately
     if (typeof document !== 'undefined') {
-      document.documentElement.lang = this.currentLanguage;
-      document.documentElement.dataset.lang = this.currentLanguage;
+      document.documentElement.lang = this.currentLanguage
+      document.documentElement.dataset.lang = this.currentLanguage
     }
 
-    await this.loadTranslations();
+    await this.loadTranslations()
     if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
       globalThis.debugLog(
         '[i18n] Translations loaded:',
-        Object.keys(this.translations),
-      );
+        Object.keys(this.translations)
+      )
     }
 
     // Apply translations in DOM after loading
@@ -3228,24 +3262,24 @@ const I18n = {
         document.addEventListener(
           'DOMContentLoaded',
           () => {
-            this.applyTranslations();
-            this._notifyReady();
+            this.applyTranslations()
+            this._notifyReady()
             // Применяем переводы еще раз с небольшой задержкой для динамически созданных элементов
-            setTimeout(() => this.applyTranslations(), 100);
+            setTimeout(() => this.applyTranslations(), 100)
           },
-          { once: true },
-        );
+          { once: true }
+        )
       } else {
         // DOM is ready, apply now
-        this.applyTranslations();
-        this._notifyReady();
+        this.applyTranslations()
+        this._notifyReady()
         // Применяем переводы еще раз с небольшой задержкой для динамически созданных элементов
-        setTimeout(() => this.applyTranslations(), 100);
+        setTimeout(() => this.applyTranslations(), 100)
       }
     } else {
-      this._notifyReady();
+      this._notifyReady()
     }
-    return this;
+    return this
   },
 
   /**
@@ -3258,28 +3292,28 @@ const I18n = {
         globalThis.location &&
         globalThis.location.search
         ? globalThis.location.search
-        : '',
-    );
-    const langParam = params.get('lang');
+        : ''
+    )
+    const langParam = params.get('lang')
     if (langParam && this.supportedLanguages.includes(langParam)) {
-      this.currentLanguage = langParam;
-      localStorage.setItem('emdr-language', langParam);
-      return;
+      this.currentLanguage = langParam
+      localStorage.setItem('emdr-language', langParam)
+      return
     }
 
     // 2. Check localStorage (second priority) - сохраненный выбор пользователя
-    const savedLang = localStorage.getItem('emdr-language');
+    const savedLang = localStorage.getItem('emdr-language')
     if (savedLang && this.supportedLanguages.includes(savedLang)) {
-      this.currentLanguage = savedLang;
-      return;
+      this.currentLanguage = savedLang
+      return
     }
 
     // 3. Check browser language
-    const browserLang = navigator.language.split('-')[0].toLowerCase();
+    const browserLang = navigator.language.split('-')[0].toLowerCase()
     if (this.supportedLanguages.includes(browserLang)) {
-      this.currentLanguage = browserLang;
-      localStorage.setItem('emdr-language', browserLang);
-      return;
+      this.currentLanguage = browserLang
+      localStorage.setItem('emdr-language', browserLang)
+      return
     }
 
     // 4. Check domain (lower priority) - только для новых пользователей без сохраненного выбора
@@ -3290,20 +3324,20 @@ const I18n = {
       globalThis.location &&
       globalThis.location.hostname
         ? globalThis.location.hostname
-        : '';
+        : ''
     if (hostname.includes('emdrbilateral.ru')) {
-      this.currentLanguage = 'ru';
-      localStorage.setItem('emdr-language', 'ru');
-      return;
+      this.currentLanguage = 'ru'
+      localStorage.setItem('emdr-language', 'ru')
+      return
     } else if (hostname.includes('emdrbilateral.online')) {
-      this.currentLanguage = 'en';
-      localStorage.setItem('emdr-language', 'en');
-      return;
+      this.currentLanguage = 'en'
+      localStorage.setItem('emdr-language', 'en')
+      return
     }
 
     // 5. Fallback to default English
-    this.currentLanguage = this.defaultLanguage;
-    localStorage.setItem('emdr-language', this.defaultLanguage);
+    this.currentLanguage = this.defaultLanguage
+    localStorage.setItem('emdr-language', this.defaultLanguage)
   },
 
   /**
@@ -3314,47 +3348,47 @@ const I18n = {
    */
   loadTranslations: async function () {
     // Capture language now — currentLanguage may change while we await the fetch
-    const lang = this.currentLanguage;
+    const lang = this.currentLanguage
     try {
-      const url = `/locales/${lang}/common.json`;
+      const url = `/locales/${lang}/common.json`
       if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
-        globalThis.debugLog('[i18n] Loading translations from:', url);
+        globalThis.debugLog('[i18n] Loading translations from:', url)
       }
-      const response = await fetch(url);
+      const response = await fetch(url)
       if (!response.ok) {
         // Log and trigger fallback without throwing (avoids throw-caught-locally lint warning)
         if (typeof globalThis !== 'undefined' && globalThis.debugError) {
           globalThis.debugError(
-            `[i18n] Failed to load translations: ${response.statusText}`,
-          );
+            `[i18n] Failed to load translations: ${response.statusText}`
+          )
         }
         // If not English, switch to en and retry
         if (lang !== 'en') {
-          this.currentLanguage = 'en';
-          return await this.loadTranslations();
+          this.currentLanguage = 'en'
+          return await this.loadTranslations()
         }
-        return false;
+        return false
       }
-      this.translations[lang] = await response.json();
+      this.translations[lang] = await response.json()
       if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
         globalThis.debugLog(
           '[i18n] Successfully loaded translations for:',
-          lang,
-        );
+          lang
+        )
       }
-      return true;
+      return true
     } catch (error) {
       if (typeof globalThis !== 'undefined' && globalThis.debugError) {
         globalThis.debugError(
-          `[i18n] Failed to load translations: ${error?.message || error}`,
-        );
+          `[i18n] Failed to load translations: ${error?.message || error}`
+        )
       }
       // Fallback: load English if current language fails
       if (lang !== 'en') {
-        this.currentLanguage = 'en';
-        return await this.loadTranslations();
+        this.currentLanguage = 'en'
+        return await this.loadTranslations()
       }
-      return false;
+      return false
     }
   },
 
@@ -3364,57 +3398,57 @@ const I18n = {
   t: function (key, options = {}) {
     // If not ready yet, return key without warning (during initialization)
     if (!this.isReady) {
-      return key;
+      return key
     }
 
     const value = this.getValueByPath(
       this.translations[this.currentLanguage],
-      key,
-    );
+      key
+    )
 
     if (!value) {
       // Check if translations object exists at all
       if (!this.translations[this.currentLanguage]) {
         if (typeof globalThis !== 'undefined' && globalThis.debugError) {
           globalThis.debugError(
-            `No translations loaded for language: ${this.currentLanguage}`,
-          );
+            `No translations loaded for language: ${this.currentLanguage}`
+          )
         }
       } else {
         if (typeof globalThis !== 'undefined' && globalThis.debugWarn) {
           globalThis.debugWarn(
-            `Translation missing: ${key} (language: ${this.currentLanguage})`,
-          );
+            `Translation missing: ${key} (language: ${this.currentLanguage})`
+          )
         }
       }
-      return key;
+      return key
     }
 
     // Auto-inject VERSION from meta tag if placeholder exists
     if (typeof value === 'string' && value.includes('{{VERSION}}')) {
-      const versionMeta = document.querySelector('meta[name="version"]');
-      const version = versionMeta ? versionMeta.getAttribute('content') : 'dev';
-      options.VERSION = `v${version}`;
+      const versionMeta = document.querySelector('meta[name="version"]')
+      const version = versionMeta ? versionMeta.getAttribute('content') : 'dev'
+      options.VERSION = `v${version}`
     }
 
     // Handle interpolation
     if (typeof value === 'string' && Object.keys(options).length > 0) {
-      let result = value;
+      let result = value
       for (const [k, v] of Object.entries(options)) {
-        result = result.replace(`{{${k}}}`, v);
+        result = result.replace(`{{${k}}}`, v)
       }
-      return result;
+      return result
     }
 
-    return value;
+    return value
   },
 
   /**
    * Get value from nested object using dot notation
    */
   getValueByPath: function (obj, path) {
-    if (!obj) return null;
-    return path.split('.').reduce((current, part) => current?.[part], obj);
+    if (!obj) return null
+    return path.split('.').reduce((current, part) => current?.[part], obj)
   },
 
   /**
@@ -3423,49 +3457,49 @@ const I18n = {
   changeLanguage: async function (lang) {
     if (!this.supportedLanguages.includes(lang)) {
       if (typeof globalThis !== 'undefined' && globalThis.debugError) {
-        globalThis.debugError(`Language '${lang}' is not supported`);
+        globalThis.debugError(`Language '${lang}' is not supported`)
       }
-      return false;
+      return false
     }
-    this.currentLanguage = lang;
-    localStorage.setItem('emdr-language', lang);
+    this.currentLanguage = lang
+    localStorage.setItem('emdr-language', lang)
 
     // Update document language immediately for accessibility
     if (typeof document !== 'undefined') {
-      document.documentElement.lang = lang;
-      document.documentElement.dataset.lang = lang;
+      document.documentElement.lang = lang
+      document.documentElement.dataset.lang = lang
     }
 
     // Attempt to load translations; do not throw on failure, just return boolean
-    const ok = await this.loadTranslations();
+    const ok = await this.loadTranslations()
     if (ok) {
-      this.applyTranslations();
+      this.applyTranslations()
     } else {
       // If translations failed to load, still try to apply whatever is available
-      this.applyTranslations();
+      this.applyTranslations()
     }
 
     // Notify listeners that language has changed so pages can react (e.g., update titles/meta)
     try {
       if (typeof CustomEvent === 'function') {
         globalThis.dispatchEvent(
-          new CustomEvent('i18nLanguageChanged', { detail: { lang } }),
-        );
+          new CustomEvent('i18nLanguageChanged', { detail: { lang } })
+        )
       } else {
         // Fallback for very old environments
         // eslint-disable-next-line no-undef
-        globalThis.dispatchEvent(new Event('i18nLanguageChanged'));
+        globalThis.dispatchEvent(new Event('i18nLanguageChanged'))
       }
     } catch (err) {
       if (typeof globalThis !== 'undefined' && globalThis.debugWarn) {
         globalThis.debugWarn(
           'Failed to dispatch i18nLanguageChanged event',
-          err,
-        );
+          err
+        )
       }
     }
 
-    return !!ok;
+    return !!ok
   },
 
   /**
@@ -3473,7 +3507,7 @@ const I18n = {
    * Used when receiving language updates from server
    */
   setLanguage: async function (lang) {
-    return this.changeLanguage(lang);
+    return this.changeLanguage(lang)
   },
 
   /**
@@ -3483,53 +3517,53 @@ const I18n = {
    */
   applyTranslations: function () {
     try {
-      const translations = this.translations[this.currentLanguage];
+      const translations = this.translations[this.currentLanguage]
       if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
         globalThis.debugLog(
           '[i18n] Applying translations for language:',
-          this.currentLanguage,
-        );
+          this.currentLanguage
+        )
       }
 
       // Check if translations are loaded
       if (!translations || Object.keys(translations).length === 0) {
         if (typeof globalThis !== 'undefined' && globalThis.debugWarn) {
           globalThis.debugWarn(
-            '[i18n] Translations not loaded yet, skipping applyTranslations',
-          );
+            '[i18n] Translations not loaded yet, skipping applyTranslations'
+          )
         }
-        return;
+        return
       }
 
       // Helper to get translation by key
       const get = (key) => {
-        if (!key) return null;
-        let value = this.getValueByPath(translations, key);
+        if (!key) return null
+        let value = this.getValueByPath(translations, key)
 
         // Auto-inject VERSION from meta tag if placeholder exists
         if (typeof value === 'string' && value.includes('{{VERSION}}')) {
-          const versionMeta = document.querySelector('meta[name="version"]');
+          const versionMeta = document.querySelector('meta[name="version"]')
           const version = versionMeta
             ? versionMeta.getAttribute('content')
-            : 'dev';
-          value = value.replace('{{VERSION}}', `v${version}`);
+            : 'dev'
+          value = value.replace('{{VERSION}}', `v${version}`)
         }
 
-        return value;
-      };
+        return value
+      }
 
       // Replace textContent for data-i18n
-      const nodes = document.querySelectorAll('[data-i18n]');
+      const nodes = document.querySelectorAll('[data-i18n]')
       if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
         globalThis.debugLog(
           '[i18n] Found',
           nodes.length,
-          'elements with data-i18n attribute',
-        );
+          'elements with data-i18n attribute'
+        )
       }
       nodes.forEach((node) => {
-        const key = node.getAttribute('data-i18n');
-        const value = get(key);
+        const key = node.getAttribute('data-i18n')
+        const value = get(key)
         if (
           value !== null &&
           value !== undefined &&
@@ -3541,46 +3575,46 @@ const I18n = {
             (value.includes('<') || value.includes('>'))
           ) {
             // Если в переводе есть HTML, используем innerHTML
-            node.innerHTML = value;
+            node.innerHTML = value
           } else {
             // Иначе используем textContent для безопасности
-            node.textContent = value;
+            node.textContent = value
           }
         } else if (value === null || value === undefined) {
           if (typeof globalThis !== 'undefined' && globalThis.debugWarn) {
-            globalThis.debugWarn('[i18n] Missing translation for key:', key);
+            globalThis.debugWarn('[i18n] Missing translation for key:', key)
           }
         }
-      });
+      })
 
       // Handle attributes: data-i18n-attr="attrName:key.path;attr2:key2"
-      const attrNodes = document.querySelectorAll('[data-i18n-attr]');
+      const attrNodes = document.querySelectorAll('[data-i18n-attr]')
       attrNodes.forEach((node) => {
-        const spec = node.getAttribute('data-i18n-attr');
-        if (!spec) return;
+        const spec = node.getAttribute('data-i18n-attr')
+        if (!spec) return
         // split by ; for multiple attr mappings
         spec.split(';').forEach((part) => {
-          const [attr, key] = part.split(':').map((s) => s && s.trim());
-          if (!attr || !key) return;
-          const value = get(key);
+          const [attr, key] = part.split(':').map((s) => s && s.trim())
+          if (!attr || !key) return
+          const value = get(key)
           if (value != null && typeof attr === 'string') {
-            node.setAttribute(attr, value);
+            node.setAttribute(attr, value)
           }
-        });
-      });
+        })
+      })
     } catch (err) {
       if (typeof globalThis !== 'undefined' && globalThis.debugError) {
-        globalThis.debugError('i18n.applyTranslations error:', err);
+        globalThis.debugError('i18n.applyTranslations error:', err)
       }
     }
-  },
-};
+  }
+}
 
 // Export for CommonJS or attach to root
 if ( true && module.exports) {
-  module.exports = I18n;
+  module.exports = I18n
 } else {
-  globalThis.i18n = I18n;
+  globalThis.i18n = I18n
 }
 
 // Auto-initialize i18n IMMEDIATELY to prevent FOUC
@@ -3589,13 +3623,13 @@ if (typeof globalThis !== 'undefined' && globalThis.document) {
   // Start initialization immediately, don't wait for DOMContentLoaded
   I18n.init().catch((err) => {
     if (typeof globalThis !== 'undefined' && globalThis.debugError) {
-      globalThis.debugError('Failed to initialize i18n:', err);
+      globalThis.debugError('Failed to initialize i18n:', err)
     }
-  });
+  })
 }
-globalThis.i18n = I18n;
+globalThis.i18n = I18n
 
-module.exports = I18n;
+module.exports = I18n
 
 
 /***/ },
@@ -3626,163 +3660,163 @@ const LanguageSelector = (function () {
       de: 'Deutsch',
       pt: 'Português',
       ja: '日本語',
-      zh: '中文',
+      zh: '中文'
     },
     SUPPORTED_LANGUAGES: ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh'],
     STORAGE_KEY: 'emdr-language',
     isSupported: (lang) => constants.SUPPORTED_LANGUAGES.includes(lang),
     saveLanguage: (lang) => {
       try {
-        localStorage.setItem(constants.STORAGE_KEY, lang);
+        localStorage.setItem(constants.STORAGE_KEY, lang)
       } catch {
         /* ignore */
       }
-    },
-  };
+    }
+  }
 
-  const languageNames = constants.LANGUAGE_NAMES;
-  const supportedLanguages = new Set(constants.SUPPORTED_LANGUAGES);
+  const languageNames = constants.LANGUAGE_NAMES
+  const supportedLanguages = new Set(constants.SUPPORTED_LANGUAGES)
 
   function init() {
-    const btn = document.getElementById('languageSelectorBtn');
-    const dropdown = document.getElementById('languageDropdown');
-    const options = document.querySelectorAll('.language-option');
+    const btn = document.getElementById('languageSelectorBtn')
+    const dropdown = document.getElementById('languageDropdown')
+    const options = document.querySelectorAll('.language-option')
 
     if (!btn || !dropdown || options.length === 0) {
-      return;
+      return
     }
 
-    const currentLang = detectCurrentLanguage();
-    updateCurrentLanguage(currentLang);
+    const currentLang = detectCurrentLanguage()
+    updateCurrentLanguage(currentLang)
 
     btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isHidden = dropdown.hasAttribute('hidden');
+      e.stopPropagation()
+      const isHidden = dropdown.hasAttribute('hidden')
       if (isHidden) {
-        dropdown.removeAttribute('hidden');
-        btn.setAttribute('aria-expanded', 'true');
+        dropdown.removeAttribute('hidden')
+        btn.setAttribute('aria-expanded', 'true')
       } else {
-        dropdown.setAttribute('hidden', '');
-        btn.setAttribute('aria-expanded', 'false');
+        dropdown.setAttribute('hidden', '')
+        btn.setAttribute('aria-expanded', 'false')
       }
-    });
+    })
 
     for (const option of options) {
       option.addEventListener('click', (e) => {
-        e.preventDefault();
-        const lang = option.dataset.lang;
-        changeLanguage(lang);
-        dropdown.setAttribute('hidden', '');
-        btn.setAttribute('aria-expanded', 'false');
-      });
+        e.preventDefault()
+        const lang = option.dataset.lang
+        changeLanguage(lang)
+        dropdown.setAttribute('hidden', '')
+        btn.setAttribute('aria-expanded', 'false')
+      })
 
       option.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          const lang = option.dataset.lang;
-          changeLanguage(lang);
-          dropdown.setAttribute('hidden', '');
-          btn.setAttribute('aria-expanded', 'false');
+          e.preventDefault()
+          const lang = option.dataset.lang
+          changeLanguage(lang)
+          dropdown.setAttribute('hidden', '')
+          btn.setAttribute('aria-expanded', 'false')
         } else if (e.key === 'Escape') {
-          dropdown.setAttribute('hidden', '');
-          btn.setAttribute('aria-expanded', 'false');
-          btn.focus();
+          dropdown.setAttribute('hidden', '')
+          btn.setAttribute('aria-expanded', 'false')
+          btn.focus()
         }
-      });
+      })
     }
 
     document.addEventListener('click', (e) => {
       if (!dropdown.contains(e.target) && e.target !== btn) {
-        dropdown.setAttribute('hidden', '');
-        btn.setAttribute('aria-expanded', 'false');
+        dropdown.setAttribute('hidden', '')
+        btn.setAttribute('aria-expanded', 'false')
       }
-    });
+    })
 
     document.addEventListener('keydown', (e) => {
       if (btn.getAttribute('aria-expanded') === 'true') {
         if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          const activeOption = dropdown.querySelector('[role="option"]:focus');
+          e.preventDefault()
+          const activeOption = dropdown.querySelector('[role="option"]:focus')
           const allOptions = Array.from(
-            dropdown.querySelectorAll('[role="option"]'),
-          );
+            dropdown.querySelectorAll('[role="option"]')
+          )
           const currentIndex = activeOption
             ? allOptions.indexOf(activeOption)
-            : -1;
-          const nextIndex = (currentIndex + 1) % allOptions.length;
-          allOptions[nextIndex].focus();
+            : -1
+          const nextIndex = (currentIndex + 1) % allOptions.length
+          allOptions[nextIndex].focus()
         } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          const activeOption = dropdown.querySelector('[role="option"]:focus');
+          e.preventDefault()
+          const activeOption = dropdown.querySelector('[role="option"]:focus')
           const allOptions = Array.from(
-            dropdown.querySelectorAll('[role="option"]'),
-          );
+            dropdown.querySelectorAll('[role="option"]')
+          )
           const currentIndex = activeOption
             ? allOptions.indexOf(activeOption)
-            : 0;
+            : 0
           const prevIndex =
-            currentIndex === 0 ? allOptions.length - 1 : currentIndex - 1;
-          allOptions[prevIndex].focus();
+            currentIndex === 0 ? allOptions.length - 1 : currentIndex - 1
+          allOptions[prevIndex].focus()
         }
       }
-    });
+    })
   }
 
   function detectCurrentLanguage() {
-    const params = new URLSearchParams(globalThis.location.search);
-    const langParam = params.get('lang');
+    const params = new URLSearchParams(globalThis.location.search)
+    const langParam = params.get('lang')
     if (langParam && supportedLanguages.has(langParam)) {
-      localStorage.setItem('emdr-language', langParam);
-      return langParam;
+      localStorage.setItem('emdr-language', langParam)
+      return langParam
     }
 
-    const savedLang = localStorage.getItem('emdr-language');
+    const savedLang = localStorage.getItem('emdr-language')
     if (savedLang && supportedLanguages.has(savedLang)) {
-      return savedLang;
+      return savedLang
     }
 
-    const browserLang = navigator.language.split('-')[0].toLowerCase();
+    const browserLang = navigator.language.split('-')[0].toLowerCase()
     if (supportedLanguages.has(browserLang)) {
-      localStorage.setItem('emdr-language', browserLang);
-      return browserLang;
+      localStorage.setItem('emdr-language', browserLang)
+      return browserLang
     }
 
     // Default to English if no match found
-    localStorage.setItem('emdr-language', 'en');
-    return 'en';
+    localStorage.setItem('emdr-language', 'en')
+    return 'en'
   }
 
   function updateCurrentLanguage(lang) {
-    const label = document.getElementById('currentLanguageLabel');
-    const options = document.querySelectorAll('.language-option');
+    const label = document.getElementById('currentLanguageLabel')
+    const options = document.querySelectorAll('.language-option')
 
     if (label) {
       // Получаем название языка из i18n, если доступно и перевод существует
-      const langNameKey = `common.lang.${lang}`;
-      let translatedName = null;
+      const langNameKey = `common.lang.${lang}`
+      let translatedName = null
       if (globalThis.i18n?.t) {
-        const result = globalThis.i18n.t(langNameKey);
+        const result = globalThis.i18n.t(langNameKey)
         // Проверяем, что перевод не вернул сам ключ (что означает отсутствие перевода)
         if (result && result !== langNameKey) {
-          translatedName = result;
+          translatedName = result
         }
       }
       // Используем перевод или fallback на hardcoded languageNames
-      label.textContent = translatedName || languageNames[lang] || lang;
+      label.textContent = translatedName || languageNames[lang] || lang
     }
 
     for (const option of options) {
-      const optionLang = option.dataset.lang;
+      const optionLang = option.dataset.lang
       if (optionLang === lang) {
-        option.classList.add('language-option--active');
-        option.setAttribute('aria-selected', 'true');
+        option.classList.add('language-option--active')
+        option.setAttribute('aria-selected', 'true')
       } else {
-        option.classList.remove('language-option--active');
-        option.setAttribute('aria-selected', 'false');
+        option.classList.remove('language-option--active')
+        option.setAttribute('aria-selected', 'false')
       }
     }
 
-    document.documentElement.lang = lang;
+    document.documentElement.lang = lang
   }
 
   /**
@@ -3791,14 +3825,14 @@ const LanguageSelector = (function () {
    * Returns a Promise that resolves to true/false depending on success.
    */
   async function safeSetI18nLanguage(lang) {
-    const ii = globalThis?.i18n;
-    if (!ii) return false;
+    const ii = globalThis?.i18n
+    if (!ii) return false
 
     // Prefer async changeLanguage if available
     if (typeof ii.changeLanguage === 'function') {
       try {
-        const res = await Promise.resolve(ii.changeLanguage(lang));
-        return !!res;
+        const res = await Promise.resolve(ii.changeLanguage(lang))
+        return !!res
       } catch {
         // Fallback to next option
       }
@@ -3807,8 +3841,8 @@ const LanguageSelector = (function () {
     // Fallback: if a legacy synchronous setLanguage exists, call it but guard errors
     if (typeof ii.setLanguage === 'function') {
       try {
-        const res = ii.setLanguage(lang);
-        return !!res;
+        const res = ii.setLanguage(lang)
+        return !!res
       } catch {
         // Fallback to next option
       }
@@ -3817,10 +3851,10 @@ const LanguageSelector = (function () {
     // Last resort: set property directly if present
     if (ii.currentLanguage !== undefined) {
       try {
-        ii.currentLanguage = lang;
+        ii.currentLanguage = lang
         if (typeof ii.applyTranslations === 'function') {
           try {
-            ii.applyTranslations();
+            ii.applyTranslations()
           } catch {
             /* ignore */
           }
@@ -3829,34 +3863,34 @@ const LanguageSelector = (function () {
         try {
           if (typeof CustomEvent === 'function') {
             globalThis.dispatchEvent(
-              new CustomEvent('i18nLanguageChanged', { detail: { lang } }),
-            );
+              new CustomEvent('i18nLanguageChanged', { detail: { lang } })
+            )
           } else if (typeof Event === 'function') {
             // eslint-disable-next-line no-undef
-            globalThis.dispatchEvent(new Event('i18nLanguageChanged'));
+            globalThis.dispatchEvent(new Event('i18nLanguageChanged'))
           }
         } catch {
           /* ignore event dispatch errors */
         }
-        return true;
+        return true
       } catch {
-        return false;
+        return false
       }
     }
 
-    return false;
+    return false
   }
 
   function changeLanguage(lang) {
     if (!supportedLanguages.has(lang)) {
-      return;
+      return
     }
 
     // Сохраняем выбор
-    localStorage.setItem('emdr-language', lang);
+    localStorage.setItem('emdr-language', lang)
 
     // Обновляем UI селектора языка
-    updateCurrentLanguage(lang);
+    updateCurrentLanguage(lang)
 
     // Обновляем i18n - это автоматически обновит все элементы с data-i18n
     safeSetI18nLanguage(lang)
@@ -3864,30 +3898,30 @@ const LanguageSelector = (function () {
         if (ok) {
           // Обновляем title страницы
           if (globalThis.i18n?.t) {
-            document.title = globalThis.i18n.t('home.title');
+            document.title = globalThis.i18n.t('home.title')
           }
         }
       })
       .catch(() => {
         // Silently fail
-      });
+      })
 
     // Обновляем URL
-    const url = new URL(globalThis.location.href);
-    url.searchParams.set('lang', lang);
-    globalThis.history.replaceState({}, '', url);
+    const url = new URL(globalThis.location.href)
+    url.searchParams.set('lang', lang)
+    globalThis.history.replaceState({}, '', url)
 
     // Синхронизируем язык с Viewer через API (только для Controller)
     if (globalThis.location.pathname.includes('/c/')) {
       const sessionId =
-        globalThis.getSessionIdFromUrl?.() || extractSessionIdFromUrl();
+        globalThis.getSessionIdFromUrl?.() || extractSessionIdFromUrl()
       if (sessionId) {
         syncLanguageToViewer(sessionId, lang).catch((err) => {
           console.warn(
             '[LanguageSelector] Failed to sync language to Viewer:',
-            err.message,
-          );
-        });
+            err.message
+          )
+        })
       }
     }
   }
@@ -3896,8 +3930,8 @@ const LanguageSelector = (function () {
    * Extract sessionId from URL path
    */
   function extractSessionIdFromUrl() {
-    const match = globalThis.location.pathname.match(/\/[cv]\/([a-f0-9]+)/);
-    return match ? match[1] : null;
+    const match = globalThis.location.pathname.match(/\/[cv]\/([a-f0-9]+)/)
+    return match ? match[1] : null
   }
 
   /**
@@ -3908,53 +3942,53 @@ const LanguageSelector = (function () {
       const response = await fetch(`/api/session/${sessionId}/language`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ language }),
-      });
+        body: JSON.stringify({ language })
+      })
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`HTTP ${response.status}`)
       }
 
-      const data = await response.json();
+      const data = await response.json()
       console.log(
         '[LanguageSelector] ✅ Language synced to Viewer:',
-        data.language,
-      );
+        data.language
+      )
     } catch (error) {
-      console.error('[LanguageSelector] ❌ Failed to sync language:', error);
-      throw error;
+      console.error('[LanguageSelector] ❌ Failed to sync language:', error)
+      throw error
     }
   }
 
   return {
-    init,
-  };
+    init
+  }
 })();
 
 // Инициализируем после готовности i18n и DOM
 (function () {
-  if (globalThis?.window === undefined) return;
+  if (globalThis?.window === undefined) return
 
-  let initialized = false;
-  let domListenerAdded = false;
+  let initialized = false
+  let domListenerAdded = false
 
   const initSelector = () => {
-    if (initialized) return;
-    initialized = true;
-    LanguageSelector.init();
-  };
+    if (initialized) return
+    initialized = true
+    LanguageSelector.init()
+  }
 
   // Если i18n уже готов, инициализируем сразу
   if (globalThis.i18n?.isReady) {
     if (document.readyState === 'loading') {
       if (!domListenerAdded) {
-        domListenerAdded = true;
+        domListenerAdded = true
         document.addEventListener('DOMContentLoaded', initSelector, {
-          once: true,
-        });
+          once: true
+        })
       }
     } else {
-      initSelector();
+      initSelector()
     }
   } else {
     // Ждем события i18nReady
@@ -3963,42 +3997,42 @@ const LanguageSelector = (function () {
       () => {
         if (document.readyState === 'loading') {
           if (!domListenerAdded) {
-            domListenerAdded = true;
+            domListenerAdded = true
             document.addEventListener('DOMContentLoaded', initSelector, {
-              once: true,
-            });
+              once: true
+            })
           }
         } else {
-          initSelector();
+          initSelector()
         }
       },
-      { once: true },
-    );
+      { once: true }
+    )
 
     // Fallback на случай если событие не сработает
     setTimeout(() => {
       if (!initialized) {
         if (document.readyState === 'loading') {
           if (!domListenerAdded) {
-            domListenerAdded = true;
+            domListenerAdded = true
             document.addEventListener('DOMContentLoaded', initSelector, {
-              once: true,
-            });
+              once: true
+            })
           }
         } else {
-          initSelector();
+          initSelector()
         }
       }
-    }, 2000);
+    }, 2000)
   }
-})();
+})()
 
 // Expose globally for debugging
 if (typeof globalThis !== 'undefined') {
-  globalThis.LanguageSelector = LanguageSelector;
+  globalThis.LanguageSelector = LanguageSelector
 }
 
-module.exports = LanguageSelector;
+module.exports = LanguageSelector
 
 
 /***/ },
@@ -4015,49 +4049,49 @@ module.exports = LanguageSelector;
  */
 
 
-const WebSocketClient = __webpack_require__(/*! ./websocket-client */ "./src/network/websocket-client.js");
+const WebSocketClient = __webpack_require__(/*! ./websocket-client */ "./src/network/websocket-client.js")
 
 class RealtimeClient {
   constructor(sessionId, role, options = {}) {
-    this.sessionId = sessionId;
-    this.role = role;
-    this.transportType = 'websocket';
-    this.client = new WebSocketClient(sessionId, role, options);
+    this.sessionId = sessionId
+    this.role = role
+    this.transportType = 'websocket'
+    this.client = new WebSocketClient(sessionId, role, options)
   }
   async connect() {
-    return this.client.connect();
+    return this.client.connect()
   }
   async send(type, payload, options = {}) {
-    return this.client.send(type, payload, options);
+    return this.client.send(type, payload, options)
   }
   on(eventType, handler) {
-    this.client.on(eventType, handler);
+    this.client.on(eventType, handler)
   }
   off(eventType, handler) {
-    this.client.off(eventType, handler);
+    this.client.off(eventType, handler)
   }
   close() {
-    this.client.close();
+    this.client.close()
   }
   get isConnected() {
-    return this.client.isConnected;
+    return this.client.isConnected
   }
   getStats() {
     return {
       ...this.client.getStats(),
-      transportType: this.transportType,
-    };
+      transportType: this.transportType
+    }
   }
   getTransportType() {
-    return this.transportType;
+    return this.transportType
   }
 }
 
 if (typeof globalThis !== 'undefined') {
-  globalThis.RealtimeClient = RealtimeClient;
+  globalThis.RealtimeClient = RealtimeClient
 }
 
-module.exports = RealtimeClient;
+module.exports = RealtimeClient
 
 
 /***/ },
@@ -4079,15 +4113,15 @@ class WebSocketClient {
   constructor(sessionId, role, options = {}) {
     if (!sessionId || typeof sessionId !== 'string') {
       throw new Error(
-        'Valid sessionId (string) is required for WebSocket connection',
-      );
+        'Valid sessionId (string) is required for WebSocket connection'
+      )
     }
     if (!role || !['controller', 'viewer'].includes(role)) {
       throw new Error(
-        'Valid role ("controller" or "viewer") is required for WebSocket connection',
-      );
+        'Valid role ("controller" or "viewer") is required for WebSocket connection'
+      )
     }
-    const globalConfig = globalThis.BBConfig?.network || {};
+    const globalConfig = globalThis.BBConfig?.network || {}
     this.config = {
       isSecure: globalThis.location.protocol === 'https:',
       maxReconnectAttempts: globalConfig.maxReconnectAttempts || 50,
@@ -4096,22 +4130,22 @@ class WebSocketClient {
       messageTimeout: globalConfig.messageTimeout || 5000,
       coalesceTypes: globalConfig.coalesceTypes || ['controller_update'],
       coalesceDelayMs: globalConfig.coalesceDelayMs || 16, // ~60fps
-      ...options,
-    };
-    this.sessionId = sessionId;
-    this.role = role;
-    this.ws = null;
-    this.isConnected = false;
-    this.isConnecting = false;
-    this.eventHandlers = new Map();
-    this.pendingMessages = new Map();
-    this.messageIdCounter = 0;
-    this.reconnectTimer = null;
-    this.heartbeatTimer = null;
-    this.messageTimeouts = new Map();
-    this._coalesceBuffers = new Map(); // type -> latest payload
-    this._coalesceTimers = new Map(); // type -> timer id
-    this.url = this._generateWebSocketUrl();
+      ...options
+    }
+    this.sessionId = sessionId
+    this.role = role
+    this.ws = null
+    this.isConnected = false
+    this.isConnecting = false
+    this.eventHandlers = new Map()
+    this.pendingMessages = new Map()
+    this.messageIdCounter = 0
+    this.reconnectTimer = null
+    this.heartbeatTimer = null
+    this.messageTimeouts = new Map()
+    this._coalesceBuffers = new Map() // type -> latest payload
+    this._coalesceTimers = new Map() // type -> timer id
+    this.url = this._generateWebSocketUrl()
     this._stats = {
       messagesSent: 0,
       messagesReceived: 0,
@@ -4119,120 +4153,120 @@ class WebSocketClient {
       lastActivity: Date.now(),
       rttMs: 0,
       jitterMs: 0,
-      _lastRttSamples: [],
-    };
+      _lastRttSamples: []
+    }
   }
   _generateWebSocketUrl() {
-    const protocol = this.config.isSecure ? 'wss:' : 'ws:';
-    const host = globalThis.location.host;
-    const url = new URL(`${protocol}//${host}`);
-    url.searchParams.set('sessionId', this.sessionId);
-    url.searchParams.set('role', this.role);
-    return url.toString();
+    const protocol = this.config.isSecure ? 'wss:' : 'ws:'
+    const host = globalThis.location.host
+    const url = new URL(`${protocol}//${host}`)
+    url.searchParams.set('sessionId', this.sessionId)
+    url.searchParams.set('role', this.role)
+    return url.toString()
   }
   /**
    * Подключение к WebSocket серверу
    */
   async connect() {
     if (this.isConnected || this.isConnecting) {
-      this.log('Connection already in progress or established');
-      return;
+      this.log('Connection already in progress or established')
+      return
     }
     return new Promise((resolve, reject) => {
-      this.isConnecting = true;
-      this.log(`Connecting to ${this.url}`);
+      this.isConnecting = true
+      this.log(`Connecting to ${this.url}`)
       try {
-        this.ws = new WebSocket(this.url);
-        this._setupEventHandlers();
+        this.ws = new WebSocket(this.url)
+        this._setupEventHandlers()
         const connectionTimeout = setTimeout(() => {
           if (this.isConnecting) {
-            this.isConnecting = false;
-            this.ws?.close();
-            reject(new Error('Connection timeout'));
+            this.isConnecting = false
+            this.ws?.close()
+            reject(new Error('Connection timeout'))
           }
-        }, 10000);
+        }, 10000)
         this.ws.onopen = () => {
-          clearTimeout(connectionTimeout);
-          this._handleConnectionSuccess();
-          resolve();
-        };
+          clearTimeout(connectionTimeout)
+          this._handleConnectionSuccess()
+          resolve()
+        }
         this.ws.onerror = (error) => {
-          clearTimeout(connectionTimeout);
-          this.isConnecting = false;
-          this._handleConnectionError(error);
-          reject(new Error('WebSocket connection failed'));
-        };
+          clearTimeout(connectionTimeout)
+          this.isConnecting = false
+          this._handleConnectionError(error)
+          reject(new Error('WebSocket connection failed'))
+        }
       } catch (error) {
-        this.isConnecting = false;
-        reject(new Error(`WebSocket connection failed: ${error.message}`));
+        this.isConnecting = false
+        reject(new Error(`WebSocket connection failed: ${error.message}`))
       }
-    });
+    })
   }
   /**
    * Улучшенная отправка с приоритетами и буферизацией
    */
   async send(type, payload, options = {}) {
     if (!this.isConnected) {
-      throw new Error('WebSocket is not connected');
+      throw new Error('WebSocket is not connected')
     }
-    const priorityTypes = ['controller_update', 'heartbeat'];
-    const isPriority = priorityTypes.includes(type);
+    const priorityTypes = ['controller_update', 'heartbeat']
+    const isPriority = priorityTypes.includes(type)
     if (isPriority) {
-      const messageId = ++this.messageIdCounter;
+      const messageId = ++this.messageIdCounter
       const message = {
         id: messageId,
         type,
         payload,
         timestamp: Date.now(),
-        priority: true,
-      };
-      return this._sendWithResponse(message, type, options);
+        priority: true
+      }
+      return this._sendWithResponse(message, type, options)
     } else if (
       this.config.coalesceTypes.includes(type) &&
       !options.expectResponse
     ) {
-      this._coalesceMessage(type, payload);
+      this._coalesceMessage(type, payload)
     } else {
-      const messageId = ++this.messageIdCounter;
-      const message = { id: messageId, type, payload, timestamp: Date.now() };
-      return this._sendWithResponse(message, type, options);
+      const messageId = ++this.messageIdCounter
+      const message = { id: messageId, type, payload, timestamp: Date.now() }
+      return this._sendWithResponse(message, type, options)
     }
   }
   _sendWithResponse(message, type, options) {
     if (options.expectResponse) {
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
-          this.pendingMessages.delete(message.id);
-          reject(new Error(`Message timeout: ${type}`));
-        }, this.config.messageTimeout);
-        this.pendingMessages.set(message.id, { resolve, reject, timeout });
-        this._sendMessage(message);
-      });
+          this.pendingMessages.delete(message.id)
+          reject(new Error(`Message timeout: ${type}`))
+        }, this.config.messageTimeout)
+        this.pendingMessages.set(message.id, { resolve, reject, timeout })
+        this._sendMessage(message)
+      })
     } else {
-      this._sendMessage(message);
+      this._sendMessage(message)
     }
   }
   _coalesceMessage(type, payload) {
-    this._coalesceBuffers.set(type, payload);
+    this._coalesceBuffers.set(type, payload)
     if (!this._coalesceTimers.has(type)) {
       const timerId = setTimeout(() => {
-        const latest = this._coalesceBuffers.get(type);
-        this._coalesceBuffers.delete(type);
-        this._coalesceTimers.delete(type);
+        const latest = this._coalesceBuffers.get(type)
+        this._coalesceBuffers.delete(type)
+        this._coalesceTimers.delete(type)
         const coalescedMessage = {
           id: ++this.messageIdCounter,
           type,
           payload: latest,
           timestamp: Date.now(),
-          batched: true,
-        };
-        try {
-          this._sendMessage(coalescedMessage);
-        } catch (e) {
-          this.log(`Coalesced send failed: ${e.message}`, 'warning');
+          batched: true
         }
-      }, this.config.coalesceDelayMs);
-      this._coalesceTimers.set(type, timerId);
+        try {
+          this._sendMessage(coalescedMessage)
+        } catch (e) {
+          this.log(`Coalesced send failed: ${e.message}`, 'warning')
+        }
+      }, this.config.coalesceDelayMs)
+      this._coalesceTimers.set(type, timerId)
     }
   }
   /**
@@ -4240,25 +4274,25 @@ class WebSocketClient {
    */
   on(eventType, handler) {
     if (!this.eventHandlers.has(eventType)) {
-      this.eventHandlers.set(eventType, []);
+      this.eventHandlers.set(eventType, [])
     }
-    this.eventHandlers.get(eventType).push(handler);
+    this.eventHandlers.get(eventType).push(handler)
   }
   off(eventType, handler) {
-    const handlers = this.eventHandlers.get(eventType);
-    if (!handlers) return;
-    const idx = handlers.indexOf(handler);
-    if (idx !== -1) handlers.splice(idx, 1);
+    const handlers = this.eventHandlers.get(eventType)
+    if (!handlers) return
+    const idx = handlers.indexOf(handler)
+    if (idx !== -1) handlers.splice(idx, 1)
   }
   close() {
-    this._clearTimers();
+    this._clearTimers()
     if (this.ws) {
-      this.ws.onclose = null; // prevent reconnect on intentional close
-      this.ws.close(1000, 'Client closed');
-      this.ws = null;
+      this.ws.onclose = null // prevent reconnect on intentional close
+      this.ws.close(1000, 'Client closed')
+      this.ws = null
     }
-    this.isConnected = false;
-    this.isConnecting = false;
+    this.isConnected = false
+    this.isConnecting = false
   }
   getStats() {
     return {
@@ -4267,186 +4301,186 @@ class WebSocketClient {
       reconnectCount: this._stats.reconnectCount,
       lastActivity: this._stats.lastActivity,
       rttMs: this._stats.rttMs,
-      jitterMs: this._stats.jitterMs,
-    };
+      jitterMs: this._stats.jitterMs
+    }
   }
   _setupEventHandlers() {
-    this.ws.onmessage = this._handleMessage.bind(this);
-    this.ws.onclose = this._handleClose.bind(this);
-    this.ws.onerror = this._handleError.bind(this);
+    this.ws.onmessage = this._handleMessage.bind(this)
+    this.ws.onclose = this._handleClose.bind(this)
+    this.ws.onerror = this._handleError.bind(this)
   }
   _handleConnectionSuccess() {
-    this.isConnected = true;
-    this.isConnecting = false;
-    const isReconnection = this._stats.reconnectCount > 0;
-    this._stats.reconnectCount = 0;
-    this._stats.lastActivity = Date.now();
-    this._startHeartbeat();
+    this.isConnected = true
+    this.isConnecting = false
+    const isReconnection = this._stats.reconnectCount > 0
+    this._stats.reconnectCount = 0
+    this._stats.lastActivity = Date.now()
+    this._startHeartbeat()
     this._emit('open', {
       sessionId: this.sessionId,
       role: this.role,
-      isReconnection,
-    });
+      isReconnection
+    })
     this.log(
-      'Connected successfully' + (isReconnection ? ' (reconnected)' : ''),
-    );
+      'Connected successfully' + (isReconnection ? ' (reconnected)' : '')
+    )
   }
   _handleConnectionError(error) {
-    this._emit('error', { error, type: 'connection' });
-    this._scheduleReconnect();
+    this._emit('error', { error, type: 'connection' })
+    this._scheduleReconnect()
   }
   _handleMessage(event) {
     try {
-      const message = JSON.parse(event.data);
-      this._stats.messagesReceived++;
-      this._stats.lastActivity = Date.now();
-      if (this._handlePendingMessage(message)) return;
-      this._emit(message.type, message.payload);
-      this._emit('message', message);
+      const message = JSON.parse(event.data)
+      this._stats.messagesReceived++
+      this._stats.lastActivity = Date.now()
+      if (this._handlePendingMessage(message)) return
+      this._emit(message.type, message.payload)
+      this._emit('message', message)
       if (message?.timestamp) {
-        this._updateNetworkMetrics(message.timestamp);
+        this._updateNetworkMetrics(message.timestamp)
       }
     } catch (error) {
-      this.log(`Failed to parse message: ${error.message}`, 'error');
-      this._emit('error', { error, type: 'parse', rawData: event.data });
+      this.log(`Failed to parse message: ${error.message}`, 'error')
+      this._emit('error', { error, type: 'parse', rawData: event.data })
     }
   }
   _handlePendingMessage(message) {
-    if (!message.id || !this.pendingMessages.has(message.id)) return false;
-    const pending = this.pendingMessages.get(message.id);
-    clearTimeout(pending.timeout);
-    this.pendingMessages.delete(message.id);
-    pending.resolve(message.payload);
-    return true;
+    if (!message.id || !this.pendingMessages.has(message.id)) return false
+    const pending = this.pendingMessages.get(message.id)
+    clearTimeout(pending.timeout)
+    this.pendingMessages.delete(message.id)
+    pending.resolve(message.payload)
+    return true
   }
   _updateNetworkMetrics(timestamp) {
-    const now = performance.now();
-    const rtt = Math.max(0, now - timestamp);
-    this._stats._lastRttSamples.push(rtt);
+    const now = performance.now()
+    const rtt = Math.max(0, now - timestamp)
+    this._stats._lastRttSamples.push(rtt)
     if (this._stats._lastRttSamples.length > 20) {
-      this._stats._lastRttSamples.shift();
+      this._stats._lastRttSamples.shift()
     }
-    const n = this._stats._lastRttSamples.length;
-    const avg = this._stats._lastRttSamples.reduce((a, b) => a + b, 0) / n;
+    const n = this._stats._lastRttSamples.length
+    const avg = this._stats._lastRttSamples.reduce((a, b) => a + b, 0) / n
     const variance =
       this._stats._lastRttSamples.reduce(
         (a, b) => a + Math.pow(b - avg, 2),
-        0,
-      ) / n;
-    const jitter = Math.sqrt(variance);
-    this._stats.rttMs = Math.round(avg);
-    this._stats.jitterMs = Math.round(jitter);
+        0
+      ) / n
+    const jitter = Math.sqrt(variance)
+    this._stats.rttMs = Math.round(avg)
+    this._stats.jitterMs = Math.round(jitter)
     this._emit('net_metrics', {
       rttMs: this._stats.rttMs,
-      jitterMs: this._stats.jitterMs,
-    });
+      jitterMs: this._stats.jitterMs
+    })
   }
   _handleClose(event) {
-    this.isConnected = false;
-    this._clearTimers();
-    this._emit('close', event);
+    this.isConnected = false
+    this._clearTimers()
+    this._emit('close', event)
     if (event.code !== 1000) {
-      this._scheduleReconnect();
+      this._scheduleReconnect()
     }
   }
   _handleError(error) {
-    this._emit('error', { error, type: 'websocket' });
+    this._emit('error', { error, type: 'websocket' })
   }
   _scheduleReconnect() {
     if (this._stats.reconnectCount >= this.config.maxReconnectAttempts) {
-      this.log('Max reconnection attempts reached', 'error');
-      this._emit('maxReconnectAttemptsReached');
-      return;
+      this.log('Max reconnection attempts reached', 'error')
+      this._emit('maxReconnectAttemptsReached')
+      return
     }
-    this._stats.reconnectCount++;
+    this._stats.reconnectCount++
     const delay =
       this.config.reconnectInterval *
-      Math.pow(1.5, this._stats.reconnectCount - 1);
+      Math.pow(1.5, this._stats.reconnectCount - 1)
     this.log(
-      `Reconnecting in ${Math.round(delay / 1000)}s (attempt ${this._stats.reconnectCount})`,
-    );
+      `Reconnecting in ${Math.round(delay / 1000)}s (attempt ${this._stats.reconnectCount})`
+    )
     this.reconnectTimer = setTimeout(() => {
       this.connect().catch(() => {
-        this._scheduleReconnect();
-      });
-    }, delay);
+        this._scheduleReconnect()
+      })
+    }, delay)
   }
   _startHeartbeat() {
     this.heartbeatTimer = setInterval(() => {
       if (this.isConnected) {
         this.send('heartbeat', { timestamp: Date.now() }).catch((err) => {
-          this.log(`Heartbeat failed: ${err.message}`, 'warning');
-        });
+          this.log(`Heartbeat failed: ${err.message}`, 'warning')
+        })
       }
-    }, this.config.heartbeatInterval);
+    }, this.config.heartbeatInterval)
   }
   _sendMessage(message) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
-      this._stats.messagesSent++;
+      this.ws.send(JSON.stringify(message))
+      this._stats.messagesSent++
     } else {
-      throw new Error('WebSocket is not connected');
+      throw new Error('WebSocket is not connected')
     }
   }
   _emit(eventType, data) {
-    const handlers = this.eventHandlers.get(eventType);
+    const handlers = this.eventHandlers.get(eventType)
     if (handlers) {
       for (const handler of handlers) {
         try {
-          handler(data);
+          handler(data)
         } catch (error) {
           this.log(
             `Error in event handler for ${eventType}: ${error.message}`,
-            'error',
-          );
+            'error'
+          )
         }
       }
     }
   }
   _clearTimers() {
     if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
     }
     if (this.heartbeatTimer) {
-      clearInterval(this.heartbeatTimer);
-      this.heartbeatTimer = null;
+      clearInterval(this.heartbeatTimer)
+      this.heartbeatTimer = null
     }
     for (const timeout of this.messageTimeouts.values()) {
-      clearTimeout(timeout);
+      clearTimeout(timeout)
     }
-    this.messageTimeouts.clear();
+    this.messageTimeouts.clear()
     for (const timerId of this._coalesceTimers.values()) {
-      clearTimeout(timerId);
+      clearTimeout(timerId)
     }
-    this._coalesceTimers.clear();
-    this._coalesceBuffers.clear();
+    this._coalesceTimers.clear()
+    this._coalesceBuffers.clear()
   }
   log(message, type = 'info') {
-    const timestamp = new Date().toLocaleTimeString();
-    const prefix = `[WS:${this.role}]`;
-    const coloredMessage = `%c${prefix} ${message}`;
-    let style;
+    const timestamp = new Date().toLocaleTimeString()
+    const prefix = `[WS:${this.role}]`
+    const coloredMessage = `%c${prefix} ${message}`
+    let style
     if (type === 'error') {
-      style = 'color: #ef4444; font-weight: bold;';
+      style = 'color: #ef4444; font-weight: bold;'
     } else if (type === 'warning') {
-      style = 'color: #f59e0b; font-weight: bold;';
+      style = 'color: #f59e0b; font-weight: bold;'
     } else {
-      style = 'color: #3b82f6; font-weight: bold;';
+      style = 'color: #3b82f6; font-weight: bold;'
     }
     console[type === 'error' ? 'error' : 'log'](
       coloredMessage,
       style,
-      timestamp,
-    );
+      timestamp
+    )
   }
 }
 
 if (typeof globalThis !== 'undefined') {
-  globalThis.WebSocketClient = WebSocketClient;
+  globalThis.WebSocketClient = WebSocketClient
 }
 
-module.exports = WebSocketClient;
+module.exports = WebSocketClient
 
 
 /***/ },
@@ -4989,7 +5023,7 @@ module.exports = BallRenderer
 
 class SharedComponents {
   constructor() {
-    this.components = new Map();
+    this.components = new Map()
   }
   /**
    * Создает переиспользуемый компонент управления скоростью
@@ -5003,16 +5037,16 @@ class SharedComponents {
       showValue: true,
       showLabels: true,
       simple: true,
-      ...options,
-    };
+      ...options
+    }
     const component = {
       container,
       options: defaultOptions,
       currentSpeed: defaultOptions.defaultValue,
       elements: {},
       render() {
-        const speedControl = document.createElement('div');
-        speedControl.className = 'speed-control';
+        const speedControl = document.createElement('div')
+        speedControl.className = 'speed-control'
         if (defaultOptions.simple) {
           speedControl.innerHTML = `
   <div class="speed-info">
@@ -5028,7 +5062,7 @@ class SharedComponents {
   value="${defaultOptions.currentSpeed}"
   step="1">
   </div>
-  `;
+  `
         } else {
           speedControl.innerHTML = `
   <div class="speed-header">
@@ -5068,112 +5102,112 @@ class SharedComponents {
   </div>
   </div>
   </div>
-  `;
+  `
         }
-        container.appendChild(speedControl);
-        this.setupElements();
-        this.setupEventListeners();
-        return this;
+        container.appendChild(speedControl)
+        this.setupElements()
+        this.setupEventListeners()
+        return this
       },
       setupElements() {
-        this.elements.range = container.querySelector('.speed-range');
-        this.elements.value = container.querySelector('.speed-value');
-        this.elements.display = container.querySelector('.speed-display');
-        this.elements.fill = container.querySelector('.speed-fill');
-        this.elements.presets = container.querySelectorAll('.speed-preset');
+        this.elements.range = container.querySelector('.speed-range')
+        this.elements.value = container.querySelector('.speed-value')
+        this.elements.display = container.querySelector('.speed-display')
+        this.elements.fill = container.querySelector('.speed-fill')
+        this.elements.presets = container.querySelectorAll('.speed-preset')
       },
       setupEventListeners() {
         if (this.elements.range) {
           this.elements.range.addEventListener('input', (e) => {
-            this.setSpeed(Number.parseInt(e.target.value, 10));
-          });
+            this.setSpeed(Number.parseInt(e.target.value, 10))
+          })
         }
         if (this.elements?.presets?.length) {
           for (const preset of this.elements.presets) {
             preset.addEventListener('click', () => {
-              const speed = Number.parseInt(preset.dataset.speed, 10);
-              this.setSpeed(speed);
-              this.updateActivePreset(speed);
-            });
+              const speed = Number.parseInt(preset.dataset.speed, 10)
+              this.setSpeed(speed)
+              this.updateActivePreset(speed)
+            })
           }
         }
       },
       updateActivePreset(speed) {
         if (this.elements?.presets?.length === 0) {
-          return;
+          return
         }
         for (const preset of this.elements.presets) {
-          preset.classList.remove('active');
+          preset.classList.remove('active')
         }
-        let activePreset = null;
+        let activePreset = null
         if (speed <= 30) {
-          activePreset = 'slow';
+          activePreset = 'slow'
         } else if (speed <= 60) {
-          activePreset = 'normal';
+          activePreset = 'normal'
         } else {
-          activePreset = 'fast';
+          activePreset = 'fast'
         }
         const activeElement = container.querySelector(
-          `.speed-preset.${activePreset}`,
-        );
+          `.speed-preset.${activePreset}`
+        )
         if (activeElement) {
-          activeElement.classList.add('active');
+          activeElement.classList.add('active')
         }
       },
       setSpeed(speed, silent = false) {
         this.currentSpeed = Math.max(
           this.options.min,
-          Math.min(this.options.max, speed),
-        );
+          Math.min(this.options.max, speed)
+        )
         if (this.elements.range) {
-          this.elements.range.value = this.currentSpeed;
+          this.elements.range.value = this.currentSpeed
         }
         // Get speed category and color based on current speed
         const { category, color } = this._getSpeedCategoryAndColor(
-          this.currentSpeed,
-        );
+          this.currentSpeed
+        )
         if (this.elements.value) {
-          this.elements.value.textContent = category;
-          this.elements.value.style.color = color;
+          this.elements.value.textContent = category
+          this.elements.value.style.color = color
         }
         if (this.elements.fill) {
-          this.elements.fill.style.width = `${this.currentSpeed}%`;
-          this.elements.fill.style.background = color;
+          this.elements.fill.style.width = `${this.currentSpeed}%`
+          this.elements.fill.style.background = color
         }
-        this.updateActivePreset(this.currentSpeed);
+        this.updateActivePreset(this.currentSpeed)
         if (!silent && this.options.onSpeedChange) {
-          this.options.onSpeedChange(this.currentSpeed);
+          this.options.onSpeedChange(this.currentSpeed)
         }
       },
       _getSpeedCategoryAndColor(speed) {
-        const t = (key) => globalThis.i18n?.t(key) || key;
+        const t = (key) => globalThis.i18n?.t(key) || key
         if (speed <= 15) {
-          return { category: t('controller.speedVerySlow'), color: '#22c55e' };
+          return { category: t('controller.speedVerySlow'), color: '#22c55e' }
         }
         if (speed <= 25) {
-          return { category: t('controller.speedSlow'), color: '#3b82f6' };
+          return { category: t('controller.speedSlow'), color: '#3b82f6' }
         }
         if (speed <= 35) {
-          return { category: t('controller.speedMedium'), color: '#8b5cf6' };
+          return { category: t('controller.speedMedium'), color: '#8b5cf6' }
         }
         if (speed <= 50) {
-          return { category: t('controller.speedFast'), color: '#f59e0b' };
+          return { category: t('controller.speedFast'), color: '#f59e0b' }
         }
-        return { category: t('controller.speedVeryFast'), color: '#ef4444' };
+        return { category: t('controller.speedVeryFast'), color: '#ef4444' }
       },
       getSpeed() {
-        return this.currentSpeed;
+        return this.currentSpeed
       },
       reset() {
-        this.setSpeed(this.options.defaultValue);
-      },
-    };
-    component.render();
+        this.setSpeed(this.options.defaultValue)
+      }
+    }
+    component.render()
     // Refresh speed label on language change
     globalThis.addEventListener('i18nLanguageChanged', () => {
-      component.setSpeed(component.currentSpeed, true);
-    });
-    return component;
+      component.setSpeed(component.currentSpeed, true)
+    })
+    return component
   }
   /**
    * Создает переиспользуемый компонент управления цветом
@@ -5186,21 +5220,21 @@ class SharedComponents {
         '#10b981',
         '#f59e0b',
         '#8b5cf6',
-        '#ec4899',
+        '#ec4899'
       ],
       defaultValue: null, // Будет установлен в colors[0] если не указан
       onColorChange: null,
       title: '🎨 Цвет',
-      ...options,
-    };
+      ...options
+    }
     const component = {
       container,
       options: defaultOptions,
       currentColor: defaultOptions.defaultValue || defaultOptions.colors[0],
       elements: {},
       render() {
-        const colorControl = document.createElement('div');
-        colorControl.className = 'color-control';
+        const colorControl = document.createElement('div')
+        colorControl.className = 'color-control'
         colorControl.innerHTML = `
   <h3>${defaultOptions.title}</h3>
   <div class="color-palette">
@@ -5213,35 +5247,35 @@ class SharedComponents {
   title="${color}"
   aria-label="Color: ${color}">
   </button>
-  `,
+  `
     )
     .join('')}
   </div>
-  `;
-        container.appendChild(colorControl);
-        this.setupEventListeners();
-        this.setColor(this.currentColor);
-        return this;
+  `
+        container.appendChild(colorControl)
+        this.setupEventListeners()
+        this.setColor(this.currentColor)
+        return this
       },
       setupEventListeners() {
-        const buttons = container.querySelectorAll('.color-btn');
+        const buttons = container.querySelectorAll('.color-btn')
         for (const button of buttons) {
           button.addEventListener('click', () => {
-            const color = button.dataset.color;
-            this.setColor(color);
-          });
+            const color = button.dataset.color
+            this.setColor(color)
+          })
         }
       },
       setColor(color) {
-        this.currentColor = color;
-        const buttons = container.querySelectorAll('.color-btn');
+        this.currentColor = color
+        const buttons = container.querySelectorAll('.color-btn')
         for (const btn of buttons) {
-          btn.classList.toggle('active', btn.dataset.color === color);
+          btn.classList.toggle('active', btn.dataset.color === color)
         }
-        this.options.onColorChange?.(color);
-      },
-    };
-    return component.render();
+        this.options.onColorChange?.(color)
+      }
+    }
+    return component.render()
   }
   /**
    * Создает переиспользуемый компонент управления размером
@@ -5252,16 +5286,16 @@ class SharedComponents {
       defaultValue: 20,
       onSizeChange: null,
       title: '📏 Размер',
-      ...options,
-    };
+      ...options
+    }
     const component = {
       container,
       options: defaultOptions,
       currentSize: defaultOptions.defaultValue,
       elements: {},
       render() {
-        const sizeControl = document.createElement('div');
-        sizeControl.className = 'size-control';
+        const sizeControl = document.createElement('div')
+        sizeControl.className = 'size-control'
         sizeControl.innerHTML = `
   <h3>${defaultOptions.title}</h3>
   <div class="size-palette">
@@ -5274,38 +5308,38 @@ class SharedComponents {
   aria-label="Size: x${index + 1} (${size}px)">
   x${index + 1}
   </button>
-  `,
+  `
     )
     .join('')}
   </div>
-  `;
-        container.appendChild(sizeControl);
-        this.setupEventListeners();
-        this.setSize(this.currentSize);
-        return this;
+  `
+        container.appendChild(sizeControl)
+        this.setupEventListeners()
+        this.setSize(this.currentSize)
+        return this
       },
       setupEventListeners() {
-        const buttons = container.querySelectorAll('.size-btn');
+        const buttons = container.querySelectorAll('.size-btn')
         for (const button of buttons) {
           button.addEventListener('click', () => {
-            const size = Number.parseInt(button.dataset.size, 10);
-            this.setSize(size);
-          });
+            const size = Number.parseInt(button.dataset.size, 10)
+            this.setSize(size)
+          })
         }
       },
       setSize(size) {
-        this.currentSize = size;
-        const buttons = container.querySelectorAll('.size-btn');
+        this.currentSize = size
+        const buttons = container.querySelectorAll('.size-btn')
         for (const btn of buttons) {
           btn.classList.toggle(
             'active',
-            Number.parseInt(btn.dataset.size, 10) === size,
-          );
+            Number.parseInt(btn.dataset.size, 10) === size
+          )
         }
-        this.options.onSizeChange?.(size);
-      },
-    };
-    return component.render();
+        this.options.onSizeChange?.(size)
+      }
+    }
+    return component.render()
   }
   /**
    * Создает переиспользуемый компонент статуса
@@ -5319,35 +5353,35 @@ class SharedComponents {
       showIcon: true,
       autoHide: false,
       hideDelay: 3000,
-      ...options,
-    };
+      ...options
+    }
     const component = {
       container,
       options: defaultOptions,
       currentStatus: 'idle',
       elements: {},
       render() {
-        const statusIndicator = document.createElement('div');
-        statusIndicator.className = 'status-indicator';
+        const statusIndicator = document.createElement('div')
+        statusIndicator.className = 'status-indicator'
         statusIndicator.innerHTML = `
   <div class="status-content">
   ${defaultOptions.showIcon ? '<span class="status-icon">⏳</span>' : ''}
   <span class="status-text">${defaultOptions.title}</span>
   </div>
-  `;
-        container.appendChild(statusIndicator);
-        this.setupElements();
-        return this;
+  `
+        container.appendChild(statusIndicator)
+        this.setupElements()
+        return this
       },
       setupElements() {
-        this.elements.container = container.querySelector('.status-indicator');
-        this.elements.icon = container.querySelector('.status-icon');
-        this.elements.text = container.querySelector('.status-text');
+        this.elements.container = container.querySelector('.status-indicator')
+        this.elements.icon = container.querySelector('.status-icon')
+        this.elements.text = container.querySelector('.status-text')
       },
       setStatus(status, message) {
-        this.currentStatus = status;
+        this.currentStatus = status
         if (this.elements.text) {
-          this.elements.text.textContent = message || '';
+          this.elements.text.textContent = message || ''
         }
         if (this.elements.icon) {
           const icons = {
@@ -5355,26 +5389,26 @@ class SharedComponents {
             warning: '⚠️',
             error: '❌',
             waiting: '⏳',
-            idle: '⏳',
-          };
-          this.elements.icon.textContent = icons[status] || '⏳';
+            idle: '⏳'
+          }
+          this.elements.icon.textContent = icons[status] || '⏳'
         }
         if (this.elements.container) {
           this.elements.container.className =
-            'status-indicator status-' + status;
+            'status-indicator status-' + status
         }
-      },
-    };
-    return component.render();
+      }
+    }
+    return component.render()
   }
 }
-const sharedComponents = new SharedComponents();
+const sharedComponents = new SharedComponents()
 if (typeof globalThis !== 'undefined') {
-  globalThis.SharedComponents = SharedComponents;
-  globalThis.sharedComponents = sharedComponents;
+  globalThis.SharedComponents = SharedComponents
+  globalThis.sharedComponents = sharedComponents
 }
 
-module.exports = { SharedComponents, sharedComponents };
+module.exports = { SharedComponents, sharedComponents }
 
 
 /***/ }

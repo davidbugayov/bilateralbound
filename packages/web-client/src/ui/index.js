@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * @fileoverview UI module exports
  * Provides UI components and utilities
@@ -9,4 +9,4 @@
 // - globalThis.NotificationSystem - Notification system class
 // - Theme preload runs automatically on page load
 
-module.exports = {};
+module.exports = {}

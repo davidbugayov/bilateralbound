@@ -4,7 +4,7 @@
  * @module application/controller/preview-manager
  */
 /* jshint esversion: 11, browser: true, node: true */
-/* global PhysicsEngine, BallRenderer, debugWarn, globalThis, BBConfig, __current, i18n */
+/* global PhysicsEngine, BallRenderer, debugWarn, globalThis */
 
 // ============================================================================
 // Приватное состояние

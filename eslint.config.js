@@ -380,14 +380,14 @@ module.exports = [
     },
   },
 
-  // 7. Shared package (browser-compatible)
+  // 7. Shared package (browser-compatible Node.js module)
   {
     files: ['packages/shared/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'script',
+      sourceType: 'commonjs',
       globals: {
-        // Standard globals
+        // Standard Node.js globals
         globalThis: 'readonly',
         Promise: 'readonly',
         Map: 'readonly',
@@ -396,8 +396,9 @@ module.exports = [
         console: 'readonly',
         module: 'readonly',
         exports: 'writable',
+        require: 'readonly',
 
-        // Browser globals
+        // Browser globals (shared code runs in both)
         window: 'readonly',
         performance: 'readonly',
         CustomEvent: 'readonly',
@@ -407,7 +408,7 @@ module.exports = [
     rules: {
       ...commonRules,
       'no-redeclare': 'off',
-      'no-unused-vars': ['error', { args: 'none' }],
+      'no-unused-vars': ['error', { args: 'none', varsIgnorePattern: '^_' }],
     },
   },
 ];

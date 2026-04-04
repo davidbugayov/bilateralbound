@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * Counters - Счётчики сессии (таймер, пассы, сеты)
  * @module domain/counters
@@ -21,166 +21,166 @@ const bbCounters = {
   _measurementInterval: null,
   _currentPassesPerSecond: 0,
   initDom() {
-    this.$timer = document.getElementById('bbTimer');
-    this.$passes = document.getElementById('bbPasses');
-    this.$sets = document.getElementById('bbSets');
-    this.$passesPerSecond = document.getElementById('bbPassesPerSecond');
-    this.$speedInfo = document.getElementById('speedInfo');
-    const resetBtn = document.getElementById('bbResetBtn');
+    this.$timer = document.getElementById('bbTimer')
+    this.$passes = document.getElementById('bbPasses')
+    this.$sets = document.getElementById('bbSets')
+    this.$passesPerSecond = document.getElementById('bbPassesPerSecond')
+    this.$speedInfo = document.getElementById('speedInfo')
+    const resetBtn = document.getElementById('bbResetBtn')
     if (resetBtn) {
-      resetBtn.addEventListener('click', () => this.resetAll());
+      resetBtn.addEventListener('click', () => this.resetAll())
     }
-    this.initSpeedMeasurement();
-    this.render();
+    this.initSpeedMeasurement()
+    this.render()
   },
   initSpeedMeasurement() {
     this._measurementInterval = setInterval(() => {
-      this.updatePassesPerSecond();
-    }, 2000);
+      this.updatePassesPerSecond()
+    }, 2000)
   },
   updatePassesPerSecond() {
     if (!this.running) {
-      this._currentPassesPerSecond = 0;
-      return;
+      this._currentPassesPerSecond = 0
+      return
     }
-    const now = performance.now();
+    const now = performance.now()
     this._passesHistory = this._passesHistory.filter(
-      (timestamp) => now - timestamp < 2000,
-    );
-    const passesInLast2Seconds = this._passesHistory.length / 2;
-    this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10;
-    this.renderSpeedInfo();
+      (timestamp) => now - timestamp < 2000
+    )
+    const passesInLast2Seconds = this._passesHistory.length / 2
+    this._currentPassesPerSecond = Math.round(passesInLast2Seconds * 10) / 10
+    this.renderSpeedInfo()
   },
   addPassMeasurement() {
-    this._passesHistory.push(performance.now());
-    this.updatePassesPerSecond();
+    this._passesHistory.push(performance.now())
+    this.updatePassesPerSecond()
   },
   start() {
-    this.running = true;
-    this.lastTickTs = performance.now();
-    this._passesHistory = [];
+    this.running = true
+    this.lastTickTs = performance.now()
+    this._passesHistory = []
   },
   stop(incrementSet = false) {
-    this.tick(performance.now());
-    this.running = false;
+    this.tick(performance.now())
+    this.running = false
     if (incrementSet) {
-      this.sets += 1;
-      this.passes = 0;
-      this.bounceHits = 0;
-      this._lastBounceTs = 0;
-      this._passesHistory = [];
+      this.sets += 1
+      this.passes = 0
+      this.bounceHits = 0
+      this._lastBounceTs = 0
+      this._passesHistory = []
     }
-    this.timerMs = 0;
-    this.render();
+    this.timerMs = 0
+    this.render()
   },
   resetAll() {
-    this.timerMs = 0;
-    this.passes = 0;
-    this.sets = 0;
-    this.bounceHits = 0;
-    this._lastBounceTs = 0;
-    this._passesHistory = [];
-    this._currentPassesPerSecond = 0;
-    this.render();
+    this.timerMs = 0
+    this.passes = 0
+    this.sets = 0
+    this.bounceHits = 0
+    this._lastBounceTs = 0
+    this._passesHistory = []
+    this._currentPassesPerSecond = 0
+    this.render()
   },
   onBounce() {
-    if (!this.running) return;
-    const now = performance.now();
-    if (now - this._lastBounceTs < 120) return;
-    this._lastBounceTs = now;
-    this.bounceHits += 1;
+    if (!this.running) return
+    const now = performance.now()
+    if (now - this._lastBounceTs < 120) return
+    this._lastBounceTs = now
+    this.bounceHits += 1
     if (this.bounceHits % 2 === 0) {
-      this.passes += 1;
-      this.addPassMeasurement();
+      this.passes += 1
+      this.addPassMeasurement()
     }
-    this.render();
+    this.render()
   },
   tick(nowTs) {
-    if (!this.running) return;
-    const dt = nowTs - this.lastTickTs;
+    if (!this.running) return
+    const dt = nowTs - this.lastTickTs
     if (dt > 0) {
-      this.timerMs += dt;
-      this.lastTickTs = nowTs;
+      this.timerMs += dt
+      this.lastTickTs = nowTs
       if (!this?._lastRenderTs || nowTs - (this._lastRenderTs || 0) > 100) {
-        this._lastRenderTs = nowTs;
-        this.render();
+        this._lastRenderTs = nowTs
+        this.render()
       }
     }
   },
   formatTime(ms) {
-    const totalSec = Math.floor(ms / 1000);
-    const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-    return `${m}:${String(s).padStart(2, '0')}`;
+    const totalSec = Math.floor(ms / 1000)
+    const m = Math.floor(totalSec / 60)
+    const s = totalSec % 60
+    return `${m}:${String(s).padStart(2, '0')}`
   },
   render() {
-    if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs);
-    if (this.$passes) this.$passes.textContent = String(this.passes);
-    if (this.$sets) this.$sets.textContent = String(this.sets);
-    this.renderSpeedInfo();
+    if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
+    if (this.$passes) this.$passes.textContent = String(this.passes)
+    if (this.$sets) this.$sets.textContent = String(this.sets)
+    this.renderSpeedInfo()
   },
   renderSpeedInfo() {
     if (this.$passesPerSecond) {
       this.$passesPerSecond.textContent =
-        this._currentPassesPerSecond.toString();
+        this._currentPassesPerSecond.toString()
     }
-    const speedComponent = globalThis.components?.speed;
+    const speedComponent = globalThis.components?.speed
     if (speedComponent && this.$speedInfo) {
-      const currentSpeed = speedComponent.getSpeed();
-      let speedCategory = '';
-      let speedColor = '';
+      const currentSpeed = speedComponent.getSpeed()
+      let speedCategory = ''
+      let speedColor = ''
       if (currentSpeed <= 15) {
-        speedCategory = 'Очень медленно';
-        speedColor = '#22c55e';
+        speedCategory = 'Очень медленно'
+        speedColor = '#22c55e'
       } else if (currentSpeed <= 25) {
-        speedCategory = 'Медленно';
-        speedColor = '#3b82f6';
+        speedCategory = 'Медленно'
+        speedColor = '#3b82f6'
       } else if (currentSpeed <= 35) {
-        speedCategory = 'Средне';
-        speedColor = '#8b5cf6';
+        speedCategory = 'Средне'
+        speedColor = '#8b5cf6'
       } else if (currentSpeed <= 50) {
-        speedCategory = 'Быстро';
-        speedColor = '#f59e0b';
+        speedCategory = 'Быстро'
+        speedColor = '#f59e0b'
       } else {
-        speedCategory = 'Очень быстро';
-        speedColor = '#ef4444';
+        speedCategory = 'Очень быстро'
+        speedColor = '#ef4444'
       }
-      this.$speedInfo.textContent = speedCategory;
-      this.$speedInfo.style.color = speedColor;
+      this.$speedInfo.textContent = speedCategory
+      this.$speedInfo.style.color = speedColor
     }
-  },
-};
-let __lastBounceTs = 0;
-let __lastVxSign = 0;
-let __lastVySign = 0;
+  }
+}
+let __lastBounceTs = 0
+let __lastVxSign = 0
+let __lastVySign = 0
 function _hasBounced(currentVelocity, lastSign, minSpeed) {
-  const currentSign = Math.sign(currentVelocity);
+  const currentSign = Math.sign(currentVelocity)
   return (
     currentSign !== 0 &&
     lastSign !== 0 &&
     currentSign !== lastSign &&
     Math.abs(currentVelocity) > minSpeed
-  );
+  )
 }
 function detectAndCountBounceFromServer(prev, curr) {
-  if (!prev || !curr) return;
-  if (curr.paused) return;
-  const minSpeed = 50;
-  const now = performance.now();
-  if (now - __lastBounceTs < 100) return;
+  if (!prev || !curr) return
+  if (curr.paused) return
+  const minSpeed = 50
+  const now = performance.now()
+  if (now - __lastBounceTs < 100) return
   const bounced =
     _hasBounced(curr.vx, __lastVxSign, minSpeed) ||
-    _hasBounced(curr.vy, __lastVySign, minSpeed);
+    _hasBounced(curr.vy, __lastVySign, minSpeed)
   if (bounced) {
-    __lastBounceTs = now;
-    bbCounters.onBounce();
+    __lastBounceTs = now
+    bbCounters.onBounce()
   }
-  if (Math.abs(curr.vx) > minSpeed) __lastVxSign = Math.sign(curr.vx);
-  if (Math.abs(curr.vy) > minSpeed) __lastVySign = Math.sign(curr.vy);
+  if (Math.abs(curr.vx) > minSpeed) __lastVxSign = Math.sign(curr.vx)
+  if (Math.abs(curr.vy) > minSpeed) __lastVySign = Math.sign(curr.vy)
 }
 if (typeof globalThis !== 'undefined') {
-  globalThis.bbCounters = bbCounters;
-  globalThis.detectAndCountBounceFromServer = detectAndCountBounceFromServer;
+  globalThis.bbCounters = bbCounters
+  globalThis.detectAndCountBounceFromServer = detectAndCountBounceFromServer
 }
 
-module.exports = { bbCounters, detectAndCountBounceFromServer };
+module.exports = { bbCounters, detectAndCountBounceFromServer }
