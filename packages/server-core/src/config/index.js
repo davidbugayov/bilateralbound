@@ -1,17 +1,17 @@
-'use strict';
+'use strict'
 
 module.exports = {
   server: {
     PORT: process.env.NODE_PORT || process.env.PORT || 3000,
-    NODE_ENV: process.env.NODE_ENV || 'development',
+    NODE_ENV: process.env.NODE_ENV || 'development'
   },
   runtime: {
     CLIENT_SIM_ONLY:
       String(process.env.CLIENT_SIM_ONLY || 'true').toLowerCase() === 'true',
     DEAD_RECKON_EPS: Math.max(
       0,
-      Number.parseFloat(process.env.DEAD_RECKON_EPS || '1.5') || 1.5,
-    ),
+      Number.parseFloat(process.env.DEAD_RECKON_EPS || '1.5') || 1.5
+    )
   },
   cors: {
     origins: [
@@ -22,9 +22,9 @@ module.exports = {
       'http://localhost:5000',
       'http://localhost:8080',
       'https://davidbugayov.github.io',
-      'https://bilateralbound.onrender.com',
-    ],
+      'https://bilateralbound.onrender.com'
+    ]
   },
   logLevel: process.env.LOG_LEVEL || 'info',
-  isDev: (process.env.NODE_ENV || 'development') !== 'production',
-};
+  isDev: (process.env.NODE_ENV || 'development') !== 'production'
+}

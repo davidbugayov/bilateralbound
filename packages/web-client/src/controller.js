@@ -1,25 +1,25 @@
-'use strict';
+'use strict'
 /* jshint esversion: 11, browser: true, node: true, -W119 */
 /* global globalThis, WS_MSG, sharedComponents, throttle, AudioManager, BallRenderer, getSessionIdFromUrl, RealtimeClient, debugWarn, debugError */
 // Require dependencies (side effects populate globalThis)
-require('./core/debug-logger');
-require('./config');
-require('./common');
-require('./domain/session-state');
-require('./domain/direction');
-require('./domain/counters');
-require('./audio/audio-manager');
-require('./i18n/constants');
-require('./i18n/i18n');
-require('./i18n/language-selector');
-require('./rendering/renderer');
-require('./ui/shared-components');
-require('./network/websocket-client');
-require('./network/realtime-client');
+require('./core/debug-logger')
+require('./config')
+require('./common')
+require('./domain/session-state')
+require('./domain/direction')
+require('./domain/counters')
+require('./audio/audio-manager')
+require('./i18n/constants')
+require('./i18n/i18n')
+require('./i18n/language-selector')
+require('./rendering/renderer')
+require('./ui/shared-components')
+require('./network/websocket-client')
+require('./network/realtime-client')
 
-const PhysicsEngine = require('@emdr/shared/physics-engine');
-const _PreviewManager = require('./application/controller/preview-manager');
-const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils');
+const PhysicsEngine = require('@emdr/shared/physics-engine')
+const _PreviewManager = require('./application/controller/preview-manager')
+const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
 const {
   getDirectionVector,
   isDiagonalMode,
@@ -27,13 +27,13 @@ const {
   setCurrentDirectionMode,
   setDirectionState,
   recalculateDiagonalDirection,
-  getDirectionMode,
-} = require('./domain/direction');
+  getDirectionMode
+} = require('./domain/direction')
 const {
   bbCounters,
-  detectAndCountBounceFromServer,
-} = require('./domain/counters');
-globalThis.PhysicsEngine = PhysicsEngine;
+  detectAndCountBounceFromServer
+} = require('./domain/counters')
+globalThis.PhysicsEngine = PhysicsEngine
 
 /**
  * Controller - Логика управления сессией BilateralBound v2.2
@@ -45,123 +45,123 @@ globalThis.PhysicsEngine = PhysicsEngine;
 /* global debugWarn, debugError, RealtimeClient */
 // Защита от повторной загрузки
 
-globalThis.__controllerLoaded = true;
+globalThis.__controllerLoaded = true
 
 if (typeof globalThis.BBDebug === 'undefined') {
-  globalThis.BBDebug = { isEnabled: false, log: () => {} };
+  globalThis.BBDebug = { isEnabled: false, log: () => {} }
 }
 globalThis.__current = globalThis.__current || {
   sessionId: null,
   viewerConnected: false,
   viewerScreenSize: { width: 0, height: 0 },
-  isInitializing: true, // Глобальный флаг инициализации
-};
-globalThis.__previewRenderer = globalThis.__previewRenderer || null;
-globalThis.__previewScale = globalThis.__previewScale || 1; // Коэффициент масштабирования
-const components = globalThis.components || {};
+  isInitializing: true // Глобальный флаг инициализации
+}
+globalThis.__previewRenderer = globalThis.__previewRenderer || null
+globalThis.__previewScale = globalThis.__previewScale || 1 // Коэффициент масштабирования
+const components = globalThis.components || {}
 if (typeof globalThis !== 'undefined') {
-  globalThis.components = components;
+  globalThis.components = components
 }
-let lastServerState = null; // Кэшируем последнее состояние от сервера
-let isPlaying = false;
-let wsClient;
-let isInitialized = false; // Флаг для предотвращения повторной инициализации
-let __ignoreServerPausedUntilTs = 0; // Кратковременная блокировка переопределения isPlaying сервером
-let __ignoreServerDirectionUntilTs = 0; // Кратковременная блокировка переопределения направления сервером
-let previewPhysicsEngine = null; // Локальный движок физики для превью
-let hiddenThrottleMs = 100; // при скрытой вкладке обновляем ~10 FPS
+let lastServerState = null // Кэшируем последнее состояние от сервера
+let isPlaying = false
+let wsClient
+let isInitialized = false // Флаг для предотвращения повторной инициализации
+let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
+let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
+let previewPhysicsEngine = null // Локальный движок физики для превью
+let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
 if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
-  hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs;
+  hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
 }
-let physicsInterval = null; // Глобальный интервал физики для возможности остановки извне
-let previewFsCanvas = null;
-let previewFsRenderer = null;
-let isPreviewFullscreen = false;
-let fsPanelHideTimer = null;
-const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 };
+let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
+let previewFsCanvas = null
+let previewFsRenderer = null
+let isPreviewFullscreen = false
+let fsPanelHideTimer = null
+const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
 document.addEventListener('DOMContentLoaded', () => {
-  initializeController().catch(debugError);
-  bbCounters.initDom();
-  const autoStopPassesInput = document.getElementById('autoStopPassesInput');
-  const autoStopSecondsInput = document.getElementById('autoStopSecondsInput');
+  initializeController().catch(debugError)
+  bbCounters.initDom()
+  const autoStopPassesInput = document.getElementById('autoStopPassesInput')
+  const autoStopSecondsInput = document.getElementById('autoStopSecondsInput')
   if (autoStopPassesInput) {
     autoStopPassesInput.addEventListener('input', () => {
       bbCounters.autoStopPasses = Math.max(
         0,
-        Number.parseInt(autoStopPassesInput.value, 10) || 0,
-      );
-    });
+        Number.parseInt(autoStopPassesInput.value, 10) || 0
+      )
+    })
   }
   if (autoStopSecondsInput) {
     autoStopSecondsInput.addEventListener('input', () => {
       bbCounters.autoStopSeconds = Math.max(
         0,
-        Number.parseInt(autoStopSecondsInput.value, 10) || 0,
-      );
-    });
+        Number.parseInt(autoStopSecondsInput.value, 10) || 0
+      )
+    })
   }
   globalThis.addEventListener('resize', () => {
-    const size = globalThis.__current?.viewerScreenSize;
+    const size = globalThis.__current?.viewerScreenSize
     if (size?.width > 0 && size?.height > 0) {
-      updatePreviewSize(size);
+      updatePreviewSize(size)
     }
-  });
+  })
   // Update viewer links when theme changes
   globalThis.addEventListener('bb_theme_changed', () => {
-    const sid = globalThis.__current?.sessionId;
+    const sid = globalThis.__current?.sessionId
     if (sid) {
-      updateViewerLink(sid);
-      const fsLink = document.getElementById('fsViewLink');
-      if (fsLink) fsLink.value = buildViewerUrl(sid);
+      updateViewerLink(sid)
+      const fsLink = document.getElementById('fsViewLink')
+      if (fsLink) fsLink.value = buildViewerUrl(sid)
     }
-  });
-});
+  })
+})
 /**
  * Современная инициализация контроллера с улучшенной обработкой ошибок
  */
 async function initializeController() {
-  const logger = createLogger('Controller');
+  const logger = createLogger('Controller')
   try {
-    if (globalThis.__current) globalThis.__current.isInitializing = true;
-    const sessionId = getSessionIdFromUrl();
+    if (globalThis.__current) globalThis.__current.isInitializing = true
+    const sessionId = getSessionIdFromUrl()
     if (!sessionId) {
-      debugError('ID сессии не найден в URL');
+      debugError('ID сессии не найден в URL')
       showCriticalError(
         globalThis.i18n?.t('controller.errorTitle') || 'Error',
-        'ID сессии не найден в URL',
-      );
-      if (globalThis.__current) globalThis.__current.isInitializing = false;
-      return;
+        'ID сессии не найден в URL'
+      )
+      if (globalThis.__current) globalThis.__current.isInitializing = false
+      return
     }
-    globalThis.__current.sessionId = sessionId;
-    await registerControllerOnServer(sessionId, logger);
-    await initializeDOMElements(sessionId);
-    await initializePreviewUI();
-    initializeComponents();
-    await initializePreview();
-    setupFullscreenListeners();
-    await initializeWebSocketClient(sessionId);
+    globalThis.__current.sessionId = sessionId
+    await registerControllerOnServer(sessionId, logger)
+    await initializeDOMElements(sessionId)
+    await initializePreviewUI()
+    initializeComponents()
+    await initializePreview()
+    setupFullscreenListeners()
+    await initializeWebSocketClient(sessionId)
     // Note: isInitializing will be reset to false in websocket 'open' handler
   } catch (error) {
-    if (globalThis.__current) globalThis.__current.isInitializing = false;
-    debugError('Error initializing controller:', error);
-    let errorMsg = error?.message || error;
+    if (globalThis.__current) globalThis.__current.isInitializing = false
+    debugError('Error initializing controller:', error)
+    let errorMsg = error?.message || error
     if (
       errorMsg?.includes('Session with this ID not found') ||
       errorMsg?.includes('not found')
     ) {
       errorMsg =
         globalThis.i18n?.t('restore.notFound') ||
-        'Session with this ID not found. Please check the URL and try again.';
+        'Session with this ID not found. Please check the URL and try again.'
     } else if (errorMsg?.includes('Realtime connection')) {
       errorMsg =
         globalThis.i18n?.t('controller.connectionError') ||
-        'Failed to connect to session. Please reload the page and try again.';
+        'Failed to connect to session. Please reload the page and try again.'
     }
     showCriticalError(
       globalThis.i18n?.t('controller.errorTitle') || 'Error',
-      errorMsg,
-    );
+      errorMsg
+    )
   }
 }
 async function registerControllerOnServer(sessionId, logger) {
@@ -171,9 +171,9 @@ async function registerControllerOnServer(sessionId, logger) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      },
-    );
+        body: JSON.stringify({})
+      }
+    )
     if (connectResponse.ok) {
       // Connection established
     } else {
@@ -184,57 +184,57 @@ async function registerControllerOnServer(sessionId, logger) {
   }
 }
 async function initializePreviewUI() {
-  const previewWrap = document.getElementById('previewWrap');
+  const previewWrap = document.getElementById('previewWrap')
   if (previewWrap) {
-    previewWrap.style.display = 'block';
+    previewWrap.style.display = 'block'
   }
 }
 function setupFullscreenListeners() {
-  const openFsBtn = document.getElementById('openPreviewFullscreenBtn');
-  const exitFsBtn = document.getElementById('exitPreviewFullscreenBtn');
-  previewFsCanvas = document.getElementById('previewFullscreenCanvas');
-  document.addEventListener('keydown', handleFullscreenKeydown, true);
-  globalThis.addEventListener('popstate', handlePopState);
+  const openFsBtn = document.getElementById('openPreviewFullscreenBtn')
+  const exitFsBtn = document.getElementById('exitPreviewFullscreenBtn')
+  previewFsCanvas = document.getElementById('previewFullscreenCanvas')
+  document.addEventListener('keydown', handleFullscreenKeydown, true)
+  globalThis.addEventListener('popstate', handlePopState)
   if (openFsBtn) {
     openFsBtn.addEventListener('click', () => {
-      openPreviewFullscreen();
-    });
+      openPreviewFullscreen()
+    })
   }
   if (exitFsBtn) {
-    exitFsBtn.addEventListener('click', closePreviewFullscreen);
+    exitFsBtn.addEventListener('click', closePreviewFullscreen)
   }
   globalThis.addEventListener('resize', () => {
-    if (isPreviewFullscreen) resizePreviewFullscreen();
-  });
+    if (isPreviewFullscreen) resizePreviewFullscreen()
+  })
 }
 function handleFullscreenKeydown(e) {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-    return;
+    return
   }
-  const key = e?.key?.toLowerCase();
+  const key = e?.key?.toLowerCase()
   if (key === ' ' || e?.code === 'Space') {
-    e.preventDefault();
-    e.stopPropagation();
-    togglePlayPause();
+    e.preventDefault()
+    e.stopPropagation()
+    togglePlayPause()
   } else if (key === 'f') {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
     if (isPreviewFullscreen) {
-      closePreviewFullscreen();
+      closePreviewFullscreen()
     } else {
-      openPreviewFullscreen();
+      openPreviewFullscreen()
     }
   } else if (key === 'escape' && isPreviewFullscreen) {
-    e.preventDefault();
-    e.stopPropagation();
-    closePreviewFullscreen();
+    e.preventDefault()
+    e.stopPropagation()
+    closePreviewFullscreen()
   }
 }
 function handlePopState() {
   if (isPreviewFullscreen) {
-    closePreviewFullscreen();
+    closePreviewFullscreen()
   } else if (globalThis.location.hash === '#fullscreen-preview') {
-    openPreviewFullscreen();
+    openPreviewFullscreen()
   }
 }
 /**
@@ -242,244 +242,244 @@ function handlePopState() {
  */
 async function completeInitialization() {
   if (isInitialized) {
-    return; // Уже инициализировано
+    return // Уже инициализировано
   }
-  isInitialized = true;
-  const logger = createLogger('Controller');
+  isInitialized = true
+  const logger = createLogger('Controller')
   try {
     // Initialization logic will be added here
   } catch (error) {
-    await handleInitializationError(error, logger);
+    await handleInitializationError(error, logger)
   }
 }
 /**
  * Современная инициализация DOM элементов
  */
 async function initializeDOMElements(sessionId) {
-  const curSidEl = document.getElementById('curSid');
+  const curSidEl = document.getElementById('curSid')
   if (curSidEl) {
-    curSidEl.textContent = sessionId;
+    curSidEl.textContent = sessionId
   }
-  const sessionInfoEl = document.getElementById('sessionInfo');
+  const sessionInfoEl = document.getElementById('sessionInfo')
   if (sessionInfoEl) {
-    const timestamp = new Date().toLocaleString();
-    sessionInfoEl.textContent = `Создана: ${timestamp}`;
+    const timestamp = new Date().toLocaleString()
+    sessionInfoEl.textContent = `Создана: ${timestamp}`
   }
-  const sessionTimestampEl = document.getElementById('sessionTimestamp');
+  const sessionTimestampEl = document.getElementById('sessionTimestamp')
   if (sessionTimestampEl) {
-    sessionTimestampEl.textContent = `Создана: ${new Date().toLocaleString()}`;
+    sessionTimestampEl.textContent = `Создана: ${new Date().toLocaleString()}`
   }
-  const viewerSessionIdEl = document.getElementById('viewerSessionId');
+  const viewerSessionIdEl = document.getElementById('viewerSessionId')
   if (viewerSessionIdEl) {
-    viewerSessionIdEl.textContent = sessionId;
+    viewerSessionIdEl.textContent = sessionId
   }
-  const viewerStatusEl = document.getElementById('viewerStatus');
+  const viewerStatusEl = document.getElementById('viewerStatus')
   if (viewerStatusEl) {
     viewerStatusEl.textContent =
-      globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...';
-    viewerStatusEl.classList.add('disconnected');
+      globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
+    viewerStatusEl.classList.add('disconnected')
   }
-  updateViewerLink(sessionId);
+  updateViewerLink(sessionId)
 }
 function buildViewerUrl(sessionId) {
-  return `${globalThis.location.origin}/s/${sessionId}`;
+  return `${globalThis.location.origin}/s/${sessionId}`
 }
 function updateViewerLink(sessionId) {
-  const viewLinkInput = document.getElementById('view');
+  const viewLinkInput = document.getElementById('view')
   if (viewLinkInput) {
-    viewLinkInput.value = buildViewerUrl(sessionId);
+    viewLinkInput.value = buildViewerUrl(sessionId)
   }
 }
 /**
  * Современная инициализация RealtimeClient (WebSocket по умолчанию)
  */
 async function initializeWebSocketClient(sessionId) {
-  const logger = createLogger('RealtimeClient');
+  const logger = createLogger('RealtimeClient')
   wsClient = new RealtimeClient(sessionId, 'controller', {
     maxReconnectAttempts: 10,
     reconnectInterval: 2000,
     heartbeatInterval: 25000,
-    coalesceDelayMs: 8, // Уменьшаем задержку для большей плавности
-  });
-  globalThis.wsClient = wsClient;
-  setupWebSocketEventHandlers(wsClient, logger, sessionId);
+    coalesceDelayMs: 8 // Уменьшаем задержку для большей плавности
+  })
+  globalThis.wsClient = wsClient
+  setupWebSocketEventHandlers(wsClient, logger, sessionId)
   await Promise.race([
     (async () => {
       try {
-        await wsClient.connect();
+        await wsClient.connect()
       } catch (error) {
-        throw new Error(`Realtime connection failed: ${error.message}`);
+        throw new Error(`Realtime connection failed: ${error.message}`)
       }
     })(),
     new Promise((_resolve, reject) =>
-      setTimeout(() => reject(new Error('Realtime connection timeout')), 15000),
-    ),
-  ]);
+      setTimeout(() => reject(new Error('Realtime connection timeout')), 15000)
+    )
+  ])
 }
 /**
  * Настройка обработчиков RealtimeClient событий
  */
 function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
-  let lastPlayingState = false;
+  let lastPlayingState = false
   wsClient.on('open', (event) => {
     // isInitializing stays true until initial_state arrives (prevents warning on page open).
     // On reconnection reset immediately — initial_state won't arrive again.
     if (event?.isReconnection && globalThis.__current) {
-      globalThis.__current.isInitializing = false;
+      globalThis.__current.isInitializing = false
     } else {
       // Safety: if initial_state never arrives, unblock after 5s
       setTimeout(() => {
         if (globalThis.__current?.isInitializing) {
-          globalThis.__current.isInitializing = false;
+          globalThis.__current.isInitializing = false
         }
-      }, 5000);
+      }, 5000)
     }
-    updateConnectionStatus(true);
+    updateConnectionStatus(true)
     // Lazy-load non-critical modules after connection established
     if (!event?.isReconnection && !globalThis.__nonCriticalLoaded) {
-      globalThis.__nonCriticalLoaded = true;
-      const s = document.createElement('script');
+      globalThis.__nonCriticalLoaded = true
+      const s = document.createElement('script')
       s.src =
         '/js/controller-settings.js?v=' +
-        (document.querySelector('meta[name="version"]')?.content || '');
-      s.defer = true;
-      document.body.appendChild(s);
+        (document.querySelector('meta[name="version"]')?.content || '')
+      s.defer = true
+      document.body.appendChild(s)
     }
     // Sync current language to session so viewer gets the same locale
-    const currentLang = localStorage.getItem('emdr-language');
+    const currentLang = localStorage.getItem('emdr-language')
     if (currentLang && sessionId) {
       fetch(`/api/session/${sessionId}/language`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ language: currentLang }),
-      }).catch(() => {});
+        body: JSON.stringify({ language: currentLang })
+      }).catch(() => {})
     }
     if (event?.isReconnection) {
       safeSend('request_state_sync', {
         timestamp: Date.now(),
         sessionId: sessionId,
-        role: 'controller',
-      });
+        role: 'controller'
+      })
       if (lastPlayingState && globalThis.__current?.viewerConnected) {
         setTimeout(async () => {
           // Don't restore if user explicitly changed play state recently
-          if (performance.now() < __ignoreServerPausedUntilTs) return;
+          if (performance.now() < __ignoreServerPausedUntilTs) return
           // Verify server is actually playing before restoring local state
           try {
-            const resp = await fetch(`/api/session/${sessionId}/state`);
-            if (!resp.ok) return;
-            const state = await resp.json();
-            if (state.paused === true) return; // Server is paused, don't restore
+            const resp = await fetch(`/api/session/${sessionId}/state`)
+            if (!resp.ok) return
+            const state = await resp.json()
+            if (state.paused === true) return // Server is paused, don't restore
           } catch {
-            return; // If fetch fails, don't restore
+            return // If fetch fails, don't restore
           }
           if (previewPhysicsEngine) {
-            previewPhysicsEngine.setPaused(false);
+            previewPhysicsEngine.setPaused(false)
           }
-          isPlaying = true;
-          globalThis.__current.isPlaying = true;
-          globalThis.isPlaying = true;
-          updatePlayPauseButton();
-        }, 500);
+          isPlaying = true
+          globalThis.__current.isPlaying = true
+          globalThis.isPlaying = true
+          updatePlayPauseButton()
+        }, 500)
       }
     }
     safeSend('controller_connected', {
       timestamp: Date.now(),
       sessionId: sessionId,
-      role: 'controller',
-    });
-  });
+      role: 'controller'
+    })
+  })
   wsClient.on('close', (event) => {
-    updateConnectionStatus(false);
-    lastPlayingState = isPlaying;
+    updateConnectionStatus(false)
+    lastPlayingState = isPlaying
     if (event.code === 1006) {
       if (previewPhysicsEngine) {
-        previewPhysicsEngine.setPaused(true);
+        previewPhysicsEngine.setPaused(true)
         const centerX =
           previewPhysicsEngine.centerX ||
-          (globalThis.__previewCanvas?.width || 500) / 2;
+          (globalThis.__previewCanvas?.width || 500) / 2
         const centerY =
           previewPhysicsEngine.centerY ||
-          (globalThis.__previewCanvas?.height || 375) / 2;
-        previewPhysicsEngine.setPosition(centerX, centerY);
-        previewPhysicsEngine.setVelocity(0, 0);
+          (globalThis.__previewCanvas?.height || 375) / 2
+        previewPhysicsEngine.setPosition(centerX, centerY)
+        previewPhysicsEngine.setVelocity(0, 0)
       }
-      isPlaying = false;
-      globalThis.__current.viewerConnected = false;
-      updatePlayPauseButton();
+      isPlaying = false
+      globalThis.__current.viewerConnected = false
+      updatePlayPauseButton()
     }
-    updateViewerStatusUI();
-  });
-  wsClient.on('error', () => {});
+    updateViewerStatusUI()
+  })
+  wsClient.on('error', () => {})
   wsClient.on(WS_MSG.viewerStatus, (data) => {
-    const wasConnected = globalThis.__current.viewerConnected;
+    const wasConnected = globalThis.__current.viewerConnected
     const isConnected =
-      data.connected === true || data.viewerConnected === true;
-    globalThis.__current.viewerConnected = isConnected;
+      data.connected === true || data.viewerConnected === true
+    globalThis.__current.viewerConnected = isConnected
     if (data.screenSize) {
-      globalThis.__current.viewerScreenSize = data.screenSize;
+      globalThis.__current.viewerScreenSize = data.screenSize
     }
     if (isConnected) {
-      completeInitialization().catch(debugError);
-      updateViewerStatusUI();
+      completeInitialization().catch(debugError)
+      updateViewerStatusUI()
     }
     if (wasConnected && !isConnected) {
-      globalThis.__current.viewerAudioActivated = false;
-      globalThis.__current.viewerScreenSize = null;
-      isPlaying = false;
-      globalThis.__current.isPlaying = false;
+      globalThis.__current.viewerAudioActivated = false
+      globalThis.__current.viewerScreenSize = null
+      isPlaying = false
+      globalThis.__current.isPlaying = false
       if (previewPhysicsEngine) {
-        previewPhysicsEngine.setPaused(true);
+        previewPhysicsEngine.setPaused(true)
       }
-      setDirectionState(1, 0);
-      setCurrentDirectionMode('horizontal');
-      updateDirectionDisplay(1, 0);
-      updateDirectionButtons();
+      setDirectionState(1, 0)
+      setCurrentDirectionMode('horizontal')
+      updateDirectionDisplay(1, 0)
+      updateDirectionButtons()
       if (bbCounters && typeof bbCounters.resetAll === 'function') {
-        bbCounters.resetAll();
+        bbCounters.resetAll()
       }
-      lastServerState = null;
-      const viewerStatusEl = document.getElementById('viewerStatus');
+      lastServerState = null
+      const viewerStatusEl = document.getElementById('viewerStatus')
       if (viewerStatusEl) {
         viewerStatusEl.textContent =
-          globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...';
-        viewerStatusEl.classList.remove('connected');
-        viewerStatusEl.classList.add('disconnected');
-        viewerStatusEl.style.fontWeight = '400';
+          globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
+        viewerStatusEl.classList.remove('connected')
+        viewerStatusEl.classList.add('disconnected')
+        viewerStatusEl.style.fontWeight = '400'
       }
-      centerBallInViewer();
-      showWaitingForViewer();
-      updatePlayPauseButton();
-      updateViewerStatusUI();
+      centerBallInViewer()
+      showWaitingForViewer()
+      updatePlayPauseButton()
+      updateViewerStatusUI()
     }
-  });
+  })
   wsClient.on(WS_MSG.initialState, (state) => {
     // Page is fully ready — allow warnings from now on
-    if (globalThis.__current) globalThis.__current.isInitializing = false;
-    lastServerState = state; // Кэшируем состояние
+    if (globalThis.__current) globalThis.__current.isInitializing = false
+    lastServerState = state // Кэшируем состояние
     if (typeof state.viewerConnected === 'boolean') {
-      globalThis.__current.viewerConnected = state.viewerConnected;
+      globalThis.__current.viewerConnected = state.viewerConnected
     }
     if (typeof state.viewerAudioActivated === 'boolean') {
-      globalThis.__current.viewerAudioActivated = state.viewerAudioActivated;
+      globalThis.__current.viewerAudioActivated = state.viewerAudioActivated
     }
     if (state.viewerScreenSize && state.viewerScreenSize.width > 0) {
-      globalThis.__current.viewerScreenSize = state.viewerScreenSize;
-      updatePreviewSize(state.viewerScreenSize);
-      updateViewerInfo(state.viewerScreenSize);
+      globalThis.__current.viewerScreenSize = state.viewerScreenSize
+      updatePreviewSize(state.viewerScreenSize)
+      updateViewerInfo(state.viewerScreenSize)
     }
-    applyServerStateToPreview(state);
-    syncUIWithState(state);
-    updateViewerAudioIndicators(); // Обновляем индикаторы звука
-    updateViewerStatusUI(); // Update status UI with connection info
-  });
+    applyServerStateToPreview(state)
+    syncUIWithState(state)
+    updateViewerAudioIndicators() // Обновляем индикаторы звука
+    updateViewerStatusUI() // Update status UI with connection info
+  })
   wsClient.on(WS_MSG.stateUpdate, (state) => {
-    lastServerState = state; // Кэшируем состояние
+    lastServerState = state // Кэшируем состояние
     if (typeof state.viewerConnected === 'boolean') {
-      const wasConnected = globalThis.__current.viewerConnected;
-      globalThis.__current.viewerConnected = state.viewerConnected;
+      const wasConnected = globalThis.__current.viewerConnected
+      globalThis.__current.viewerConnected = state.viewerConnected
       if (wasConnected !== state.viewerConnected) {
-        updateViewerStatusUI();
+        updateViewerStatusUI()
       }
       // FIXED: Always keep preview in clientSimulation mode for consistent physics.
       // The viewer also runs in clientSimulation: true — both sides use the same physics
@@ -490,109 +490,109 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     if (state.viewerScreenSize?.width > 0) {
       const prevSize = globalThis.__current?.viewerScreenSize || {
         width: 0,
-        height: 0,
-      };
-      const nextSize = state.viewerScreenSize;
+        height: 0
+      }
+      const nextSize = state.viewerScreenSize
       const sizeChanged =
         !prevSize ||
         prevSize.width !== nextSize.width ||
-        prevSize.height !== nextSize.height;
-      globalThis.__current.viewerConnected = true;
-      globalThis.__current.viewerScreenSize = nextSize;
+        prevSize.height !== nextSize.height
+      globalThis.__current.viewerConnected = true
+      globalThis.__current.viewerScreenSize = nextSize
       if (sizeChanged) {
-        updatePhysicsEngineWorldSize(nextSize);
-        const canvas = document.getElementById('preview');
+        updatePhysicsEngineWorldSize(nextSize)
+        const canvas = document.getElementById('preview')
         if (canvas) {
           const { previewWidth, previewHeight } = calculatePreviewDimensions(
             canvas,
-            nextSize,
-          );
-          setCanvasDimensions(canvas, previewWidth, previewHeight);
+            nextSize
+          )
+          setCanvasDimensions(canvas, previewWidth, previewHeight)
         }
-        updateViewerInfo(nextSize);
-        updateViewerStatusUI();
+        updateViewerInfo(nextSize)
+        updateViewerStatusUI()
         if (isPreviewFullscreen) {
-          updateFullscreenViewerStatus();
+          updateFullscreenViewerStatus()
         }
       }
     }
-    applyServerStateToPreview(state);
-    updateViewerAudioIndicators(); // Обновляем индикаторы звука при каждом обновлении состояния
-    _syncUIPause(state);
-    _syncUIDirection(state);
-  });
+    applyServerStateToPreview(state)
+    updateViewerAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
+    _syncUIPause(state)
+    _syncUIDirection(state)
+  })
   wsClient.on(WS_MSG.netMetrics, ({ jitterMs }) => {
-    applyAdaptiveSmoothing(previewPhysicsEngine, jitterMs);
-  });
+    applyAdaptiveSmoothing(previewPhysicsEngine, jitterMs)
+  })
   wsClient.on(WS_MSG.viewerAudioActivated, (data) => {
     if (globalThis.__current) {
-      globalThis.__current.viewerAudioActivated = data.activated;
+      globalThis.__current.viewerAudioActivated = data.activated
     }
-    updateViewerAudioIndicators();
-  });
+    updateViewerAudioIndicators()
+  })
   // Bounce sync - snap preview to viewer's exact bounce position + direction
   // Skip if preview is doing seekingCenter animation to prevent interrupting return-to-center
   wsClient.on(WS_MSG.bounceSync, (data) => {
-    if (!previewPhysicsEngine) return;
+    if (!previewPhysicsEngine) return
     // Don't interrupt seekingCenter animation (return-to-center on pause)
-    if (previewPhysicsEngine.state?.seekingCenter) return;
+    if (previewPhysicsEngine.state?.seekingCenter) return
     if (typeof data.x === 'number' && typeof data.y === 'number') {
       // FIXED: Only snap if drift is significant (> 50px).
       // Small drifts are handled by the spring-damper drift correction which is smoother.
       // Hard-snapping on every bounce causes visible jitter when network jitter is low.
       const drift = Math.hypot(
         data.x - previewPhysicsEngine.ball.x,
-        data.y - previewPhysicsEngine.ball.y,
-      );
+        data.y - previewPhysicsEngine.ball.y
+      )
       if (drift > 50) {
         // Snap position on physics engine
-        previewPhysicsEngine.ball.x = data.x;
-        previewPhysicsEngine.ball.y = data.y;
-        previewPhysicsEngine._prevPos.x = data.x;
-        previewPhysicsEngine._prevPos.y = data.y;
-        previewPhysicsEngine._currPos.x = data.x;
-        previewPhysicsEngine._currPos.y = data.y;
+        previewPhysicsEngine.ball.x = data.x
+        previewPhysicsEngine.ball.y = data.y
+        previewPhysicsEngine._prevPos.x = data.x
+        previewPhysicsEngine._prevPos.y = data.y
+        previewPhysicsEngine._currPos.x = data.x
+        previewPhysicsEngine._currPos.y = data.y
       }
       // Always sync direction on bounce (direction is critical for post-bounce movement)
       if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
-        previewPhysicsEngine.state.lastDirection.x = data.dirX;
-        previewPhysicsEngine.state.lastDirection.y = data.dirY;
+        previewPhysicsEngine.state.lastDirection.x = data.dirX
+        previewPhysicsEngine.state.lastDirection.y = data.dirY
         // Recalculate velocity from new direction
         const pps =
           (previewPhysicsEngine.ball.speed / 100) *
-          previewPhysicsEngine.options.maxSpeed;
-        previewPhysicsEngine.ball.vx = data.dirX * pps;
-        previewPhysicsEngine.ball.vy = data.dirY * pps;
+          previewPhysicsEngine.options.maxSpeed
+        previewPhysicsEngine.ball.vx = data.dirX * pps
+        previewPhysicsEngine.ball.vy = data.dirY * pps
       }
       // Sync side info for debugging
       if (data.side) {
-        previewPhysicsEngine._lastBounceSide = data.side;
+        previewPhysicsEngine._lastBounceSide = data.side
       }
     }
-  });
+  })
   wsClient.on('maxReconnectAttemptsReached', () => {
-    logger.error('Max reconnect attempts reached');
+    logger.error('Max reconnect attempts reached')
     showCriticalError(
       globalThis.i18n?.t('controller.connectionFailed') || 'Connection Failed',
       globalThis.i18n?.t('controller.connectionFailed') ||
-        'Cannot connect to server. Please check your internet connection and reload the page.',
-    );
-  });
+        'Cannot connect to server. Please check your internet connection and reload the page.'
+    )
+  })
   wsClient.on('session_lost', () => {
-    logger.error('Session lost (evicted by server)');
+    logger.error('Session lost (evicted by server)')
     showCriticalError(
       globalThis.i18n?.t('controller.sessionLost') || 'Session Expired',
       globalThis.i18n?.t('controller.sessionLostMsg') ||
-        'Your session has expired or was removed from the server. Please reload the page.',
-    );
-  });
+        'Your session has expired or was removed from the server. Please reload the page.'
+    )
+  })
 }
 /**
  * Применяет состояние от viewer/сервера к превью контроллера
  * АРХИТЕКТУРА: Превью в viewer режиме (isViewer: true) следует за состоянием от viewer через WebSocket
  */
 function applyServerStateToPreview(state) {
-  if (!previewPhysicsEngine || !state) return;
+  if (!previewPhysicsEngine || !state) return
   if (
     state.viewerScreenSize &&
     typeof state.viewerScreenSize.width === 'number' &&
@@ -600,43 +600,43 @@ function applyServerStateToPreview(state) {
     state.viewerScreenSize.width > 0 &&
     state.viewerScreenSize.height > 0
   ) {
-    const currentW = previewPhysicsEngine.options.worldWidth;
-    const currentH = previewPhysicsEngine.options.worldHeight;
+    const currentW = previewPhysicsEngine.options.worldWidth
+    const currentH = previewPhysicsEngine.options.worldHeight
     if (
       currentW !== state.viewerScreenSize.width ||
       currentH !== state.viewerScreenSize.height
     ) {
       previewPhysicsEngine.setWorldSize(
         state.viewerScreenSize.width,
-        state.viewerScreenSize.height,
-      );
+        state.viewerScreenSize.height
+      )
     }
   }
   // First server update after play pressed — snap to server position and unpause.
   // Safe: if user pressed stop, _pendingPlaySync is already cleared in _setPlayPauseState.
   if (previewPhysicsEngine._pendingPlaySync && state.paused === false) {
-    previewPhysicsEngine._pendingPlaySync = false;
-    previewPhysicsEngine._hasReceivedFirstMovingUpdate = true;
+    previewPhysicsEngine._pendingPlaySync = false
+    previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
     if (typeof state.x === 'number' && typeof state.y === 'number') {
-      previewPhysicsEngine.ball.x = state.x;
-      previewPhysicsEngine.ball.y = state.y;
-      previewPhysicsEngine._prevPos.x = state.x;
-      previewPhysicsEngine._prevPos.y = state.y;
-      previewPhysicsEngine._currPos.x = state.x;
-      previewPhysicsEngine._currPos.y = state.y;
+      previewPhysicsEngine.ball.x = state.x
+      previewPhysicsEngine.ball.y = state.y
+      previewPhysicsEngine._prevPos.x = state.x
+      previewPhysicsEngine._prevPos.y = state.y
+      previewPhysicsEngine._currPos.x = state.x
+      previewPhysicsEngine._currPos.y = state.y
     }
     if (state.dirX !== undefined)
-      previewPhysicsEngine.state.lastDirection.x = state.dirX;
+      previewPhysicsEngine.state.lastDirection.x = state.dirX
     if (state.dirY !== undefined)
-      previewPhysicsEngine.state.lastDirection.y = state.dirY;
-    if (state.speed !== undefined) previewPhysicsEngine.setSpeed(state.speed);
-    previewPhysicsEngine.setPaused(false);
-    if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall);
-    if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg);
-    isPlaying = true;
-    updatePlayPauseButton();
-    bbCounters.start();
-    return;
+      previewPhysicsEngine.state.lastDirection.y = state.dirY
+    if (state.speed !== undefined) previewPhysicsEngine.setSpeed(state.speed)
+    previewPhysicsEngine.setPaused(false)
+    if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall)
+    if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg)
+    isPlaying = true
+    updatePlayPauseButton()
+    bbCounters.start()
+    return
   }
   if (previewPhysicsEngine.options.clientSimulation) {
     const localCommand = {
@@ -645,18 +645,18 @@ function applyServerStateToPreview(state) {
       speed: state.speed,
       colorBall: state.colorBall,
       colorBg: state.colorBg,
-      ballSize: state.ballSize,
-    };
+      ballSize: state.ballSize
+    }
     if (
       localCommand.dirX !== undefined &&
       localCommand.dirY !== undefined &&
       Math.abs(localCommand.dirX) < 1e-6 &&
       Math.abs(localCommand.dirY) < 1e-6
     ) {
-      delete localCommand.dirX;
-      delete localCommand.dirY;
+      delete localCommand.dirX
+      delete localCommand.dirY
     }
-    previewPhysicsEngine.applyCommand(localCommand);
+    previewPhysicsEngine.applyCommand(localCommand)
     // Store server position for drift correction (same mechanism as viewer)
     if (
       typeof state.x === 'number' &&
@@ -665,28 +665,28 @@ function applyServerStateToPreview(state) {
     ) {
       // First update after play: hard-snap to server position to start in sync
       if (!previewPhysicsEngine._hasReceivedFirstMovingUpdate) {
-        previewPhysicsEngine._hasReceivedFirstMovingUpdate = true;
-        previewPhysicsEngine.ball.x = state.x;
-        previewPhysicsEngine.ball.y = state.y;
-        previewPhysicsEngine._prevPos.x = state.x;
-        previewPhysicsEngine._prevPos.y = state.y;
-        previewPhysicsEngine._currPos.x = state.x;
-        previewPhysicsEngine._currPos.y = state.y;
+        previewPhysicsEngine._hasReceivedFirstMovingUpdate = true
+        previewPhysicsEngine.ball.x = state.x
+        previewPhysicsEngine.ball.y = state.y
+        previewPhysicsEngine._prevPos.x = state.x
+        previewPhysicsEngine._prevPos.y = state.y
+        previewPhysicsEngine._currPos.x = state.x
+        previewPhysicsEngine._currPos.y = state.y
       } else {
         // Store server position for lightweight drift correction (checked every 3s by physics engine)
         previewPhysicsEngine._lastServerPos = {
           x: state.x,
           y: state.y,
-          ts: performance.now(),
-        };
+          ts: performance.now()
+        }
       }
     }
   } else {
-    previewPhysicsEngine.applyCommand(state);
+    previewPhysicsEngine.applyCommand(state)
   }
   const pausedState = previewPhysicsEngine.options.clientSimulation
     ? previewPhysicsEngine.state.paused
-    : state.paused;
+    : state.paused
   // Apply paused state from server only when it changes AND user hasn't recently toggled play/pause.
   // Without the timestamp guard, server's delayed response overrides user's stop action (double-space bug).
   if (
@@ -694,10 +694,10 @@ function applyServerStateToPreview(state) {
     previewPhysicsEngine.state.paused !== state.paused &&
     performance.now() >= __ignoreServerPausedUntilTs
   ) {
-    previewPhysicsEngine.setPaused(state.paused);
+    previewPhysicsEngine.setPaused(state.paused)
     // Reset first-update flag on pause so next play starts with hard-snap
     if (state.paused) {
-      previewPhysicsEngine._hasReceivedFirstMovingUpdate = false;
+      previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
     }
   }
   if (
@@ -705,19 +705,19 @@ function applyServerStateToPreview(state) {
     performance.now() >= __ignoreServerPausedUntilTs
   ) {
     // Sync isPlaying with server state (only when user hasn't recently toggled)
-    const newIsPlaying = !state.paused;
+    const newIsPlaying = !state.paused
     if (isPlaying !== newIsPlaying) {
-      isPlaying = newIsPlaying;
-      updatePlayPauseButton();
+      isPlaying = newIsPlaying
+      updatePlayPauseButton()
     }
     if (state.paused) {
-      bbCounters.stop(false);
+      bbCounters.stop(false)
     } else {
-      bbCounters.start();
+      bbCounters.start()
     }
   }
   if (lastServerState) {
-    detectAndCountBounceFromServer(lastServerState, state);
+    detectAndCountBounceFromServer(lastServerState, state)
   }
 }
 /**
@@ -725,48 +725,48 @@ function applyServerStateToPreview(state) {
  * Physics engine runs at 60Hz tick rate; renderer interpolates between
  * _prevPos and _currPos using the accumulator fraction for smooth motion.
  */
-const PHYSICS_TICK_RATE = 60; // Гц
-const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE;
+const PHYSICS_TICK_RATE = 60 // Гц
+const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
 function physicsLoop() {
   if (previewPhysicsEngine) {
-    previewPhysicsEngine.update(PHYSICS_DT / 1000);
+    previewPhysicsEngine.update(PHYSICS_DT / 1000)
   }
 }
 function renderPreviewLoop(timestamp) {
   if (!previewPhysicsEngine || !globalThis.__previewRenderer) {
-    requestAnimationFrame(renderPreviewLoop);
-    return;
+    requestAnimationFrame(renderPreviewLoop)
+    return
   }
-  const now = performance.now();
-  const lastPhysicsUpdate = previewPhysicsEngine?.__lastPhysicsUpdateTs ?? now;
+  const now = performance.now()
+  const lastPhysicsUpdate = previewPhysicsEngine?.__lastPhysicsUpdateTs ?? now
   const alpha = Math.max(
     0,
-    Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT),
-  );
-  const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha);
-  const stateToRender = getScaledState(interpolatedState);
-  globalThis.__previewRenderer?.drawFrame(stateToRender);
+    Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT)
+  )
+  const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
+  const stateToRender = getScaledState(interpolatedState)
+  globalThis.__previewRenderer?.drawFrame(stateToRender)
   if (document.hidden) {
     setTimeout(
       () => requestAnimationFrame(renderPreviewLoop),
-      hiddenThrottleMs,
-    );
+      hiddenThrottleMs
+    )
   } else {
-    requestAnimationFrame(renderPreviewLoop);
+    requestAnimationFrame(renderPreviewLoop)
   }
 }
 /**
  * Обновление статуса соединения
  */
 function updateConnectionStatus(isConnected) {
-  const wsStatus = document.getElementById('wsStatus');
+  const wsStatus = document.getElementById('wsStatus')
   if (wsStatus) {
     wsStatus.className = isConnected
       ? 'status-indicator connected'
-      : 'status-indicator disconnected';
+      : 'status-indicator disconnected'
     wsStatus.textContent = isConnected
       ? globalThis.i18n?.t('controller.connected') || 'Connected'
-      : globalThis.i18n?.t('controller.disconnected') || 'Disconnected';
+      : globalThis.i18n?.t('controller.disconnected') || 'Disconnected'
   }
 }
 /**
@@ -779,34 +779,34 @@ function createLogger(moduleName) {
     warning: () => {},
     error: (message, data) => {
       if (data?.type === 'connection_closed' || message.includes('соединение'))
-        return;
-      console.error(`[${moduleName}] ${message}`, data || '');
-    },
-  };
+        return
+      console.error(`[${moduleName}] ${message}`, data || '')
+    }
+  }
 }
 /**
  * Кастомная ошибка приложения
  */
 class AppError extends Error {
   constructor(code, message) {
-    super(message);
-    this.name = 'AppError';
-    this.code = code;
-    this.timestamp = new Date().toISOString();
+    super(message)
+    this.name = 'AppError'
+    this.code = code
+    this.timestamp = new Date().toISOString()
   }
 }
 /**
  * Обработка ошибок инициализации
  */
 async function handleInitializationError(error, logger) {
-  logger.error('Критическая ошибка инициализации:', error);
+  logger.error('Критическая ошибка инициализации:', error)
   if (error instanceof AppError) {
     // AppError already logged with context
   }
 }
 function _syncUISpeed(ballState) {
   if (ballState.speed !== undefined) {
-    components.speed?.setSpeed(ballState.speed, true);
+    components.speed?.setSpeed(ballState.speed, true)
   }
 }
 function _syncUISize(ballState) {
@@ -815,15 +815,15 @@ function _syncUISize(ballState) {
     components.size &&
     typeof components.size.setSize === 'function'
   ) {
-    const sizes = [20, 40, 80, 100];
+    const sizes = [20, 40, 80, 100]
     const closestSize = sizes.reduce(
       (prev, curr) =>
         Math.abs(curr - ballState.radius) < Math.abs(prev - ballState.radius)
           ? curr
           : prev,
-      sizes[0], // initial value
-    );
-    components.size.setSize(closestSize);
+      sizes[0] // initial value
+    )
+    components.size.setSize(closestSize)
   }
 }
 function _syncUIColors(ballState) {
@@ -832,95 +832,95 @@ function _syncUIColors(ballState) {
     components.ballColor &&
     typeof components.ballColor.setColor === 'function'
   ) {
-    components.ballColor.setColor(ballState.colorBall);
+    components.ballColor.setColor(ballState.colorBall)
   }
   if (
     ballState.colorBg &&
     components.bgColor &&
     typeof components.bgColor.setColor === 'function'
   ) {
-    components.bgColor.setColor(ballState.colorBg);
+    components.bgColor.setColor(ballState.colorBg)
   }
 }
 function _syncUIPause(ballState) {
   if (ballState.paused !== undefined) {
-    const now = performance.now();
+    const now = performance.now()
     if (now >= __ignoreServerPausedUntilTs) {
-      isPlaying = !ballState.paused;
-      updatePlayPauseButton();
-      syncFsPlayPauseButton(); // Синхронизируем и полноэкранную кнопку
+      isPlaying = !ballState.paused
+      updatePlayPauseButton()
+      syncFsPlayPauseButton() // Синхронизируем и полноэкранную кнопку
     }
   }
 }
 function _syncUIDirection(ballState) {
   if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
-    const now = performance.now();
+    const now = performance.now()
     if (now < __ignoreServerDirectionUntilTs) {
-      return;
+      return
     }
-    const mode = getDirectionMode(ballState.dirX, ballState.dirY);
-    const currentMode = getCurrentDirectionMode();
+    const mode = getDirectionMode(ballState.dirX, ballState.dirY)
+    const currentMode = getCurrentDirectionMode()
     if (mode && mode !== currentMode) {
-      setDirectionState(ballState.dirX, ballState.dirY);
-      setCurrentDirectionMode(mode);
-      updateDirectionButtons();
-      updateDirectionDisplay(ballState.dirX, ballState.dirY);
+      setDirectionState(ballState.dirX, ballState.dirY)
+      setCurrentDirectionMode(mode)
+      updateDirectionButtons()
+      updateDirectionDisplay(ballState.dirX, ballState.dirY)
     }
   }
 }
 function syncUIWithState(ballState) {
   try {
-    if (!ballState) return;
-    updatePreviewSize(ballState.viewerScreenSize);
-    globalThis.__current.viewerConnected = ballState.viewerConnected;
-    globalThis.__current.viewerScreenSize = ballState.viewerScreenSize;
-    updateViewerStatusUI();
-    _syncUISpeed(ballState);
-    _syncUISize(ballState);
-    _syncUIColors(ballState);
-    _syncUIPause(ballState);
-    _syncUIDirection(ballState);
+    if (!ballState) return
+    updatePreviewSize(ballState.viewerScreenSize)
+    globalThis.__current.viewerConnected = ballState.viewerConnected
+    globalThis.__current.viewerScreenSize = ballState.viewerScreenSize
+    updateViewerStatusUI()
+    _syncUISpeed(ballState)
+    _syncUISize(ballState)
+    _syncUIColors(ballState)
+    _syncUIPause(ballState)
+    _syncUIDirection(ballState)
     if (ballState.soundEnabled !== undefined) {
       const soundEnabledCheckbox = document.getElementById(
-        'soundEnabledCheckbox',
-      );
+        'soundEnabledCheckbox'
+      )
       if (soundEnabledCheckbox) {
-        soundEnabledCheckbox.checked = Boolean(ballState.soundEnabled);
-        const soundTypeControl = document.getElementById('soundTypeControl');
+        soundEnabledCheckbox.checked = Boolean(ballState.soundEnabled)
+        const soundTypeControl = document.getElementById('soundTypeControl')
         if (soundTypeControl) {
           if (ballState.soundEnabled) {
-            soundTypeControl.classList.add('enabled');
+            soundTypeControl.classList.add('enabled')
           } else {
-            soundTypeControl.classList.remove('enabled');
+            soundTypeControl.classList.remove('enabled')
           }
         }
       }
     }
     if (ballState.soundType) {
-      const soundTypeSelect = document.getElementById('soundTypeSelect');
+      const soundTypeSelect = document.getElementById('soundTypeSelect')
       if (soundTypeSelect) {
-        soundTypeSelect.value = ballState.soundType;
+        soundTypeSelect.value = ballState.soundType
       }
     }
   } catch (err) {
-    debugWarn('Error in syncUIWithState:', err);
+    debugWarn('Error in syncUIWithState:', err)
   }
 }
 function _initializeSpeedControl() {
-  const container = document.getElementById('speedControl');
+  const container = document.getElementById('speedControl')
   if (!container) {
-    return;
+    return
   }
   components.speed = sharedComponents.createSpeedControl(container, {
     onSpeedChange: throttle((speed) => {
-      updateSpeed(speed);
-    }, 100),
-  });
+      updateSpeed(speed)
+    }, 100)
+  })
 }
 function _initializeBallColorControl() {
-  const container = document.getElementById('ballColorControl');
+  const container = document.getElementById('ballColorControl')
   if (!container) {
-    return;
+    return
   }
   components.ballColor = sharedComponents.createColorControl(container, {
     colors: [
@@ -935,19 +935,19 @@ function _initializeBallColorControl() {
       '#fb7185',
       '#ffffff',
       '#a855f7',
-      '#14b8a6',
+      '#14b8a6'
     ],
     defaultValue: '#60a5fa',
     title: '',
     onColorChange: (color) => {
-      setBallColor(color);
-    },
-  });
+      setBallColor(color)
+    }
+  })
 }
 function _initializeBgColorControl() {
-  const container = document.getElementById('bgColorControl');
+  const container = document.getElementById('bgColorControl')
   if (!container) {
-    return;
+    return
   }
   components.bgColor = sharedComponents.createColorControl(container, {
     colors: [
@@ -962,169 +962,169 @@ function _initializeBgColorControl() {
       '#fce7f3',
       '#f3f4f6',
       '#e5e7eb',
-      '#d1d5db',
+      '#d1d5db'
     ],
     defaultValue: '#020617',
     title: '',
     onColorChange: (color) => {
-      setBackgroundColor(color);
-    },
-  });
+      setBackgroundColor(color)
+    }
+  })
 }
 function _initializeSizeControl() {
-  const container = document.getElementById('sizeControl');
+  const container = document.getElementById('sizeControl')
   if (!container) {
-    return;
+    return
   }
   components.size = sharedComponents.createSizeControl(container, {
     sizes: [20, 40, 80, 100],
     defaultValue: 20,
     title: '',
     onSizeChange: (size) => {
-      setBallSize(size);
-    },
-  });
+      setBallSize(size)
+    }
+  })
 }
 function _initializeSoundControls() {
-  const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox');
-  const soundTypeSelect = document.getElementById('soundTypeSelect');
-  const soundTypeControl = document.getElementById('soundTypeControl');
+  const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox')
+  const soundTypeSelect = document.getElementById('soundTypeSelect')
+  const soundTypeControl = document.getElementById('soundTypeControl')
   if (!soundEnabledCheckbox || !soundTypeSelect || !soundTypeControl) {
-    return;
+    return
   }
   try {
     const soundLabel =
-      soundEnabledCheckbox.parentElement?.querySelector('span');
+      soundEnabledCheckbox.parentElement?.querySelector('span')
     const _i18nSafe = (key, fallback) => {
-      const val = globalThis.i18n?.t(key);
-      return val && val !== key ? val : fallback;
-    };
+      const val = globalThis.i18n?.t(key)
+      return val && val !== key ? val : fallback
+    }
     const _updateSoundLabel = (enabled) => {
-      if (!soundLabel) return;
+      if (!soundLabel) return
       soundLabel.textContent = enabled
         ? _i18nSafe('controller.soundEnabled', 'Sound enabled')
-        : _i18nSafe('controller.enableSound', 'Enable sound');
-    };
+        : _i18nSafe('controller.enableSound', 'Enable sound')
+    }
     soundEnabledCheckbox.addEventListener('change', (e) => {
-      const enabled = e.target.checked;
-      setSoundEnabled(enabled);
-      _updateSoundLabel(enabled);
+      const enabled = e.target.checked
+      setSoundEnabled(enabled)
+      _updateSoundLabel(enabled)
       if (enabled) {
-        soundTypeControl.classList.add('enabled');
+        soundTypeControl.classList.add('enabled')
       } else {
-        soundTypeControl.classList.remove('enabled');
+        soundTypeControl.classList.remove('enabled')
       }
       if (lastServerState) {
-        lastServerState.soundEnabled = enabled;
+        lastServerState.soundEnabled = enabled
       }
-      updateViewerAudioIndicators();
-    });
+      updateViewerAudioIndicators()
+    })
     soundTypeSelect.addEventListener('change', (e) => {
-      const soundType = e.target.value;
-      setSoundType(soundType);
+      const soundType = e.target.value
+      setSoundType(soundType)
       if (lastServerState) {
-        lastServerState.soundType = soundType;
+        lastServerState.soundType = soundType
       }
-    });
+    })
     if (lastServerState) {
       if (typeof lastServerState.soundEnabled === 'boolean') {
-        soundEnabledCheckbox.checked = lastServerState.soundEnabled;
-        _updateSoundLabel(lastServerState.soundEnabled);
+        soundEnabledCheckbox.checked = lastServerState.soundEnabled
+        _updateSoundLabel(lastServerState.soundEnabled)
         if (lastServerState.soundEnabled) {
-          soundTypeControl.classList.add('enabled');
+          soundTypeControl.classList.add('enabled')
         } else {
-          soundTypeControl.classList.remove('enabled');
+          soundTypeControl.classList.remove('enabled')
         }
       }
       if (lastServerState.soundType) {
-        soundTypeSelect.value = lastServerState.soundType;
+        soundTypeSelect.value = lastServerState.soundType
       }
     }
   } catch (error) {
-    console.error('Error initializing sound controls:', error);
+    console.error('Error initializing sound controls:', error)
   }
 }
-let _controllerAudioManager = null;
+let _controllerAudioManager = null
 function _initializeControllerAudio() {
-  const monitorCheckbox = document.getElementById('controllerMonitorCheckbox');
-  const volumeSlider = document.getElementById('controllerVolumeSlider');
-  const volumeValue = document.getElementById('controllerVolumeValue');
-  const volumeControl = document.getElementById('controllerVolumeControl');
-  if (!monitorCheckbox) return;
+  const monitorCheckbox = document.getElementById('controllerMonitorCheckbox')
+  const volumeSlider = document.getElementById('controllerVolumeSlider')
+  const volumeValue = document.getElementById('controllerVolumeValue')
+  const volumeControl = document.getElementById('controllerVolumeControl')
+  if (!monitorCheckbox) return
 
   monitorCheckbox.addEventListener('change', (e) => {
-    const enabled = e.target.checked;
+    const enabled = e.target.checked
     if (enabled) {
       if (!_controllerAudioManager && typeof AudioManager !== 'undefined') {
-        _controllerAudioManager = new AudioManager();
-        _controllerAudioManager.init(true);
-        _controllerAudioManager.setVolume((volumeSlider?.value ?? 50) / 100);
+        _controllerAudioManager = new AudioManager()
+        _controllerAudioManager.init(true)
+        _controllerAudioManager.setVolume((volumeSlider?.value ?? 50) / 100)
         _controllerAudioManager.setSoundType(
-          lastServerState?.soundType || 'soft',
-        );
+          lastServerState?.soundType || 'soft'
+        )
       } else if (_controllerAudioManager) {
-        _controllerAudioManager.init();
+        _controllerAudioManager.init()
       }
-      if (_controllerAudioManager) _controllerAudioManager.setEnabled(true);
+      if (_controllerAudioManager) _controllerAudioManager.setEnabled(true)
       if (volumeControl) {
-        volumeControl.style.opacity = '1';
-        volumeControl.style.pointerEvents = 'auto';
+        volumeControl.style.opacity = '1'
+        volumeControl.style.pointerEvents = 'auto'
       }
     } else {
-      if (_controllerAudioManager) _controllerAudioManager.setEnabled(false);
+      if (_controllerAudioManager) _controllerAudioManager.setEnabled(false)
       if (volumeControl) {
-        volumeControl.style.opacity = '0.5';
-        volumeControl.style.pointerEvents = 'none';
+        volumeControl.style.opacity = '0.5'
+        volumeControl.style.pointerEvents = 'none'
       }
     }
-  });
+  })
 
   if (volumeSlider) {
     volumeSlider.addEventListener('input', () => {
-      if (volumeValue) volumeValue.textContent = `${volumeSlider.value}%`;
+      if (volumeValue) volumeValue.textContent = `${volumeSlider.value}%`
       if (_controllerAudioManager)
-        _controllerAudioManager.setVolume(volumeSlider.value / 100);
-    });
+        _controllerAudioManager.setVolume(volumeSlider.value / 100)
+    })
   }
 
   // Play sound on bounce when monitoring is active
   globalThis.addEventListener('bb_bounce', () => {
-    if (!_controllerAudioManager?.enabled) return;
-    const soundType = lastServerState?.soundType || 'soft';
+    if (!_controllerAudioManager?.enabled) return
+    const soundType = lastServerState?.soundType || 'soft'
     if (_controllerAudioManager.soundType !== soundType) {
-      _controllerAudioManager.setSoundType(soundType);
+      _controllerAudioManager.setSoundType(soundType)
     }
-    _controllerAudioManager.playTick();
-  });
+    _controllerAudioManager.playTick()
+  })
 }
 function initializeComponents() {
-  _initializeSpeedControl();
-  _initializeBallColorControl();
-  _initializeBgColorControl();
-  _initializeSizeControl();
-  _initializeSoundControls();
-  _initializeControllerAudio();
+  _initializeSpeedControl()
+  _initializeBallColorControl()
+  _initializeBgColorControl()
+  _initializeSizeControl()
+  _initializeSoundControls()
+  _initializeControllerAudio()
   // Lock controls until viewer connects (updateViewerStatusUI will unlock when ready)
-  setControlsEnabled(false);
-  updateDirectionDisplay(1, 0);
+  setControlsEnabled(false)
+  updateDirectionDisplay(1, 0)
 }
 function setControlsEnabled(enabled) {
-  const main = document.querySelector('main.wrap');
-  if (main) main.classList.toggle('controls-locked', !enabled);
+  const main = document.querySelector('main.wrap')
+  if (main) main.classList.toggle('controls-locked', !enabled)
 }
 function safeSend(type, payload) {
   try {
     if (typeof wsClient?.send === 'function') {
-      const result = wsClient.send(type, payload);
+      const result = wsClient.send(type, payload)
       if (result && typeof result.catch === 'function') {
         result.catch((err) => {
           if (err.message === 'Session not found') {
             const msg =
               globalThis.i18n?.t('controller.sessionLost') ||
-              'Session expired. Please reload the page.';
-            showNotification(msg, 'error');
+              'Session expired. Please reload the page.'
+            showNotification(msg, 'error')
           }
-        });
+        })
       }
     }
   } catch {
@@ -1133,112 +1133,112 @@ function safeSend(type, payload) {
 }
 function updateSpeed(speed) {
   if (globalThis.__current?.isInitializing) {
-    return;
+    return
   }
   if (!globalThis.__current?.viewerConnected) {
-    showViewerNotConnectedWarning();
-    return;
+    showViewerNotConnectedWarning()
+    return
   }
   try {
-    safeSend(WS_MSG.controllerUpdate, { speed });
+    safeSend(WS_MSG.controllerUpdate, { speed })
   } catch (err) {
-    debugWarn('Error updating speed:', err);
+    debugWarn('Error updating speed:', err)
   }
 }
 async function initializePreview() {
-  showWaitingForViewer();
-  const previewWrap = document.getElementById('previewWrap');
+  showWaitingForViewer()
+  const previewWrap = document.getElementById('previewWrap')
   if (previewWrap) {
-    previewWrap.style.display = 'block';
+    previewWrap.style.display = 'block'
   }
-  const canvas = document.getElementById('preview');
+  const canvas = document.getElementById('preview')
   if (!canvas) {
-    return;
+    return
   }
   if (canvas.width === 0 || canvas.height === 0) {
-    const container = canvas.parentElement;
-    const containerRect = container.getBoundingClientRect();
-    const initialWidth = Math.min(containerRect.width - 40, 500);
-    const initialHeight = Math.min(400, initialWidth * 0.75);
-    canvas.width = initialWidth;
-    canvas.height = initialHeight;
-    canvas.style.width = canvas.width + 'px';
-    canvas.style.height = canvas.height + 'px';
+    const container = canvas.parentElement
+    const containerRect = container.getBoundingClientRect()
+    const initialWidth = Math.min(containerRect.width - 40, 500)
+    const initialHeight = Math.min(400, initialWidth * 0.75)
+    canvas.width = initialWidth
+    canvas.height = initialHeight
+    canvas.style.width = canvas.width + 'px'
+    canvas.style.height = canvas.height + 'px'
   }
   try {
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
       isViewer: true,
-      clientSimulation: true, // Start with local simulation (failsafe)
-    });
+      clientSimulation: true // Start with local simulation (failsafe)
+    })
     try {
-      globalThis.__previewPhysics = previewPhysicsEngine;
+      globalThis.__previewPhysics = previewPhysicsEngine
     } catch (err) {
-      debugWarn('Unable to export preview physics engine:', err);
+      debugWarn('Unable to export preview physics engine:', err)
     }
-    previewPhysicsEngine.setPaused(true);
-    globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce());
+    previewPhysicsEngine.setPaused(true)
+    globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce())
     if (globalThis.BBConfig?.smoothing) {
-      previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing);
+      previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
     }
-    if (physicsInterval) clearInterval(physicsInterval);
-    physicsInterval = setInterval(physicsLoop, PHYSICS_DT);
-    requestAnimationFrame(renderPreviewLoop);
+    if (physicsInterval) clearInterval(physicsInterval)
+    physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
+    requestAnimationFrame(renderPreviewLoop)
     globalThis.__previewRenderer = new BallRenderer(
       canvas,
       previewPhysicsEngine,
       {
-        localPhysics: true, // Use accumulator-based alpha for smoother interpolation
-      },
-    );
-    globalThis.__previewCanvas = canvas;
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
+        localPhysics: true // Use accumulator-based alpha for smoother interpolation
+      }
+    )
+    globalThis.__previewCanvas = canvas
+    const canvasWidth = canvas.width
+    const canvasHeight = canvas.height
     if (
       globalThis.__current.viewerScreenSize &&
       globalThis.__current.viewerScreenSize.width > 0
     ) {
       previewPhysicsEngine.setWorldSize(
         globalThis.__current.viewerScreenSize.width,
-        globalThis.__current.viewerScreenSize.height,
-      );
-      const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2;
-      const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2;
-      previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY);
-      previewPhysicsEngine.setVelocity(0, 0);
+        globalThis.__current.viewerScreenSize.height
+      )
+      const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
+      const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
+      previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
+      previewPhysicsEngine.setVelocity(0, 0)
     } else {
-      previewPhysicsEngine.setWorldSize(canvasWidth, canvasHeight);
-      previewPhysicsEngine.setPosition(canvasWidth / 2, canvasHeight / 2);
-      previewPhysicsEngine.setVelocity(0, 0);
+      previewPhysicsEngine.setWorldSize(canvasWidth, canvasHeight)
+      previewPhysicsEngine.setPosition(canvasWidth / 2, canvasHeight / 2)
+      previewPhysicsEngine.setVelocity(0, 0)
     }
   } catch {
     // Silently ignore canvas size errors
   }
 }
 function showWaitingForViewer() {
-  const viewerInfo = document.getElementById('viewerInfo');
+  const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
     viewerInfo.textContent =
       globalThis.i18n?.t('controller.waitingForViewerConnection') ||
-      '⏳ Waiting for viewer connection';
-    viewerInfo.style.display = 'block';
+      '⏳ Waiting for viewer connection'
+    viewerInfo.style.display = 'block'
   }
   if (previewPhysicsEngine) {
-    const canvas = document.getElementById('preview');
+    const canvas = document.getElementById('preview')
     if (canvas) {
       // Ensure canvas has valid dimensions before centering
-      const width = canvas.width || 500;
-      const height = canvas.height || 375;
-      previewPhysicsEngine.setPosition(width / 2, height / 2);
-      previewPhysicsEngine.setVelocity(0, 0);
-      previewPhysicsEngine.setPaused(true);
+      const width = canvas.width || 500
+      const height = canvas.height || 375
+      previewPhysicsEngine.setPosition(width / 2, height / 2)
+      previewPhysicsEngine.setVelocity(0, 0)
+      previewPhysicsEngine.setPaused(true)
     }
   }
 }
 function hideWaitingForViewer() {
-  const viewerInfo = document.getElementById('viewerInfo');
+  const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.style.display = 'none';
+    viewerInfo.style.display = 'none'
   }
 }
 /**
@@ -1247,74 +1247,74 @@ function hideWaitingForViewer() {
  */
 function recalculateDiagonalDirectionIfNeeded() {
   if (!isDiagonalMode()) {
-    return;
+    return
   }
-  const directionVector = recalculateDiagonalDirection();
+  const directionVector = recalculateDiagonalDirection()
   if (!directionVector) {
-    return;
+    return
   }
-  const { dirX, dirY } = directionVector;
+  const { dirX, dirY } = directionVector
   if (isPlaying) {
     safeSend(WS_MSG.controllerUpdate, {
       paused: true,
-      returnToCenter: true,
-    });
+      returnToCenter: true
+    })
     setTimeout(() => {
       safeSend(WS_MSG.controllerUpdate, {
         paused: false,
         dirX,
-        dirY,
-      });
-    }, 200);
+        dirY
+      })
+    }, 200)
   } else {
     safeSend(WS_MSG.controllerUpdate, {
       dirX,
-      dirY,
-    });
+      dirY
+    })
   }
 }
 function updatePreviewSize(viewerScreenSize) {
   if (canUpdatePreview(viewerScreenSize)) {
-    const canvas = document.getElementById('preview');
-    if (!canvas) return;
+    const canvas = document.getElementById('preview')
+    if (!canvas) return
     const { previewWidth, previewHeight } = calculatePreviewDimensions(
       canvas,
-      viewerScreenSize,
-    );
-    setCanvasDimensions(canvas, previewWidth, previewHeight);
-    updatePhysicsEngineWorldSize(viewerScreenSize);
-    recalculateDiagonalDirectionIfNeeded();
-    applyServerStateOrCenter();
-    updateViewerInfo(viewerScreenSize);
+      viewerScreenSize
+    )
+    setCanvasDimensions(canvas, previewWidth, previewHeight)
+    updatePhysicsEngineWorldSize(viewerScreenSize)
+    recalculateDiagonalDirectionIfNeeded()
+    applyServerStateOrCenter()
+    updateViewerInfo(viewerScreenSize)
   } else {
-    showWaitingForViewer();
-    centerBallInViewer();
+    showWaitingForViewer()
+    centerBallInViewer()
   }
 }
 function canUpdatePreview(viewerScreenSize) {
   const isReady =
-    viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine;
-  return Boolean(isReady);
+    viewerScreenSize && globalThis.__previewRenderer && previewPhysicsEngine
+  return Boolean(isReady)
 }
 function calculatePreviewDimensions(canvas, viewerScreenSize) {
-  const container = canvas.parentElement;
-  const containerRect = container.getBoundingClientRect();
-  const maxWidth = Math.min(containerRect.width - 40, 500);
-  const maxHeight = Math.min(400, maxWidth * 0.75);
-  const viewerRatio = viewerScreenSize.width / viewerScreenSize.height;
-  let previewWidth = maxWidth;
-  let previewHeight = previewWidth / viewerRatio;
+  const container = canvas.parentElement
+  const containerRect = container.getBoundingClientRect()
+  const maxWidth = Math.min(containerRect.width - 40, 500)
+  const maxHeight = Math.min(400, maxWidth * 0.75)
+  const viewerRatio = viewerScreenSize.width / viewerScreenSize.height
+  let previewWidth = maxWidth
+  let previewHeight = previewWidth / viewerRatio
   if (previewHeight > maxHeight) {
-    previewHeight = maxHeight;
-    previewWidth = previewHeight * viewerRatio;
+    previewHeight = maxHeight
+    previewWidth = previewHeight * viewerRatio
   }
-  return { previewWidth, previewHeight };
+  return { previewWidth, previewHeight }
 }
 function setCanvasDimensions(canvas, previewWidth, previewHeight) {
-  canvas.width = previewWidth;
-  canvas.height = previewHeight;
-  canvas.style.width = canvas.width + 'px';
-  canvas.style.height = canvas.height + 'px';
+  canvas.width = previewWidth
+  canvas.height = previewHeight
+  canvas.style.width = canvas.width + 'px'
+  canvas.style.height = canvas.height + 'px'
 }
 function updatePhysicsEngineWorldSize(viewerScreenSize) {
   if (
@@ -1325,44 +1325,44 @@ function updatePhysicsEngineWorldSize(viewerScreenSize) {
   ) {
     previewPhysicsEngine.setWorldSize(
       viewerScreenSize.width,
-      viewerScreenSize.height,
-    );
+      viewerScreenSize.height
+    )
   }
 }
 function applyServerStateOrCenter() {
   if (lastServerState) {
-    previewPhysicsEngine.applyCommand(lastServerState);
+    previewPhysicsEngine.applyCommand(lastServerState)
   } else {
-    centerBallInViewer();
+    centerBallInViewer()
   }
 }
 function centerBallInViewer() {
-  if (!previewPhysicsEngine) return;
+  if (!previewPhysicsEngine) return
   if (globalThis.__current?.viewerScreenSize?.width > 0) {
-    const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2;
-    const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2;
-    previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY);
-    previewPhysicsEngine.setVelocity(0, 0);
+    const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
+    const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
+    previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
+    previewPhysicsEngine.setVelocity(0, 0)
   } else if (isPreviewFullscreen && previewFsCanvas) {
-    const centerX = previewFsCanvas.width / 2;
-    const centerY = previewFsCanvas.height / 2;
-    previewPhysicsEngine.setPosition(centerX, centerY);
-    previewPhysicsEngine.setVelocity(0, 0);
+    const centerX = previewFsCanvas.width / 2
+    const centerY = previewFsCanvas.height / 2
+    previewPhysicsEngine.setPosition(centerX, centerY)
+    previewPhysicsEngine.setVelocity(0, 0)
   } else if (globalThis.__previewCanvas) {
     // Ensure canvas has valid dimensions before centering
-    const canvas = globalThis.__previewCanvas;
-    const width = canvas.width || 500;
-    const height = canvas.height || 375;
-    previewPhysicsEngine.setPosition(width / 2, height / 2);
-    previewPhysicsEngine.setVelocity(0, 0);
+    const canvas = globalThis.__previewCanvas
+    const width = canvas.width || 500
+    const height = canvas.height || 375
+    previewPhysicsEngine.setPosition(width / 2, height / 2)
+    previewPhysicsEngine.setVelocity(0, 0)
   }
 }
 function updateViewerInfo(viewerScreenSize) {
-  const viewerInfo = document.getElementById('viewerInfo');
+  const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer';
-    viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`;
-    viewerInfo.style.display = 'block';
+    const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer'
+    viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`
+    viewerInfo.style.display = 'block'
   }
 }
 /**
@@ -1375,26 +1375,26 @@ function updateViewerInfo(viewerScreenSize) {
 function _applyDirectionChangeWhenPlaying(dirX, dirY) {
   safeSend(WS_MSG.controllerUpdate, {
     paused: true,
-    returnToCenter: true,
-  });
+    returnToCenter: true
+  })
   if (previewPhysicsEngine) {
     // Center first, then pause — setPosition cancels seekingCenter so
     // the manual centering won't be overridden by the animation
-    centerBallInViewer();
-    previewPhysicsEngine.setPaused(true);
+    centerBallInViewer()
+    previewPhysicsEngine.setPaused(true)
   }
   // 400ms: enough for server to process + broadcast + viewer to receive & center
   setTimeout(() => {
     safeSend(WS_MSG.controllerUpdate, {
       paused: false,
       dirX,
-      dirY,
-    });
+      dirY
+    })
     if (previewPhysicsEngine) {
-      previewPhysicsEngine.setDirection(dirX, dirY);
-      previewPhysicsEngine.setPaused(false);
+      previewPhysicsEngine.setDirection(dirX, dirY)
+      previewPhysicsEngine.setPaused(false)
     }
-  }, 400);
+  }, 400)
 }
 /**
  * @private
@@ -1406,38 +1406,38 @@ function _applyDirectionChangeWhenPlaying(dirX, dirY) {
 function _applyDirectionChangeWhenPaused(dirX, dirY) {
   safeSend(WS_MSG.controllerUpdate, {
     dirX,
-    dirY,
-  });
+    dirY
+  })
 }
 /**
  * Устанавливает направление движения шарика.
  * @param {string} directionMode - Режим направления для установки.
  */
 function setDirection(directionMode) {
-  if (!directionMode) return;
+  if (!directionMode) return
   // Во время инициализации просто обновляем локальное состояние
   if (globalThis.__current?.isInitializing) {
-    return;
+    return
   }
   try {
-    const directionVector = getDirectionVector(directionMode);
-    if (!directionVector) return;
-    const { dirX, dirY } = directionVector;
-    setDirectionState(dirX, dirY);
-    setCurrentDirectionMode(directionMode);
-    __ignoreServerDirectionUntilTs = performance.now() + 1500;
+    const directionVector = getDirectionVector(directionMode)
+    if (!directionVector) return
+    const { dirX, dirY } = directionVector
+    setDirectionState(dirX, dirY)
+    setCurrentDirectionMode(directionMode)
+    __ignoreServerDirectionUntilTs = performance.now() + 1500
     if (isPlaying) {
-      _applyDirectionChangeWhenPlaying(dirX, dirY);
+      _applyDirectionChangeWhenPlaying(dirX, dirY)
     } else {
       if (previewPhysicsEngine) {
-        previewPhysicsEngine.setDirection(dirX, dirY);
+        previewPhysicsEngine.setDirection(dirX, dirY)
       }
-      _applyDirectionChangeWhenPaused(dirX, dirY);
+      _applyDirectionChangeWhenPaused(dirX, dirY)
     }
-    updateDirectionButtons();
-    updateDirectionDisplay(dirX, dirY);
+    updateDirectionButtons()
+    updateDirectionDisplay(dirX, dirY)
   } catch (error) {
-    console.error('Ошибка установки направления:', error);
+    console.error('Ошибка установки направления:', error)
   }
 }
 function setBallColor(color) {
@@ -1446,98 +1446,98 @@ function setBallColor(color) {
   }
   if (globalThis.__current?.isInitializing) {
     if (lastServerState) {
-      lastServerState.colorBall = color;
+      lastServerState.colorBall = color
     }
-    return;
+    return
   }
   if (!globalThis.__current?.viewerConnected) {
     if (lastServerState) {
-      lastServerState.colorBall = color;
+      lastServerState.colorBall = color
     }
-    return;
+    return
   }
-  safeSend(WS_MSG.controllerUpdate, { colorBall: color });
+  safeSend(WS_MSG.controllerUpdate, { colorBall: color })
 }
 function setBallSize(size) {
   // Всегда обновляем локальное состояние и превью
   if (lastServerState) {
-    lastServerState.radius = size;
+    lastServerState.radius = size
   }
   if (previewPhysicsEngine) {
-    previewPhysicsEngine.ball.radius = size;
+    previewPhysicsEngine.ball.radius = size
   }
   if (globalThis.__current?.isInitializing) {
-    return;
+    return
   }
-  safeSend(WS_MSG.controllerUpdate, { radius: size });
+  safeSend(WS_MSG.controllerUpdate, { radius: size })
 }
 function setSoundEnabled(enabled) {
   if (globalThis.__current?.isInitializing) {
-    return;
+    return
   }
   if (!globalThis.__current?.viewerConnected) {
-    showViewerNotConnectedWarning();
-    return;
+    showViewerNotConnectedWarning()
+    return
   }
-  safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) });
+  safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) })
   if (lastServerState) {
-    lastServerState.soundEnabled = Boolean(enabled);
+    lastServerState.soundEnabled = Boolean(enabled)
   }
-  updateViewerAudioIndicators();
+  updateViewerAudioIndicators()
 }
 function setSoundType(soundType) {
   if (globalThis.__current?.isInitializing) {
-    return;
+    return
   }
   if (!globalThis.__current?.viewerConnected) {
-    showViewerNotConnectedWarning();
-    return;
+    showViewerNotConnectedWarning()
+    return
   }
-  safeSend(WS_MSG.controllerUpdate, { soundType: soundType });
+  safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
 }
 function setBallSizeMultiplier(multiplier) {
-  const baseSize = 20;
-  const newSize = baseSize * multiplier;
-  setBallSize(newSize);
+  const baseSize = 20
+  const newSize = baseSize * multiplier
+  setBallSize(newSize)
 }
 function setBackgroundColor(color) {
   if (globalThis.__previewRenderer) {
-    globalThis.__previewRenderer.setBackgroundColor(color);
+    globalThis.__previewRenderer.setBackgroundColor(color)
   }
   if (previewFsRenderer) {
-    previewFsRenderer.setBackgroundColor(color);
+    previewFsRenderer.setBackgroundColor(color)
   }
   if (globalThis.__current?.isInitializing) {
     if (lastServerState) {
-      lastServerState.colorBg = color;
+      lastServerState.colorBg = color
     }
-    return;
+    return
   }
   if (!globalThis.__current?.viewerConnected) {
     if (lastServerState) {
-      lastServerState.colorBg = color;
+      lastServerState.colorBg = color
     }
-    return;
+    return
   }
-  safeSend(WS_MSG.controllerUpdate, { colorBg: color });
+  safeSend(WS_MSG.controllerUpdate, { colorBg: color })
 }
 function updateDirectionButtons() {
-  const currentMode = getCurrentDirectionMode();
-  const directionButtons = document.querySelectorAll('[data-mode]');
+  const currentMode = getCurrentDirectionMode()
+  const directionButtons = document.querySelectorAll('[data-mode]')
   for (const button of directionButtons) {
-    button.classList.toggle('active', button.dataset.mode === currentMode);
+    button.classList.toggle('active', button.dataset.mode === currentMode)
   }
   const fsDirectionButtons = {
     fsDirH: 'horizontal',
     fsDirV: 'vertical',
     fsDirDL: 'diagRLL',
     fsDirDR: 'diagRL',
-    fsDirRandom: 'random',
-  };
+    fsDirRandom: 'random'
+  }
   for (const [id, mode] of Object.entries(fsDirectionButtons)) {
-    const button = document.getElementById(id);
+    const button = document.getElementById(id)
     if (button) {
-      button.classList.toggle('active', mode === currentMode);
+      button.classList.toggle('active', mode === currentMode)
     }
   }
 }
@@ -1550,33 +1550,33 @@ function getDirectionInfo(mode) {
       return {
         text:
           globalThis.i18n?.t('controller.horizontalFull') || '↔️ Horizontal',
-        icon: '↔️',
-      };
+        icon: '↔️'
+      }
     case 'vertical':
       return {
         text: globalThis.i18n?.t('controller.verticalFull') || '↕️ Vertical',
-        icon: '↕️',
-      };
+        icon: '↕️'
+      }
     case 'diagRL':
       return {
         text: globalThis.i18n?.t('controller.diagLTRB') || '↘️ Diagonal',
-        icon: '↘️',
-      };
+        icon: '↘️'
+      }
     case 'diagRLL':
       return {
         text: globalThis.i18n?.t('controller.diagLBRT') || '↗️ Diagonal',
-        icon: '↗️',
-      };
+        icon: '↗️'
+      }
     case 'random':
       return {
         text: globalThis.i18n?.t('controller.randomFull') || '🎲 Random',
-        icon: '🎲',
-      };
+        icon: '🎲'
+      }
     default:
       return {
         text: globalThis.i18n?.t('controller.unknownDirection') || '❓ Unknown',
-        icon: '❓',
-      };
+        icon: '❓'
+      }
   }
 }
 /**
@@ -1587,40 +1587,40 @@ function getDirectionInfo(mode) {
  */
 function updateDirectionDisplay(dirX, dirY, customText = null) {
   try {
-    const directionDisplay = document.getElementById('currentDirectionDisplay');
-    let directionText = customText || 'Неизвестно';
-    let directionIcon;
+    const directionDisplay = document.getElementById('currentDirectionDisplay')
+    let directionText = customText || 'Неизвестно'
+    let directionIcon
     if (!customText) {
-      const currentMode = getCurrentDirectionMode();
-      const directionInfo = getDirectionInfo(currentMode);
-      directionText = directionInfo.text;
-      directionIcon = directionInfo.icon;
+      const currentMode = getCurrentDirectionMode()
+      const directionInfo = getDirectionInfo(currentMode)
+      directionText = directionInfo.text
+      directionIcon = directionInfo.icon
     }
     if (directionDisplay) {
-      directionDisplay.textContent = directionIcon || '❓';
-      directionDisplay.title = directionText;
+      directionDisplay.textContent = directionIcon || '❓'
+      directionDisplay.title = directionText
     }
-    const fsDirectionDisplay = document.getElementById('fsCurrentDirection');
+    const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
       fsDirectionDisplay.innerHTML = directionDisplay
         ? directionDisplay.textContent
-        : `${directionIcon || '❓'}`;
+        : `${directionIcon || '❓'}`
     }
   } catch (error) {
-    console.error('Ошибка обновления отображения направления:', error);
+    console.error('Ошибка обновления отображения направления:', error)
   }
 }
 function updatePlayPauseButton() {
-  const button = document.getElementById('playPauseBtn');
+  const button = document.getElementById('playPauseBtn')
   if (button) {
     if (isPlaying) {
-      button.textContent = globalThis.i18n?.t('controller.stop') || '⏸ Stop';
-      button.classList.add('playing');
-      button.disabled = false; // Кнопка активна при воспроизведении
+      button.textContent = globalThis.i18n?.t('controller.stop') || '⏸ Stop'
+      button.classList.add('playing')
+      button.disabled = false // Кнопка активна при воспроизведении
     } else {
-      button.textContent = globalThis.i18n?.t('controller.start') || '▶️ Start';
-      button.classList.remove('playing');
-      button.disabled = false;
+      button.textContent = globalThis.i18n?.t('controller.start') || '▶️ Start'
+      button.classList.remove('playing')
+      button.disabled = false
     }
   }
 }
@@ -1633,75 +1633,75 @@ function updatePlayPauseButton() {
 function _setPlayPauseState(shouldPlay) {
   // Не отправляем команды во время инициализации
   if (globalThis.__current?.isInitializing) {
-    return;
+    return
   }
   if (!globalThis.__current?.viewerConnected) {
-    if (shouldPlay) showViewerNotConnectedWarning();
-    return;
+    if (shouldPlay) showViewerNotConnectedWarning()
+    return
   }
-  const currentMode = getCurrentDirectionMode();
+  const currentMode = getCurrentDirectionMode()
   const payload = shouldPlay
     ? {
         paused: false,
         ...(getDirectionVector(currentMode) || { dirX: 1, dirY: 0 }),
-        speed: Number(components.speed?.getSpeed() ?? 40),
+        speed: Number(components.speed?.getSpeed() ?? 40)
       }
     : {
         paused: true,
-        returnToCenter: true,
-      };
-  safeSend(WS_MSG.controllerUpdate, payload);
-  isPlaying = shouldPlay;
-  globalThis.__current.isPlaying = shouldPlay;
-  globalThis.isPlaying = shouldPlay;
-  globalThis.forcePauseUntilUserAction = false;
+        returnToCenter: true
+      }
+  safeSend(WS_MSG.controllerUpdate, payload)
+  isPlaying = shouldPlay
+  globalThis.__current.isPlaying = shouldPlay
+  globalThis.isPlaying = shouldPlay
+  globalThis.forcePauseUntilUserAction = false
   if (shouldPlay) {
-    bbCounters.start();
+    bbCounters.start()
   } else {
-    bbCounters.stop(true);
+    bbCounters.stop(true)
   }
   if (previewPhysicsEngine) {
     if (shouldPlay) {
       // Don't unpause preview yet — wait for first server state_update to sync position.
       // This prevents jitter caused by preview moving ahead of server during network latency.
-      const dirOnly = { ...payload };
-      delete dirOnly.paused;
-      previewPhysicsEngine.applyCommand(dirOnly);
-      previewPhysicsEngine._pendingPlaySync = true;
-      previewPhysicsEngine._hasReceivedFirstMovingUpdate = false;
+      const dirOnly = { ...payload }
+      delete dirOnly.paused
+      previewPhysicsEngine.applyCommand(dirOnly)
+      previewPhysicsEngine._pendingPlaySync = true
+      previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
     } else {
-      previewPhysicsEngine._pendingPlaySync = false;
-      previewPhysicsEngine.applyCommand(payload);
-      centerBallInViewer();
+      previewPhysicsEngine._pendingPlaySync = false
+      previewPhysicsEngine.applyCommand(payload)
+      centerBallInViewer()
     }
   }
-  __ignoreServerPausedUntilTs = performance.now() + 800;
-  _schedulePlayPauseAnimations();
-  return true;
+  __ignoreServerPausedUntilTs = performance.now() + 800
+  _schedulePlayPauseAnimations()
+  return true
 }
 /**
  * Переключает состояние воспроизведения/паузы сессии.
  * Отправляет соответствующие команды на сервер и обновляет UI.
  */
 function togglePlayPause() {
-  _setPlayPauseState(!isPlaying);
+  _setPlayPauseState(!isPlaying)
 }
 /**
  * Обновляет все кнопки Play/Pause (основную и полноэкранную).
  * @private
  */
 function _updateAllPlayPauseButtons() {
-  updatePlayPauseButton();
-  syncFsPlayPauseButton();
+  updatePlayPauseButton()
+  syncFsPlayPauseButton()
 }
 /**
  * Планирует обновления кнопок с анимацией.
  * @private
  */
 function _schedulePlayPauseAnimations() {
-  _updateAllPlayPauseButtons();
-  setTimeout(() => _updateAllPlayPauseButtons(), 150);
-  setTimeout(() => _updateAllPlayPauseButtons(), 300);
+  _updateAllPlayPauseButtons()
+  setTimeout(() => _updateAllPlayPauseButtons(), 150)
+  setTimeout(() => _updateAllPlayPauseButtons(), 300)
 }
 /**
  * Нормализует координату, проверяя, является ли она конечным числом.
@@ -1711,7 +1711,7 @@ function _schedulePlayPauseAnimations() {
  * @private
  */
 function _normalizeCoordinate(coord, fallback) {
-  return typeof coord === 'number' && Number.isFinite(coord) ? coord : fallback;
+  return typeof coord === 'number' && Number.isFinite(coord) ? coord : fallback
 }
 /**
  * Масштабирует состояние мяча из координат вьювера в координаты превью.
@@ -1722,127 +1722,127 @@ function getScaledState(state) {
   const canScale =
     globalThis.__current.viewerScreenSize &&
     globalThis.__previewCanvas &&
-    state;
+    state
   if (canScale) {
-    const viewerSize = globalThis.__current.viewerScreenSize;
+    const viewerSize = globalThis.__current.viewerScreenSize
     const previewSize = {
       width: globalThis.__previewCanvas.width,
-      height: globalThis.__previewCanvas.height,
-    };
+      height: globalThis.__previewCanvas.height
+    }
     if (viewerSize.width > 0 && viewerSize.height > 0) {
-      const scaleX = previewSize.width / viewerSize.width;
-      const scaleY = previewSize.height / viewerSize.height;
-      const scaleRadius = Math.min(scaleX, scaleY);
-      const scaledState = { ...state };
-      const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2);
-      const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2);
-      scaledState.x = rawX * scaleX;
-      scaledState.y = rawY * scaleY;
+      const scaleX = previewSize.width / viewerSize.width
+      const scaleY = previewSize.height / viewerSize.height
+      const scaleRadius = Math.min(scaleX, scaleY)
+      const scaledState = { ...state }
+      const rawX = _normalizeCoordinate(state.x, viewerSize.width / 2)
+      const rawY = _normalizeCoordinate(state.y, viewerSize.height / 2)
+      scaledState.x = rawX * scaleX
+      scaledState.y = rawY * scaleY
       if (typeof scaledState.radius === 'number') {
-        scaledState.radius *= scaleRadius;
+        scaledState.radius *= scaleRadius
       }
-      return scaledState;
+      return scaledState
     }
   }
-  return state;
+  return state
 }
 function updateViewerStatusUI() {
-  const viewerStatusEl = document.getElementById('viewerStatus');
+  const viewerStatusEl = document.getElementById('viewerStatus')
   if (viewerStatusEl) {
     if (globalThis.__current.viewerConnected) {
       viewerStatusEl.textContent =
-        globalThis.i18n?.t('controller.viewerConnected') || 'Connected';
-      viewerStatusEl.classList.add('connected');
-      viewerStatusEl.classList.remove('disconnected');
-      viewerStatusEl.style.fontWeight = '600';
-      hideWaitingForViewer();
+        globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
+      viewerStatusEl.classList.add('connected')
+      viewerStatusEl.classList.remove('disconnected')
+      viewerStatusEl.style.fontWeight = '600'
+      hideWaitingForViewer()
       if (globalThis.__current.viewerScreenSize?.width > 0) {
-        updatePreviewSize(globalThis.__current.viewerScreenSize);
+        updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
-      setControlsEnabled(true);
+      setControlsEnabled(true)
     } else {
       viewerStatusEl.textContent =
-        globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...';
-      viewerStatusEl.classList.add('disconnected');
-      viewerStatusEl.classList.remove('connected');
-      viewerStatusEl.style.fontWeight = '400';
-      showWaitingForViewer();
-      setControlsEnabled(false);
+        globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
+      viewerStatusEl.classList.add('disconnected')
+      viewerStatusEl.classList.remove('connected')
+      viewerStatusEl.style.fontWeight = '400'
+      showWaitingForViewer()
+      setControlsEnabled(false)
     }
   }
-  updateViewerAudioIndicators();
-  updateViewerLinkVisualState();
+  updateViewerAudioIndicators()
+  updateViewerLinkVisualState()
 }
 /**
  * Обновляет визуальное состояние ссылки для клиента в зависимости от подключения вьювера
  */
 function updateViewerLinkVisualState() {
-  const viewInput = document.getElementById('view');
-  if (!viewInput) return;
+  const viewInput = document.getElementById('view')
+  if (!viewInput) return
   if (globalThis.__current.viewerConnected) {
-    viewInput.style.borderColor = '#94a3b8';
-    viewInput.style.backgroundColor = '#ffffff';
-    viewInput.style.color = '#1f2937';
-    viewInput.placeholder = '';
+    viewInput.style.borderColor = '#94a3b8'
+    viewInput.style.backgroundColor = '#ffffff'
+    viewInput.style.color = '#1f2937'
+    viewInput.placeholder = ''
   } else {
-    viewInput.style.borderColor = '#ef4444';
-    viewInput.style.backgroundColor = '#fef2f2';
-    viewInput.style.color = '#ef4444';
+    viewInput.style.borderColor = '#ef4444'
+    viewInput.style.backgroundColor = '#fef2f2'
+    viewInput.style.color = '#ef4444'
     viewInput.placeholder =
       (globalThis.i18n?.t('controller.waitingViewer') || 'Waiting for viewer') +
-      '...';
+      '...'
   }
 }
 /**
  * Обновляет индикаторы звука зрителя на основе состояния
  */
 function updateViewerAudioIndicators() {
-  const audioIndicator = document.getElementById('viewerAudioIndicator');
-  const audioText = document.getElementById('viewerAudioText');
-  if (!audioIndicator || !audioText) return;
-  const soundEnabled = lastServerState?.soundEnabled ?? false;
+  const audioIndicator = document.getElementById('viewerAudioIndicator')
+  const audioText = document.getElementById('viewerAudioText')
+  if (!audioIndicator || !audioText) return
+  const soundEnabled = lastServerState?.soundEnabled ?? false
   const viewerAudioActivated =
-    globalThis.__current?.viewerAudioActivated ?? false;
-  const currentState = `${soundEnabled}-${viewerAudioActivated}`;
-  if (updateViewerAudioIndicators._lastState === currentState) return;
-  updateViewerAudioIndicators._lastState = currentState;
+    globalThis.__current?.viewerAudioActivated ?? false
+  const currentState = `${soundEnabled}-${viewerAudioActivated}`
+  if (updateViewerAudioIndicators._lastState === currentState) return
+  updateViewerAudioIndicators._lastState = currentState
   if (soundEnabled) {
     if (!viewerAudioActivated) {
-      audioIndicator.classList.remove('hidden', 'ready');
-      audioIndicator.classList.add('warning');
+      audioIndicator.classList.remove('hidden', 'ready')
+      audioIndicator.classList.add('warning')
       audioText.textContent =
         globalThis.i18n?.t('controller.viewerSoundNotActivated') ||
-        'Waiting: viewer must click "Enable sound"';
+        'Waiting: viewer must click "Enable sound"'
     } else {
-      audioIndicator.classList.remove('hidden', 'warning');
-      audioIndicator.classList.add('ready');
+      audioIndicator.classList.remove('hidden', 'warning')
+      audioIndicator.classList.add('ready')
       audioText.textContent =
         globalThis.i18n?.t('controller.viewerHearingSound') ||
-        'Viewer sound activated';
+        'Viewer sound activated'
     }
   } else {
-    audioIndicator.classList.add('hidden');
+    audioIndicator.classList.add('hidden')
   }
 }
 function _initializeFullscreenRenderer() {
   try {
     if (!previewPhysicsEngine) {
-      return;
+      return
     }
     if (previewFsRenderer) {
-      previewFsRenderer.setPhysicsEngine(previewPhysicsEngine);
+      previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
     } else {
       previewFsRenderer = new BallRenderer(
         previewFsCanvas,
         previewPhysicsEngine,
         {
-          localPhysics: false,
-        },
-      );
-      previewFsRenderer.start();
+          localPhysics: false
+        }
+      )
+      previewFsRenderer.start()
     }
   } catch (err) {
-    debugError('Error initializing fullscreen preview:', err);
+    debugError('Error initializing fullscreen preview:', err)
   }
 }
 /**
@@ -1850,135 +1850,135 @@ function _initializeFullscreenRenderer() {
  * Рефакторинг для снижения когнитивной сложности.
  */
 function openPreviewFullscreen() {
-  const overlay = document.getElementById('previewOverlay');
+  const overlay = document.getElementById('previewOverlay')
   if (!overlay || !previewFsCanvas) {
-    return;
+    return
   }
-  const currentUrl = globalThis.location.href;
-  const fullscreenUrl = currentUrl.split('#')[0] + '#fullscreen-preview';
+  const currentUrl = globalThis.location.href
+  const fullscreenUrl = currentUrl.split('#')[0] + '#fullscreen-preview'
   history.pushState(
     { fullscreen: true, returnUrl: currentUrl },
     '',
-    fullscreenUrl,
-  );
-  overlay.style.display = 'block';
-  isPreviewFullscreen = true;
-  document.body.classList.add('fullscreen-active');
-  _initializeFullscreenRenderer();
-  resizePreviewFullscreen();
-  setupFsPanelAutoHide();
-  setupFsPanelDrag();
-  setupFullscreenGestures();
-  syncFsPlayPauseButton();
-  wireFullscreenControls();
-  fillFsSessionInfo();
+    fullscreenUrl
+  )
+  overlay.style.display = 'block'
+  isPreviewFullscreen = true
+  document.body.classList.add('fullscreen-active')
+  _initializeFullscreenRenderer()
+  resizePreviewFullscreen()
+  setupFsPanelAutoHide()
+  setupFsPanelDrag()
+  setupFullscreenGestures()
+  syncFsPlayPauseButton()
+  wireFullscreenControls()
+  fillFsSessionInfo()
   if (!globalThis.__current?.viewerConnected && previewPhysicsEngine) {
-    centerBallInViewer();
+    centerBallInViewer()
   }
 }
 function closePreviewFullscreen() {
-  const overlay = document.getElementById('previewOverlay');
-  if (!overlay) return;
-  const currentUrl = globalThis.location.href;
-  const baseUrl = currentUrl.split('#')[0];
-  history.replaceState(null, '', baseUrl);
-  overlay.style.display = 'none';
-  isPreviewFullscreen = false;
-  document.body.classList.remove('fullscreen-active');
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay) return
+  const currentUrl = globalThis.location.href
+  const baseUrl = currentUrl.split('#')[0]
+  history.replaceState(null, '', baseUrl)
+  overlay.style.display = 'none'
+  isPreviewFullscreen = false
+  document.body.classList.remove('fullscreen-active')
 }
 function resizePreviewFullscreen() {
-  if (!previewFsCanvas) return;
-  previewFsCanvas.width = globalThis.innerWidth;
-  previewFsCanvas.height = globalThis.innerHeight;
+  if (!previewFsCanvas) return
+  previewFsCanvas.width = globalThis.innerWidth
+  previewFsCanvas.height = globalThis.innerHeight
   // Override CSS 100vw/100vh with explicit px values so BallRenderer.renderLoop()
   // sees clientWidth === canvas.width and doesn't call resize() which would
   // overwrite the viewer world size with canvas dimensions, shifting the ball
-  previewFsCanvas.style.width = globalThis.innerWidth + 'px';
-  previewFsCanvas.style.height = globalThis.innerHeight + 'px';
+  previewFsCanvas.style.width = globalThis.innerWidth + 'px'
+  previewFsCanvas.style.height = globalThis.innerHeight + 'px'
   if (previewPhysicsEngine) {
-    const vs = globalThis.__current?.viewerScreenSize;
+    const vs = globalThis.__current?.viewerScreenSize
     if (vs && vs.width > 0 && vs.height > 0) {
-      previewPhysicsEngine.setWorldSize(vs.width, vs.height);
+      previewPhysicsEngine.setWorldSize(vs.width, vs.height)
     } else {
       previewPhysicsEngine.setWorldSize(
         globalThis.innerWidth,
-        globalThis.innerHeight,
-      );
+        globalThis.innerHeight
+      )
       if (!globalThis.__current?.viewerConnected) {
-        centerBallInViewer();
+        centerBallInViewer()
       }
     }
   }
 }
 function setupFsPanelAutoHide() {
-  const panel = document.getElementById('previewFsPanel');
-  const overlay = document.getElementById('previewOverlay');
-  if (!panel || !overlay) return;
+  const panel = document.getElementById('previewFsPanel')
+  const overlay = document.getElementById('previewOverlay')
+  if (!panel || !overlay) return
   const show = () => {
-    panel.style.opacity = '1';
-  };
+    panel.style.opacity = '1'
+  }
   const hide = () => {
-    panel.style.opacity = '0';
-  };
+    panel.style.opacity = '0'
+  }
   const scheduleHide = () => {
-    clearTimeout(fsPanelHideTimer);
-    fsPanelHideTimer = setTimeout(hide, 2000);
-  };
+    clearTimeout(fsPanelHideTimer)
+    fsPanelHideTimer = setTimeout(hide, 2000)
+  }
   overlay.addEventListener('mousemove', () => {
-    show();
-    scheduleHide();
-  });
+    show()
+    scheduleHide()
+  })
   overlay.addEventListener('click', () => {
-    show();
-    scheduleHide();
-  });
-  show();
-  scheduleHide();
+    show()
+    scheduleHide()
+  })
+  show()
+  scheduleHide()
 }
 function setupFsPanelDrag() {
-  const panel = document.getElementById('previewFsPanel');
-  const overlay = document.getElementById('previewOverlay');
-  if (!panel || !overlay) return;
+  const panel = document.getElementById('previewFsPanel')
+  const overlay = document.getElementById('previewOverlay')
+  if (!panel || !overlay) return
   const onDown = (x, y) => {
-    const rect = panel.getBoundingClientRect();
-    fsPanelDrag.active = true;
-    fsPanelDrag.offsetX = x - rect.left;
-    fsPanelDrag.offsetY = y - rect.top;
-  };
+    const rect = panel.getBoundingClientRect()
+    fsPanelDrag.active = true
+    fsPanelDrag.offsetX = x - rect.left
+    fsPanelDrag.offsetY = y - rect.top
+  }
   const onMove = (x, y) => {
     if (fsPanelDrag.active) {
-      panel.style.left = `${x - fsPanelDrag.offsetX}px`;
-      panel.style.top = `${y - fsPanelDrag.offsetY}px`;
-      panel.style.transform = 'translateX(0)';
+      panel.style.left = `${x - fsPanelDrag.offsetX}px`
+      panel.style.top = `${y - fsPanelDrag.offsetY}px`
+      panel.style.transform = 'translateX(0)'
     }
-  };
+  }
   const onUp = () => {
-    fsPanelDrag.active = false;
-  };
+    fsPanelDrag.active = false
+  }
   panel.addEventListener('mousedown', (e) => {
-    onDown(e.clientX, e.clientY);
-  });
+    onDown(e.clientX, e.clientY)
+  })
   overlay.addEventListener('mousemove', (e) => {
-    onMove(e.clientX, e.clientY);
-  });
-  globalThis.addEventListener('mouseup', onUp);
+    onMove(e.clientX, e.clientY)
+  })
+  globalThis.addEventListener('mouseup', onUp)
   panel.addEventListener(
     'touchstart',
     (e) => {
-      const t = e.touches[0];
-      onDown(t.clientX, t.clientY);
+      const t = e.touches[0]
+      onDown(t.clientX, t.clientY)
     },
-    { passive: true },
-  );
+    { passive: true }
+  )
   overlay.addEventListener(
     'touchmove',
     (e) => {
-      const t = e.touches[0];
-      onMove(t.clientX, t.clientY);
+      const t = e.touches[0]
+      onMove(t.clientX, t.clientY)
     },
-    { passive: true },
-  );
-  globalThis.addEventListener('touchend', onUp, { passive: true });
+    { passive: true }
+  )
+  globalThis.addEventListener('touchend', onUp, { passive: true })
 }
 /**
  * Обрабатывает свайп-жесты в полноэкранном режиме для управления направлением и воспроизведением.
@@ -1990,15 +1990,15 @@ function setupFsPanelDrag() {
 function _handleFullscreenSwipe(dx, dy, threshold) {
   if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
     if (dx > 0) {
-      setDirection('horizontal');
+      setDirection('horizontal')
     } else {
-      setDirection('vertical');
+      setDirection('vertical')
     }
   } else if (Math.abs(dy) > threshold) {
-    const isSwipedUp = dy < 0;
-    const isSwipedDown = dy > 0;
+    const isSwipedUp = dy < 0
+    const isSwipedDown = dy > 0
     if ((isSwipedUp && !isPlaying) || (isSwipedDown && isPlaying)) {
-      togglePlayPause();
+      togglePlayPause()
     }
   }
 }
@@ -2006,86 +2006,86 @@ function _handleFullscreenSwipe(dx, dy, threshold) {
  * Настраивает обработку жестов в полноэкранном режиме.
  */
 function setupFullscreenGestures() {
-  const overlay = document.getElementById('previewOverlay');
-  if (!overlay) return;
-  let startX = 0;
-  let startY = 0;
-  let swiping = false;
-  const threshold = 40;
+  const overlay = document.getElementById('previewOverlay')
+  if (!overlay) return
+  let startX = 0
+  let startY = 0
+  let swiping = false
+  const threshold = 40
   const handleTouchStart = (e) => {
-    const t = e.touches[0];
-    startX = t.clientX;
-    startY = t.clientY;
-    swiping = true;
-  };
+    const t = e.touches[0]
+    startX = t.clientX
+    startY = t.clientY
+    swiping = true
+  }
   const handleTouchEnd = (e) => {
     if (swiping) {
-      swiping = false;
-      const t = e.changedTouches[0];
-      const dx = t.clientX - startX;
-      const dy = t.clientY - startY;
-      _handleFullscreenSwipe(dx, dy, threshold);
+      swiping = false
+      const t = e.changedTouches[0]
+      const dx = t.clientX - startX
+      const dy = t.clientY - startY
+      _handleFullscreenSwipe(dx, dy, threshold)
     }
-  };
-  overlay.addEventListener('touchstart', handleTouchStart, { passive: true });
-  overlay.addEventListener('touchend', handleTouchEnd, { passive: true });
+  }
+  overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
+  overlay.addEventListener('touchend', handleTouchEnd, { passive: true })
 }
 function syncFsPlayPauseButton() {
-  const btn = document.getElementById('fsPlayPauseBtn');
-  if (!btn) return;
+  const btn = document.getElementById('fsPlayPauseBtn')
+  if (!btn) return
   if (isPlaying) {
-    btn.textContent = '⏸ Стоп';
+    btn.textContent = '⏸ Стоп'
   } else {
-    btn.textContent = '▶️ Старт';
+    btn.textContent = '▶️ Старт'
   }
 }
 function wireFullscreenControls() {
-  setupFullscreenSpeedControl();
-  setupFullscreenSizeControls();
-  setupFullscreenDirectionControls();
-  setupFullscreenColorControls();
+  setupFullscreenSpeedControl()
+  setupFullscreenSizeControls()
+  setupFullscreenDirectionControls()
+  setupFullscreenColorControls()
 }
 function setupFullscreenSpeedControl() {
-  const speed = document.getElementById('fsSpeed');
+  const speed = document.getElementById('fsSpeed')
   if (speed) {
     if (components.speed?.getSpeed) {
-      speed.value = components.speed.getSpeed();
+      speed.value = components.speed.getSpeed()
     } else {
-      speed.value = 40;
+      speed.value = 40
     }
     speed.oninput = (e) => {
-      const target = e?.target;
+      const target = e?.target
       if (target?.value !== undefined) {
-        updateSpeed(Number(target.value));
+        updateSpeed(Number(target.value))
       }
-    };
+    }
   }
 }
 function setupFullscreenSizeControls() {
-  const size1 = document.getElementById('fsSize1');
-  const size2 = document.getElementById('fsSize2');
-  const size3 = document.getElementById('fsSize3');
-  const size4 = document.getElementById('fsSize4');
-  if (size1) size1.onclick = () => setBallSizeMultiplier(1);
-  if (size2) size2.onclick = () => setBallSizeMultiplier(2);
-  if (size3) size3.onclick = () => setBallSizeMultiplier(3);
-  if (size4) size4.onclick = () => setBallSizeMultiplier(4);
+  const size1 = document.getElementById('fsSize1')
+  const size2 = document.getElementById('fsSize2')
+  const size3 = document.getElementById('fsSize3')
+  const size4 = document.getElementById('fsSize4')
+  if (size1) size1.onclick = () => setBallSizeMultiplier(1)
+  if (size2) size2.onclick = () => setBallSizeMultiplier(2)
+  if (size3) size3.onclick = () => setBallSizeMultiplier(3)
+  if (size4) size4.onclick = () => setBallSizeMultiplier(4)
 }
 function setupFullscreenDirectionControls() {
-  const dH = document.getElementById('fsDirH');
-  const dV = document.getElementById('fsDirV');
-  const dDL = document.getElementById('fsDirDL');
-  const dDR = document.getElementById('fsDirDR');
-  const dRandom = document.getElementById('fsDirRandom');
-  if (dH) dH.onclick = () => setDirection('horizontal');
-  if (dV) dV.onclick = () => setDirection('vertical');
-  if (dDL) dDL.onclick = () => setDirection('diagRLL');
-  if (dDR) dDR.onclick = () => setDirection('diagRL');
-  if (dRandom) dRandom.onclick = () => setDirection('random');
+  const dH = document.getElementById('fsDirH')
+  const dV = document.getElementById('fsDirV')
+  const dDL = document.getElementById('fsDirDL')
+  const dDR = document.getElementById('fsDirDR')
+  const dRandom = document.getElementById('fsDirRandom')
+  if (dH) dH.onclick = () => setDirection('horizontal')
+  if (dV) dV.onclick = () => setDirection('vertical')
+  if (dDL) dDL.onclick = () => setDirection('diagRLL')
+  if (dDR) dDR.onclick = () => setDirection('diagRL')
+  if (dRandom) dRandom.onclick = () => setDirection('random')
 }
 function setupFullscreenColorControls() {
-  setupFullscreenBallColorControls();
-  setupFullscreenBackgroundColorControls();
+  setupFullscreenBallColorControls()
+  setupFullscreenBackgroundColorControls()
 }
 function setupFullscreenBallColorControls() {
   const ballColors = [
@@ -2100,15 +2100,15 @@ function setupFullscreenBallColorControls() {
     '#fb7185',
     '#ffffff',
     '#a855f7',
-    '#14b8a6',
-  ];
+    '#14b8a6'
+  ]
   for (let i = 1; i <= 12; i++) {
-    const btn = document.getElementById(`fsBallCol${i}`);
+    const btn = document.getElementById(`fsBallCol${i}`)
     if (btn) {
       // Устанавливаем background-color из data-color атрибута
-      const color = btn.dataset.color || ballColors[i - 1];
-      btn.style.backgroundColor = color;
-      btn.onclick = () => setBallColor(color);
+      const color = btn.dataset.color || ballColors[i - 1]
+      btn.style.backgroundColor = color
+      btn.onclick = () => setBallColor(color)
     }
   }
 }
@@ -2125,46 +2125,46 @@ function setupFullscreenBackgroundColorControls() {
     '#fce7f3',
     '#f3f4f6',
     '#e5e7eb',
-    '#d1d5db',
-  ];
+    '#d1d5db'
+  ]
   for (let i = 1; i <= 12; i++) {
-    const btn = document.getElementById(`fsBg${i}`);
+    const btn = document.getElementById(`fsBg${i}`)
     if (btn) {
       // Устанавливаем background-color из data-color атрибута
-      const color = btn.dataset.color || bgColors[i - 1];
-      btn.style.backgroundColor = color;
-      btn.onclick = () => setBackgroundColor(color);
+      const color = btn.dataset.color || bgColors[i - 1]
+      btn.style.backgroundColor = color
+      btn.onclick = () => setBackgroundColor(color)
     }
   }
 }
 function fillFsSessionInfo() {
   try {
-    const sid = globalThis.__current?.sessionId ?? '...';
-    const fsSid = document.getElementById('fsCurSid');
-    if (fsSid) fsSid.textContent = `SID: ${sid}`;
-    const fsLink = document.getElementById('fsViewLink');
-    if (fsLink) fsLink.value = buildViewerUrl(sid);
-    updateFullscreenViewerStatus();
+    const sid = globalThis.__current?.sessionId ?? '...'
+    const fsSid = document.getElementById('fsCurSid')
+    if (fsSid) fsSid.textContent = `SID: ${sid}`
+    const fsLink = document.getElementById('fsViewLink')
+    if (fsLink) fsLink.value = buildViewerUrl(sid)
+    updateFullscreenViewerStatus()
   } catch (err) {
-    debugWarn('Error in fillFsSessionInfo:', err);
+    debugWarn('Error in fillFsSessionInfo:', err)
   }
 }
 /**
  * Обновляет индикатор статуса вьювера в полноэкранном режиме
  */
 function updateFullscreenViewerStatus() {
-  const fsViewerStatus = document.getElementById('fsViewerStatus');
-  if (!fsViewerStatus) return;
-  const statusText = fsViewerStatus.querySelector('.fs-status-text');
-  if (!statusText) return;
+  const fsViewerStatus = document.getElementById('fsViewerStatus')
+  if (!fsViewerStatus) return
+  const statusText = fsViewerStatus.querySelector('.fs-status-text')
+  if (!statusText) return
   if (globalThis.__current?.viewerConnected) {
-    fsViewerStatus.classList.add('connected');
+    fsViewerStatus.classList.add('connected')
     statusText.textContent =
-      globalThis.i18n?.t('controller.viewerConnected') || 'Connected';
+      globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
   } else {
-    fsViewerStatus.classList.remove('connected');
+    fsViewerStatus.classList.remove('connected')
     statusText.textContent =
-      globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...';
+      globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
   }
 }
 /**
@@ -2172,26 +2172,26 @@ function updateFullscreenViewerStatus() {
  */
 function resetSession() {
   try {
-    bbCounters.resetAll();
+    bbCounters.resetAll()
     if (isPlaying) {
-      _setPlayPauseState(false);
+      _setPlayPauseState(false)
     }
     safeSend(WS_MSG.controllerUpdate, {
       paused: true,
-      returnToCenter: true,
-    });
-    setDirection('horizontal');
+      returnToCenter: true
+    })
+    setDirection('horizontal')
     showNotification(
       globalThis.i18n?.t('controller.sessionReset') || 'Session reset',
-      'info',
-    );
+      'info'
+    )
   } catch (error) {
-    console.error('Session reset error:', error);
+    console.error('Session reset error:', error)
     showNotification(
       globalThis.i18n?.t('controller.sessionResetError') ||
         'Error resetting session',
-      'error',
-    );
+      'error'
+    )
   }
 }
 /**
@@ -2207,19 +2207,19 @@ function showCriticalError(title, message) {
       actions: [
         {
           label: globalThis.i18n?.t('viewer.reload') || 'Reload page',
-          callback: () => globalThis.location.reload(),
-        },
-      ],
-    });
+          callback: () => globalThis.location.reload()
+        }
+      ]
+    })
   } else if (globalThis.emdrErrorOverlay) {
     globalThis.emdrErrorOverlay.show({
       title,
       message,
       actionText: globalThis.i18n?.t('viewer.reload') || 'Reload page',
-      onAction: () => globalThis.location.reload(),
-    });
+      onAction: () => globalThis.location.reload()
+    })
   } else {
-    alert(`${title}\n\n${message}`);
+    alert(`${title}\n\n${message}`)
   }
 }
 function showNotification(message, type = 'info') {
@@ -2230,25 +2230,25 @@ function showNotification(message, type = 'info') {
         info: 'Info',
         success: 'Success',
         warning: 'Warning',
-        error: 'Error',
-      };
+        error: 'Error'
+      }
       globalThis.errorStateManager.show(`notification-${type}`, {
         title: titles[type] || 'Info',
         message: message,
-        duration: type === 'error' ? 0 : 4000, // Ошибки не исчезают автоматически
-      });
+        duration: type === 'error' ? 0 : 4000 // Ошибки не исчезают автоматически
+      })
     } else if (globalThis.showSuccessToast && type === 'success') {
-      globalThis.showSuccessToast(message);
+      globalThis.showSuccessToast(message)
     } else {
       // Fallback: показываем через alert для ошибок
       if (type === 'error') {
-        alert(`Ошибка: ${message}`);
+        alert(`Ошибка: ${message}`)
       }
     }
   } catch (error) {
-    console.error('Error showing notification:', error);
+    console.error('Error showing notification:', error)
     if (type === 'error') {
-      alert(message);
+      alert(message)
     }
   }
 }
@@ -2259,32 +2259,32 @@ function showNotification(message, type = 'info') {
 function showViewerNotConnectedWarning() {
   // Не показываем варнинг во время инициализации
   if (globalThis.__current?.isInitializing) {
-    return;
+    return
   }
 
   const _t = (key, fallback) => {
-    const v = globalThis.i18n?.t(key);
-    return v && v !== key ? v : fallback;
-  };
+    const v = globalThis.i18n?.t(key)
+    return v && v !== key ? v : fallback
+  }
   const title = _t(
     'controller.viewerNotConnectedWarning',
-    'Viewer not connected',
-  );
+    'Viewer not connected'
+  )
   const message = _t(
     'controller.viewerNotConnectedMessage',
-    'Share the viewer link with your client so they can join the session.',
-  );
+    'Share the viewer link with your client so they can join the session.'
+  )
 
   // Используем errorStateManager для отображения предупреждения
   if (globalThis.errorStateManager?.show) {
     globalThis.errorStateManager.show('viewer-not-connected', {
       title: title,
       message: message,
-      duration: 8000, // Увеличиваем время отображения до 8 секунд
-    });
+      duration: 8000 // Увеличиваем время отображения до 8 секунд
+    })
   } else {
     // Fallback: показываем через alert если errorStateManager недоступен
-    showNotification(`${title}: ${message}`, 'warning');
+    showNotification(`${title}: ${message}`, 'warning')
   }
 }
 /**
@@ -2296,14 +2296,14 @@ function showViewerNotConnectedWarning() {
 function requireViewerConnection(action, showWarning = true) {
   if (!globalThis.__current?.viewerConnected) {
     if (showWarning) {
-      showViewerNotConnectedWarning();
+      showViewerNotConnectedWarning()
     }
-    return false;
+    return false
   }
   if (typeof action === 'function') {
-    action();
+    action()
   }
-  return true;
+  return true
 }
 
 /**
@@ -2311,30 +2311,30 @@ function requireViewerConnection(action, showWarning = true) {
  * Idempotent: subsequent calls are no-ops (delegated handler is already active).
  */
 function initViewerConnectionWarnings() {
-  const main = document.querySelector('main.wrap');
-  if (!main || main._viewerGuardAdded) return;
-  main._viewerGuardAdded = true;
+  const main = document.querySelector('main.wrap')
+  if (!main || main._viewerGuardAdded) return
+  main._viewerGuardAdded = true
   // Block clicks on controls that require viewer connection
   main.addEventListener(
     'click',
     (event) => {
-      if (globalThis.__current?.viewerConnected) return;
-      if (globalThis.__current?.isInitializing) return;
-      const t = event.target;
+      if (globalThis.__current?.viewerConnected) return
+      if (globalThis.__current?.isInitializing) return
+      const t = event.target
       const inControl = t.closest(
-        '.controls-card, .session-actions-row, #presetControls, .presets-details, #previewFsPanel',
-      );
-      if (!inControl) return;
+        '.controls-card, .session-actions-row, #presetControls, .presets-details, #previewFsPanel'
+      )
+      if (!inControl) return
       const isExempt = t.closest(
-        '.link-group, #autoStopRow, .session-stats-row, .drag-handle, #toggleDebugBtn, .fs-close-btn, .fs-panel-header',
-      );
-      if (isExempt) return;
-      event.stopImmediatePropagation();
-      event.preventDefault();
-      showViewerNotConnectedWarning();
+        '.link-group, #autoStopRow, .session-stats-row, .drag-handle, #toggleDebugBtn, .fs-close-btn, .fs-panel-header'
+      )
+      if (isExempt) return
+      event.stopImmediatePropagation()
+      event.preventDefault()
+      showViewerNotConnectedWarning()
     },
-    true,
-  );
+    true
+  )
 }
 
 /**
@@ -2342,31 +2342,31 @@ function initViewerConnectionWarnings() {
  */
 function toggleDebugOverlay() {
   if (globalThis.BBDebug && typeof globalThis.BBDebug.toggle === 'function') {
-    globalThis.BBDebug.toggle();
+    globalThis.BBDebug.toggle()
   }
 }
 
 // Экспорт функций в глобальную область видимости для доступа из HTML onclick
-globalThis.togglePlayPause = togglePlayPause;
-globalThis.setDirection = setDirection;
-globalThis.updateSpeed = updateSpeed;
-globalThis.setBallColor = setBallColor;
-globalThis.setBallSize = setBallSize;
-globalThis.setBackgroundColor = setBackgroundColor;
-globalThis.resetSession = resetSession;
-globalThis.setSoundEnabled = setSoundEnabled;
-globalThis.setSoundType = setSoundType;
-globalThis.setBallSizeMultiplier = setBallSizeMultiplier;
-globalThis.showViewerNotConnectedWarning = showViewerNotConnectedWarning;
-globalThis.requireViewerConnection = requireViewerConnection;
-globalThis.reinitializeViewerConnectionWarnings = initViewerConnectionWarnings;
-globalThis.toggleDebugOverlay = toggleDebugOverlay;
+globalThis.togglePlayPause = togglePlayPause
+globalThis.setDirection = setDirection
+globalThis.updateSpeed = updateSpeed
+globalThis.setBallColor = setBallColor
+globalThis.setBallSize = setBallSize
+globalThis.setBackgroundColor = setBackgroundColor
+globalThis.resetSession = resetSession
+globalThis.setSoundEnabled = setSoundEnabled
+globalThis.setSoundType = setSoundType
+globalThis.setBallSizeMultiplier = setBallSizeMultiplier
+globalThis.showViewerNotConnectedWarning = showViewerNotConnectedWarning
+globalThis.requireViewerConnection = requireViewerConnection
+globalThis.reinitializeViewerConnectionWarnings = initViewerConnectionWarnings
+globalThis.toggleDebugOverlay = toggleDebugOverlay
 
 // Инициализация обработчиков предупреждений после загрузки DOM
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initViewerConnectionWarnings);
+  document.addEventListener('DOMContentLoaded', initViewerConnectionWarnings)
 } else {
-  initViewerConnectionWarnings();
+  initViewerConnectionWarnings()
 }
 
-module.exports = { initializeController };
+module.exports = { initializeController }

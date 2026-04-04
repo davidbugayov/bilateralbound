@@ -1,5 +1,5 @@
 (function () {
-  'use strict';
+  'use strict'
 
   // Combined structured data for BilateralBound
   const structuredData = [
@@ -28,12 +28,12 @@
         'Permanent session links',
         'No registration required',
         'Free for therapists and patients',
-        '8 languages supported',
+        '8 languages supported'
       ],
       author: {
         '@type': 'Person',
         name: 'David Bugaev',
-        url: 'https://github.com/davidbugayov',
+        url: 'https://github.com/davidbugayov'
       },
       publisher: {
         '@type': 'Organization',
@@ -42,15 +42,15 @@
           '@type': 'ImageObject',
           url: 'https://emdrbilateral.ru/emdr-eye.png',
           width: 512,
-          height: 512,
-        },
+          height: 512
+        }
       },
       offers: {
         '@type': 'Offer',
         price: '0',
         priceCurrency: 'USD',
-        availability: 'https://schema.org/InStock',
-      },
+        availability: 'https://schema.org/InStock'
+      }
     },
     {
       '@context': 'https://schema.org',
@@ -67,7 +67,7 @@
         name: 'EMDR',
         alternateName: 'Eye Movement Desensitization and Reprocessing',
         medicalSpecialty: 'Psychiatry',
-        relevantSpecialty: ['Psychology', 'Psychotherapy'],
+        relevantSpecialty: ['Psychology', 'Psychotherapy']
       },
       audience: [
         {
@@ -78,14 +78,14 @@
             'Anxiety',
             'Depression',
             'Phobia',
-            'Trauma',
-          ],
+            'Trauma'
+          ]
         },
         {
           '@type': 'MedicalAudience',
-          audienceType: 'Clinician',
-        },
-      ],
+          audienceType: 'Clinician'
+        }
+      ]
     },
     {
       '@context': 'https://schema.org',
@@ -96,50 +96,50 @@
           name: 'What is EMDR therapy?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy method that uses bilateral stimulation — typically eye movements — to help the brain reprocess traumatic memories. It is recognised by the WHO and APA as an effective treatment for PTSD.',
-          },
+            text: 'EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy method that uses bilateral stimulation — typically eye movements — to help the brain reprocess traumatic memories. It is recognised by the WHO and APA as an effective treatment for PTSD.'
+          }
         },
         {
           '@type': 'Question',
           name: 'How does BilateralBound work?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'The therapist creates a session and receives a controller link; the patient opens the viewer link on any device. The therapist controls a moving ball in real-time over WebSocket — the patient follows it with their eyes, creating bilateral stimulation. No software installation needed.',
-          },
+            text: 'The therapist creates a session and receives a controller link; the patient opens the viewer link on any device. The therapist controls a moving ball in real-time over WebSocket — the patient follows it with their eyes, creating bilateral stimulation. No software installation needed.'
+          }
         },
         {
           '@type': 'Question',
           name: 'Is BilateralBound free to use?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes, BilateralBound is completely free for therapists and patients worldwide. No registration, no subscription, no time limits.',
-          },
+            text: 'Yes, BilateralBound is completely free for therapists and patients worldwide. No registration, no subscription, no time limits.'
+          }
         },
         {
           '@type': 'Question',
           name: 'Does EMDR therapy work online?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. Research supports the effectiveness of telehealth EMDR. BilateralBound delivers real-time bilateral stimulation over WebSocket with millisecond precision, replicating in-person session quality remotely.',
-          },
+            text: 'Yes. Research supports the effectiveness of telehealth EMDR. BilateralBound delivers real-time bilateral stimulation over WebSocket with millisecond precision, replicating in-person session quality remotely.'
+          }
         },
         {
           '@type': 'Question',
           name: 'What conditions does EMDR treat?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'EMDR is used to treat post-traumatic stress disorder (PTSD), anxiety disorders, panic attacks, depression, phobias, OCD, and relationship trauma. It is also used in couples therapy for processing shared traumatic experiences.',
-          },
+            text: 'EMDR is used to treat post-traumatic stress disorder (PTSD), anxiety disorders, panic attacks, depression, phobias, OCD, and relationship trauma. It is also used in couples therapy for processing shared traumatic experiences.'
+          }
         },
         {
           '@type': 'Question',
           name: 'Does the therapist need special training to use BilateralBound?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "The platform is designed for use by qualified EMDR-trained therapists. EMDR therapy should only be conducted by certified mental health professionals. BilateralBound provides the bilateral stimulation tool — clinical judgement and technique remain the therapist's responsibility.",
-          },
-        },
-      ],
+            text: 'The platform is designed for use by qualified EMDR-trained therapists. EMDR therapy should only be conducted by certified mental health professionals. BilateralBound provides the bilateral stimulation tool — clinical judgement and technique remain the therapist\'s responsibility.'
+          }
+        }
+      ]
     },
     {
       '@context': 'https://schema.org',
@@ -150,7 +150,7 @@
         '@type': 'ImageObject',
         url: 'https://emdrbilateral.ru/emdr-eye.png',
         width: 512,
-        height: 512,
+        height: 512
       },
       sameAs: ['https://github.com/davidbugayov'],
       contactPoint: {
@@ -164,15 +164,15 @@
           'French',
           'Portuguese',
           'Japanese',
-          'Chinese',
-        ],
-      },
-    },
-  ];
+          'Chinese'
+        ]
+      }
+    }
+  ]
 
   // Inject structured data into page
-  const script = document.createElement('script');
-  script.type = 'application/ld+json';
-  script.text = JSON.stringify(structuredData);
-  document.head.appendChild(script);
-})();
+  const script = document.createElement('script')
+  script.type = 'application/ld+json'
+  script.text = JSON.stringify(structuredData)
+  document.head.appendChild(script)
+})()

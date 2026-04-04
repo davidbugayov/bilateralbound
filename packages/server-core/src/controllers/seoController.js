@@ -1,13 +1,13 @@
-'use strict';
+'use strict'
 
 function registerSeoRoutes(app) {
   // Dynamic robots.txt per domain (.ru gets Host directive, .online does not)
   app.get('/robots.txt', (req, res) => {
-    const host = req.get('host') || '';
-    const isRu = host.endsWith('.ru');
+    const host = req.get('host') || ''
+    const isRu = host.endsWith('.ru')
     const base = isRu
       ? 'https://emdrbilateral.ru'
-      : 'https://emdrbilateral.online';
+      : 'https://emdrbilateral.online'
     const lines = [
       '# Robots.txt - BilateralBound EMDR Therapy',
       '',
@@ -78,34 +78,34 @@ function registerSeoRoutes(app) {
       'User-agent: Google-Extended',
       'Allow: /',
       '',
-      `Sitemap: ${base}/sitemap.xml`,
-    ];
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.send(lines.join('\n'));
-  });
+      `Sitemap: ${base}/sitemap.xml`
+    ]
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+    res.send(lines.join('\n'))
+  })
 
   // Dynamic sitemap.xml per domain
   app.get('/sitemap.xml', (req, res) => {
-    const host = req.get('host') || '';
-    const isRu = host.endsWith('.ru');
+    const host = req.get('host') || ''
+    const isRu = host.endsWith('.ru')
     const base = isRu
       ? 'https://emdrbilateral.ru'
-      : 'https://emdrbilateral.online';
-    const today = new Date().toISOString().split('T')[0];
+      : 'https://emdrbilateral.online'
+    const today = new Date().toISOString().split('T')[0]
     const imageTitle = isRu
       ? 'BilateralBound - EMDR терапия онлайн'
-      : 'BilateralBound - Online EMDR Therapy Platform';
+      : 'BilateralBound - Online EMDR Therapy Platform'
     const imageCaption = isRu
       ? 'Профессиональная платформа EMDR терапии с биодинамической стимуляцией'
-      : 'Professional EMDR therapy platform with bilateral stimulation';
+      : 'Professional EMDR therapy platform with bilateral stimulation'
     const verificationUrls = isRu
       ? [
           '  <url>\n    <loc>https://emdrbilateral.ru/google0a8d78e57c19cb2f.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
           '  <url>\n    <loc>https://emdrbilateral.ru/yandex_736ad8daf3553b6b.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
-          '  <url>\n    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
+          '  <url>\n    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>'
         ].join('\n')
-      : '';
+      : ''
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
@@ -121,19 +121,19 @@ function registerSeoRoutes(app) {
     </image:image>
   </url>
 ${verificationUrls}
-</urlset>`;
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.send(xml.trim());
-  });
+</urlset>`
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8')
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+    res.send(xml.trim())
+  })
 
   // llms.txt — structured summary for LLM crawlers (Perplexity, Claude, Gemini)
   app.get('/llms.txt', (req, res) => {
-    const host = req.get('host') || '';
-    const isRu = host.endsWith('.ru');
+    const host = req.get('host') || ''
+    const isRu = host.endsWith('.ru')
     const base = isRu
       ? 'https://emdrbilateral.ru'
-      : 'https://emdrbilateral.online';
+      : 'https://emdrbilateral.online'
     const content = `# BilateralBound
 
 > Free online EMDR therapy platform. Therapists control a bilateral stimulation ball in real-time; patients follow it with their eyes from any device via a permanent link. No registration required. Free to use.
@@ -172,15 +172,15 @@ ${verificationUrls}
 - Developer: David Bugaev
 - Project URL: ${base}
 - Contact: via GitHub https://github.com/davidbugayov
-`;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.send(content);
-  });
+`
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+    res.send(content)
+  })
 
   // RSS feed
   app.get('/rss.xml', (req, res) => {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = `${req.protocol}://${req.get('host')}`
     const rss = `
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -206,9 +206,9 @@ ${verificationUrls}
   </item>
 </channel>
 </rss>
-    `.trim();
-    res.type('application/xml').send(rss);
-  });
+    `.trim()
+    res.type('application/xml').send(rss)
+  })
 }
 
-module.exports = { registerSeoRoutes };
+module.exports = { registerSeoRoutes }

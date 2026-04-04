@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * PreviewManager — единый модуль управления превью контроллера
  * @module application/controller/preview-manager
@@ -9,15 +9,15 @@
 // ============================================================================
 // Приватное состояние
 // ============================================================================
-let _physicsEngine = null;
-let _renderer = null;
-let _canvas = null;
+let _physicsEngine = null
+let _renderer = null
+let _canvas = null
 const _callbacks = {
   onBounce: () => {},
   getLastServerState: () => null,
   isFullscreenActive: () => false,
-  getFullscreenCanvas: () => null,
-};
+  getFullscreenCanvas: () => null
+}
 
 // ============================================================================
 // Внутренние утилиты
@@ -28,7 +28,7 @@ const _callbacks = {
  * @returns {HTMLCanvasElement|null}
  */
 function getCanvas() {
-  return document.getElementById('preview');
+  return document.getElementById('preview')
 }
 
 /**
@@ -37,7 +37,7 @@ function getCanvas() {
  * @returns {Element}
  */
 function getContainer(canvas) {
-  return canvas.parentElement;
+  return canvas.parentElement
 }
 
 /**
@@ -47,7 +47,7 @@ function getContainer(canvas) {
  * @returns {{w: number, h: number}}
  */
 function ensureMinSize(w, h) {
-  return { w: Math.max(w, 100), h: Math.max(h, 75) };
+  return { w: Math.max(w, 100), h: Math.max(h, 75) }
 }
 
 /**
@@ -55,7 +55,7 @@ function ensureMinSize(w, h) {
  * @returns {boolean}
  */
 function hasRequiredElements() {
-  return Boolean(getCanvas());
+  return Boolean(getCanvas())
 }
 
 // ============================================================================
@@ -69,9 +69,9 @@ function hasRequiredElements() {
  */
 async function initializePreview(callbacks) {
   if (callbacks) {
-    Object.assign(_callbacks, callbacks);
+    Object.assign(_callbacks, callbacks)
   }
-  return _initStandalone();
+  return _initStandalone()
 }
 
 /**
@@ -81,32 +81,32 @@ async function initializePreview(callbacks) {
 async function _initStandalone() {
   if (!hasRequiredElements()) {
     if (typeof debugWarn === 'function') {
-      debugWarn('PreviewManager: required DOM elements not found');
+      debugWarn('PreviewManager: required DOM elements not found')
     }
-    return false;
+    return false
   }
 
-  showWaitingForViewer();
+  showWaitingForViewer()
 
-  const previewWrap = document.getElementById('previewWrap');
+  const previewWrap = document.getElementById('previewWrap')
   if (previewWrap) {
-    previewWrap.style.display = 'block';
+    previewWrap.style.display = 'block'
   }
 
-  const canvas = getCanvas();
-  if (!canvas) return false;
+  const canvas = getCanvas()
+  if (!canvas) return false
 
   // Инициализация размеров canvas при нулевых значениях
   if (canvas.width === 0 || canvas.height === 0) {
-    const container = getContainer(canvas);
-    const containerRect = container.getBoundingClientRect();
-    const initialWidth = Math.min(containerRect.width - 40, 500);
-    const initialHeight = Math.min(400, initialWidth * 0.75);
-    const { w, h } = ensureMinSize(initialWidth, initialHeight);
-    canvas.width = w;
-    canvas.height = h;
-    canvas.style.width = canvas.width + 'px';
-    canvas.style.height = canvas.height + 'px';
+    const container = getContainer(canvas)
+    const containerRect = container.getBoundingClientRect()
+    const initialWidth = Math.min(containerRect.width - 40, 500)
+    const initialHeight = Math.min(400, initialWidth * 0.75)
+    const { w, h } = ensureMinSize(initialWidth, initialHeight)
+    canvas.width = w
+    canvas.height = h
+    canvas.style.width = canvas.width + 'px'
+    canvas.style.height = canvas.height + 'px'
   }
 
   try {
@@ -114,36 +114,36 @@ async function _initStandalone() {
     _physicsEngine = new PhysicsEngine({
       sessionId: 'preview',
       isViewer: true,
-      clientSimulation: true,
-    });
-    _physicsEngine.setPaused(true);
+      clientSimulation: true
+    })
+    _physicsEngine.setPaused(true)
 
     // Настройка smoothing
     if (globalThis.BBConfig?.smoothing) {
-      _physicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing);
+      _physicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
     }
 
     // Создание renderer
-    _canvas = canvas;
+    _canvas = canvas
     _renderer = new BallRenderer(canvas, _physicsEngine, {
-      localPhysics: true,
-    });
-    _renderer.start();
+      localPhysics: true
+    })
+    _renderer.start()
 
     // Обработка bounce событий
-    globalThis.addEventListener('bb_bounce', () => _callbacks.onBounce());
+    globalThis.addEventListener('bb_bounce', () => _callbacks.onBounce())
 
     // Начальная позиция мяча
-    _initBallPosition();
+    _initBallPosition()
 
-    return true;
+    return true
   } catch (error) {
     if (typeof debugWarn === 'function') {
-      debugWarn('PreviewManager: initialization error', error);
+      debugWarn('PreviewManager: initialization error', error)
     }
-    _physicsEngine = null;
-    _renderer = null;
-    return false;
+    _physicsEngine = null
+    _renderer = null
+    return false
   }
 }
 
@@ -152,39 +152,39 @@ async function _initStandalone() {
  * @private
  */
 function _initBallPosition() {
-  const viewerSize = globalThis.__current?.viewerScreenSize;
+  const viewerSize = globalThis.__current?.viewerScreenSize
   if (viewerSize?.width > 0 && viewerSize?.height > 0) {
-    _physicsEngine.setWorldSize(viewerSize.width, viewerSize.height);
-    _physicsEngine.setPosition(viewerSize.width / 2, viewerSize.height / 2);
+    _physicsEngine.setWorldSize(viewerSize.width, viewerSize.height)
+    _physicsEngine.setPosition(viewerSize.width / 2, viewerSize.height / 2)
   } else {
-    const { w, h } = ensureMinSize(_canvas.width, _canvas.height);
-    _physicsEngine.setWorldSize(w, h);
-    _physicsEngine.setPosition(w / 2, h / 2);
+    const { w, h } = ensureMinSize(_canvas.width, _canvas.height)
+    _physicsEngine.setWorldSize(w, h)
+    _physicsEngine.setPosition(w / 2, h / 2)
   }
-  _physicsEngine.setVelocity(0, 0);
+  _physicsEngine.setVelocity(0, 0)
 }
 
 /**
  * Показать сообщение ожидания viewer
  */
 function showWaitingForViewer() {
-  const viewerInfo = document.getElementById('viewerInfo');
+  const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
     viewerInfo.textContent =
       globalThis.i18n?.t('controller.waitingForViewerConnection') ||
-      '⏳ Waiting for viewer connection';
-    viewerInfo.style.display = 'block';
+      '⏳ Waiting for viewer connection'
+    viewerInfo.style.display = 'block'
   }
-  _centerAndPauseBall();
+  _centerAndPauseBall()
 }
 
 /**
  * Скрыть сообщение ожидания viewer
  */
 function hideWaitingForViewer() {
-  const viewerInfo = document.getElementById('viewerInfo');
+  const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.style.display = 'none';
+    viewerInfo.style.display = 'none'
   }
 }
 
@@ -193,9 +193,9 @@ function hideWaitingForViewer() {
  * @private
  */
 function _centerAndPauseBall() {
-  if (!_physicsEngine) return;
-  _physicsEngine.setVelocity(0, 0);
-  _physicsEngine.setPaused(true);
+  if (!_physicsEngine) return
+  _physicsEngine.setVelocity(0, 0)
+  _physicsEngine.setPaused(true)
 }
 
 /**
@@ -204,20 +204,20 @@ function _centerAndPauseBall() {
  */
 function updatePreviewSize(viewerScreenSize) {
   if (canUpdatePreview(viewerScreenSize)) {
-    const canvas = getCanvas();
-    if (!canvas) return;
+    const canvas = getCanvas()
+    if (!canvas) return
 
     const { width, height } = calculatePreviewDimensions(
       canvas,
-      viewerScreenSize,
-    );
-    setCanvasDimensions(canvas, width, height);
-    updatePhysicsEngineWorldSize(viewerScreenSize);
-    applyServerStateOrCenter();
-    updateViewerInfo(viewerScreenSize);
+      viewerScreenSize
+    )
+    setCanvasDimensions(canvas, width, height)
+    updatePhysicsEngineWorldSize(viewerScreenSize)
+    applyServerStateOrCenter()
+    updateViewerInfo(viewerScreenSize)
   } else {
-    showWaitingForViewer();
-    centerBallInViewer();
+    showWaitingForViewer()
+    centerBallInViewer()
   }
 }
 
@@ -227,7 +227,7 @@ function updatePreviewSize(viewerScreenSize) {
  * @returns {boolean}
  */
 function canUpdatePreview(viewerScreenSize) {
-  return Boolean(viewerScreenSize && _renderer && _physicsEngine);
+  return Boolean(viewerScreenSize && _renderer && _physicsEngine)
 }
 
 /**
@@ -237,21 +237,21 @@ function canUpdatePreview(viewerScreenSize) {
  * @returns {{width: number, height: number}}
  */
 function calculatePreviewDimensions(canvas, viewerScreenSize) {
-  const container = getContainer(canvas);
-  const containerRect = container.getBoundingClientRect();
-  const maxWidth = Math.min(containerRect.width - 40, 500);
-  const maxHeight = Math.min(400, maxWidth * 0.75);
-  const viewerRatio = viewerScreenSize.width / viewerScreenSize.height;
+  const container = getContainer(canvas)
+  const containerRect = container.getBoundingClientRect()
+  const maxWidth = Math.min(containerRect.width - 40, 500)
+  const maxHeight = Math.min(400, maxWidth * 0.75)
+  const viewerRatio = viewerScreenSize.width / viewerScreenSize.height
 
-  let width = maxWidth;
-  let height = width / viewerRatio;
+  let width = maxWidth
+  let height = width / viewerRatio
 
   if (height > maxHeight) {
-    height = maxHeight;
-    width = height * viewerRatio;
+    height = maxHeight
+    width = height * viewerRatio
   }
 
-  return { width, height };
+  return { width, height }
 }
 
 /**
@@ -261,10 +261,10 @@ function calculatePreviewDimensions(canvas, viewerScreenSize) {
  * @param {number} height
  */
 function setCanvasDimensions(canvas, width, height) {
-  canvas.width = width;
-  canvas.height = height;
-  canvas.style.width = width + 'px';
-  canvas.style.height = height + 'px';
+  canvas.width = width
+  canvas.height = height
+  canvas.style.width = width + 'px'
+  canvas.style.height = height + 'px'
 }
 
 /**
@@ -279,8 +279,8 @@ function updatePhysicsEngineWorldSize(viewerScreenSize) {
   ) {
     _physicsEngine.setWorldSize(
       viewerScreenSize.width,
-      viewerScreenSize.height,
-    );
+      viewerScreenSize.height
+    )
   }
 }
 
@@ -288,11 +288,11 @@ function updatePhysicsEngineWorldSize(viewerScreenSize) {
  * Применить состояние сервера или центрировать мяч
  */
 function applyServerStateOrCenter() {
-  const lastState = _callbacks.getLastServerState();
+  const lastState = _callbacks.getLastServerState()
   if (lastState && _physicsEngine) {
-    _physicsEngine.applyCommand(lastState);
+    _physicsEngine.applyCommand(lastState)
   } else {
-    centerBallInViewer();
+    centerBallInViewer()
   }
 }
 
@@ -300,31 +300,31 @@ function applyServerStateOrCenter() {
  * Центрировать мяч в viewer
  */
 function centerBallInViewer() {
-  if (!_physicsEngine) return;
+  if (!_physicsEngine) return
 
-  const viewerSize = globalThis.__current?.viewerScreenSize;
+  const viewerSize = globalThis.__current?.viewerScreenSize
   if (viewerSize?.width > 0 && viewerSize?.height > 0) {
-    _physicsEngine.setPosition(viewerSize.width / 2, viewerSize.height / 2);
-    _physicsEngine.setVelocity(0, 0);
-    return;
+    _physicsEngine.setPosition(viewerSize.width / 2, viewerSize.height / 2)
+    _physicsEngine.setVelocity(0, 0)
+    return
   }
 
   // Полноэкранный режим
   if (_callbacks.isFullscreenActive()) {
-    const fsCanvas = _callbacks.getFullscreenCanvas();
+    const fsCanvas = _callbacks.getFullscreenCanvas()
     if (fsCanvas) {
-      _physicsEngine.setPosition(fsCanvas.width / 2, fsCanvas.height / 2);
-      _physicsEngine.setVelocity(0, 0);
-      return;
+      _physicsEngine.setPosition(fsCanvas.width / 2, fsCanvas.height / 2)
+      _physicsEngine.setVelocity(0, 0)
+      return
     }
   }
 
   // Canvas превью
-  const canvas = _canvas || getCanvas();
+  const canvas = _canvas || getCanvas()
   if (canvas) {
-    const { w, h } = ensureMinSize(canvas.width, canvas.height);
-    _physicsEngine.setPosition(w / 2, h / 2);
-    _physicsEngine.setVelocity(0, 0);
+    const { w, h } = ensureMinSize(canvas.width, canvas.height)
+    _physicsEngine.setPosition(w / 2, h / 2)
+    _physicsEngine.setVelocity(0, 0)
   }
 }
 
@@ -333,12 +333,12 @@ function centerBallInViewer() {
  * @param {Object} viewerScreenSize
  */
 function updateViewerInfo(viewerScreenSize) {
-  const viewerInfo = document.getElementById('viewerInfo');
-  if (!viewerInfo || !viewerScreenSize) return;
+  const viewerInfo = document.getElementById('viewerInfo')
+  if (!viewerInfo || !viewerScreenSize) return
 
-  const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer';
-  viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`;
-  viewerInfo.style.display = 'block';
+  const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer'
+  viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`
+  viewerInfo.style.display = 'block'
 }
 
 /**
@@ -346,7 +346,7 @@ function updateViewerInfo(viewerScreenSize) {
  * @returns {Object|null}
  */
 function getPreviewPhysicsEngine() {
-  return _physicsEngine;
+  return _physicsEngine
 }
 
 // ============================================================================
@@ -361,8 +361,8 @@ if (typeof globalThis !== 'undefined') {
     centerBall: centerBallInViewer,
     showWaiting: showWaitingForViewer,
     hideWaiting: hideWaitingForViewer,
-    updateViewerInfo,
-  };
+    updateViewerInfo
+  }
 }
 
 module.exports = {
@@ -377,5 +377,5 @@ module.exports = {
   setCanvasDimensions,
   updatePhysicsEngineWorldSize,
   canUpdatePreview,
-  applyServerStateOrCenter,
-};
+  applyServerStateOrCenter
+}
