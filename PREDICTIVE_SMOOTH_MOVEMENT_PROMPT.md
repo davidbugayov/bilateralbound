@@ -11,6 +11,7 @@
 ## Ключевое преимущество нашей архитектуры
 
 В отличие от классических проблем game networking, у нас:
+
 - **Viewer знает скорость и направление** (получает от сервера)
 - **Controller тоже знает скорость и направление** (получает от сервера через WebSocket)
 - Оба могут **предсказывать** позицию шарика на основе velocity
@@ -25,8 +26,8 @@
 
 ```javascript
 // Позиция предсказывается на основе последней известной velocity
-predictedX = lastKnownX + velocityX * deltaTime
-predictedY = lastKnownY + velocityY * deltaTime
+predictedX = lastKnownX + velocityX * deltaTime;
+predictedY = lastKnownY + velocityY * deltaTime;
 ```
 
 **Преимущество**: Шарик движется плавно между серверными обновлениями (15Hz), а не "прыгает" к новой позиции.
@@ -37,12 +38,14 @@ predictedY = lastKnownY + velocityY * deltaTime
 // Вместо линейной интерполяции между двумя точками
 // используем cubic hermite spline с учётом velocity
 function hermite(t, p0, p1, m0, m1) {
-  const t2 = t * t
-  const t3 = t2 * t
-  return (2*t3 - 3*t2 + 1) * p0 +
-         (t3 - 2*t2 + t) * m0 +
-         (-2*t3 + 3*t2) * p1 +
-         (t3 - t2) * m1
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return (
+    (2 * t3 - 3 * t2 + 1) * p0 +
+    (t3 - 2 * t2 + t) * m0 +
+    (-2 * t3 + 3 * t2) * p1 +
+    (t3 - t2) * m1
+  );
 }
 ```
 
@@ -55,20 +58,20 @@ function hermite(t, p0, p1, m0, m1) {
 // с небольшой задержкой (jitter buffer) для компенсации неравномерных интервалов
 class SnapshotBuffer {
   constructor(bufferSize = 3, delayMs = 50) {
-    this.buffer = []
-    this.delay = delayMs
+    this.buffer = [];
+    this.delay = delayMs;
   }
-  
+
   addSnapshot(timestamp, x, y, vx, vy) {
-    this.buffer.push({ timestamp, x, y, vx, vy })
+    this.buffer.push({ timestamp, x, y, vx, vy });
     if (this.buffer.length > this.bufferSize) {
-      this.buffer.shift()
+      this.buffer.shift();
     }
   }
-  
+
   getPosition(renderTime) {
     // Интерполируем между двумя снапшотами, ближайшими к renderTime - delay
-    const targetTime = renderTime - this.delay
+    const targetTime = renderTime - this.delay;
     // ... cubic hermite interpolation
   }
 }
@@ -82,20 +85,20 @@ class SnapshotBuffer {
 // Плавно корректируем отклонение от серверной позиции
 // вместо резкого snap
 function applySpringCorrection(current, target, velocity, dt) {
-  const stiffness = 10  // жёсткость пружины
-  const damping = 5     // демпфирование
-  
-  const dx = target.x - current.x
-  const dy = target.y - current.y
-  
+  const stiffness = 10; // жёсткость пружины
+  const damping = 5; // демпфирование
+
+  const dx = target.x - current.x;
+  const dy = target.y - current.y;
+
   // Сила пружины: F = -k * x - d * v
-  const fx = stiffness * dx - damping * velocity.x
-  const fy = stiffness * dy - damping * velocity.y
-  
+  const fx = stiffness * dx - damping * velocity.x;
+  const fy = stiffness * dy - damping * velocity.y;
+
   return {
     x: current.x + fx * dt,
-    y: current.y + fy * dt
-  }
+    y: current.y + fy * dt,
+  };
 }
 ```
 

@@ -376,7 +376,10 @@ module.exports = [
     rules: {
       ...commonRules,
       'no-redeclare': 'off',
-      'no-unused-vars': ['error', { args: 'none', varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'error',
+        { args: 'none', varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
+      ],
     },
   },
 

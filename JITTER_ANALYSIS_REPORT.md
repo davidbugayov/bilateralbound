@@ -54,7 +54,8 @@ _applyDriftCorrection() {
 }
 ```
 
-**Проблема:** 
+**Проблема:**
+
 - Проверка drift каждые 3 секунды (`driftCheckIntervalMs: 3000`)
 - Коррекция применяется с коэффициентом 0.05 (5%) — очень медленно
 - При быстром шаре drift может накапливаться между проверками
@@ -105,11 +106,18 @@ _calculateSpeedFactor() {
 ### 2.6 Adaptive Smoothing (smoothing-utils.js)
 
 ```javascript
-const adaptiveDamping = Math.min(25, Math.max(15, baseDamping + (jitterMs / dampingFactor)));
-const adaptiveStiffness = Math.min(35, Math.max(25, baseStiffness - (jitterMs / stiffnessFactor)));
+const adaptiveDamping = Math.min(
+  25,
+  Math.max(15, baseDamping + jitterMs / dampingFactor),
+);
+const adaptiveStiffness = Math.min(
+  35,
+  Math.max(25, baseStiffness - jitterMs / stiffnessFactor),
+);
 ```
 
 **Проблема:** Формулы адаптации простые, но не учитывают:
+
 - Направление jitter (горизонтальный vs вертикальный)
 - Скорость шара (при высокой скорости нужна другая адаптация)
 - Историю jitter (тренд, а не мгновенное значение)
@@ -118,16 +126,16 @@ const adaptiveStiffness = Math.min(35, Math.max(25, baseStiffness - (jitterMs / 
 
 ## 3. Конкретные значения и их влияние
 
-| Параметр | Текущее значение | Проблема | Рекомендация |
-|----------|-----------------|----------|--------------|
-| `PHYSICS_TICK_RATE` | 60 Hz | Нестабильный setInterval | Использовать `setImmediate` + компенсация |
-| `BROADCAST_EVERY_N_TICKS` | 12 (5 Hz) | Редкие обновления | Увеличить до 6 (10 Hz) |
-| `driftThresholdPx` | 50 px | Большой порог | Уменьшить до 20-30 px |
-| `driftCorrectionMs` | 300 ms | Медленная коррекция | Уменьшить до 150-200 ms |
-| `correctionFactor` | 0.05 (5%) | Слишком медленно | Увеличить до 0.1-0.15 |
-| `driftCheckIntervalMs` | 3000 ms | Редкая проверка | Уменьшить до 1000 ms |
-| `maxFrameTime` | 50 ms | Большой clamp | Уменьшить до 33 ms |
-| `stoppingDuration` | 0.6 sec | Линейная декелерация | Использовать ease-out |
+| Параметр                  | Текущее значение | Проблема                 | Рекомендация                              |
+| ------------------------- | ---------------- | ------------------------ | ----------------------------------------- |
+| `PHYSICS_TICK_RATE`       | 60 Hz            | Нестабильный setInterval | Использовать `setImmediate` + компенсация |
+| `BROADCAST_EVERY_N_TICKS` | 12 (5 Hz)        | Редкие обновления        | Увеличить до 6 (10 Hz)                    |
+| `driftThresholdPx`        | 50 px            | Большой порог            | Уменьшить до 20-30 px                     |
+| `driftCorrectionMs`       | 300 ms           | Медленная коррекция      | Уменьшить до 150-200 ms                   |
+| `correctionFactor`        | 0.05 (5%)        | Слишком медленно         | Увеличить до 0.1-0.15                     |
+| `driftCheckIntervalMs`    | 3000 ms          | Редкая проверка          | Уменьшить до 1000 ms                      |
+| `maxFrameTime`            | 50 ms            | Большой clamp            | Уменьшить до 33 ms                        |
+| `stoppingDuration`        | 0.6 sec          | Линейная декелерация     | Использовать ease-out                     |
 
 ---
 
@@ -142,11 +150,11 @@ function physicsTick() {
   const now = performance.now();
   const elapsed = now - lastTick;
   lastTick = now;
-  
+
   // Компенсация дрейфа
   const dt = Math.min(elapsed, PHYSICS_DT * 2) / 1000;
   updatePhysics(dt);
-  
+
   // Следующий тик с учётом остатка
   const remainder = elapsed - PHYSICS_DT;
   const nextDelay = Math.max(0, PHYSICS_DT - remainder);
@@ -160,17 +168,17 @@ function physicsTick() {
 // Непрерывная коррекция вместо периодической
 _applyDriftCorrection() {
   if (!this._driftCorrection) return;
-  
+
   const now = performance.now();
   const elapsed = now - this._driftCorrection.startTs;
   const t = Math.min(1, elapsed / this._driftCorrection.duration);
-  
+
   // Ease-out вместо линейной интерполяции
   const ease = 1 - (1 - t) * (1 - t);
-  
+
   // Увеличить коэффициент коррекции
   const correctionFactor = 0.15; // было 0.05
-  
+
   this.ball.x += this._driftCorrection.offsetX * ease * correctionFactor;
   this.ball.y += this._driftCorrection.offsetY * ease * correctionFactor;
 }
@@ -194,17 +202,21 @@ _renderFrame(currentTime) {
 function calculateAdaptiveSmoothing(jitterMs, speed, customConfig) {
   // Учитывать скорость шара
   const speedFactor = speed / 100;
-  
+
   // Экспоненциальное скользящее среднее для jitter
   this._jitterEma = this._jitterEma * 0.8 + jitterMs * 0.2;
-  
-  const adaptiveDamping = Math.min(25, Math.max(15, 
-    baseDamping + (this._jitterEma / dampingFactor) * (1 + speedFactor)
-  ));
-  
+
+  const adaptiveDamping = Math.min(
+    25,
+    Math.max(
+      15,
+      baseDamping + (this._jitterEma / dampingFactor) * (1 + speedFactor),
+    ),
+  );
+
   // Динамический порог drift на основе скорости
   const dynamicThreshold = baseThreshold * (1 - speedFactor * 0.5);
-  
+
   return { damping: adaptiveDamping, driftThresholdPx: dynamicThreshold };
 }
 ```
@@ -238,6 +250,7 @@ _calculateSpeedFactor() {
 ## 6. Тестирование
 
 Для верификации исправлений рекомендуется:
+
 1. Включить debug overlay в renderer (`showDebug: true`)
 2. Мониторить значения `jitter`, `damping`, `stiffness` в реальном времени
 3. Измерить frame time variance до и после исправлений
@@ -252,10 +265,11 @@ _calculateSpeedFactor() {
 
 ```javascript
 // smoothing-utils.js:92-98
-adaptiveDamping = clamp(15, 25, baseDamping + (jitterMs / dampingFactor))
+adaptiveDamping = clamp(15, 25, baseDamping + jitterMs / dampingFactor);
 ```
 
 **Математический анализ:**
+
 - `baseDamping = 20`, `dampingFactor = 20`
 - При `jitterMs = 0`: `damping = 20`
 - При `jitterMs = 10`: `damping = 20 + 0.5 = 20.5`
@@ -265,18 +279,20 @@ adaptiveDamping = clamp(15, 25, baseDamping + (jitterMs / dampingFactor))
 **Проблема:** Линейная зависимость слабо реагирует на высокий jitter. Увеличение всего на 5 пунктов при jitter 100ms недостаточно.
 
 **Рекомендация:** Использовать квадратичную или логарифмическую зависимость:
+
 ```javascript
-adaptiveDamping = clamp(15, 25, baseDamping + Math.log2(1 + jitterMs / 10))
+adaptiveDamping = clamp(15, 25, baseDamping + Math.log2(1 + jitterMs / 10));
 ```
 
 ### 7.2 Формула адаптивной жёсткости
 
 ```javascript
 // smoothing-utils.js:101-107
-adaptiveStiffness = clamp(25, 35, baseStiffness - (jitterMs / stiffnessFactor))
+adaptiveStiffness = clamp(25, 35, baseStiffness - jitterMs / stiffnessFactor);
 ```
 
 **Математический анализ:**
+
 - `baseStiffness = 30`, `stiffnessFactor = 30`
 - При `jitterMs = 0`: `stiffness = 30`
 - При `jitterMs = 30`: `stiffness = 30 - 1 = 29`
@@ -298,6 +314,7 @@ _applyDriftCorrection() {
 ```
 
 **Математический анализ:**
+
 - При `offsetX = 50px`, `duration = 300ms`:
   - `t = 0.1` (30ms): `ease = 1 - 0.9² = 0.19`, `correction = 50 * 0.19 * 0.05 = 0.475px`
   - `t = 0.5` (150ms): `ease = 1 - 0.5² = 0.75`, `correction = 50 * 0.75 * 0.05 = 1.875px`
@@ -312,11 +329,12 @@ _applyDriftCorrection() {
 ```javascript
 // physics-engine.js:187-189
 function calculatePixelsPerSecond(speedPercent, maxSpeed) {
-  return (speedPercent / 100) * maxSpeed
+  return (speedPercent / 100) * maxSpeed;
 }
 ```
 
 **Математический анализ:**
+
 - При `speedPercent = 30`, `maxSpeed = 5000`: `pps = 1500 px/s`
 - При `speedPercent = 50`, `maxSpeed = 5000`: `pps = 2500 px/s`
 - При `speedPercent = 100`, `maxSpeed = 5000`: `pps = 5000 px/s`
@@ -332,6 +350,7 @@ alpha = Math.max(0, Math.min(1, (now - lastTs) / this.fixedStepMs));
 ```
 
 **Математический анализ:**
+
 - `fixedStepMs = 1000/60 ≈ 16.67ms`
 - Если physics update пришёл 5ms назад: `alpha = 5/16.67 = 0.3`
 - Если physics update пришёл 16ms назад: `alpha = 16/16.67 = 0.96`
@@ -343,7 +362,7 @@ alpha = Math.max(0, Math.min(1, (now - lastTs) / this.fixedStepMs));
 
 ```javascript
 // direction-utils.js:8
-const DIRECTION_EPSILON = 1e-6
+const DIRECTION_EPSILON = 1e-6;
 ```
 
 **Проверка:** Эпсилон слишком мал. При направлении `{x: 0.0000001, y: 1.0}` движение считается «вертикальным», но на практике это вызывает микро-drift по X.
@@ -355,6 +374,7 @@ const DIRECTION_EPSILON = 1e-6
 ## 8. Результаты E2E теста на dev сервере
 
 ### До исправлений (v2.39.400):
+
 ```
 Average dt: 190.31ms
 dt Std Dev: 91.85ms
@@ -363,6 +383,7 @@ Max Jitter X: 1122.00px
 ```
 
 ### После исправлений (v2.39.402):
+
 ```
 Average dt: 188.72ms (-0.8%)
 dt Std Dev: 51.51ms (-44.0%)
@@ -373,6 +394,7 @@ Max Jitter X: 686.00px (-38.9%)
 **Улучшение:** Вариативность уменьшилась на **44%**, max jitter на **38.9%**.
 
 **Примечание:** Тест измеряет HTTP API (`/api/session/:id/state`), а не реальный viewer. HTTP добавляет задержку и не отражает реальный jitter на viewer, который использует:
+
 - `clientSimulation` mode — локальная физика на 60 FPS
 - WebSocket обновления каждые ~66ms (4 тика)
 - Drift correction с коэффициентом 0.15
@@ -384,6 +406,7 @@ Max Jitter X: 686.00px (-38.9%)
 ## 9. Заключение
 
 Jitter в BilateralBound вызван комбинацией факторов:
+
 - **Серверная нестабильность** (setInterval, clamp на 3x DT)
 - **Медленная drift correction** (коэффициент 0.05 = 5% за 300ms)
 - **Редкая проверка drift** (каждые 3 секунды)
@@ -394,6 +417,7 @@ Jitter в BilateralBound вызван комбинацией факторов:
 **E2E тест подтвердил:** Фактический jitter 380px при ожидаемом <5px — в 76 раз хуже!
 
 **Критические исправления:**
+
 1. Компенсированный setTimeout вместо setInterval
 2. correctionFactor: 0.05 → 0.15-0.2
 3. driftCheckIntervalMs: 3000 → 1000

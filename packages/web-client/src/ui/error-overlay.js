@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 if (typeof EMDRErrorOverlay === 'undefined') {
   const STYLES = `
@@ -130,21 +130,21 @@ if (typeof EMDRErrorOverlay === 'undefined') {
       .emdr-error-actions { flex-direction: column; }
       .emdr-error-button { width: 100%; }
     }
-  `
+  `;
 
-  const NS = 'http://www.w3.org/2000/svg'
+  const NS = 'http://www.w3.org/2000/svg';
 
   function makeSvg(attrs, ...children) {
-    const svg = document.createElementNS(NS, 'svg')
-    for (const [k, v] of Object.entries(attrs)) svg.setAttribute(k, v)
-    for (const child of children) svg.appendChild(child)
-    return svg
+    const svg = document.createElementNS(NS, 'svg');
+    for (const [k, v] of Object.entries(attrs)) svg.setAttribute(k, v);
+    for (const child of children) svg.appendChild(child);
+    return svg;
   }
 
   function svgEl(tag, attrs) {
-    const el = document.createElementNS(NS, tag)
-    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v)
-    return el
+    const el = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
   }
 
   function makeAlertIcon() {
@@ -157,12 +157,12 @@ if (typeof EMDRErrorOverlay === 'undefined') {
         stroke: 'currentColor',
         'stroke-width': '2.5',
         'stroke-linecap': 'round',
-        'stroke-linejoin': 'round'
+        'stroke-linejoin': 'round',
       },
       svgEl('circle', { cx: '12', cy: '12', r: '10' }),
       svgEl('line', { x1: '12', y1: '8', x2: '12', y2: '12' }),
-      svgEl('line', { x1: '12', y1: '16', x2: '12.01', y2: '16' })
-    )
+      svgEl('line', { x1: '12', y1: '16', x2: '12.01', y2: '16' }),
+    );
   }
 
   function makeCloseIcon() {
@@ -175,29 +175,29 @@ if (typeof EMDRErrorOverlay === 'undefined') {
         stroke: 'currentColor',
         'stroke-width': '2',
         'stroke-linecap': 'round',
-        'stroke-linejoin': 'round'
+        'stroke-linejoin': 'round',
       },
       svgEl('line', { x1: '18', y1: '6', x2: '6', y2: '18' }),
-      svgEl('line', { x1: '6', y1: '6', x2: '18', y2: '18' })
-    )
+      svgEl('line', { x1: '6', y1: '6', x2: '18', y2: '18' }),
+    );
   }
 
   class EMDRErrorOverlay {
     constructor() {
-      this._overlay = null
-      this._isVisible = false
+      this._overlay = null;
+      this._isVisible = false;
       this._handleEscape = (e) => {
-        if (e.key === 'Escape' && this._isVisible) this.hide()
-      }
-      this._injectStyles()
+        if (e.key === 'Escape' && this._isVisible) this.hide();
+      };
+      this._injectStyles();
     }
 
     _injectStyles() {
-      if (document.getElementById('emdr-error-overlay-styles')) return
-      const style = document.createElement('style')
-      style.id = 'emdr-error-overlay-styles'
-      style.textContent = STYLES
-      document.head.appendChild(style)
+      if (document.getElementById('emdr-error-overlay-styles')) return;
+      const style = document.createElement('style');
+      style.id = 'emdr-error-overlay-styles';
+      style.textContent = STYLES;
+      document.head.appendChild(style);
     }
 
     /**
@@ -209,109 +209,109 @@ if (typeof EMDRErrorOverlay === 'undefined') {
      * @param {Function} [config.onClose]
      */
     show(config) {
-      if (this._isVisible) this.hide()
+      if (this._isVisible) this.hide();
 
-      this._overlay = document.createElement('div')
-      this._overlay.className = 'emdr-error-overlay'
-      this._overlay.setAttribute('role', 'dialog')
-      this._overlay.setAttribute('aria-modal', 'true')
-      this._overlay.setAttribute('aria-labelledby', 'emdr-error-title')
+      this._overlay = document.createElement('div');
+      this._overlay.className = 'emdr-error-overlay';
+      this._overlay.setAttribute('role', 'dialog');
+      this._overlay.setAttribute('aria-modal', 'true');
+      this._overlay.setAttribute('aria-labelledby', 'emdr-error-title');
 
-      const modal = document.createElement('div')
-      modal.className = 'emdr-error-modal'
+      const modal = document.createElement('div');
+      modal.className = 'emdr-error-modal';
 
       // Close button (X)
-      const closeBtn = document.createElement('button')
-      closeBtn.className = 'emdr-error-close'
-      closeBtn.setAttribute('aria-label', 'Close')
-      closeBtn.appendChild(makeCloseIcon())
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'emdr-error-close';
+      closeBtn.setAttribute('aria-label', 'Close');
+      closeBtn.appendChild(makeCloseIcon());
       closeBtn.onclick = () => {
-        config.onClose?.()
-        this.hide()
-      }
+        config.onClose?.();
+        this.hide();
+      };
 
       // Alert icon circle
-      const iconWrap = document.createElement('div')
-      iconWrap.className = 'emdr-error-icon'
-      iconWrap.appendChild(makeAlertIcon())
+      const iconWrap = document.createElement('div');
+      iconWrap.className = 'emdr-error-icon';
+      iconWrap.appendChild(makeAlertIcon());
 
       // Title
-      const title = document.createElement('h2')
-      title.id = 'emdr-error-title'
-      title.className = 'emdr-error-title'
-      title.textContent = config.title
+      const title = document.createElement('h2');
+      title.id = 'emdr-error-title';
+      title.className = 'emdr-error-title';
+      title.textContent = config.title;
 
       // Divider
-      const divider = document.createElement('hr')
-      divider.className = 'emdr-error-divider'
+      const divider = document.createElement('hr');
+      divider.className = 'emdr-error-divider';
 
       // Message
-      const msgEl = document.createElement('div')
-      msgEl.className = 'emdr-error-message'
-      msgEl.textContent = config.message
+      const msgEl = document.createElement('div');
+      msgEl.className = 'emdr-error-message';
+      msgEl.textContent = config.message;
 
       // Actions
-      const actions = document.createElement('div')
-      actions.className = 'emdr-error-actions'
+      const actions = document.createElement('div');
+      actions.className = 'emdr-error-actions';
 
       if (config.actionText && config.onAction) {
-        const primaryBtn = document.createElement('button')
-        primaryBtn.className = 'emdr-error-button emdr-error-button-primary'
-        primaryBtn.textContent = config.actionText
+        const primaryBtn = document.createElement('button');
+        primaryBtn.className = 'emdr-error-button emdr-error-button-primary';
+        primaryBtn.textContent = config.actionText;
         primaryBtn.onclick = () => {
-          config.onAction()
-          this.hide()
-        }
-        actions.appendChild(primaryBtn)
+          config.onAction();
+          this.hide();
+        };
+        actions.appendChild(primaryBtn);
       }
 
-      const closeLabel = globalThis.i18n?.t('common.close') || 'Close'
-      const secondaryBtn = document.createElement('button')
-      secondaryBtn.className = 'emdr-error-button emdr-error-button-secondary'
-      secondaryBtn.textContent = closeLabel
+      const closeLabel = globalThis.i18n?.t('common.close') || 'Close';
+      const secondaryBtn = document.createElement('button');
+      secondaryBtn.className = 'emdr-error-button emdr-error-button-secondary';
+      secondaryBtn.textContent = closeLabel;
       secondaryBtn.onclick = () => {
-        config.onClose?.()
-        this.hide()
-      }
-      actions.appendChild(secondaryBtn)
+        config.onClose?.();
+        this.hide();
+      };
+      actions.appendChild(secondaryBtn);
 
-      modal.appendChild(closeBtn)
-      modal.appendChild(iconWrap)
-      modal.appendChild(title)
-      modal.appendChild(divider)
-      modal.appendChild(msgEl)
-      modal.appendChild(actions)
-      this._overlay.appendChild(modal)
+      modal.appendChild(closeBtn);
+      modal.appendChild(iconWrap);
+      modal.appendChild(title);
+      modal.appendChild(divider);
+      modal.appendChild(msgEl);
+      modal.appendChild(actions);
+      this._overlay.appendChild(modal);
 
       this._overlay.addEventListener('click', (e) => {
         if (e.target === this._overlay) {
-          config.onClose?.()
-          this.hide()
+          config.onClose?.();
+          this.hide();
         }
-      })
+      });
 
-      document.addEventListener('keydown', this._handleEscape)
-      document.body.appendChild(this._overlay)
-      this._isVisible = true
-      setTimeout(() => closeBtn.focus(), 100)
+      document.addEventListener('keydown', this._handleEscape);
+      document.body.appendChild(this._overlay);
+      this._isVisible = true;
+      setTimeout(() => closeBtn.focus(), 100);
     }
 
     hide() {
-      this._overlay?.parentNode?.removeChild(this._overlay)
-      this._overlay = null
-      this._isVisible = false
-      document.removeEventListener('keydown', this._handleEscape)
+      this._overlay?.parentNode?.removeChild(this._overlay);
+      this._overlay = null;
+      this._isVisible = false;
+      document.removeEventListener('keydown', this._handleEscape);
     }
 
     isShowing() {
-      return this._isVisible
+      return this._isVisible;
     }
   }
 
-  globalThis.EMDRErrorOverlay = EMDRErrorOverlay
-  globalThis.emdrErrorOverlay = new EMDRErrorOverlay()
+  globalThis.EMDRErrorOverlay = EMDRErrorOverlay;
+  globalThis.emdrErrorOverlay = new EMDRErrorOverlay();
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { EMDRErrorOverlay }
+    module.exports = { EMDRErrorOverlay };
   }
 }

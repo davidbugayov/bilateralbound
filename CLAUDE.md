@@ -339,11 +339,13 @@ EOF
 Use Playwright MCP server for browser automation and E2E testing. Available tools:
 
 ### Navigation & Pages
+
 - `playwright_navigate` — open URL in browser (chromium/firefox/webkit)
 - `playwright_go_back` / `playwright_go_forward` — browser history
 - `playwright_close` — close browser
 
 ### Interaction
+
 - `playwright_click` — click element by CSS selector
 - `playwright_fill` — fill input field
 - `playwright_select` — select dropdown option
@@ -353,28 +355,33 @@ Use Playwright MCP server for browser automation and E2E testing. Available tool
 - `playwright_drag` — drag element to target
 
 ### Assertions & Inspection
+
 - `playwright_get_visible_text` — get page text content
 - `playwright_get_visible_html` — get page HTML
 - `playwright_screenshot` — capture screenshot (base64 or PNG file)
 - `playwright_console_logs` — retrieve browser console logs
 
 ### Network & API
+
 - `playwright_get` / `playwright_post` / `playwright_put` / `playwright_patch` / `playwright_delete` — HTTP requests from browser context
 - `playwright_expect_response` + `playwright_assert_response` — wait for and validate HTTP responses
 
 ### Advanced
+
 - `playwright_evaluate` — execute JavaScript in page context
 - `playwright_resize` — resize viewport (supports device presets: iPhone, iPad, etc.)
 - `playwright_custom_user_agent` — set custom User-Agent
 - `playwright_save_as_pdf` — save page as PDF
 
 ### Code Generation
+
 - `start_codegen_session` — record Playwright actions
 - `end_codegen_session` — generate test file from recorded actions
 - `get_codegen_session` — view session info
 - `clear_codegen_session` — discard session
 
 ### Usage Example
+
 ```
 # Open controller page
 playwright_navigate url="http://localhost:3000/c/test123"

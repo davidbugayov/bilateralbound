@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 /**
  * Direction utilities for BilateralBound
  * Single source of truth for direction calculations.
@@ -8,8 +8,8 @@
 // Increased from 1e-6 to 1e-4 to prevent micro-drift
 // At 1e-6, direction {x: 0.0000001, y: 1.0} is treated as vertical
 // but causes visible X-axis drift
-const DIRECTION_EPSILON = 1e-4
-const MAX_DIRECTION_ABS = 1.001
+const DIRECTION_EPSILON = 1e-4;
+const MAX_DIRECTION_ABS = 1.001;
 
 // ============================================
 // DIRECTION CHECKS
@@ -21,7 +21,7 @@ const MAX_DIRECTION_ABS = 1.001
  * @returns {boolean}
  */
 function isVerticalDirection(dirX) {
-  return Math.abs(dirX || 0) < DIRECTION_EPSILON
+  return Math.abs(dirX || 0) < DIRECTION_EPSILON;
 }
 
 /**
@@ -30,7 +30,7 @@ function isVerticalDirection(dirX) {
  * @returns {boolean}
  */
 function isHorizontalDirection(dirY) {
-  return Math.abs(dirY || 0) < DIRECTION_EPSILON
+  return Math.abs(dirY || 0) < DIRECTION_EPSILON;
 }
 
 /**
@@ -40,7 +40,10 @@ function isHorizontalDirection(dirY) {
  * @returns {boolean}
  */
 function isZeroDirection(dirX, dirY) {
-  return Math.abs(dirX || 0) < DIRECTION_EPSILON && Math.abs(dirY || 0) < DIRECTION_EPSILON
+  return (
+    Math.abs(dirX || 0) < DIRECTION_EPSILON &&
+    Math.abs(dirY || 0) < DIRECTION_EPSILON
+  );
 }
 
 // ============================================
@@ -54,11 +57,11 @@ function isZeroDirection(dirX, dirY) {
  * @returns {{x: number, y: number}|null} Unit vector or null if zero
  */
 function normalizeDirection(vx, vy) {
-  const speed = Math.hypot(vx || 0, vy || 0)
+  const speed = Math.hypot(vx || 0, vy || 0);
   if (speed > 0) {
-    return { x: vx / speed, y: vy / speed }
+    return { x: vx / speed, y: vy / speed };
   }
-  return null
+  return null;
 }
 
 /**
@@ -67,7 +70,11 @@ function normalizeDirection(vx, vy) {
  * @returns {boolean} True if value is valid
  */
 function isValidDirection(value) {
-  return typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= MAX_DIRECTION_ABS
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    Math.abs(value) <= MAX_DIRECTION_ABS
+  );
 }
 
 // ============================================
@@ -81,22 +88,22 @@ function isValidDirection(value) {
  * @returns {string|null} 'horizontal', 'vertical', 'diagRL', 'diagRLL', or null
  */
 function getDirectionMode(dirX, dirY) {
-  const ax = Math.abs(dirX || 0)
-  const ay = Math.abs(dirY || 0)
+  const ax = Math.abs(dirX || 0);
+  const ay = Math.abs(dirY || 0);
 
   // Pure modes
-  if (ax > 0.9 && ay < 0.2) return 'horizontal'
-  if (ay > 0.9 && ax < 0.2) return 'vertical'
+  if (ax > 0.9 && ay < 0.2) return 'horizontal';
+  if (ay > 0.9 && ax < 0.2) return 'vertical';
 
   // Dominant axis
-  if (ax > ay * 2) return 'horizontal'
-  if (ay > ax * 2) return 'vertical'
+  if (ax > ay * 2) return 'horizontal';
+  if (ay > ax * 2) return 'vertical';
 
   // Diagonal modes
-  if (dirX > 0 && dirY > 0) return 'diagRL'  // Top-left to bottom-right
-  if (dirX > 0 && dirY < 0) return 'diagRLL' // Bottom-left to top-right
+  if (dirX > 0 && dirY > 0) return 'diagRL'; // Top-left to bottom-right
+  if (dirX > 0 && dirY < 0) return 'diagRLL'; // Bottom-left to top-right
 
-  return null
+  return null;
 }
 
 // ============================================
@@ -113,20 +120,20 @@ function getDirectionMode(dirX, dirY) {
  * @returns {object} Modified velocity
  */
 function applyAxisLock(velocity, dirX, dirY, maxSpeed) {
-  const dx = dirX || 0
-  const dy = dirY || 0
-  const isVertical = isVerticalDirection(dx) && Math.abs(dy) > 0
-  const isHorizontal = isHorizontalDirection(dy) && Math.abs(dx) > 0
+  const dx = dirX || 0;
+  const dy = dirY || 0;
+  const isVertical = isVerticalDirection(dx) && Math.abs(dy) > 0;
+  const isHorizontal = isHorizontalDirection(dy) && Math.abs(dx) > 0;
 
   if (isVertical) {
-    velocity.vx = 0
-    velocity.vy = dy * maxSpeed
+    velocity.vx = 0;
+    velocity.vy = dy * maxSpeed;
   } else if (isHorizontal) {
-    velocity.vy = 0
-    velocity.vx = dx * maxSpeed
+    velocity.vy = 0;
+    velocity.vx = dx * maxSpeed;
   }
 
-  return velocity
+  return velocity;
 }
 
 // ============================================
@@ -142,12 +149,12 @@ function applyAxisLock(velocity, dirX, dirY, maxSpeed) {
  * @returns {{vx: number, vy: number, pps: number}}
  */
 function calculateVelocity(dirX, dirY, speedPercent, maxSpeed) {
-  const pps = (speedPercent / 100) * maxSpeed
+  const pps = (speedPercent / 100) * maxSpeed;
   return {
     vx: (dirX || 0) * pps,
     vy: (dirY || 0) * pps,
-    pps
-  }
+    pps,
+  };
 }
 
 /**
@@ -161,8 +168,8 @@ function calculateVelocity(dirX, dirY, speedPercent, maxSpeed) {
 function getFallbackDirection(x, y, centerX, centerY) {
   return {
     x: x < centerX ? 1 : -1,
-    y: y < centerY ? 1 : -1
-  }
+    y: y < centerY ? 1 : -1,
+  };
 }
 
 module.exports = {
@@ -176,5 +183,5 @@ module.exports = {
   getDirectionMode,
   applyAxisLock,
   calculateVelocity,
-  getFallbackDirection
-}
+  getFallbackDirection,
+};

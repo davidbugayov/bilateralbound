@@ -5,23 +5,23 @@
 
 class SuccessToast {
   constructor() {
-    this.container = null
-    this.autoHideTimeout = 3000
-    this.init()
+    this.container = null;
+    this.autoHideTimeout = 3000;
+    this.init();
   }
 
   init() {
-    if (this.container) return
-    this.container = document.createElement('div')
-    this.container.className = 'success-toast-container'
-    document.body.appendChild(this.container)
-    this.setupStyles()
+    if (this.container) return;
+    this.container = document.createElement('div');
+    this.container.className = 'success-toast-container';
+    document.body.appendChild(this.container);
+    this.setupStyles();
   }
 
   setupStyles() {
-    if (document.getElementById('success-toast-styles')) return
-    const styles = document.createElement('style')
-    styles.id = 'success-toast-styles'
+    if (document.getElementById('success-toast-styles')) return;
+    const styles = document.createElement('style');
+    styles.id = 'success-toast-styles';
     styles.textContent = `
       .success-toast-container {
         position: fixed;
@@ -106,42 +106,42 @@ class SuccessToast {
           padding: 10px 14px;
         }
       }
-    `
-    document.head.appendChild(styles)
+    `;
+    document.head.appendChild(styles);
   }
 
   show(message, duration = this.autoHideTimeout) {
-    const toast = document.createElement('div')
-    toast.className = 'success-toast'
+    const toast = document.createElement('div');
+    toast.className = 'success-toast';
 
-    const icon = document.createElement('div')
-    icon.className = 'success-toast-icon'
-    icon.textContent = '✅'
+    const icon = document.createElement('div');
+    icon.className = 'success-toast-icon';
+    icon.textContent = '✅';
 
-    const text = document.createElement('div')
-    text.className = 'success-toast-text'
-    text.textContent = message
+    const text = document.createElement('div');
+    text.className = 'success-toast-text';
+    text.textContent = message;
 
-    toast.appendChild(icon)
-    toast.appendChild(text)
-    this.container.appendChild(toast)
+    toast.appendChild(icon);
+    toast.appendChild(text);
+    this.container.appendChild(toast);
 
     if (duration > 0) {
       setTimeout(() => {
-        toast.classList.add('removing')
-        setTimeout(() => toast.remove(), 200)
-      }, duration)
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 200);
+      }, duration);
     }
   }
 
   success(message) {
-    this.show(message)
+    this.show(message);
   }
 }
 
 // Export globally
 if (typeof globalThis !== 'undefined') {
-  globalThis.successToast = new SuccessToast()
+  globalThis.successToast = new SuccessToast();
   globalThis.showSuccessToast = (message) =>
-    globalThis.successToast.success(message)
+    globalThis.successToast.success(message);
 }
