@@ -833,43 +833,28 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     applyAdaptiveSmoothing(physicsEngine, jitterMs)
   })
 
-  // Bounce ack - server sends back authoritative position for drift correction
-  // Use smooth spring-damper correction instead of instant snap to avoid visual jitter
+  // Bounce ack - server sends authoritative position/direction on bounce
+  // Direction is synced immediately (critical for correct post-bounce movement)
+  // Position drift is handled by periodic spring-damper correction (physics-engine.js)
+  // to avoid visual jitter from conflicting correction sources.
   wsClient.on('bounce_ack', (data) => {
     if (!physicsEngine) return
-    const serverX = data.serverX
-    const serverY = data.serverY
     const serverDirX = data.serverDirX
     const serverDirY = data.serverDirY
     if (
-      typeof serverX === 'number' &&
-      typeof serverY === 'number' &&
       typeof serverDirX === 'number' &&
       typeof serverDirY === 'number'
     ) {
-      // Calculate drift between viewer and server
-      const drift = Math.hypot(
-        serverX - physicsEngine.ball.x,
-        serverY - physicsEngine.ball.y
-      )
-      // Only correct if drift is significant (>25px) — small drifts are normal
-      if (drift > 25) {
-        // Store server position for spring-damper drift correction (smooth, no jitter)
-        physicsEngine._lastServerPos = {
-          x: serverX,
-          y: serverY,
-          ts: performance.now()
-        }
-        // Sync direction from server (critical for correct post-bounce movement)
-        physicsEngine.state.lastDirection.x = serverDirX
-        physicsEngine.state.lastDirection.y = serverDirY
-        // Recalculate velocity
-        const pps = (physicsEngine.ball.speed / 100) * physicsEngine.options.maxSpeed
-        physicsEngine.ball.vx = serverDirX * pps
-        physicsEngine.ball.vy = serverDirY * pps
-        debugLog(`🎯 Bounce drift correction: drift=${drift.toFixed(1)}px, spring-damper active`)
-      }
+      // Sync direction from server (immediate, always safe — direction changes at bounce)
+      physicsEngine.state.lastDirection.x = serverDirX
+      physicsEngine.state.lastDirection.y = serverDirY
+      // Recalculate velocity from synced direction
+      const pps = (physicsEngine.ball.speed / 100) * physicsEngine.options.maxSpeed
+      physicsEngine.ball.vx = serverDirX * pps
+      physicsEngine.ball.vy = serverDirY * pps
     }
+    // Position drift is handled by periodic drift correction (every 50ms, threshold 40px)
+    // — no instant snap, no duplicate correction sources.
   })
 }
 
