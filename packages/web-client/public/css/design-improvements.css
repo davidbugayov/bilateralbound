@@ -1263,6 +1263,7 @@ input:focus-visible + .slider {
 /* Three column layout tweaks */
 .controller-layout {
   gap: 16px;
+  align-items: stretch;
 }
 
 /* Left column */
@@ -1274,9 +1275,24 @@ input:focus-visible + .slider {
   padding: 10px 12px;
 }
 
-/* Center column */
+/* Center column — centered preview */
 .controller-center-col {
   gap: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Session block in center: full width */
+.controller-center-col .control-section {
+  width: 100%;
+}
+
+/* Preview: centered, max-width */
+.controller-center-col .floating-preview {
+  max-width: 100%;
+  width: 100%;
 }
 
 /* Right column */
