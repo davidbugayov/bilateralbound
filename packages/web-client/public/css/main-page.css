@@ -1,6 +1,6 @@
 /* ===== MAIN PAGE — REDESIGN 2026 ===== */
 
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 /* ── Design tokens ── */
 :root {
@@ -17,8 +17,8 @@
   --mp-muted: #64748b;
   --mp-subtle: #94a3b8;
   --mp-radius: 14px;
-  --mp-font-display: "Syne", system-ui, sans-serif;
-  --mp-font-body: "DM Sans", system-ui, sans-serif;
+  --mp-font-display: "Inter", system-ui, sans-serif;
+  --mp-font-body: "Inter", system-ui, sans-serif;
 
   /* Legacy vars kept for header/language-selector */
   --bg-card: var(--mp-surface);
