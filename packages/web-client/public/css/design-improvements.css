@@ -1,10 +1,42 @@
 /* ===== DESIGN IMPROVEMENTS — BilateralBound EMDR ===== */
 
-/* Based on ui-ux-pro-max design system analysis */
-
 /* Style: Accessible & Ethical (WCAG AAA compliant) */
-
 /* Colors: Medical teal (#0891B2) + health green (#22C55E) */
+/* Fonts: System fonts (wide, native) */
+
+/* ========================================
+   SYSTEM FONTS — wide, native, no Google Fonts
+   ======================================== */
+html,
+body {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    system-ui,
+    sans-serif !important;
+}
+
+/* Fix session info empty block — show timestamp */
+#sessionInfo {
+  min-height: 20px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.light-theme #sessionInfo {
+  color: #64748b;
+}
+
+/* Ensure session timestamp is visible */
+#sessionTimestamp {
+  display: inline;
+}
+
+.light-theme #sessionTimestamp {
+  color: #475569;
+}
 
 /* ========================================
    1. ACCESSIBILITY: Reduced Motion Support
