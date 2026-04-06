@@ -694,12 +694,14 @@ class ControllerSettingsManager {
       // Update sessionTimestamp span without destroying HTML structure
       const timestampEl = document.getElementById('sessionTimestamp')
       if (timestampEl) {
-        if (current?.createdAt) {
-          timestampEl.textContent = `Создана: ${new Date(current.createdAt).toLocaleString()}`
-        } else {
-          // Fallback: show current time even if session not yet saved
-          timestampEl.textContent = `Создана: ${new Date().toLocaleString()}`
-        }
+        const i18n = globalThis.i18n
+        const label = i18n?.isReady && i18n.t('controller.sessionCreated') !== 'controller.sessionCreated'
+          ? i18n.t('controller.sessionCreated')
+          : 'Created: '
+        const dateStr = current?.createdAt
+          ? new Date(current.createdAt).toLocaleString()
+          : new Date().toLocaleString()
+        timestampEl.textContent = `${label}${dateStr}`
       }
       
       // Update name in sessionInfo but keep sessionTimestamp span intact
