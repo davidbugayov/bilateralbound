@@ -260,11 +260,6 @@ async function initializeDOMElements(sessionId) {
   if (curSidEl) {
     curSidEl.textContent = sessionId
   }
-  const sessionInfoEl = document.getElementById('sessionInfo')
-  if (sessionInfoEl) {
-    const timestamp = new Date().toLocaleString()
-    sessionInfoEl.textContent = `Создана: ${timestamp}`
-  }
   const sessionTimestampEl = document.getElementById('sessionTimestamp')
   if (sessionTimestampEl) {
     sessionTimestampEl.textContent = `Создана: ${new Date().toLocaleString()}`
