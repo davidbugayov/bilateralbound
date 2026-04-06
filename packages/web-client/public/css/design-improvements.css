@@ -1275,51 +1275,9 @@ input:focus-visible + .slider {
   padding: 10px 12px;
 }
 
-/* Center column — normal flow, full width */
+/* Center column — original layout */
 .controller-center-col {
   gap: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  min-width: 0;
-}
-
-/* Session block in center: full width */
-.controller-center-col .control-section {
-  width: 100%;
-}
-
-/* Preview: smaller when viewer not connected */
-.controller-center-col .floating-preview {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-/* Center viewer status text */
-.link-group__label {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 10px;
-}
-
-.link-group__label .viewer-session-id {
-  display: block;
-  width: 100%;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  color: #cbd5e1;
-  font-size: 0.8rem;
-}
-
-/* Center waiting status */
-#viewerStatus {
-  display: block;
-  width: 100%;
-  text-align: center;
 }
 
 /* Right column */
