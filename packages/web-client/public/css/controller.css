@@ -711,8 +711,33 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   padding: 14px 24px !important;
   background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%) !important;
   border: none !important;
+  border-radius: 14px !important;
   animation: sessionBtnGlow 2.4s ease-in-out infinite;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.session-start-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 20%),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.session-start-btn:hover::before {
+  left: 100%;
 }
 
 .session-start-btn:hover {
@@ -720,7 +745,8 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   animation: none;
   box-shadow:
     0 0 32px rgb(37 99 235 / 55%),
-    0 0 60px rgb(34 211 238 / 35%) !important;
+    0 0 60px rgb(34 211 238 / 35%),
+    0 8px 24px rgb(0 0 0 / 30%) !important;
 }
 
 .session-reset-btn {
@@ -991,31 +1017,46 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   justify-content: center;
   gap: 6px;
   padding: 14px 8px 12px;
-  background: rgb(15 23 42 / 60%);
+  background: linear-gradient(145deg, rgb(15 23 42 / 70%) 0%, rgb(30 41 59 / 60%) 100%);
   border: 2px solid #334155;
-  border-radius: 10px;
+  border-radius: 12px;
   color: #cbd5e1;
   cursor: pointer;
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease;
   text-align: center;
   font-family: inherit;
   min-height: 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.preset-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgb(255 255 255 / 3%) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .preset-card:hover {
-  background: rgb(30 41 59 / 90%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgb(0 0 0 / 35%);
+  background: linear-gradient(145deg, rgb(30 41 59 / 90%) 0%, rgb(51 65 85 / 80%) 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 40%);
   color: #f1f5f9;
 }
 
+.preset-card:hover::before {
+  opacity: 1;
+}
+
 .preset-card:active {
-  transform: translateY(0);
-  box-shadow: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
 }
 
 .preset-icon {

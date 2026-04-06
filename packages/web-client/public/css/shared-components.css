@@ -150,12 +150,22 @@ body::before {
 }
 
 .control-section {
-  background: #1e293b;
-  border: 2px solid #475569;
-  border-radius: 12px;
-  padding: 16px;
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 20px;
   margin-bottom: 0;
-  box-shadow: 0 4px 16px -2px rgb(0 0 0 / 30%);
+  box-shadow:
+    0 4px 16px -2px rgb(0 0 0 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.control-section:hover {
+  border-color: #475569;
+  box-shadow:
+    0 8px 24px -4px rgb(0 0 0 / 35%),
+    inset 0 1px 0 rgb(255 255 255 / 8%);
 }
 
 .floating-preview {
