@@ -1280,6 +1280,55 @@ input:focus-visible + .slider {
   gap: 16px;
 }
 
+/* Fix 1: Preview canvas centered horizontally */
+.preview-canvas-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-canvas-wrapper canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* Fix 2: Session info - ensure timestamp is visible */
+#sessionInfo {
+  min-height: 20px;
+  display: block;
+}
+
+#sessionTimestamp {
+  display: inline !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix 3: Preview panel - limit height when viewer not connected */
+.floating-preview {
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.floating-preview.viewer-connected {
+  max-height: none;
+  overflow: visible;
+}
+
+/* Preview canvas wrapper - constrain when no viewer */
+.floating-preview:not(.viewer-connected) .preview-canvas-wrapper {
+  max-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.floating-preview:not(.viewer-connected) #preview {
+  max-height: 180px;
+  width: auto;
+  height: auto;
+}
+
 /* Right column */
 .controller-right-col {
   gap: 12px;

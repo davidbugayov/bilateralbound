@@ -1747,6 +1747,7 @@ function getScaledState(state) {
 }
 function updateViewerStatusUI() {
   const viewerStatusEl = document.getElementById('viewerStatus')
+  const previewWrap = document.getElementById('previewWrap')
   if (viewerStatusEl) {
     if (globalThis.__current.viewerConnected) {
       viewerStatusEl.textContent =
@@ -1759,6 +1760,7 @@ function updateViewerStatusUI() {
         updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
       setControlsEnabled(true)
+      if (previewWrap) previewWrap.classList.add('viewer-connected')
     } else {
       viewerStatusEl.textContent =
         globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
@@ -1767,6 +1769,7 @@ function updateViewerStatusUI() {
       viewerStatusEl.style.fontWeight = '400'
       showWaitingForViewer()
       setControlsEnabled(false)
+      if (previewWrap) previewWrap.classList.remove('viewer-connected')
     }
   }
   updateViewerAudioIndicators()
