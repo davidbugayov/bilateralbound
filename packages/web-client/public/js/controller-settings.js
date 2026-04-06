@@ -1,4 +1,3 @@
-/* jshint esversion: 11 */
 'use strict'
 /**
  * Генерирует уникальный идентификатор сессии
@@ -691,12 +690,32 @@ class ControllerSettingsManager {
       const el = document.getElementById('sessionInfo')
       if (!el) return
       const current = this.sessions.find((s) => s.id === this.currentSessionId)
-      const nameTxt = current?.name ? `Название: ${current.name}` : ''
-      const separator = nameTxt ? ' • ' : ''
-      const createdTxt = current?.createdAt
-        ? `${separator}Создана: ${new Date(current.createdAt).toLocaleString()}`
-        : ''
-      el.textContent = `${nameTxt}${createdTxt}`
+      
+      // Update sessionTimestamp span without destroying HTML structure
+      const timestampEl = document.getElementById('sessionTimestamp')
+      if (timestampEl && current?.createdAt) {
+        timestampEl.textContent = `Создана: ${new Date(current.createdAt).toLocaleString()}`
+      }
+      
+      // Update name in sessionInfo but keep sessionTimestamp span intact
+      const nameTxt = current?.name || ''
+      if (nameTxt) {
+        // Only add name display if it doesn't exist
+        let nameEl = document.getElementById('sessionName')
+        if (!nameEl) {
+          nameEl = document.createElement('span')
+          nameEl.id = 'sessionName'
+          nameEl.className = 'session-info-item'
+          nameEl.style.display = 'inline'
+          nameEl.style.marginRight = '8px'
+          el.insertBefore(nameEl, timestampEl)
+        }
+        nameEl.textContent = `${current.name}`
+      } else {
+        // Remove name if it exists
+        const nameEl = document.getElementById('sessionName')
+        if (nameEl) nameEl.remove()
+      }
     } catch (err) {
       debugWarn('Error updating session display:', err)
     }
