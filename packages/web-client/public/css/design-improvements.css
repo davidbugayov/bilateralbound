@@ -1329,6 +1329,26 @@ input:focus-visible + .slider {
   height: auto;
 }
 
+/* Info text below preview (Waiting for viewer connection) */
+.preview-info-text {
+  display: block !important;
+  padding: 8px 12px;
+  margin: 8px auto 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  background: rgb(15 23 42 / 60%);
+  border: 1px solid rgb(51 65 85 / 40%);
+  border-radius: 8px;
+  max-width: fit-content;
+}
+
+.light-theme .preview-info-text {
+  background: rgb(255 255 255 / 80%);
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
 /* Right column */
 .controller-right-col {
   gap: 12px;
