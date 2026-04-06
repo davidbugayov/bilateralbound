@@ -695,11 +695,14 @@ class ControllerSettingsManager {
       // Update sessionTimestamp span without destroying HTML structure
       const timestampEl = document.getElementById('sessionTimestamp')
       if (timestampEl) {
-        if (current?.createdAt) {
-          timestampEl.textContent = `Создана: ${new Date(current.createdAt).toLocaleString()}`
+        const i18n = globalThis.i18n
+        const dateStr = current?.createdAt
+          ? new Date(current.createdAt).toLocaleString()
+          : new Date().toLocaleString()
+        if (i18n?.isReady && i18n.t('controller.sessionCreated') !== 'controller.sessionCreated') {
+          timestampEl.textContent = `${i18n.t('controller.sessionCreated')}`
         } else {
-          // Fallback: show current time even if session not yet saved
-          timestampEl.textContent = `Создана: ${new Date().toLocaleString()}`
+          timestampEl.textContent = `Created: ${dateStr}`
         }
       }
       
