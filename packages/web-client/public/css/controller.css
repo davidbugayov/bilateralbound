@@ -165,6 +165,10 @@ input:checked + .slider::before {
 #preview {
   border: 1px solid #475569;
   background: #020617;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
 }
 
 .light-theme #preview {
