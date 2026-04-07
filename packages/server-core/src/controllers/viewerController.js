@@ -1,6 +1,7 @@
 'use strict'
 
 const { clearStateCache } = require('../network/middleware')
+const ValidationUtils = require('../utils/validation')
 
 function registerViewerRoutes(
   app,
@@ -50,12 +51,17 @@ function registerViewerRoutes(
     requireSession,
     (req, res) => {
       const { sessionId } = req.params
-      const { side, x, y, dirX, dirY, timestamp } = req.body || {}
+      const validated = ValidationUtils.validateBouncePayload(req.body)
+      if (!validated) {
+        return res
+          .status(400)
+          .json({ error: 'Invalid bounce data', requestId: req.id })
+      }
 
       // Broadcast bounce_sync to controllers via WebSocket
       const bounceMessage = JSON.stringify({
         type: 'bounce_sync',
-        payload: { side, x, y, dirX, dirY, timestamp }
+        payload: validated
       })
       for (const { client, info } of webSocketManager.getClients(sessionId)) {
         if (info.role === 'controller' && client.readyState === 1) {

@@ -1,6 +1,6 @@
 {
   "name": "@emdr/server-core",
-  "version": "2.39.448",
+  "version": "2.39.449",
   "description": "EMDR therapy server core components",
   "main": "src/index.js",
   "type": "commonjs",
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^5.1.0",

@@ -258,6 +258,67 @@ class ValidationUtils {
   }
 
   /**
+   * Валидирует bounce sync payload
+   */
+  static validateBouncePayload(data) {
+    if (!data || typeof data !== 'object') {
+      return null
+    }
+
+    const validated = {}
+
+    // side: string, one of allowed values
+    const allowedSides = ['left', 'right', 'top', 'bottom']
+    if (typeof data.side === 'string' && allowedSides.includes(data.side)) {
+      validated.side = data.side
+    }
+
+    // x, y: numbers
+    if (typeof data.x === 'number' && !Number.isNaN(data.x)) {
+      validated.x = data.x
+    }
+    if (typeof data.y === 'number' && !Number.isNaN(data.y)) {
+      validated.y = data.y
+    }
+
+    // dirX, dirY: numbers between -1 and 1
+    if (
+      typeof data.dirX === 'number' &&
+      !Number.isNaN(data.dirX) &&
+      Math.abs(data.dirX) <= 1
+    ) {
+      validated.dirX = data.dirX
+    }
+    if (
+      typeof data.dirY === 'number' &&
+      !Number.isNaN(data.dirY) &&
+      Math.abs(data.dirY) <= 1
+    ) {
+      validated.dirY = data.dirY
+    }
+
+    // timestamp: positive number
+    if (
+      typeof data.timestamp === 'number' &&
+      !Number.isNaN(data.timestamp) &&
+      data.timestamp > 0
+    ) {
+      validated.timestamp = data.timestamp
+    }
+
+    return Object.keys(validated).length > 0 ? validated : null
+  }
+
+  /**
+   * Валидирует sessionId формат
+   */
+  static validateSessionId(sessionId) {
+    return (
+      typeof sessionId === 'string' && /^[a-zA-Z0-9_-]{3,32}$/.test(sessionId)
+    )
+  }
+
+  /**
    * Валидирует размеры экрана
    */
   static validateScreenSize(screenSize) {

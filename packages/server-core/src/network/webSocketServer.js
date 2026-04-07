@@ -9,7 +9,8 @@ function setupWebSocketServer(
   analytics,
   logger
 ) {
-  const wss = new WebSocketServer({ server })
+  // maxPayload: 4KB limit prevents memory exhaustion attacks
+  const wss = new WebSocketServer({ server, maxPayload: 4096 })
 
   wss.on('connection', (ws, req) => {
     const url = new URL(req.url, `https://${req.headers.host}`)
@@ -288,6 +289,15 @@ function handleWebSocketMessage(
     const data = JSON.parse(message)
     if (data.type === 'heartbeat') {
       return
+    }
+
+    // Validate sessionId format in WS messages
+    if (data.payload?.sessionId) {
+      const ValidationUtils = require('../utils/validation')
+      if (!ValidationUtils.validateSessionId(data.payload.sessionId)) {
+        logger.warn({ sessionId: clientInfo.sessionId }, 'Invalid sessionId in WS message')
+        return
+      }
     }
 
     logger.debug(

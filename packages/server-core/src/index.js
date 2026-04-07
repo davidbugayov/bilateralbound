@@ -12,7 +12,8 @@ const LocalizationService = require('./services/LocalizationService')
 const {
   setupMiddleware,
   requireSession,
-  setNoCacheHeaders
+  setNoCacheHeaders,
+  csrfProtection
 } = require('./network/middleware')
 const { setupWebSocketServer } = require('./network/webSocketServer')
 const { registerSessionRoutes } = require('./controllers/sessionController')
@@ -64,7 +65,10 @@ const localizationService = new LocalizationService(config, logger)
 // 5. HTTP Middleware + Routes
 const boundRequireSession = requireSession(sessionService)
 const mw = { requireSession: boundRequireSession, logger }
-setupMiddleware(app, config)
+setupMiddleware(app, config, logger)
+
+// CSRF protection on all API routes
+app.use('/api/', csrfProtection)
 
 // Analytics tracking middleware (HTTP request counting + error tracking)
 app.use((req, res, next) => {

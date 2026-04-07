@@ -4,8 +4,10 @@ const helmet = require('helmet')
 const compression = require('compression')
 const rateLimit = require('express-rate-limit')
 const express = require('express')
+const cookieParser = require('cookie-parser')
 const os = require('node:os')
 const { v4: uuidv4 } = require('uuid')
+const crypto = require('node:crypto')
 
 function getNetworkInterfaces() {
   const interfaces = os.networkInterfaces()
@@ -24,6 +26,71 @@ function getNetworkInterfaces() {
 function requestId(req, res, next) {
   req.id = req.headers['x-request-id'] || uuidv4()
   res.setHeader('X-Request-Id', req.id)
+  next()
+}
+
+/**
+ * CSRF protection using double-submit cookie pattern.
+ * Generates a CSRF token cookie and validates the X-CSRF-Token header.
+ * Safe for SPA + API architecture without session-based CSRF.
+ */
+function csrfProtection(req, res, next) {
+  // Only protect state-changing methods
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next()
+  }
+
+  // Skip CSRF for health check and analytics (localhost-only)
+  if (
+    req.path === '/health' ||
+    req.path === '/api/analytics'
+  ) {
+    return next()
+  }
+
+  const token = req.headers['x-csrf-token']
+  const cookieToken = req.cookies?.csrfToken
+
+  // If no cookie token exists, generate one and return 403
+  if (!cookieToken) {
+    const newToken = crypto.randomBytes(32).toString('hex')
+    res.cookie('csrfToken', newToken, {
+      httpOnly: false, // Must be readable by JS for double-submit
+      secure: !req.app.get('isDev'),
+      sameSite: 'strict',
+      maxAge: 3600000 // 1 hour
+    })
+    return res.status(403).json({
+      error: 'CSRF token required',
+      requestId: req.id
+    })
+  }
+
+  // Validate token match
+  if (!token || token !== cookieToken) {
+    return res.status(403).json({
+      error: 'Invalid CSRF token',
+      requestId: req.id
+    })
+  }
+
+  next()
+}
+
+/**
+ * Middleware to set CSRF token cookie (called on initial page load).
+ * The frontend reads this cookie and sends it back as X-CSRF-Token header.
+ */
+function setCsrfCookie(req, res, next) {
+  if (!req.cookies?.csrfToken) {
+    const token = crypto.randomBytes(32).toString('hex')
+    res.cookie('csrfToken', token, {
+      httpOnly: false, // Required for double-submit pattern
+      secure: !req.app.get('isDev'),
+      sameSite: 'strict',
+      maxAge: 3600000 // 1 hour
+    })
+  }
   next()
 }
 
@@ -51,11 +118,17 @@ function clearStateCache(apiCache, sessionId) {
   apiCache.delete(`state_${sessionId}`)
 }
 
-function setupMiddleware(app, config) {
+function setupMiddleware(app, config, logger) {
   const networkInterfaces = getNetworkInterfaces()
+
+  // Store isDev flag on app for CSRF cookie
+  app.set('isDev', config.isDev)
 
   // Request ID
   app.use(requestId)
+
+  // CSRF cookie on page loads (GET requests for HTML)
+  app.use(setCsrfCookie)
 
   // Network interface IP (from expressApp L246-251)
   app.use((req, res, next) => {
@@ -112,18 +185,19 @@ function setupMiddleware(app, config) {
     })
   )
 
-  // Rate limiting (non-dev only, from expressApp L290-302)
-  if (!isDev) {
-    const apiLimiter = rateLimit({
-      windowMs: 60 * 1000,
-      max: 100,
-      message: 'Too many requests from this IP, please try again later.',
-      standardHeaders: true,
-      legacyHeaders: false,
-      validate: { xForwardedForHeader: false }
-    })
-    app.use('/api/', apiLimiter)
-  }
+  // Rate limiting (from expressApp L290-302)
+  // Dev: higher limits for testing; Prod: strict limits
+  const apiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: isDev ? 500 : 100,
+    message: isDev
+      ? 'Too many requests from this IP'
+      : 'Too many requests, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: { xForwardedForHeader: false }
+  })
+  app.use('/api/', apiLimiter)
 
   // CORS (from expressApp L304-319)
   app.use(
@@ -146,13 +220,33 @@ function setupMiddleware(app, config) {
   // Compression
   app.use(compression({ level: 6 }))
 
+  // Cookie parser (required for CSRF double-submit)
+  app.use(cookieParser())
+
   // JSON parser
   app.use(express.json())
+
+  // Generic error handler — hides internal details in production
+  app.use((err, req, res, next) => {
+    // Log full error internally
+    if (logger && typeof logger.error === 'function') {
+      logger.error({ err, requestId: req.id }, 'Unhandled error')
+    }
+
+    // Send generic message in production
+    const isProduction = !req.app.get('isDev')
+    res.status(err.status || 500).json({
+      error: isProduction ? 'Internal server error' : err.message,
+      requestId: req.id
+    })
+  })
 }
 
 module.exports = {
   setupMiddleware,
   requireSession,
   setNoCacheHeaders,
-  clearStateCache
+  clearStateCache,
+  csrfProtection,
+  setCsrfCookie
 }
