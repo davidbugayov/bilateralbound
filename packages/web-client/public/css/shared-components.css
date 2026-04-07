@@ -2413,7 +2413,7 @@ button:hover {
 
 .preview-canvas-wrapper {
   text-align: center;
-  overflow-x: hidden;
+  overflow: visible;
   max-width: 100%;
   position: relative;
   padding: 8px 16px;
