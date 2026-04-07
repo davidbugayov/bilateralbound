@@ -322,20 +322,44 @@ async function main() {
 
   // Тест возврата мяча в центр при паузе
   await test('Viewer ball returns to center on pause', async () => {
-    // Ball is playing after the sync test — pause with returnToCenter
-    await ctrlPage.evaluate(async () => {
-      const sid = globalThis.__current?.sessionId
-      if (sid) {
-        await fetch(`/api/session/${sid}/controller/update`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paused: true, returnToCenter: true })
-        }).catch(() => {})
+    // Debug: check viewer state before pause
+    const viewerBeforePause = await viewPage.evaluate(() => {
+      const engine = globalThis.physicsEngine
+      return {
+        paused: engine?.state?.paused,
+        seekingCenter: engine?.state?.seekingCenter,
+        x: engine?.ball?.x,
+        y: engine?.ball?.y,
+        centerX: engine?.centerX,
+        centerY: engine?.centerY,
+        ignoreServerPausedUntilTs: globalThis.__ignoreServerPausedUntilTs,
+        now: Date.now()
       }
     })
+    console.log('  [PAUSE DEBUG before]', JSON.stringify(viewerBeforePause))
 
-    // Wait for: server broadcast (~200ms) + seek animation (400ms) + buffer (2000ms)
-    await new Promise((r) => setTimeout(r, 3000))
+    // Ball is playing after the sync test — pause with returnToCenter
+    // IMPORTANT: must use csrfFetch (not fetch) because CSRF middleware blocks plain fetch
+    const serverResponse = await ctrlPage.evaluate(async () => {
+      const sid = globalThis.__current?.sessionId
+      if (sid) {
+        try {
+          const res = await globalThis.csrfFetch(`/api/session/${sid}/controller/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paused: true, returnToCenter: true })
+          })
+          return { status: res.status, ok: res.ok }
+        } catch (e) {
+          return { error: e.message }
+        }
+      }
+      return { noSession: true }
+    })
+    console.log('  [PAUSE DEBUG server response]', JSON.stringify(serverResponse))
+
+    // Wait for: server broadcast (~200ms) + seek animation (400ms) + buffer (3000ms)
+    await new Promise((r) => setTimeout(r, 3500))
 
     const state = await viewPage.evaluate(() => {
       const engine = globalThis.physicsEngine
@@ -346,12 +370,20 @@ async function main() {
         centerX: engine.centerX,
         centerY: engine.centerY,
         paused: engine.state.paused,
-        seekingCenter: engine.state.seekingCenter
+        seekingCenter: engine.state.seekingCenter,
+        ignoreServerPausedUntilTs: globalThis.__ignoreServerPausedUntilTs,
+        now: Date.now(),
+        isPlaying: globalThis.__current?.isPlaying
       }
     })
+    console.log('  [PAUSE DEBUG after]', JSON.stringify(state))
 
     if (!state) throw new Error('physicsEngine not found on viewer')
-    if (!state.paused) throw new Error('Ball not paused after pause command')
+    if (!state.paused) throw new Error(
+      `Ball not paused after pause command. seekingCenter=${state.seekingCenter}, ` +
+      `ignoreUntil=${state.ignoreServerPausedUntilTs}, now=${state.now}, ` +
+      `dist=${Math.hypot(state.x - state.centerX, state.y - state.centerY).toFixed(1)}`
+    )
 
     const dist = Math.hypot(state.x - state.centerX, state.y - state.centerY)
     if (dist > 10) {
