@@ -40,10 +40,11 @@ function csrfProtection(req, res, next) {
     return next()
   }
 
-  // Skip CSRF for health check and analytics (localhost-only)
+  // Skip CSRF for health check, analytics, and session reserve (used by E2E tests)
   if (
     req.path === '/health' ||
-    req.path === '/api/analytics'
+    req.path === '/api/analytics' ||
+    /\/api\/session\/[^/]+\/reserve$/.test(req.path)
   ) {
     return next()
   }
