@@ -122,7 +122,7 @@ function testBallAtRightEdge() {
   const wrongViewerW = 1920
   const wrongViewerH = 1080
 
-  const { px: wrongPx } = scalePreviewCoordinates(
+  scalePreviewCoordinates(
     ballX,
     ballY,
     wrongViewerW,

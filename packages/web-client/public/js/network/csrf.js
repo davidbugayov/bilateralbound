@@ -3,7 +3,7 @@
  * Reads the csrfToken cookie and returns it for use in X-CSRF-Token header.
  * Standalone version for non-bundled scripts (main-page.js, etc.)
  */
-;(function () {
+(function () {
   'use strict'
 
   /**
@@ -23,7 +23,7 @@
    */
   async function csrfFetch(url, options) {
     options = options || {}
-    var token = getCsrfToken()
+    const token = getCsrfToken()
     if (token) {
       options.headers = Object.assign({}, options.headers || {}, {
         'X-CSRF-Token': token

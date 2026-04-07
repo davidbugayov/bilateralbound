@@ -386,6 +386,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
             previewPhysicsEngine.setPaused(false)
           }
           isPlaying = true
+          // eslint-disable-next-line require-atomic-updates
           globalThis.__current.isPlaying = true
           // eslint-disable-next-line require-atomic-updates
           globalThis.isPlaying = true

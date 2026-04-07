@@ -11,6 +11,7 @@ const BASE_URL = process.argv[2] || 'http://localhost:3000'
 /**
  * Check if server is available
  */
+// eslint-disable-next-line no-unused-vars
 async function checkServerAvailable(url) {
   try {
     const http = require('http')
@@ -28,7 +29,7 @@ async function checkServerAvailable(url) {
         resolve(false)
       })
     })
-  } catch (err) {
+  } catch {
     return false
   }
 }
@@ -88,7 +89,7 @@ async function measureBallJitter(page, duration) {
       }
 
       await new Promise((resolve) => setTimeout(resolve, 50)) // 20 Hz sampling
-    } catch (err) {
+    } catch {
       // Page might be navigating
     }
   }

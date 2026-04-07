@@ -31,11 +31,11 @@ async function test(name, fn) {
 
 async function reserveSession(sessionId) {
   try {
-    const res = await fetch(`${BASE_URL}/api/session/${sessionId}/reserve`, {
+    await fetch(`${BASE_URL}/api/session/${sessionId}/reserve`, {
       method: 'POST'
     })
     // eslint-disable-next-line no-empty
-  } catch (e) {}
+  } catch {}
 }
 
 /**
@@ -108,7 +108,7 @@ async function setNetworkThrottle(page, latencyMs) {
 }
 
 async function main() {
-  console.log(`\n\U0001f680 Ball Sync E2E: ${BASE_URL}\n`)
+  console.log(`\n🚀 Ball Sync E2E: ${BASE_URL}\n`)
 
   await reserveSession(TEST_SESSION)
 
