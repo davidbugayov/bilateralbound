@@ -2423,7 +2423,6 @@ button:hover {
 .preview-canvas-wrapper .viewer-info-popup {
   position: relative;
   margin: 8px auto 0;
-  display: none;
 }
 
 .preview-status-stack {
