@@ -1,5 +1,5 @@
 /* jshint esversion: 11, browser: true, node: true */
-/* global globalThis, fetch, localStorage, console, document, performance, PhysicsEngine, BallRenderer, WebSocketClient, WS_MSG, AudioManager, sharedComponents, getSessionIdFromUrl, logger, debugError, debugLog, debugWarn, RealtimeClient */
+/* global globalThis, localStorage, console, document, performance, PhysicsEngine, BallRenderer, WebSocketClient, WS_MSG, AudioManager, sharedComponents, getSessionIdFromUrl, logger, debugError, debugLog, debugWarn, RealtimeClient */
 'use strict'
 // Initialize global state first
 if (!globalThis.__current) globalThis.__current = {}

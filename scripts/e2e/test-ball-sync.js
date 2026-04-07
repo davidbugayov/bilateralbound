@@ -68,7 +68,7 @@ function analyzeSmoothness(positions) {
   if (positions.length < 2) {
     return { avgVelocity: 0, teleportCount: 0, samples: positions.length }
   }
-  let velocities = []
+  const velocities = []
   let teleportCount = 0
   const TELEPORT_THRESHOLD = 300
   for (let i = 1; i < positions.length; i++) {

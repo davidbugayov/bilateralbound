@@ -387,6 +387,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
           }
           isPlaying = true
           globalThis.__current.isPlaying = true
+          // eslint-disable-next-line require-atomic-updates
           globalThis.isPlaying = true
           updatePlayPauseButton()
         }, 500)
