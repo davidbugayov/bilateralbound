@@ -233,7 +233,36 @@ function onStateUpdate(state) {
 
 function updatePhysicsFromState(state) {
   debugLog('📥 [VIEWER] Received state update:', state)
+
+  // Capture viewer's current ball position BEFORE applying server state.
+  // When server sends returnToCenter + paused, the server position is already
+  // at center — we need to animate from the viewer's current position, not snap.
+  const viewerBallX = physicsEngine.ball.x
+  const viewerBallY = physicsEngine.ball.y
+  const dxBefore = physicsEngine.centerX - viewerBallX
+  const dyBefore = physicsEngine.centerY - viewerBallY
+  const distBefore = Math.hypot(dxBefore, dyBefore)
+  const isReturningToCenter =
+    state.paused === true && distBefore > physicsEngine.options.centerSnapThreshold
+
   physicsEngine.applyCommand(state)
+
+  // If server sent returnToCenter + paused, force seekingCenter animation
+  // from the viewer's pre-update position (not the snapped server position).
+  if (isReturningToCenter && !physicsEngine.state.seekingCenter) {
+    physicsEngine.state.seekingCenter = true
+    physicsEngine._seekCenterStart = {
+      x: viewerBallX,
+      y: viewerBallY,
+      ts: performance.now()
+    }
+    debugLog('🎯 [VIEWER] Forced seekCenter animation from viewer position', {
+      fromX: viewerBallX.toFixed(1),
+      fromY: viewerBallY.toFixed(1),
+      distBefore: distBefore.toFixed(1)
+    })
+  }
+
   const isPaused = physicsEngine.state.paused
   const isNotSeeking = !physicsEngine.state.seekingCenter
   const isNotStopping = !physicsEngine.state.stopping
