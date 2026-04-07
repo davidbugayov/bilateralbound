@@ -480,7 +480,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     syncUIWithState(state)
     updateViewerAudioIndicators() // Обновляем индикаторы звука
     updateViewerStatusUI() // Update status UI with connection info
-    
+
     // Update session timestamp display after initial state is received
     updateSessionTimestampDisplay()
   })

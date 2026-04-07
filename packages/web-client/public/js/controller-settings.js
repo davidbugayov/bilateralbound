@@ -703,7 +703,7 @@ class ControllerSettingsManager {
           : new Date().toLocaleString()
         timestampEl.textContent = `${label}${dateStr}`
       }
-      
+
       // Update name in sessionInfo but keep sessionTimestamp span intact
       const nameTxt = current?.name || ''
       if (nameTxt) {

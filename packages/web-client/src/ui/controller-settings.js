@@ -691,7 +691,7 @@ class ControllerSettingsManager {
       const el = document.getElementById('sessionInfo')
       if (!el) return
       const current = this.sessions.find((s) => s.id === this.currentSessionId)
-      
+
       // Update sessionTimestamp span without destroying HTML structure
       const timestampEl = document.getElementById('sessionTimestamp')
       if (timestampEl) {
@@ -704,7 +704,7 @@ class ControllerSettingsManager {
           : new Date().toLocaleString()
         timestampEl.textContent = `${label}${dateStr}`
       }
-      
+
       // Update name in sessionInfo but keep sessionTimestamp span intact
       const nameTxt = current?.name || ''
       if (nameTxt) {
