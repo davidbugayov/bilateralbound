@@ -648,12 +648,14 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+  overflow: hidden;
 }
 
 /* Center col: preview fills remaining height */
 .controller-center-col #previewWrap {
   flex: 1;
   min-height: 200px;
+  overflow: hidden;
 }
 
 /* Right col: no sticky — all primary controls are here */
@@ -1244,16 +1246,23 @@ body {
     overflow-y: auto;
   }
 
-  /* Hide scrollbar in left column while keeping scroll functionality */
-  .controller-left-col {
+  /* Hide scrollbar in all columns while keeping scroll functionality */
+  .controller-left-col,
+  .controller-center-col,
+  .controller-right-col {
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding-top: 36px;
-    padding-right: 4px;
   }
 
-  .controller-left-col::-webkit-scrollbar {
+  .controller-left-col::-webkit-scrollbar,
+  .controller-center-col::-webkit-scrollbar,
+  .controller-right-col::-webkit-scrollbar {
     display: none;
+  }
+
+  .controller-left-col {
+    padding-top: 36px;
+    padding-right: 4px;
   }
 
   /* Compact right col: reduce gap and padding to avoid scroll */
