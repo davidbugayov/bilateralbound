@@ -2416,29 +2416,31 @@ button:hover {
   overflow: visible;
   max-width: 100%;
   position: relative;
-  padding-bottom: 20px;
+  padding-bottom: 28px;
   flex-shrink: 0;
 }
 
-/* viewer-info-popup должен быть виден даже когда #previewWrap скрыт (display: none) */
-#previewWrap .preview-canvas-wrapper .viewer-info-popup {
-  position: fixed !important;
-  display: block !important;
-  bottom: 20px;
+/* Preview info stack — элементы внутри wrapper друг под другом */
+.preview-info-stack {
+  position: absolute;
   left: 50%;
+  bottom: 0;
   transform: translateX(-50%);
-  z-index: 100;
-  margin: 0;
-  width: auto;
-  max-width: 400px;
-}
-
-.preview-status-stack {
-  margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
   align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#previewWrap .preview-canvas-wrapper .viewer-info-popup {
+  position: relative !important;
+  display: block !important;
+  margin: 0;
+  width: max-content;
+  max-width: 90%;
+  pointer-events: auto;
 }
 
 .viewer-info-popup {
