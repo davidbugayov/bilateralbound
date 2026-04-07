@@ -285,6 +285,19 @@ function updateViewerLink(sessionId) {
     viewLinkInput.value = buildViewerUrl(sessionId)
   }
 }
+
+/**
+ * Updates the session timestamp display using i18n-aware label
+ */
+function updateSessionTimestampDisplay() {
+  const timestampEl = document.getElementById('sessionTimestamp')
+  if (!timestampEl) return
+  const i18n = globalThis.i18n
+  const label = i18n?.isReady && i18n.t('controller.sessionCreated') !== 'controller.sessionCreated'
+    ? i18n.t('controller.sessionCreated')
+    : 'Created: '
+  timestampEl.textContent = `${label}${new Date().toLocaleString()}`
+}
 /**
  * Современная инициализация RealtimeClient (WebSocket по умолчанию)
  */
@@ -467,6 +480,9 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     syncUIWithState(state)
     updateViewerAudioIndicators() // Обновляем индикаторы звука
     updateViewerStatusUI() // Update status UI with connection info
+    
+    // Update session timestamp display after initial state is received
+    updateSessionTimestampDisplay()
   })
   wsClient.on(WS_MSG.stateUpdate, (state) => {
     lastServerState = state // Кэшируем состояние
