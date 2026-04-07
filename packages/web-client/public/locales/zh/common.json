@@ -153,7 +153,7 @@
     "connectionDirect": "✅ 直接连接",
     "connectionRelay": "⚠️ 服务器中继（可能有轻微延迟）",
     "connectionNone": "❌ 无连接",
-    "sessionCreated": "创建时间：",
+    "sessionCreated": "创建时间： ",
     "viewerLinkLabel": "👁️ 客户端链接（Viewer）:",
     "copyClientLink": "📋 复制",
     "passesLabel": "通过次数",

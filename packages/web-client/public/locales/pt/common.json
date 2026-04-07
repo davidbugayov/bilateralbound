@@ -161,7 +161,7 @@
     "connectionDirect": "✅ Conexão direta",
     "connectionRelay": "⚠️ Relay do servidor (possível leve atraso)",
     "connectionNone": "❌ Sem conexão",
-    "sessionCreated": "Criada:",
+    "sessionCreated": "Criada: ",
     "viewerLinkLabel": "👁️ Link para o cliente (Viewer):",
     "copyClientLink": "📋 Copiar",
     "passesLabel": "Passes",
