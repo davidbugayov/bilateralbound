@@ -20,7 +20,7 @@
         globalThis.i18n?.t('session.creating') || '🔄 Creating session...'
 
       console.log('🔄 Creating session...')
-      const response = await fetch('/api/session', { method: 'POST' })
+      const response = await globalThis.csrfFetch('/api/session', { method: 'POST' })
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -60,7 +60,7 @@
         return
       }
 
-      const connectResponse = await fetch(
+      const connectResponse = await globalThis.csrfFetch(
         '/api/session/' + sessionId + '/controller/connect',
         {
           method: 'POST',
@@ -175,7 +175,7 @@
         false
       )
 
-      const response = await fetch('/api/session/' + clientId + '/reserve', {
+      const response = await globalThis.csrfFetch('/api/session/' + clientId + '/reserve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
