@@ -13,6 +13,12 @@ class BroadcastService {
     this.clientSimulationOnly = clientSimulationOnly === true
     // Храним последнее отправленное состояние для delta compression
     this._lastBroadcastedState = new Map() // sessionId -> lastState
+    // Cleanup interval для stale delta entries
+    this._deltaCleanupInterval = setInterval(
+      () => this._cleanupStaleDeltaEntries(),
+      60 * 1000
+    )
+    this._deltaCleanupInterval.unref()
   }
 
   _buildStatePayload(session, stateType, payloadOverride = null, options = {}) {
@@ -419,6 +425,51 @@ class BroadcastService {
 
   _isClientReady(client) {
     return client?.readyState === 1 // WebSocket.OPEN
+  }
+
+  /**
+   * Graceful shutdown — stops the delta cleanup interval
+   */
+  destroy() {
+    if (this._deltaCleanupInterval) {
+      clearInterval(this._deltaCleanupInterval)
+      this._deltaCleanupInterval = null
+    }
+    this._lastBroadcastedState.clear()
+  }
+
+  /**
+   * Удаляет delta cache для сессии при её очистке (вызывается из SessionService)
+   * @param {string} sessionId
+   */
+  clearDeltaCache(sessionId) {
+    this._lastBroadcastedState.delete(sessionId)
+  }
+
+  /**
+   * Периодическая очистка stale записей из delta cache
+   * Удаляет записи старше 10 минут (сессия уже мертва но cache остался)
+   * @private
+   */
+  _cleanupStaleDeltaEntries() {
+    const now = Date.now()
+    const MAX_AGE = 10 * 60 * 1000 // 10 минут
+    let removedCount = 0
+
+    for (const [sessionId] of this._lastBroadcastedState) {
+      const session = this.sessionRepository.findById(sessionId)
+      if (!session || now - session.lastActivity > MAX_AGE) {
+        this._lastBroadcastedState.delete(sessionId)
+        removedCount++
+      }
+    }
+
+    if (removedCount > 0) {
+      this.logger.debug(
+        { removedCount, remainingSize: this._lastBroadcastedState.size },
+        'Delta cache cleanup'
+      )
+    }
   }
 }
 

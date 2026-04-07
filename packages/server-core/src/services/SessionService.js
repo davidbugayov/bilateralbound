@@ -3,6 +3,20 @@
 
 const ValidationUtils = require('../utils/validation.js')
 
+// Throttle delays per update type (ms) — configured to balance responsiveness and stability
+const THROTTLE_DEFAULT = 50
+const THROTTLE_COLOR = 200 // Color changes are less urgent
+const THROTTLE_SPEED = 100
+const THROTTLE_DIRECTION = 0 // No throttle — don't lose clicks
+const THROTTLE_PAUSE = 0 // Instant response for play/pause
+
+// Session cleanup delay (ms)
+const PENDING_DELETE_DELAY = 5 * 60 * 1000 // 5 minutes
+
+// Direction normalization timeouts (ms)
+const NORMALIZE_TIMEOUT_WITH_PREV = 600
+const NORMALIZE_TIMEOUT_NEW = 150
+
 class SessionService {
   /**
    * Facade for session business logic — everything that isn't physics or broadcast.
@@ -183,6 +197,8 @@ class SessionService {
         if (session) {
           this.physics.stopPhysics(session)
         }
+        // Clear delta compression cache to prevent memory leak
+        this.broadcast.clearDeltaCache(id)
         this.analytics.recordSessionEnded(id)
         this.logger.logSession(id, `Session cleaned up: ${reason}`)
       }
@@ -252,7 +268,9 @@ class SessionService {
             session.mainLoop = null
           }
           session.physicsEngine = null
-          session.pendingDeleteAt = Date.now() + 5 * 60 * 1000
+          session.pendingDeleteAt = Date.now() + PENDING_DELETE_DELAY
+          // Clear delta compression cache to prevent memory leak
+          this.broadcast.clearDeltaCache(sessionId)
           this.logger.logSession(
             sessionId,
             'All clients disconnected — physics freed, session pending delete in 5 min'
@@ -300,25 +318,26 @@ class SessionService {
 
   /**
    * Returns throttle delay in ms based on update type
+   * Constants defined at module level for easier tuning and testing
    * @private
    */
   _getThrottleDelay(updates) {
     if (!updates) {
-      return 50
+      return THROTTLE_DEFAULT
     }
     if (updates.colorBall !== undefined || updates.colorBg !== undefined) {
-      return 200
+      return THROTTLE_COLOR
     }
     if (updates.speed !== undefined) {
-      return 100
+      return THROTTLE_SPEED
     }
     if (updates.dirX !== undefined || updates.dirY !== undefined) {
-      return 0 // No throttle for direction — don't lose clicks
+      return THROTTLE_DIRECTION
     }
     if (updates.paused !== undefined || updates.resume === true) {
-      return 0
+      return THROTTLE_PAUSE
     }
-    return 50
+    return THROTTLE_DEFAULT
   }
 
   /**
@@ -413,7 +432,9 @@ class SessionService {
    * @private
    */
   _setDirectionNormalizationTimeout(session, hadPrevSize) {
-    session.normalizeDirectionUntilTs = Date.now() + (hadPrevSize ? 600 : 150)
+    session.normalizeDirectionUntilTs =
+      Date.now() +
+      (hadPrevSize ? NORMALIZE_TIMEOUT_WITH_PREV : NORMALIZE_TIMEOUT_NEW)
   }
 
   /**

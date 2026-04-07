@@ -159,6 +159,8 @@ function gracefulShutdown() {
   for (const interval of cleanupIntervals) {
     clearInterval(interval)
   }
+  // Stop broadcast service delta cleanup interval and clear cache
+  broadcastService.destroy()
   setTimeout(() => process.exit(0), 3000).unref()
   server.closeAllConnections()
   server.close(() => {
