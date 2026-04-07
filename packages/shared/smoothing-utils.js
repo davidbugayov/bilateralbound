@@ -21,21 +21,17 @@
  * These values are used if BBConfig.smoothing is not defined
  */
 const DEFAULT_SMOOTHING_CONFIG = {
-  // Base smoothing parameters
-  damping: 20, // Base damping (15-25 range) — higher = smoother
-  stiffness: 30, // Base stiffness (25-35 range) — lower = smoother
+  // Base smoothing parameters — aligned with physics-engine.js defaults
+  damping: 2, // Matches physics-engine stiffness default
+  stiffness: 3, // Matches physics-engine damping default
   maxPredictSec: 0.02, // Max prediction time in seconds
   snapDistance: 0.3, // Snap distance threshold (0.2-0.4)
 
   // Adaptive factors — how much jitter affects each parameter
   dampingJitterFactor: 20, // jitterMs / factor added to damping
   stiffnessJitterFactor: 30, // jitterMs / factor subtracted from stiffness
-  highJitterThreshold: 15, // Threshold for snapDistance increase
-
-  // Exponential smoothing
-  exponentialSmoothing: false, // Use exponential smoothing
-  stateBuffering: false, // Use state buffering
-  bufferSize: 10 // Buffer size for state buffering
+  highJitterThreshold: 15 // Threshold for snapDistance increase
+  // Removed: exponentialSmoothing, stateBuffering, bufferSize — unused
 }
 
 // ============================================
@@ -94,20 +90,25 @@ function calculateAdaptiveSmoothing(jitterMs, customConfig) {
     config.snapDistance || DEFAULT_SMOOTHING_CONFIG.snapDistance
 
   // Calculate adaptive values with clamping
+  // Base values are now 2 (damping) and 3 (stiffness) — aligned with physics-engine.
+  // Clamping range widened to allow meaningful adaptation:
+  //   damping: 1-8 (good range for spring-damper stability)
+  //   stiffness: 1-10 (good range for correction strength)
+
   // Damping: increases with jitter → more smoothing when network is bad
   const adaptiveDamping = Math.min(
-    25, // max clamp
+    8, // max clamp
     Math.max(
-      15, // min clamp
+      1, // min clamp
       baseDamping + jitterMs / dampingFactor
     )
   )
 
   // Stiffness: decreases with jitter → gentler correction when network is bad
   const adaptiveStiffness = Math.min(
-    35, // max clamp
+    10, // max clamp
     Math.max(
-      25, // min clamp
+      1, // min clamp
       baseStiffness - jitterMs / stiffnessFactor
     )
   )
@@ -126,10 +127,7 @@ function calculateAdaptiveSmoothing(jitterMs, customConfig) {
     stiffness: adaptiveStiffness,
     maxPredictSec:
       config.maxPredictSec || DEFAULT_SMOOTHING_CONFIG.maxPredictSec,
-    snapDistance: adaptiveSnapDistance,
-    exponentialSmoothing: config.exponentialSmoothing,
-    stateBuffering: config.stateBuffering,
-    bufferSize: config.bufferSize
+    snapDistance: adaptiveSnapDistance
   }
 }
 

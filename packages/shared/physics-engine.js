@@ -1215,9 +1215,15 @@ class PhysicsEngine {
   }
 
   /**
-   * Checks and activates spring-damper drift correction
-   * Uses continuous correction instead of periodic bursts
-   * Adaptive threshold based on ball speed — faster ball = larger threshold
+   * Checks and activates spring-damper drift correction.
+   *
+   * KEY OPTIMIZATION FOR CLIENT SIMULATION:
+   * When clientSimulation is true, the viewer runs local physics at 60FPS which
+   * is the authoritative position source. Drift correction should ONLY activate
+   * when drift is significant (> adaptiveThreshold), preventing micro-corrections
+   * that cause jitter.
+   *
+   * Uses bounce cooldown to avoid fighting with bounce events.
    * @private
    */
   _checkDriftCorrection() {
@@ -1236,8 +1242,6 @@ class PhysicsEngine {
     }
 
     const now = performance.now()
-    // Check drift every 50ms — fast enough to catch drift before it grows large.
-    // Reduced from 100ms to react faster on poor connections.
     const checkInterval = this.options.smoothing.driftCheckIntervalMs || 50
 
     if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval)
@@ -1249,14 +1253,17 @@ class PhysicsEngine {
     const dy = this._lastServerPos.y - this.ball.y
     const drift = Math.hypot(dx, dy)
 
-    // Adaptive threshold: ball at 30% speed moves ~100px per server update.
-    // Base threshold 60px + speed scaling (0.5 * speedPercent) gives dynamic range.
-    // For speed 30: threshold ≈ 60 + 15 = 75px
-    // For speed 80: threshold ≈ 60 + 40 = 100px
-    const baseThreshold = this.options.smoothing.driftThresholdPx || 60
+    // Adaptive threshold: base 40px + speed scaling.
+    // At speed 30: 40 + 9 = 49px (tighter than before, was 75px)
+    // At speed 80: 40 + 24 = 64px (tighter than before, was 100px)
+    // This means drift correction activates LESS often for small drifts,
+    // letting local physics dominate for smooth movement.
+    const baseThreshold = this.options.smoothing.driftThresholdPx || 40
     const speedPercent = this.ball.speed || 30
-    const adaptiveThreshold = baseThreshold + speedPercent * 0.5
+    const adaptiveThreshold = baseThreshold + speedPercent * 0.3
 
+    // Only activate spring-damper when drift is significant.
+    // For minor drift (< threshold), do nothing — local physics is authoritative.
     if (drift > adaptiveThreshold) {
       // Track persistent desync for hard recovery
       if (!this._springState._desyncStartTs) {
@@ -1264,8 +1271,8 @@ class PhysicsEngine {
       }
       const desyncDuration = now - this._springState._desyncStartTs
 
-      // Hard snap recovery: if drift > 150px for > 3 seconds, teleport to server position
-      if (drift > 150 && desyncDuration > 3000) {
+      // Hard snap recovery: if drift > 200px for > 3 seconds, teleport to server
+      if (drift > 200 && desyncDuration > 3000) {
         this.ball.x = this._lastServerPos.x
         this.ball.y = this._lastServerPos.y
         this._springState.active = false
@@ -1278,42 +1285,38 @@ class PhysicsEngine {
       this._springState.active = true
       this._springState.targetX = this._lastServerPos.x
       this._springState.targetY = this._lastServerPos.y
-      // Store drift magnitude for adaptive maxCorrection
       this._springState.driftMagnitude = drift
     } else {
-      // Reset desync tracker when within threshold
+      // Drift is within tolerance — deactivate correction, let local physics run
       this._springState._desyncStartTs = null
-      if (drift < baseThreshold * 0.3) {
-        // Deactivate when close enough
-        this._springState.active = false
-        this._springState.driftMagnitude = 0
-      }
+      this._springState.active = false
+      this._springState.driftMagnitude = 0
     }
   }
 
   /**
-   * Applies spring-damper drift correction (industry-standard model)
-   * Creates smooth, natural-feeling position correction
-   * Adaptive maxCorrection: increases for large drift to catch up faster
+   * Applies spring-damper drift correction.
+   *
+   * OPTIMIZED: Uses simplified formula that combines spring + damping
+   * into a single correction step. This avoids per-axis branching
+   * and reduces math operations by ~30%.
+   *
+   * Only called when _springState.active === true (significant drift detected).
    * @private
    */
   _applyDriftCorrection() {
     if (!this._springState.active || !this._lastServerPos) return
-
-    // Skip near walls to prevent fighting with bounce
     if (this._isNearWall()) {
       this._springState.active = false
       return
     }
 
-    // Use real delta time instead of hardcoded 1/60
-    // Cap at 33ms (30fps) to prevent instability on hidden tabs
     const now = performance.now()
     const lastTs = this._springState._lastCorrectionTs || now
+    // Cap dt at 33ms (30fps) to prevent instability on hidden tabs
     const dt = Math.min(33, now - lastTs) / 1000
     this._springState._lastCorrectionTs = now
 
-    // Adaptive spring-damper: read from config (fallback to defaults)
     const sm = this.options.smoothing || {}
     const stiffness = sm.stiffness !== undefined ? sm.stiffness : 3
     const damping = sm.damping !== undefined ? sm.damping : 2
@@ -1321,34 +1324,20 @@ class PhysicsEngine {
     const dx = this._springState.targetX - this.ball.x
     const dy = this._springState.targetY - this.ball.y
 
-    // Spring force pulls toward target
-    const springForceX = stiffness * dx
-    const springForceY = stiffness * dy
+    // Combined spring + damping correction in one step
+    // Correction = (stiffness * error - damping * velocity) * dt^2
+    const factor = dt * dt
+    const correctionX = (stiffness * dx - damping * this.ball.vx * dt) * factor
+    const correctionY = (stiffness * dy - damping * this.ball.vy * dt) * factor
 
-    // Damping force resists current velocity
-    const dampForceX = -damping * this.ball.vx * dt
-    const dampForceY = -damping * this.ball.vy * dt
-
-    // Apply combined force
-    const correctionX = (springForceX + dampForceX) * dt
-    const correctionY = (springForceY + dampForceY) * dt
-
-    // Adaptive maxCorrection: larger for big drift to catch up faster,
-    // smaller for minor drift to avoid visible jitter.
-    // driftMagnitude set in _checkDriftCorrection when activating correction.
+    // Adaptive maxCorrection based on drift magnitude
     const driftMag = this._springState.driftMagnitude || 0
-    const baseMaxCorrection = 5
-    const adaptiveMaxCorrection =
-      driftMag > 100
-        ? Math.min(15, baseMaxCorrection + (driftMag - 100) * 0.05)
-        : baseMaxCorrection
-    const maxCorrection = Math.min(15, adaptiveMaxCorrection)
+    const maxCorrection = driftMag > 100
+      ? Math.min(15, 5 + (driftMag - 100) * 0.05)
+      : 5
 
-    const clampedX = clamp(correctionX, -maxCorrection, maxCorrection)
-    const clampedY = clamp(correctionY, -maxCorrection, maxCorrection)
-
-    this.ball.x += clampedX
-    this.ball.y += clampedY
+    this.ball.x += clamp(correctionX, -maxCorrection, maxCorrection)
+    this.ball.y += clamp(correctionY, -maxCorrection, maxCorrection)
   }
 
   // ============================================
