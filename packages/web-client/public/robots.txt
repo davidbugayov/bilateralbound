@@ -141,20 +141,16 @@ Crawl-delay: 2
 # ==============================================================================
 
 User-agent: GPTBot
-Disallow: /
-Crawl-delay: 2
+Allow: /
 
 User-agent: Claude-Web
-Disallow: /
-Crawl-delay: 2
+Allow: /
 
 User-agent: Google-Extended
-Disallow: /
-Crawl-delay: 2
+Allow: /
 
 User-agent: CCBot
 Allow: /
-Crawl-delay: 3
 
 # ==============================================================================
 # КАРТЫ САЙТА

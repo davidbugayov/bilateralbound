@@ -254,6 +254,20 @@ class LocalizationService {
       `$1${isRu ? 'ru_RU' : 'en_US'}$2`
     )
 
+    // Add og:locale:alternate for all other languages
+    const allLocales = [
+      'ru_RU', 'en_US', 'de_DE', 'es_ES', 'fr_FR', 'pt_PT', 'ja_JP', 'zh_CN'
+    ]
+    const currentLocale = isRu ? 'ru_RU' : 'en_US'
+    const alternateLocales = allLocales.filter(l => l !== currentLocale)
+    const alternateMetaTags = alternateLocales
+      .map(loc => `    <meta property="og:locale:alternate" content="${loc}" />`)
+      .join('\n')
+    html = html.replace(
+      /(<meta property="og:locale"[^>]*>)/,
+      `$1\n${alternateMetaTags}`
+    )
+
     // Fix og:title and twitter:title for .ru (static HTML defaults to English)
     if (isRu) {
       const ruTitle = 'BilateralBound - EMDR терапия онлайн'

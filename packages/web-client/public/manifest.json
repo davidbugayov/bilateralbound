@@ -1,0 +1,26 @@
+{
+  "name": "BilateralBound — Free Online EMDR Therapy",
+  "short_name": "BilateralBound",
+  "description": "Free online EMDR therapy platform with bilateral stimulation for treating PTSD, anxiety, and trauma.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "lang": "en",
+  "categories": ["health", "medical"],
+  "icons": [
+    {
+      "src": "/favicon-viewer.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/emdr-eye.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd
-        http://www.google.com/schemas/sitemap-image/1.1
-        http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd">
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- Домашняя страница -->
+  <!-- Главная страница — Русский (основной домен .ru) -->
   <url>
     <loc>https://emdrbilateral.ru/</loc>
-    <lastmod>2026-03-07</lastmod>
+    <lastmod>2026-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -18,10 +14,21 @@
       <image:title>BilateralBound - EMDR терапия для пациентов</image:title>
       <image:caption>Профессиональная платформа EMDR терапии с биодинамической стимуляцией</image:caption>
     </image:image>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://emdrbilateral.ru/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://emdrbilateral.online/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://emdrbilateral.online/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://emdrbilateral.online/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://emdrbilateral.online/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="pt" href="https://emdrbilateral.online/?lang=pt" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://emdrbilateral.online/?lang=ja" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://emdrbilateral.online/?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://emdrbilateral.online/" />
   </url>
+
+  <!-- Homepage — English (основной домен .online) -->
   <url>
     <loc>https://emdrbilateral.online/</loc>
-    <lastmod>2026-03-07</lastmod>
+    <lastmod>2026-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -29,26 +36,15 @@
       <image:title>BilateralBound - EMDR Therapy Platform</image:title>
       <image:caption>Professional EMDR therapy platform with bilateral stimulation</image:caption>
     </image:image>
-  </url>
-
-  <!-- Verification files -->
-  <url>
-    <loc>https://emdrbilateral.ru/google0a8d78e57c19cb2f.html</loc>
-    <lastmod>2024-07-25</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.1</priority>
-  </url>
-  <url>
-    <loc>https://emdrbilateral.ru/yandex_736ad8daf3553b6b.html</loc>
-    <lastmod>2024-07-25</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.1</priority>
-  </url>
-  <url>
-    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>
-    <lastmod>2024-07-25</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.1</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://emdrbilateral.online/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://emdrbilateral.ru/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://emdrbilateral.online/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://emdrbilateral.online/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://emdrbilateral.online/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="pt" href="https://emdrbilateral.online/?lang=pt" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://emdrbilateral.online/?lang=ja" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://emdrbilateral.online/?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://emdrbilateral.online/" />
   </url>
 
 </urlset>

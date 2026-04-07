@@ -96,7 +96,7 @@
           name: 'What is EMDR therapy?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy method that uses bilateral stimulation — typically eye movements — to help the brain reprocess traumatic memories. It is recognised by the WHO and APA as an effective treatment for PTSD.'
+            text: 'EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy that uses bilateral stimulation — typically eye movements — to help the brain reprocess traumatic memories. Recognised by WHO and APA for PTSD treatment.'
           }
         },
         {
@@ -104,7 +104,7 @@
           name: 'How does BilateralBound work?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'The therapist creates a session and receives a controller link; the patient opens the viewer link on any device. The therapist controls a moving ball in real-time over WebSocket — the patient follows it with their eyes, creating bilateral stimulation. No software installation needed.'
+            text: 'The therapist creates a session and sends a viewer link to the patient. The therapist controls a moving ball in real-time — the patient follows it with their eyes, creating bilateral stimulation. No software installation needed.'
           }
         },
         {
@@ -120,7 +120,7 @@
           name: 'Does EMDR therapy work online?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. Research supports the effectiveness of telehealth EMDR. BilateralBound delivers real-time bilateral stimulation over WebSocket with millisecond precision, replicating in-person session quality remotely.'
+            text: 'Yes. Research supports the effectiveness of telehealth EMDR. BilateralBound delivers real-time bilateral stimulation over WebSocket with millisecond precision.'
           }
         },
         {
@@ -128,7 +128,7 @@
           name: 'What conditions does EMDR treat?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'EMDR is used to treat post-traumatic stress disorder (PTSD), anxiety disorders, panic attacks, depression, phobias, OCD, and relationship trauma. It is also used in couples therapy for processing shared traumatic experiences.'
+            text: 'EMDR treats PTSD, anxiety, depression, phobias, OCD, and trauma. It is also used in couples therapy for processing shared traumatic experiences.'
           }
         },
         {
@@ -136,8 +136,20 @@
           name: 'Does the therapist need special training to use BilateralBound?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'The platform is designed for use by qualified EMDR-trained therapists. EMDR therapy should only be conducted by certified mental health professionals. BilateralBound provides the bilateral stimulation tool — clinical judgement and technique remain the therapist\'s responsibility.'
+            text: 'Yes. EMDR therapy should only be conducted by qualified, EMDR-trained therapists. BilateralBound provides the bilateral stimulation tool — clinical judgement and technique remain the therapist\'s responsibility.'
           }
+        }
+      ]
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: 'https://emdrbilateral.ru/'
         }
       ]
     },
