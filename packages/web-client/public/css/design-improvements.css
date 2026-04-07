@@ -1304,29 +1304,31 @@ input:focus-visible + .slider {
   opacity: 1 !important;
 }
 
-/* Fix 3: Preview panel - limit height when viewer not connected */
+/* Fix 3: Preview panel - maintain minimum height regardless of viewer state */
 .floating-preview {
-  max-height: 300px;
-  overflow: hidden;
+  min-height: 200px;
+  overflow: visible;
+  transition: min-height 0.2s ease;
 }
 
 .floating-preview.viewer-connected {
-  max-height: none;
-  overflow: visible;
+  min-height: 250px;
 }
 
-/* Preview canvas wrapper - constrain when no viewer */
-.floating-preview:not(.viewer-connected) .preview-canvas-wrapper {
-  max-height: 200px;
+/* Preview canvas wrapper - ensure minimum dimensions */
+.floating-preview .preview-canvas-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 150px;
 }
 
-.floating-preview:not(.viewer-connected) #preview {
-  max-height: 180px;
-  width: auto;
-  height: auto;
+/* Canvas maintains aspect ratio and minimum size */
+.floating-preview #preview {
+  display: block;
+  min-width: 200px;
+  min-height: 150px;
+  max-width: 100%;
 }
 
 /* Info text below preview (Waiting for viewer connection) */
