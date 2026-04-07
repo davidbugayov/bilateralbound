@@ -296,7 +296,7 @@ const LanguageSelector = (function () {
    */
   async function syncLanguageToViewer(sessionId, language) {
     try {
-      const response = await fetch(`/api/session/${sessionId}/language`, {
+      const response = await globalThis.csrfFetch(`/api/session/${sessionId}/language`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ language })

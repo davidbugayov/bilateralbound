@@ -16,6 +16,7 @@ require('./rendering/renderer')
 require('./ui/shared-components')
 require('./network/websocket-client')
 require('./network/realtime-client')
+require('./network/csrf')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const _PreviewManager = require('./application/controller/preview-manager')
@@ -166,7 +167,7 @@ async function initializeController() {
 }
 async function registerControllerOnServer(sessionId, logger) {
   try {
-    const connectResponse = await fetch(
+    const connectResponse = await globalThis.csrfFetch(
       `/api/session/${sessionId}/controller/connect`,
       {
         method: 'POST',
@@ -356,7 +357,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     // Sync current language to session so viewer gets the same locale
     const currentLang = localStorage.getItem('emdr-language')
     if (currentLang && sessionId) {
-      fetch(`/api/session/${sessionId}/language`, {
+      globalThis.csrfFetch(`/api/session/${sessionId}/language`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ language: currentLang })
@@ -374,12 +375,12 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
           if (performance.now() < __ignoreServerPausedUntilTs) return
           // Verify server is actually playing before restoring local state
           try {
-            const resp = await fetch(`/api/session/${sessionId}/state`)
+            const resp = await globalThis.csrfFetch(`/api/session/${sessionId}/state`)
             if (!resp.ok) return
             const state = await resp.json()
             if (state.paused === true) return // Server is paused, don't restore
           } catch {
-            return // If fetch fails, don't restore
+            return // If fetch failed, don't restore
           }
           if (previewPhysicsEngine) {
             previewPhysicsEngine.setPaused(false)

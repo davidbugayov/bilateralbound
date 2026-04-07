@@ -15,6 +15,7 @@ require('./audio/audio-manager')
 require('./rendering/renderer')
 require('./network/websocket-client')
 require('./network/realtime-client')
+require('./network/csrf')
 require('./ui/shared-components')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
@@ -162,7 +163,7 @@ function resizeCanvas() {
 
 async function connectToSession(sessionId) {
   try {
-    const response = await fetch(`/api/session/${sessionId}/viewer/connect`, {
+    const response = await globalThis.csrfFetch(`/api/session/${sessionId}/viewer/connect`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -721,7 +722,7 @@ async function initializeViewer(sessionId) {
 function setupWebSocketHandlers(wsClient, sessionId) {
   async function fetchAndApplyState() {
     try {
-      const resp = await fetch(`/api/session/${sessionId}/state`)
+      const resp = await globalThis.csrfFetch(`/api/session/${sessionId}/state`)
       if (!resp.ok) return
       const state = await resp.json()
       onStateUpdate(state)
