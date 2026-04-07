@@ -648,14 +648,12 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   flex-direction: column;
   gap: 16px;
   min-width: 0;
-  overflow: hidden;
 }
 
 /* Center col: preview fills remaining height */
 .controller-center-col #previewWrap {
   flex: 1;
   min-height: 200px;
-  overflow: hidden;
 }
 
 /* Right col: no sticky — all primary controls are here */
