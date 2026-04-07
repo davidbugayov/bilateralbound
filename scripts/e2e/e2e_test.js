@@ -334,8 +334,8 @@ async function main() {
       }
     })
 
-    // Wait for: server broadcast (~200ms) + seek animation (400ms) + buffer (600ms)
-    await new Promise((r) => setTimeout(r, 1200))
+    // Wait for: server broadcast (~200ms) + seek animation (400ms) + buffer (2000ms)
+    await new Promise((r) => setTimeout(r, 3000))
 
     const state = await viewPage.evaluate(() => {
       const engine = globalThis.physicsEngine
