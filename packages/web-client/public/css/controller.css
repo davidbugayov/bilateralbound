@@ -658,6 +658,9 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 .controller-center-col #previewWrap {
   flex: 1;
   min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* Right col: no sticky — all primary controls are here */
