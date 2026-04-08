@@ -1333,7 +1333,7 @@ input:focus-visible + .slider {
 .floating-preview .preview-canvas-wrapper {
   display: flex;
   flex-direction: column !important;
-  align-items: stretch;
+  align-items: center;
   justify-content: flex-start;
   min-height: auto;
   padding: 0;
@@ -1353,6 +1353,7 @@ input:focus-visible + .slider {
   width: 100%;
   padding: 8px 16px 0;
   box-sizing: border-box;
+  margin: 0 auto;
 }
 
 /* Info text below preview (Waiting for viewer connection) - contained within card */
