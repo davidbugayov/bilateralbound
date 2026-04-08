@@ -26,6 +26,11 @@
   text-align: center;
   position: relative;
   padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
 /* === SESSION INFO STYLING === */

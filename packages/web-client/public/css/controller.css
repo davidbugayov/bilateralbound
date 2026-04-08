@@ -2240,13 +2240,17 @@ body {
 /* Preview canvas wrapper - replaces inline style */
 .preview-canvas-wrapper {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
 .preview-info-stack {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 12px;
   width: 100%;
 }
 
