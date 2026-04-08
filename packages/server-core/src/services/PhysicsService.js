@@ -167,30 +167,25 @@ class PhysicsService {
       const currentState = session.physicsEngine.getState()
       const wasPlaying = !session.ballState.paused
 
-      session.physicsEngine.setWorldSize(
-        validatedSize.width,
-        validatedSize.height
-      )
+       session.physicsEngine.setWorldSize(
+         validatedSize.width,
+         validatedSize.height
+       )
 
-      if (!hadPrevSize) {
-        this._initializeBallPosition(session, validatedSize)
-      } else if (this._shouldScaleBallPosition(session, currentState)) {
-        this._scaleBallPosition(
-          session,
-          currentState,
-          validatedSize,
-          wasPlaying
-        )
-      }
+       if (!hadPrevSize) {
+         this._initializeBallPosition(session, validatedSize)
+       } else if (this._shouldScaleBallPosition(session, currentState)) {
+         this._scaleBallPosition(
+           session,
+           currentState,
+           validatedSize,
+           wasPlaying
+         )
+       }
 
-      const { dirX: userDirX, dirY: userDirY } = session.ballState
-      this._withSoundPreserved(session, () => {
-        Object.assign(session.ballState, session.physicsEngine.getState())
-      })
-      if (userDirX !== undefined && userDirY !== undefined) {
-        session.ballState.dirX = userDirX
-        session.ballState.dirY = userDirY
-      }
+       this._withSoundPreserved(session, () => {
+         Object.assign(session.ballState, session.physicsEngine.getState())
+       })
     } else {
       // No physics engine — set defaults directly
       session.ballState.x = validatedSize.width / 2
@@ -311,16 +306,11 @@ class PhysicsService {
           .some(({ info }) => info.role === 'viewer')
         if (!hasViewers) continue
 
-        try {
-          const { dirX: userDirX, dirY: userDirY } = session.ballState
-          this._withSoundPreserved(session, () => {
-            session.physicsEngine.update(actualDt)
-            Object.assign(session.ballState, session.physicsEngine.getState())
-          })
-          if (userDirX !== undefined && userDirY !== undefined) {
-            session.ballState.dirX = userDirX
-            session.ballState.dirY = userDirY
-          }
+       try {
+           this._withSoundPreserved(session, () => {
+             session.physicsEngine.update(actualDt)
+             Object.assign(session.ballState, session.physicsEngine.getState())
+           })
 
           if (!session.ticks) session.ticks = 0
           session.ticks++
