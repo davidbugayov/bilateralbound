@@ -2239,6 +2239,20 @@ body {
   position: relative;
 }
 
+.preview-info-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.preview-info-stack .viewer-info-popup {
+  margin-top: 0 !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* Reset button in fullscreen - replaces inline style */
 .fs-reset-btn {
   grid-column: 1 / -1;
