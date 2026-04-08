@@ -869,13 +869,14 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   // to avoid visual jitter from conflicting correction sources.
   wsClient.on('bounce_ack', (data) => {
     if (!physicsEngine) return
+
+    // Always sync direction from server (immediate, always safe — direction changes at bounce)
     const serverDirX = data.serverDirX
     const serverDirY = data.serverDirY
     if (
       typeof serverDirX === 'number' &&
       typeof serverDirY === 'number'
     ) {
-      // Sync direction from server (immediate, always safe — direction changes at bounce)
       physicsEngine.state.lastDirection.x = serverDirX
       physicsEngine.state.lastDirection.y = serverDirY
       // Recalculate velocity from synced direction
@@ -883,8 +884,23 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       physicsEngine.ball.vx = serverDirX * pps
       physicsEngine.ball.vy = serverDirY * pps
     }
-    // Position drift is handled by periodic drift correction (every 50ms, threshold 40px)
-    // — no instant snap, no duplicate correction sources.
+
+    // Snap position on bounce to prevent drifting away from server position
+    // This is critical: after bounce, viewer position may diverge from server due to network latency
+    // Hard snap at bounce ensures they start in sync for the next movement segment
+    if (typeof data.serverX === 'number' && typeof data.serverY === 'number') {
+      // Snap ball to server position to reset accumulation of drift errors
+      physicsEngine.ball.x = data.serverX
+      physicsEngine.ball.y = data.serverY
+      physicsEngine._prevPos.x = data.serverX
+      physicsEngine._prevPos.y = data.serverY
+      physicsEngine._currPos.x = data.serverX
+      physicsEngine._currPos.y = data.serverY
+
+      // Clear drift correction state after snap to prevent spring-damper from fighting the snap
+      physicsEngine._lastServerPos = null
+      physicsEngine._springState.active = false
+    }
   })
 }
 
