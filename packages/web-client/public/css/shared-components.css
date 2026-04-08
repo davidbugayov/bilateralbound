@@ -2411,7 +2411,7 @@ button:hover {
   font-size: 12px;
 }
 
-#previewWrap .preview-canvas-wrapper {
+#previewWrap .floating-preview .preview-canvas-wrapper {
   text-align: center;
   overflow: visible;
   max-width: 100%;
