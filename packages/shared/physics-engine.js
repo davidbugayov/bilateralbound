@@ -46,7 +46,9 @@ const DEFAULT_OPTIONS = {
     // At 10% speed: was 65px (3.4% of 1920px), now 43px (2.2%)
     driftThresholdPx: 40,
     driftCorrectionMs: 200,
-    driftCheckIntervalMs: 50,
+    // Reduced from 50ms to 33ms for more frequent drift checks (~30fps)
+    // enables faster response after bounces and smoother edge transitions
+    driftCheckIntervalMs: 33,
     // Adaptive spring-damper parameters (used by _applyDriftCorrection)
     stiffness: 3,
     damping: 2
@@ -1205,11 +1207,17 @@ class PhysicsEngine {
   /**
    * Checks if ball is near a wall boundary (within margin)
    * Skips drift correction near walls to prevent fighting with bounce events
+   * Uses a very tight margin (just the radius + 1px) to only disable correction
+   * when the ball is literally touching the wall. This prevents jitter after bounces
+   * by allowing drift correction to work smoothly right up to the bounce point.
    * @private
    * @returns {boolean} true if near wall
    */
   _isNearWall() {
-    const margin = this.ball.radius + this.options.bounceWallMargin + 5
+    // Reduce margin significantly: only disable when ball is actually at the wall
+    // was: radius(20) + bounceWallMargin(10) + 5 = 35px
+    // now: radius(20) + 2 = 22px (only 2px past the bounce point)
+    const margin = this.ball.radius + 2
     const { worldWidth, worldHeight } = this.options
     return (
       this.ball.x <= margin ||
@@ -1247,7 +1255,9 @@ class PhysicsEngine {
     }
 
     const now = performance.now()
-    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 50
+    // Check drift more frequently (every 33ms = ~30 fps instead of 50ms) for faster response
+    // after bounces and smoother visual transition across edges
+    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 33
 
     if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval)
       return
@@ -1336,10 +1346,13 @@ class PhysicsEngine {
     const correctionY = (stiffness * dy - damping * this.ball.vy * dt) * factor
 
     // Adaptive maxCorrection based on drift magnitude
+    // Increased from 5-15px to 8-25px for faster correction at edges and smoother
+    // transition from bounce. This allows the ball to smoothly accelerate away from
+    // the wall instead of getting stuck in micro-corrections.
     const driftMag = this._springState.driftMagnitude || 0
     const maxCorrection = driftMag > 100
-      ? Math.min(15, 5 + (driftMag - 100) * 0.05)
-      : 5
+      ? Math.min(25, 8 + (driftMag - 100) * 0.08)
+      : 8
 
     this.ball.x += clamp(correctionX, -maxCorrection, maxCorrection)
     this.ball.y += clamp(correctionY, -maxCorrection, maxCorrection)
