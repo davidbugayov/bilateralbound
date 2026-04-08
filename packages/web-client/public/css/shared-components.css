@@ -2416,30 +2416,36 @@ button:hover {
   overflow: visible;
   max-width: 100%;
   position: relative;
-  padding-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
   flex-shrink: 0;
 }
 
-/* Preview info stack — элементы внутри wrapper друг под другом */
+/* Preview info stack — элементы внутри wrapper друг под другом, под canvas */
 .preview-info-stack {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
+  position: relative;
+  left: auto;
+  bottom: auto;
+  transform: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  pointer-events: none;
-  z-index: 10;
+  pointer-events: auto;
+  z-index: 1;
+  width: 100%;
+  max-width: 320px;
 }
 
 #previewWrap .preview-canvas-wrapper .viewer-info-popup {
   position: relative !important;
   display: block !important;
   margin: 0;
-  width: max-content;
-  max-width: 90%;
+  width: 100%;
+  max-width: 100%;
   pointer-events: auto;
 }
 
