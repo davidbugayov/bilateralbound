@@ -1333,12 +1333,15 @@ input:focus-visible + .slider {
 .floating-preview .preview-canvas-wrapper {
   display: flex;
   flex-direction: column !important;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-start;
-  min-height: 150px;
-  padding: 8px 16px;
+  min-height: auto;
+  padding: 0;
   flex-shrink: 0;
-  gap: 12px;
+  gap: 0;
+  width: 100%;
+  background: inherit;
+  border-radius: inherit;
 }
 
 /* Canvas maintains aspect ratio and minimum size */
@@ -1347,6 +1350,9 @@ input:focus-visible + .slider {
   min-width: 200px;
   min-height: 150px;
   max-width: 100%;
+  width: 100%;
+  padding: 8px 16px 0;
+  box-sizing: border-box;
 }
 
 /* Info text below preview (Waiting for viewer connection) - contained within card */
@@ -1363,6 +1369,7 @@ input:focus-visible + .slider {
   max-width: 100%;
   width: 100%;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .light-theme .preview-info-text {
