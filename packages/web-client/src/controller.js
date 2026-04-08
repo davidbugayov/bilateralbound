@@ -1181,8 +1181,8 @@ async function initializePreview() {
   try {
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
-      isViewer: true,
-      clientSimulation: true // Start with local simulation (failsafe)
+      isViewer: true, // Preview follows viewer physics (local simulation + drift correction)
+      clientSimulation: true // Use client-side physics like viewer for smooth motion
     })
     try {
       globalThis.__previewPhysics = previewPhysicsEngine
@@ -1682,11 +1682,12 @@ function _setPlayPauseState(shouldPlay) {
       previewPhysicsEngine.applyCommand(dirOnly)
       previewPhysicsEngine._pendingPlaySync = true
       previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
-    } else {
-      previewPhysicsEngine._pendingPlaySync = false
-      previewPhysicsEngine.applyCommand(payload)
-      centerBallInViewer()
-    }
+     } else {
+       previewPhysicsEngine._pendingPlaySync = false
+       // applyCommand with returnToCenter: true will trigger smooth seek-center animation.
+       // Don't call centerBallInViewer() — it uses setPosition() which kills the animation.
+       previewPhysicsEngine.applyCommand(payload)
+     }
   }
   __ignoreServerPausedUntilTs = performance.now() + 800
   _schedulePlayPauseAnimations()
