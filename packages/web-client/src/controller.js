@@ -263,7 +263,9 @@ async function initializeDOMElements(sessionId) {
   }
   const sessionTimestampEl = document.getElementById('sessionTimestamp')
   if (sessionTimestampEl) {
-    sessionTimestampEl.textContent = `Создана: ${new Date().toLocaleString()}`
+    // Use English "Created:" label initially, will be updated with i18n when ready
+    const label = 'Created: '
+    sessionTimestampEl.textContent = `${label}${new Date().toLocaleString()}`
   }
   const viewerSessionIdEl = document.getElementById('viewerSessionId')
   if (viewerSessionIdEl) {

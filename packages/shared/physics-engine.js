@@ -500,6 +500,11 @@ class PhysicsEngine {
     this.ball.vx = 0
     this.ball.vy = 0
 
+    // Clear drift correction state during pause to prevent conflict with seek-center animation
+    this._lastServerPos = null
+    this._springState.active = false
+    this._springState._desyncStartTs = null
+
     const dx = this.centerX - this.ball.x
     const dy = this.centerY - this.ball.y
     const distanceFromCenter = Math.hypot(dx, dy)
