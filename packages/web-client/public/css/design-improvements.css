@@ -1332,6 +1332,7 @@ input:focus-visible + .slider {
 /* Preview canvas wrapper - ensure minimum dimensions */
 .floating-preview .preview-canvas-wrapper {
   display: flex;
+  flex-direction: column !important;
   align-items: center;
   justify-content: center;
   min-height: 150px;
