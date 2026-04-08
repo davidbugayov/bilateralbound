@@ -2242,8 +2242,8 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  align-items: stretch;
+  gap: 0;
   width: 100%;
 }
 
@@ -2252,12 +2252,19 @@ body {
   flex-direction: column;
   gap: 8px;
   width: 100%;
+  max-width: none !important;
+  align-items: stretch;
+  padding-bottom: 8px;
 }
 
 .preview-info-stack .viewer-info-popup {
   margin-top: 0 !important;
   width: 100%;
   box-sizing: border-box;
+}
+
+.preview-info-stack .viewer-info-popup:last-child {
+  padding-bottom: 8px;
 }
 
 /* Reset button in fullscreen - replaces inline style */

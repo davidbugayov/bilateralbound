@@ -28,8 +28,8 @@
   padding-bottom: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  align-items: stretch;
+  gap: 0;
   width: 100%;
 }
 

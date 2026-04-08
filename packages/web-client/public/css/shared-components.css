@@ -2433,21 +2433,27 @@ button:hover {
   transform: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
+  gap: 8px;
   pointer-events: auto;
   z-index: 1;
   width: 100%;
-  max-width: 320px;
+  max-width: none;
+  padding-bottom: 8px;
 }
 
 #previewWrap .preview-canvas-wrapper .viewer-info-popup {
   position: relative !important;
   display: block !important;
-  margin: 0;
+  margin: 0 !important;
   width: 100%;
   max-width: 100%;
   pointer-events: auto;
+  padding: 8px 12px;
+}
+
+#previewWrap .preview-canvas-wrapper .viewer-info-popup:last-child {
+  padding-bottom: 12px;
 }
 
 .viewer-info-popup {
