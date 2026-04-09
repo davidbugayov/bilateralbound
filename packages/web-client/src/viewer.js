@@ -785,10 +785,8 @@ function setupWebSocketHandlers(wsClient, sessionId) {
 
   wsClient.on('close', () => {
     debugWarn('🔌 WS connection closed.')
-    // Center ball and pause on connection loss
-    if (physicsEngine) {
-      physicsEngine.applyCommand({ paused: true, returnToCenter: true })
-    }
+    // Keep local physics running during transient disconnects.
+    // Hard pause+center here causes visible stutter; on reconnect we reconcile smoothly.
     const lostMsg =
       globalThis.i18n?.t('viewer.connectionLost') ||
       'Connection lost. Reconnecting…'
@@ -839,11 +837,6 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     if (!globalThis.__current) globalThis.__current = {}
     globalThis.__current.controllerConnected = false
 
-    // Pause the ball when controller disconnects
-    if (physicsEngine) {
-      physicsEngine.applyCommand({ paused: true, returnToCenter: true })
-    }
-
     const msg =
       globalThis.i18n?.t('viewer.controllerDisconnected') ||
       'Controller disconnected'
@@ -885,21 +878,14 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       physicsEngine.ball.vy = serverDirY * pps
     }
 
-    // Snap position on bounce to prevent drifting away from server position
-    // This is critical: after bounce, viewer position may diverge from server due to network latency
-    // Hard snap at bounce ensures they start in sync for the next movement segment
+    // Do not hard-snap position on bounce ack.
+    // Hard snap produces visible jitter; drift correction will catch up smoothly.
     if (typeof data.serverX === 'number' && typeof data.serverY === 'number') {
-      // Snap ball to server position to reset accumulation of drift errors
-      physicsEngine.ball.x = data.serverX
-      physicsEngine.ball.y = data.serverY
-      physicsEngine._prevPos.x = data.serverX
-      physicsEngine._prevPos.y = data.serverY
-      physicsEngine._currPos.x = data.serverX
-      physicsEngine._currPos.y = data.serverY
-
-      // Clear drift correction state after snap to prevent spring-damper from fighting the snap
-      physicsEngine._lastServerPos = null
-      physicsEngine._springState.active = false
+      physicsEngine._lastServerPos = {
+        x: data.serverX,
+        y: data.serverY,
+        ts: performance.now()
+      }
     }
   })
 }

@@ -553,20 +553,11 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     // Don't interrupt seekingCenter animation (return-to-center on pause)
     if (previewPhysicsEngine.state?.seekingCenter) return
     if (typeof data.x === 'number' && typeof data.y === 'number') {
-      const drift = Math.hypot(
-        data.x - previewPhysicsEngine.ball.x,
-        data.y - previewPhysicsEngine.ball.y
-      )
-      // Large drift (>50px): instant snap to prevent visible desync on controller preview
-      // Small drifts are acceptable — the controller preview is for therapist monitoring,
-      // not pixel-perfect sync. Viewer uses spring-damper for smooth correction.
-      if (drift > 50) {
-        previewPhysicsEngine.ball.x = data.x
-        previewPhysicsEngine.ball.y = data.y
-        previewPhysicsEngine._prevPos.x = data.x
-        previewPhysicsEngine._prevPos.y = data.y
-        previewPhysicsEngine._currPos.x = data.x
-        previewPhysicsEngine._currPos.y = data.y
+      // Keep preview motion continuous: store target for drift correction, no hard snap.
+      previewPhysicsEngine._lastServerPos = {
+        x: data.x,
+        y: data.y,
+        ts: performance.now()
       }
       // Always sync direction on bounce (direction is critical for post-bounce movement)
       if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
@@ -1617,9 +1608,7 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     }
     const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
     if (fsDirectionDisplay) {
-      fsDirectionDisplay.innerHTML = directionDisplay
-        ? directionDisplay.textContent
-        : `${directionIcon || '❓'}`
+      fsDirectionDisplay.textContent = directionDisplay?.textContent || directionIcon || '❓'
     }
   } catch (error) {
     console.error('Ошибка обновления отображения направления:', error)
