@@ -245,7 +245,43 @@ function updatePhysicsFromState(state) {
   const isReturningToCenter =
     state.paused === true && distBefore > physicsEngine.options.centerSnapThreshold
 
-  physicsEngine.applyCommand(state)
+  // CLIENT-SIDE AUTHORITY: Parameter-based sync filter.
+  // If the ball is moving and the server velocity matches local velocity closely,
+  // AND the positional drift is below the correction threshold,
+  // strip x/y from the state command so applyCommand only processes parameters
+  // (speed, direction, paused) — not coordinates.
+  // This prevents server position updates from interrupting smooth local physics
+  // when the simulation is already in sync "by parameters".
+  const stateToApply = { ...state }
+  const isMoving = !physicsEngine.state.paused && !physicsEngine.state.stopping
+  if (
+    isMoving &&
+    stateToApply.paused !== true &&   // always honour pause/unpause fully
+    stateToApply.paused !== false &&
+    typeof stateToApply.x === 'number' &&
+    typeof stateToApply.y === 'number'
+  ) {
+    const serverVx = stateToApply.vx
+    const serverVy = stateToApply.vy
+    if (typeof serverVx === 'number' && typeof serverVy === 'number') {
+      const velDx = Math.abs(serverVx - physicsEngine.ball.vx)
+      const velDy = Math.abs(serverVy - physicsEngine.ball.vy)
+      const velocitiesMatch = velDx < 10 && velDy < 10
+      const posDrift = Math.hypot(
+        stateToApply.x - physicsEngine.ball.x,
+        stateToApply.y - physicsEngine.ball.y
+      )
+      const driftThreshold = physicsEngine.options.smoothing?.driftThresholdPx || 100
+      if (velocitiesMatch && posDrift < driftThreshold) {
+        // In sync by parameters — drop coordinate fields, keep only motion params
+        debugLog('📥 [VIEWER] Skipping x/y: vectors match, drift=' + posDrift.toFixed(1) + 'px')
+        delete stateToApply.x
+        delete stateToApply.y
+      }
+    }
+  }
+
+  physicsEngine.applyCommand(stateToApply)
 
   // If server sent returnToCenter + paused, force seekingCenter animation
   // from the viewer's pre-update position (not the snapped server position).
@@ -880,10 +916,20 @@ function setupWebSocketHandlers(wsClient, sessionId) {
 
     // Do not hard-snap position on bounce ack.
     // Hard snap produces visible jitter; drift correction will catch up smoothly.
+    // Store vx/vy alongside position so the vector-guard in _checkDriftCorrection
+    // can skip position correction when velocities already match post-bounce.
     if (typeof data.serverX === 'number' && typeof data.serverY === 'number') {
       physicsEngine._lastServerPos = {
         x: data.serverX,
         y: data.serverY,
+        // Include server velocity so _checkDriftCorrection can compare vectors.
+        // If not provided, fall back to the direction we just applied.
+        vx: typeof data.serverVx === 'number'
+          ? data.serverVx
+          : (physicsEngine.ball.vx),
+        vy: typeof data.serverVy === 'number'
+          ? data.serverVy
+          : (physicsEngine.ball.vy),
         ts: performance.now()
       }
     }

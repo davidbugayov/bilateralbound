@@ -30,6 +30,19 @@ const {
 // CONSTANTS
 // ============================================
 
+/**
+ * Fixed physics timestep for deterministic simulation.
+ * Both viewer and server step physics at exactly this interval,
+ * eliminating drift caused by different FPS / deltaTime values.
+ */
+const FIXED_DT = 1 / 60
+
+/**
+ * Maximum accumulated time per frame (2 steps).
+ * Prevents "spiral of death" on slow machines or hidden tabs.
+ */
+const MAX_ACCUMULATOR = FIXED_DT * 2
+
 const DEFAULT_OPTIONS = {
   worldWidth: 800,
   worldHeight: 600,
@@ -42,13 +55,12 @@ const DEFAULT_OPTIONS = {
   centerCheckThreshold: 10,
   driftStaleMs: 1500,
   smoothing: {
-    // Base threshold reduced from 60 to 40px for tighter sync at low speeds
-    // At 10% speed: was 65px (3.4% of 1920px), now 43px (2.2%)
-    driftThresholdPx: 40,
+    // CLIENT-SIDE AUTHORITY: high threshold — server coords used only for coarse sync.
+    // Viewer is authoritative; only correct if drift > 100px.
+    driftThresholdPx: 100,
     driftCorrectionMs: 200,
-    // Reduced from 50ms to 33ms for more frequent drift checks (~30fps)
-    // enables faster response after bounces and smoother edge transitions
-    driftCheckIntervalMs: 33,
+    // Drift check every 50ms (~20fps) — reduces correction frequency for smoother motion
+    driftCheckIntervalMs: 50,
     // Adaptive spring-damper parameters (used by _applyDriftCorrection)
     stiffness: 3,
     damping: 2
@@ -274,6 +286,10 @@ class PhysicsEngine {
     this._seekCenterStart = null
     // Spring-damper state for continuous drift correction
     this._springState = { active: false, targetX: 0, targetY: 0, lastDt: 0 }
+
+    // Fixed-timestep accumulator for deterministic simulation.
+    // Ensures identical physics output regardless of caller FPS.
+    this._accumulator = 0
 
     // Callbacks
     this.bounceCallback = this.options.bounceCallback
@@ -641,14 +657,30 @@ class PhysicsEngine {
   // ============================================
 
   /**
-   * Updates physics for the given time delta
-   * @param {number} deltaTime - Time elapsed since last frame
+   * Updates physics using a Fixed Timestep accumulator.
+   *
+   * DETERMINISM: Both viewer and server advance by exactly FIXED_DT (1/60 s)
+   * per sub-step, regardless of the caller's FPS. This guarantees identical
+   * ball positions on any hardware or update frequency — eliminating drift
+   * caused by floating-point accumulation over variable deltaTime.
+   *
+   * The accumulator is capped at MAX_ACCUMULATOR (2 steps) to prevent
+   * the "spiral of death" on slow machines or throttled background tabs.
+   *
+   * @param {number} deltaTime - Wall-clock time elapsed since last call (seconds)
    */
   update(deltaTime) {
-    if (this.isViewer) {
-      this._updateViewerPhysics(deltaTime)
-    } else {
-      this._updateServerPhysics(deltaTime)
+    // Guard: clamp incoming deltaTime — large spikes (tab hidden, debugger) must not
+    // cause runaway physics by only allowing up to MAX_ACCUMULATOR worth of work.
+    this._accumulator += Math.min(deltaTime, MAX_ACCUMULATOR)
+
+    while (this._accumulator >= FIXED_DT) {
+      if (this.isViewer) {
+        this._updateViewerPhysics(FIXED_DT)
+      } else {
+        this._updateServerPhysics(FIXED_DT)
+      }
+      this._accumulator -= FIXED_DT
     }
 
     this.__lastPhysicsUpdateTs = performance?.now?.() ?? Date.now()
@@ -1225,11 +1257,13 @@ class PhysicsEngine {
    * @returns {boolean} true if near wall
    */
   _isNearWall() {
-    // Increase margin: disable when ball is near the wall to prevent fighting
-    // with bounce logic, especially with extrapolation that might put
-    // the server position slightly outside bounds.
-    // Margin: radius(20) + 10px buffer = 30px
-    const margin = this.ball.radius + 10
+    // CLIENT-SIDE AUTHORITY: Extended wall immunity zone.
+    // margin = radius + 40px (was radius + 10px).
+    // This ~60px-wide zone around each wall ensures drift correction
+    // never fights the bounce logic on either side of impact.
+    // Server extrapolation can place the ball slightly outside bounds;
+    // this larger margin prevents "bumping" when the viewer is near a wall.
+    const margin = this.ball.radius + 40
     const { worldWidth, worldHeight } = this.options
     return (
       this.ball.x <= margin ||
@@ -1255,29 +1289,30 @@ class PhysicsEngine {
     if (!this._lastServerPos || this.state.paused) return
     const now = performance.now()
 
-    // Small cooldown after local wall bounce to avoid "wall jitter"
-    // from delayed server snapshots around impact moment.
-    if (now - this._lastLocalBounceTs < 250) {
+    // CLIENT-SIDE AUTHORITY: Extended cooldown after local wall bounce.
+    // 500ms (was 250ms) — server packets confirming the old direction
+    // arrive late and would fight with post-bounce local physics.
+    if (now - this._lastLocalBounceTs < 500) {
       this._springState.active = false
       return
     }
 
     const posAge = now - this._lastServerPos.ts
-    const serverTimeAge = this._lastServerPos.serverTime ? (Date.now() - this._lastServerPos.serverTime) : posAge
+    const serverTimeAge = this._lastServerPos.serverTime
+      ? (Date.now() - this._lastServerPos.serverTime)
+      : posAge
 
     if (posAge > this.options.driftStaleMs) {
       this._springState.active = false
       return
     }
 
-    // Check drift more frequently (every 33ms = ~30 fps instead of 50ms) for faster response
-    // after bounces and smoother visual transition across edges
-    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 33
-
+    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 50
     if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval)
       return
 
-    // Skip drift correction near walls to prevent fighting with bounce
+    // CLIENT-SIDE AUTHORITY: Skip drift correction near walls.
+    // Expanded immunity zone (radius+40) prevents correction fighting bounce logic.
     if (this._isNearWall()) {
       this._springState.active = false
       return
@@ -1288,19 +1323,16 @@ class PhysicsEngine {
     // Extrapolate server position based on its velocity and time since last update
     let serverX = this._lastServerPos.x
     let serverY = this._lastServerPos.y
+    const serverVx = this._lastServerPos.vx
+    const serverVy = this._lastServerPos.vy
 
-    if (
-      this._lastServerPos.vx !== undefined &&
-      this._lastServerPos.vy !== undefined
-    ) {
+    if (serverVx !== undefined && serverVy !== undefined) {
       const dt = serverTimeAge / 1000
-      serverX += this._lastServerPos.vx * dt
-      serverY += this._lastServerPos.vy * dt
+      serverX += serverVx * dt
+      serverY += serverVy * dt
     }
 
-    // CLAMP extrapolated server position to viewer's world bounds.
-    // This prevents the viewer from trying to "chase" a position that is
-    // outside its own screen, which causes the "bumping/vibrating" at edges.
+    // Clamp extrapolated server position to viewer's world bounds.
     const { worldWidth, worldHeight } = this.options
     const { radius } = this.ball
     serverX = Math.max(radius, Math.min(worldWidth - radius, serverX))
@@ -1310,12 +1342,29 @@ class PhysicsEngine {
     const dy = serverY - this.ball.y
     const drift = Math.hypot(dx, dy)
 
-    // Adaptive threshold: base 40px + speed scaling.
-    const baseThreshold = this.options.smoothing.driftThresholdPx || 40
+    // CLIENT-SIDE AUTHORITY: Velocity vector guard.
+    // If server velocity matches local velocity closely, the simulation is already
+    // in sync by parameters — skip position correction entirely.
+    // This is the core of "sync by events, not coordinates".
+    if (serverVx !== undefined && serverVy !== undefined) {
+      const velDx = Math.abs(serverVx - this.ball.vx)
+      const velDy = Math.abs(serverVy - this.ball.vy)
+      const velocitiesMatch = velDx < 10 && velDy < 10
+      if (velocitiesMatch && drift < this.options.smoothing.driftThresholdPx) {
+        // Vectors are aligned — viewer's local simulation is authoritative
+        this._springState._desyncStartTs = null
+        this._springState.active = false
+        this._springState.driftMagnitude = 0
+        return
+      }
+    }
+
+    // Adaptive threshold: base 100px + speed scaling.
+    // High threshold means server coords are only used for coarse correction.
+    const baseThreshold = this.options.smoothing.driftThresholdPx || 100
     const speedPercent = this.ball.speed || 30
     const adaptiveThreshold = baseThreshold + speedPercent * 0.3
 
-    // Activate spring-damper when drift is significant.
     if (drift > adaptiveThreshold) {
       // Track persistent desync for hard recovery
       if (!this._springState._desyncStartTs) {
@@ -1338,18 +1387,11 @@ class PhysicsEngine {
       this._springState.targetX = serverX
       this._springState.targetY = serverY
       this._springState.driftMagnitude = drift
-    } else if (drift > 2) {
-      // Minor drift: apply a very subtle proportional correction without spring state
-      // This helps stay in sync without "jerking" when crossing the threshold
-      const subtleFactor = 0.05 // 5% correction per drift check
-      this.ball.x += dx * subtleFactor
-      this.ball.y += dy * subtleFactor
-
-      this._springState._desyncStartTs = null
-      this._springState.active = false
-      this._springState.driftMagnitude = 0
     } else {
-      // Drift is within tolerance — deactivate correction, let local physics run
+      // Drift is within tolerance — deactivate correction, let local physics run.
+      // NOTE: The old "5% subtle correction" block (drift > 2px) has been REMOVED.
+      // It was the primary source of visual jitter. Local physics is now authoritative
+      // for all drift below adaptiveThreshold.
       this._springState._desyncStartTs = null
       this._springState.active = false
       this._springState.driftMagnitude = 0

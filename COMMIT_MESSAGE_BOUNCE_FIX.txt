@@ -1,6 +1,0 @@
-fix: improve bounce smoothing and add E2E tests
-
-- Refine physics engine for better bounce behavior
-- Add smoothing utilities to reduce jitter
-- Implement comprehensive E2E tests for bounce smoothing
-- Fix test scripts for bounce smoothing validation
