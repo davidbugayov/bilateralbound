@@ -279,6 +279,15 @@ function updatePhysicsFromState(state) {
         debugLog('📥 [VIEWER] Skipping x/y: ' + reason)
         delete stateToApply.x
         delete stateToApply.y
+        
+        // CLIENT-SIDE AUTHORITY: If near wall, also ignore direction from server
+        // to prevent the server from "pushing" the ball into the wall before
+        // the server itself processes the bounce.
+        if (isNearWall) {
+          delete stateToApply.lastDirection
+          delete stateToApply.vx
+          delete stateToApply.vy
+        }
       }
     }
   }
@@ -884,7 +893,11 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     showConnectionBanner(msg, '🔌')
   })
 
-  wsClient.on('state_update', onStateUpdate)
+  wsClient.on('state_update', (state) => {
+    // Hide disconnected modal if we are receiving updates
+    hideConnectionBanner()
+    onStateUpdate(state)
+  })
   wsClient.on('initial_state', onStateUpdate)
   wsClient.on('viewer_status', updateStatus)
   wsClient.on('language_updated', onLanguageUpdate)
@@ -934,6 +947,15 @@ function setupWebSocketHandlers(wsClient, sessionId) {
           : (physicsEngine.ball.vy),
         ts: performance.now()
       }
+    }
+    // Filter coordinate updates near walls (Client-Side Authority)
+    if (this.physics && this.physics._isNearWall()) {
+        // IMPORTANT: Do NOT update lastDirection here. 
+        // Local physics must remain authoritative over trajectory during a bounce
+        // to prevent the server from "pushing" the ball back into the wall
+        // before the server itself processes the bounce.
+        this.physics.ball.speed = state.ball.speed;
+        return;
     }
   })
 }

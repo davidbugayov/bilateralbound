@@ -742,14 +742,14 @@ class PhysicsEngine {
     if (!isPureVertical) {
       if (ball.x < radius) {
         const overflow = radius - ball.x
-        ball.x = radius + overflow
+        ball.x = radius + overflow + 0.1 // Add epsilon to skip wall
         if (dirX < 0) {
           state.lastDirection.x = Math.abs(dirX)
           bounceSide = 'left'
         }
       } else if (ball.x > worldWidth - radius) {
         const overflow = ball.x - (worldWidth - radius)
-        ball.x = worldWidth - radius - overflow
+        ball.x = worldWidth - radius - overflow - 0.1 // Add epsilon to skip wall
         if (dirX > 0) {
           state.lastDirection.x = -Math.abs(dirX)
           bounceSide = 'right'
@@ -761,20 +761,21 @@ class PhysicsEngine {
     if (!isPureHorizontal) {
       if (ball.y < radius) {
         const overflow = radius - ball.y
-        ball.y = radius + overflow
+        ball.y = radius + overflow + 0.1 // Add epsilon to skip wall
         if (dirY < 0) {
           state.lastDirection.y = Math.abs(dirY)
           bounceSide = bounceSide || 'top'
         }
-      } else if (ball.y >= worldHeight - radius) {
+      } else if (ball.y > worldHeight - radius) {
         const overflow = ball.y - (worldHeight - radius)
-        ball.y = worldHeight - radius - overflow
+        ball.y = worldHeight - radius - overflow - 0.1 // Add epsilon to skip wall
         if (dirY > 0) {
           state.lastDirection.y = -Math.abs(dirY)
           bounceSide = bounceSide || 'bottom'
         }
       }
     }
+Line 773:     }
 
     if (bounceSide) {
       this.handleBounce(bounceSide)
