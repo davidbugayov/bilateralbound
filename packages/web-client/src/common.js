@@ -254,11 +254,16 @@ class ThemeManager {
  */
 async function copy(elementId, successMessage) {
   const element = document.getElementById(elementId)
+  
+  const i18n = globalThis.i18n
+  // helper to get localized strings or fallback
+  const getLoc = (key, fallback) => (i18n && i18n.t(key) !== key ? i18n.t(key) : fallback)
+
   if (!element?.value) {
     if (globalThis.showErrorNotification) {
       globalThis.showErrorNotification(
-        'Ошибка',
-        'Элемент для копирования не найден.'
+        getLoc('controller.errorTitle', 'Ошибка'),
+        getLoc('controller.copyErrorElement', 'Элемент для копирования не найден.')
       )
     } else {
       debugError('Элемент для копирования не найден:', elementId)
@@ -268,14 +273,24 @@ async function copy(elementId, successMessage) {
   try {
     await navigator.clipboard.writeText(element.value)
     if (globalThis.showSuccessNotification) {
-      globalThis.showSuccessNotification(successMessage || 'Текст скопирован!')
+      // Use standard Success title and localized message
+      const title = getLoc('controller.success', 'Success')
+      const msg = successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована')
+      
+      // showSuccessNotification expects (title, message)
+      if (globalThis.showSuccessNotification.length >= 2) {
+        globalThis.showSuccessNotification(title, msg)
+      } else {
+        // Fallback for older signature if any
+        globalThis.showSuccessNotification(msg)
+      }
     }
   } catch (err) {
     debugError('Ошибка копирования:', err)
     if (globalThis.showErrorNotification) {
       globalThis.showErrorNotification(
-        'Ошибка копирования',
-        'Не удалось скопировать текст.'
+        getLoc('controller.errorTitle', 'Ошибка копирования'),
+        getLoc('controller.copyError', 'Не удалось скопировать текст.')
       )
     }
   }
