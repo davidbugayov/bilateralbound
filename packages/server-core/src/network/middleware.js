@@ -184,7 +184,7 @@ function setupMiddleware(app, config, logger) {
       // Disabled: nginx sets X-Frame-Options and HSTS — duplicates caused conflicts
       frameguard: false,
       hsts: false,
-      crossOriginResourcePolicy: { policy: 'same-site' },
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
     })
   )
