@@ -243,11 +243,15 @@
    */
   async function copy(elementId, successMessage) {
     const element = document.getElementById(elementId)
+    
+    const i18n = globalThis.i18n
+    const getLoc = (key, fallback) => (i18n && i18n.t(key) !== key ? i18n.t(key) : fallback)
+
     if (!element?.value) {
       if (globalThis.showErrorNotification) {
         globalThis.showErrorNotification(
-          'Ошибка',
-          'Элемент для копирования не найден.'
+          getLoc('controller.errorTitle', 'Ошибка'),
+          getLoc('controller.copyErrorElement', 'Элемент для копирования не найден.')
         )
       } else {
         debugError('Элемент для копирования не найден:', elementId)
@@ -257,16 +261,25 @@
     try {
       await navigator.clipboard.writeText(element.value)
       if (globalThis.showSuccessNotification) {
-        globalThis.showSuccessNotification(
-          successMessage || 'Текст скопирован!'
-        )
+        const title = getLoc('controller.success', 'Success')
+        const msg = successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована')
+        if (globalThis.showSuccessNotification.length >= 2) {
+          globalThis.showSuccessNotification(title, msg)
+        } else {
+          globalThis.showSuccessNotification(msg)
+        }
+      } else if (globalThis.showSuccessToast) {
+        const msg = successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована')
+        globalThis.showSuccessToast(msg)
+      } else {
+        alert(successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована'))
       }
     } catch (err) {
       debugError('Ошибка копирования:', err)
       if (globalThis.showErrorNotification) {
         globalThis.showErrorNotification(
-          'Ошибка копирования',
-          'Не удалось скопировать текст.'
+          getLoc('controller.errorTitle', 'Ошибка копирования'),
+          getLoc('controller.copyError', 'Не удалось скопировать текст.')
         )
       }
     }

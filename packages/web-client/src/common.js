@@ -284,6 +284,12 @@ async function copy(elementId, successMessage) {
         // Fallback for older signature if any
         globalThis.showSuccessNotification(msg)
       }
+    } else if (globalThis.showSuccessToast) {
+      const msg = successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована')
+      globalThis.showSuccessToast(msg)
+    } else {
+      // Fallback if no notification systems are loaded yet, just alert
+      alert(successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована'))
     }
   } catch (err) {
     debugError('Ошибка копирования:', err)
