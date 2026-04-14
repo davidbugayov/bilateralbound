@@ -69,6 +69,10 @@ function updateHtmlFiles(version, hash) {
     );
     // STEP 2: Update version query parameter in all resource URLs (script, link, etc)
     content = content.replace(/\?v=[^"'\s]*/g, `?v=${versionString}`);
+    
+    // STEP 2.1: Specifically ensure /sw.js has a version query param in registrations
+    content = content.replace(/\/sw\.js(?:\?v=[^"']*)?/g, `/sw.js?v=${versionString}`);
+
     // STEP 3: Add single meta version tag (before theme-color for consistency)
     content = content.replace(
       /<meta name="theme-color"/,

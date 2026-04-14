@@ -6,8 +6,8 @@
  * Provides offline support and caching
  */
 
-const CACHE_NAME = 'bilateralbound-v3-2.39.495';
-const CACHE_VERSION = '2.39.495';
+const CACHE_NAME = 'bilateralbound-v3-2.39.496';
+const CACHE_VERSION = '2.39.496';
 const STATIC_ASSETS = [
   '/',
   '/index.html?v=' + CACHE_VERSION,
