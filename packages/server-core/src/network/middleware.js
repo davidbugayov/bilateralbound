@@ -149,15 +149,15 @@ function setupMiddleware(app, config, logger) {
           styleSrc: [
             '\'self\'',
             '\'unsafe-inline\'',
-            'https://fonts.googleapis.com'
+            'https://*.googleapis.com'
           ],
           styleSrcAttr: ['\'self\'', '\'unsafe-inline\''],
           styleSrcElem: [
             '\'self\'',
             '\'unsafe-inline\'',
-            'https://fonts.googleapis.com'
+            'https://*.googleapis.com'
           ],
-          fontSrc: ['\'self\'', 'https://fonts.gstatic.com'],
+          fontSrc: ['\'self\'', 'https://*.gstatic.com'],
           scriptSrc: ['\'self\'', '\'unsafe-inline\''],
           scriptSrcAttr: ['\'self\'', '\'unsafe-inline\''],
           scriptSrcElem: [
@@ -171,8 +171,8 @@ function setupMiddleware(app, config, logger) {
           connectSrc: [
             '\'self\'',
             'wss:',
-            'https://fonts.googleapis.com',
-            'https://fonts.gstatic.com',
+            'https://*.googleapis.com',
+            'https://*.gstatic.com',
             'https://mc.yandex.ru',
             'https://mc.yandex.com',
             'wss://mc.yandex.com'

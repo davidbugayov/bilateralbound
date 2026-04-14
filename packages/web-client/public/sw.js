@@ -5,9 +5,9 @@
  * Service Worker for BilateralBound
  * Provides offline support and caching
  */
-
-const CACHE_NAME = 'bilateralbound-v3-2.39.496';
-const CACHE_VERSION = '2.39.496';
+/** Build: 2026-04-14T11:51:26Z */
+const CACHE_NAME = 'bilateralbound-v3-2.39.497';
+const CACHE_VERSION = '2.39.497';
 const STATIC_ASSETS = [
   '/',
   '/index.html?v=' + CACHE_VERSION,
