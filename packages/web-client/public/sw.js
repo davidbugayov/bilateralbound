@@ -6,8 +6,8 @@
  * Provides offline support and caching
  */
 
-const CACHE_NAME = 'bilateralbound-v3-2.39.395';
-const CACHE_VERSION = '2.39.395';
+const CACHE_NAME = 'bilateralbound-v3-2.39.495';
+const CACHE_VERSION = '2.39.495';
 const STATIC_ASSETS = [
   '/',
   '/index.html?v=' + CACHE_VERSION,
@@ -75,6 +75,11 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (url.pathname.startsWith('/api/')) return;
 
+  // BYPASS Third-Party Fonts: let the browser handle them directly to avoid CSP issues in SW context
+  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+    return;
+  }
+
   // For static assets: cache first
   if (
     STATIC_ASSETS.some(
@@ -105,19 +110,26 @@ self.addEventListener('fetch', (event) => {
   }
 
   // For other requests: network first, cache fallback
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        if (response.ok && request.url.startsWith(self.location.origin)) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          return response;
-        }
-        // Non-OK — serve any cached version as fallback
-        return caches
-          .match(request, { ignoreSearch: true })
-          .then((fallback) => fallback || response);
-      })
-      .catch(() => caches.match(request, { ignoreSearch: true })),
-  );
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok && request.url.startsWith(self.location.origin)) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            return response;
+          }
+          // Non-OK — serve any cached version as fallback
+          return caches
+            .match(request, { ignoreSearch: true })
+            .then((fallback) => fallback || response);
+        })
+        .catch(async () => {
+           const cached = await caches.match(request, { ignoreSearch: true });
+           if (cached) return cached;
+           // If we have nothing, throw so the browser handles it naturally, 
+           // but respondWith must receive a promise that resolves to a Response.
+           // For non-essential assets, we can return a generic error response.
+           return new Response('Network error', { status: 408, headers: { 'Content-Type': 'text/plain' } });
+        }),
+    );
 });
