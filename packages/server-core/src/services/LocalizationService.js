@@ -312,16 +312,20 @@ class LocalizationService {
    * Reads HTML templates and package.json version, then populates _htmlCache.
    */
   _buildHtmlCache() {
-    const cachedViewerHtml = fs.readFileSync(
+    let cachedViewerHtml = fs.readFileSync(
       path.join(this._publicPath, 'viewer.html'),
       'utf8'
     )
-    const cachedControllerHtml = fs.readFileSync(
+    let cachedControllerHtml = fs.readFileSync(
       path.join(this._publicPath, 'session-controller.html'),
       'utf8'
     )
+    let cachedIndexHtml = fs.readFileSync(
+      path.join(this._publicPath, 'index.html'),
+      'utf8'
+    )
 
-    // Read version from package.json for index.html injection
+    // Read version from package.json
     const packageJsonPath = path.join(
       __dirname,
       '..',
@@ -333,9 +337,20 @@ class LocalizationService {
     const appVersion = JSON.parse(
       fs.readFileSync(packageJsonPath, 'utf8')
     ).version
-    const cachedIndexHtml = fs
-      .readFileSync(path.join(this._publicPath, 'index.html'), 'utf8')
+
+    // DYNAMIC CACHE-BUSTING: Replace all ?v=... hardcoded strings in all templates
+    // Match anything after ?v= until a quote or space.
+    const versionRegex = /\?v=[a-zA-Z0-9.\-_]+/g
+    const newVersionStr = `?v=${appVersion}`
+
+    cachedViewerHtml = cachedViewerHtml.replace(versionRegex, newVersionStr)
+    cachedControllerHtml = cachedControllerHtml.replace(
+      versionRegex,
+      newVersionStr
+    )
+    cachedIndexHtml = cachedIndexHtml
       .replace(/⚡ BilateralBound v[\d.]+/, `⚡ BilateralBound v${appVersion}`)
+      .replace(versionRegex, newVersionStr)
 
     // Build per-language HTML cache
     for (const lang of SUPPORTED_LANGS) {
