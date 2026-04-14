@@ -1262,6 +1262,8 @@ class PhysicsEngine {
     }
 
     const posAge = now - this._lastServerPos.ts
+    const serverTimeAge = this._lastServerPos.serverTime ? (Date.now() - this._lastServerPos.serverTime) : posAge
+
     if (posAge > this.options.driftStaleMs) {
       this._springState.active = false
       return
@@ -1282,21 +1284,29 @@ class PhysicsEngine {
 
     this._lastDriftCheckTs = now
 
-    const dx = this._lastServerPos.x - this.ball.x
-    const dy = this._lastServerPos.y - this.ball.y
+    // Extrapolate server position based on its velocity and time since last update
+    let serverX = this._lastServerPos.x
+    let serverY = this._lastServerPos.y
+
+    if (
+      this._lastServerPos.vx !== undefined &&
+      this._lastServerPos.vy !== undefined
+    ) {
+      const dt = serverTimeAge / 1000
+      serverX += this._lastServerPos.vx * dt
+      serverY += this._lastServerPos.vy * dt
+    }
+
+    const dx = serverX - this.ball.x
+    const dy = serverY - this.ball.y
     const drift = Math.hypot(dx, dy)
 
     // Adaptive threshold: base 40px + speed scaling.
-    // At speed 30: 40 + 9 = 49px (tighter than before, was 75px)
-    // At speed 80: 40 + 24 = 64px (tighter than before, was 100px)
-    // This means drift correction activates LESS often for small drifts,
-    // letting local physics dominate for smooth movement.
     const baseThreshold = this.options.smoothing.driftThresholdPx || 40
     const speedPercent = this.ball.speed || 30
     const adaptiveThreshold = baseThreshold + speedPercent * 0.3
 
-    // Only activate spring-damper when drift is significant.
-    // For minor drift (< threshold), do nothing — local physics is authoritative.
+    // Activate spring-damper when drift is significant.
     if (drift > adaptiveThreshold) {
       // Track persistent desync for hard recovery
       if (!this._springState._desyncStartTs) {
@@ -1306,8 +1316,8 @@ class PhysicsEngine {
 
       // Hard snap recovery: if drift > 200px for > 3 seconds, teleport to server
       if (drift > 200 && desyncDuration > 3000) {
-        this.ball.x = this._lastServerPos.x
-        this.ball.y = this._lastServerPos.y
+        this.ball.x = serverX
+        this.ball.y = serverY
         this._springState.active = false
         this._springState.driftMagnitude = 0
         this._springState._desyncStartTs = null
@@ -1316,9 +1326,19 @@ class PhysicsEngine {
 
       // Activate spring-damper correction
       this._springState.active = true
-      this._springState.targetX = this._lastServerPos.x
-      this._springState.targetY = this._lastServerPos.y
+      this._springState.targetX = serverX
+      this._springState.targetY = serverY
       this._springState.driftMagnitude = drift
+    } else if (drift > 2) {
+      // Minor drift: apply a very subtle proportional correction without spring state
+      // This helps stay in sync without "jerking" when crossing the threshold
+      const subtleFactor = 0.05 // 5% correction per drift check
+      this.ball.x += dx * subtleFactor
+      this.ball.y += dy * subtleFactor
+
+      this._springState._desyncStartTs = null
+      this._springState.active = false
+      this._springState.driftMagnitude = 0
     } else {
       // Drift is within tolerance — deactivate correction, let local physics run
       this._springState._desyncStartTs = null
@@ -1500,8 +1520,18 @@ class PhysicsEngine {
     this.state.targetX = cx
     this.state.targetY = cy
 
+    const serverTime = command.serverTimestamp || command.ts || Date.now()
+    const now = performance.now()
+
     if (this.options.clientSimulation) {
-      this._lastServerPos = { x: cx, y: cy, ts: performance.now() }
+      this._lastServerPos = {
+        x: cx,
+        y: cy,
+        vx: command.vx,
+        vy: command.vy,
+        ts: now,
+        serverTime: serverTime
+      }
       return
     }
 

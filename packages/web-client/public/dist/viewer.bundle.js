@@ -583,6 +583,7 @@ class PhysicsEngine {
     this._lastDriftCheckTs = 0
     this._driftCorrection = null
     this._currentJitterMs = 0
+    this._lastLocalBounceTs = 0
     this._seekCenterStart = null
     // Spring-damper state for continuous drift correction
     this._springState = { active: false, targetX: 0, targetY: 0, lastDt: 0 }
@@ -1073,6 +1074,16 @@ class PhysicsEngine {
 
     this.state.lastVx = this.ball.vx
     this.state.lastVy = this.ball.vy
+    this._lastLocalBounceTs = performance.now()
+
+    // After a local bounce, stale server snapshots can briefly pull the ball back to the wall.
+    // Clear correction target and let local physics settle first.
+    if (this.isViewer && this.options.clientSimulation) {
+      this._lastServerPos = null
+      this._springState.active = false
+      this._springState.driftMagnitude = 0
+      this._springState._desyncStartTs = null
+    }
 
     this._triggerBounceCallback(side)
     this._dispatchBounceEvent(side)
@@ -1554,8 +1565,16 @@ class PhysicsEngine {
    */
   _checkDriftCorrection() {
     if (!this._lastServerPos || this.state.paused) return
+    const now = performance.now()
 
-    const posAge = performance.now() - this._lastServerPos.ts
+    // Small cooldown after local wall bounce to avoid "wall jitter"
+    // from delayed server snapshots around impact moment.
+    if (now - this._lastLocalBounceTs < 250) {
+      this._springState.active = false
+      return
+    }
+
+    const posAge = now - this._lastServerPos.ts
     if (posAge > this.options.driftStaleMs) {
       this._springState.active = false
       return
@@ -1567,7 +1586,6 @@ class PhysicsEngine {
       return
     }
 
-    const now = performance.now()
     // Check drift more frequently (every 33ms = ~30 fps instead of 50ms) for faster response
     // after bounces and smoother visual transition across edges
     const checkInterval = this.options.smoothing.driftCheckIntervalMs || 33
@@ -6440,10 +6458,8 @@ function setupWebSocketHandlers(wsClient, sessionId) {
 
   wsClient.on('close', () => {
     debugWarn('🔌 WS connection closed.')
-    // Center ball and pause on connection loss
-    if (physicsEngine) {
-      physicsEngine.applyCommand({ paused: true, returnToCenter: true })
-    }
+    // Keep local physics running during transient disconnects.
+    // Hard pause+center here causes visible stutter; on reconnect we reconcile smoothly.
     const lostMsg =
       globalThis.i18n?.t('viewer.connectionLost') ||
       'Connection lost. Reconnecting…'
@@ -6494,11 +6510,6 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     if (!globalThis.__current) globalThis.__current = {}
     globalThis.__current.controllerConnected = false
 
-    // Pause the ball when controller disconnects
-    if (physicsEngine) {
-      physicsEngine.applyCommand({ paused: true, returnToCenter: true })
-    }
-
     const msg =
       globalThis.i18n?.t('viewer.controllerDisconnected') ||
       'Controller disconnected'
@@ -6540,21 +6551,14 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       physicsEngine.ball.vy = serverDirY * pps
     }
 
-    // Snap position on bounce to prevent drifting away from server position
-    // This is critical: after bounce, viewer position may diverge from server due to network latency
-    // Hard snap at bounce ensures they start in sync for the next movement segment
+    // Do not hard-snap position on bounce ack.
+    // Hard snap produces visible jitter; drift correction will catch up smoothly.
     if (typeof data.serverX === 'number' && typeof data.serverY === 'number') {
-      // Snap ball to server position to reset accumulation of drift errors
-      physicsEngine.ball.x = data.serverX
-      physicsEngine.ball.y = data.serverY
-      physicsEngine._prevPos.x = data.serverX
-      physicsEngine._prevPos.y = data.serverY
-      physicsEngine._currPos.x = data.serverX
-      physicsEngine._currPos.y = data.serverY
-
-      // Clear drift correction state after snap to prevent spring-damper from fighting the snap
-      physicsEngine._lastServerPos = null
-      physicsEngine._springState.active = false
+      physicsEngine._lastServerPos = {
+        x: data.serverX,
+        y: data.serverY,
+        ts: performance.now()
+      }
     }
   })
 }
