@@ -171,6 +171,8 @@ function setupMiddleware(app, config, logger) {
           connectSrc: [
             '\'self\'',
             'wss:',
+            'https://fonts.googleapis.com',
+            'https://fonts.gstatic.com',
             'https://mc.yandex.ru',
             'https://mc.yandex.com',
             'wss://mc.yandex.com'

@@ -957,14 +957,6 @@ function setupWebSocketHandlers(wsClient, sessionId) {
         ts: performance.now()
       }
     }
-    // Filter coordinate updates near walls (Client-Side Authority)
-    if (physicsEngine && physicsEngine._isNearWall()) {
-        // IMPORTANT: Do NOT update lastDirection here. 
-        // Local physics must remain authoritative over trajectory during a bounce
-        // to prevent the server from "pushing" the ball back into the wall
-        // before the server itself processes the bounce.
-        physicsEngine.ball.speed = state.ball.speed;
-        return;
     }
   })
 }
