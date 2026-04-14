@@ -775,7 +775,6 @@ class PhysicsEngine {
         }
       }
     }
-Line 773:     }
 
     if (bounceSide) {
       this.handleBounce(bounceSide)
