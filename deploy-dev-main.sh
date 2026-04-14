@@ -26,17 +26,20 @@ else
     exit 1
 fi
 
-# Install dependencies
-echo "📦 Installing dependencies..."
+# Install dependencies and build client
+echo "📦 Installing dependencies and building client..."
 ssh -T ${USER}@${SERVER} << 'ENDSSH'
 cd /var/www/dev.emdrbilateral.online
-npm ci --omit=dev --ignore-scripts
+# Include devDependencies for webpack build
+npm ci --ignore-scripts
+# Rebuild the viewer and controller bundles
+npm run build --workspace=packages/web-client
 ENDSSH
 
 if [ $? -eq 0 ]; then
-    echo "✅ Dependencies installed successfully"
+    echo "✅ Dependencies installed and client rebuilt successfully"
 else
-    echo "❌ Failed to install dependencies"
+    echo "❌ Failed to install dependencies or build client"
     exit 1
 fi
 
