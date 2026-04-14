@@ -1225,10 +1225,11 @@ class PhysicsEngine {
    * @returns {boolean} true if near wall
    */
   _isNearWall() {
-    // Reduce margin significantly: only disable when ball is actually at the wall
-    // was: radius(20) + bounceWallMargin(10) + 5 = 35px
-    // now: radius(20) + 2 = 22px (only 2px past the bounce point)
-    const margin = this.ball.radius + 2
+    // Increase margin: disable when ball is near the wall to prevent fighting
+    // with bounce logic, especially with extrapolation that might put
+    // the server position slightly outside bounds.
+    // Margin: radius(20) + 10px buffer = 30px
+    const margin = this.ball.radius + 10
     const { worldWidth, worldHeight } = this.options
     return (
       this.ball.x <= margin ||
@@ -1269,18 +1270,18 @@ class PhysicsEngine {
       return
     }
 
-    // Skip drift correction near walls to prevent fighting with bounce
-    if (this._isNearWall()) {
-      this._springState.active = false
-      return
-    }
-
     // Check drift more frequently (every 33ms = ~30 fps instead of 50ms) for faster response
     // after bounces and smoother visual transition across edges
     const checkInterval = this.options.smoothing.driftCheckIntervalMs || 33
 
     if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval)
       return
+
+    // Skip drift correction near walls to prevent fighting with bounce
+    if (this._isNearWall()) {
+      this._springState.active = false
+      return
+    }
 
     this._lastDriftCheckTs = now
 
@@ -1296,6 +1297,14 @@ class PhysicsEngine {
       serverX += this._lastServerPos.vx * dt
       serverY += this._lastServerPos.vy * dt
     }
+
+    // CLAMP extrapolated server position to viewer's world bounds.
+    // This prevents the viewer from trying to "chase" a position that is
+    // outside its own screen, which causes the "bumping/vibrating" at edges.
+    const { worldWidth, worldHeight } = this.options
+    const { radius } = this.ball
+    serverX = Math.max(radius, Math.min(worldWidth - radius, serverX))
+    serverY = Math.max(radius, Math.min(worldHeight - radius, serverY))
 
     const dx = serverX - this.ball.x
     const dy = serverY - this.ball.y
