@@ -1766,15 +1766,17 @@ function _normalizeCoordinate(coord, fallback) {
  * @returns {object} - Масштабированное состояние.
  */
 function getScaledState(state) {
+  const targetCanvas = isPreviewFullscreen && previewFsCanvas ? previewFsCanvas : globalThis.__previewCanvas
+
   const canScale =
     globalThis.__current.viewerScreenSize &&
-    globalThis.__previewCanvas &&
+    targetCanvas &&
     state
   if (canScale) {
     const viewerSize = globalThis.__current.viewerScreenSize
     const previewSize = {
-      width: globalThis.__previewCanvas.width,
-      height: globalThis.__previewCanvas.height
+      width: targetCanvas.width,
+      height: targetCanvas.height
     }
     if (viewerSize.width > 0 && viewerSize.height > 0) {
       const scaleX = previewSize.width / viewerSize.width
