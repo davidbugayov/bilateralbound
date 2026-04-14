@@ -1434,22 +1434,21 @@ class PhysicsEngine {
     const dt = Math.min(33, now - lastTs) / 1000
     this._springState._lastCorrectionTs = now
 
+    // Advance the target position so it moves alongside the ball
+    this._springState.targetX += this.ball.vx * dt
+    this._springState.targetY += this.ball.vy * dt
+
     const sm = this.options.smoothing || {}
     const stiffness = sm.stiffness !== undefined ? sm.stiffness : 3
-    const damping = sm.damping !== undefined ? sm.damping : 2
 
     const dx = this._springState.targetX - this.ball.x
     const dy = this._springState.targetY - this.ball.y
 
-    // Combined spring + damping correction in one step
-    // Correction = (stiffness * error - damping * velocity) * dt
-    const correctionX = (stiffness * dx - damping * this.ball.vx * dt) * dt
-    const correctionY = (stiffness * dy - damping * this.ball.vy * dt) * dt
+    // Smooth proportional correction toward the moving target
+    let correctionX = dx * stiffness * dt
+    let correctionY = dy * stiffness * dt
 
     // Adaptive maxCorrection based on drift magnitude
-    // Increased from 5-15px to 8-25px for faster correction at edges and smoother
-    // transition from bounce. This allows the ball to smoothly accelerate away from
-    // the wall instead of getting stuck in micro-corrections.
     const driftMag = this._springState.driftMagnitude || 0
     const maxCorrection = driftMag > 100
       ? Math.min(25, 8 + (driftMag - 100) * 0.08)
