@@ -653,7 +653,7 @@ function applyServerStateToPreview(state) {
       speed: state.speed,
       colorBall: state.colorBall,
       colorBg: state.colorBg,
-      ballSize: state.ballSize
+      radius: state.radius
     }
     if (
       localCommand.dirX !== undefined &&
