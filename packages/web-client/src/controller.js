@@ -695,6 +695,8 @@ function applyServerStateToPreview(state) {
           // Also ignore direction from server if we are mismatched or near wall
           if (isNearWall || isMismatched) {
              delete localCommand.lastDirection
+             delete localCommand.dirX
+             delete localCommand.dirY
              delete localCommand.vx
              delete localCommand.vy
           }

@@ -294,6 +294,8 @@ function updatePhysicsFromState(state) {
         // Also ignore direction from server if we are mismatched or near wall
         if (isNearWall || isMismatched) {
           delete stateToApply.lastDirection
+          delete stateToApply.dirX
+          delete stateToApply.dirY
           delete stateToApply.vx
           delete stateToApply.vy
         }
