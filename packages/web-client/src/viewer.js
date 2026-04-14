@@ -272,9 +272,11 @@ function updatePhysicsFromState(state) {
         stateToApply.y - physicsEngine.ball.y
       )
       const driftThreshold = physicsEngine.options.smoothing?.driftThresholdPx || 100
-      if (velocitiesMatch && posDrift < driftThreshold) {
-        // In sync by parameters — drop coordinate fields, keep only motion params
-        debugLog('📥 [VIEWER] Skipping x/y: vectors match, drift=' + posDrift.toFixed(1) + 'px')
+      const isNearWall = physicsEngine._isNearWall()
+      if (isNearWall || (velocitiesMatch && posDrift < driftThreshold)) {
+        // In sync by parameters OR near wall immunity zone — drop coordinate fields, keep only motion params
+        const reason = isNearWall ? 'near wall' : ('drift=' + posDrift.toFixed(1) + 'px')
+        debugLog('📥 [VIEWER] Skipping x/y: ' + reason)
         delete stateToApply.x
         delete stateToApply.y
       }

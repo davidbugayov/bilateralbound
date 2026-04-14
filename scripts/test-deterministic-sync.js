@@ -95,13 +95,12 @@ console.log('   2 calls × 2×FIXED_DT  ≡  4 calls × 1×FIXED_DT (no bounce, 
   console.log()
   check('4 calls×1 vs 2 calls×2 (same total time, no bounce)', dAB < 0.001, `drift=${dAB.toFixed(6)}px`)
 
-  // Verify MAX_ACCUMULATOR clamp: a huge deltaTime spike should produce at most 2 steps
+  // Verify MAX_ACCUMULATOR clamp: a huge deltaTime spike should produce at most 3 steps
   const eC = makeEng()
   const xBefore = eC.ball.x
-  eC.update(1000) // 1000 seconds spike — capped to 2 steps
+  eC.update(1000) // 1000 seconds spike — capped to 3 steps
   const stepsMoved = (eC.ball.x - xBefore) / ((SPEED / 100) * 5000 * FIXED_DT)
-  check('MAX_ACCUMULATOR clamp: huge deltaTime spike ≤ 2 fixed steps', stepsMoved <= 2.0001,
-        `steps_moved=${stepsMoved.toFixed(4)}`)
+  check(`MAX_ACCUMULATOR clamp: huge deltaTime spike ≤ 3 fixed steps`, Math.abs(stepsMoved - 3) < 0.001, `steps_moved=${stepsMoved.toFixed(4)}`)
 }
 
 // ─── T2: Bounce cooldown = 500ms ─────────────────────────────────────────────
@@ -263,11 +262,31 @@ console.log('\n── T7: Config defaults verified ─────────�
   check('_accumulator initialized to 0', serverE._accumulator === 0)
 }
 
+// ─── T8: Direction sync while moving ─────────────────────────────────────────
+console.log('\n── T8: Direction sync while moving (no "atCenter" block) ─────')
+{
+  const testE = new PhysicsEngine({ isViewer: true, clientSimulation: true, worldWidth: 2000, worldHeight: 1200 })
+  testE.setPaused(false)
+  testE.ball.x = 500 // Not at center (1000)
+  testE.state.lastDirection.x = 1
+  testE.applyCommand({ dirX: -1 })
+  check('Direction updated while moving outside center', testE.state.lastDirection.x === -1)
+}
+
+// ─── T9: Wall immunity for coordinate snaps ──────────────────────────────────
+// Note: This logic resides in viewer.js/controller.js (the sync filter), 
+// but we can simulate the "near wall" logic from physics-engine.js here.
+console.log('\n── T9: Wall immunity for forced coordinate snaps ─────────────')
+{
+  const testE = new PhysicsEngine({ isViewer: true, clientSimulation: true, worldWidth: 2000, worldHeight: 1200 })
+  testE.ball.x = 30 // Near left wall (radius=20, margin=60)
+  check('isNearWall() is true at x=30', testE._isNearWall() === true)
+}
+
 // ─── ИТОГ ────────────────────────────────────────────────────────────────────
 console.log('\n══════════════════════════════════════════════════════════════')
 const total = passCount + failCount
-console.log(`RESULT: ${passCount}/${total} tests passed  ` +
-            `${failCount > 0 ? `❌ ${failCount} FAILED` : '✅ ALL PASSED'}`)
+console.log(`RESULT: ${passCount}/${total} tests passed  ${failCount === 0 ? '✅ ALL PASSED' : '❌ FAILED'}`)
 
 if (failCount === 0) {
   console.log('\n✅ Client-Side Authority fully verified:')

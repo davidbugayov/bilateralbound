@@ -557,6 +557,8 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       previewPhysicsEngine._lastServerPos = {
         x: data.x,
         y: data.y,
+        vx: data.vx,
+        vy: data.vy,
         ts: performance.now()
       }
       // Always sync direction on bounce (direction is critical for post-bounce movement)
@@ -662,6 +664,30 @@ function applyServerStateToPreview(state) {
       delete localCommand.dirX
       delete localCommand.dirY
     }
+    // CLIENT-SIDE AUTHORITY: Parameter-based sync filter (identical to viewer.js).
+    // Near walls (immunity zone) or when already in sync by velocity, we ignore x/y.
+    const isMoving = !previewPhysicsEngine.state.paused && !previewPhysicsEngine.state.stopping
+    if (isMoving && typeof state.x === 'number' && typeof state.y === 'number') {
+      const serverVx = state.vx
+      const serverVy = state.vy
+      if (typeof serverVx === 'number' && typeof serverVy === 'number') {
+        const velDx = Math.abs(serverVx - previewPhysicsEngine.ball.vx)
+        const velDy = Math.abs(serverVy - previewPhysicsEngine.ball.vy)
+        const velocitiesMatch = velDx < 10 && velDy < 10
+        const posDrift = Math.hypot(
+          state.x - previewPhysicsEngine.ball.x,
+          state.y - previewPhysicsEngine.ball.y
+        )
+        const driftThreshold = previewPhysicsEngine.options.smoothing?.driftThresholdPx || 100
+        const isNearWall = previewPhysicsEngine._isNearWall()
+        if (isNearWall || (velocitiesMatch && posDrift < driftThreshold)) {
+          // Drop coordinate fields to prevent jitter
+          delete localCommand.x
+          delete localCommand.y
+        }
+      }
+    }
+
     previewPhysicsEngine.applyCommand(localCommand)
     // Store server position for drift correction (same mechanism as viewer)
     if (

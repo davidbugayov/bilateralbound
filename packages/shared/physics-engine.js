@@ -38,10 +38,10 @@ const {
 const FIXED_DT = 1 / 60
 
 /**
- * Maximum accumulated time per frame (2 steps).
+ * Maximum accumulated time per frame (3 steps).
  * Prevents "spiral of death" on slow machines or hidden tabs.
  */
-const MAX_ACCUMULATOR = FIXED_DT * 2
+const MAX_ACCUMULATOR = FIXED_DT * 3
 
 const DEFAULT_OPTIONS = {
   worldWidth: 800,
@@ -1702,15 +1702,9 @@ class PhysicsEngine {
   _handleViewerDirectionUpdate(command) {
     if (command.dirX === undefined && command.dirY === undefined) return
 
-    if (this.options.clientSimulation && !this.state.paused) {
-      const atCenter =
-        Math.abs(this.ball.x - this.centerX) <
-          this.options.centerCheckThreshold &&
-        Math.abs(this.ball.y - this.centerY) <
-          this.options.centerCheckThreshold
-
-      if (!atCenter) return
-    }
+    // Accept direction updates even if moving.
+    // Sync by parameters (Client-Side Authority) means we should follow the server's
+    // intention, but let local boundary detection handle the exact bounce timing.
 
     let newDx = command.dirX ?? this.state.lastDirection.x
     let newDy = command.dirY ?? this.state.lastDirection.y
