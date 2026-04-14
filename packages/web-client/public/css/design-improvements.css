@@ -1351,8 +1351,6 @@ input:focus-visible + .slider {
   min-height: 150px;
   max-width: 100%;
   width: 100%;
-  padding: 8px 16px 0;
-  box-sizing: border-box;
   margin: 0 auto;
 }
 
