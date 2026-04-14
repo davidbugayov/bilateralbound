@@ -33,6 +33,7 @@ cd /var/www/dev.emdrbilateral.online
 # Include devDependencies for webpack build
 npm ci --ignore-scripts
 # Rebuild the viewer and controller bundles
+rm -rf packages/web-client/public/dist/*
 npm run build --workspace=packages/web-client
 ENDSSH
 

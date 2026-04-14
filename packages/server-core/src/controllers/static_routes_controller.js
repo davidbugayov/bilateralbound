@@ -36,7 +36,11 @@ function registerStaticRoutes(
         etag: true,
         lastModified: true,
         setHeaders: (res) => {
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+          if (dir === 'dist') {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+          } else {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+          }
         }
       })
     )

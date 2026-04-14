@@ -949,12 +949,12 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       }
     }
     // Filter coordinate updates near walls (Client-Side Authority)
-    if (this.physics && this.physics._isNearWall()) {
+    if (physicsEngine && physicsEngine._isNearWall()) {
         // IMPORTANT: Do NOT update lastDirection here. 
         // Local physics must remain authoritative over trajectory during a bounce
         // to prevent the server from "pushing" the ball back into the wall
         // before the server itself processes the bounce.
-        this.physics.ball.speed = state.ball.speed;
+        physicsEngine.ball.speed = state.ball.speed;
         return;
     }
   })
