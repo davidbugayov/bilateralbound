@@ -682,7 +682,7 @@ function applyServerStateToPreview(state) {
         const isNearWall = previewPhysicsEngine._isNearWall()
 
         // VECTOR GUARDING: If client and server disagree on direction near a wall,
-        // the client MUST remain authoritative. 
+        // the client MUST remain authoritative.
         const directionMismatchX = (serverVx * previewPhysicsEngine.ball.vx) < 0
         const directionMismatchY = (serverVy * previewPhysicsEngine.ball.vy) < 0
         const isMismatched = directionMismatchX || directionMismatchY
@@ -691,7 +691,7 @@ function applyServerStateToPreview(state) {
           // Drop coordinate fields to prevent jitter
           delete localCommand.x
           delete localCommand.y
-          
+
           // Also ignore direction from server if we are mismatched or near wall
           if (isNearWall || isMismatched) {
              delete localCommand.lastDirection

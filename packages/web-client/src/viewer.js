@@ -273,9 +273,9 @@ function updatePhysicsFromState(state) {
       )
       const driftThreshold = physicsEngine.options.smoothing?.driftThresholdPx || 100
       const isNearWall = physicsEngine._isNearWall()
-      
+
       // VECTOR GUARDING: If client and server disagree on direction near a wall,
-      // the client MUST remain authoritative. 
+      // the client MUST remain authoritative.
       const directionMismatchX = (serverVx * physicsEngine.ball.vx) < 0
       const directionMismatchY = (serverVy * physicsEngine.ball.vy) < 0
       const isMismatched = directionMismatchX || directionMismatchY
@@ -287,10 +287,10 @@ function updatePhysicsFromState(state) {
         // 3. Already in sync
         const reason = isMismatched ? 'vec mismatch' : (isNearWall ? 'near wall' : ('drift=' + posDrift.toFixed(1) + 'px'))
         debugLog('📥 [VIEWER] Skipping x/y: ' + reason)
-        
+
         delete stateToApply.x
         delete stateToApply.y
-        
+
         // Also ignore direction from server if we are mismatched or near wall
         if (isNearWall || isMismatched) {
           delete stateToApply.lastDirection
@@ -956,7 +956,6 @@ function setupWebSocketHandlers(wsClient, sessionId) {
           : (physicsEngine.ball.vy),
         ts: performance.now()
       }
-    }
     }
   })
 }
