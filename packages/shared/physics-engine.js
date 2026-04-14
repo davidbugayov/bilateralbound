@@ -1442,10 +1442,9 @@ class PhysicsEngine {
     const dy = this._springState.targetY - this.ball.y
 
     // Combined spring + damping correction in one step
-    // Correction = (stiffness * error - damping * velocity) * dt^2
-    const factor = dt * dt
-    const correctionX = (stiffness * dx - damping * this.ball.vx * dt) * factor
-    const correctionY = (stiffness * dy - damping * this.ball.vy * dt) * factor
+    // Correction = (stiffness * error - damping * velocity) * dt
+    const correctionX = (stiffness * dx - damping * this.ball.vx * dt) * dt
+    const correctionY = (stiffness * dy - damping * this.ball.vy * dt) * dt
 
     // Adaptive maxCorrection based on drift magnitude
     // Increased from 5-15px to 8-25px for faster correction at edges and smoother

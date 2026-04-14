@@ -187,8 +187,8 @@ function setupWebSocketServer(
                 dirY: data.payload.dirY,
                 serverX: session.ballState?.x ?? data.payload.x,
                 serverY: session.ballState?.y ?? data.payload.y,
-                serverDirX: session.ballState?.dirX ?? data.payload.dirX,
-                serverDirY: session.ballState?.dirY ?? data.payload.dirY,
+                serverDirX: data.payload.dirX,
+                serverDirY: data.payload.dirY,
                 ts: Date.now()
               }
             })
