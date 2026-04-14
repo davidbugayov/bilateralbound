@@ -273,17 +273,26 @@ function updatePhysicsFromState(state) {
       )
       const driftThreshold = physicsEngine.options.smoothing?.driftThresholdPx || 100
       const isNearWall = physicsEngine._isNearWall()
-      if (isNearWall || (velocitiesMatch && posDrift < driftThreshold)) {
-        // In sync by parameters OR near wall immunity zone — drop coordinate fields, keep only motion params
-        const reason = isNearWall ? 'near wall' : ('drift=' + posDrift.toFixed(1) + 'px')
+      
+      // VECTOR GUARDING: If client and server disagree on direction near a wall,
+      // the client MUST remain authoritative. 
+      const directionMismatchX = (serverVx * physicsEngine.ball.vx) < 0
+      const directionMismatchY = (serverVy * physicsEngine.ball.vy) < 0
+      const isMismatched = directionMismatchX || directionMismatchY
+
+      if (isNearWall || isMismatched || (velocitiesMatch && posDrift < driftThreshold)) {
+        // Drop coordinate fields if:
+        // 1. Near wall (immunity zone)
+        // 2. Trajectories mismatch (one has bounced, other hasn't)
+        // 3. Already in sync
+        const reason = isMismatched ? 'vec mismatch' : (isNearWall ? 'near wall' : ('drift=' + posDrift.toFixed(1) + 'px'))
         debugLog('📥 [VIEWER] Skipping x/y: ' + reason)
+        
         delete stateToApply.x
         delete stateToApply.y
         
-        // CLIENT-SIDE AUTHORITY: If near wall, also ignore direction from server
-        // to prevent the server from "pushing" the ball into the wall before
-        // the server itself processes the bounce.
-        if (isNearWall) {
+        // Also ignore direction from server if we are mismatched or near wall
+        if (isNearWall || isMismatched) {
           delete stateToApply.lastDirection
           delete stateToApply.vx
           delete stateToApply.vy

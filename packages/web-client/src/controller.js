@@ -680,10 +680,24 @@ function applyServerStateToPreview(state) {
         )
         const driftThreshold = previewPhysicsEngine.options.smoothing?.driftThresholdPx || 100
         const isNearWall = previewPhysicsEngine._isNearWall()
-        if (isNearWall || (velocitiesMatch && posDrift < driftThreshold)) {
+
+        // VECTOR GUARDING: If client and server disagree on direction near a wall,
+        // the client MUST remain authoritative. 
+        const directionMismatchX = (serverVx * previewPhysicsEngine.ball.vx) < 0
+        const directionMismatchY = (serverVy * previewPhysicsEngine.ball.vy) < 0
+        const isMismatched = directionMismatchX || directionMismatchY
+
+        if (isNearWall || isMismatched || (velocitiesMatch && posDrift < driftThreshold)) {
           // Drop coordinate fields to prevent jitter
           delete localCommand.x
           delete localCommand.y
+          
+          // Also ignore direction from server if we are mismatched or near wall
+          if (isNearWall || isMismatched) {
+             delete localCommand.lastDirection
+             delete localCommand.vx
+             delete localCommand.vy
+          }
         }
       }
     }
