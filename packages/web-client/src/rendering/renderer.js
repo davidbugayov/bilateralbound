@@ -25,8 +25,7 @@ class BallRenderer {
     this.adaptiveFrameRate = true // Адаптивная частота кадров
     this.maxFrameTime = 50 // Максимальное время кадра в ms
     this.fixedStepMs = 1000 / 60
-    this.accumulatorMs = 0
-    this.maxSubsteps = 3
+    this.fixedStepMs = 1000 / 60
     this.onFrameCallback = null
     this.options = {
       localPhysics: false, // Флаг для локальной физики (для вьювера)
@@ -79,33 +78,15 @@ class BallRenderer {
     return Math.min(deltaTime, this.maxFrameTime)
   }
   _updatePhysics(clampedDeltaTime) {
-    this.accumulatorMs += clampedDeltaTime
     if (this.onFrameCallback) {
       this.onFrameCallback(clampedDeltaTime / 1000)
     }
-    if (this.options.localPhysics) {
-      let substeps = 0
-      while (
-        this.accumulatorMs >= this.fixedStepMs &&
-        substeps < this.maxSubsteps
-      ) {
-        this.physics.update(this.fixedStepMs / 1000)
-        this.accumulatorMs -= this.fixedStepMs
-        substeps++
-      }
-    }
+    // Let the physics engine handle the time accumulation and fixed steps
+    this.physics.update(clampedDeltaTime / 1000)
   }
   _renderFrame(currentTime) {
-    let alpha = 1
-    if (this.fixedStepMs > 0) {
-      if (this.options.localPhysics) {
-        alpha = Math.max(0, Math.min(1, this.accumulatorMs / this.fixedStepMs))
-      } else {
-        const now = currentTime
-        const lastTs = this.physics?.__lastPhysicsUpdateTs ?? now
-        alpha = Math.max(0, Math.min(1, (now - lastTs) / this.fixedStepMs))
-      }
-    }
+    // Get the exact interpolation alpha from the physics engine's internal accumulator
+    const alpha = this.physics.getInterpolationAlpha ? this.physics.getInterpolationAlpha() : 1
     this.render(alpha)
   }
   renderLoop(currentTime) {

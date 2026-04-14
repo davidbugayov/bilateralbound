@@ -915,12 +915,21 @@ class PhysicsEngine {
   // ============================================
 
   /**
+   * Returns current interpolation alpha (0-1) for smooth rendering.
+   * Represents the fractional progress within the current fixed timestep.
+   * @returns {number}
+   */
+  getInterpolationAlpha() {
+    return Math.max(0, Math.min(1, this._accumulator / (1 / 60))) // Use 1/60 (FIXED_DT)
+  }
+
+  /**
    * Gets interpolated ball position
-   * @param {number} [alpha=1] - Interpolation factor (0-1)
+   * @param {number} [alpha] - Optional manual alpha, otherwise uses internal accumulator.
    * @returns {object}
    */
   getInterpolatedBall(alpha) {
-    const a = clamp(typeof alpha === 'number' ? alpha : 1, 0, 1)
+    const a = typeof alpha === 'number' ? Math.max(0, Math.min(1, alpha)) : this.getInterpolationAlpha()
 
     this._interpBall.x =
       this._prevPos.x + (this._currPos.x - this._prevPos.x) * a
