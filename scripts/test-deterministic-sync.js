@@ -283,6 +283,36 @@ console.log('\n── T9: Wall immunity for forced coordinate snaps ────
   check('isNearWall() is true at x=30', testE._isNearWall() === true)
 }
 
+// ─── T10: Bounce Reflection accuracy ─────────────────────────────────────────
+console.log('\n── T10: Bounce Reflection accuracy ───────────────────────────')
+{
+  const testE = new PhysicsEngine({ 
+    isViewer: true, 
+    clientSimulation: true, 
+    worldWidth: 2000, 
+    worldHeight: 1200,
+    maxSpeed: 10000 // Ensure consistent speed for math
+  })
+  testE.ball.radius = 20
+  testE.setPaused(false) // CRITICAL: must be unpaused to move
+  
+  // Simulate a step that goes beyond the right wall (1980)
+  testE.ball.x = 1970 
+  // speed 25% of 10000 = 2500 pps
+  // 1970 + (2500 * 1/60) = 1970 + 41.666... = 2011.666...
+  // worldWidth - radius = 2000 - 20 = 1980
+  // overflow = 2011.666... - 1980 = 31.666...
+  // reflected position = 1980 - 31.666... = 1948.333...
+  
+  testE.state.lastDirection.x = 1
+  testE.setSpeed(25) 
+  testE._accumulator = 1/60
+  testE.update(0) // run 1 step
+  
+  const expected = 1980 - ( (1970 + 2500/60) - 1980 )
+  check('Ball reflected correctly (no sticking at 1980)', Math.abs(testE.ball.x - expected) < 0.1, `x=${testE.ball.x.toFixed(2)} expected=${expected.toFixed(2)}`)
+}
+
 // ─── ИТОГ ────────────────────────────────────────────────────────────────────
 console.log('\n══════════════════════════════════════════════════════════════')
 const total = passCount + failCount

@@ -740,14 +740,16 @@ class PhysicsEngine {
 
     // Horizontal bounds — check unless locked to pure vertical movement
     if (!isPureVertical) {
-      if (ball.x <= radius) {
-        ball.x = radius
+      if (ball.x < radius) {
+        const overflow = radius - ball.x
+        ball.x = radius + overflow
         if (dirX < 0) {
           state.lastDirection.x = Math.abs(dirX)
           bounceSide = 'left'
         }
-      } else if (ball.x >= worldWidth - radius) {
-        ball.x = worldWidth - radius
+      } else if (ball.x > worldWidth - radius) {
+        const overflow = ball.x - (worldWidth - radius)
+        ball.x = worldWidth - radius - overflow
         if (dirX > 0) {
           state.lastDirection.x = -Math.abs(dirX)
           bounceSide = 'right'
@@ -757,14 +759,16 @@ class PhysicsEngine {
 
     // Vertical bounds — check unless locked to pure horizontal movement
     if (!isPureHorizontal) {
-      if (ball.y <= radius) {
-        ball.y = radius
+      if (ball.y < radius) {
+        const overflow = radius - ball.y
+        ball.y = radius + overflow
         if (dirY < 0) {
           state.lastDirection.y = Math.abs(dirY)
           bounceSide = bounceSide || 'top'
         }
       } else if (ball.y >= worldHeight - radius) {
-        ball.y = worldHeight - radius
+        const overflow = ball.y - (worldHeight - radius)
+        ball.y = worldHeight - radius - overflow
         if (dirY > 0) {
           state.lastDirection.y = -Math.abs(dirY)
           bounceSide = bounceSide || 'bottom'
