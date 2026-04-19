@@ -73,7 +73,7 @@ journalctl -u emdrbilateral-online -n 50 --no-pager
 Причина: зомби-процесс держит порт (из-за конкуренции между systemd RestartSec и check-services.sh cron).
 
 ```bash
-ssh root@213.139.229.44
+ssh root@90.156.254.190
 systemctl stop emdrbilateral-dev
 kill -9 $(lsof -t -i:3003 2>/dev/null)
 sleep 3

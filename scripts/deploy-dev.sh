@@ -5,7 +5,7 @@
 
 set -e
 
-SERVER="213.139.229.44"
+SERVER="90.156.254.190"
 PROJECT_DIR="/var/www/dev.emdrbilateral.online"
 SERVICE="emdrbilateral-dev"
 BRANCH="main"

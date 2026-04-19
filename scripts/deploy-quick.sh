@@ -25,21 +25,21 @@ log_error() {
 
 deploy_prod() {
     log "Deploying Production (emdrbilateral.online)..."
-    sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
+    sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
         "cd /var/www/emdrbilateral.online && git fetch --all && git checkout stable && git reset --hard origin/stable && systemctl restart emdrbilateral-online.service && systemctl status emdrbilateral-online.service --no-pager"
     log_success "Production deployed successfully"
 }
 
 deploy_prod_ru() {
     log "Deploying Production RU (emdrbilateral.ru)..."
-    sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
+    sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
         "cd /var/www/emdrbilateral.ru && git fetch --all && git checkout stable && git reset --hard origin/stable && systemctl restart emdrbilateral-ru.service && systemctl status emdrbilateral-ru.service --no-pager"
     log_success "Production RU deployed successfully"
 }
 
 deploy_dev() {
     log "Deploying Dev (dev.emdrbilateral.online)..."
-    sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
+    sshpass -p '9Ddc0BYKqrJZm6a9' ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
         "cd /var/www/dev.emdrbilateral.online && git fetch --all && git checkout stable-enhanced && git reset --hard origin/stable-enhanced && systemctl restart emdrbilateral-dev.service && systemctl status emdrbilateral-dev.service --no-pager"
     log_success "Dev deployed successfully"
 }

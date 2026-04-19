@@ -3,7 +3,7 @@
 
 set -e
 
-SERVER="root@213.139.229.44"
+SERVER="root@90.156.254.190"
 PASSWORD="9Ddc0BYKDavidqrJZm6a9"
 PROJECT_DIR="/var/www/dev.emdrbilateral.online"
 

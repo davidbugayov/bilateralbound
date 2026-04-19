@@ -3,7 +3,7 @@
 # Deploy to dev.emdrbilateral.online from main branch
 # Usage: bash deploy-dev-main.sh
 
-SERVER="213.139.229.44"
+SERVER="90.156.254.190"
 USER="root"
 PROJECT_DIR="/var/www/dev.emdrbilateral.online"
 SERVICE="emdrbilateral-dev"

@@ -39,7 +39,7 @@ npm run deploy:dev:status  # Статус systemd
 ### Если сервис в crash-loop (EADDRINUSE)
 
 ```bash
-ssh root@213.139.229.44
+ssh root@90.156.254.190
 kill -9 $(lsof -t -i:3003)   # Убить зомби-процесс
 systemctl restart emdrbilateral-dev
 ```

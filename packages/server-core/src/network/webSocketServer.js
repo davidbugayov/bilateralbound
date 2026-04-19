@@ -149,22 +149,22 @@ function setupWebSocketServer(
         }
       },
 
-      // Bounce sync - viewer sends ball position on bounce for controller preview sync
+      // Bounce sync - viewer sends bounce event; relay direction only to controller.
+      // Position is NOT relayed: both clients run local physics from the same params
+      // and detect bounces independently. Position relay caused spring-damper jitter.
       bounce: (data) => {
         if (role === 'viewer') {
           const clients = webSocketManager.getClients(sessionId)
+          // Direction-only bounce_sync to controller preview
           const bounceMessage = JSON.stringify({
             type: 'bounce_sync',
             payload: {
               side: data.payload.side,
-              x: data.payload.x,
-              y: data.payload.y,
               dirX: data.payload.dirX,
               dirY: data.payload.dirY,
               timestamp: data.payload.timestamp
             }
           })
-          // Send bounce_sync to controller
           for (const { client, info: clientInfo } of clients) {
             if (clientInfo.role === 'controller' && client.readyState === 1) {
               try {
@@ -174,30 +174,21 @@ function setupWebSocketServer(
               }
             }
           }
-          // Send bounce_ack back to viewer for drift correction
-          const session = sessionService.getSession(sessionId)
-          if (session) {
-            const ackMessage = JSON.stringify({
-              type: 'bounce_ack',
-              payload: {
-                side: data.payload.side,
-                x: data.payload.x,
-                y: data.payload.y,
-                dirX: data.payload.dirX,
-                dirY: data.payload.dirY,
-                serverX: session.ballState?.x ?? data.payload.x,
-                serverY: session.ballState?.y ?? data.payload.y,
-                serverDirX: data.payload.dirX,
-                serverDirY: data.payload.dirY,
-                ts: Date.now()
-              }
-            })
-            if (ws.readyState === 1) {
-              try {
-                ws.send(ackMessage)
-              } catch (error) {
-                logger.error({ err: error }, 'Error sending bounce_ack')
-              }
+          // Direction-only bounce_ack back to viewer
+          const ackMessage = JSON.stringify({
+            type: 'bounce_ack',
+            payload: {
+              side: data.payload.side,
+              serverDirX: data.payload.dirX,
+              serverDirY: data.payload.dirY,
+              ts: Date.now()
+            }
+          })
+          if (ws.readyState === 1) {
+            try {
+              ws.send(ackMessage)
+            } catch (error) {
+              logger.error({ err: error }, 'Error sending bounce_ack')
             }
           }
         }

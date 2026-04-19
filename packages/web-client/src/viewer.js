@@ -918,46 +918,18 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     applyAdaptiveSmoothing(physicsEngine, jitterMs)
   })
 
-  // Bounce ack - server sends authoritative position/direction on bounce
-  // Direction is synced immediately (critical for correct post-bounce movement)
-  // Position drift is handled by periodic spring-damper correction (physics-engine.js)
-  // to avoid visual jitter from conflicting correction sources.
+  // Bounce ack - sync direction only; no position relay.
+  // Viewer runs pure local physics; no drift correction anchor needed.
   wsClient.on('bounce_ack', (data) => {
     if (!physicsEngine) return
-
-    // Always sync direction from server (immediate, always safe — direction changes at bounce)
     const serverDirX = data.serverDirX
     const serverDirY = data.serverDirY
-    if (
-      typeof serverDirX === 'number' &&
-      typeof serverDirY === 'number'
-    ) {
+    if (typeof serverDirX === 'number' && typeof serverDirY === 'number') {
       physicsEngine.state.lastDirection.x = serverDirX
       physicsEngine.state.lastDirection.y = serverDirY
-      // Recalculate velocity from synced direction
       const pps = (physicsEngine.ball.speed / 100) * physicsEngine.options.maxSpeed
       physicsEngine.ball.vx = serverDirX * pps
       physicsEngine.ball.vy = serverDirY * pps
-    }
-
-    // Do not hard-snap position on bounce ack.
-    // Hard snap produces visible jitter; drift correction will catch up smoothly.
-    // Store vx/vy alongside position so the vector-guard in _checkDriftCorrection
-    // can skip position correction when velocities already match post-bounce.
-    if (typeof data.serverX === 'number' && typeof data.serverY === 'number') {
-      physicsEngine._lastServerPos = {
-        x: data.serverX,
-        y: data.serverY,
-        // Include server velocity so _checkDriftCorrection can compare vectors.
-        // If not provided, fall back to the direction we just applied.
-        vx: typeof data.serverVx === 'number'
-          ? data.serverVx
-          : (physicsEngine.ball.vx),
-        vy: typeof data.serverVy === 'number'
-          ? data.serverVy
-          : (physicsEngine.ball.vy),
-        ts: performance.now()
-      }
     }
   })
 }

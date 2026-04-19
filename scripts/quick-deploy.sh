@@ -4,7 +4,7 @@ set -e
 echo "=== Quick Deploy to dev.emdrbilateral.online ==="
 echo ""
 
-ssh root@213.139.229.44 << 'EOF'
+ssh root@90.156.254.190 << 'EOF'
 set -e
 echo "1. Navigating to project..."
 cd /var/www/emdrbilateral.online

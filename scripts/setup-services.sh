@@ -5,7 +5,7 @@
 
 set -e
 
-SERVER="213.139.229.44"
+SERVER="90.156.254.190"
 USER="root"
 PASSWORD='9Ddc0BYKqrJZm6a9'
 

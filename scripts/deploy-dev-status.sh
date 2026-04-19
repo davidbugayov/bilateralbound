@@ -3,5 +3,5 @@
 # Show dev service status
 # Usage: npm run deploy:dev:status
 
-ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
+ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
     'systemctl status emdrbilateral-dev --no-pager'

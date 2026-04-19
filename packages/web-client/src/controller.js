@@ -547,36 +547,24 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
     updateViewerAudioIndicators()
   })
-  // Bounce sync - snap controller preview to viewer's bounce position + direction
-  // Skip if preview is doing seekingCenter animation to prevent interrupting return-to-center
+  // Bounce sync - sync direction only; no position relay.
+  // Both controller preview and viewer run local physics with identical params,
+  // so they bounce at the same wall independently. Direction sync corrects any
+  // minor divergence without triggering spring-damper corrections.
   wsClient.on(WS_MSG.bounceSync, (data) => {
     if (!previewPhysicsEngine) return
-    // Don't interrupt seekingCenter animation (return-to-center on pause)
     if (previewPhysicsEngine.state?.seekingCenter) return
-    if (typeof data.x === 'number' && typeof data.y === 'number') {
-      // Keep preview motion continuous: store target for drift correction, no hard snap.
-      previewPhysicsEngine._lastServerPos = {
-        x: data.x,
-        y: data.y,
-        vx: data.vx,
-        vy: data.vy,
-        ts: performance.now()
-      }
-      // Always sync direction on bounce (direction is critical for post-bounce movement)
-      if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
-        previewPhysicsEngine.state.lastDirection.x = data.dirX
-        previewPhysicsEngine.state.lastDirection.y = data.dirY
-        // Recalculate velocity from new direction
-        const pps =
-          (previewPhysicsEngine.ball.speed / 100) *
-          previewPhysicsEngine.options.maxSpeed
-        previewPhysicsEngine.ball.vx = data.dirX * pps
-        previewPhysicsEngine.ball.vy = data.dirY * pps
-      }
-      // Sync side info for debugging
-      if (data.side) {
-        previewPhysicsEngine._lastBounceSide = data.side
-      }
+    if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
+      previewPhysicsEngine.state.lastDirection.x = data.dirX
+      previewPhysicsEngine.state.lastDirection.y = data.dirY
+      const pps =
+        (previewPhysicsEngine.ball.speed / 100) *
+        previewPhysicsEngine.options.maxSpeed
+      previewPhysicsEngine.ball.vx = data.dirX * pps
+      previewPhysicsEngine.ball.vy = data.dirY * pps
+    }
+    if (data.side) {
+      previewPhysicsEngine._lastBounceSide = data.side
     }
   })
   wsClient.on('maxReconnectAttemptsReached', () => {

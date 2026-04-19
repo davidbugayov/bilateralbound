@@ -9,10 +9,10 @@ if [ -z "$DEPLOY_PASSWORD" ]; then
 fi
 
 echo "=== emdrbilateral-online logs ==="
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
+sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
     'journalctl -u emdrbilateral-online -n 50 --no-pager'
 
 echo ""
 echo "=== emdrbilateral-ru logs ==="
-sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
+sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
     'journalctl -u emdrbilateral-ru -n 50 --no-pager'

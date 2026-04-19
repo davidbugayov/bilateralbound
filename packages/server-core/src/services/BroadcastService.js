@@ -53,19 +53,15 @@ class BroadcastService {
   }
 
   /**
-   * Возвращает только изменившиеся поля по сравнению с последним broadcast
-   * Всегда включаем x, y, vx, vy для плавной интерполяции, остальное — только если изменилось
+   * Возвращает только изменившиеся параметры по сравнению с последним broadcast.
+   * Позиция (x, y, vx, vy) намеренно исключена: оба клиента запускают локальную
+   * физику и синхронизируются по параметрам, а не по координатам. Позиционный
+   * relay вызывал spring-damper коррекцию → рывки на контроллере и вьювере.
    * @private
    */
   _getDeltaPayload(sessionId, currentPayload) {
     const lastState = this._lastBroadcastedState.get(sessionId)
-    const delta = {
-      // Всегда отправляем позицию и скорость для интерполяции
-      x: currentPayload.x,
-      y: currentPayload.y,
-      vx: currentPayload.vx,
-      vy: currentPayload.vy
-    }
+    const delta = {}
 
     this._addChangedFields(delta, currentPayload, lastState)
     this._addScreenSizeIfChanged(delta, currentPayload, lastState)

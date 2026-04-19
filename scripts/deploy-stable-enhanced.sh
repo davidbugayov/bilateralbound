@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Конфигурация
-SERVER="213.139.229.44"
+SERVER="90.156.254.190"
 USER="root"
 PASSWORD='9Ddc0BYKqrJZm6a9'
 DEV_PATH="/var/www/dev.emdrbilateral.online"
