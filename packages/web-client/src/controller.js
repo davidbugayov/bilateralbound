@@ -75,6 +75,7 @@ if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
   hiddenThrottleMs = globalThis.BBConfig.rendering.hiddenThrottleMs
 }
 let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
+let _previewRafLast = 0 // Timestamp последнего rAF кадра для dt физики
 let previewFsCanvas = null
 let previewFsRenderer = null
 let isPreviewFullscreen = false
@@ -721,11 +722,15 @@ function applyServerStateToPreview(state) {
         previewPhysicsEngine._currPos.x = state.x
         previewPhysicsEngine._currPos.y = state.y
       } else {
-        // Store server position for lightweight drift correction (checked every 3s by physics engine)
+        // Store server position for drift correction — include vx/vy so the
+        // velocity guard in _checkDriftCorrection works correctly
         previewPhysicsEngine._lastServerPos = {
           x: state.x,
           y: state.y,
-          ts: performance.now()
+          vx: state.vx,
+          vy: state.vy,
+          ts: performance.now(),
+          serverTime: state.serverTimestamp || Date.now()
         }
       }
     }
@@ -785,12 +790,22 @@ function renderPreviewLoop(timestamp) {
     requestAnimationFrame(renderPreviewLoop)
     return
   }
-  const now = performance.now()
-  const lastPhysicsUpdate = previewPhysicsEngine?.__lastPhysicsUpdateTs ?? now
-  const alpha = Math.max(
-    0,
-    Math.min(1, (now - lastPhysicsUpdate) / PHYSICS_DT)
-  )
+  // Drive physics from rAF using real elapsed time — eliminates jitter caused by
+  // running physics on a separate setInterval. When fullscreen is active,
+  // BallRenderer.start() drives physics; skip here to avoid double-stepping.
+  if (!isPreviewFullscreen) {
+    if (_previewRafLast > 0) {
+      const dt = Math.min(timestamp - _previewRafLast, 50) / 1000
+      previewPhysicsEngine.update(dt)
+    }
+    _previewRafLast = timestamp
+  } else {
+    // Reset so there's no dt spike when exiting fullscreen
+    _previewRafLast = 0
+  }
+  const alpha = previewPhysicsEngine.getInterpolationAlpha
+    ? previewPhysicsEngine.getInterpolationAlpha()
+    : 1
   const interpolatedState = previewPhysicsEngine.getInterpolatedBall(alpha)
   const stateToRender = getScaledState(interpolatedState)
   globalThis.__previewRenderer?.drawFrame(stateToRender)
@@ -1230,7 +1245,8 @@ async function initializePreview() {
       previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
     }
     if (physicsInterval) clearInterval(physicsInterval)
-    physicsInterval = setInterval(physicsLoop, PHYSICS_DT)
+    physicsInterval = null // Physics now driven by renderPreviewLoop rAF
+    _previewRafLast = 0
     requestAnimationFrame(renderPreviewLoop)
     globalThis.__previewRenderer = new BallRenderer(
       canvas,

@@ -189,7 +189,9 @@ function createEventHandlers(deps) {
         globalThis.__current.viewerAudioActivated = data.activated
       updateViewerAudioIndicators()
     },
-    // Bounce sync - snap preview to viewer's exact bounce position + direction
+    // Bounce sync - snap preview to viewer's exact bounce position + direction.
+    // Compensates for network latency by extrapolating the ball position forward
+    // using the bounce timestamp included by the viewer.
     onBounceSync(data) {
       if (!previewPhysicsEngine) return
       // If preview is paused (user just stopped), ignore bounce — ball must stay at center.
@@ -197,18 +199,47 @@ function createEventHandlers(deps) {
       // overriding the center position with the edge position, leaving ball stuck.
       if (previewPhysicsEngine.state.paused) return
       if (typeof data.x === 'number' && typeof data.y === 'number') {
-        previewPhysicsEngine.ball.x = data.x
-        previewPhysicsEngine.ball.y = data.y
-        previewPhysicsEngine._prevPos.x = data.x
-        previewPhysicsEngine._prevPos.y = data.y
-        previewPhysicsEngine._currPos.x = data.x
-        previewPhysicsEngine._currPos.y = data.y
+        const pps =
+          (previewPhysicsEngine.ball.speed / 100) *
+          previewPhysicsEngine.options.maxSpeed
+
+        let snapX = data.x
+        let snapY = data.y
+
+        // Extrapolate forward to compensate for network round-trip latency.
+        // The viewer included Date.now() when the bounce happened; by subtracting
+        // it from Date.now() on the controller we get total transit latency.
+        // Cap at 200ms to avoid overshoot on clock-skew or stale packets.
+        if (typeof data.timestamp === 'number' && typeof data.dirX === 'number') {
+          const latencyMs = Math.min(200, Math.max(0, Date.now() - data.timestamp))
+          if (latencyMs > 0) {
+            const latencySec = latencyMs / 1000
+            const ex = snapX + data.dirX * pps * latencySec
+            const ey = snapY + (data.dirY || 0) * pps * latencySec
+            const r = previewPhysicsEngine.ball.radius
+            const w = previewPhysicsEngine.options.worldWidth || 800
+            const h = previewPhysicsEngine.options.worldHeight || 600
+            // Only apply if extrapolation stays within bounds (no additional bounce)
+            if (ex >= r && ex <= w - r && ey >= r && ey <= h - r) {
+              snapX = ex
+              snapY = ey
+            }
+          }
+        }
+
+        previewPhysicsEngine.ball.x = snapX
+        previewPhysicsEngine.ball.y = snapY
+        previewPhysicsEngine._prevPos.x = snapX
+        previewPhysicsEngine._prevPos.y = snapY
+        previewPhysicsEngine._currPos.x = snapX
+        previewPhysicsEngine._currPos.y = snapY
+        // Clear visual offset — this is an intentional hard sync, not a drift correction
+        previewPhysicsEngine._visualOffsetX = 0
+        previewPhysicsEngine._visualOffsetY = 0
+
         if (typeof data.dirX === 'number' && typeof data.dirY === 'number') {
           previewPhysicsEngine.state.lastDirection.x = data.dirX
           previewPhysicsEngine.state.lastDirection.y = data.dirY
-          const pps =
-            (previewPhysicsEngine.ball.speed / 100) *
-            previewPhysicsEngine.options.maxSpeed
           previewPhysicsEngine.ball.vx = data.dirX * pps
           previewPhysicsEngine.ball.vy = data.dirY * pps
         }
