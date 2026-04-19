@@ -148,11 +148,11 @@ function createEventHandlers(deps) {
           updatePhysicsEngineWorldSize(next)
           const canvas = document.getElementById('preview')
           if (canvas) {
-            const { previewWidth, previewHeight } = calculatePreviewDimensions(
+            const { width, height } = calculatePreviewDimensions(
               canvas,
               next
             )
-            setCanvasDimensions(canvas, previewWidth, previewHeight)
+            setCanvasDimensions(canvas, width, height)
           }
           updateViewerInfo(next)
           updateViewerStatusUI()

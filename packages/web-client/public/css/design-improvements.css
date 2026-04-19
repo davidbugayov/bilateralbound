@@ -1384,7 +1384,8 @@ input:focus-visible + .slider {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   background: #020617;
   flex: 1;
@@ -1395,7 +1396,6 @@ input:focus-visible + .slider {
   min-width: 200px;
   min-height: 150px;
   max-width: 100%;
-  width: 100%;
 }
 
 /* Viewer info bar below canvas */

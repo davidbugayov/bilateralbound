@@ -96,18 +96,16 @@ async function _initStandalone() {
   const canvas = getCanvas()
   if (!canvas) return false
 
-  // Инициализация размеров canvas при нулевых значениях
-  if (canvas.width === 0 || canvas.height === 0) {
-    const container = getContainer(canvas)
-    const containerRect = container.getBoundingClientRect()
-    const initialWidth = Math.min(containerRect.width - 40, 500)
-    const initialHeight = Math.min(400, initialWidth * 0.75)
-    const { w, h } = ensureMinSize(initialWidth, initialHeight)
-    canvas.width = w
-    canvas.height = h
-    canvas.style.width = canvas.width + 'px'
-    canvas.style.height = canvas.height + 'px'
-  }
+  // Всегда задаём начальный размер (дефолт canvas 300×150 не подходит)
+  const container = getContainer(canvas)
+  const containerRect = container.getBoundingClientRect()
+  const initialWidth = Math.min(containerRect.width - 40, 500)
+  const initialHeight = Math.min(400, initialWidth * 0.75)
+  const { w, h } = ensureMinSize(initialWidth, initialHeight)
+  canvas.width = w
+  canvas.height = h
+  canvas.style.width = canvas.width + 'px'
+  canvas.style.height = canvas.height + 'px'
 
   try {
     // Создание physics engine
@@ -173,7 +171,7 @@ function showWaitingForViewer() {
     viewerInfo.textContent =
       globalThis.i18n?.t('controller.waitingForViewerConnection') ||
       '⏳ Waiting for viewer connection'
-    viewerInfo.style.display = 'block'
+    viewerInfo.classList.remove('hidden')
   }
   _centerAndPauseBall()
 }
@@ -184,7 +182,7 @@ function showWaitingForViewer() {
 function hideWaitingForViewer() {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.style.display = 'none'
+    viewerInfo.classList.add('hidden')
   }
 }
 
@@ -213,7 +211,6 @@ function updatePreviewSize(viewerScreenSize) {
     )
     setCanvasDimensions(canvas, width, height)
     updatePhysicsEngineWorldSize(viewerScreenSize)
-    applyServerStateOrCenter()
     updateViewerInfo(viewerScreenSize)
   } else {
     showWaitingForViewer()
@@ -338,7 +335,7 @@ function updateViewerInfo(viewerScreenSize) {
 
   const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer'
   viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`
-  viewerInfo.style.display = 'block'
+  viewerInfo.classList.remove('hidden')
 }
 
 /**
