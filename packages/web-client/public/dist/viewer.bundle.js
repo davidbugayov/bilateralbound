@@ -1,2 +1,6781 @@
-(()=>{var t={62(t){"use strict";function e(){const t=document.cookie.match(/(?:^|; )csrfToken=([^;]*)/);return t?decodeURIComponent(t[1]):null}async function s(t,s={}){const i=e();return i&&(s.headers={...s.headers,"X-CSRF-Token":i}),fetch(t,s)}t.exports={getCsrfToken:e,csrfFetch:s},"undefined"!=typeof globalThis&&(globalThis.csrfFetch=s,globalThis.getCsrfToken=e)},73(t){"use strict";"undefined"!=typeof globalThis&&(globalThis.BBConfig=globalThis.BBConfig||{rendering:{hiddenThrottleMs:100,adaptiveFrameRate:!0,maxFrameTime:32,targetFrameTime:16},smoothing:{damping:22,stiffness:28,maxPredictSec:.02,snapDistance:.3,dampingJitterFactor:20,stiffnessJitterFactor:30,highJitterThreshold:15,driftThresholdPx:50,driftCorrectionMs:400,driftCheckIntervalMs:3e3,predictionEnabled:!0,adaptiveStiffness:!0,adaptiveDamping:!0,exponentialSmoothing:!0,stateBuffering:!0,bufferSize:10,smoothingFactor:.35,velocitySmoothingAlpha:.1},network:{heartbeatInterval:25e3,reconnectDelay:2e3,messageTimeout:5e3,maxReconnectAttempts:10,coalesceTypes:["controller_update"],coalesceDelayMs:8,priorityTypes:["controller_update","heartbeat"]},performance:{deadReckonEps:1,throttleDelay:16,adaptiveThrottling:!0,maxFrameSteps:3,stepCapping:!0},physics:{minSpeed:50,maxSpeed:5e3,ballRadius:20,worldWidth:800,worldHeight:600,maxAcceleration:5e3}},t.exports&&(t.exports=globalThis.BBConfig))},85(t){"use strict";const e={sync:"#4A9EFF",sse:"#FF8C42",network:"#52B788",physics:"#9D4EDD",state:"#F72585",command:"#FF006E",movement:"#06FFA5",bounce:"#C77DFF",audio:"#FFD700"},s=new class{constructor(){this.enabled=this._checkDebugMode(),this.categories=this._getEnabledCategories(),this.throttles=new Map,this.enabled&&this._logStats()}_checkDebugMode(){if(void 0===globalThis.window)return!1;const t=new URLSearchParams(globalThis.location.search);return"1"===t.get("debug")||"1"===t.get("bbdebug")}_getEnabledCategories(){if(!this.enabled)return new Set;const t=new URLSearchParams(globalThis.location.search),s=t.get("debug-cat")||t.get("categories");return s?new Set(s.split(",").map(t=>t.trim())):new Set(Object.keys(e))}_logStats(){console.log("%c[DEBUG MODE ENABLED]","background: #0A0; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;"),console.log("📊 Enabled categories:",Array.from(this.categories).join(", "))}_isEnabled(t){return this.enabled&&this.categories.has(t)}_log(t,s,i){if(!this._isEnabled(t))return;const n=e[t]||"#999",a=(new Date).toISOString().split("T")[1].slice(0,-1);console.log(`%c[${t.toUpperCase()}] ${a} - ${s}`,`color: ${n}; font-weight: bold;`,i??"")}sync(t,e){this._log("sync",t,e)}sse(t,e){this._log("sse",t,e)}physics(t,e){this._log("physics",t,e)}network(t,e){this._log("network",t,e)}state(t,e){this._log("state",t,e)}command(t,e){this._log("command",t,e)}movement(t,e){this._log("movement",t,e)}bounce(t,e){this._log("bounce",t,e)}audio(t,e){this._log("audio",t,e)}throttle(t,e,s,i,n){const a=Date.now(),o=this.throttles.get(t);o&&a-o<e||(this.throttles.set(t,a),this._log(s,i,n))}error(t,e){console.error(`%c[ERROR] ${t}`,"color: #F00; font-weight: bold;",e??"")}warn(t,e){console.warn(`%c[WARN] ${t}`,"color: #FA0; font-weight: bold;",e??"")}info(t,e){console.info(`%cℹ️ ${t}`,"color: #4A9EFF; font-weight: bold;",e??"")}log(t,e){console.log(t,e??"")}scope(t){return{sync:(e,s)=>this.sync(`[${t}] ${e}`,s),sse:(e,s)=>this.sse(`[${t}] ${e}`,s),physics:(e,s)=>this.physics(`[${t}] ${e}`,s),network:(e,s)=>this.network(`[${t}] ${e}`,s),state:(e,s)=>this.state(`[${t}] ${e}`,s),command:(e,s)=>this.command(`[${t}] ${e}`,s),movement:(e,s)=>this.movement(`[${t}] ${e}`,s),bounce:(e,s)=>this.bounce(`[${t}] ${e}`,s),audio:(e,s)=>this.audio(`[${t}] ${e}`,s),error:(e,s)=>this.error(`[${t}] ${e}`,s),warn:(e,s)=>this.warn(`[${t}] ${e}`,s),info:(e,s)=>this.info(`[${t}] ${e}`,s),log:(e,s)=>this.log(`[${t}] ${e}`,s)}}};t?.exports&&(t.exports=s),void 0!==globalThis&&(globalThis.debugLogger=s,globalThis.logger=s,globalThis.createScopedLogger=t=>s.scope(t),globalThis.debugLog=(...t)=>{s.enabled&&(1===t.length&&"string"==typeof t[0]?console.log(t[0]):2===t.length?console.log(t[0],t[1]):console.log(...t))},globalThis.debugError=(...t)=>{s.enabled&&s.error(t[0],t[1])},globalThis.debugWarn=(...t)=>{s.enabled&&s.warn(t[0],t[1])})},166(t){const e=globalThis.I18nConstants||{SUPPORTED_LANGUAGES:["en","ru","es","fr","de","pt","ja","zh"],DEFAULT_LANGUAGE:"en",STORAGE_KEY:"emdr-language",detectFromDomain:()=>{const t="undefined"!=typeof location?location.hostname:"";return t.includes("emdrbilateral.ru")?"ru":(t.includes("emdrbilateral.online"),"en")}},s={currentLanguage:e.DEFAULT_LANGUAGE,defaultLanguage:e.DEFAULT_LANGUAGE,translations:{},supportedLanguages:e.SUPPORTED_LANGUAGES,isReady:!1,_readyCallbacks:[],ready(t){"function"==typeof t&&(this.isReady?t():this._readyCallbacks.push(t))},_notifyReady(){if("undefined"!=typeof document){const t=document.getElementById("i18n-cloak");t&&t.remove(),document.documentElement.classList.add("i18n-ready")}if(!this.isReady){for(this.isReady=!0;this._readyCallbacks.length;)try{this._readyCallbacks.shift()()}catch(t){"undefined"!=typeof globalThis&&globalThis.debugError&&globalThis.debugError("i18n.ready callback error:",t)}"undefined"!=typeof window&&"function"==typeof Event&&globalThis.dispatchEvent(new Event("i18nReady"))}},init:async function(){return this.detectLanguage(),"undefined"!=typeof globalThis&&globalThis.debugLog&&globalThis.debugLog("[i18n] Detected language:",this.currentLanguage),"undefined"!=typeof document&&(document.documentElement.lang=this.currentLanguage,document.documentElement.dataset.lang=this.currentLanguage),await this.loadTranslations(),"undefined"!=typeof globalThis&&globalThis.debugLog&&globalThis.debugLog("[i18n] Translations loaded:",Object.keys(this.translations)),"undefined"!=typeof document?"loading"===document.readyState?document.addEventListener("DOMContentLoaded",()=>{this.applyTranslations(),this._notifyReady(),setTimeout(()=>this.applyTranslations(),100)},{once:!0}):(this.applyTranslations(),this._notifyReady(),setTimeout(()=>this.applyTranslations(),100)):this._notifyReady(),this},detectLanguage:function(){const t=new URLSearchParams("undefined"!=typeof globalThis&&globalThis.location&&globalThis.location.search?globalThis.location.search:"").get("lang");if(t&&this.supportedLanguages.includes(t))return this.currentLanguage=t,void localStorage.setItem("emdr-language",t);const e=localStorage.getItem("emdr-language");if(e&&this.supportedLanguages.includes(e))return void(this.currentLanguage=e);const s=navigator.language.split("-")[0].toLowerCase();if(this.supportedLanguages.includes(s))return this.currentLanguage=s,void localStorage.setItem("emdr-language",s);const i="undefined"!=typeof globalThis&&globalThis.location&&globalThis.location.hostname?globalThis.location.hostname:"";return i.includes("emdrbilateral.ru")?(this.currentLanguage="ru",void localStorage.setItem("emdr-language","ru")):i.includes("emdrbilateral.online")?(this.currentLanguage="en",void localStorage.setItem("emdr-language","en")):(this.currentLanguage=this.defaultLanguage,void localStorage.setItem("emdr-language",this.defaultLanguage))},loadTranslations:async function(){const t=this.currentLanguage;try{const e=`/locales/${t}/common.json`;"undefined"!=typeof globalThis&&globalThis.debugLog&&globalThis.debugLog("[i18n] Loading translations from:",e);const s=await fetch(e);return s.ok?(this.translations[t]=await s.json(),"undefined"!=typeof globalThis&&globalThis.debugLog&&globalThis.debugLog("[i18n] Successfully loaded translations for:",t),!0):("undefined"!=typeof globalThis&&globalThis.debugError&&globalThis.debugError(`[i18n] Failed to load translations: ${s.statusText}`),"en"!==t&&(this.currentLanguage="en",await this.loadTranslations()))}catch(e){return"undefined"!=typeof globalThis&&globalThis.debugError&&globalThis.debugError(`[i18n] Failed to load translations: ${e?.message||e}`),"en"!==t&&(this.currentLanguage="en",await this.loadTranslations())}},t:function(t,e={}){if(!this.isReady)return t;const s=this.getValueByPath(this.translations[this.currentLanguage],t);if(!s)return this.translations[this.currentLanguage]?"undefined"!=typeof globalThis&&globalThis.debugWarn&&globalThis.debugWarn(`Translation missing: ${t} (language: ${this.currentLanguage})`):"undefined"!=typeof globalThis&&globalThis.debugError&&globalThis.debugError(`No translations loaded for language: ${this.currentLanguage}`),t;if("string"==typeof s&&s.includes("{{VERSION}}")){const t=document.querySelector('meta[name="version"]'),s=t?t.getAttribute("content"):"dev";e.VERSION=`v${s}`}if("string"==typeof s&&Object.keys(e).length>0){let t=s;for(const[s,i]of Object.entries(e))t=t.replace(`{{${s}}}`,i);return t}return s},getValueByPath:function(t,e){return t?e.split(".").reduce((t,e)=>t?.[e],t):null},changeLanguage:async function(t){if(!this.supportedLanguages.includes(t))return"undefined"!=typeof globalThis&&globalThis.debugError&&globalThis.debugError(`Language '${t}' is not supported`),!1;this.currentLanguage=t,localStorage.setItem("emdr-language",t),"undefined"!=typeof document&&(document.documentElement.lang=t,document.documentElement.dataset.lang=t);const e=await this.loadTranslations();this.applyTranslations();try{"function"==typeof CustomEvent?globalThis.dispatchEvent(new CustomEvent("i18nLanguageChanged",{detail:{lang:t}})):globalThis.dispatchEvent(new Event("i18nLanguageChanged"))}catch(t){"undefined"!=typeof globalThis&&globalThis.debugWarn&&globalThis.debugWarn("Failed to dispatch i18nLanguageChanged event",t)}return!!e},setLanguage:async function(t){return this.changeLanguage(t)},applyTranslations:function(){try{const t=this.translations[this.currentLanguage];if("undefined"!=typeof globalThis&&globalThis.debugLog&&globalThis.debugLog("[i18n] Applying translations for language:",this.currentLanguage),!t||0===Object.keys(t).length)return void("undefined"!=typeof globalThis&&globalThis.debugWarn&&globalThis.debugWarn("[i18n] Translations not loaded yet, skipping applyTranslations"));const e=e=>{if(!e)return null;let s=this.getValueByPath(t,e);if("string"==typeof s&&s.includes("{{VERSION}}")){const t=document.querySelector('meta[name="version"]'),e=t?t.getAttribute("content"):"dev";s=s.replace("{{VERSION}}",`v${e}`)}return s},s=document.querySelectorAll("[data-i18n]");"undefined"!=typeof globalThis&&globalThis.debugLog&&globalThis.debugLog("[i18n] Found",s.length,"elements with data-i18n attribute"),s.forEach(t=>{const s=t.getAttribute("data-i18n"),i=e(s);null!=i&&"object"!=typeof i?"string"==typeof i&&(i.includes("<")||i.includes(">"))?t.innerHTML=i:t.textContent=i:null==i&&"undefined"!=typeof globalThis&&globalThis.debugWarn&&globalThis.debugWarn("[i18n] Missing translation for key:",s)}),document.querySelectorAll("[data-i18n-attr]").forEach(t=>{const s=t.getAttribute("data-i18n-attr");s&&s.split(";").forEach(s=>{const[i,n]=s.split(":").map(t=>t&&t.trim());if(!i||!n)return;const a=e(n);null!=a&&"string"==typeof i&&t.setAttribute(i,a)})})}catch(t){"undefined"!=typeof globalThis&&globalThis.debugError&&globalThis.debugError("i18n.applyTranslations error:",t)}}};t.exports?t.exports=s:globalThis.i18n=s,"undefined"!=typeof globalThis&&globalThis.document&&s.init().catch(t=>{"undefined"!=typeof globalThis&&globalThis.debugError&&globalThis.debugError("Failed to initialize i18n:",t)}),globalThis.i18n=s,t.exports=s},246(t){"use strict";const e={damping:2,stiffness:3,maxPredictSec:.02,snapDistance:.3,dampingJitterFactor:20,stiffnessJitterFactor:30,highJitterThreshold:15};function s(){const t="undefined"!=typeof globalThis&&globalThis.BBConfig?globalThis.BBConfig.smoothing||globalThis.BBConfig:{};return{...e,...t}}function i(t,i){const n=i||s(),a=n.damping||e.damping,o=n.stiffness||e.stiffness,r=n.dampingJitterFactor||e.dampingJitterFactor,l=n.stiffnessJitterFactor||e.stiffnessJitterFactor,h=n.highJitterThreshold||e.highJitterThreshold,c=n.snapDistance||e.snapDistance,d=Math.min(8,Math.max(1,a+t/r)),u=Math.min(10,Math.max(1,o-t/l)),g=Math.min(.4,Math.max(.2,c+(t>h?.05:0)));return{damping:d,stiffness:u,maxPredictSec:n.maxPredictSec||e.maxPredictSec,snapDistance:g}}t.exports={DEFAULT_SMOOTHING_CONFIG:e,calculateAdaptiveSmoothing:i,applyAdaptiveSmoothing:function(t,e){if(!t)return;t.updateJitter(e);const s=i(e);t.setSmoothingOptions(s)},resolveSmoothingConfig:s,getSmoothingConfigString:function(){const t=s();return`SmoothingConfig{damping:${t.damping}, stiffness:${t.stiffness}, maxPredictSec:${t.maxPredictSec}, snapDistance:${t.snapDistance}}`}}},396(t,e,s){"use strict";const{DIRECTION_EPSILON:i,isVerticalDirection:n,isHorizontalDirection:a,normalizeDirection:o,isValidDirection:r,getFallbackDirection:l}=s(397),{createBouncePhysicsData:h,dispatchBounceEvent:c}=s(930),d=1/60,u={worldWidth:800,worldHeight:600,ballRadius:20,minSpeed:50,maxSpeed:5e3,defaultSpeed:30,bounceWallMargin:10,centerSnapThreshold:2,centerCheckThreshold:10,driftStaleMs:1500,smoothing:{driftThresholdPx:100,driftCorrectionMs:200,driftCheckIntervalMs:50,stiffness:3,damping:2}},g={paused:!0,lastDirection:{x:0,y:0},targetVx:0,targetVy:0,smoothVx:0,smoothVy:0,allowInterpWhenPaused:!1,stopping:!1,stoppingStartTs:0,stoppingDuration:.6,seekingCenter:!1,seekingCenterDuration:.4},p={ball:"#60a5fa",bg:"#020617"},m=/^#[0-9a-fA-F]{6}$/;function f(t){return"number"==typeof t&&Number.isFinite(t)}function b(t){return"number"==typeof t&&t>=0&&t<=100&&!Number.isNaN(t)}function y(t){return"string"==typeof t&&m.test(t)}function v(t){const e={};var s;return"boolean"==typeof t.paused&&(e.paused=t.paused),"boolean"==typeof t.stopping&&(e.stopping=t.stopping),!0===t.reset&&(e.reset=!0),f(s=t.radius)&&s>0&&s<=1e3&&(e.radius=t.radius),y(t.colorBall)&&(e.colorBall=t.colorBall),y(t.colorBg)&&(e.colorBg=t.colorBg),e}function T(t,e){return t/100*e}function _(t,e,s){return Math.max(e,Math.min(s,t))}t.exports=class{constructor(t={}){this.options={...u,...t,smoothing:{...u.smoothing,...t.smoothing||{}}},this._mergeGlobalSmoothingConfig(),this.isViewer=Boolean(t.isViewer??!1),this._worldSizeSet=!1,this.centerX=this.options.worldWidth/2,this.centerY=this.options.worldHeight/2,this.ball=this._createInitialBall(),this._prevPos={x:this.ball.x,y:this.ball.y},this._currPos={x:this.ball.x,y:this.ball.y},this._interpBall={x:this.ball.x,y:this.ball.y,radius:this.ball.radius,colorBall:null},this.colors={...p},this.state=this._createInitialState(),this._lastServerPos=null,this._lastDriftCheckTs=0,this._driftCorrection=null,this._currentJitterMs=0,this._lastLocalBounceTs=0,this._seekCenterStart=null,this._springState={active:!1,targetX:0,targetY:0,lastDt:0},this._visualOffsetX=0,this._visualOffsetY=0,this._accumulator=0,this.bounceCallback=this.options.bounceCallback,this.renderer=null}_mergeGlobalSmoothingConfig(){"undefined"!=typeof globalThis&&globalThis.BBConfig?.smoothing&&(this.options.smoothing={...this.options.smoothing,...globalThis.BBConfig.smoothing})}_createInitialBall(){return{x:this.centerX,y:this.centerY,vx:0,vy:0,speed:u.defaultSpeed,radius:this.options.ballRadius}}_createInitialState(){return{...g,targetX:this.centerX,targetY:this.centerY}}setRenderer(t){this.renderer=t}setSmoothingOptions(t={}){t&&"object"==typeof t&&(this.options.smoothing={...this.options.smoothing,...t})}updateJitter(t){this._currentJitterMs=t}setWorldSize(t,e){this.options.worldWidth=t,this.options.worldHeight=e,this.centerX=t/2,this.centerY=e/2,this._worldSizeSet=!0,this.state?.paused&&(this.state.seekingCenter=!1,this._seekCenterStart=null,this._snapToCenter()),this.clampBallWithinBounds()}setPosition(t,e){this.ball.x=t,this.ball.y=e,this.state.seekingCenter=!1,this._seekCenterStart=null,this.clampBallWithinBounds(),this._prevPos.x=this.ball.x,this._prevPos.y=this.ball.y,this._currPos.x=this.ball.x,this._currPos.y=this.ball.y,this._visualOffsetX=0,this._visualOffsetY=0,this.isViewer&&(this.state.targetX=this.ball.x,this.state.targetY=this.ball.y,this.state.smoothVx=0,this.state.smoothVy=0,this.state.lastVx=0,this.state.lastVy=0)}setSpeed(t){this.ball.speed=_(t,0,100)}setDirection(t,e){if(this.state.lastDirection.x=t,this.state.lastDirection.y=e,!this.isViewer||this.options.clientSimulation){const s=T(this.ball.speed,this.options.maxSpeed);this.ball.vx=t*s,this.ball.vy=e*s}}setVelocity(t,e){this.ball.vx=t,this.ball.vy=e,this.state.targetVx=t,this.state.targetVy=e;const s=o(t,e);s&&(this.state.lastDirection.x=s.x,this.state.lastDirection.y=s.y)}setPaused(t){const e=this.state.paused;this.state.paused=Boolean(t),e!==this.state.paused&&(this.state.stopping=!1,this.state.paused?this._handlePause():this._handleUnpause())}_handlePause(){this.isViewer?this._handleViewerPause():this._resetBallToCenter()}_handleViewerPause(){this.state.allowInterpWhenPaused=!1,this.state.lastVx=0,this.state.lastVy=0,this.state.smoothVx=0,this.state.smoothVy=0,this.ball.vx=0,this.ball.vy=0,this._lastServerPos=null,this._springState.active=!1,this._springState._desyncStartTs=null,this._visualOffsetX=0,this._visualOffsetY=0;const t=this.centerX-this.ball.x,e=this.centerY-this.ball.y;Math.hypot(t,e)>this.options.centerSnapThreshold?(this.state.seekingCenter=!0,this._seekCenterStart={x:this.ball.x,y:this.ball.y,ts:performance.now()}):(this.state.seekingCenter=!1,this._snapToCenter()),this.clampBallWithinBounds()}_handleUnpause(){this.state.allowInterpWhenPaused=!1,this.state.seekingCenter&&this._snapToCenter(),this.state.seekingCenter=!1,this._seekCenterStart=null,this.options.clientSimulation&&this._restoreLocalVelocity()}startStopping(t=.6){this.state.paused||(this.state.stopping=!0,this.state.stoppingStartTs=performance.now(),this.state.stoppingDuration=t)}returnToCenter(){if(this.isViewer){const t=this.centerX-this.ball.x,e=this.centerY-this.ball.y;Math.hypot(t,e)>this.options.centerSnapThreshold?(this.state.seekingCenter=!0,this._seekCenterStart={x:this.ball.x,y:this.ball.y,ts:performance.now()}):(this.state.seekingCenter=!1,this._snapToCenter()),this.clampBallWithinBounds()}else this._resetBallToCenter()}setBallColor(t){"string"==typeof t&&t.length>0&&(this.colors.ball=t,this._invalidateRendererCache())}setBgColor(t){"string"==typeof t&&t.length>0&&(this.colors.bg=t,this._invalidateRendererCache())}setBallSize(t){"number"==typeof t&&t>0&&t<=500&&(this.ball.radius=t,this.clampBallWithinBounds())}_invalidateRendererCache(){this.renderer&&"function"==typeof this.renderer.invalidateBallCache&&this.renderer.invalidateBallCache()}update(t){for(this._accumulator+=Math.min(t,.05);this._accumulator>=d;)this.isViewer?this._updateViewerPhysics(d):this._updateServerPhysics(d),this._accumulator-=d;this.__lastPhysicsUpdateTs=performance?.now?.()??Date.now()}updateClientPhysics(t){if(this.state.paused)return;if(!this._ensureWorldSizeSet())return;const e=this._calculateSpeedFactor();if(e<=0)return void this.setPaused(!0);const s=this._calculateClientVelocity();this._applyAxisLock(s),s.vx*=e,s.vy*=e,this._updateBallPosition(s,t),this.handleBoundaryCollisions(),this._updateCurrentPosition()}handleBoundaryCollisions(){const{ball:t,options:e,state:s}=this,{radius:n}=t,{worldWidth:a,worldHeight:o}=e;let r=null;const l=s.lastDirection.x||0,h=s.lastDirection.y||0,c=Math.abs(h)<i&&Math.abs(l)>=i;if(!(Math.abs(l)<i&&Math.abs(h)>=i))if(t.x<n){const e=n-t.x;t.x=n+e+.1,l<0&&(s.lastDirection.x=Math.abs(l),r="left")}else if(t.x>a-n){const e=t.x-(a-n);t.x=a-n-e-.1,l>0&&(s.lastDirection.x=-Math.abs(l),r="right")}if(!c)if(t.y<n){const e=n-t.y;t.y=n+e+.1,h<0&&(s.lastDirection.y=Math.abs(h),r=r||"top")}else if(t.y>o-n){const e=t.y-(o-n);t.y=o-n-e-.1,h>0&&(s.lastDirection.y=-Math.abs(h),r=r||"bottom")}r&&this.handleBounce(r)}handleBounce(t){const e=T(this.ball.speed,this.options.maxSpeed);this.ball.vx=this.state.lastDirection.x*e,this.ball.vy=this.state.lastDirection.y*e,this.ensureMinimumSpeed(),this.state.lastVx=this.ball.vx,this.state.lastVy=this.ball.vy,this._lastLocalBounceTs=performance.now(),this.isViewer&&this.options.clientSimulation&&(this._lastServerPos=null,this._springState.active=!1,this._springState.driftMagnitude=0,this._springState._desyncStartTs=null),this._triggerBounceCallback(t),this._dispatchBounceEvent(t)}_triggerBounceCallback(t){if(!this.bounceCallback)return;const e=h(t,this.ball,this.state.lastDirection);this.bounceCallback(e)}_dispatchBounceEvent(t){c(t,this.ball)}ensureMinimumSpeed(){const t=Math.hypot(this.ball.vx,this.ball.vy);if(t>0&&t<this.options.minSpeed){const e=this.options.minSpeed/t;this.ball.vx*=e,this.ball.vy*=e}else 0===t&&this._setFallbackVelocity()}_setFallbackVelocity(){const t=this.state.lastDirection.x||0,e=this.state.lastDirection.y||0;if(n(t)&&Math.abs(e)>0)this.ball.vx=0,this.ball.vy=Math.sign(e)*this.options.minSpeed;else if(a(e)&&Math.abs(t)>0)this.ball.vx=Math.sign(t)*this.options.minSpeed,this.ball.vy=0;else{const t=l(this.ball.x,this.ball.y,this.centerX,this.centerY);this.ball.vx=t.x*this.options.minSpeed,this.ball.vy=t.y*this.options.minSpeed}}clampBallWithinBounds(){const{radius:t}=this.ball,e=this.options.worldWidth,s=this.options.worldHeight;if(e<=0||s<=0||t<0)return;const i=_(this.ball.x,t,e-t),n=_(this.ball.y,t,s-t);i!==this.ball.x&&(this.ball.x=i,this.isViewer&&(this.state.smoothVx=0)),n!==this.ball.y&&(this.ball.y=n,this.isViewer&&(this.state.smoothVy=0)),"number"==typeof this.state.targetX&&(this.state.targetX=_(this.state.targetX,t,e-t)),"number"==typeof this.state.targetY&&(this.state.targetY=_(this.state.targetY,t,s-t))}getInterpolationAlpha(){return Math.max(0,Math.min(1,this._accumulator/(1/60)))}getInterpolatedBall(t){const e="number"==typeof t?Math.max(0,Math.min(1,t)):this.getInterpolationAlpha();return this._interpBall.x=this._prevPos.x+(this._currPos.x-this._prevPos.x)*e+this._visualOffsetX,this._interpBall.y=this._prevPos.y+(this._currPos.y-this._prevPos.y)*e+this._visualOffsetY,this._interpBall.radius=this.ball.radius,this._interpBall.colorBall=this.ball.colorBall||null,this._interpBall}applyCommand(t){if(!t)return;const e=this._validateCommand(t);0!==Object.keys(e).length&&(this._handleCommonCommands(e),this.isViewer?this._handleViewerCommand(e):this._handleServerCommand(e))}getState(){return{x:this.ball.x,y:this.ball.y,vx:this.ball.vx,vy:this.ball.vy,dirX:this.state.lastDirection.x,dirY:this.state.lastDirection.y,speed:this.ball.speed,radius:this.ball.radius,paused:this.state.paused,stopping:this.state.stopping,colorBall:this.colors.ball,colorBg:this.colors.bg}}reset(){this.ball.x=this.centerX,this.ball.y=this.centerY,this.ball.vx=0,this.ball.vy=0,this.ball.speed=u.defaultSpeed,this.ball.radius=this.options.ballRadius,this.state.lastDirection.x=0,this.state.lastDirection.y=0,this.state.targetVx=0,this.state.targetVy=0,this.state.targetX=this.centerX,this.state.targetY=this.centerY}_restoreLocalVelocity(){Math.abs(this.state.lastDirection.x||0)<i&&Math.abs(this.state.lastDirection.y||0)<i&&(this.state.lastDirection.x=1,this.state.lastDirection.y=0);const t=T(this.ball.speed,this.options.maxSpeed);this.ball.vx=this.state.lastDirection.x*t,this.ball.vy=this.state.lastDirection.y*t,this.state.lastVx=this.ball.vx,this.state.lastVy=this.ball.vy}_resetBallToCenter(){this.ball.x=this.centerX,this.ball.y=this.centerY,this.ball.vx=0,this.ball.vy=0,this.state.targetX=this.centerX,this.state.targetY=this.centerY,this.clampBallWithinBounds()}_snapToCenter(){this.ball.x=this.centerX,this.ball.y=this.centerY,this.ball.vx=0,this.ball.vy=0,this._prevPos.x=this.centerX,this._prevPos.y=this.centerY,this._currPos.x=this.centerX,this._currPos.y=this.centerY,this.state.targetX=this.centerX,this.state.targetY=this.centerY,this._visualOffsetX=0,this._visualOffsetY=0}_decayVisualOffset(t){if(0===this._visualOffsetX&&0===this._visualOffsetY)return;const e=Math.pow(.5,t/.15);this._visualOffsetX*=e,this._visualOffsetY*=e,Math.abs(this._visualOffsetX)<.05&&(this._visualOffsetX=0),Math.abs(this._visualOffsetY)<.05&&(this._visualOffsetY=0)}_updateViewerPhysics(t){this.state.paused?this.state.seekingCenter&&this._updateSeekCenter():(this.options.clientSimulation?(this.updateClientPhysics(t),this._applyDriftCorrection(),this._checkDriftCorrection()):this.updateClientPhysics(t),this._decayVisualOffset(t))}_updateServerPhysics(t){if(this.state.paused)return;if(!this._worldSizeSet)return;const e=this._calculateSpeedFactor();if(e<=0)return void this.setPaused(!0);const s=T(this.ball.speed,this.options.maxSpeed)*e;this.ball.vx=this.state.lastDirection.x*s,this.ball.vy=this.state.lastDirection.y*s,this._prevPos.x=this.ball.x,this._prevPos.y=this.ball.y,this.ball.x+=this.ball.vx*t,this.ball.y+=this.ball.vy*t,this.handleBoundaryCollisions(),this._currPos.x=this.ball.x,this._currPos.y=this.ball.y}_calculateSpeedFactor(){if(!this.state.stopping)return 1;const t=(performance.now()-this.state.stoppingStartTs)/1e3,e=Math.min(1,t/this.state.stoppingDuration);return 1-(1-e)*(1-e)*(1-e)}_ensureWorldSizeSet(){return!!this._worldSizeSet||this.options.worldWidth>0&&this.options.worldHeight>0&&(this._worldSizeSet=!0,!0)}_calculateClientVelocity(){const t=T(this.ball.speed,this.options.maxSpeed);return{vx:(this.state.lastDirection.x||0)*t,vy:(this.state.lastDirection.y||0)*t}}_applyAxisLock(t){const e=this.state.lastDirection.x||0,s=this.state.lastDirection.y||0,i=T(this.ball.speed,this.options.maxSpeed),o=n(e)&&Math.abs(s)>0,r=a(s)&&Math.abs(e)>0;o?(t.vx=0,t.vy=s*i,this.state.smoothVx=0):r?(t.vy=0,t.vx=e*i,this.state.smoothVy=0):(Math.abs(e)>0||Math.abs(s)>0)&&(t.vx=e*i,t.vy=s*i)}_updateBallPosition(t,e){this.ball.vx=t.vx,this.ball.vy=t.vy,this._prevPos.x=this.ball.x,this._prevPos.y=this.ball.y,this.ball.x+=t.vx*e,this.ball.y+=t.vy*e}_updateCurrentPosition(){this._currPos.x=this.ball.x,this._currPos.y=this.ball.y}_updateSeekCenter(){if(!this._seekCenterStart)return this.state.seekingCenter=!1,void this._snapToCenter();const t=(performance.now()-this._seekCenterStart.ts)/1e3,e=Math.min(1,t/this.state.seekingCenterDuration),s=1-(1-e)*(1-e),i=this._seekCenterStart.x+(this.centerX-this._seekCenterStart.x)*s,n=this._seekCenterStart.y+(this.centerY-this._seekCenterStart.y)*s;this._prevPos.x=i,this._prevPos.y=n,this._currPos.x=i,this._currPos.y=n,this.ball.x=i,this.ball.y=n,e>=1&&(this.state.seekingCenter=!1,this._seekCenterStart=null,this._snapToCenter())}_isNearWall(){const t=this.ball.radius+40,{worldWidth:e,worldHeight:s}=this.options;return this.ball.x<=t||this.ball.x>=e-t||this.ball.y<=t||this.ball.y>=s-t}_checkDriftCorrection(){if(!this._lastServerPos||this.state.paused)return;const t=performance.now();if(t-this._lastLocalBounceTs<500)return void(this._springState.active=!1);const e=t-this._lastServerPos.ts,s=this._lastServerPos.serverTime?Date.now()-this._lastServerPos.serverTime:e;if(e>this.options.driftStaleMs)return void(this._springState.active=!1);const i=this.options.smoothing.driftCheckIntervalMs||50;if(this._lastDriftCheckTs&&t-this._lastDriftCheckTs<i)return;if(this._isNearWall())return void(this._springState.active=!1);this._lastDriftCheckTs=t;let n=this._lastServerPos.x,a=this._lastServerPos.y;const o=this._lastServerPos.vx,r=this._lastServerPos.vy;if(void 0!==o&&void 0!==r){const t=s/1e3;n+=o*t,a+=r*t}const{worldWidth:l,worldHeight:h}=this.options,{radius:c}=this.ball;n=Math.max(c,Math.min(l-c,n)),a=Math.max(c,Math.min(h-c,a));const d=n-this.ball.x,u=a-this.ball.y,g=Math.hypot(d,u);if(void 0!==o&&void 0!==r){const t=Math.abs(o-this.ball.vx),e=Math.abs(r-this.ball.vy);if(t<10&&e<10&&g<this.options.smoothing.driftThresholdPx)return this._springState._desyncStartTs=null,this._springState.active=!1,void(this._springState.driftMagnitude=0)}if(g>(this.options.smoothing.driftThresholdPx||100)+.3*(this.ball.speed||30)){this._springState._desyncStartTs||(this._springState._desyncStartTs=t);const e=t-this._springState._desyncStartTs;if(g>200&&e>3e3)return this.ball.x=n,this.ball.y=a,this._visualOffsetX=0,this._visualOffsetY=0,this._springState.active=!1,this._springState.driftMagnitude=0,void(this._springState._desyncStartTs=null);this._springState.active=!0,this._springState.targetX=n,this._springState.targetY=a,this._springState.driftMagnitude=g}else this._springState._desyncStartTs=null,this._springState.active=!1,this._springState.driftMagnitude=0}_applyDriftCorrection(){if(!this._springState.active||!this._lastServerPos)return;if(this._isNearWall())return void(this._springState.active=!1);const t=performance.now(),e=this._springState._lastCorrectionTs||t,s=Math.min(33,t-e)/1e3;this._springState._lastCorrectionTs=t,this._springState.targetX+=this.ball.vx*s,this._springState.targetY+=this.ball.vy*s;const i=this.options.smoothing||{},n=void 0!==i.stiffness?i.stiffness:3;let a=(this._springState.targetX-this.ball.x)*n*s,o=(this._springState.targetY-this.ball.y)*n*s;const r=this._springState.driftMagnitude||0,l=r>100?Math.min(25,8+.08*(r-100)):8,h=_(a,-l,l),c=_(o,-l,l);this.ball.x+=h,this.ball.y+=c,this._visualOffsetX-=h,this._visualOffsetY-=c}_validateCommand(t){const e=this.isViewer?function(t){const e={};return f(t.x)&&(e.x=t.x),f(t.y)&&(e.y=t.y),f(t.vx)&&(e.vx=t.vx),f(t.vy)&&(e.vy=t.vy),r(t.dirX)&&(e.dirX=t.dirX),r(t.dirY)&&(e.dirY=t.dirY),b(t.speed)&&(e.speed=t.speed),e}(t):function(t){const e={};return r(t.dirX)&&(e.dirX=t.dirX),r(t.dirY)&&(e.dirY=t.dirY),b(t.speed)&&(e.speed=t.speed),e}(t);return{...e,...v(t)}}_handleCommonCommands(t){if(!0!==t.stopping||!this.isViewer||this.state.paused||this.state.stopping||this.startStopping(),void 0!==t.paused){const e=this.state.paused;this.setPaused(t.paused),this.isViewer&&e&&!1===t.paused&&this._handleViewerUnpause(t)}t.returnToCenter&&(this.isViewer&&!this.state.seekingCenter?this.returnToCenter():this.isViewer||this.returnToCenter(),this.options.clientSimulation&&(this._hasReceivedFirstMovingUpdate=!1)),t.reset&&this.reset(),void 0!==t.radius&&this.setBallSize(t.radius),void 0!==t.colorBall&&this.setBallColor(t.colorBall),void 0!==t.colorBg&&this.setBgColor(t.colorBg)}_handleViewerUnpause(t){if(void 0!==t.dirX||void 0!==t.dirY){const e=t.dirX??this.state.lastDirection.x??1,s=t.dirY??this.state.lastDirection.y??0;this.state.lastDirection.x=e,this.state.lastDirection.y=s}Math.abs(this.state.lastDirection.x||0)<i&&Math.abs(this.state.lastDirection.y||0)<i&&this.setDirection(1,0),this._updatePredictionBase()}_handleViewerCommand(t){this._handleViewerPositionUpdate(t),this._handleViewerVelocityUpdate(t),this._handleViewerSpeedUpdate(t),this._handleViewerDirectionUpdate(t)}_handleViewerPositionUpdate(t){if(void 0===t.x||void 0===t.y)return;const e=_(t.x,this.ball.radius,this.options.worldWidth-this.ball.radius),s=_(t.y,this.ball.radius,this.options.worldHeight-this.ball.radius);this.state.targetX=e,this.state.targetY=s;const i=t.serverTimestamp||t.ts||Date.now(),n=performance.now();this.options.clientSimulation?this._lastServerPos={x:e,y:s,vx:t.vx,vy:t.vy,ts:n,serverTime:i}:!0===t.paused?this._handleViewerPositionPause():!1===t.paused&&(void 0!==t.vx&&(this.state.lastVx=t.vx),void 0!==t.vy&&(this.state.lastVy=t.vy))}_handleViewerPositionPause(){if(this.state.allowInterpWhenPaused=!1,this.state.smoothVx=0,this.state.smoothVy=0,this.state.lastVx=0,this.state.lastVy=0,!this.state.seekingCenter){const t=this.centerX-this.ball.x,e=this.centerY-this.ball.y;Math.hypot(t,e)>this.options.centerSnapThreshold&&(this.state.seekingCenter=!0,this._seekCenterStart={x:this.ball.x,y:this.ball.y,ts:performance.now()})}}_handleViewerVelocityUpdate(t){if(this.options.clientSimulation)return;let e=t.vx,s=t.vy;if(void 0!==e){const t=this.ball.radius+this.options.bounceWallMargin,s=this.ball.x<=t,i=this.ball.x>=this.options.worldWidth-t,n=e<0,a=e>0,o=this.ball.vx<0,r=this.ball.vx>0;(s&&n&&r||i&&a&&o)&&(e=void 0)}if(void 0!==s){const t=this.ball.radius+this.options.bounceWallMargin,e=this.ball.y<=t,i=this.ball.y>=this.options.worldHeight-t,n=s<0,a=s>0,o=this.ball.vy<0,r=this.ball.vy>0;(e&&n&&r||i&&a&&o)&&(s=void 0)}void 0!==e&&(this.state.lastVx=e),void 0!==s&&(this.state.lastVy=s);const i="number"==typeof this.state.lastVx?this.state.lastVx:0,n="number"==typeof this.state.lastVy?this.state.lastVy:0,a=Math.hypot(i,n);a>0&&(this.state.lastDirection.x=i/a,this.state.lastDirection.y=n/a)}_handleViewerSpeedUpdate(t){void 0!==t.speed&&(this.setSpeed(t.speed),this.state.paused||this._updatePredictionBase())}_handleViewerDirectionUpdate(t){if(void 0===t.dirX&&void 0===t.dirY)return;let e=t.dirX??this.state.lastDirection.x,s=t.dirY??this.state.lastDirection.y;if(Math.abs(e)<i&&Math.abs(s)<i&&(Math.abs(this.state.lastDirection.x)>i||Math.abs(this.state.lastDirection.y)>i?(e=this.state.lastDirection.x,s=this.state.lastDirection.y):(e=1,s=0)),this.state.lastDirection.x=e,this.state.lastDirection.y=s,this.options.clientSimulation){const t=T(this.ball.speed,this.options.maxSpeed);this.ball.vx=e*t,this.ball.vy=s*t}this.state.paused||this._updatePredictionBase()}_updatePredictionBase(){const t=T(this.ball.speed,this.options.maxSpeed),e=this.state.lastDirection.x||0,s=this.state.lastDirection.y||0;0===e&&0===s||(this.state.lastVx=e*t,this.state.lastVy=s*t,this.options.clientSimulation&&(this.ball.vx=e*t,this.ball.vy=s*t))}_handleServerCommand(t){this._handleServerDirection(t),this._handleServerSpeed(t),this._handleServerUnpause(t)}_handleServerDirection(t){if(void 0===t.dirX&&void 0===t.dirY)return;const e=t.dirX??this.state.lastDirection.x,s=t.dirY??this.state.lastDirection.y;this.setDirection(e,s)}_handleServerSpeed(t){void 0!==t.speed&&this.setSpeed(t.speed)}_handleServerUnpause(t){(!1===t.paused||!1===this.state.paused)&&this._restoreServerVelocity()}_restoreServerVelocity(){const t=T(this.ball.speed,this.options.maxSpeed);let e=this.state.lastDirection.x||0,s=this.state.lastDirection.y||0;0===e&&0===s&&(e=1,s=0,this.setDirection(e,s)),this.setVelocity(e*t,s*t)}}},397(t){"use strict";const e=1e-4;function s(t){return Math.abs(t||0)<e}function i(t){return Math.abs(t||0)<e}t.exports={DIRECTION_EPSILON:e,MAX_DIRECTION_ABS:1.001,isVerticalDirection:s,isHorizontalDirection:i,isZeroDirection:function(t,s){return Math.abs(t||0)<e&&Math.abs(s||0)<e},normalizeDirection:function(t,e){const s=Math.hypot(t||0,e||0);return s>0?{x:t/s,y:e/s}:null},isValidDirection:function(t){return"number"==typeof t&&Number.isFinite(t)&&Math.abs(t)<=1.001},getDirectionMode:function(t,e){const s=Math.abs(t||0),i=Math.abs(e||0);return s>.9&&i<.2?"horizontal":i>.9&&s<.2?"vertical":s>2*i?"horizontal":i>2*s?"vertical":t>0&&e>0?"diagRL":t>0&&e<0?"diagRLL":null},applyAxisLock:function(t,e,n,a){const o=e||0,r=n||0,l=s(o)&&Math.abs(r)>0,h=i(r)&&Math.abs(o)>0;return l?(t.vx=0,t.vy=r*a):h&&(t.vy=0,t.vx=o*a),t},calculateVelocity:function(t,e,s,i){const n=s/100*i;return{vx:(t||0)*n,vy:(e||0)*n,pps:n}},getFallbackDirection:function(t,e,s,i){return{x:t<s?1:-1,y:e<i?1:-1}}}},422(t){"use strict";class e{constructor(){this.components=new Map}createSpeedControl(t,e={}){const s={min:5,max:100,defaultValue:30,onSpeedChange:null,showValue:!0,showLabels:!0,simple:!0,...e},i={container:t,options:s,currentSpeed:s.defaultValue,elements:{},render(){const e=document.createElement("div");return e.className="speed-control",s.simple?e.innerHTML=`\n  <div class="speed-info">\n  ${s.showValue?`<div class="speed-display"><span class="speed-value">${globalThis.i18n?.t("controller.speedMedium")||"Medium"}</span></div>`:""}\n  </div>\n  <div class="speed-slider-container">\n  <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>\n  <input type="range"\n  id="speedRange"\n  class="speed-range"\n  min="${s.min}"\n  max="${s.max}"\n  value="${s.currentSpeed}"\n  step="1">\n  </div>\n  `:e.innerHTML=`\n  <div class="speed-header">\n  <div class="speed-icon">⚡</div>\n  <div class="speed-info">\n  ${s.showValue?`<div class="speed-display"><span class="speed-value">${globalThis.i18n?.t("controller.speedMedium")||"Medium"}</span></div>`:""}\n  </div>\n  <div class="speed-indicator">\n  <div class="speed-bar">\n  <div class="speed-fill" style="width: 40%"></div>\n  </div>\n  </div>\n  </div>\n  <div class="speed-controls">\n  <div class="speed-presets">\n  <button class="speed-preset slow" data-speed="20">🐌<span>${globalThis.i18n?.t("controller.speedSlow")||"Slow"}</span></button>\n  <button class="speed-preset normal active" data-speed="40">⚡<span>${globalThis.i18n?.t("controller.speedMedium")||"Medium"}</span></button>\n  <button class="speed-preset fast" data-speed="80">🚀<span>${globalThis.i18n?.t("controller.speedFast")||"Fast"}</span></button>\n  </div>\n  <div class="speed-slider-container">\n  <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>\n  <div class="speed-track">\n  <input type="range"\n  id="speedRange"\n  class="speed-range"\n  min="${s.min}"\n  max="${s.max}"\n  value="${s.currentSpeed}"\n  step="1">\n  <div class="speed-marks">\n  <span class="mark" style="left: 0">0</span>\n  <span class="mark" style="left: 25%">25</span>\n  <span class="mark" style="left: 50%">50</span>\n  <span class="mark" style="left: 75%">75</span>\n  <span class="mark" style="left: 100%">100</span>\n  </div>\n  </div>\n  </div>\n  </div>\n  `,t.appendChild(e),this.setupElements(),this.setupEventListeners(),this},setupElements(){this.elements.range=t.querySelector(".speed-range"),this.elements.value=t.querySelector(".speed-value"),this.elements.display=t.querySelector(".speed-display"),this.elements.fill=t.querySelector(".speed-fill"),this.elements.presets=t.querySelectorAll(".speed-preset")},setupEventListeners(){if(this.elements.range&&this.elements.range.addEventListener("input",t=>{this.setSpeed(Number.parseInt(t.target.value,10))}),this.elements?.presets?.length)for(const t of this.elements.presets)t.addEventListener("click",()=>{const e=Number.parseInt(t.dataset.speed,10);this.setSpeed(e),this.updateActivePreset(e)})},updateActivePreset(e){if(0===this.elements?.presets?.length)return;for(const t of this.elements.presets)t.classList.remove("active");let s=null;s=e<=30?"slow":e<=60?"normal":"fast";const i=t.querySelector(`.speed-preset.${s}`);i&&i.classList.add("active")},setSpeed(t,e=!1){this.currentSpeed=Math.max(this.options.min,Math.min(this.options.max,t)),this.elements.range&&(this.elements.range.value=this.currentSpeed);const{category:s,color:i}=this._getSpeedCategoryAndColor(this.currentSpeed);this.elements.value&&(this.elements.value.textContent=s,this.elements.value.style.color=i),this.elements.fill&&(this.elements.fill.style.width=`${this.currentSpeed}%`,this.elements.fill.style.background=i),this.updateActivePreset(this.currentSpeed),!e&&this.options.onSpeedChange&&this.options.onSpeedChange(this.currentSpeed)},_getSpeedCategoryAndColor(t){const e=t=>globalThis.i18n?.t(t)||t;return t<=15?{category:e("controller.speedVerySlow"),color:"#22c55e"}:t<=25?{category:e("controller.speedSlow"),color:"#3b82f6"}:t<=35?{category:e("controller.speedMedium"),color:"#8b5cf6"}:t<=50?{category:e("controller.speedFast"),color:"#f59e0b"}:{category:e("controller.speedVeryFast"),color:"#ef4444"}},getSpeed(){return this.currentSpeed},reset(){this.setSpeed(this.options.defaultValue)}};return i.render(),globalThis.addEventListener("i18nLanguageChanged",()=>{i.setSpeed(i.currentSpeed,!0)}),i}createColorControl(t,e={}){const s={colors:["#60a5fa","#ef4444","#10b981","#f59e0b","#8b5cf6","#ec4899"],defaultValue:null,onColorChange:null,title:"🎨 Цвет",...e};return{container:t,options:s,currentColor:s.defaultValue||s.colors[0],elements:{},render(){const e=document.createElement("div");return e.className="color-control",e.innerHTML=`\n  <h3>${s.title}</h3>\n  <div class="color-palette">\n  ${s.colors.map(t=>`\n  <button class="color-btn"\n  data-color="${t}"\n  style="background-color: ${t}"\n  title="${t}"\n  aria-label="Color: ${t}">\n  </button>\n  `).join("")}\n  </div>\n  `,t.appendChild(e),this.setupEventListeners(),this.setColor(this.currentColor),this},setupEventListeners(){const e=t.querySelectorAll(".color-btn");for(const t of e)t.addEventListener("click",()=>{const e=t.dataset.color;this.setColor(e)})},setColor(e){this.currentColor=e;const s=t.querySelectorAll(".color-btn");for(const t of s)t.classList.toggle("active",t.dataset.color===e);this.options.onColorChange?.(e)}}.render()}createSizeControl(t,e={}){const s={sizes:[20,40,80,100],defaultValue:20,onSizeChange:null,title:"📏 Размер",...e};return{container:t,options:s,currentSize:s.defaultValue,elements:{},render(){const e=document.createElement("div");return e.className="size-control",e.innerHTML=`\n  <h3>${s.title}</h3>\n  <div class="size-palette">\n  ${s.sizes.map((t,e)=>`\n  <button class="size-btn"\n  data-size="${t}"\n  title="${t}px"\n  aria-label="Size: x${e+1} (${t}px)">\n  x${e+1}\n  </button>\n  `).join("")}\n  </div>\n  `,t.appendChild(e),this.setupEventListeners(),this.setSize(this.currentSize),this},setupEventListeners(){const e=t.querySelectorAll(".size-btn");for(const t of e)t.addEventListener("click",()=>{const e=Number.parseInt(t.dataset.size,10);this.setSize(e)})},setSize(e){this.currentSize=e;const s=t.querySelectorAll(".size-btn");for(const t of s)t.classList.toggle("active",Number.parseInt(t.dataset.size,10)===e);this.options.onSizeChange?.(e)}}.render()}createStatusIndicator(t,e={}){const s={title:"Статус",showIcon:!0,autoHide:!1,hideDelay:3e3,...e};return{container:t,options:s,currentStatus:"idle",elements:{},render(){const e=document.createElement("div");return e.className="status-indicator",e.innerHTML=`\n  <div class="status-content">\n  ${s.showIcon?'<span class="status-icon">⏳</span>':""}\n  <span class="status-text">${s.title}</span>\n  </div>\n  `,t.appendChild(e),this.setupElements(),this},setupElements(){this.elements.container=t.querySelector(".status-indicator"),this.elements.icon=t.querySelector(".status-icon"),this.elements.text=t.querySelector(".status-text")},setStatus(t,e){if(this.currentStatus=t,this.elements.text&&(this.elements.text.textContent=e||""),this.elements.icon){const e={success:"✅",warning:"⚠️",error:"❌",waiting:"⏳",idle:"⏳"};this.elements.icon.textContent=e[t]||"⏳"}this.elements.container&&(this.elements.container.className="status-indicator status-"+t)}}.render()}}const s=new e;"undefined"!=typeof globalThis&&(globalThis.SharedComponents=e,globalThis.sharedComponents=s),t.exports={SharedComponents:e,sharedComponents:s}},473(t,e,s){"use strict";t=s.nmd(t);const i=["en","ru","es","fr","de","pt","ja","zh"],n={en:"English",ru:"Русский",es:"Español",fr:"Français",de:"Deutsch",pt:"Português",ja:"日本語",zh:"中文"},a="emdr-language";function o(t){return i.includes(t)}const r={SUPPORTED_LANGUAGES:i,LANGUAGE_NAMES:n,STORAGE_KEY:a,DEFAULT_LANGUAGE:"en",isSupported:o,detectFromDomain:function(){let t="localhost";return"undefined"!=typeof globalThis&&globalThis.location&&(t=globalThis.location.hostname),t.includes("emdrbilateral.ru")?"ru":(t.includes("emdrbilateral.online"),"en")},saveLanguage:function(t){if(o(t)&&"undefined"!=typeof globalThis&&globalThis.localStorage)try{globalThis.localStorage.setItem(a,t)}catch{}}};Object.freeze(r),Object.freeze(i),Object.freeze(n),"undefined"!=typeof globalThis&&globalThis&&(globalThis.I18nConstants=r),t&&t.exports&&(t.exports=r),t.exports=r},549(t,e,s){"use strict";const i=s(897);class n{constructor(t,e,s={}){this.sessionId=t,this.role=e,this.transportType="websocket",this.client=new i(t,e,s)}async connect(){return this.client.connect()}async send(t,e,s={}){return this.client.send(t,e,s)}on(t,e){this.client.on(t,e)}off(t,e){this.client.off(t,e)}close(){this.client.close()}get isConnected(){return this.client.isConnected}getStats(){return{...this.client.getStats(),transportType:this.transportType}}getTransportType(){return this.transportType}}"undefined"!=typeof globalThis&&(globalThis.RealtimeClient=n),t.exports=n},578(t){"use strict";const e="undefined"!=typeof globalThis&&globalThis.debugLog?globalThis.debugLog:()=>{},s="undefined"!=typeof globalThis&&globalThis.debugError?globalThis.debugError:()=>{},i="undefined"!=typeof globalThis&&globalThis.debugWarn?globalThis.debugWarn:()=>{},n=globalThis.CommonUtils?.getSessionIdFromUrl&&"function"==typeof globalThis.CommonUtils.getSessionIdFromUrl?globalThis.CommonUtils.getSessionIdFromUrl:function(){const t=globalThis.location.pathname.split("/");return"c"!==t[1]&&"s"!==t[1]||!t[2]?new URLSearchParams(globalThis.location.search).get("sessionId"):t[2]},a=globalThis.CommonUtils?.toggleFullscreen&&"function"==typeof globalThis.CommonUtils.toggleFullscreen?globalThis.CommonUtils.toggleFullscreen:async function(t){try{if(!(()=>{const t=document.documentElement;return!!(t.requestFullscreen||t.webkitRequestFullscreen||t.msRequestFullscreen||t.mozRequestFullScreen)})())return!1;if(document.fullscreenElement||document.webkitFullscreenElement||document.msFullscreenElement||document.mozFullScreenElement){const t=document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen||document.mozCancelFullScreen;await(t?.call(document))}else{const e=t||document.documentElement,s=e.requestFullscreen||e.webkitRequestFullscreen||e.msRequestFullscreen||e.mozRequestFullScreen;await(s?.call(e))}return!0}catch(t){return s("Fullscreen API error:",t),!1}},o=globalThis.CommonUtils&&"function"==typeof globalThis.CommonUtils.throttle?globalThis.CommonUtils.throttle:function(t,e=100){if("function"!=typeof t)return()=>{};let s=0,i=null,n=null;return function(...a){const o=Date.now(),r=e-(o-s);n=a,r<=0||r>e?(i&&(clearTimeout(i),i=null),s=o,t.apply(this,a)):null===i&&(i=setTimeout(()=>{s=Date.now(),i=null,t.apply(this,n),n=null},r))}};"undefined"!=typeof globalThis&&(globalThis.debugLog=e,globalThis.debugError=s,globalThis.debugWarn=i,globalThis.getSessionIdFromUrl=n,globalThis.toggleFullscreen=a,globalThis.throttle=o,globalThis.WS_MSG=Object.freeze({controllerUpdate:"controller_update",heartbeat:"heartbeat",initialState:"initial_state",stateUpdate:"state_update",viewerStatus:"viewer_status",viewerAudioActivated:"viewer_audio_activated",netMetrics:"net_metrics",bounceSync:"bounce_sync"}));class r{constructor(){this.themeKey="bb_theme",this.init()}init(){this.setupThemeToggle(),this.loadTheme(),this.setupThemeChangeListener()}loadTheme(){const t=localStorage.getItem(this.themeKey)||"dark";document.body.classList.remove("dark-theme","light-theme"),"light"===t?(document.body.classList.add("light-theme"),this.updateThemeButton("☀️")):(document.body.classList.add("dark-theme"),this.updateThemeButton("🌙"))}toggleTheme(){const t=document.body,e=t.classList.contains("light-theme");t.classList.remove("dark-theme","light-theme"),e?(t.classList.add("dark-theme"),localStorage.setItem(this.themeKey,"dark"),this.updateThemeButton("🌙")):(t.classList.add("light-theme"),localStorage.setItem(this.themeKey,"light"),this.updateThemeButton("☀️")),globalThis.dispatchEvent(new CustomEvent("bb_theme_changed"))}updateThemeButton(t){const e=document.getElementById("themeToggleBtn");e&&(e.textContent=t)}setupThemeToggle(){const t=document.getElementById("themeToggleBtn");t&&t.addEventListener("click",()=>this.toggleTheme())}setupThemeChangeListener(){globalThis.addEventListener("bb_theme_changed",()=>{this.loadTheme()})}}async function l(t,e){const i=document.getElementById(t),n=globalThis.i18n,a=(t,e)=>n&&n.t(t)!==t?n.t(t):e;if(i?.value)try{if(await navigator.clipboard.writeText(i.value),globalThis.showSuccessNotification){const t=a("controller.success","Success"),s=e||a("controller.linkCopied","Ссылка скопирована");globalThis.showSuccessNotification.length>=2?globalThis.showSuccessNotification(t,s):globalThis.showSuccessNotification(s)}else if(globalThis.showSuccessToast){const t=e||a("controller.linkCopied","Ссылка скопирована");globalThis.showSuccessToast(t)}else alert(e||a("controller.linkCopied","Ссылка скопирована"))}catch(t){s("Ошибка копирования:",t),globalThis.showErrorNotification&&globalThis.showErrorNotification(a("controller.errorTitle","Ошибка копирования"),a("controller.copyError","Не удалось скопировать текст."))}else globalThis.showErrorNotification?globalThis.showErrorNotification(a("controller.errorTitle","Ошибка"),a("controller.copyErrorElement","Элемент для копирования не найден.")):s("Элемент для копирования не найден:",t)}function h(){globalThis.location.href="/"}document.addEventListener("DOMContentLoaded",()=>{globalThis.themeManager=new r}),"undefined"!=typeof globalThis&&(globalThis.copy=l,globalThis.goBack=h),t.exports={ThemeManager:r,copy:l,goBack:h,getSessionIdFromUrl:n,toggleFullscreen:a,throttle:o}},746(t){"use strict";class e{constructor(){this.enabled=!1,this.volume=.5,this.audioContext=null,this.oscillatorType="sine",this.frequency=180,this.duration=.12,this.soundType="soft",this.audioBuffers=new Map,this.loadingPromises=new Map,this.soundFiles={tick:"/sounds/tick.wav",click:"/sounds/click.wav",bounce:"/sounds/bounce.wav",tone:"/sounds/tone.wav",beep:"/sounds/beep.wav"},this.useAudioFiles=!0,this.filesLoaded=!1}init(t=!1){if(!this.audioContext){const t=globalThis.AudioContext||globalThis.webkitAudioContext;t?this.audioContext=new t:"undefined"!=typeof logger&&logger.warn("Web Audio API is not supported in this browser.")}"suspended"===this.audioContext?.state&&this.audioContext.resume().catch(t=>{"undefined"!=typeof logger&&logger.warn("Failed to resume AudioContext:",t)}),t&&this.useAudioFiles&&!this.filesLoaded&&this.preloadSounds().catch(t=>{"undefined"!=typeof logger&&logger.warn("Failed to load audio files, falling back to synthesis:",t),this.useAudioFiles=!1})}async loadSound(t){if(!this.audioContext)throw new Error("AudioContext not initialized");if(this.audioBuffers.has(t))return this.audioBuffers.get(t);if(this.loadingPromises.has(t))return await this.loadingPromises.get(t);const e=fetch(t).then(t=>{if(!t.ok)throw new Error(`HTTP error! status: ${t.status}`);return t.arrayBuffer()}).then(t=>this.audioContext.decodeAudioData(t)).then(e=>(this.audioBuffers.set(t,e),this.loadingPromises.delete(t),e)).catch(e=>{throw this.loadingPromises.delete(t),e});return this.loadingPromises.set(t,e),await e}async preloadSounds(){if(!this.audioContext)return;logger?.log("🔊 Starting audio files preload...");const t=Object.values(this.soundFiles).map(t=>this.loadSound(t).then(()=>!0).catch(()=>null)),e=(await Promise.all(t)).filter(t=>!0===t).length;this.filesLoaded=e>0,e===Object.keys(this.soundFiles).length?logger?.log(`✅ Audio files preloaded: ${e}/${Object.keys(this.soundFiles).length}`):e>0?logger?.warn(`⚠️ Partially loaded: ${e}/${Object.keys(this.soundFiles).length} (using synthesis for missing)`):(logger?.warn("⚠️ No audio files loaded, using synthesis fallback"),this.useAudioFiles=!1)}setEnabled(t){this.enabled=!!t,t&&this.useAudioFiles&&!this.filesLoaded&&this.audioContext&&this.preloadSounds().catch(t=>{"undefined"!=typeof logger&&logger.warn("Failed to load audio files:",t),this.useAudioFiles=!1})}setVolume(t){this.volume=Math.max(0,Math.min(1,t))}setSoundType(t){switch(this.soundType=t,t){case"tone":this.oscillatorType="sine",this.frequency=440,this.duration=.15;break;case"click":this.oscillatorType="square",this.frequency=800,this.duration=.03;break;case"bounce":this.oscillatorType="sine",this.frequency=220,this.duration=.08;break;case"beep":this.oscillatorType="sine",this.frequency=880,this.duration=.06;break;case"soft":this.oscillatorType="sine",this.frequency=180,this.duration=.12;break;default:this.oscillatorType="sine",this.frequency=600,this.duration=.05}}playTick(t){if(!this.enabled||!this.audioContext)return;if("suspended"===this.audioContext.state)return void this.audioContext.resume().catch(()=>{});const e=t||this.soundType;if(t&&t!==this.soundType&&this.setSoundType(t),this.useAudioFiles&&this.filesLoaded){const t=this.soundFiles[e];if(t&&this.audioBuffers.has(t))return void this.playBufferedSound(t)}this.playSynthesizedSound()}playBufferedSound(t){try{const e=this.audioBuffers.get(t);if(!e)return;const s=this.audioContext.createBufferSource(),i=this.audioContext.createGain();s.buffer=e,i.gain.value=this.volume,s.connect(i),i.connect(this.audioContext.destination),s.start()}catch(t){"undefined"!=typeof logger&&logger.error("Error playing buffered sound:",t),this.playSynthesizedSound()}}playSynthesizedSound(){try{if("soft"===this.soundType)return void this.playSoftWoodenSound();const t=this.audioContext.createOscillator(),e=this.audioContext.createGain();t.type=this.oscillatorType,t.frequency.setValueAtTime(this.frequency,this.audioContext.currentTime),e.gain.setValueAtTime(0,this.audioContext.currentTime),e.gain.linearRampToValueAtTime(this.volume,this.audioContext.currentTime+.005),e.gain.exponentialRampToValueAtTime(.001,this.audioContext.currentTime+this.duration),t.connect(e),e.connect(this.audioContext.destination),t.start(),t.stop(this.audioContext.currentTime+this.duration)}catch(t){"undefined"!=typeof logger&&logger.error("Error playing synthesized sound:",t)}}playSoftWoodenSound(){try{const t=this.audioContext.currentTime,e=.16,s=this.audioContext.createOscillator(),i=this.audioContext.createGain();s.type="sine",s.frequency.setValueAtTime(120,t),s.frequency.exponentialRampToValueAtTime(60,t+e),i.gain.setValueAtTime(0,t),i.gain.linearRampToValueAtTime(.8*this.volume,t+.004),i.gain.exponentialRampToValueAtTime(.001,t+e),s.connect(i),i.connect(this.audioContext.destination),s.start(t),s.stop(t+e)}catch(t){"undefined"!=typeof logger&&logger.error("Error playing soft wooden sound:",t)}}}"undefined"!=typeof globalThis&&(globalThis.AudioManager=e),t.exports=e},777(t){class e{constructor(t,e,s={}){if(!t)throw new Error("Canvas element is required for BallRenderer");if(!e)throw new Error("PhysicsEngine is required for BallRenderer");if(this.canvas=t,this.ctx=t.getContext("2d"),this.physics=e,!this.ctx)throw new Error("Unable to get 2D context from canvas");this.animationFrameId=null,this.lastTime=0,this.frameCount=0,this.frameTimeHistory=[],this.adaptiveFrameRate=!0,this.maxFrameTime=50,this.fixedStepMs=1e3/60,this.fixedStepMs=1e3/60,this.onFrameCallback=null,this.options={localPhysics:!1,...s},this.adaptiveFrameRate=globalThis.BBConfig?.rendering?.adaptiveFrameRate??this.adaptiveFrameRate,this.maxFrameTime=globalThis.BBConfig?.rendering?.maxFrameTime??this.maxFrameTime,this.pi2=2*Math.PI,this.fillRect=this.ctx.fillRect.bind(this.ctx),this.beginPath=this.ctx.beginPath.bind(this.ctx),this.fill=this.ctx.fill.bind(this.ctx),this.ball=this.physics.ball,this.colors=this.physics.colors,this._cached={radius:null,color:null,gradient:null,path:null}}start(){this.animationFrameId&&this.stop(),this.lastTime=performance.now(),this.renderLoop=this.renderLoop.bind(this),this.renderLoop(performance.now())}stop(){this.animationFrameId&&(cancelAnimationFrame(this.animationFrameId),this.animationFrameId=null)}_calculateDeltaTime(t){const e=t-this.lastTime;return this.adaptiveFrameRate&&(this.frameTimeHistory.push(e),this.frameTimeHistory.length>20&&this.frameTimeHistory.shift()),Math.min(e,this.maxFrameTime)}_updatePhysics(t){this.onFrameCallback&&this.onFrameCallback(t/1e3),this.physics.update(t/1e3)}_renderFrame(t){const e=this.physics.getInterpolationAlpha?this.physics.getInterpolationAlpha():1;this.render(e)}renderLoop(t){if(this.validateCanvas()){const e=this.canvas.clientWidth,s=this.canvas.clientHeight;if(e&&e!==this.canvas.width||s&&s!==this.canvas.height)return this.resize(e||this.canvas.width,s||this.canvas.height),this.lastTime=t,void(this.animationFrameId=requestAnimationFrame(this.renderLoop));const i=this._calculateDeltaTime(t);this.frameCount++;try{this._updatePhysics(i),this._renderFrame(t),this.lastTime=t}catch(t){return"function"==typeof globalThis?.logger?.error&&globalThis.logger.error("Render loop error:",t),void this.stop()}this.animationFrameId=requestAnimationFrame(this.renderLoop)}else this.stop()}_renderFull(t){const e=this.physics.options.worldWidth||this.canvas.width,s=this.physics.options.worldHeight||this.canvas.height;this.ctx.fillStyle=this.colors.bg,this.fillRect(0,0,e,s);const i=this.physics.getInterpolatedBall?this.physics.getInterpolatedBall(t):this.physics.ball;this.renderBall(i),this.options.showDebug&&this._renderDebugOverlay()}_renderDebugOverlay(){const t=this.ctx,e=this._buildDebugLines(),s=this._estimateDebugBoxWidth(e),i=16*e.length+16,n=this.physics.options.worldWidth||this.canvas.width,a=(this.physics.options.worldHeight||this.canvas.height,n-s-8);t.save(),t.font="12px monospace",t.textBaseline="top",t.fillStyle="rgba(0, 0, 0, 0.65)",t.fillRect(a,8,s,i),t.strokeStyle="rgba(255, 255, 255, 0.3)",t.lineWidth=1,t.strokeRect(a,8,s,i);const o=this._getJitterLevel();t.fillStyle="bad"===o?"#ff6b6b":"warn"===o?"#ffd93d":"#6bff6b";for(let s=0;s<e.length;s++)t.fillStyle=0===s?"bad"===o?"#ff6b6b":"warn"===o?"#ffd93d":"#6bff6b":"#ffffff",t.fillText(e[s],a+8,16+16*s);t.restore()}_buildDebugLines(){const t=[],e=this._getRealFps(),s=this._getLastFrameTime(),i=this.physics.options.smoothing||{};if(t.push(`${e.toFixed(0)} FPS | ${s.toFixed(1)}ms`),void 0!==i.damping||void 0!==i.stiffness){const e=null!=i.damping?i.damping:"-",s=null!=i.stiffness?i.stiffness:"-";t.push(`damp:${e} stiff:${s}`)}null!=i.driftThresholdPx&&t.push(`drift: >${i.driftThresholdPx}px`);const n=this._getEstimatedJitterMs();return t.push(`jitter: ~${n.toFixed(0)}ms (${this._getJitterLevel()})`),t}_estimateDebugBoxWidth(t){let e=0;for(const s of t)s.length>e&&(e=s.length);return 7.5*e+16}_getRealFps(){return this.frameTimeHistory&&0!==this.frameTimeHistory.length?1e3/(this.frameTimeHistory.reduce((t,e)=>t+e,0)/this.frameTimeHistory.length):60}_getLastFrameTime(){return this.frameTimeHistory&&0!==this.frameTimeHistory.length?this.frameTimeHistory[this.frameTimeHistory.length-1]:16}_getEstimatedJitterMs(){if(!this.frameTimeHistory||this.frameTimeHistory.length<4)return 0;const t=this.frameTimeHistory.slice(-8),e=t.reduce((t,e)=>t+e,0)/t.length,s=t.reduce((t,s)=>t+(s-e)**2,0)/t.length;return Math.sqrt(s)}_getJitterLevel(){const t=this._getEstimatedJitterMs();return t>15?"bad":t>8?"warn":"good"}render(t=1){if(!this.canvas||!this.ctx||!this.physics)return;const e=this.physics.options.worldWidth,s=this.physics.options.worldHeight,i=e>0&&s>0&&(this.canvas.width!==e||this.canvas.height!==s);try{if(i){const t=this.canvas.width/e,i=this.canvas.height/s;if(this.ctx.save(),Math.abs(t-i)<.001)this.ctx.scale(t,i);else{const n=Math.min(t,i),a=(this.canvas.width-e*n)/2,o=(this.canvas.height-s*n)/2;this.ctx.fillStyle=this.physics.colors.bg,this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height),this.ctx.translate(a,o),this.ctx.scale(n,n)}}this._renderFull(t),i&&this.ctx.restore()}catch(t){i&&this.ctx.restore(),"function"==typeof debugError&&debugError("Error during render:",t)}}renderBall(t){const e=t||this.ball;if(e&&"number"==typeof e.x&&"number"==typeof e.y){if(e.radius<=0||e.radius>1e3)return;try{const t=e.colorBall||this.colors.ball;if(this._cached.radius!==e.radius||this._cached.color!==t){this._cached.radius=e.radius,this._cached.color=t;const s=this.ctx.createRadialGradient(.3*-e.radius,.3*-e.radius,0,0,0,e.radius);s.addColorStop(0,t),s.addColorStop(1,this.adjustBrightness(t,-20)),this._cached.gradient=s;const i=new Path2D;i.arc(0,0,Math.max(e.radius,2),0,this.pi2),this._cached.path=i}this.beginPath(),this.ctx.save(),this.ctx.imageSmoothingEnabled=!0,this.ctx.imageSmoothingQuality="high",this.ctx.translate(e.x,e.y),this.ctx.fillStyle=this._cached.gradient,this.ctx.shadowColor="rgba(0, 0, 0, 0.2)",this.ctx.shadowBlur=4,this.ctx.shadowOffsetX=2,this.ctx.shadowOffsetY=2,this.ctx.fill(this._cached.path),this.ctx.restore(),this.ctx.shadowColor="transparent",this.ctx.shadowBlur=0,this.ctx.shadowOffsetX=0,this.ctx.shadowOffsetY=0}catch(t){"function"==typeof globalThis?.logger?.warn&&globalThis.logger.warn("Error rendering ball:",t)}}}adjustBrightness(t,e){const s=t.replace("#",""),i=Math.max(0,Math.min(255,Number.parseInt(s.slice(0,2),16)+e)),n=Math.max(0,Math.min(255,Number.parseInt(s.slice(2,4),16)+e)),a=Math.max(0,Math.min(255,Number.parseInt(s.slice(4,6),16)+e));return`#${i.toString(16).padStart(2,"0")}${n.toString(16).padStart(2,"0")}${a.toString(16).padStart(2,"0")}`}invalidateBallCache(){this._cached.radius=null,this._cached.color=null,this._cached.gradient=null,this._cached.path=null}resize(t,e){if(this.canvas)try{this.canvas.width=t,this.canvas.height=e,this.canvas.style.width=t+"px",this.canvas.style.height=e+"px",this.physics&&this.physics.setWorldSize(t,e),this._cached.radius=null,this._cached.color=null,this._cached.gradient=null,this._cached.path=null}catch(t){"function"==typeof globalThis?.logger?.error&&globalThis.logger.error("Canvas resize error:",t)}}validateCanvas(){if(!this.canvas)return!1;if(!this.canvas.parentNode)return!1;if(!this.ctx){try{if(this.ctx=this.canvas.getContext("2d"),this.ctx)return this.fillRect=this.ctx.fillRect.bind(this.ctx),this.beginPath=this.ctx.beginPath.bind(this.ctx),this.fill=this.ctx.fill.bind(this.ctx),!0}catch(t){"function"==typeof globalThis?.logger?.warn&&globalThis.logger.warn("Failed to recover canvas context:",t)}return!1}return!0}setPhysicsEngine(t){t&&t.ball&&t.colors&&(this.physics=t,this.ball=this.physics.ball,this.colors=this.physics.colors)}drawFrame(t){if(this.validateCanvas()&&t)try{this.ctx.fillStyle=t.colorBg||this.colors.bg,this.fillRect(0,0,this.canvas.width,this.canvas.height),this.renderBall(t)}catch(t){"function"==typeof globalThis?.logger?.warn&&globalThis.logger.warn("Error drawing frame:",t)}}setBackgroundColor(t){this.colors&&(this.colors.bg=t),this._cached.radius=null,this._cached.color=null}}"undefined"!=typeof globalThis&&(globalThis.BallRenderer=e),t.exports=e},856(t){"use strict";const e=function(){const t=globalThis.I18nConstants||{LANGUAGE_NAMES:{en:"English",ru:"Русский",es:"Español",fr:"Français",de:"Deutsch",pt:"Português",ja:"日本語",zh:"中文"},SUPPORTED_LANGUAGES:["en","ru","es","fr","de","pt","ja","zh"],STORAGE_KEY:"emdr-language",isSupported:e=>t.SUPPORTED_LANGUAGES.includes(e),saveLanguage:e=>{try{localStorage.setItem(t.STORAGE_KEY,e)}catch{}}},e=t.LANGUAGE_NAMES,s=new Set(t.SUPPORTED_LANGUAGES);function i(t){const s=document.getElementById("currentLanguageLabel"),i=document.querySelectorAll(".language-option");if(s){const i=`common.lang.${t}`;let n=null;if(globalThis.i18n?.t){const t=globalThis.i18n.t(i);t&&t!==i&&(n=t)}s.textContent=n||e[t]||t}for(const e of i)e.dataset.lang===t?(e.classList.add("language-option--active"),e.setAttribute("aria-selected","true")):(e.classList.remove("language-option--active"),e.setAttribute("aria-selected","false"));document.documentElement.lang=t}function n(t){if(!s.has(t))return;localStorage.setItem("emdr-language",t),i(t),async function(t){const e=globalThis?.i18n;if(!e)return!1;if("function"==typeof e.changeLanguage)try{return!!await Promise.resolve(e.changeLanguage(t))}catch{}if("function"==typeof e.setLanguage)try{return!!e.setLanguage(t)}catch{}if(void 0!==e.currentLanguage)try{if(e.currentLanguage=t,"function"==typeof e.applyTranslations)try{e.applyTranslations()}catch{}try{"function"==typeof CustomEvent?globalThis.dispatchEvent(new CustomEvent("i18nLanguageChanged",{detail:{lang:t}})):"function"==typeof Event&&globalThis.dispatchEvent(new Event("i18nLanguageChanged"))}catch{}return!0}catch{return!1}return!1}(t).then(t=>{t&&globalThis.i18n?.t&&(document.title=globalThis.i18n.t("home.title"))}).catch(()=>{});const e=new URL(globalThis.location.href);if(e.searchParams.set("lang",t),globalThis.history.replaceState({},"",e),globalThis.location.pathname.includes("/c/")){const e=globalThis.getSessionIdFromUrl?.()||function(){const t=globalThis.location.pathname.match(/\/[cv]\/([a-f0-9]+)/);return t?t[1]:null}();e&&async function(t,e){try{const s=await globalThis.csrfFetch(`/api/session/${t}/language`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({language:e})});if(!s.ok)throw new Error(`HTTP ${s.status}`);const i=await s.json();console.log("[LanguageSelector] ✅ Language synced to Viewer:",i.language)}catch(t){throw console.error("[LanguageSelector] ❌ Failed to sync language:",t),t}}(e,t).catch(t=>{console.warn("[LanguageSelector] Failed to sync language to Viewer:",t.message)})}}return{init:function(){const t=document.getElementById("languageSelectorBtn"),e=document.getElementById("languageDropdown"),a=document.querySelectorAll(".language-option");if(t&&e&&0!==a.length){i(function(){const t=new URLSearchParams(globalThis.location.search).get("lang");if(t&&s.has(t))return localStorage.setItem("emdr-language",t),t;const e=localStorage.getItem("emdr-language");if(e&&s.has(e))return e;const i=navigator.language.split("-")[0].toLowerCase();return s.has(i)?(localStorage.setItem("emdr-language",i),i):(localStorage.setItem("emdr-language","en"),"en")}()),t.addEventListener("click",s=>{s.stopPropagation(),e.hasAttribute("hidden")?(e.removeAttribute("hidden"),t.setAttribute("aria-expanded","true")):(e.setAttribute("hidden",""),t.setAttribute("aria-expanded","false"))});for(const s of a)s.addEventListener("click",i=>{i.preventDefault(),n(s.dataset.lang),e.setAttribute("hidden",""),t.setAttribute("aria-expanded","false")}),s.addEventListener("keydown",i=>{"Enter"===i.key||" "===i.key?(i.preventDefault(),n(s.dataset.lang),e.setAttribute("hidden",""),t.setAttribute("aria-expanded","false")):"Escape"===i.key&&(e.setAttribute("hidden",""),t.setAttribute("aria-expanded","false"),t.focus())});document.addEventListener("click",s=>{e.contains(s.target)||s.target===t||(e.setAttribute("hidden",""),t.setAttribute("aria-expanded","false"))}),document.addEventListener("keydown",s=>{if("true"===t.getAttribute("aria-expanded"))if("ArrowDown"===s.key){s.preventDefault();const t=e.querySelector('[role="option"]:focus'),i=Array.from(e.querySelectorAll('[role="option"]')),n=t?i.indexOf(t):-1;i[(n+1)%i.length].focus()}else if("ArrowUp"===s.key){s.preventDefault();const t=e.querySelector('[role="option"]:focus'),i=Array.from(e.querySelectorAll('[role="option"]')),n=t?i.indexOf(t):0;i[0===n?i.length-1:n-1].focus()}})}}}}();!function(){if(void 0===globalThis?.window)return;let t=!1,s=!1;const i=()=>{t||(t=!0,e.init())};globalThis.i18n?.isReady?"loading"===document.readyState?s||(s=!0,document.addEventListener("DOMContentLoaded",i,{once:!0})):i():(globalThis.addEventListener("i18nReady",()=>{"loading"===document.readyState?s||(s=!0,document.addEventListener("DOMContentLoaded",i,{once:!0})):i()},{once:!0}),setTimeout(()=>{t||("loading"===document.readyState?s||(s=!0,document.addEventListener("DOMContentLoaded",i,{once:!0})):i())},2e3))}(),"undefined"!=typeof globalThis&&(globalThis.LanguageSelector=e),t.exports=e},897(t){"use strict";class e{constructor(t,e,s={}){if(!t||"string"!=typeof t)throw new Error("Valid sessionId (string) is required for WebSocket connection");if(!e||!["controller","viewer"].includes(e))throw new Error('Valid role ("controller" or "viewer") is required for WebSocket connection');const i=globalThis.BBConfig?.network||{};this.config={isSecure:"https:"===globalThis.location.protocol,maxReconnectAttempts:i.maxReconnectAttempts||50,reconnectInterval:i.reconnectDelay||3e3,heartbeatInterval:i.heartbeatInterval||25e3,messageTimeout:i.messageTimeout||5e3,coalesceTypes:i.coalesceTypes||["controller_update"],coalesceDelayMs:i.coalesceDelayMs||16,...s},this.sessionId=t,this.role=e,this.ws=null,this.isConnected=!1,this.isConnecting=!1,this.eventHandlers=new Map,this.pendingMessages=new Map,this.messageIdCounter=0,this.reconnectTimer=null,this.heartbeatTimer=null,this.messageTimeouts=new Map,this._coalesceBuffers=new Map,this._coalesceTimers=new Map,this.url=this._generateWebSocketUrl(),this._stats={messagesSent:0,messagesReceived:0,reconnectCount:0,lastActivity:Date.now(),rttMs:0,jitterMs:0,_lastRttSamples:[]}}_generateWebSocketUrl(){const t=this.config.isSecure?"wss:":"ws:",e=globalThis.location.host,s=new URL(`${t}//${e}`);return s.searchParams.set("sessionId",this.sessionId),s.searchParams.set("role",this.role),s.toString()}async connect(){if(!this.isConnected&&!this.isConnecting)return new Promise((t,e)=>{this.isConnecting=!0,this.log(`Connecting to ${this.url}`);try{this.ws=new WebSocket(this.url),this._setupEventHandlers();const s=setTimeout(()=>{this.isConnecting&&(this.isConnecting=!1,this.ws?.close(),e(new Error("Connection timeout")))},1e4);this.ws.onopen=()=>{clearTimeout(s),this._handleConnectionSuccess(),t()},this.ws.onerror=t=>{clearTimeout(s),this.isConnecting=!1,this._handleConnectionError(t),e(new Error("WebSocket connection failed"))}}catch(t){this.isConnecting=!1,e(new Error(`WebSocket connection failed: ${t.message}`))}});this.log("Connection already in progress or established")}async send(t,e,s={}){if(!this.isConnected)throw new Error("WebSocket is not connected");if(["controller_update","heartbeat"].includes(t)){const i={id:++this.messageIdCounter,type:t,payload:e,timestamp:Date.now(),priority:!0};return this._sendWithResponse(i,t,s)}if(!this.config.coalesceTypes.includes(t)||s.expectResponse){const i={id:++this.messageIdCounter,type:t,payload:e,timestamp:Date.now()};return this._sendWithResponse(i,t,s)}this._coalesceMessage(t,e)}_sendWithResponse(t,e,s){if(s.expectResponse)return new Promise((s,i)=>{const n=setTimeout(()=>{this.pendingMessages.delete(t.id),i(new Error(`Message timeout: ${e}`))},this.config.messageTimeout);this.pendingMessages.set(t.id,{resolve:s,reject:i,timeout:n}),this._sendMessage(t)});this._sendMessage(t)}_coalesceMessage(t,e){if(this._coalesceBuffers.set(t,e),!this._coalesceTimers.has(t)){const e=setTimeout(()=>{const e=this._coalesceBuffers.get(t);this._coalesceBuffers.delete(t),this._coalesceTimers.delete(t);const s={id:++this.messageIdCounter,type:t,payload:e,timestamp:Date.now(),batched:!0};try{this._sendMessage(s)}catch(t){this.log(`Coalesced send failed: ${t.message}`,"warning")}},this.config.coalesceDelayMs);this._coalesceTimers.set(t,e)}}on(t,e){this.eventHandlers.has(t)||this.eventHandlers.set(t,[]),this.eventHandlers.get(t).push(e)}off(t,e){const s=this.eventHandlers.get(t);if(!s)return;const i=s.indexOf(e);-1!==i&&s.splice(i,1)}close(){this._clearTimers(),this.ws&&(this.ws.onclose=null,this.ws.close(1e3,"Client closed"),this.ws=null),this.isConnected=!1,this.isConnecting=!1}getStats(){return{messagesSent:this._stats.messagesSent,messagesReceived:this._stats.messagesReceived,reconnectCount:this._stats.reconnectCount,lastActivity:this._stats.lastActivity,rttMs:this._stats.rttMs,jitterMs:this._stats.jitterMs}}_setupEventHandlers(){this.ws.onmessage=this._handleMessage.bind(this),this.ws.onclose=this._handleClose.bind(this),this.ws.onerror=this._handleError.bind(this)}_handleConnectionSuccess(){this.isConnected=!0,this.isConnecting=!1;const t=this._stats.reconnectCount>0;this._stats.reconnectCount=0,this._stats.lastActivity=Date.now(),this._startHeartbeat(),this._emit("open",{sessionId:this.sessionId,role:this.role,isReconnection:t}),this.log("Connected successfully"+(t?" (reconnected)":""))}_handleConnectionError(t){this._emit("error",{error:t,type:"connection"}),this._scheduleReconnect()}_handleMessage(t){try{const e=JSON.parse(t.data);if(this._stats.messagesReceived++,this._stats.lastActivity=Date.now(),this._handlePendingMessage(e))return;this._emit(e.type,e.payload),this._emit("message",e),e?.timestamp&&this._updateNetworkMetrics(e.timestamp)}catch(e){this.log(`Failed to parse message: ${e.message}`,"error"),this._emit("error",{error:e,type:"parse",rawData:t.data})}}_handlePendingMessage(t){if(!t.id||!this.pendingMessages.has(t.id))return!1;const e=this.pendingMessages.get(t.id);return clearTimeout(e.timeout),this.pendingMessages.delete(t.id),e.resolve(t.payload),!0}_updateNetworkMetrics(t){const e=performance.now(),s=Math.max(0,e-t);this._stats._lastRttSamples.push(s),this._stats._lastRttSamples.length>20&&this._stats._lastRttSamples.shift();const i=this._stats._lastRttSamples.length,n=this._stats._lastRttSamples.reduce((t,e)=>t+e,0)/i,a=this._stats._lastRttSamples.reduce((t,e)=>t+Math.pow(e-n,2),0)/i,o=Math.sqrt(a);this._stats.rttMs=Math.round(n),this._stats.jitterMs=Math.round(o),this._emit("net_metrics",{rttMs:this._stats.rttMs,jitterMs:this._stats.jitterMs})}_handleClose(t){this.isConnected=!1,this._clearTimers(),this._emit("close",t),1e3!==t.code&&this._scheduleReconnect()}_handleError(t){this._emit("error",{error:t,type:"websocket"})}_scheduleReconnect(){if(this._stats.reconnectCount>=this.config.maxReconnectAttempts)return this.log("Max reconnection attempts reached","error"),void this._emit("maxReconnectAttemptsReached");this._stats.reconnectCount++;const t=this.config.reconnectInterval*Math.pow(1.5,this._stats.reconnectCount-1);this.log(`Reconnecting in ${Math.round(t/1e3)}s (attempt ${this._stats.reconnectCount})`),this.reconnectTimer=setTimeout(()=>{this.connect().catch(()=>{this._scheduleReconnect()})},t)}_startHeartbeat(){this.heartbeatTimer=setInterval(()=>{this.isConnected&&this.send("heartbeat",{timestamp:Date.now()}).catch(t=>{this.log(`Heartbeat failed: ${t.message}`,"warning")})},this.config.heartbeatInterval)}_sendMessage(t){if(!this.ws||this.ws.readyState!==WebSocket.OPEN)throw new Error("WebSocket is not connected");this.ws.send(JSON.stringify(t)),this._stats.messagesSent++}_emit(t,e){const s=this.eventHandlers.get(t);if(s)for(const i of s)try{i(e)}catch(e){this.log(`Error in event handler for ${t}: ${e.message}`,"error")}}_clearTimers(){this.reconnectTimer&&(clearTimeout(this.reconnectTimer),this.reconnectTimer=null),this.heartbeatTimer&&(clearInterval(this.heartbeatTimer),this.heartbeatTimer=null);for(const t of this.messageTimeouts.values())clearTimeout(t);this.messageTimeouts.clear();for(const t of this._coalesceTimers.values())clearTimeout(t);this._coalesceTimers.clear(),this._coalesceBuffers.clear()}log(t,e="info"){const s=(new Date).toLocaleTimeString(),i=`%c[WS:${this.role}] ${t}`;let n;n="error"===e?"color: #ef4444; font-weight: bold;":"warning"===e?"color: #f59e0b; font-weight: bold;":"color: #3b82f6; font-weight: bold;",console["error"===e?"error":"log"](i,n,s)}}"undefined"!=typeof globalThis&&(globalThis.WebSocketClient=e),t.exports=e},930(t){"use strict";function e(t,e){return{side:t,x:e.x,y:e.y}}t.exports={createBounceMessage:function(t,e,s){return{side:t,x:e.x,y:e.y,dirX:s.x||0,dirY:s.y||0,timestamp:Date.now()}},createBounceEventDetail:e,createBouncePhysicsData:function(t,e,s){return{side:t,x:e.x,y:e.y,vx:e.vx,vy:e.vy,dirX:s.x,dirY:s.y}},dispatchBounceEvent:function(t,s){try{if("undefined"!=typeof globalThis){const i=new CustomEvent("bb_bounce",{detail:e(t,s)});globalThis.dispatchEvent(i)}}catch{}}}}},e={};function s(i){var n=e[i];if(void 0!==n)return n.exports;var a=e[i]={id:i,loaded:!1,exports:{}};return t[i](a,a.exports,s),a.loaded=!0,a.exports}s.nmd=t=>(t.paths=[],t.children||(t.children=[]),t),(()=>{"use strict";globalThis.__current||(globalThis.__current={}),s(85),s(73),s(578),s(473),s(166),s(856),s(746),s(777),s(897),s(549),s(62),s(422);const t=s(396),{applyAdaptiveSmoothing:e}=s(246);function i(t){console.error("❌ Viewer Error:",t);const e=document.getElementById("loading");e&&(e.textContent="❌ "+t,e.style.color="#ef4444"),globalThis.errorStateManager?.show?globalThis.errorStateManager.show("critical-error",{title:globalThis.i18n?.t("viewer.errorTitle")||"Connection Error",message:t,actions:[{label:globalThis.i18n?.t("viewer.reload")||"Reload page",callback:()=>globalThis.location.reload()}]}):globalThis.emdrErrorOverlay?globalThis.emdrErrorOverlay.show({title:globalThis.i18n?.t("viewer.errorTitle")||"Connection Error",message:t,actionText:globalThis.i18n?.t("viewer.reload")||"Reload page",onAction:()=>globalThis.location.reload()}):alert(`${globalThis.i18n?.t("viewer.errorTitle")||"Connection Error"}\n\n${t}`)}globalThis.PhysicsEngine=t;let n,a,o,r=null;function l(){if(r)for(;r.firstChild;)r.firstChild.remove()}function h(t,e="⚠️"){if(!r){const t=document.createElement("style");t.textContent="\n      #viewerConnectionBanner {\n        position: fixed;\n        inset: 0;\n        z-index: 500;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        pointer-events: none;\n      }\n      #viewerConnectionBanner .vcb-card {\n        background: rgba(2, 6, 23, 0.88);\n        backdrop-filter: blur(16px);\n        border: 1px solid rgba(239, 68, 68, 0.35);\n        border-radius: 16px;\n        padding: 28px 40px;\n        text-align: center;\n        box-shadow: 0 0 40px rgba(239, 68, 68, 0.15), 0 8px 32px rgba(0,0,0,0.5);\n        animation: vcbFadeIn 0.3s ease;\n        max-width: 360px;\n      }\n      @keyframes vcbFadeIn {\n        from { opacity: 0; transform: scale(0.92) translateY(8px); }\n        to   { opacity: 1; transform: scale(1) translateY(0); }\n      }\n      #viewerConnectionBanner .vcb-icon {\n        font-size: 2.5rem;\n        margin-bottom: 12px;\n        display: block;\n      }\n      #viewerConnectionBanner .vcb-text {\n        font-size: 1.1rem;\n        font-weight: 600;\n        color: #f1f5f9;\n        line-height: 1.4;\n        letter-spacing: 0.01em;\n      }\n    ",document.head.appendChild(t),r=document.createElement("div"),r.id="viewerConnectionBanner",document.body.appendChild(r)}l();const s=document.createElement("div");s.className="vcb-card";const i=document.createElement("span");i.className="vcb-icon",i.textContent=e;const n=document.createElement("span");n.className="vcb-text",n.textContent=t,s.appendChild(i),s.appendChild(n),r.appendChild(s),r.style.display="flex"}function c(){r&&(r.style.display="none",l())}function d(){const t=document.getElementById("viewerCanvas");t&&(t.width=globalThis.innerWidth,t.height=globalThis.innerHeight,t.style.width=t.width+"px",t.style.height=t.height+"px",a&&a.setWorldSize(globalThis.innerWidth,globalThis.innerHeight))}function u(t){if(globalThis.__current||(globalThis.__current={}),"boolean"==typeof t.controllerConnected&&(globalThis.__current.controllerConnected=t.controllerConnected,console.log("📊 [VIEWER] controllerConnected updated to:",t.controllerConnected)),!y.status)return;const e=!0===t.controllerConnected,s=!1===t.controllerConnected;if(e){const t=globalThis.i18n?.t("viewer.controllerConnected")||"Controller connected";y.status.setStatus("success",t)}else if(s){const t=globalThis.i18n?.t("viewer.waitingForController")||"Waiting for controller...";y.status.setStatus("waiting",t)}}function g(t){t&&t.language&&t.language!==localStorage.getItem("emdr-language")&&p({language:t.language}),a&&t&&function(t){debugLog("📥 [VIEWER] Received state update:",t);const e=a.ball.x,s=a.ball.y,i=a.centerX-e,n=a.centerY-s,o=Math.hypot(i,n),r=!0===t.paused&&o>a.options.centerSnapThreshold,l={...t};if(!a.state.paused&&!a.state.stopping&&!0!==l.paused&&!1!==l.paused&&"number"==typeof l.x&&"number"==typeof l.y){const t=l.vx,e=l.vy;if("number"==typeof t&&"number"==typeof e){const s=Math.abs(t-a.ball.vx),i=Math.abs(e-a.ball.vy),n=s<10&&i<10,o=Math.hypot(l.x-a.ball.x,l.y-a.ball.y),r=a.options.smoothing?.driftThresholdPx||100,h=a._isNearWall(),c=t*a.ball.vx<0,d=e*a.ball.vy<0,u=c||d;if(h||u||n&&o<r){const t=u?"vec mismatch":h?"near wall":"drift="+o.toFixed(1)+"px";debugLog("📥 [VIEWER] Skipping x/y: "+t),delete l.x,delete l.y,(h||u)&&(delete l.lastDirection,delete l.dirX,delete l.dirY,delete l.vx,delete l.vy)}}}a.applyCommand(l),r&&!a.state.seekingCenter&&(a.state.seekingCenter=!0,a._seekCenterStart={x:e,y:s,ts:performance.now()},debugLog("🎯 [VIEWER] Forced seekCenter animation from viewer position",{fromX:e.toFixed(1),fromY:s.toFixed(1),distBefore:o.toFixed(1)}));const h=a.state.paused,c=!a.state.seekingCenter,d=!a.state.stopping;if(h&&c&&d){const t=a.centerX-a.ball.x,e=a.centerY-a.ball.y;Math.hypot(t,e)>2&&(a.state.seekingCenter=!0,a._seekCenterStart={x:a.ball.x,y:a.ball.y,ts:performance.now()})}debugLog("📥 [VIEWER] Engine state after update:",{paused:a.state.paused,seekingCenter:a.state.seekingCenter})}(t),t&&m&&function(t){"boolean"==typeof t.soundEnabled&&(debugLog("🔊 [VIEWER] soundEnabled from state:",t.soundEnabled),m.setEnabled(t.soundEnabled),S()),t.soundType&&(debugLog("🔊 [VIEWER] soundType from state:",t.soundType),m.setSoundType(t.soundType))}(t),t&&"boolean"==typeof t.controllerConnected&&u(t)}function p(t){const e=t?.language;if(e)if(debugLog("🌍 Language update received:",e),globalThis.i18n&&"function"==typeof globalThis.i18n.setLanguage)try{globalThis.i18n.setLanguage(e),debugLog("✅ Language applied:",e)}catch(t){debugWarn("❌ Failed to apply language:",t.message)}else debugWarn("⚠️ i18n not available for language update");else debugWarn("❌ Invalid language update data:",t)}let m=null,f=!1,b=!1;const y={};let v=null;function T(){"undefined"!=typeof AudioManager?(m=new AudioManager,globalThis.audioManager=m,"undefined"!=typeof logger&&logger.audio("AudioManager создан, enabled:",m.enabled),function(){const t=()=>{!1===f&&m&&m.enabled&&(m.init(),f=!0,globalThis.audioActivated=!0,localStorage.setItem("bb_audioActivated","true"),"undefined"!=typeof logger&&logger.audio("🖱️ Audio context initialized on user gesture (implicit click) - кнопка скрыта"),document.removeEventListener("click",t),document.removeEventListener("touchstart",t))};document.addEventListener("click",t,{once:!0}),document.addEventListener("touchstart",t,{once:!0});const e=document.getElementById("unmuteBtn");if(null===e)return void debugWarn("🔊 Unmute button НЕ найдена!");"undefined"!=typeof logger&&logger.audio("Unmute button найдена, добавляем обработчики"),e.addEventListener("click",()=>{_(t)}),e.addEventListener("touchstart",e=>{e.preventDefault(),_(t)});const s=document.getElementById("viewerVolumeSlider");if(s){const t=t=>{const e=t.target;if(e instanceof HTMLInputElement){const t=e.value;m&&t&&m.setVolume(t/100)}};s.addEventListener("input",t)}}(),globalThis.checkAudioOverlay=S,!1!==b&&(debugLog("🔊 Применяем отложенный soundEnabled:",b),m.setEnabled(b),b=!1),S()):debugWarn("AudioManager not loaded yet")}function _(t){debugLog("🔘 [activateAudio] Функция вызвана"),m?(m.init(),f=!0,globalThis.audioActivated=!0,localStorage.setItem("bb_audioActivated","true"),debugLog("✅ [activateAudio] audioActivated установлен на true"),S(),t&&(document.removeEventListener("click",t),document.removeEventListener("touchstart",t)),"undefined"!=typeof logger&&logger.audio("✅ Audio activated by user gesture - кнопка нажата!"),getSessionIdFromUrl()&&n&&(debugLog("📤 [activateAudio] Отправляем viewerAudioActivated на сервер"),n.send(WS_MSG.viewerAudioActivated,{activated:!0}).catch(()=>{}))):debugWarn("❌ [activateAudio] audioManager не инициализирован!")}function S(){const t=document.getElementById("unmuteOverlay");if(!t)return void debugWarn("🔊 checkAudioOverlay: overlay element НЕ найден!");const e=m&&m.enabled&&!f;if(t.classList.toggle("hidden",!e),"undefined"!=typeof logger)if(e)logger.audio("Показываем unmute overlay - звук включен, но не активирован");else{const t=m?m.enabled?"уже активирован":"звук отключен на контроллере":"audioManager не инициализирован";logger.audio("Скрываем unmute overlay",{reason:t})}const s=document.getElementById("viewerAudioControls");if(s){const t=m&&f;s.classList.toggle("hidden",!t),s.style.display=t?"flex":"none"}}"undefined"!=typeof globalThis&&(globalThis.audioManager=m,globalThis.audioActivated=f,globalThis.resetAudioActivation=function(){localStorage.removeItem("bb_audioActivated"),f=!1,globalThis.audioActivated=!1,m&&S(),console.log("🔊 Audio activation state reset. Reload page to see unmute overlay again.")}),document.addEventListener("DOMContentLoaded",async function(){debugLog("🚀 DOMContentLoaded fired"),debugLog("🔊 Audio activation state restored from localStorage:",f),debugLog("🚀 Доступные глобальные объекты:",{AudioManager:typeof AudioManager,PhysicsEngine:typeof t,BallRenderer:typeof BallRenderer,WebSocketClient:typeof WebSocketClient,RealtimeClient:typeof RealtimeClient,sharedComponents:typeof sharedComponents});try{const s=getSessionIdFromUrl();if(!s)return void i("Session ID не найден в URL");debugLog("📱 Session ID получен:",s),function(){if(debugLog("📦 initializeComponents вызван"),"undefined"!=typeof sharedComponents&&(y.status=sharedComponents.createStatusIndicator(document.getElementById("statusContainer"),{title:globalThis.i18n?.isReady&&globalThis.i18n.t("viewer.connecting")||"Connecting...",showIcon:!0,autoHide:!1})),debugLog("📦 Status indicator создан"),debugLog("🔊 Проверка AudioManager:",typeof AudioManager),"function"==typeof AudioManager)debugLog("🔊 AudioManager доступен, инициализируем сразу"),T();else{debugLog("🔊 AudioManager еще не загружен, ждем...");let t=0;const e=setInterval(()=>{t++,debugLog(`🔊 Попытка ${t}/50 найти AudioManager:`,typeof AudioManager),"function"==typeof AudioManager&&(clearInterval(e),debugLog("🔊 AudioManager загружен, инициализируем"),T())},100);setTimeout(()=>{clearInterval(e),"function"!=typeof AudioManager&&debugError("❌ AudioManager не загрузился за 5 секунд!")},5e3)}}(),await async function(s){try{debugLog("📱 Инициализация viewer для сессии:",s),function(){const t=document.getElementById("loading");t&&(t.style.display="none")}(),globalThis.__current||(globalThis.__current={}),globalThis.__current.sessionId=s;const r=document.getElementById("viewerCanvas");if(!r)return void console.error("Canvas не найден");d();const l=t=>{!function(t,e,s){if(m&&m.enabled&&f&&m.playTick(),n&&a){const i=a.ball;n.send("bounce",{side:t,x:i.x,y:i.y,dirX:e||0,dirY:s||0,timestamp:Date.now()}).catch(t=>{debugWarn("Failed to send bounce:",t)})}}(t.side,t.dirX,t.dirY)};a=new t({worldWidth:globalThis.innerWidth,worldHeight:globalThis.innerHeight,isViewer:!0,clientSimulation:!0,bounceCallback:l}),globalThis.physicsEngine=a,a.setWorldSize(globalThis.innerWidth,globalThis.innerHeight),a.setPaused(!0),o=new BallRenderer(r,a,{localPhysics:!0}),a.setRenderer(o),await async function(t){try{(await globalThis.csrfFetch(`/api/session/${t}/viewer/connect`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({screenSize:{width:globalThis.innerWidth,height:globalThis.innerHeight}})})).ok?debugLog("✅ Viewer connected to session"):debugWarn("⚠️ Failed to connect viewer to session")}catch(t){debugWarn("⚠️ Error connecting to session:",t)}}(s),n=new RealtimeClient(s,"viewer"),globalThis.wsClient=n,debugLog("✅ WebSocketClient создан"),function(t,s){t.on("open",()=>{debugLog("✅ WS connection established."),c();const e=globalThis.i18n?.t("viewer.connectionEstablished")||"Connection established";y.status?.setStatus("success",e),debugLog("🔄 Fetching state via REST (first connect or reconnect)"),async function(){try{const t=await globalThis.csrfFetch(`/api/session/${s}/state`);if(!t.ok)return;const e=await t.json();g(e),u(e)}catch(t){debugWarn("Не удалось получить состояние через REST",t)}}().catch(()=>{}),t.send("viewer_connected",{timestamp:Date.now(),sessionId:s,role:"viewer",screenSize:{width:globalThis.innerWidth,height:globalThis.innerHeight}}).catch(()=>{})}),t.on("close",()=>{debugWarn("🔌 WS connection closed."),h(globalThis.i18n?.t("viewer.connectionLost")||"Connection lost. Reconnecting…","🔄")}),t.on("error",t=>{!function(t){const e="connection_closed"===t?.type,s=!0===t?.isFirstAttempt,n=!globalThis.__current?.controllerConnected;if(e&&(s||n)){const e=s?"first attempt":"controller not connected yet";return void debugLog(`ℹ️ Realtime: ${t?.type} (${e})`)}debugError("❌ WebSocket error:",t),"connection"===t?.type&&i(globalThis.i18n?.t("viewer.connectionError")||"Connection error")}(t)}),t.on("maxReconnectAttemptsReached",()=>{i(globalThis.i18n?.t("viewer.connectionFailed")||"Cannot connect to the server. Please check your internet connection and reload the page.")}),t.on("controller_status",t=>{debugLog("📊 Статус контроллера:",t),u(t)}),t.on("controller_connected",t=>{console.log("📊 [VIEWER] Controller connected event received:",JSON.stringify(t)),debugLog("📊 Controller connected event:",t),c(),u("boolean"==typeof t.controllerConnected?t:{controllerConnected:!0})}),t.on("viewer_connected",t=>{debugLog("📊 [VIEWER] viewer_connected event received:",t)}),t.on("controller_disconnected",t=>{console.log("📊 [VIEWER] Controller disconnected event received:",JSON.stringify(t)),debugLog("📊 Controller disconnected event:",t),globalThis.__current||(globalThis.__current={}),globalThis.__current.controllerConnected=!1;const e=globalThis.i18n?.t("viewer.controllerDisconnected")||"Controller disconnected";y.status&&y.status.setStatus("warning",e),h(e,"🔌")}),t.on("state_update",t=>{c(),g(t)}),t.on("initial_state",g),t.on("viewer_status",u),t.on("language_updated",p),t.on("net_metrics",({jitterMs:t})=>{e(a,t)}),t.on("bounce_ack",t=>{if(!a)return;const e=t.serverDirX,s=t.serverDirY;if("number"==typeof e&&"number"==typeof s){a.state.lastDirection.x=e,a.state.lastDirection.y=s;const t=a.ball.speed/100*a.options.maxSpeed;a.ball.vx=e*t,a.ball.vy=s*t}})}(n,s);try{await n.connect()}catch(t){debugWarn("⚠️ First connection attempt failed, will retry:",t.message)}o&&o.start(),function(){function t(){const t=document.querySelector(".fullscreen-btn");if(!t)return;const e=!!document.fullscreenElement,s=e?"viewer.exitFullscreen":"viewer.fullscreen",i=e?"⛶ Выйти":"⛶ Полноэкранный";t.textContent=globalThis.i18n?.t?globalThis.i18n.t(s):i,t instanceof HTMLElement&&(t.dataset.i18n=s)}globalThis.addEventListener("resize",()=>{d(),n&&(clearTimeout(v),v=setTimeout(()=>{n.send("viewer_screen_size",{width:globalThis.innerWidth,height:globalThis.innerHeight}).catch(()=>{})},300))}),globalThis.toggleFullscreen=function(){document.fullscreenElement?document.exitFullscreen&&document.exitFullscreen().catch(t=>{debugWarn("Error attempting to exit fullscreen:",t)}):document.documentElement.requestFullscreen().catch(t=>{debugWarn("Error attempting to enable fullscreen:",t)})},document.addEventListener("fullscreenchange",()=>{t(),d(),n&&n.send("viewer_screen_size",{width:globalThis.innerWidth,height:globalThis.innerHeight}).catch(()=>{})}),globalThis.addEventListener("i18nReady",()=>{if(globalThis.i18n?.applyTranslations&&globalThis.i18n.applyTranslations(),"idle"===y.status?.currentStatus){const t=globalThis.i18n?.t("viewer.connecting")||"Connecting...";y.status.setStatus("idle",t)}}),globalThis.addEventListener("i18nLanguageChanged",()=>{globalThis.i18n?.applyTranslations&&globalThis.i18n.applyTranslations(),t()}),document.addEventListener("keydown",t=>{if((" "===t.key||"Spacebar"===t.key)&&(t.preventDefault(),n&&a)){const t=a.state?.paused??!0,e=!t;debugLog(`[VIEWER] Space pressed: toggling pause from ${t} to ${e}`),n.send("viewer_update",{paused:e})}})}(),setTimeout(()=>{const t=document.getElementById("hotkeysHint");t&&t.classList.add("hidden")},1e4),debugLog("✅ Viewer успешно инициализирован")}catch(t){debugError("❌ Ошибка инициализации viewer:",t),i((globalThis.i18n?.t("viewer.initError")||"Initialization error: ")+t.message)}}(s)}catch(t){debugError("❌ Критическая ошибка инициализации:",t);let e=t.message||t;e?.includes("Session with this ID not found")||e?.includes("not found")?e="Session with this ID not found. Please check the URL and try again.":e?.includes("Realtime connection")&&(e="Failed to connect to session. Please reload the page and try again."),i(e)}})})()})();
+/******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "../shared/bounce-utils.js"
+/*!*********************************!*\
+  !*** ../shared/bounce-utils.js ***!
+  \*********************************/
+(module) {
+
+"use strict";
+
+/**
+ * Bounce utilities for BilateralBound
+ * Single source of truth for bounce message/event creation.
+ * Used by PhysicsEngine, controller, and viewer.
+ */
+
+// ============================================
+// BOUNCE MESSAGE FACTORY
+// ============================================
+
+/**
+ * Creates bounce message for WebSocket sync
+ * @param {string} side - Bounce side: 'left', 'right', 'top', 'bottom'
+ * @param {object} ball - Ball state with x, y
+ * @param {object} direction - Direction with x, y
+ * @returns {object} Bounce message for sending over network
+ */
+function createBounceMessage(side, ball, direction) {
+  return {
+    side,
+    x: ball.x,
+    y: ball.y,
+    dirX: direction.x || 0,
+    dirY: direction.y || 0,
+    timestamp: Date.now()
+  }
+}
+
+/**
+ * Creates bounce event detail for DOM events
+ * @param {string} side - Bounce side
+ * @param {object} ball - Ball state with x, y
+ * @returns {object} Event detail for CustomEvent
+ */
+function createBounceEventDetail(side, ball) {
+  return {
+    side,
+    x: ball.x,
+    y: ball.y
+  }
+}
+
+// ============================================
+// BOUNCE PHYSICS DATA
+// ============================================
+
+/**
+ * Creates complete bounce physics data
+ * @param {string} side - Bounce side
+ * @param {object} ball - Ball state
+ * @param {object} direction - Last direction
+ * @returns {object} Complete bounce data
+ */
+function createBouncePhysicsData(side, ball, direction) {
+  return {
+    side,
+    x: ball.x,
+    y: ball.y,
+    vx: ball.vx,
+    vy: ball.vy,
+    dirX: direction.x,
+    dirY: direction.y
+  }
+}
+
+// ============================================
+// Bounce dispatch helper
+// ============================================
+
+/**
+ * Dispatches bounce event to DOM
+ * @param {string} side - Bounce side
+ * @param {object} ball - Ball state
+ */
+function dispatchBounceEvent(side, ball) {
+  try {
+    if (typeof globalThis !== 'undefined') {
+      const ev = new CustomEvent('bb_bounce', {
+        detail: createBounceEventDetail(side, ball)
+      })
+      globalThis.dispatchEvent(ev)
+    }
+  } catch {
+    // Silently ignore event dispatch errors
+  }
+}
+
+module.exports = {
+  createBounceMessage,
+  createBounceEventDetail,
+  createBouncePhysicsData,
+  dispatchBounceEvent
+}
+
+
+/***/ },
+
+/***/ "../shared/direction-utils.js"
+/*!************************************!*\
+  !*** ../shared/direction-utils.js ***!
+  \************************************/
+(module) {
+
+"use strict";
+
+/**
+ * Direction utilities for BilateralBound
+ * Single source of truth for direction calculations.
+ * Used by PhysicsEngine, controller, and viewer.
+ */
+
+// Increased from 1e-6 to 1e-4 to prevent micro-drift
+// At 1e-6, direction {x: 0.0000001, y: 1.0} is treated as vertical
+// but causes visible X-axis drift
+const DIRECTION_EPSILON = 1e-4
+const MAX_DIRECTION_ABS = 1.001
+
+// ============================================
+// DIRECTION CHECKS
+// ============================================
+
+/**
+ * Checks if direction is effectively vertical (no horizontal component)
+ * @param {number} dirX - X direction component (-1 to 1)
+ * @returns {boolean}
+ */
+function isVerticalDirection(dirX) {
+  return Math.abs(dirX || 0) < DIRECTION_EPSILON
+}
+
+/**
+ * Checks if direction is effectively horizontal (no vertical component)
+ * @param {number} dirY - Y direction component (-1 to 1)
+ * @returns {boolean}
+ */
+function isHorizontalDirection(dirY) {
+  return Math.abs(dirY || 0) < DIRECTION_EPSILON
+}
+
+/**
+ * Checks if direction is effectively zero (both components near zero)
+ * @param {number} dirX - X direction
+ * @param {number} dirY - Y direction
+ * @returns {boolean}
+ */
+function isZeroDirection(dirX, dirY) {
+  return (
+    Math.abs(dirX || 0) < DIRECTION_EPSILON &&
+    Math.abs(dirY || 0) < DIRECTION_EPSILON
+  )
+}
+
+// ============================================
+// DIRECTION NORMALIZATION
+// ============================================
+
+/**
+ * Normalizes velocity to unit direction vector
+ * @param {number} vx - Velocity X
+ * @param {number} vy - Velocity Y
+ * @returns {{x: number, y: number}|null} Unit vector or null if zero
+ */
+function normalizeDirection(vx, vy) {
+  const speed = Math.hypot(vx || 0, vy || 0)
+  if (speed > 0) {
+    return { x: vx / speed, y: vy / speed }
+  }
+  return null
+}
+
+/**
+ * Clamps direction components to valid range (-1.001 to 1.001)
+ * @param {number} value - Direction value
+ * @returns {boolean} True if value is valid
+ */
+function isValidDirection(value) {
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    Math.abs(value) <= MAX_DIRECTION_ABS
+  )
+}
+
+// ============================================
+// DIRECTION MODE (for UI)
+// ============================================
+
+/**
+ * Determines movement mode from direction components
+ * @param {number} dirX - X direction
+ * @param {number} dirY - Y direction
+ * @returns {string|null} 'horizontal', 'vertical', 'diagRL', 'diagRLL', or null
+ */
+function getDirectionMode(dirX, dirY) {
+  const ax = Math.abs(dirX || 0)
+  const ay = Math.abs(dirY || 0)
+
+  // Pure modes
+  if (ax > 0.9 && ay < 0.2) return 'horizontal'
+  if (ay > 0.9 && ax < 0.2) return 'vertical'
+
+  // Dominant axis
+  if (ax > ay * 2) return 'horizontal'
+  if (ay > ax * 2) return 'vertical'
+
+  // Diagonal modes
+  if (dirX > 0 && dirY > 0) return 'diagRL' // Top-left to bottom-right
+  if (dirX > 0 && dirY < 0) return 'diagRLL' // Bottom-left to top-right
+
+  return null
+}
+
+// ============================================
+// AXIS LOCK
+// ============================================
+
+/**
+ * Applies axis lock for pure vertical/horizontal movement
+ * When direction is nearly vertical/horizontal, locks the other axis to zero
+ * @param {object} velocity - Velocity object {vx, vy} to modify in-place
+ * @param {number} dirX - X direction component
+ * @param {number} dirY - Y direction component
+ * @param {number} maxSpeed - Maximum pixels per second
+ * @returns {object} Modified velocity
+ */
+function applyAxisLock(velocity, dirX, dirY, maxSpeed) {
+  const dx = dirX || 0
+  const dy = dirY || 0
+  const isVertical = isVerticalDirection(dx) && Math.abs(dy) > 0
+  const isHorizontal = isHorizontalDirection(dy) && Math.abs(dx) > 0
+
+  if (isVertical) {
+    velocity.vx = 0
+    velocity.vy = dy * maxSpeed
+  } else if (isHorizontal) {
+    velocity.vy = 0
+    velocity.vx = dx * maxSpeed
+  }
+
+  return velocity
+}
+
+// ============================================
+// DIRECTION CALCULATION
+// ============================================
+
+/**
+ * Calculates velocity from direction and speed
+ * @param {number} dirX - X direction (-1 to 1)
+ * @param {number} dirY - Y direction (-1 to 1)
+ * @param {number} speedPercent - Speed as percentage (0-100)
+ * @param {number} maxSpeed - Maximum speed in px/s
+ * @returns {{vx: number, vy: number, pps: number}}
+ */
+function calculateVelocity(dirX, dirY, speedPercent, maxSpeed) {
+  const pps = (speedPercent / 100) * maxSpeed
+  return {
+    vx: (dirX || 0) * pps,
+    vy: (dirY || 0) * pps,
+    pps
+  }
+}
+
+/**
+ * Gets fallback direction when current direction is zero
+ * @param {number} x - Current X position
+ * @param {number} y - Current Y position
+ * @param {number} centerX - World center X
+ * @param {number} centerY - World center Y
+ * @returns {{x: number, y: number}} Fallback direction
+ */
+function getFallbackDirection(x, y, centerX, centerY) {
+  return {
+    x: x < centerX ? 1 : -1,
+    y: y < centerY ? 1 : -1
+  }
+}
+
+module.exports = {
+  DIRECTION_EPSILON,
+  MAX_DIRECTION_ABS,
+  isVerticalDirection,
+  isHorizontalDirection,
+  isZeroDirection,
+  normalizeDirection,
+  isValidDirection,
+  getDirectionMode,
+  applyAxisLock,
+  calculateVelocity,
+  getFallbackDirection
+}
+
+
+/***/ },
+
+/***/ "../shared/physics-engine.js"
+/*!***********************************!*\
+  !*** ../shared/physics-engine.js ***!
+  \***********************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ * PhysicsEngine - optimized physics engine for BilateralBound
+ * Manages movement, bounces, and ball scaling
+ * Optimized for performance and reusability
+ *
+ * NOTE: Uses shared direction-utils and bounce-utils to avoid duplication.
+ * See packages/shared/direction-utils.js and packages/shared/bounce-utils.js
+ */
+
+// Import shared utilities (avoid duplication)
+const {
+  DIRECTION_EPSILON,
+  isVerticalDirection,
+  isHorizontalDirection,
+  normalizeDirection,
+  isValidDirection,
+  // calculateVelocity — unused, kept for API compatibility
+  getFallbackDirection
+} = __webpack_require__(/*! ./direction-utils */ "../shared/direction-utils.js")
+
+const {
+  // createBounceMessage — unused, kept for API compatibility
+  // createBounceEventDetail — unused, kept for API compatibility
+  createBouncePhysicsData,
+  dispatchBounceEvent
+} = __webpack_require__(/*! ./bounce-utils */ "../shared/bounce-utils.js")
+
+// ============================================
+// CONSTANTS
+// ============================================
+
+/**
+ * Fixed physics timestep for deterministic simulation.
+ * Both viewer and server step physics at exactly this interval,
+ * eliminating drift caused by different FPS / deltaTime values.
+ */
+const FIXED_DT = 1 / 60
+
+/**
+ * Maximum accumulated time per frame (3 steps).
+ * Prevents "spiral of death" on slow machines or hidden tabs.
+ */
+const MAX_ACCUMULATOR = FIXED_DT * 3
+
+const DEFAULT_OPTIONS = {
+  worldWidth: 800,
+  worldHeight: 600,
+  ballRadius: 20,
+  minSpeed: 50,
+  maxSpeed: 5000,
+  defaultSpeed: 30,
+  bounceWallMargin: 10,
+  centerSnapThreshold: 2,
+  centerCheckThreshold: 10,
+  driftStaleMs: 1500,
+  smoothing: {
+    // CLIENT-SIDE AUTHORITY: high threshold — server coords used only for coarse sync.
+    // Viewer is authoritative; only correct if drift > 100px.
+    driftThresholdPx: 100,
+    driftCorrectionMs: 200,
+    // Drift check every 50ms (~20fps) — reduces correction frequency for smoother motion
+    driftCheckIntervalMs: 50,
+    // Adaptive spring-damper parameters (used by _applyDriftCorrection)
+    stiffness: 3,
+    damping: 2
+  }
+}
+
+const DEFAULT_STATE = {
+  paused: true,
+  lastDirection: { x: 0, y: 0 },
+  targetVx: 0,
+  targetVy: 0,
+  smoothVx: 0,
+  smoothVy: 0,
+  allowInterpWhenPaused: false,
+  stopping: false,
+  stoppingStartTs: 0,
+  stoppingDuration: 0.6,
+  seekingCenter: false,
+  seekingCenterDuration: 0.4
+}
+
+const DEFAULT_COLORS = {
+  ball: '#60a5fa',
+  bg: '#020617'
+}
+
+const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/
+const MAX_RADIUS = 500
+const MAX_COMMAND_RADIUS = 1000
+
+// ============================================
+// VALIDATION HELPERS
+// ============================================
+
+/**
+ * Validates a number is finite
+ * @param {*} value - Value to check
+ * @returns {boolean}
+ */
+function isFiniteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+/**
+ * Validates speed percentage
+ * @param {number} value - Speed value
+ * @returns {boolean}
+ */
+function isValidSpeed(value) {
+  return (
+    typeof value === 'number' &&
+    value >= 0 &&
+    value <= 100 &&
+    !Number.isNaN(value)
+  )
+}
+
+/**
+ * Validates hex color string
+ * @param {string} value - Color value
+ * @returns {boolean}
+ */
+function isValidHexColor(value) {
+  return typeof value === 'string' && HEX_COLOR_REGEX.test(value)
+}
+
+/**
+ * Validates radius value
+ * @param {number} value - Radius value
+ * @returns {boolean}
+ */
+function isValidRadius(value) {
+  return isFiniteNumber(value) && value > 0 && value <= MAX_COMMAND_RADIUS
+}
+
+// ============================================
+// COMMAND VALIDATORS
+// ============================================
+
+/**
+ * Validates viewer-specific command fields
+ * @param {object} command - Command to validate
+ * @returns {object} Validated fields
+ */
+function validateViewerCommand(command) {
+  const validated = {}
+
+  if (isFiniteNumber(command.x)) validated.x = command.x
+  if (isFiniteNumber(command.y)) validated.y = command.y
+  if (isFiniteNumber(command.vx)) validated.vx = command.vx
+  if (isFiniteNumber(command.vy)) validated.vy = command.vy
+  if (isValidDirection(command.dirX)) validated.dirX = command.dirX
+  if (isValidDirection(command.dirY)) validated.dirY = command.dirY
+  if (isValidSpeed(command.speed)) validated.speed = command.speed
+
+  return validated
+}
+
+/**
+ * Validates server-specific command fields
+ * @param {object} command - Command to validate
+ * @returns {object} Validated fields
+ */
+function validateServerCommand(command) {
+  const validated = {}
+
+  if (isValidDirection(command.dirX)) validated.dirX = command.dirX
+  if (isValidDirection(command.dirY)) validated.dirY = command.dirY
+  if (isValidSpeed(command.speed)) validated.speed = command.speed
+
+  return validated
+}
+
+/**
+ * Validates common command fields
+ * @param {object} command - Command to validate
+ * @returns {object} Validated fields
+ */
+function validateCommonCommand(command) {
+  const validated = {}
+
+  if (typeof command.paused === 'boolean') validated.paused = command.paused
+  if (typeof command.stopping === 'boolean')
+    validated.stopping = command.stopping
+  if (command.reset === true) validated.reset = true
+  if (isValidRadius(command.radius)) validated.radius = command.radius
+  if (isValidHexColor(command.colorBall))
+    validated.colorBall = command.colorBall
+  if (isValidHexColor(command.colorBg)) validated.colorBg = command.colorBg
+
+  return validated
+}
+
+// ============================================
+// MATH HELPERS
+// ============================================
+
+/**
+ * Calculates speed in pixels per second
+ * @param {number} speedPercent - Speed as percentage (0-100)
+ * @param {number} maxSpeed - Maximum speed in px/s
+ * @returns {number}
+ */
+function calculatePixelsPerSecond(speedPercent, maxSpeed) {
+  return (speedPercent / 100) * maxSpeed
+}
+
+/**
+ * Clamps value between min and max
+ * @param {number} value - Value to clamp
+ * @param {number} min - Minimum
+ * @param {number} max - Maximum
+ * @returns {number}
+ */
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value))
+}
+
+// NOTE: isVerticalDirection and isHorizontalDirection are imported from direction-utils.js
+// They are available via destructured import at top of file
+
+// PHYSICS ENGINE CLASS
+// ============================================
+
+class PhysicsEngine {
+  /**
+   * @param {object} [options={}] - Engine configuration
+   * @param {number} [options.worldWidth=800] - World width
+   * @param {number} [options.worldHeight=600] - World height
+   * @param {number} [options.ballRadius=20] - Ball radius
+   * @param {number} [options.minSpeed=50] - Minimum speed
+   * @param {number} [options.maxSpeed=5000] - Maximum speed
+   * @param {boolean} [options.isViewer=false] - Whether this is viewer mode
+   * @param {boolean} [options.clientSimulation=false] - Whether to use client simulation
+   * @param {Function} [options.bounceCallback=null] - Callback on bounce
+   */
+  constructor(options = {}) {
+    // Initialize options with defaults
+    this.options = {
+      ...DEFAULT_OPTIONS,
+      ...options,
+      smoothing: {
+        ...DEFAULT_OPTIONS.smoothing,
+        ...(options.smoothing || {})
+      }
+    }
+
+    // Merge global smoothing config if available
+    this._mergeGlobalSmoothingConfig()
+
+    this.isViewer = Boolean(options.isViewer ?? false)
+    this._worldSizeSet = false
+
+    // Initialize center coordinates
+    this.centerX = this.options.worldWidth / 2
+    this.centerY = this.options.worldHeight / 2
+
+    // Initialize ball state
+    this.ball = this._createInitialBall()
+
+    // Position tracking for interpolation
+    this._prevPos = { x: this.ball.x, y: this.ball.y }
+    this._currPos = { x: this.ball.x, y: this.ball.y }
+    this._interpBall = {
+      x: this.ball.x,
+      y: this.ball.y,
+      radius: this.ball.radius,
+      colorBall: null
+    }
+
+    // Colors
+    this.colors = { ...DEFAULT_COLORS }
+
+    // Physics state
+    this.state = this._createInitialState()
+
+    // Drift correction state (spring-damper model)
+    this._lastServerPos = null
+    this._lastDriftCheckTs = 0
+    this._driftCorrection = null
+    this._currentJitterMs = 0
+    this._lastLocalBounceTs = 0
+    this._seekCenterStart = null
+    // Spring-damper state for continuous drift correction
+    this._springState = { active: false, targetX: 0, targetY: 0, lastDt: 0 }
+
+    // Visual offset: decouples physics position from render position.
+    // When drift correction teleports ball.x/y, an equal+opposite offset is applied
+    // here so the rendered position doesn't change. The offset decays to zero over
+    // ~300ms, hiding the correction behind a smooth visual slide.
+    this._visualOffsetX = 0
+    this._visualOffsetY = 0
+
+    // Fixed-timestep accumulator for deterministic simulation.
+    // Ensures identical physics output regardless of caller FPS.
+    this._accumulator = 0
+
+    // Callbacks
+    this.bounceCallback = this.options.bounceCallback
+    this.renderer = null
+  }
+
+  /**
+   * Merges global BBConfig smoothing options
+   * @private
+   */
+  _mergeGlobalSmoothingConfig() {
+    if (typeof globalThis !== 'undefined' && globalThis.BBConfig?.smoothing) {
+      this.options.smoothing = {
+        ...this.options.smoothing,
+        ...globalThis.BBConfig.smoothing
+      }
+    }
+  }
+
+  /**
+   * Creates initial ball state
+   * @private
+   * @returns {object}
+   */
+  _createInitialBall() {
+    return {
+      x: this.centerX,
+      y: this.centerY,
+      vx: 0,
+      vy: 0,
+      speed: DEFAULT_OPTIONS.defaultSpeed,
+      radius: this.options.ballRadius
+    }
+  }
+
+  /**
+   * Creates initial physics state
+   * @private
+   * @returns {object}
+   */
+  _createInitialState() {
+    return {
+      ...DEFAULT_STATE,
+      targetX: this.centerX,
+      targetY: this.centerY
+    }
+  }
+
+  // ============================================
+  // PUBLIC API - CONFIGURATION
+  // ============================================
+
+  /**
+   * Sets renderer for cache invalidation on color change
+   * @param {object} renderer - BallRenderer instance
+   */
+  setRenderer(renderer) {
+    this.renderer = renderer
+  }
+
+  /**
+   * Sets smoothing options
+   * @param {object} [opts={}] - Smoothing options
+   */
+  setSmoothingOptions(opts = {}) {
+    if (opts && typeof opts === 'object') {
+      this.options.smoothing = { ...this.options.smoothing, ...opts }
+    }
+  }
+
+  /**
+   * Updates jitter metric from external source
+   * @param {number} jitterMs - Current jitter in milliseconds
+   */
+  updateJitter(jitterMs) {
+    this._currentJitterMs = jitterMs
+  }
+
+  // ============================================
+  // PUBLIC API - WORLD & POSITION
+  // ============================================
+
+  /**
+   * Sets world dimensions and recalculates center
+   * @param {number} width - World width
+   * @param {number} height - World height
+   */
+  setWorldSize(width, height) {
+    this.options.worldWidth = width
+    this.options.worldHeight = height
+    this.centerX = width / 2
+    this.centerY = height / 2
+    this._worldSizeSet = true
+
+    if (this.state?.paused) {
+      this.state.seekingCenter = false
+      this._seekCenterStart = null
+      this._snapToCenter()
+    }
+
+    this.clampBallWithinBounds()
+  }
+
+  /**
+   * Sets ball position
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   */
+  setPosition(x, y) {
+    this.ball.x = x
+    this.ball.y = y
+
+    this.state.seekingCenter = false
+    this._seekCenterStart = null
+
+    this.clampBallWithinBounds()
+
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
+    this._visualOffsetX = 0
+    this._visualOffsetY = 0
+
+    if (this.isViewer) {
+      this.state.targetX = this.ball.x
+      this.state.targetY = this.ball.y
+      this.state.smoothVx = 0
+      this.state.smoothVy = 0
+      this.state.lastVx = 0
+      this.state.lastVy = 0
+    }
+  }
+
+  // ============================================
+  // PUBLIC API - VELOCITY & DIRECTION
+  // ============================================
+
+  /**
+   * Sets ball speed (as percentage)
+   * @param {number} percent - Speed percentage (0-100)
+   */
+  setSpeed(percent) {
+    this.ball.speed = clamp(percent, 0, 100)
+  }
+
+  /**
+   * Sets movement direction
+   * @param {number} dirX - X direction (-1 to 1)
+   * @param {number} dirY - Y direction (-1 to 1)
+   */
+  setDirection(dirX, dirY) {
+    this.state.lastDirection.x = dirX
+    this.state.lastDirection.y = dirY
+
+    if (!this.isViewer || this.options.clientSimulation) {
+      const pps = calculatePixelsPerSecond(
+        this.ball.speed,
+        this.options.maxSpeed
+      )
+      this.ball.vx = dirX * pps
+      this.ball.vy = dirY * pps
+    }
+  }
+
+  /**
+   * Sets movement velocity
+   * @param {number} vx - Velocity X
+   * @param {number} vy - Velocity Y
+   */
+  setVelocity(vx, vy) {
+    this.ball.vx = vx
+    this.ball.vy = vy
+    this.state.targetVx = vx
+    this.state.targetVy = vy
+
+    const normalized = normalizeDirection(vx, vy)
+    if (normalized) {
+      this.state.lastDirection.x = normalized.x
+      this.state.lastDirection.y = normalized.y
+    }
+  }
+
+  // ============================================
+  // PUBLIC API - STATE CONTROL
+  // ============================================
+
+  /**
+   * Sets pause state
+   * @param {boolean} paused - Pause state
+   */
+  setPaused(paused) {
+    const wasPaused = this.state.paused
+    this.state.paused = Boolean(paused)
+
+    if (wasPaused === this.state.paused) return
+
+    this.state.stopping = false
+
+    if (this.state.paused) {
+      this._handlePause()
+    } else {
+      this._handleUnpause()
+    }
+  }
+
+  /**
+   * Handles pause transition
+   * @private
+   */
+  _handlePause() {
+    if (this.isViewer) {
+      this._handleViewerPause()
+    } else {
+      this._resetBallToCenter()
+    }
+  }
+
+  /**
+   * Handles viewer pause with animation
+   * @private
+   */
+  _handleViewerPause() {
+    this.state.allowInterpWhenPaused = false
+    this.state.lastVx = 0
+    this.state.lastVy = 0
+    this.state.smoothVx = 0
+    this.state.smoothVy = 0
+    this.ball.vx = 0
+    this.ball.vy = 0
+
+    // Clear drift correction state during pause to prevent conflict with seek-center animation
+    this._lastServerPos = null
+    this._springState.active = false
+    this._springState._desyncStartTs = null
+    this._visualOffsetX = 0
+    this._visualOffsetY = 0
+
+    const dx = this.centerX - this.ball.x
+    const dy = this.centerY - this.ball.y
+    const distanceFromCenter = Math.hypot(dx, dy)
+
+    if (distanceFromCenter > this.options.centerSnapThreshold) {
+      this.state.seekingCenter = true
+      this._seekCenterStart = {
+        x: this.ball.x,
+        y: this.ball.y,
+        ts: performance.now()
+      }
+    } else {
+      this.state.seekingCenter = false
+      this._snapToCenter()
+    }
+
+    this.clampBallWithinBounds()
+  }
+
+  /**
+   * Handles unpause transition
+   * @private
+   */
+  _handleUnpause() {
+    this.state.allowInterpWhenPaused = false
+
+    if (this.state.seekingCenter) {
+      this._snapToCenter()
+    }
+
+    this.state.seekingCenter = false
+    this._seekCenterStart = null
+
+    if (this.options.clientSimulation) {
+      this._restoreLocalVelocity()
+    }
+  }
+
+  /**
+   * Starts smooth deceleration
+   * @param {number} [duration=0.6] - Deceleration duration in seconds
+   */
+  startStopping(duration = 0.6) {
+    if (this.state.paused) return
+
+    this.state.stopping = true
+    this.state.stoppingStartTs = performance.now()
+    this.state.stoppingDuration = duration
+  }
+
+  /**
+   * Public method for returning to center.
+   * For viewer mode: starts smooth seek-center animation (like pause).
+   * For server mode: instant snap to center.
+   */
+  returnToCenter() {
+    if (this.isViewer) {
+      const dx = this.centerX - this.ball.x
+      const dy = this.centerY - this.ball.y
+      const distanceFromCenter = Math.hypot(dx, dy)
+
+      if (distanceFromCenter > this.options.centerSnapThreshold) {
+        this.state.seekingCenter = true
+        this._seekCenterStart = {
+          x: this.ball.x,
+          y: this.ball.y,
+          ts: performance.now()
+        }
+      } else {
+        this.state.seekingCenter = false
+        this._snapToCenter()
+      }
+      this.clampBallWithinBounds()
+    } else {
+      this._resetBallToCenter()
+    }
+  }
+
+  // ============================================
+  // PUBLIC API - APPEARANCE
+  // ============================================
+
+  /**
+   * Sets ball color
+   * @param {string} color - Hex color
+   */
+  setBallColor(color) {
+    if (typeof color === 'string' && color.length > 0) {
+      this.colors.ball = color
+      this._invalidateRendererCache()
+    }
+  }
+
+  /**
+   * Sets background color
+   * @param {string} color - Hex color
+   */
+  setBgColor(color) {
+    if (typeof color === 'string' && color.length > 0) {
+      this.colors.bg = color
+      this._invalidateRendererCache()
+    }
+  }
+
+  /**
+   * Sets ball size
+   * @param {number} radius - Ball radius
+   */
+  setBallSize(radius) {
+    if (typeof radius === 'number' && radius > 0 && radius <= MAX_RADIUS) {
+      this.ball.radius = radius
+      this.clampBallWithinBounds()
+    }
+  }
+
+  /**
+   * Invalidates renderer cache
+   * @private
+   */
+  _invalidateRendererCache() {
+    if (
+      this.renderer &&
+      typeof this.renderer.invalidateBallCache === 'function'
+    ) {
+      this.renderer.invalidateBallCache()
+    }
+  }
+
+  // ============================================
+  // PUBLIC API - PHYSICS UPDATE
+  // ============================================
+
+  /**
+   * Updates physics using a Fixed Timestep accumulator.
+   *
+   * DETERMINISM: Both viewer and server advance by exactly FIXED_DT (1/60 s)
+   * per sub-step, regardless of the caller's FPS. This guarantees identical
+   * ball positions on any hardware or update frequency — eliminating drift
+   * caused by floating-point accumulation over variable deltaTime.
+   *
+   * The accumulator is capped at MAX_ACCUMULATOR (2 steps) to prevent
+   * the "spiral of death" on slow machines or throttled background tabs.
+   *
+   * @param {number} deltaTime - Wall-clock time elapsed since last call (seconds)
+   */
+  update(deltaTime) {
+    // Guard: clamp incoming deltaTime — large spikes (tab hidden, debugger) must not
+    // cause runaway physics by only allowing up to MAX_ACCUMULATOR worth of work.
+    this._accumulator += Math.min(deltaTime, MAX_ACCUMULATOR)
+
+    while (this._accumulator >= FIXED_DT) {
+      if (this.isViewer) {
+        this._updateViewerPhysics(FIXED_DT)
+      } else {
+        this._updateServerPhysics(FIXED_DT)
+      }
+      this._accumulator -= FIXED_DT
+    }
+
+    this.__lastPhysicsUpdateTs = performance?.now?.() ?? Date.now()
+  }
+
+  /**
+   * Updates client-side physics
+   * @param {number} deltaTime - Time elapsed since last frame
+   */
+  updateClientPhysics(deltaTime) {
+    if (this.state.paused) return
+    if (!this._ensureWorldSizeSet()) return
+
+    const speedFactor = this._calculateSpeedFactor()
+    if (speedFactor <= 0) {
+      this.setPaused(true)
+      return
+    }
+
+    const velocity = this._calculateClientVelocity()
+    this._applyAxisLock(velocity)
+    velocity.vx *= speedFactor
+    velocity.vy *= speedFactor
+
+    this._updateBallPosition(velocity, deltaTime)
+    this.handleBoundaryCollisions()
+    this._updateCurrentPosition()
+  }
+
+  // ============================================
+  // PUBLIC API - BOUNDARY & COLLISION
+  // ============================================
+
+  /**
+   * Handles boundary collisions
+   * Respects axis lock: in horizontal mode only, vertical bounces are ignored;
+   * in vertical mode only, horizontal bounces are ignored.
+   * Diagonal mode always bounces on all sides.
+   * Prevents the ball from leaving the screen.
+   */
+  handleBoundaryCollisions() {
+    const { ball, options, state } = this
+    const { radius } = ball
+    const { worldWidth, worldHeight } = options
+
+    let bounceSide = null
+    const dirX = state.lastDirection.x || 0
+    const dirY = state.lastDirection.y || 0
+
+    // Check if movement is locked to a single axis
+    // Pure horizontal: dirY ≈ 0 and dirX ≠ 0 → skip vertical wall checks
+    const isPureHorizontal =
+      Math.abs(dirY) < DIRECTION_EPSILON && Math.abs(dirX) >= DIRECTION_EPSILON
+    // Pure vertical: dirX ≈ 0 and dirY ≠ 0 → skip horizontal wall checks
+    const isPureVertical =
+      Math.abs(dirX) < DIRECTION_EPSILON && Math.abs(dirY) >= DIRECTION_EPSILON
+
+    // Horizontal bounds — check unless locked to pure vertical movement
+    if (!isPureVertical) {
+      if (ball.x < radius) {
+        const overflow = radius - ball.x
+        ball.x = radius + overflow + 0.1 // Add epsilon to skip wall
+        if (dirX < 0) {
+          state.lastDirection.x = Math.abs(dirX)
+          bounceSide = 'left'
+        }
+      } else if (ball.x > worldWidth - radius) {
+        const overflow = ball.x - (worldWidth - radius)
+        ball.x = worldWidth - radius - overflow - 0.1 // Add epsilon to skip wall
+        if (dirX > 0) {
+          state.lastDirection.x = -Math.abs(dirX)
+          bounceSide = 'right'
+        }
+      }
+    }
+
+    // Vertical bounds — check unless locked to pure horizontal movement
+    if (!isPureHorizontal) {
+      if (ball.y < radius) {
+        const overflow = radius - ball.y
+        ball.y = radius + overflow + 0.1 // Add epsilon to skip wall
+        if (dirY < 0) {
+          state.lastDirection.y = Math.abs(dirY)
+          bounceSide = bounceSide || 'top'
+        }
+      } else if (ball.y > worldHeight - radius) {
+        const overflow = ball.y - (worldHeight - radius)
+        ball.y = worldHeight - radius - overflow - 0.1 // Add epsilon to skip wall
+        if (dirY > 0) {
+          state.lastDirection.y = -Math.abs(dirY)
+          bounceSide = bounceSide || 'bottom'
+        }
+      }
+    }
+
+    if (bounceSide) {
+      this.handleBounce(bounceSide)
+    }
+  }
+
+  /**
+   * Handles bounce off boundary
+   * @param {string} side - Bounce side: 'left', 'right', 'top', 'bottom'
+   */
+  handleBounce(side) {
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
+    this.ball.vx = this.state.lastDirection.x * pps
+    this.ball.vy = this.state.lastDirection.y * pps
+
+    this.ensureMinimumSpeed()
+
+    this.state.lastVx = this.ball.vx
+    this.state.lastVy = this.ball.vy
+    this._lastLocalBounceTs = performance.now()
+
+    // After a local bounce, stale server snapshots can briefly pull the ball back to the wall.
+    // Clear correction target and let local physics settle first.
+    if (this.isViewer && this.options.clientSimulation) {
+      this._lastServerPos = null
+      this._springState.active = false
+      this._springState.driftMagnitude = 0
+      this._springState._desyncStartTs = null
+    }
+
+    this._triggerBounceCallback(side)
+    this._dispatchBounceEvent(side)
+  }
+
+  /**
+   * Triggers bounce callback
+   * @param {string} side - Bounce side
+   * @private
+   */
+  _triggerBounceCallback(side) {
+    if (!this.bounceCallback) return
+
+    const data = createBouncePhysicsData(
+      side,
+      this.ball,
+      this.state.lastDirection
+    )
+    this.bounceCallback(data)
+  }
+
+  /**
+   * Dispatches bounce event
+   * @param {string} side - Bounce side
+   * @private
+   */
+  _dispatchBounceEvent(side) {
+    dispatchBounceEvent(side, this.ball)
+  }
+
+  /**
+   * Ensures minimum speed after bounce
+   */
+  ensureMinimumSpeed() {
+    const currentSpeed = Math.hypot(this.ball.vx, this.ball.vy)
+
+    if (currentSpeed > 0 && currentSpeed < this.options.minSpeed) {
+      const scale = this.options.minSpeed / currentSpeed
+      this.ball.vx *= scale
+      this.ball.vy *= scale
+    } else if (currentSpeed === 0) {
+      this._setFallbackVelocity()
+    }
+  }
+
+  /**
+   * Sets fallback velocity when speed is zero
+   * @private
+   */
+  _setFallbackVelocity() {
+    const dirX = this.state.lastDirection.x || 0
+    const dirY = this.state.lastDirection.y || 0
+
+    if (isVerticalDirection(dirX) && Math.abs(dirY) > 0) {
+      this.ball.vx = 0
+      this.ball.vy = Math.sign(dirY) * this.options.minSpeed
+    } else if (isHorizontalDirection(dirY) && Math.abs(dirX) > 0) {
+      this.ball.vx = Math.sign(dirX) * this.options.minSpeed
+      this.ball.vy = 0
+    } else {
+      const fallback = getFallbackDirection(
+        this.ball.x,
+        this.ball.y,
+        this.centerX,
+        this.centerY
+      )
+      this.ball.vx = fallback.x * this.options.minSpeed
+      this.ball.vy = fallback.y * this.options.minSpeed
+    }
+  }
+
+  /**
+   * Ensures ball stays within world boundaries
+   */
+  clampBallWithinBounds() {
+    const { radius } = this.ball
+    const w = this.options.worldWidth
+    const h = this.options.worldHeight
+
+    if (w <= 0 || h <= 0 || radius < 0) return
+
+    const clampedX = clamp(this.ball.x, radius, w - radius)
+    const clampedY = clamp(this.ball.y, radius, h - radius)
+
+    if (clampedX !== this.ball.x) {
+      this.ball.x = clampedX
+      if (this.isViewer) this.state.smoothVx = 0
+    }
+
+    if (clampedY !== this.ball.y) {
+      this.ball.y = clampedY
+      if (this.isViewer) this.state.smoothVy = 0
+    }
+
+    if (typeof this.state.targetX === 'number') {
+      this.state.targetX = clamp(this.state.targetX, radius, w - radius)
+    }
+
+    if (typeof this.state.targetY === 'number') {
+      this.state.targetY = clamp(this.state.targetY, radius, h - radius)
+    }
+  }
+
+  // ============================================
+  // PUBLIC API - INTERPOLATION
+  // ============================================
+
+  /**
+   * Returns current interpolation alpha (0-1) for smooth rendering.
+   * Represents the fractional progress within the current fixed timestep.
+   * @returns {number}
+   */
+  getInterpolationAlpha() {
+    return Math.max(0, Math.min(1, this._accumulator / (1 / 60))) // Use 1/60 (FIXED_DT)
+  }
+
+  /**
+   * Gets interpolated ball position
+   * @param {number} [alpha] - Optional manual alpha, otherwise uses internal accumulator.
+   * @returns {object}
+   */
+  getInterpolatedBall(alpha) {
+    const a = typeof alpha === 'number' ? Math.max(0, Math.min(1, alpha)) : this.getInterpolationAlpha()
+
+    this._interpBall.x =
+      this._prevPos.x + (this._currPos.x - this._prevPos.x) * a + this._visualOffsetX
+    this._interpBall.y =
+      this._prevPos.y + (this._currPos.y - this._prevPos.y) * a + this._visualOffsetY
+    this._interpBall.radius = this.ball.radius
+    this._interpBall.colorBall = this.ball.colorBall || null
+
+    return this._interpBall
+  }
+
+  // ============================================
+  // PUBLIC API - COMMAND HANDLING
+  // ============================================
+
+  /**
+   * Applies command from server
+   * @param {object} command - Command object
+   */
+  applyCommand(command) {
+    if (!command) return
+
+    const validatedCommand = this._validateCommand(command)
+    if (Object.keys(validatedCommand).length === 0) return
+
+    this._handleCommonCommands(validatedCommand)
+
+    if (this.isViewer) {
+      this._handleViewerCommand(validatedCommand)
+    } else {
+      this._handleServerCommand(validatedCommand)
+    }
+  }
+
+  /**
+   * Gets current physics engine state
+   * @returns {object} Ball and engine state
+   */
+  getState() {
+    return {
+      x: this.ball.x,
+      y: this.ball.y,
+      vx: this.ball.vx,
+      vy: this.ball.vy,
+      dirX: this.state.lastDirection.x,
+      dirY: this.state.lastDirection.y,
+      speed: this.ball.speed,
+      radius: this.ball.radius,
+      paused: this.state.paused,
+      stopping: this.state.stopping,
+      colorBall: this.colors.ball,
+      colorBg: this.colors.bg
+    }
+  }
+
+  /**
+   * Resets state to initial
+   */
+  reset() {
+    this.ball.x = this.centerX
+    this.ball.y = this.centerY
+    this.ball.vx = 0
+    this.ball.vy = 0
+    this.ball.speed = DEFAULT_OPTIONS.defaultSpeed
+    this.ball.radius = this.options.ballRadius
+
+    this.state.lastDirection.x = 0
+    this.state.lastDirection.y = 0
+    this.state.targetVx = 0
+    this.state.targetVy = 0
+    this.state.targetX = this.centerX
+    this.state.targetY = this.centerY
+  }
+
+  // ============================================
+  // PRIVATE - VELOCITY HELPERS
+  // ============================================
+
+  /**
+   * Restores velocity for local simulation
+   * @private
+   */
+  _restoreLocalVelocity() {
+    if (
+      Math.abs(this.state.lastDirection.x || 0) < DIRECTION_EPSILON &&
+      Math.abs(this.state.lastDirection.y || 0) < DIRECTION_EPSILON
+    ) {
+      this.state.lastDirection.x = 1
+      this.state.lastDirection.y = 0
+    }
+
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
+    this.ball.vx = this.state.lastDirection.x * pps
+    this.ball.vy = this.state.lastDirection.y * pps
+    this.state.lastVx = this.ball.vx
+    this.state.lastVy = this.ball.vy
+  }
+
+  /**
+   * Resets ball to center
+   * @private
+   */
+  _resetBallToCenter() {
+    this.ball.x = this.centerX
+    this.ball.y = this.centerY
+    this.ball.vx = 0
+    this.ball.vy = 0
+    this.state.targetX = this.centerX
+    this.state.targetY = this.centerY
+    this.clampBallWithinBounds()
+  }
+
+  /**
+   * Snaps ball to center and syncs position state
+   * @private
+   */
+  _snapToCenter() {
+    this.ball.x = this.centerX
+    this.ball.y = this.centerY
+    this.ball.vx = 0
+    this.ball.vy = 0
+    this._prevPos.x = this.centerX
+    this._prevPos.y = this.centerY
+    this._currPos.x = this.centerX
+    this._currPos.y = this.centerY
+    this.state.targetX = this.centerX
+    this.state.targetY = this.centerY
+    this._visualOffsetX = 0
+    this._visualOffsetY = 0
+  }
+
+  // ============================================
+  // PRIVATE - PHYSICS UPDATE HELPERS
+  // ============================================
+
+  /**
+   * Decays the visual offset toward zero each physics step.
+   * Half-life ~150ms: correction is 50% hidden at 150ms, 75% at 300ms.
+   * @param {number} dt - Fixed timestep in seconds
+   * @private
+   */
+  _decayVisualOffset(dt) {
+    if (this._visualOffsetX === 0 && this._visualOffsetY === 0) return
+    const factor = Math.pow(0.5, dt / 0.15)
+    this._visualOffsetX *= factor
+    this._visualOffsetY *= factor
+    if (Math.abs(this._visualOffsetX) < 0.05) this._visualOffsetX = 0
+    if (Math.abs(this._visualOffsetY) < 0.05) this._visualOffsetY = 0
+  }
+
+  /**
+   * Updates viewer physics
+   * @param {number} deltaTime - Time delta
+   * @private
+   */
+  _updateViewerPhysics(deltaTime) {
+    if (this.state.paused) {
+      if (this.state.seekingCenter) {
+        this._updateSeekCenter()
+      }
+      return
+    }
+
+    if (this.options.clientSimulation) {
+      this.updateClientPhysics(deltaTime)
+      this._applyDriftCorrection()
+      this._checkDriftCorrection()
+    } else {
+      this.updateClientPhysics(deltaTime)
+    }
+
+    this._decayVisualOffset(deltaTime)
+  }
+
+  /**
+   * Updates server physics
+   * @param {number} deltaTime - Time delta
+   * @private
+   */
+  _updateServerPhysics(deltaTime) {
+    if (this.state.paused) return
+    if (!this._worldSizeSet) return
+
+    const speedFactor = this._calculateSpeedFactor()
+    if (speedFactor <= 0) {
+      this.setPaused(true)
+      return
+    }
+
+    const pps =
+      calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed) *
+      speedFactor
+    this.ball.vx = this.state.lastDirection.x * pps
+    this.ball.vy = this.state.lastDirection.y * pps
+
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+
+    this.ball.x += this.ball.vx * deltaTime
+    this.ball.y += this.ball.vy * deltaTime
+
+    this.handleBoundaryCollisions()
+
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
+  }
+
+  /**
+   * Calculates speed factor based on stopping state
+   * Uses cubic ease-out for smooth deceleration (industry standard)
+   * @returns {number}
+   * @private
+   */
+  _calculateSpeedFactor() {
+    if (!this.state.stopping) return 1.0
+
+    const elapsed = (performance.now() - this.state.stoppingStartTs) / 1000
+    const t = Math.min(1, elapsed / this.state.stoppingDuration)
+    // Cubic ease-out: 1 - (1-t)^3 creates smooth deceleration curve
+    return 1 - (1 - t) * (1 - t) * (1 - t)
+  }
+
+  /**
+   * Ensures world size is set
+   * @returns {boolean}
+   * @private
+   */
+  _ensureWorldSizeSet() {
+    if (this._worldSizeSet) return true
+
+    if (this.options.worldWidth > 0 && this.options.worldHeight > 0) {
+      this._worldSizeSet = true
+      return true
+    }
+
+    return false
+  }
+
+  /**
+   * Calculates client velocity
+   * @returns {{vx: number, vy: number}}
+   * @private
+   */
+  _calculateClientVelocity() {
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
+    return {
+      vx: (this.state.lastDirection.x || 0) * pps,
+      vy: (this.state.lastDirection.y || 0) * pps
+    }
+  }
+
+  /**
+   * Applies axis lock for pure vertical/horizontal movement
+   * @param {object} velocity - Velocity object to modify
+   * @private
+   */
+  _applyAxisLock(velocity) {
+    const dirX = this.state.lastDirection.x || 0
+    const dirY = this.state.lastDirection.y || 0
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
+
+    const isVertical = isVerticalDirection(dirX) && Math.abs(dirY) > 0
+    const isHorizontal = isHorizontalDirection(dirY) && Math.abs(dirX) > 0
+
+    if (isVertical) {
+      velocity.vx = 0
+      velocity.vy = dirY * pps
+      this.state.smoothVx = 0
+    } else if (isHorizontal) {
+      velocity.vy = 0
+      velocity.vx = dirX * pps
+      this.state.smoothVy = 0
+    } else if (Math.abs(dirX) > 0 || Math.abs(dirY) > 0) {
+      velocity.vx = dirX * pps
+      velocity.vy = dirY * pps
+    }
+  }
+
+  /**
+   * Updates ball position
+   * @param {object} velocity - Velocity
+   * @param {number} deltaTime - Time delta
+   * @private
+   */
+  _updateBallPosition(velocity, deltaTime) {
+    this.ball.vx = velocity.vx
+    this.ball.vy = velocity.vy
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+    this.ball.x += velocity.vx * deltaTime
+    this.ball.y += velocity.vy * deltaTime
+  }
+
+  /**
+   * Updates current position tracking
+   * @private
+   */
+  _updateCurrentPosition() {
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
+  }
+
+  /**
+   * Updates seek-to-center animation
+   * @private
+   */
+  _updateSeekCenter() {
+    if (!this._seekCenterStart) {
+      this.state.seekingCenter = false
+      this._snapToCenter()
+      return
+    }
+
+    const elapsed = (performance.now() - this._seekCenterStart.ts) / 1000
+    const t = Math.min(1, elapsed / this.state.seekingCenterDuration)
+    const ease = 1 - (1 - t) * (1 - t)
+
+    const newX =
+      this._seekCenterStart.x + (this.centerX - this._seekCenterStart.x) * ease
+    const newY =
+      this._seekCenterStart.y + (this.centerY - this._seekCenterStart.y) * ease
+
+    this._prevPos.x = newX
+    this._prevPos.y = newY
+    this._currPos.x = newX
+    this._currPos.y = newY
+    this.ball.x = newX
+    this.ball.y = newY
+
+    if (t >= 1) {
+      this.state.seekingCenter = false
+      this._seekCenterStart = null
+      this._snapToCenter()
+    }
+  }
+
+  // ============================================
+  // PRIVATE - DRIFT CORRECTION
+  // ============================================
+
+  /**
+   * Checks if ball is near a wall boundary (within margin)
+   * Skips drift correction near walls to prevent fighting with bounce events
+   * Uses a very tight margin (just the radius + 1px) to only disable correction
+   * when the ball is literally touching the wall. This prevents jitter after bounces
+   * by allowing drift correction to work smoothly right up to the bounce point.
+   * @private
+   * @returns {boolean} true if near wall
+   */
+  _isNearWall() {
+    // CLIENT-SIDE AUTHORITY: Extended wall immunity zone.
+    // margin = radius + 40px (was radius + 10px).
+    // This ~60px-wide zone around each wall ensures drift correction
+    // never fights the bounce logic on either side of impact.
+    // Server extrapolation can place the ball slightly outside bounds;
+    // this larger margin prevents "bumping" when the viewer is near a wall.
+    const margin = this.ball.radius + 40
+    const { worldWidth, worldHeight } = this.options
+    return (
+      this.ball.x <= margin ||
+      this.ball.x >= worldWidth - margin ||
+      this.ball.y <= margin ||
+      this.ball.y >= worldHeight - margin
+    )
+  }
+
+  /**
+   * Checks and activates spring-damper drift correction.
+   *
+   * KEY OPTIMIZATION FOR CLIENT SIMULATION:
+   * When clientSimulation is true, the viewer runs local physics at 60FPS which
+   * is the authoritative position source. Drift correction should ONLY activate
+   * when drift is significant (> adaptiveThreshold), preventing micro-corrections
+   * that cause jitter.
+   *
+   * Uses bounce cooldown to avoid fighting with bounce events.
+   * @private
+   */
+  _checkDriftCorrection() {
+    if (!this._lastServerPos || this.state.paused) return
+    const now = performance.now()
+
+    // CLIENT-SIDE AUTHORITY: Extended cooldown after local wall bounce.
+    // 500ms (was 250ms) — server packets confirming the old direction
+    // arrive late and would fight with post-bounce local physics.
+    if (now - this._lastLocalBounceTs < 500) {
+      this._springState.active = false
+      return
+    }
+
+    const posAge = now - this._lastServerPos.ts
+    const serverTimeAge = this._lastServerPos.serverTime
+      ? (Date.now() - this._lastServerPos.serverTime)
+      : posAge
+
+    if (posAge > this.options.driftStaleMs) {
+      this._springState.active = false
+      return
+    }
+
+    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 50
+    if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval)
+      return
+
+    // CLIENT-SIDE AUTHORITY: Skip drift correction near walls.
+    // Expanded immunity zone (radius+40) prevents correction fighting bounce logic.
+    if (this._isNearWall()) {
+      this._springState.active = false
+      return
+    }
+
+    this._lastDriftCheckTs = now
+
+    // Extrapolate server position based on its velocity and time since last update
+    let serverX = this._lastServerPos.x
+    let serverY = this._lastServerPos.y
+    const serverVx = this._lastServerPos.vx
+    const serverVy = this._lastServerPos.vy
+
+    if (serverVx !== undefined && serverVy !== undefined) {
+      const dt = serverTimeAge / 1000
+      serverX += serverVx * dt
+      serverY += serverVy * dt
+    }
+
+    // Clamp extrapolated server position to viewer's world bounds.
+    const { worldWidth, worldHeight } = this.options
+    const { radius } = this.ball
+    serverX = Math.max(radius, Math.min(worldWidth - radius, serverX))
+    serverY = Math.max(radius, Math.min(worldHeight - radius, serverY))
+
+    const dx = serverX - this.ball.x
+    const dy = serverY - this.ball.y
+    const drift = Math.hypot(dx, dy)
+
+    // CLIENT-SIDE AUTHORITY: Velocity vector guard.
+    // If server velocity matches local velocity closely, the simulation is already
+    // in sync by parameters — skip position correction entirely.
+    // This is the core of "sync by events, not coordinates".
+    if (serverVx !== undefined && serverVy !== undefined) {
+      const velDx = Math.abs(serverVx - this.ball.vx)
+      const velDy = Math.abs(serverVy - this.ball.vy)
+      const velocitiesMatch = velDx < 10 && velDy < 10
+      if (velocitiesMatch && drift < this.options.smoothing.driftThresholdPx) {
+        // Vectors are aligned — viewer's local simulation is authoritative
+        this._springState._desyncStartTs = null
+        this._springState.active = false
+        this._springState.driftMagnitude = 0
+        return
+      }
+    }
+
+    // Adaptive threshold: base 100px + speed scaling.
+    // High threshold means server coords are only used for coarse correction.
+    const baseThreshold = this.options.smoothing.driftThresholdPx || 100
+    const speedPercent = this.ball.speed || 30
+    const adaptiveThreshold = baseThreshold + speedPercent * 0.3
+
+    if (drift > adaptiveThreshold) {
+      // Track persistent desync for hard recovery
+      if (!this._springState._desyncStartTs) {
+        this._springState._desyncStartTs = now
+      }
+      const desyncDuration = now - this._springState._desyncStartTs
+
+      // Hard snap recovery: if drift > 200px for > 3 seconds, teleport to server
+      if (drift > 200 && desyncDuration > 3000) {
+        this.ball.x = serverX
+        this.ball.y = serverY
+        this._visualOffsetX = 0
+        this._visualOffsetY = 0
+        this._springState.active = false
+        this._springState.driftMagnitude = 0
+        this._springState._desyncStartTs = null
+        return
+      }
+
+      // Activate spring-damper correction
+      this._springState.active = true
+      this._springState.targetX = serverX
+      this._springState.targetY = serverY
+      this._springState.driftMagnitude = drift
+    } else {
+      // Drift is within tolerance — deactivate correction, let local physics run.
+      // NOTE: The old "5% subtle correction" block (drift > 2px) has been REMOVED.
+      // It was the primary source of visual jitter. Local physics is now authoritative
+      // for all drift below adaptiveThreshold.
+      this._springState._desyncStartTs = null
+      this._springState.active = false
+      this._springState.driftMagnitude = 0
+    }
+  }
+
+  /**
+   * Applies spring-damper drift correction.
+   *
+   * OPTIMIZED: Uses simplified formula that combines spring + damping
+   * into a single correction step. This avoids per-axis branching
+   * and reduces math operations by ~30%.
+   *
+   * Only called when _springState.active === true (significant drift detected).
+   * @private
+   */
+  _applyDriftCorrection() {
+    if (!this._springState.active || !this._lastServerPos) return
+    if (this._isNearWall()) {
+      this._springState.active = false
+      return
+    }
+
+    const now = performance.now()
+    const lastTs = this._springState._lastCorrectionTs || now
+    // Cap dt at 33ms (30fps) to prevent instability on hidden tabs
+    const dt = Math.min(33, now - lastTs) / 1000
+    this._springState._lastCorrectionTs = now
+
+    // Advance the target position so it moves alongside the ball
+    this._springState.targetX += this.ball.vx * dt
+    this._springState.targetY += this.ball.vy * dt
+
+    const sm = this.options.smoothing || {}
+    const stiffness = sm.stiffness !== undefined ? sm.stiffness : 3
+
+    const dx = this._springState.targetX - this.ball.x
+    const dy = this._springState.targetY - this.ball.y
+
+    // Smooth proportional correction toward the moving target
+    let correctionX = dx * stiffness * dt
+    let correctionY = dy * stiffness * dt
+
+    // Adaptive maxCorrection based on drift magnitude
+    const driftMag = this._springState.driftMagnitude || 0
+    const maxCorrection = driftMag > 100
+      ? Math.min(25, 8 + (driftMag - 100) * 0.08)
+      : 8
+
+    const appliedX = clamp(correctionX, -maxCorrection, maxCorrection)
+    const appliedY = clamp(correctionY, -maxCorrection, maxCorrection)
+
+    this.ball.x += appliedX
+    this.ball.y += appliedY
+
+    // Equal+opposite offset so the rendered position doesn't jump.
+    // Decays to zero over ~300ms via _decayVisualOffset().
+    this._visualOffsetX -= appliedX
+    this._visualOffsetY -= appliedY
+  }
+
+  // ============================================
+  // PRIVATE - COMMAND VALIDATION
+  // ============================================
+
+  /**
+   * Validates incoming command
+   * @param {object} command - Command to validate
+   * @returns {object} Validated command
+   * @private
+   */
+  _validateCommand(command) {
+    const modeSpecific = this.isViewer
+      ? validateViewerCommand(command)
+      : validateServerCommand(command)
+
+    const common = validateCommonCommand(command)
+
+    return { ...modeSpecific, ...common }
+  }
+
+  // ============================================
+  // PRIVATE - COMMAND HANDLERS
+  // ============================================
+
+  /**
+   * Handles common commands
+   * @param {object} command - Validated command
+   * @private
+   */
+  _handleCommonCommands(command) {
+    if (
+      command.stopping === true &&
+      this.isViewer &&
+      !this.state.paused &&
+      !this.state.stopping
+    ) {
+      this.startStopping()
+    }
+
+    if (command.paused !== undefined) {
+      const wasPaused = this.state.paused
+      this.setPaused(command.paused)
+
+      if (this.isViewer && wasPaused && command.paused === false) {
+        this._handleViewerUnpause(command)
+      }
+    }
+
+    if (command.returnToCenter) {
+      // _handleViewerPause (called via setPaused above) already starts seekingCenter.
+      // Only call returnToCenter if seekingCenter wasn't already started by the pause handler.
+      if (this.isViewer && !this.state.seekingCenter) {
+        this.returnToCenter()
+      } else if (!this.isViewer) {
+        this.returnToCenter()
+      }
+      if (this.options.clientSimulation) {
+        this._hasReceivedFirstMovingUpdate = false
+      }
+    }
+
+    if (command.reset) this.reset()
+    if (command.radius !== undefined) this.setBallSize(command.radius)
+    if (command.colorBall !== undefined) this.setBallColor(command.colorBall)
+    if (command.colorBg !== undefined) this.setBgColor(command.colorBg)
+  }
+
+  /**
+   * Handles viewer unpause
+   * @param {object} command - Command
+   * @private
+   */
+  _handleViewerUnpause(command) {
+    if (command.dirX !== undefined || command.dirY !== undefined) {
+      const newDx = command.dirX ?? this.state.lastDirection.x ?? 1
+      const newDy = command.dirY ?? this.state.lastDirection.y ?? 0
+      this.state.lastDirection.x = newDx
+      this.state.lastDirection.y = newDy
+    }
+
+    if (
+      Math.abs(this.state.lastDirection.x || 0) < DIRECTION_EPSILON &&
+      Math.abs(this.state.lastDirection.y || 0) < DIRECTION_EPSILON
+    ) {
+      this.setDirection(1, 0)
+    }
+
+    this._updatePredictionBase()
+  }
+
+  /**
+   * Handles viewer commands
+   * @param {object} command - Command
+   * @private
+   */
+  _handleViewerCommand(command) {
+    this._handleViewerPositionUpdate(command)
+    this._handleViewerVelocityUpdate(command)
+    this._handleViewerSpeedUpdate(command)
+    this._handleViewerDirectionUpdate(command)
+  }
+
+  /**
+   * Handles viewer position update
+   * @param {object} command - Command
+   * @private
+   */
+  _handleViewerPositionUpdate(command) {
+    if (command.x === undefined || command.y === undefined) return
+
+    const cx = clamp(
+      command.x,
+      this.ball.radius,
+      this.options.worldWidth - this.ball.radius
+    )
+    const cy = clamp(
+      command.y,
+      this.ball.radius,
+      this.options.worldHeight - this.ball.radius
+    )
+
+    this.state.targetX = cx
+    this.state.targetY = cy
+
+    const serverTime = command.serverTimestamp || command.ts || Date.now()
+    const now = performance.now()
+
+    if (this.options.clientSimulation) {
+      this._lastServerPos = {
+        x: cx,
+        y: cy,
+        vx: command.vx,
+        vy: command.vy,
+        ts: now,
+        serverTime: serverTime
+      }
+      return
+    }
+
+    if (command.paused === true) {
+      this._handleViewerPositionPause()
+    } else if (command.paused === false) {
+      if (command.vx !== undefined) this.state.lastVx = command.vx
+      if (command.vy !== undefined) this.state.lastVy = command.vy
+    }
+  }
+
+  /**
+   * Handles viewer position pause
+   * @private
+   */
+  _handleViewerPositionPause() {
+    this.state.allowInterpWhenPaused = false
+    this.state.smoothVx = 0
+    this.state.smoothVy = 0
+    this.state.lastVx = 0
+    this.state.lastVy = 0
+
+    if (!this.state.seekingCenter) {
+      const dx = this.centerX - this.ball.x
+      const dy = this.centerY - this.ball.y
+
+      if (Math.hypot(dx, dy) > this.options.centerSnapThreshold) {
+        this.state.seekingCenter = true
+        this._seekCenterStart = {
+          x: this.ball.x,
+          y: this.ball.y,
+          ts: performance.now()
+        }
+      }
+    }
+  }
+
+  /**
+   * Handles viewer velocity update
+   * @param {object} command - Command
+   * @private
+   */
+  _handleViewerVelocityUpdate(command) {
+    if (this.options.clientSimulation) return
+
+    let newVx = command.vx
+    let newVy = command.vy
+
+    if (newVx !== undefined) {
+      const wallMargin = this.ball.radius + this.options.bounceWallMargin
+      const nearLeftWall = this.ball.x <= wallMargin
+      const nearRightWall = this.ball.x >= this.options.worldWidth - wallMargin
+      const serverMovingLeft = newVx < 0
+      const serverMovingRight = newVx > 0
+      const localMovingLeft = this.ball.vx < 0
+      const localMovingRight = this.ball.vx > 0
+
+      if (
+        (nearLeftWall && serverMovingLeft && localMovingRight) ||
+        (nearRightWall && serverMovingRight && localMovingLeft)
+      ) {
+        newVx = undefined
+      }
+    }
+
+    if (newVy !== undefined) {
+      const wallMargin = this.ball.radius + this.options.bounceWallMargin
+      const nearTopWall = this.ball.y <= wallMargin
+      const nearBottomWall =
+        this.ball.y >= this.options.worldHeight - wallMargin
+      const serverMovingUp = newVy < 0
+      const serverMovingDown = newVy > 0
+      const localMovingUp = this.ball.vy < 0
+      const localMovingDown = this.ball.vy > 0
+
+      if (
+        (nearTopWall && serverMovingUp && localMovingDown) ||
+        (nearBottomWall && serverMovingDown && localMovingUp)
+      ) {
+        newVy = undefined
+      }
+    }
+
+    if (newVx !== undefined) this.state.lastVx = newVx
+    if (newVy !== undefined) this.state.lastVy = newVy
+
+    const lvx = typeof this.state.lastVx === 'number' ? this.state.lastVx : 0
+    const lvy = typeof this.state.lastVy === 'number' ? this.state.lastVy : 0
+    const sp = Math.hypot(lvx, lvy)
+
+    if (sp > 0) {
+      this.state.lastDirection.x = lvx / sp
+      this.state.lastDirection.y = lvy / sp
+    }
+  }
+
+  /**
+   * Handles viewer speed update
+   * @param {object} command - Command
+   * @private
+   */
+  _handleViewerSpeedUpdate(command) {
+    if (command.speed === undefined) return
+
+    this.setSpeed(command.speed)
+
+    if (!this.state.paused) {
+      this._updatePredictionBase()
+    }
+  }
+
+  /**
+   * Handles viewer direction update
+   * @param {object} command - Command
+   * @private
+   */
+  _handleViewerDirectionUpdate(command) {
+    if (command.dirX === undefined && command.dirY === undefined) return
+
+    // Accept direction updates even if moving.
+    // Sync by parameters (Client-Side Authority) means we should follow the server's
+    // intention, but let local boundary detection handle the exact bounce timing.
+
+    let newDx = command.dirX ?? this.state.lastDirection.x
+    let newDy = command.dirY ?? this.state.lastDirection.y
+
+    if (
+      Math.abs(newDx) < DIRECTION_EPSILON &&
+      Math.abs(newDy) < DIRECTION_EPSILON
+    ) {
+      if (
+        Math.abs(this.state.lastDirection.x) > DIRECTION_EPSILON ||
+        Math.abs(this.state.lastDirection.y) > DIRECTION_EPSILON
+      ) {
+        newDx = this.state.lastDirection.x
+        newDy = this.state.lastDirection.y
+      } else {
+        newDx = 1
+        newDy = 0
+      }
+    }
+
+    this.state.lastDirection.x = newDx
+    this.state.lastDirection.y = newDy
+
+    if (this.options.clientSimulation) {
+      const pps = calculatePixelsPerSecond(
+        this.ball.speed,
+        this.options.maxSpeed
+      )
+      this.ball.vx = newDx * pps
+      this.ball.vy = newDy * pps
+    }
+
+    if (!this.state.paused) {
+      this._updatePredictionBase()
+    }
+  }
+
+  /**
+   * Updates prediction base velocity
+   * @private
+   */
+  _updatePredictionBase() {
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
+    const dx = this.state.lastDirection.x || 0
+    const dy = this.state.lastDirection.y || 0
+
+    if (dx !== 0 || dy !== 0) {
+      this.state.lastVx = dx * pps
+      this.state.lastVy = dy * pps
+
+      if (this.options.clientSimulation) {
+        this.ball.vx = dx * pps
+        this.ball.vy = dy * pps
+      }
+    }
+  }
+
+  /**
+   * Handles server commands
+   * @param {object} command - Command
+   * @private
+   */
+  _handleServerCommand(command) {
+    this._handleServerDirection(command)
+    this._handleServerSpeed(command)
+    this._handleServerUnpause(command)
+  }
+
+  /**
+   * Handles server direction
+   * @param {object} command - Command
+   * @private
+   */
+  _handleServerDirection(command) {
+    if (command.dirX === undefined && command.dirY === undefined) return
+
+    const newDx = command.dirX ?? this.state.lastDirection.x
+    const newDy = command.dirY ?? this.state.lastDirection.y
+    this.setDirection(newDx, newDy)
+  }
+
+  /**
+   * Handles server speed
+   * @param {object} command - Command
+   * @private
+   */
+  _handleServerSpeed(command) {
+    if (command.speed !== undefined) {
+      this.setSpeed(command.speed)
+    }
+  }
+
+  /**
+   * Handles server unpause
+   * @param {object} command - Command
+   * @private
+   */
+  _handleServerUnpause(command) {
+    const willBeUnpaused =
+      command.paused === false || this.state.paused === false
+    if (willBeUnpaused) {
+      this._restoreServerVelocity()
+    }
+  }
+
+  /**
+   * Restores server velocity
+   * @private
+   */
+  _restoreServerVelocity() {
+    const pps = calculatePixelsPerSecond(
+      this.ball.speed,
+      this.options.maxSpeed
+    )
+    let dirX = this.state.lastDirection.x || 0
+    let dirY = this.state.lastDirection.y || 0
+
+    if (dirX === 0 && dirY === 0) {
+      dirX = 1
+      dirY = 0
+      this.setDirection(dirX, dirY)
+    }
+
+    this.setVelocity(dirX * pps, dirY * pps)
+  }
+}
+
+module.exports = PhysicsEngine
+
+
+/***/ },
+
+/***/ "../shared/smoothing-utils.js"
+/*!************************************!*\
+  !*** ../shared/smoothing-utils.js ***!
+  \************************************/
+(module) {
+
+"use strict";
+
+
+/**
+ * Shared smoothing utilities for adaptive physics smoothing
+ * Used by both viewer and controller
+ *
+ * ARCHITECTURE NOTE:
+ * This module reads base config from BBConfig (globalThis.BBConfig)
+ * and applies adaptive adjustments based on network jitter.
+ *
+ * All formulas use configurable factors from BBConfig rather than hardcoded values.
+ * See BBConfig.smoothing for available parameters.
+ */
+
+// ============================================
+// DEFAULT CONFIG
+// ============================================
+
+/**
+ * Default smoothing configuration
+ * These values are used if BBConfig.smoothing is not defined
+ */
+const DEFAULT_SMOOTHING_CONFIG = {
+  // Base smoothing parameters — aligned with physics-engine.js defaults
+  damping: 2, // Matches physics-engine stiffness default
+  stiffness: 3, // Matches physics-engine damping default
+  maxPredictSec: 0.02, // Max prediction time in seconds
+  snapDistance: 0.3, // Snap distance threshold (0.2-0.4)
+
+  // Adaptive factors — how much jitter affects each parameter
+  dampingJitterFactor: 20, // jitterMs / factor added to damping
+  stiffnessJitterFactor: 30, // jitterMs / factor subtracted from stiffness
+  highJitterThreshold: 15 // Threshold for snapDistance increase
+  // Removed: exponentialSmoothing, stateBuffering, bufferSize — unused
+}
+
+// ============================================
+// CONFIG RESOLUTION
+// ============================================
+
+/**
+ * Resolves smoothing config from BBConfig with fallback to defaults
+ * @returns {object} Resolved smoothing configuration
+ */
+function resolveSmoothingConfig() {
+  const globalConfig =
+    typeof globalThis !== 'undefined' && globalThis.BBConfig
+      ? globalThis.BBConfig.smoothing || globalThis.BBConfig
+      : {}
+
+  return { ...DEFAULT_SMOOTHING_CONFIG, ...globalConfig }
+}
+
+// ============================================
+// ADAPTIVE SMOOTHING CALCULATION
+// ============================================
+
+/**
+ * Calculates adaptive smoothing options based on network jitter
+ *
+ * FORMULA EXPLANATION:
+ * - damping increases with jitter (more jitter → more smoothing)
+ * - stiffness decreases with jitter (more jitter → less aggressive correction)
+ * - snapDistance increases when jitter exceeds threshold (wider catch zone)
+ *
+ * @param {number} jitterMs - Current network jitter in milliseconds
+ * @param {object} [customConfig] - Optional overrides for BBConfig values
+ * @returns {object} Adaptive smoothing options
+ *
+ * @example
+ * // With default config:
+ * // jitter=10: damping = 20 + 10/20 = 20.5
+ * // jitter=30: damping = 20 + 30/20 = 21.5
+ * // jitter=50: damping = 20 + 50/20 = 22.5 (capped at 25)
+ */
+function calculateAdaptiveSmoothing(jitterMs, customConfig) {
+  const config = customConfig || resolveSmoothingConfig()
+
+  // Extract adaptive factors
+  const baseDamping = config.damping || DEFAULT_SMOOTHING_CONFIG.damping
+  const baseStiffness = config.stiffness || DEFAULT_SMOOTHING_CONFIG.stiffness
+  const dampingFactor =
+    config.dampingJitterFactor || DEFAULT_SMOOTHING_CONFIG.dampingJitterFactor
+  const stiffnessFactor =
+    config.stiffnessJitterFactor ||
+    DEFAULT_SMOOTHING_CONFIG.stiffnessJitterFactor
+  const highJitterThreshold =
+    config.highJitterThreshold || DEFAULT_SMOOTHING_CONFIG.highJitterThreshold
+  const baseSnapDistance =
+    config.snapDistance || DEFAULT_SMOOTHING_CONFIG.snapDistance
+
+  // Calculate adaptive values with clamping
+  // Base values are now 2 (damping) and 3 (stiffness) — aligned with physics-engine.
+  // Clamping range widened to allow meaningful adaptation:
+  //   damping: 1-8 (good range for spring-damper stability)
+  //   stiffness: 1-10 (good range for correction strength)
+
+  // Damping: increases with jitter → more smoothing when network is bad
+  const adaptiveDamping = Math.min(
+    8, // max clamp
+    Math.max(
+      1, // min clamp
+      baseDamping + jitterMs / dampingFactor
+    )
+  )
+
+  // Stiffness: decreases with jitter → gentler correction when network is bad
+  const adaptiveStiffness = Math.min(
+    10, // max clamp
+    Math.max(
+      1, // min clamp
+      baseStiffness - jitterMs / stiffnessFactor
+    )
+  )
+
+  // Snap distance: increases when jitter is high → wider catch zone
+  const adaptiveSnapDistance = Math.min(
+    0.4, // max clamp
+    Math.max(
+      0.2, // min clamp
+      baseSnapDistance + (jitterMs > highJitterThreshold ? 0.05 : 0)
+    )
+  )
+
+  return {
+    damping: adaptiveDamping,
+    stiffness: adaptiveStiffness,
+    maxPredictSec:
+      config.maxPredictSec || DEFAULT_SMOOTHING_CONFIG.maxPredictSec,
+    snapDistance: adaptiveSnapDistance
+  }
+}
+
+// ============================================
+// PHYSICS ENGINE INTEGRATION
+// ============================================
+
+/**
+ * Applies adaptive smoothing to physics engine based on network metrics
+ *
+ * This is the main entry point called from controller.js and viewer.js
+ * when net_metrics events are received.
+ *
+ * @param {object} physicsEngine - PhysicsEngine instance
+ * @param {number} jitterMs - Current network jitter in milliseconds
+ */
+function applyAdaptiveSmoothing(physicsEngine, jitterMs) {
+  if (!physicsEngine) return
+
+  // Update jitter metric on the engine (used for drift correction)
+  physicsEngine.updateJitter(jitterMs)
+
+  // Calculate adaptive options based on current jitter
+  const options = calculateAdaptiveSmoothing(jitterMs)
+
+  // Apply to physics engine
+  physicsEngine.setSmoothingOptions(options)
+}
+
+// ============================================
+// DEBUG HELPERS
+// ============================================
+
+/**
+ * Gets current smoothing config as human-readable string
+ * Useful for debugging/logging
+ * @returns {string} Config summary
+ */
+function getSmoothingConfigString() {
+  const config = resolveSmoothingConfig()
+  return `SmoothingConfig{damping:${config.damping}, stiffness:${config.stiffness}, maxPredictSec:${config.maxPredictSec}, snapDistance:${config.snapDistance}}`
+}
+
+module.exports = {
+  DEFAULT_SMOOTHING_CONFIG,
+  calculateAdaptiveSmoothing,
+  applyAdaptiveSmoothing,
+  resolveSmoothingConfig,
+  getSmoothingConfigString
+}
+
+
+/***/ },
+
+/***/ "./src/audio/audio-manager.js"
+/*!************************************!*\
+  !*** ./src/audio/audio-manager.js ***!
+  \************************************/
+(module) {
+
+"use strict";
+
+/**
+ * AudioManager - Handles audio playback for the application.
+ * Uses Web Audio API for both synthesized sounds and loaded audio files.
+ * Supports multiple sound types with automatic fallback to synthesis.
+ */
+class AudioManager {
+  constructor() {
+    this.enabled = false
+    this.volume = 0.5
+    this.audioContext = null
+    this.oscillatorType = 'sine' // sine, square, sawtooth, triangle
+    this.frequency = 180 // Hz - low frequency for soft wooden sound
+    this.duration = 0.12 // seconds - soft knock duration
+    this.soundType = 'soft' // soft (EMDR default), tick, tone, click, bounce, beep
+    this.audioBuffers = new Map()
+    this.loadingPromises = new Map()
+    this.soundFiles = {
+      tick: '/sounds/tick.wav',
+      click: '/sounds/click.wav',
+      bounce: '/sounds/bounce.wav',
+      tone: '/sounds/tone.wav',
+      beep: '/sounds/beep.wav'
+    }
+    this.useAudioFiles = true
+    this.filesLoaded = false
+  }
+  /**
+   * Initializes the AudioContext. Must be called after a user gesture.
+   * @param {boolean} preload - Whether to preload sounds immediately (default: false for lazy loading)
+   */
+  init(preload = false) {
+    if (!this.audioContext) {
+      const AudioContext =
+        globalThis.AudioContext || globalThis.webkitAudioContext
+      if (AudioContext) {
+        this.audioContext = new AudioContext()
+      } else {
+        if (typeof logger !== 'undefined') {
+          logger.warn('Web Audio API is not supported in this browser.')
+        }
+      }
+    }
+    if (this.audioContext?.state === 'suspended') {
+      this.audioContext.resume().catch((err) => {
+        if (typeof logger !== 'undefined') {
+          logger.warn('Failed to resume AudioContext:', err)
+        }
+      })
+    }
+    // Lazy loading: only preload when explicitly requested or when sound is enabled
+    if (preload && this.useAudioFiles && !this.filesLoaded) {
+      this.preloadSounds().catch((err) => {
+        if (typeof logger !== 'undefined') {
+          logger.warn(
+            'Failed to load audio files, falling back to synthesis:',
+            err
+          )
+        }
+        this.useAudioFiles = false
+      })
+    }
+  }
+  /**
+   * Загружает звуковой файл и декодирует его в AudioBuffer
+   * @param {string} url - URL звукового файла
+   * @returns {Promise<AudioBuffer>}
+   */
+  async loadSound(url) {
+    if (!this.audioContext) {
+      throw new Error('AudioContext not initialized')
+    }
+    if (this.audioBuffers.has(url)) {
+      return this.audioBuffers.get(url)
+    }
+    if (this.loadingPromises.has(url)) {
+      return await this.loadingPromises.get(url)
+    }
+    const loadPromise = fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        return response.arrayBuffer()
+      })
+      .then((arrayBuffer) => this.audioContext.decodeAudioData(arrayBuffer))
+      .then((audioBuffer) => {
+        this.audioBuffers.set(url, audioBuffer)
+        this.loadingPromises.delete(url)
+        return audioBuffer
+      })
+      .catch((err) => {
+        this.loadingPromises.delete(url)
+        throw err
+      })
+    this.loadingPromises.set(url, loadPromise)
+    return await loadPromise
+  }
+  /**
+   * Предзагружает все звуковые файлы
+   * @returns {Promise<void>}
+   */
+  async preloadSounds() {
+    if (!this.audioContext) {
+      return
+    }
+    logger?.log('🔊 Starting audio files preload...')
+    const loadPromises = Object.values(this.soundFiles).map((url) =>
+      this.loadSound(url)
+        .then(() => true)
+        .catch(() => null)
+    )
+    const results = await Promise.all(loadPromises)
+    const loadedCount = results.filter((r) => r === true).length
+    this.filesLoaded = loadedCount > 0
+    if (loadedCount === Object.keys(this.soundFiles).length) {
+      logger?.log(
+        `✅ Audio files preloaded: ${loadedCount}/${Object.keys(this.soundFiles).length}`
+      )
+    } else if (loadedCount > 0) {
+      logger?.warn(
+        `⚠️ Partially loaded: ${loadedCount}/${Object.keys(this.soundFiles).length} (using synthesis for missing)`
+      )
+    } else {
+      logger?.warn('⚠️ No audio files loaded, using synthesis fallback')
+      this.useAudioFiles = false
+    }
+  }
+  setEnabled(enabled) {
+    this.enabled = !!enabled
+    // Lazy load sounds when user enables sound for the first time
+    if (
+      enabled &&
+      this.useAudioFiles &&
+      !this.filesLoaded &&
+      this.audioContext
+    ) {
+      this.preloadSounds().catch((err) => {
+        if (typeof logger !== 'undefined') {
+          logger.warn('Failed to load audio files:', err)
+        }
+        this.useAudioFiles = false
+      })
+    }
+  }
+  setVolume(volume) {
+    this.volume = Math.max(0, Math.min(1, volume))
+  }
+  setSoundType(type) {
+    this.soundType = type
+    switch (type) {
+      case 'tone':
+        this.oscillatorType = 'sine'
+        this.frequency = 440
+        this.duration = 0.15
+        break
+      case 'click':
+        this.oscillatorType = 'square'
+        this.frequency = 800
+        this.duration = 0.03
+        break
+      case 'bounce':
+        this.oscillatorType = 'sine'
+        this.frequency = 220
+        this.duration = 0.08
+        break
+      case 'beep':
+        this.oscillatorType = 'sine'
+        this.frequency = 880
+        this.duration = 0.06
+        break
+      case 'soft':
+        this.oscillatorType = 'sine'
+        this.frequency = 180
+        this.duration = 0.12
+        break
+      case 'tick':
+      default:
+        this.oscillatorType = 'sine'
+        this.frequency = 600
+        this.duration = 0.05
+        break
+    }
+  }
+  /**
+   * Plays a tick sound using current or override type.
+   * @param {string} [overrideType] - Optional: override the current sound type
+   */
+  playTick(overrideType) {
+    if (!this.enabled || !this.audioContext) {
+      return
+    }
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(() => {})
+      return
+    }
+    const soundType = overrideType || this.soundType
+    if (overrideType && overrideType !== this.soundType) {
+      this.setSoundType(overrideType)
+    }
+    if (this.useAudioFiles && this.filesLoaded) {
+      const url = this.soundFiles[soundType]
+      if (url && this.audioBuffers.has(url)) {
+        this.playBufferedSound(url)
+        return
+      }
+    }
+    this.playSynthesizedSound()
+  }
+  /**
+   * Воспроизводит загруженный звук из буфера
+   * @param {string} url - URL звукового файла
+   */
+  playBufferedSound(url) {
+    try {
+      const buffer = this.audioBuffers.get(url)
+      if (!buffer) {
+        return
+      }
+      const source = this.audioContext.createBufferSource()
+      const gainNode = this.audioContext.createGain()
+      source.buffer = buffer
+      gainNode.gain.value = this.volume
+      source.connect(gainNode)
+      gainNode.connect(this.audioContext.destination)
+      source.start()
+    } catch (error) {
+      if (typeof logger !== 'undefined') {
+        logger.error('Error playing buffered sound:', error)
+      }
+      this.playSynthesizedSound()
+    }
+  }
+  /**
+   * Воспроизводит синтезированный звук (оригинальный метод)
+   */
+  playSynthesizedSound() {
+    try {
+      if (this.soundType === 'soft') {
+        this.playSoftWoodenSound()
+        return
+      }
+      const oscillator = this.audioContext.createOscillator()
+      const gainNode = this.audioContext.createGain()
+      oscillator.type = this.oscillatorType
+      oscillator.frequency.setValueAtTime(
+        this.frequency,
+        this.audioContext.currentTime
+      )
+      gainNode.gain.setValueAtTime(0, this.audioContext.currentTime)
+      gainNode.gain.linearRampToValueAtTime(
+        this.volume,
+        this.audioContext.currentTime + 0.005
+      )
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        this.audioContext.currentTime + this.duration
+      )
+      oscillator.connect(gainNode)
+      gainNode.connect(this.audioContext.destination)
+      oscillator.start()
+      oscillator.stop(this.audioContext.currentTime + this.duration)
+    } catch (error) {
+      if (typeof logger !== 'undefined') {
+        logger.error('Error playing synthesized sound:', error)
+      }
+    }
+  }
+  /**
+   * Plays a soft low-frequency thud — default EMDR bilateral stimulation sound.
+   * Pure sine sweep (120→60 Hz) with smooth decay. No harsh transients.
+   */
+  playSoftWoodenSound() {
+    try {
+      const now = this.audioContext.currentTime
+      const duration = 0.16
+      const osc = this.audioContext.createOscillator()
+      const gain = this.audioContext.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(120, now)
+      osc.frequency.exponentialRampToValueAtTime(60, now + duration)
+      // Short linear attack to avoid click artifact, then smooth decay
+      gain.gain.setValueAtTime(0, now)
+      gain.gain.linearRampToValueAtTime(this.volume * 0.8, now + 0.004)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
+      osc.connect(gain)
+      gain.connect(this.audioContext.destination)
+      osc.start(now)
+      osc.stop(now + duration)
+    } catch (error) {
+      if (typeof logger !== 'undefined') {
+        logger.error('Error playing soft wooden sound:', error)
+      }
+    }
+  }
+}
+if (typeof globalThis !== 'undefined') {
+  globalThis.AudioManager = AudioManager
+}
+
+module.exports = AudioManager
+
+
+/***/ },
+
+/***/ "./src/common.js"
+/*!***********************!*\
+  !*** ./src/common.js ***!
+  \***********************/
+(module) {
+
+"use strict";
+/* jshint esversion: 11, asi: true */
+
+
+/**
+ * Common utilities and functions for BilateralBound
+ * Упрощенная версия с использованием общих утилит
+ */
+/**
+ * Условное логирование только в режиме разработки.
+ * @param {...*} args - Аргументы для логирования.
+ */
+const debugLog =
+  typeof globalThis !== 'undefined' && globalThis.debugLog
+    ? globalThis.debugLog
+    : () => {}
+/**
+ * Логирует ошибки в режиме разработки.
+ * @param {...*} args - Аргументы для логирования.
+ */
+const debugError =
+  typeof globalThis !== 'undefined' && globalThis.debugError
+    ? globalThis.debugError
+    : () => {}
+/**
+ * Логирует предупреждения в режиме разработки.
+ * @param {...*} args - Аргументы для логирования.
+ */
+const debugWarn =
+  typeof globalThis !== 'undefined' && globalThis.debugWarn
+    ? globalThis.debugWarn
+    : () => {}
+/**
+ * Извлекает ID сессии из URL.
+ * @returns {string|null} ID сессии или null, если не найден.
+ */
+const getSessionIdFromUrl =
+  globalThis.CommonUtils?.getSessionIdFromUrl &&
+  typeof globalThis.CommonUtils.getSessionIdFromUrl === 'function'
+    ? globalThis.CommonUtils.getSessionIdFromUrl
+    : function () {
+        const path = globalThis.location.pathname
+        const parts = path.split('/')
+        if ((parts[1] === 'c' || parts[1] === 's') && parts[2]) {
+          return parts[2]
+        }
+        const urlParams = new URLSearchParams(globalThis.location.search)
+        return urlParams.get('sessionId')
+      }
+const toggleFullscreen =
+  globalThis.CommonUtils?.toggleFullscreen &&
+  typeof globalThis.CommonUtils.toggleFullscreen === 'function'
+    ? globalThis.CommonUtils.toggleFullscreen
+    : (function () {
+        const canFullscreen = () => {
+          const docEl = document.documentElement
+          return !!(
+            docEl.requestFullscreen ||
+            docEl.webkitRequestFullscreen ||
+            docEl.msRequestFullscreen ||
+            docEl.mozRequestFullScreen
+          )
+        }
+        const isFs = () =>
+          !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.msFullscreenElement ||
+            document.mozFullScreenElement
+          )
+        /**
+         * Toggles fullscreen mode for a given element or the entire page.
+         * Uses the Fullscreen API with fallbacks for different browsers.
+         * @param {HTMLElement} [el] - The element to make fullscreen. Defaults to document.documentElement.
+         * @returns {Promise<boolean>} A promise that resolves to true if the state changed, false otherwise.
+         */
+        return async function toggleFullscreen(el) {
+          try {
+            if (!canFullscreen()) {
+              return false
+            }
+            if (isFs()) {
+              const exitFullscreen =
+                document.exitFullscreen ||
+                document.webkitExitFullscreen ||
+                document.msExitFullscreen ||
+                document.mozCancelFullScreen
+              await exitFullscreen?.call(document)
+            } else {
+              const target = el || document.documentElement
+              const requestFullscreen =
+                target.requestFullscreen ||
+                target.webkitRequestFullscreen ||
+                target.msRequestFullscreen ||
+                target.mozRequestFullScreen
+              await requestFullscreen?.call(target)
+            }
+            return true
+          } catch (err) {
+            debugError('Fullscreen API error:', err)
+            return false
+          }
+        }
+      })()
+/**
+ * Создает throttled-функцию, которая вызывает fn не чаще одного раза за указанный период.
+ * @param {Function} fn - Функция для throttling.
+ * @param {number} [wait=100] - Период ожидания в миллисекундах.
+ * @returns {Function} Новая throttled-функция.
+ */
+const throttle =
+  globalThis.CommonUtils &&
+  typeof globalThis.CommonUtils.throttle === 'function'
+    ? globalThis.CommonUtils.throttle
+    : function throttleImplementation(fn, wait = 100) {
+        if (typeof fn !== 'function') {
+          return () => {}
+        }
+        let last = 0
+        let timeoutId = null
+        let trailingArgs = null
+        return function throttled(...args) {
+          const now = Date.now()
+          const remaining = wait - (now - last)
+          trailingArgs = args
+          if (remaining <= 0 || remaining > wait) {
+            if (timeoutId) {
+              clearTimeout(timeoutId)
+              timeoutId = null
+            }
+            last = now
+            fn.apply(this, args)
+          } else if (timeoutId === null) {
+            timeoutId = setTimeout(() => {
+              last = Date.now()
+              timeoutId = null
+              fn.apply(this, trailingArgs)
+              trailingArgs = null
+            }, remaining)
+          }
+        }
+      }
+if (typeof globalThis !== 'undefined') {
+  globalThis.debugLog = debugLog
+  globalThis.debugError = debugError
+  globalThis.debugWarn = debugWarn
+  globalThis.getSessionIdFromUrl = getSessionIdFromUrl
+  globalThis.toggleFullscreen = toggleFullscreen
+  globalThis.throttle = throttle
+  globalThis.WS_MSG = Object.freeze({
+    controllerUpdate: 'controller_update',
+    heartbeat: 'heartbeat',
+    initialState: 'initial_state',
+    stateUpdate: 'state_update',
+    viewerStatus: 'viewer_status',
+    viewerAudioActivated: 'viewer_audio_activated',
+    netMetrics: 'net_metrics',
+    bounceSync: 'bounce_sync'
+  })
+}
+/**
+ * Manages the theme (light/dark) of the application.
+ * @class ThemeManager
+ */
+class ThemeManager {
+  /**
+   * The key used to store the theme preference in localStorage.
+   * @type {string}
+   * @private
+   */
+  /**
+   * Initializes the ThemeManager
+   */
+  constructor() {
+    this.themeKey = 'bb_theme'
+    this.init()
+  }
+  /**
+   * Loads the saved theme and sets up the theme toggle button.
+   * @private
+   */
+  init() {
+    this.setupThemeToggle()
+    this.loadTheme()
+    this.setupThemeChangeListener()
+  }
+  /**
+   * Loads the theme from localStorage and applies it to the body.
+   * @private
+   */
+  loadTheme() {
+    const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
+    document.body.classList.remove('dark-theme', 'light-theme')
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-theme')
+      this.updateThemeButton('☀️')
+    } else {
+      document.body.classList.add('dark-theme')
+      this.updateThemeButton('🌙')
+    }
+  }
+  /**
+   * Cycles through themes: dark -> light -> dark
+   */
+  toggleTheme() {
+    const body = document.body
+    const hasLightClass = body.classList.contains('light-theme')
+    body.classList.remove('dark-theme', 'light-theme')
+    if (hasLightClass) {
+      body.classList.add('dark-theme')
+      localStorage.setItem(this.themeKey, 'dark')
+      this.updateThemeButton('🌙')
+    } else {
+      body.classList.add('light-theme')
+      localStorage.setItem(this.themeKey, 'light')
+      this.updateThemeButton('☀️')
+    }
+    // Notify controller to update viewer links with new theme
+    globalThis.dispatchEvent(new CustomEvent('bb_theme_changed'))
+  }
+  /**
+   * Updates the theme toggle button text/icon
+   * @private
+   */
+  updateThemeButton(text) {
+    const btn = document.getElementById('themeToggleBtn')
+    if (btn) {
+      btn.textContent = text
+    }
+  }
+  /**
+   * Finds the theme toggle button and attaches a click event listener.
+   * @private
+   */
+  setupThemeToggle() {
+    const toggleBtn = document.getElementById('themeToggleBtn')
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => this.toggleTheme())
+    }
+  }
+  /**
+   * Listens for theme changes from WebSocket and updates the UI.
+   * @private
+   */
+  setupThemeChangeListener() {
+    globalThis.addEventListener('bb_theme_changed', () => {
+      this.loadTheme()
+    })
+  }
+}
+/**
+ * Копирует текст из элемента в буфер обмена.
+ * @param {string} elementId - ID элемента, из которого нужно скопировать текст.
+ * @param {string} successMessage - Сообщение, отображаемое при успешном копировании.
+ */
+async function copy(elementId, successMessage) {
+  const element = document.getElementById(elementId)
+  
+  const i18n = globalThis.i18n
+  // helper to get localized strings or fallback
+  const getLoc = (key, fallback) => (i18n && i18n.t(key) !== key ? i18n.t(key) : fallback)
+
+  if (!element?.value) {
+    if (globalThis.showErrorNotification) {
+      globalThis.showErrorNotification(
+        getLoc('controller.errorTitle', 'Ошибка'),
+        getLoc('controller.copyErrorElement', 'Элемент для копирования не найден.')
+      )
+    } else {
+      debugError('Элемент для копирования не найден:', elementId)
+    }
+    return
+  }
+  try {
+    await navigator.clipboard.writeText(element.value)
+    if (globalThis.showSuccessNotification) {
+      // Use standard Success title and localized message
+      const title = getLoc('controller.success', 'Success')
+      const msg = successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована')
+      
+      // showSuccessNotification expects (title, message)
+      if (globalThis.showSuccessNotification.length >= 2) {
+        globalThis.showSuccessNotification(title, msg)
+      } else {
+        // Fallback for older signature if any
+        globalThis.showSuccessNotification(msg)
+      }
+    } else if (globalThis.showSuccessToast) {
+      const msg = successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована')
+      globalThis.showSuccessToast(msg)
+    } else {
+      // Fallback if no notification systems are loaded yet, just alert
+      alert(successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована'))
+    }
+  } catch (err) {
+    debugError('Ошибка копирования:', err)
+    if (globalThis.showErrorNotification) {
+      globalThis.showErrorNotification(
+        getLoc('controller.errorTitle', 'Ошибка копирования'),
+        getLoc('controller.copyError', 'Не удалось скопировать текст.')
+      )
+    }
+  }
+}
+/**
+ * Navigates the user to the main page.
+ */
+function goBack() {
+  globalThis.location.href = '/'
+}
+document.addEventListener('DOMContentLoaded', () => {
+  globalThis.themeManager = new ThemeManager()
+})
+if (typeof globalThis !== 'undefined') {
+  globalThis.copy = copy
+  globalThis.goBack = goBack
+}
+
+module.exports = {
+  ThemeManager,
+  copy,
+  goBack,
+  getSessionIdFromUrl,
+  toggleFullscreen,
+  throttle
+}
+
+
+/***/ },
+
+/***/ "./src/config.js"
+/*!***********************!*\
+  !*** ./src/config.js ***!
+  \***********************/
+(module) {
+
+"use strict";
+
+if (typeof globalThis !== 'undefined') {
+  globalThis.BBConfig = globalThis.BBConfig || {
+    rendering: {
+      hiddenThrottleMs: 100, // при скрытой вкладке ~10 FPS
+      adaptiveFrameRate: true, // Адаптивная частота кадров
+      maxFrameTime: 32, // Максимальное время кадра в ms (для предотвращения спирали)
+      targetFrameTime: 16 // Целевое время кадра для 60 FPS
+    },
+    smoothing: {
+      // Base parameters (адаптивно меняются через smoothing-utils.js)
+      damping: 22, // Base damping (15-25) — чем больше, тем мягче
+      stiffness: 28, // Base stiffness (25-35) — чем меньше, тем плавнее
+      maxPredictSec: 0.02, // Max prediction time (0.01-0.05)
+      snapDistance: 0.3, // Snap distance threshold (0.2-0.4)
+      // Adaptive smoothing factors
+      dampingJitterFactor: 20, // jitterMs / factor для damping
+      stiffnessJitterFactor: 30, // jitterMs / factor для stiffness
+      highJitterThreshold: 15, // Порог для snapDistance increase
+      // Drift correction
+      driftThresholdPx: 50, // Порог дрейфа в пикселях (20-100)
+      driftCorrectionMs: 400, // Время коррекции дрейфа (100-500, больше = плавнее)
+      driftCheckIntervalMs: 3000, // Интервал проверки дрейфа
+      // Legacy flags (сохранены для совместимости)
+      predictionEnabled: true, // Включена предикция движения
+      adaptiveStiffness: true, // Адаптивная жесткость на основе расстояния
+      adaptiveDamping: true, // Адаптивное демпфирование на основе скорости
+      exponentialSmoothing: true, // Включено экспоненциальное сглаживание
+      stateBuffering: true, // Буферизация состояний для интерполяции
+      bufferSize: 10, // Буфер для интерполяции
+      smoothingFactor: 0.35, // Коэффициент сглаживания позиции
+      velocitySmoothingAlpha: 0.1 // Коэффициент сглаживания скорости
+    },
+    network: {
+      heartbeatInterval: 25000, // 25 секунд
+      reconnectDelay: 2000, // Уменьшена задержка для быстрого восстановления
+      messageTimeout: 5000, // 5 секунд
+      maxReconnectAttempts: 10, // Увеличено количество попыток
+      coalesceTypes: ['controller_update'], // Типы сообщений для коалесцирования
+      coalesceDelayMs: 8, // Уменьшена задержка для большей плавности
+      priorityTypes: ['controller_update', 'heartbeat'] // Приоритетные типы сообщений
+    },
+    performance: {
+      deadReckonEps: 1, // Уменьшен порог dead reckoning для точности
+      throttleDelay: 16, // Задержка throttling для 60 FPS
+      adaptiveThrottling: true, // Адаптивное throttling
+      maxFrameSteps: 3, // Максимальное количество шагов физики за кадр
+      stepCapping: true // Включено ограничение шага для предотвращения рывков
+    },
+    physics: {
+      minSpeed: 50, // Минимальная скорость после отскока
+      maxSpeed: 5000, // Максимальная скорость
+      ballRadius: 20, // Радиус мяча по умолчанию
+      worldWidth: 800, // Ширина мира по умолчанию
+      worldHeight: 600, // Высота мира по умолчанию
+      maxAcceleration: 5000 // Максимальное ускорение для предотвращения рывков
+    }
+  }
+
+  if ( true && module.exports) {
+    module.exports = globalThis.BBConfig
+  }
+}
+
+
+/***/ },
+
+/***/ "./src/core/debug-logger.js"
+/*!**********************************!*\
+  !*** ./src/core/debug-logger.js ***!
+  \**********************************/
+(module) {
+
+"use strict";
+/**
+ * @fileoverview Debug Logger - Unified debug logging with query toggle
+ * @module utils/debug-logger
+ * @version 2.0.0 - Optimized, merged bb-debug functionality
+ *
+ * Usage:
+ *   Add ?debug=1 or ?bbdebug=1 to URL
+ *   Example: /v/abc123?debug=1&debug-cat=sync,movement
+ *
+ * Categories: sync, physics, network, sse, state, command, movement, bounce, audio
+ */
+/* jshint esversion: 11, browser: true, node: true, boss: true, laxbreak: true, laxcomma: true, unused: false */
+/* global globalThis, console, module, Map, Set */
+
+const CATEGORY_COLORS = {
+  sync: '#4A9EFF',
+  sse: '#FF8C42',
+  network: '#52B788',
+  physics: '#9D4EDD',
+  state: '#F72585',
+  command: '#FF006E',
+  movement: '#06FFA5',
+  bounce: '#C77DFF',
+  audio: '#FFD700'
+}
+class DebugLogger {
+  constructor() {
+    this.enabled = this._checkDebugMode()
+    this.categories = this._getEnabledCategories()
+    this.throttles = new Map()
+    if (this.enabled) {
+      this._logStats()
+    }
+  }
+  _checkDebugMode() {
+    if (globalThis.window === undefined) {
+      return false
+    }
+    const params = new URLSearchParams(globalThis.location.search)
+    return params.get('debug') === '1' || params.get('bbdebug') === '1'
+  }
+  _getEnabledCategories() {
+    if (!this.enabled) {
+      return new Set()
+    }
+    const params = new URLSearchParams(globalThis.location.search)
+    const categories = params.get('debug-cat') || params.get('categories')
+    return categories
+      ? new Set(categories.split(',').map((c) => c.trim()))
+      : new Set(Object.keys(CATEGORY_COLORS))
+  }
+  _logStats() {
+    console.log(
+      '%c[DEBUG MODE ENABLED]',
+      'background: #0A0; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;'
+    )
+    console.log(
+      '📊 Enabled categories:',
+      Array.from(this.categories).join(', ')
+    )
+  }
+  _isEnabled(category) {
+    return this.enabled && this.categories.has(category)
+  }
+  _log(category, message, data) {
+    if (!this._isEnabled(category)) {
+      return
+    }
+    const color = CATEGORY_COLORS[category] || '#999'
+    const time = new Date().toISOString().split('T')[1].slice(0, -1)
+    console.log(
+      `%c[${category.toUpperCase()}] ${time} - ${message}`,
+      `color: ${color}; font-weight: bold;`,
+      data ?? ''
+    )
+  }
+  sync(msg, data) {
+    this._log('sync', msg, data)
+  }
+  sse(msg, data) {
+    this._log('sse', msg, data)
+  }
+  physics(msg, data) {
+    this._log('physics', msg, data)
+  }
+  network(msg, data) {
+    this._log('network', msg, data)
+  }
+  state(msg, data) {
+    this._log('state', msg, data)
+  }
+  command(msg, data) {
+    this._log('command', msg, data)
+  }
+  movement(msg, data) {
+    this._log('movement', msg, data)
+  }
+  bounce(msg, data) {
+    this._log('bounce', msg, data)
+  }
+  audio(msg, data) {
+    this._log('audio', msg, data)
+  }
+  throttle(key, intervalMs, category, message, data) {
+    const now = Date.now()
+    const last = this.throttles.get(key)
+    if (last && now - last < intervalMs) {
+      return
+    }
+    this.throttles.set(key, now)
+    this._log(category, message, data)
+  }
+  error(msg, err) {
+    console.error(
+      `%c[ERROR] ${msg}`,
+      'color: #F00; font-weight: bold;',
+      err ?? ''
+    )
+  }
+  warn(msg, data) {
+    console.warn(
+      `%c[WARN] ${msg}`,
+      'color: #FA0; font-weight: bold;',
+      data ?? ''
+    )
+  }
+  info(msg, data) {
+    console.info(
+      `%cℹ️ ${msg}`,
+      'color: #4A9EFF; font-weight: bold;',
+      data ?? ''
+    )
+  }
+  log(msg, data) {
+    console.log(msg, data ?? '')
+  }
+  /**
+   * Creates a scoped logger for a specific module
+   * @param {string} moduleName - The name of the module
+   * @returns {object} Scoped logger object
+   * @public
+   * @used
+   * jshint unused: false
+   */
+  scope(moduleName) {
+    return {
+      sync: (msg, data) => this.sync(`[${moduleName}] ${msg}`, data),
+      sse: (msg, data) => this.sse(`[${moduleName}] ${msg}`, data),
+      physics: (msg, data) => this.physics(`[${moduleName}] ${msg}`, data),
+      network: (msg, data) => this.network(`[${moduleName}] ${msg}`, data),
+      state: (msg, data) => this.state(`[${moduleName}] ${msg}`, data),
+      command: (msg, data) => this.command(`[${moduleName}] ${msg}`, data),
+      movement: (msg, data) => this.movement(`[${moduleName}] ${msg}`, data),
+      bounce: (msg, data) => this.bounce(`[${moduleName}] ${msg}`, data),
+      audio: (msg, data) => this.audio(`[${moduleName}] ${msg}`, data),
+      error: (msg, err) => this.error(`[${moduleName}] ${msg}`, err),
+      warn: (msg, data) => this.warn(`[${moduleName}] ${msg}`, data),
+      info: (msg, data) => this.info(`[${moduleName}] ${msg}`, data),
+      log: (msg, data) => this.log(`[${moduleName}] ${msg}`, data)
+    }
+  }
+}
+const debugLogger = new DebugLogger()
+if ( true && module?.exports) {
+  module.exports = debugLogger
+}
+if (globalThis !== undefined) {
+  globalThis.debugLogger = debugLogger
+  globalThis.logger = debugLogger
+  globalThis.createScopedLogger = (moduleName) => debugLogger.scope(moduleName)
+  globalThis.debugLog = (...args) => {
+    if (!debugLogger.enabled) {
+      return
+    }
+    if (args.length === 1 && typeof args[0] === 'string') {
+      console.log(args[0])
+    } else if (args.length === 2) {
+      console.log(args[0], args[1])
+    } else {
+      console.log(...args)
+    }
+  }
+  globalThis.debugError = (...args) => {
+    if (!debugLogger.enabled) {
+      return
+    }
+    debugLogger.error(args[0], args[1])
+  }
+  globalThis.debugWarn = (...args) => {
+    if (!debugLogger.enabled) {
+      return
+    }
+    debugLogger.warn(args[0], args[1])
+  }
+}
+
+
+/***/ },
+
+/***/ "./src/i18n/constants.js"
+/*!*******************************!*\
+  !*** ./src/i18n/constants.js ***!
+  \*******************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+/* module decorator */ module = __webpack_require__.nmd(module);
+
+/**
+ * @fileoverview Shared i18n constants - Single Source of Truth
+ * All language-related constants are defined here to avoid duplication
+ * @module constants/i18n-constants
+ */
+
+/**
+ * List of supported languages
+ * @constant {string[]}
+ */
+const SUPPORTED_LANGUAGES = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh']
+
+/**
+ * Human-readable language names
+ * @constant {Object<string, string>}
+ */
+const LANGUAGE_NAMES = {
+  en: 'English',
+  ru: 'Русский',
+  es: 'Español',
+  fr: 'Français',
+  de: 'Deutsch',
+  pt: 'Português',
+  ja: '日本語',
+  zh: '中文'
+}
+
+/**
+ * LocalStorage key for language preference
+ * @constant {string}
+ */
+const STORAGE_KEY = 'emdr-language'
+
+/**
+ * Default language fallback
+ * @constant {string}
+ */
+const DEFAULT_LANGUAGE = 'en'
+
+/**
+ * Check if a language code is supported
+ * @param {string} lang - Language code to check
+ * @returns {boolean}
+ */
+function isSupported(lang) {
+  return SUPPORTED_LANGUAGES.includes(lang)
+}
+
+/**
+ * Detect language from domain
+ * @returns {string} Language code
+ */
+function detectFromDomain() {
+  // Safe access to location.hostname
+  let hostname = 'localhost'
+  if (typeof globalThis !== 'undefined' && globalThis.location) {
+    hostname = globalThis.location.hostname
+  }
+
+  // Check domain for language detection (emdrbilateral is project name, not a typo)
+  if (hostname.includes('emdrbilateral.ru')) {
+    return 'ru'
+  }
+  if (hostname.includes('emdrbilateral.online')) {
+    return 'en'
+  }
+
+  return DEFAULT_LANGUAGE
+}
+
+/**
+ * Save language preference
+ * @param {string} lang - Language code to save
+ */
+function saveLanguage(lang) {
+  // Early return if not supported
+  if (!isSupported(lang)) {
+    return
+  }
+
+  // Save to localStorage if available
+  if (typeof globalThis !== 'undefined' && globalThis.localStorage) {
+    try {
+      globalThis.localStorage.setItem(STORAGE_KEY, lang)
+    } catch {
+      // Ignore storage errors
+    }
+  }
+}
+
+// Export constants
+const I18nConstants = {
+  SUPPORTED_LANGUAGES,
+  LANGUAGE_NAMES,
+  STORAGE_KEY,
+  DEFAULT_LANGUAGE,
+  isSupported,
+  detectFromDomain,
+  saveLanguage
+}
+
+// Freeze to prevent accidental mutation
+Object.freeze(I18nConstants)
+Object.freeze(SUPPORTED_LANGUAGES)
+Object.freeze(LANGUAGE_NAMES)
+
+// Export to global scope (browser)
+if (typeof globalThis !== 'undefined' && globalThis) {
+  globalThis.I18nConstants = I18nConstants
+}
+
+// CommonJS export (Node.js)
+if ( true && module && module.exports) {
+  module.exports = I18nConstants
+}
+
+module.exports = I18nConstants
+
+
+/***/ },
+
+/***/ "./src/i18n/i18n.js"
+/*!**************************!*\
+  !*** ./src/i18n/i18n.js ***!
+  \**************************/
+(module) {
+
+/**
+ * i18n Configuration
+ * Handles multi-language support for Bilateral Bound
+ * Uses shared constants from constants/i18n-constants.js when available
+ */
+
+// Use shared constants or fallback to inline values
+const constants = globalThis.I18nConstants || {
+  SUPPORTED_LANGUAGES: ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh'],
+  DEFAULT_LANGUAGE: 'en',
+  STORAGE_KEY: 'emdr-language',
+  detectFromDomain: () => {
+    const hostname = typeof location !== 'undefined' ? location.hostname : ''
+    if (hostname.includes('emdrbilateral.ru')) return 'ru'
+    if (hostname.includes('emdrbilateral.online')) return 'en'
+    return 'en'
+  }
+}
+
+// Simple i18n manager for client-side
+const I18n = {
+  currentLanguage: constants.DEFAULT_LANGUAGE,
+  defaultLanguage: constants.DEFAULT_LANGUAGE,
+  translations: {},
+  supportedLanguages: constants.SUPPORTED_LANGUAGES,
+  isReady: false,
+  _readyCallbacks: [],
+
+  ready(callback) {
+    if (typeof callback !== 'function') return
+    if (this.isReady) {
+      callback()
+      return
+    }
+    this._readyCallbacks.push(callback)
+  },
+
+  _notifyReady() {
+    // Remove anti-flash cloak
+    if (typeof document !== 'undefined') {
+      const cloak = document.getElementById('i18n-cloak')
+      if (cloak) cloak.remove()
+      document.documentElement.classList.add('i18n-ready')
+    }
+
+    if (this.isReady) return
+    this.isReady = true
+    while (this._readyCallbacks.length) {
+      try {
+        const cb = this._readyCallbacks.shift()
+        cb()
+      } catch (err) {
+        // Silently ignore callback errors to prevent initialization blocking
+        if (typeof globalThis !== 'undefined' && globalThis.debugError) {
+          globalThis.debugError('i18n.ready callback error:', err)
+        }
+      }
+    }
+    if (typeof window !== 'undefined' && typeof Event === 'function') {
+      // eslint-disable-next-line no-undef
+      globalThis.dispatchEvent(new Event('i18nReady'))
+    }
+  },
+
+  /**
+   * Initialize i18n system
+   */
+  init: async function () {
+    this.detectLanguage()
+    if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
+      globalThis.debugLog('[i18n] Detected language:', this.currentLanguage)
+    }
+
+    // Update document language immediately
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = this.currentLanguage
+      document.documentElement.dataset.lang = this.currentLanguage
+    }
+
+    await this.loadTranslations()
+    if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
+      globalThis.debugLog(
+        '[i18n] Translations loaded:',
+        Object.keys(this.translations)
+      )
+    }
+
+    // Apply translations in DOM after loading
+    // If DOM is ready, apply immediately, otherwise wait for DOMContentLoaded
+    if (typeof document !== 'undefined') {
+      if (document.readyState === 'loading') {
+        // DOM is still loading, wait for it
+        document.addEventListener(
+          'DOMContentLoaded',
+          () => {
+            this.applyTranslations()
+            this._notifyReady()
+            // Применяем переводы еще раз с небольшой задержкой для динамически созданных элементов
+            setTimeout(() => this.applyTranslations(), 100)
+          },
+          { once: true }
+        )
+      } else {
+        // DOM is ready, apply now
+        this.applyTranslations()
+        this._notifyReady()
+        // Применяем переводы еще раз с небольшой задержкой для динамически созданных элементов
+        setTimeout(() => this.applyTranslations(), 100)
+      }
+    } else {
+      this._notifyReady()
+    }
+    return this
+  },
+
+  /**
+   * Detect language from multiple sources
+   */
+  detectLanguage: function () {
+    // 1. Check URL parameter (highest priority)
+    const params = new URLSearchParams(
+      typeof globalThis !== 'undefined' &&
+        globalThis.location &&
+        globalThis.location.search
+        ? globalThis.location.search
+        : ''
+    )
+    const langParam = params.get('lang')
+    if (langParam && this.supportedLanguages.includes(langParam)) {
+      this.currentLanguage = langParam
+      localStorage.setItem('emdr-language', langParam)
+      return
+    }
+
+    // 2. Check localStorage (second priority) - сохраненный выбор пользователя
+    const savedLang = localStorage.getItem('emdr-language')
+    if (savedLang && this.supportedLanguages.includes(savedLang)) {
+      this.currentLanguage = savedLang
+      return
+    }
+
+    // 3. Check browser language
+    const browserLang = navigator.language.split('-')[0].toLowerCase()
+    if (this.supportedLanguages.includes(browserLang)) {
+      this.currentLanguage = browserLang
+      localStorage.setItem('emdr-language', browserLang)
+      return
+    }
+
+    // 4. Check domain (lower priority) - только для новых пользователей без сохраненного выбора
+    // Russian domain → Russian language
+    // English domain → English language
+    const hostname =
+      typeof globalThis !== 'undefined' &&
+      globalThis.location &&
+      globalThis.location.hostname
+        ? globalThis.location.hostname
+        : ''
+    if (hostname.includes('emdrbilateral.ru')) {
+      this.currentLanguage = 'ru'
+      localStorage.setItem('emdr-language', 'ru')
+      return
+    } else if (hostname.includes('emdrbilateral.online')) {
+      this.currentLanguage = 'en'
+      localStorage.setItem('emdr-language', 'en')
+      return
+    }
+
+    // 5. Fallback to default English
+    this.currentLanguage = this.defaultLanguage
+    localStorage.setItem('emdr-language', this.defaultLanguage)
+  },
+
+  /**
+   * Load translations from server.
+   * Language is captured at call time to avoid a race condition where
+   * currentLanguage changes during the async fetch, which would cause
+   * translations for one language to be stored under a different key.
+   */
+  loadTranslations: async function () {
+    // Capture language now — currentLanguage may change while we await the fetch
+    const lang = this.currentLanguage
+    try {
+      const url = `/locales/${lang}/common.json`
+      if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
+        globalThis.debugLog('[i18n] Loading translations from:', url)
+      }
+      const response = await fetch(url)
+      if (!response.ok) {
+        // Log and trigger fallback without throwing (avoids throw-caught-locally lint warning)
+        if (typeof globalThis !== 'undefined' && globalThis.debugError) {
+          globalThis.debugError(
+            `[i18n] Failed to load translations: ${response.statusText}`
+          )
+        }
+        // If not English, switch to en and retry
+        if (lang !== 'en') {
+          this.currentLanguage = 'en'
+          return await this.loadTranslations()
+        }
+        return false
+      }
+      this.translations[lang] = await response.json()
+      if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
+        globalThis.debugLog(
+          '[i18n] Successfully loaded translations for:',
+          lang
+        )
+      }
+      return true
+    } catch (error) {
+      if (typeof globalThis !== 'undefined' && globalThis.debugError) {
+        globalThis.debugError(
+          `[i18n] Failed to load translations: ${error?.message || error}`
+        )
+      }
+      // Fallback: load English if current language fails
+      if (lang !== 'en') {
+        this.currentLanguage = 'en'
+        return await this.loadTranslations()
+      }
+      return false
+    }
+  },
+
+  /**
+   * Get translation by key with dot notation
+   */
+  t: function (key, options = {}) {
+    // If not ready yet, return key without warning (during initialization)
+    if (!this.isReady) {
+      return key
+    }
+
+    const value = this.getValueByPath(
+      this.translations[this.currentLanguage],
+      key
+    )
+
+    if (!value) {
+      // Check if translations object exists at all
+      if (!this.translations[this.currentLanguage]) {
+        if (typeof globalThis !== 'undefined' && globalThis.debugError) {
+          globalThis.debugError(
+            `No translations loaded for language: ${this.currentLanguage}`
+          )
+        }
+      } else {
+        if (typeof globalThis !== 'undefined' && globalThis.debugWarn) {
+          globalThis.debugWarn(
+            `Translation missing: ${key} (language: ${this.currentLanguage})`
+          )
+        }
+      }
+      return key
+    }
+
+    // Auto-inject VERSION from meta tag if placeholder exists
+    if (typeof value === 'string' && value.includes('{{VERSION}}')) {
+      const versionMeta = document.querySelector('meta[name="version"]')
+      const version = versionMeta ? versionMeta.getAttribute('content') : 'dev'
+      options.VERSION = `v${version}`
+    }
+
+    // Handle interpolation
+    if (typeof value === 'string' && Object.keys(options).length > 0) {
+      let result = value
+      for (const [k, v] of Object.entries(options)) {
+        result = result.replace(`{{${k}}}`, v)
+      }
+      return result
+    }
+
+    return value
+  },
+
+  /**
+   * Get value from nested object using dot notation
+   */
+  getValueByPath: function (obj, path) {
+    if (!obj) return null
+    return path.split('.').reduce((current, part) => current?.[part], obj)
+  },
+
+  /**
+   * Change current language
+   */
+  changeLanguage: async function (lang) {
+    if (!this.supportedLanguages.includes(lang)) {
+      if (typeof globalThis !== 'undefined' && globalThis.debugError) {
+        globalThis.debugError(`Language '${lang}' is not supported`)
+      }
+      return false
+    }
+    this.currentLanguage = lang
+    localStorage.setItem('emdr-language', lang)
+
+    // Update document language immediately for accessibility
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang
+      document.documentElement.dataset.lang = lang
+    }
+
+    // Attempt to load translations; do not throw on failure, just return boolean
+    const ok = await this.loadTranslations()
+    if (ok) {
+      this.applyTranslations()
+    } else {
+      // If translations failed to load, still try to apply whatever is available
+      this.applyTranslations()
+    }
+
+    // Notify listeners that language has changed so pages can react (e.g., update titles/meta)
+    try {
+      if (typeof CustomEvent === 'function') {
+        globalThis.dispatchEvent(
+          new CustomEvent('i18nLanguageChanged', { detail: { lang } })
+        )
+      } else {
+        // Fallback for very old environments
+        // eslint-disable-next-line no-undef
+        globalThis.dispatchEvent(new Event('i18nLanguageChanged'))
+      }
+    } catch (err) {
+      if (typeof globalThis !== 'undefined' && globalThis.debugWarn) {
+        globalThis.debugWarn(
+          'Failed to dispatch i18nLanguageChanged event',
+          err
+        )
+      }
+    }
+
+    return !!ok
+  },
+
+  /**
+   * Alias for changeLanguage for API consistency
+   * Used when receiving language updates from server
+   */
+  setLanguage: async function (lang) {
+    return this.changeLanguage(lang)
+  },
+
+  /**
+   * Apply translations to DOM elements with data-i18n or data-i18n-attr attributes.
+   * - elements with `data-i18n` will have their textContent replaced
+   * - elements with `data-i18n-attr` will set attributes, e.g. data-i18n-attr="placeholder:home.placeholder"
+   */
+  applyTranslations: function () {
+    try {
+      const translations = this.translations[this.currentLanguage]
+      if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
+        globalThis.debugLog(
+          '[i18n] Applying translations for language:',
+          this.currentLanguage
+        )
+      }
+
+      // Check if translations are loaded
+      if (!translations || Object.keys(translations).length === 0) {
+        if (typeof globalThis !== 'undefined' && globalThis.debugWarn) {
+          globalThis.debugWarn(
+            '[i18n] Translations not loaded yet, skipping applyTranslations'
+          )
+        }
+        return
+      }
+
+      // Helper to get translation by key
+      const get = (key) => {
+        if (!key) return null
+        let value = this.getValueByPath(translations, key)
+
+        // Auto-inject VERSION from meta tag if placeholder exists
+        if (typeof value === 'string' && value.includes('{{VERSION}}')) {
+          const versionMeta = document.querySelector('meta[name="version"]')
+          const version = versionMeta
+            ? versionMeta.getAttribute('content')
+            : 'dev'
+          value = value.replace('{{VERSION}}', `v${version}`)
+        }
+
+        return value
+      }
+
+      // Replace textContent for data-i18n
+      const nodes = document.querySelectorAll('[data-i18n]')
+      if (typeof globalThis !== 'undefined' && globalThis.debugLog) {
+        globalThis.debugLog(
+          '[i18n] Found',
+          nodes.length,
+          'elements with data-i18n attribute'
+        )
+      }
+      nodes.forEach((node) => {
+        const key = node.getAttribute('data-i18n')
+        const value = get(key)
+        if (
+          value !== null &&
+          value !== undefined &&
+          typeof value !== 'object'
+        ) {
+          // Проверяем, содержит ли перевод HTML-теги
+          if (
+            typeof value === 'string' &&
+            (value.includes('<') || value.includes('>'))
+          ) {
+            // Если в переводе есть HTML, используем innerHTML
+            node.innerHTML = value
+          } else {
+            // Иначе используем textContent для безопасности
+            node.textContent = value
+          }
+        } else if (value === null || value === undefined) {
+          if (typeof globalThis !== 'undefined' && globalThis.debugWarn) {
+            globalThis.debugWarn('[i18n] Missing translation for key:', key)
+          }
+        }
+      })
+
+      // Handle attributes: data-i18n-attr="attrName:key.path;attr2:key2"
+      const attrNodes = document.querySelectorAll('[data-i18n-attr]')
+      attrNodes.forEach((node) => {
+        const spec = node.getAttribute('data-i18n-attr')
+        if (!spec) return
+        // split by ; for multiple attr mappings
+        spec.split(';').forEach((part) => {
+          const [attr, key] = part.split(':').map((s) => s && s.trim())
+          if (!attr || !key) return
+          const value = get(key)
+          if (value != null && typeof attr === 'string') {
+            node.setAttribute(attr, value)
+          }
+        })
+      })
+    } catch (err) {
+      if (typeof globalThis !== 'undefined' && globalThis.debugError) {
+        globalThis.debugError('i18n.applyTranslations error:', err)
+      }
+    }
+  }
+}
+
+// Export for CommonJS or attach to root
+if ( true && module.exports) {
+  module.exports = I18n
+} else {
+  globalThis.i18n = I18n
+}
+
+// Auto-initialize i18n IMMEDIATELY to prevent FOUC
+// We need to start initialization as early as possible
+if (typeof globalThis !== 'undefined' && globalThis.document) {
+  // Start initialization immediately, don't wait for DOMContentLoaded
+  I18n.init().catch((err) => {
+    if (typeof globalThis !== 'undefined' && globalThis.debugError) {
+      globalThis.debugError('Failed to initialize i18n:', err)
+    }
+  })
+}
+globalThis.i18n = I18n
+
+module.exports = I18n
+
+
+/***/ },
+
+/***/ "./src/i18n/language-selector.js"
+/*!***************************************!*\
+  !*** ./src/i18n/language-selector.js ***!
+  \***************************************/
+(module) {
+
+"use strict";
+
+
+/**
+ * Language Selector Manager with i18n Integration
+ * Handles multi-language switching and page content translation
+ * Uses shared constants from constants/i18n-constants.js
+ */
+
+const LanguageSelector = (function () {
+  // Use shared constants or fallback to inline values (for backwards compatibility)
+  const constants = globalThis.I18nConstants || {
+    LANGUAGE_NAMES: {
+      en: 'English',
+      ru: 'Русский',
+      es: 'Español',
+      fr: 'Français',
+      de: 'Deutsch',
+      pt: 'Português',
+      ja: '日本語',
+      zh: '中文'
+    },
+    SUPPORTED_LANGUAGES: ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh'],
+    STORAGE_KEY: 'emdr-language',
+    isSupported: (lang) => constants.SUPPORTED_LANGUAGES.includes(lang),
+    saveLanguage: (lang) => {
+      try {
+        localStorage.setItem(constants.STORAGE_KEY, lang)
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  const languageNames = constants.LANGUAGE_NAMES
+  const supportedLanguages = new Set(constants.SUPPORTED_LANGUAGES)
+
+  function init() {
+    const btn = document.getElementById('languageSelectorBtn')
+    const dropdown = document.getElementById('languageDropdown')
+    const options = document.querySelectorAll('.language-option')
+
+    if (!btn || !dropdown || options.length === 0) {
+      return
+    }
+
+    const currentLang = detectCurrentLanguage()
+    updateCurrentLanguage(currentLang)
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const isHidden = dropdown.hasAttribute('hidden')
+      if (isHidden) {
+        dropdown.removeAttribute('hidden')
+        btn.setAttribute('aria-expanded', 'true')
+      } else {
+        dropdown.setAttribute('hidden', '')
+        btn.setAttribute('aria-expanded', 'false')
+      }
+    })
+
+    for (const option of options) {
+      option.addEventListener('click', (e) => {
+        e.preventDefault()
+        const lang = option.dataset.lang
+        changeLanguage(lang)
+        dropdown.setAttribute('hidden', '')
+        btn.setAttribute('aria-expanded', 'false')
+      })
+
+      option.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          const lang = option.dataset.lang
+          changeLanguage(lang)
+          dropdown.setAttribute('hidden', '')
+          btn.setAttribute('aria-expanded', 'false')
+        } else if (e.key === 'Escape') {
+          dropdown.setAttribute('hidden', '')
+          btn.setAttribute('aria-expanded', 'false')
+          btn.focus()
+        }
+      })
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target) && e.target !== btn) {
+        dropdown.setAttribute('hidden', '')
+        btn.setAttribute('aria-expanded', 'false')
+      }
+    })
+
+    document.addEventListener('keydown', (e) => {
+      if (btn.getAttribute('aria-expanded') === 'true') {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          const activeOption = dropdown.querySelector('[role="option"]:focus')
+          const allOptions = Array.from(
+            dropdown.querySelectorAll('[role="option"]')
+          )
+          const currentIndex = activeOption
+            ? allOptions.indexOf(activeOption)
+            : -1
+          const nextIndex = (currentIndex + 1) % allOptions.length
+          allOptions[nextIndex].focus()
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          const activeOption = dropdown.querySelector('[role="option"]:focus')
+          const allOptions = Array.from(
+            dropdown.querySelectorAll('[role="option"]')
+          )
+          const currentIndex = activeOption
+            ? allOptions.indexOf(activeOption)
+            : 0
+          const prevIndex =
+            currentIndex === 0 ? allOptions.length - 1 : currentIndex - 1
+          allOptions[prevIndex].focus()
+        }
+      }
+    })
+  }
+
+  function detectCurrentLanguage() {
+    const params = new URLSearchParams(globalThis.location.search)
+    const langParam = params.get('lang')
+    if (langParam && supportedLanguages.has(langParam)) {
+      localStorage.setItem('emdr-language', langParam)
+      return langParam
+    }
+
+    const savedLang = localStorage.getItem('emdr-language')
+    if (savedLang && supportedLanguages.has(savedLang)) {
+      return savedLang
+    }
+
+    const browserLang = navigator.language.split('-')[0].toLowerCase()
+    if (supportedLanguages.has(browserLang)) {
+      localStorage.setItem('emdr-language', browserLang)
+      return browserLang
+    }
+
+    // Default to English if no match found
+    localStorage.setItem('emdr-language', 'en')
+    return 'en'
+  }
+
+  function updateCurrentLanguage(lang) {
+    const label = document.getElementById('currentLanguageLabel')
+    const options = document.querySelectorAll('.language-option')
+
+    if (label) {
+      // Получаем название языка из i18n, если доступно и перевод существует
+      const langNameKey = `common.lang.${lang}`
+      let translatedName = null
+      if (globalThis.i18n?.t) {
+        const result = globalThis.i18n.t(langNameKey)
+        // Проверяем, что перевод не вернул сам ключ (что означает отсутствие перевода)
+        if (result && result !== langNameKey) {
+          translatedName = result
+        }
+      }
+      // Используем перевод или fallback на hardcoded languageNames
+      label.textContent = translatedName || languageNames[lang] || lang
+    }
+
+    for (const option of options) {
+      const optionLang = option.dataset.lang
+      if (optionLang === lang) {
+        option.classList.add('language-option--active')
+        option.setAttribute('aria-selected', 'true')
+      } else {
+        option.classList.remove('language-option--active')
+        option.setAttribute('aria-selected', 'false')
+      }
+    }
+
+    document.documentElement.lang = lang
+  }
+
+  /**
+   * Safe setter for i18n language across different implementations.
+   * Tries async changeLanguage(lang) -> sync setLanguage(lang) -> direct assignment.
+   * Returns a Promise that resolves to true/false depending on success.
+   */
+  async function safeSetI18nLanguage(lang) {
+    const ii = globalThis?.i18n
+    if (!ii) return false
+
+    // Prefer async changeLanguage if available
+    if (typeof ii.changeLanguage === 'function') {
+      try {
+        const res = await Promise.resolve(ii.changeLanguage(lang))
+        return !!res
+      } catch {
+        // Fallback to next option
+      }
+    }
+
+    // Fallback: if a legacy synchronous setLanguage exists, call it but guard errors
+    if (typeof ii.setLanguage === 'function') {
+      try {
+        const res = ii.setLanguage(lang)
+        return !!res
+      } catch {
+        // Fallback to next option
+      }
+    }
+
+    // Last resort: set property directly if present
+    if (ii.currentLanguage !== undefined) {
+      try {
+        ii.currentLanguage = lang
+        if (typeof ii.applyTranslations === 'function') {
+          try {
+            ii.applyTranslations()
+          } catch {
+            /* ignore */
+          }
+        }
+        // Emit language change event for fallback path
+        try {
+          if (typeof CustomEvent === 'function') {
+            globalThis.dispatchEvent(
+              new CustomEvent('i18nLanguageChanged', { detail: { lang } })
+            )
+          } else if (typeof Event === 'function') {
+            // eslint-disable-next-line no-undef
+            globalThis.dispatchEvent(new Event('i18nLanguageChanged'))
+          }
+        } catch {
+          /* ignore event dispatch errors */
+        }
+        return true
+      } catch {
+        return false
+      }
+    }
+
+    return false
+  }
+
+  function changeLanguage(lang) {
+    if (!supportedLanguages.has(lang)) {
+      return
+    }
+
+    // Сохраняем выбор
+    localStorage.setItem('emdr-language', lang)
+
+    // Обновляем UI селектора языка
+    updateCurrentLanguage(lang)
+
+    // Обновляем i18n - это автоматически обновит все элементы с data-i18n
+    safeSetI18nLanguage(lang)
+      .then((ok) => {
+        if (ok) {
+          // Обновляем title страницы
+          if (globalThis.i18n?.t) {
+            document.title = globalThis.i18n.t('home.title')
+          }
+        }
+      })
+      .catch(() => {
+        // Silently fail
+      })
+
+    // Обновляем URL
+    const url = new URL(globalThis.location.href)
+    url.searchParams.set('lang', lang)
+    globalThis.history.replaceState({}, '', url)
+
+    // Синхронизируем язык с Viewer через API (только для Controller)
+    if (globalThis.location.pathname.includes('/c/')) {
+      const sessionId =
+        globalThis.getSessionIdFromUrl?.() || extractSessionIdFromUrl()
+      if (sessionId) {
+        syncLanguageToViewer(sessionId, lang).catch((err) => {
+          console.warn(
+            '[LanguageSelector] Failed to sync language to Viewer:',
+            err.message
+          )
+        })
+      }
+    }
+  }
+
+  /**
+   * Extract sessionId from URL path
+   */
+  function extractSessionIdFromUrl() {
+    const match = globalThis.location.pathname.match(/\/[cv]\/([a-f0-9]+)/)
+    return match ? match[1] : null
+  }
+
+  /**
+   * Sync language to Viewer via API
+   */
+  async function syncLanguageToViewer(sessionId, language) {
+    try {
+      const response = await globalThis.csrfFetch(`/api/session/${sessionId}/language`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log(
+        '[LanguageSelector] ✅ Language synced to Viewer:',
+        data.language
+      )
+    } catch (error) {
+      console.error('[LanguageSelector] ❌ Failed to sync language:', error)
+      throw error
+    }
+  }
+
+  return {
+    init
+  }
+})();
+
+// Инициализируем после готовности i18n и DOM
+(function () {
+  if (globalThis?.window === undefined) return
+
+  let initialized = false
+  let domListenerAdded = false
+
+  const initSelector = () => {
+    if (initialized) return
+    initialized = true
+    LanguageSelector.init()
+  }
+
+  // Если i18n уже готов, инициализируем сразу
+  if (globalThis.i18n?.isReady) {
+    if (document.readyState === 'loading') {
+      if (!domListenerAdded) {
+        domListenerAdded = true
+        document.addEventListener('DOMContentLoaded', initSelector, {
+          once: true
+        })
+      }
+    } else {
+      initSelector()
+    }
+  } else {
+    // Ждем события i18nReady
+    globalThis.addEventListener(
+      'i18nReady',
+      () => {
+        if (document.readyState === 'loading') {
+          if (!domListenerAdded) {
+            domListenerAdded = true
+            document.addEventListener('DOMContentLoaded', initSelector, {
+              once: true
+            })
+          }
+        } else {
+          initSelector()
+        }
+      },
+      { once: true }
+    )
+
+    // Fallback на случай если событие не сработает
+    setTimeout(() => {
+      if (!initialized) {
+        if (document.readyState === 'loading') {
+          if (!domListenerAdded) {
+            domListenerAdded = true
+            document.addEventListener('DOMContentLoaded', initSelector, {
+              once: true
+            })
+          }
+        } else {
+          initSelector()
+        }
+      }
+    }, 2000)
+  }
+})()
+
+// Expose globally for debugging
+if (typeof globalThis !== 'undefined') {
+  globalThis.LanguageSelector = LanguageSelector
+}
+
+module.exports = LanguageSelector
+
+
+/***/ },
+
+/***/ "./src/network/csrf.js"
+/*!*****************************!*\
+  !*** ./src/network/csrf.js ***!
+  \*****************************/
+(module) {
+
+"use strict";
+/**
+ * CSRF token helper for double-submit cookie pattern.
+ * Reads the csrfToken cookie and returns it for use in X-CSRF-Token header.
+ */
+
+
+/**
+ * Get CSRF token from the cookie.
+ * @returns {string|null} The CSRF token or null if not found.
+ */
+function getCsrfToken() {
+  const match = document.cookie.match(/(?:^|; )csrfToken=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
+/**
+ * Fetch wrapper that automatically adds the CSRF token header.
+ * @param {string} url - The URL to fetch.
+ * @param {object} [options={}] - Fetch options.
+ * @returns {Promise<Response>} The fetch response.
+ */
+async function csrfFetch(url, options = {}) {
+  const token = getCsrfToken()
+  if (token) {
+    options.headers = {
+      ...options.headers,
+      'X-CSRF-Token': token
+    }
+  }
+  return fetch(url, options)
+}
+
+module.exports = { getCsrfToken, csrfFetch }
+
+// Expose on globalThis for use in bundled code
+if (typeof globalThis !== 'undefined') {
+  globalThis.csrfFetch = csrfFetch
+  globalThis.getCsrfToken = getCsrfToken
+}
+
+
+/***/ },
+
+/***/ "./src/network/realtime-client.js"
+/*!****************************************!*\
+  !*** ./src/network/realtime-client.js ***!
+  \****************************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+/**
+ * RealtimeClient - WebSocket transport wrapper
+ */
+
+
+const WebSocketClient = __webpack_require__(/*! ./websocket-client */ "./src/network/websocket-client.js")
+
+class RealtimeClient {
+  constructor(sessionId, role, options = {}) {
+    this.sessionId = sessionId
+    this.role = role
+    this.transportType = 'websocket'
+    this.client = new WebSocketClient(sessionId, role, options)
+  }
+  async connect() {
+    return this.client.connect()
+  }
+  async send(type, payload, options = {}) {
+    return this.client.send(type, payload, options)
+  }
+  on(eventType, handler) {
+    this.client.on(eventType, handler)
+  }
+  off(eventType, handler) {
+    this.client.off(eventType, handler)
+  }
+  close() {
+    this.client.close()
+  }
+  get isConnected() {
+    return this.client.isConnected
+  }
+  getStats() {
+    return {
+      ...this.client.getStats(),
+      transportType: this.transportType
+    }
+  }
+  getTransportType() {
+    return this.transportType
+  }
+}
+
+if (typeof globalThis !== 'undefined') {
+  globalThis.RealtimeClient = RealtimeClient
+}
+
+module.exports = RealtimeClient
+
+
+/***/ },
+
+/***/ "./src/network/websocket-client.js"
+/*!*****************************************!*\
+  !*** ./src/network/websocket-client.js ***!
+  \*****************************************/
+(module) {
+
+"use strict";
+/**
+ * WebSocketClient - Модернизированный клиент для WebSocket соединений
+ * Использует современные возможности JavaScript для лучшей надежности
+ */
+
+
+class WebSocketClient {
+  constructor(sessionId, role, options = {}) {
+    if (!sessionId || typeof sessionId !== 'string') {
+      throw new Error(
+        'Valid sessionId (string) is required for WebSocket connection'
+      )
+    }
+    if (!role || !['controller', 'viewer'].includes(role)) {
+      throw new Error(
+        'Valid role ("controller" or "viewer") is required for WebSocket connection'
+      )
+    }
+    const globalConfig = globalThis.BBConfig?.network || {}
+    this.config = {
+      isSecure: globalThis.location.protocol === 'https:',
+      maxReconnectAttempts: globalConfig.maxReconnectAttempts || 50,
+      reconnectInterval: globalConfig.reconnectDelay || 3000,
+      heartbeatInterval: globalConfig.heartbeatInterval || 25000,
+      messageTimeout: globalConfig.messageTimeout || 5000,
+      coalesceTypes: globalConfig.coalesceTypes || ['controller_update'],
+      coalesceDelayMs: globalConfig.coalesceDelayMs || 16, // ~60fps
+      ...options
+    }
+    this.sessionId = sessionId
+    this.role = role
+    this.ws = null
+    this.isConnected = false
+    this.isConnecting = false
+    this.eventHandlers = new Map()
+    this.pendingMessages = new Map()
+    this.messageIdCounter = 0
+    this.reconnectTimer = null
+    this.heartbeatTimer = null
+    this.messageTimeouts = new Map()
+    this._coalesceBuffers = new Map() // type -> latest payload
+    this._coalesceTimers = new Map() // type -> timer id
+    this.url = this._generateWebSocketUrl()
+    this._stats = {
+      messagesSent: 0,
+      messagesReceived: 0,
+      reconnectCount: 0,
+      lastActivity: Date.now(),
+      rttMs: 0,
+      jitterMs: 0,
+      _lastRttSamples: []
+    }
+  }
+  _generateWebSocketUrl() {
+    const protocol = this.config.isSecure ? 'wss:' : 'ws:'
+    const host = globalThis.location.host
+    const url = new URL(`${protocol}//${host}`)
+    url.searchParams.set('sessionId', this.sessionId)
+    url.searchParams.set('role', this.role)
+    return url.toString()
+  }
+  /**
+   * Подключение к WebSocket серверу
+   */
+  async connect() {
+    if (this.isConnected || this.isConnecting) {
+      this.log('Connection already in progress or established')
+      return
+    }
+    return new Promise((resolve, reject) => {
+      this.isConnecting = true
+      this.log(`Connecting to ${this.url}`)
+      try {
+        this.ws = new WebSocket(this.url)
+        this._setupEventHandlers()
+        const connectionTimeout = setTimeout(() => {
+          if (this.isConnecting) {
+            this.isConnecting = false
+            this.ws?.close()
+            reject(new Error('Connection timeout'))
+          }
+        }, 10000)
+        this.ws.onopen = () => {
+          clearTimeout(connectionTimeout)
+          this._handleConnectionSuccess()
+          resolve()
+        }
+        this.ws.onerror = (error) => {
+          clearTimeout(connectionTimeout)
+          this.isConnecting = false
+          this._handleConnectionError(error)
+          reject(new Error('WebSocket connection failed'))
+        }
+      } catch (error) {
+        this.isConnecting = false
+        reject(new Error(`WebSocket connection failed: ${error.message}`))
+      }
+    })
+  }
+  /**
+   * Улучшенная отправка с приоритетами и буферизацией
+   */
+  async send(type, payload, options = {}) {
+    if (!this.isConnected) {
+      throw new Error('WebSocket is not connected')
+    }
+    const priorityTypes = ['controller_update', 'heartbeat']
+    const isPriority = priorityTypes.includes(type)
+    if (isPriority) {
+      const messageId = ++this.messageIdCounter
+      const message = {
+        id: messageId,
+        type,
+        payload,
+        timestamp: Date.now(),
+        priority: true
+      }
+      return this._sendWithResponse(message, type, options)
+    } else if (
+      this.config.coalesceTypes.includes(type) &&
+      !options.expectResponse
+    ) {
+      this._coalesceMessage(type, payload)
+    } else {
+      const messageId = ++this.messageIdCounter
+      const message = { id: messageId, type, payload, timestamp: Date.now() }
+      return this._sendWithResponse(message, type, options)
+    }
+  }
+  _sendWithResponse(message, type, options) {
+    if (options.expectResponse) {
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          this.pendingMessages.delete(message.id)
+          reject(new Error(`Message timeout: ${type}`))
+        }, this.config.messageTimeout)
+        this.pendingMessages.set(message.id, { resolve, reject, timeout })
+        this._sendMessage(message)
+      })
+    } else {
+      this._sendMessage(message)
+    }
+  }
+  _coalesceMessage(type, payload) {
+    this._coalesceBuffers.set(type, payload)
+    if (!this._coalesceTimers.has(type)) {
+      const timerId = setTimeout(() => {
+        const latest = this._coalesceBuffers.get(type)
+        this._coalesceBuffers.delete(type)
+        this._coalesceTimers.delete(type)
+        const coalescedMessage = {
+          id: ++this.messageIdCounter,
+          type,
+          payload: latest,
+          timestamp: Date.now(),
+          batched: true
+        }
+        try {
+          this._sendMessage(coalescedMessage)
+        } catch (e) {
+          this.log(`Coalesced send failed: ${e.message}`, 'warning')
+        }
+      }, this.config.coalesceDelayMs)
+      this._coalesceTimers.set(type, timerId)
+    }
+  }
+  /**
+   * Регистрация обработчика события
+   */
+  on(eventType, handler) {
+    if (!this.eventHandlers.has(eventType)) {
+      this.eventHandlers.set(eventType, [])
+    }
+    this.eventHandlers.get(eventType).push(handler)
+  }
+  off(eventType, handler) {
+    const handlers = this.eventHandlers.get(eventType)
+    if (!handlers) return
+    const idx = handlers.indexOf(handler)
+    if (idx !== -1) handlers.splice(idx, 1)
+  }
+  close() {
+    this._clearTimers()
+    if (this.ws) {
+      this.ws.onclose = null // prevent reconnect on intentional close
+      this.ws.close(1000, 'Client closed')
+      this.ws = null
+    }
+    this.isConnected = false
+    this.isConnecting = false
+  }
+  getStats() {
+    return {
+      messagesSent: this._stats.messagesSent,
+      messagesReceived: this._stats.messagesReceived,
+      reconnectCount: this._stats.reconnectCount,
+      lastActivity: this._stats.lastActivity,
+      rttMs: this._stats.rttMs,
+      jitterMs: this._stats.jitterMs
+    }
+  }
+  _setupEventHandlers() {
+    this.ws.onmessage = this._handleMessage.bind(this)
+    this.ws.onclose = this._handleClose.bind(this)
+    this.ws.onerror = this._handleError.bind(this)
+  }
+  _handleConnectionSuccess() {
+    this.isConnected = true
+    this.isConnecting = false
+    const isReconnection = this._stats.reconnectCount > 0
+    this._stats.reconnectCount = 0
+    this._stats.lastActivity = Date.now()
+    this._startHeartbeat()
+    this._emit('open', {
+      sessionId: this.sessionId,
+      role: this.role,
+      isReconnection
+    })
+    this.log(
+      'Connected successfully' + (isReconnection ? ' (reconnected)' : '')
+    )
+  }
+  _handleConnectionError(error) {
+    this._emit('error', { error, type: 'connection' })
+    this._scheduleReconnect()
+  }
+  _handleMessage(event) {
+    try {
+      const message = JSON.parse(event.data)
+      this._stats.messagesReceived++
+      this._stats.lastActivity = Date.now()
+      if (this._handlePendingMessage(message)) return
+      this._emit(message.type, message.payload)
+      this._emit('message', message)
+      if (message?.timestamp) {
+        this._updateNetworkMetrics(message.timestamp)
+      }
+    } catch (error) {
+      this.log(`Failed to parse message: ${error.message}`, 'error')
+      this._emit('error', { error, type: 'parse', rawData: event.data })
+    }
+  }
+  _handlePendingMessage(message) {
+    if (!message.id || !this.pendingMessages.has(message.id)) return false
+    const pending = this.pendingMessages.get(message.id)
+    clearTimeout(pending.timeout)
+    this.pendingMessages.delete(message.id)
+    pending.resolve(message.payload)
+    return true
+  }
+  _updateNetworkMetrics(timestamp) {
+    const now = performance.now()
+    const rtt = Math.max(0, now - timestamp)
+    this._stats._lastRttSamples.push(rtt)
+    if (this._stats._lastRttSamples.length > 20) {
+      this._stats._lastRttSamples.shift()
+    }
+    const n = this._stats._lastRttSamples.length
+    const avg = this._stats._lastRttSamples.reduce((a, b) => a + b, 0) / n
+    const variance =
+      this._stats._lastRttSamples.reduce(
+        (a, b) => a + Math.pow(b - avg, 2),
+        0
+      ) / n
+    const jitter = Math.sqrt(variance)
+    this._stats.rttMs = Math.round(avg)
+    this._stats.jitterMs = Math.round(jitter)
+    this._emit('net_metrics', {
+      rttMs: this._stats.rttMs,
+      jitterMs: this._stats.jitterMs
+    })
+  }
+  _handleClose(event) {
+    this.isConnected = false
+    this._clearTimers()
+    this._emit('close', event)
+    if (event.code !== 1000) {
+      this._scheduleReconnect()
+    }
+  }
+  _handleError(error) {
+    this._emit('error', { error, type: 'websocket' })
+  }
+  _scheduleReconnect() {
+    if (this._stats.reconnectCount >= this.config.maxReconnectAttempts) {
+      this.log('Max reconnection attempts reached', 'error')
+      this._emit('maxReconnectAttemptsReached')
+      return
+    }
+    this._stats.reconnectCount++
+    const delay =
+      this.config.reconnectInterval *
+      Math.pow(1.5, this._stats.reconnectCount - 1)
+    this.log(
+      `Reconnecting in ${Math.round(delay / 1000)}s (attempt ${this._stats.reconnectCount})`
+    )
+    this.reconnectTimer = setTimeout(() => {
+      this.connect().catch(() => {
+        this._scheduleReconnect()
+      })
+    }, delay)
+  }
+  _startHeartbeat() {
+    this.heartbeatTimer = setInterval(() => {
+      if (this.isConnected) {
+        this.send('heartbeat', { timestamp: Date.now() }).catch((err) => {
+          this.log(`Heartbeat failed: ${err.message}`, 'warning')
+        })
+      }
+    }, this.config.heartbeatInterval)
+  }
+  _sendMessage(message) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message))
+      this._stats.messagesSent++
+    } else {
+      throw new Error('WebSocket is not connected')
+    }
+  }
+  _emit(eventType, data) {
+    const handlers = this.eventHandlers.get(eventType)
+    if (handlers) {
+      for (const handler of handlers) {
+        try {
+          handler(data)
+        } catch (error) {
+          this.log(
+            `Error in event handler for ${eventType}: ${error.message}`,
+            'error'
+          )
+        }
+      }
+    }
+  }
+  _clearTimers() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer)
+      this.heartbeatTimer = null
+    }
+    for (const timeout of this.messageTimeouts.values()) {
+      clearTimeout(timeout)
+    }
+    this.messageTimeouts.clear()
+    for (const timerId of this._coalesceTimers.values()) {
+      clearTimeout(timerId)
+    }
+    this._coalesceTimers.clear()
+    this._coalesceBuffers.clear()
+  }
+  log(message, type = 'info') {
+    const timestamp = new Date().toLocaleTimeString()
+    const prefix = `[WS:${this.role}]`
+    const coloredMessage = `%c${prefix} ${message}`
+    let style
+    if (type === 'error') {
+      style = 'color: #ef4444; font-weight: bold;'
+    } else if (type === 'warning') {
+      style = 'color: #f59e0b; font-weight: bold;'
+    } else {
+      style = 'color: #3b82f6; font-weight: bold;'
+    }
+    console[type === 'error' ? 'error' : 'log'](
+      coloredMessage,
+      style,
+      timestamp
+    )
+  }
+}
+
+if (typeof globalThis !== 'undefined') {
+  globalThis.WebSocketClient = WebSocketClient
+}
+
+module.exports = WebSocketClient
+
+
+/***/ },
+
+/***/ "./src/rendering/renderer.js"
+/*!***********************************!*\
+  !*** ./src/rendering/renderer.js ***!
+  \***********************************/
+(module) {
+
+/* global globalThis, Path2D, debugError */
+/**
+ * BallRenderer - оптимизированный модуль рендеринга для BilateralBound
+ * Отвечает за отрисовку шарика и фона
+ * Оптимизирован для производительности и поддержки переиспользования
+ */
+class BallRenderer {
+  constructor(canvas, physicsEngine, options = {}) {
+    if (!canvas) {
+      throw new Error('Canvas element is required for BallRenderer')
+    }
+    if (!physicsEngine) {
+      throw new Error('PhysicsEngine is required for BallRenderer')
+    }
+    this.canvas = canvas
+    this.ctx = canvas.getContext('2d')
+    this.physics = physicsEngine
+    if (!this.ctx) {
+      throw new Error('Unable to get 2D context from canvas')
+    }
+    this.animationFrameId = null
+    this.lastTime = 0
+    this.frameCount = 0
+    this.frameTimeHistory = [] // История времен кадров для расчета реального FPS
+    this.adaptiveFrameRate = true // Адаптивная частота кадров
+    this.maxFrameTime = 50 // Максимальное время кадра в ms
+    this.fixedStepMs = 1000 / 60
+    this.fixedStepMs = 1000 / 60
+    this.onFrameCallback = null
+    this.options = {
+      localPhysics: false, // Флаг для локальной физики (для вьювера)
+      ...options
+    }
+    this.adaptiveFrameRate =
+      globalThis.BBConfig?.rendering?.adaptiveFrameRate ??
+      this.adaptiveFrameRate
+    this.maxFrameTime =
+      globalThis.BBConfig?.rendering?.maxFrameTime ?? this.maxFrameTime
+    this.pi2 = Math.PI * 2
+    this.fillRect = this.ctx.fillRect.bind(this.ctx)
+    this.beginPath = this.ctx.beginPath.bind(this.ctx)
+    this.fill = this.ctx.fill.bind(this.ctx)
+    this.ball = this.physics.ball
+    this.colors = this.physics.colors
+    this._cached = {
+      radius: null,
+      color: null,
+      gradient: null,
+      path: null
+    }
+  }
+  /**
+   * Запускает рендеринг
+   */
+  start() {
+    if (this.animationFrameId) {
+      this.stop()
+    }
+    this.lastTime = performance.now()
+    this.renderLoop = this.renderLoop.bind(this)
+    this.renderLoop(performance.now())
+  }
+  /**
+   * Останавливает рендеринг
+   */
+  stop() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId)
+      this.animationFrameId = null
+    }
+  }
+  _calculateDeltaTime(currentTime) {
+    const deltaTime = currentTime - this.lastTime
+    if (this.adaptiveFrameRate) {
+      this.frameTimeHistory.push(deltaTime)
+      if (this.frameTimeHistory.length > 20) this.frameTimeHistory.shift()
+    }
+    return Math.min(deltaTime, this.maxFrameTime)
+  }
+  _updatePhysics(clampedDeltaTime) {
+    if (this.onFrameCallback) {
+      this.onFrameCallback(clampedDeltaTime / 1000)
+    }
+    // Let the physics engine handle the time accumulation and fixed steps
+    this.physics.update(clampedDeltaTime / 1000)
+  }
+  _renderFrame(currentTime) {
+    // Get the exact interpolation alpha from the physics engine's internal accumulator
+    const alpha = this.physics.getInterpolationAlpha ? this.physics.getInterpolationAlpha() : 1
+    this.render(alpha)
+  }
+  renderLoop(currentTime) {
+    if (this.validateCanvas()) {
+      const clientW = this.canvas.clientWidth
+      const clientH = this.canvas.clientHeight
+      if (
+        (clientW && clientW !== this.canvas.width) ||
+        (clientH && clientH !== this.canvas.height)
+      ) {
+        this.resize(
+          clientW || this.canvas.width,
+          clientH || this.canvas.height
+        )
+        this.lastTime = currentTime
+        this.animationFrameId = requestAnimationFrame(this.renderLoop)
+        return
+      }
+      const clampedDeltaTime = this._calculateDeltaTime(currentTime)
+      this.frameCount++
+      try {
+        this._updatePhysics(clampedDeltaTime)
+        this._renderFrame(currentTime)
+        this.lastTime = currentTime
+      } catch (err) {
+        if (typeof globalThis?.logger?.error === 'function') {
+          globalThis.logger.error('Render loop error:', err)
+        }
+        this.stop()
+        return
+      }
+      this.animationFrameId = requestAnimationFrame(this.renderLoop)
+    } else {
+      this.stop()
+    }
+  }
+  /**
+   * Renders the scene using a full repaint strategy.
+   * @param {number} alpha - The interpolation factor.
+   * @private
+   */
+  _renderFull(alpha) {
+    // Use world dimensions for fill so background covers full canvas even when scaled
+    const w = this.physics.options.worldWidth || this.canvas.width
+    const h = this.physics.options.worldHeight || this.canvas.height
+    this.ctx.fillStyle = this.colors.bg
+    this.fillRect(0, 0, w, h)
+    const ballState = this.physics.getInterpolatedBall
+      ? this.physics.getInterpolatedBall(alpha)
+      : this.physics.ball
+    this.renderBall(ballState)
+    // Render debug overlay if enabled
+    if (this.options.showDebug) {
+      this._renderDebugOverlay()
+    }
+  }
+
+  /**
+   * Renders a debug overlay with jitter/smoothing diagnostics.
+   * Shows FPS, frame time, damping/stiffness from physics engine.
+   * @private
+   */
+  _renderDebugOverlay() {
+    const ctx = this.ctx
+    const padding = 8
+    const lineH = 16
+    const lines = this._buildDebugLines()
+    const boxW = this._estimateDebugBoxWidth(lines)
+    const boxH = lines.length * lineH + padding * 2
+
+    // Position: top-right corner in world coords
+    const worldW = this.physics.options.worldWidth || this.canvas.width
+    const _worldH = this.physics.options.worldHeight || this.canvas.height // reserved for future use
+    const x = worldW - boxW - padding
+    const y = padding
+
+    ctx.save()
+    ctx.font = '12px monospace'
+    ctx.textBaseline = 'top'
+
+    // Background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)'
+    ctx.fillRect(x, y, boxW, boxH)
+
+    // Border
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+    ctx.lineWidth = 1
+    ctx.strokeRect(x, y, boxW, boxH)
+
+    // Text
+    const jitterClass = this._getJitterLevel()
+    ctx.fillStyle =
+      jitterClass === 'bad'
+        ? '#ff6b6b'
+        : jitterClass === 'warn'
+          ? '#ffd93d'
+          : '#6bff6b'
+    for (let i = 0; i < lines.length; i++) {
+      ctx.fillStyle =
+        i === 0
+          ? jitterClass === 'bad'
+            ? '#ff6b6b'
+            : jitterClass === 'warn'
+              ? '#ffd93d'
+              : '#6bff6b'
+          : '#ffffff'
+      ctx.fillText(lines[i], x + padding, y + padding + i * lineH)
+    }
+    ctx.restore()
+  }
+
+  /**
+   * Builds debug lines for the overlay.
+   * Returns array of strings.
+   * @returns {string[]}
+   */
+  _buildDebugLines() {
+    const lines = []
+    const fps = this._getRealFps()
+    const frameMs = this._getLastFrameTime()
+    const smoothing = this.physics.options.smoothing || {}
+
+    lines.push(`${fps.toFixed(0)} FPS | ${frameMs.toFixed(1)}ms`)
+
+    if (smoothing.damping !== undefined || smoothing.stiffness !== undefined) {
+      const damping = smoothing.damping != null ? smoothing.damping : '-'
+      const stiffness = smoothing.stiffness != null ? smoothing.stiffness : '-'
+      lines.push(`damp:${damping} stiff:${stiffness}`)
+    }
+
+    if (smoothing.driftThresholdPx != null) {
+      lines.push(`drift: >${smoothing.driftThresholdPx}px`)
+    }
+
+    // Show jitter level
+    const jitter = this._getEstimatedJitterMs()
+    lines.push(`jitter: ~${jitter.toFixed(0)}ms (${this._getJitterLevel()})`)
+
+    return lines
+  }
+
+  /**
+   * Estimates the box width for debug overlay based on text.
+   * @param {string[]} lines
+   * @returns {number}
+   * @private
+   */
+  _estimateDebugBoxWidth(lines) {
+    // Approximate: ~7px per character in 12px monospace
+    let maxChars = 0
+    for (const line of lines) {
+      if (line.length > maxChars) maxChars = line.length
+    }
+    return maxChars * 7.5 + 16
+  }
+
+  /**
+   * Calculates a rolling average frames per second.
+   * @returns {number} Average FPS over recent frames.
+   */
+  _getRealFps() {
+    if (!this.frameTimeHistory || this.frameTimeHistory.length === 0) return 60
+    const total = this.frameTimeHistory.reduce((sum, v) => sum + v, 0)
+    return 1000 / (total / this.frameTimeHistory.length)
+  }
+
+  /**
+   * Returns the last frame time in ms.
+   * @returns {number}
+   */
+  _getLastFrameTime() {
+    if (!this.frameTimeHistory || this.frameTimeHistory.length === 0) return 16
+    return this.frameTimeHistory[this.frameTimeHistory.length - 1]
+  }
+
+  /**
+   * Heuristic estimate of network jitter from frame time variance.
+   * Uses standard deviation of recent frame times.
+   * @returns {number} Estimated jitter in ms.
+   */
+  _getEstimatedJitterMs() {
+    if (!this.frameTimeHistory || this.frameTimeHistory.length < 4) return 0
+    const recent = this.frameTimeHistory.slice(-8)
+    const mean = recent.reduce((s, v) => s + v, 0) / recent.length
+    const variance =
+      recent.reduce((s, v) => s + (v - mean) ** 2, 0) / recent.length
+    return Math.sqrt(variance)
+  }
+
+  /**
+   * Classifies jitter level: 'good', 'warn', or 'bad'.
+   * @returns {string}
+   */
+  _getJitterLevel() {
+    const jitter = this._getEstimatedJitterMs()
+    if (jitter > 15) return 'bad'
+    if (jitter > 8) return 'warn'
+    return 'good'
+  }
+  /**
+   * Renders the scene.
+   * @param {number} [alpha=1] - The interpolation factor for smooth animation.
+   */
+  render(alpha = 1) {
+    if (!this.canvas || !this.ctx || !this.physics) {
+      return
+    }
+    const worldW = this.physics.options.worldWidth
+    const worldH = this.physics.options.worldHeight
+    const needsScale =
+      worldW > 0 &&
+      worldH > 0 &&
+      (this.canvas.width !== worldW || this.canvas.height !== worldH)
+    try {
+      if (needsScale) {
+        const scaleX = this.canvas.width / worldW
+        const scaleY = this.canvas.height / worldH
+        this.ctx.save()
+        if (Math.abs(scaleX - scaleY) < 0.001) {
+          // Aspect ratios match — simple uniform scale, no letterbox needed
+          this.ctx.scale(scaleX, scaleY)
+        } else {
+          // Aspect ratios differ (e.g. fullscreen on a different-AR monitor).
+          // Use uniform scale + letterbox so the ball stays circular.
+          const uniformScale = Math.min(scaleX, scaleY)
+          const offsetX = (this.canvas.width - worldW * uniformScale) / 2
+          const offsetY = (this.canvas.height - worldH * uniformScale) / 2
+          // Fill letterbox bars with background color
+          this.ctx.fillStyle = this.physics.colors.bg
+          this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+          this.ctx.translate(offsetX, offsetY)
+          this.ctx.scale(uniformScale, uniformScale)
+        }
+      }
+      this._renderFull(alpha)
+      if (needsScale) {
+        this.ctx.restore()
+      }
+    } catch (err) {
+      if (needsScale) {
+        this.ctx.restore()
+      }
+      if (typeof debugError === 'function') {
+        debugError('Error during render:', err)
+      }
+    }
+  }
+  /**
+   * Рисует шарик (оптимизированная версия)
+   */
+  renderBall(ballState) {
+    const ball = ballState || this.ball
+    if (ball && typeof ball.x === 'number' && typeof ball.y === 'number') {
+      if (ball.radius <= 0 || ball.radius > 1000) {
+        return
+      }
+      try {
+        const col = ball.colorBall || this.colors.ball
+        if (this._cached.radius !== ball.radius || this._cached.color !== col) {
+          this._cached.radius = ball.radius
+          this._cached.color = col
+          const g = this.ctx.createRadialGradient(
+            -ball.radius * 0.3,
+            -ball.radius * 0.3,
+            0,
+            0,
+            0,
+            ball.radius
+          )
+          g.addColorStop(0, col)
+          g.addColorStop(1, this.adjustBrightness(col, -20))
+          this._cached.gradient = g
+          const p = new Path2D()
+          p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2)
+          this._cached.path = p
+        }
+        this.beginPath()
+        this.ctx.save()
+        this.ctx.imageSmoothingEnabled = true
+        this.ctx.imageSmoothingQuality = 'high'
+        this.ctx.translate(ball.x, ball.y)
+        this.ctx.fillStyle = this._cached.gradient
+        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
+        this.ctx.shadowBlur = 4
+        this.ctx.shadowOffsetX = 2
+        this.ctx.shadowOffsetY = 2
+        this.ctx.fill(this._cached.path)
+        this.ctx.restore()
+        this.ctx.shadowColor = 'transparent'
+        this.ctx.shadowBlur = 0
+        this.ctx.shadowOffsetX = 0
+        this.ctx.shadowOffsetY = 0
+      } catch (err) {
+        if (typeof globalThis?.logger?.warn === 'function') {
+          globalThis.logger.warn('Error rendering ball:', err)
+        }
+      }
+    }
+  }
+  /**
+   * Изменяет яркость цвета
+   */
+  adjustBrightness(color, amount) {
+    const hex = color.replace('#', '')
+    const r = Math.max(
+      0,
+      Math.min(255, Number.parseInt(hex.slice(0, 2), 16) + amount)
+    )
+    const g = Math.max(
+      0,
+      Math.min(255, Number.parseInt(hex.slice(2, 4), 16) + amount)
+    )
+    const b = Math.max(
+      0,
+      Math.min(255, Number.parseInt(hex.slice(4, 6), 16) + amount)
+    )
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+  }
+  /**
+   * Инвалидирует кэш шарика (градиент и геометрию)
+   * Вызывается при изменении цвета или размера
+   */
+  invalidateBallCache() {
+    this._cached.radius = null
+    this._cached.color = null
+    this._cached.gradient = null
+    this._cached.path = null
+  }
+  /**
+   * Изменяет размеры canvas
+   */
+  resize(width, height) {
+    if (!this.canvas) {
+      return
+    }
+    try {
+      this.canvas.width = width
+      this.canvas.height = height
+      this.canvas.style.width = width + 'px'
+      this.canvas.style.height = height + 'px'
+      if (this.physics) {
+        this.physics.setWorldSize(width, height)
+      }
+      this._cached.radius = null
+      this._cached.color = null
+      this._cached.gradient = null
+      this._cached.path = null
+    } catch (err) {
+      if (typeof globalThis?.logger?.error === 'function') {
+        globalThis.logger.error('Canvas resize error:', err)
+      }
+    }
+  }
+  /**
+   * Проверяет и восстанавливает canvas при необходимости
+   */
+  validateCanvas() {
+    if (!this.canvas) {
+      return false
+    }
+    if (!this.canvas.parentNode) {
+      return false
+    }
+    if (!this.ctx) {
+      try {
+        this.ctx = this.canvas.getContext('2d')
+        if (this.ctx) {
+          this.fillRect = this.ctx.fillRect.bind(this.ctx)
+          this.beginPath = this.ctx.beginPath.bind(this.ctx)
+          this.fill = this.ctx.fill.bind(this.ctx)
+          return true
+        }
+      } catch (err) {
+        if (typeof globalThis?.logger?.warn === 'function') {
+          globalThis.logger.warn('Failed to recover canvas context:', err)
+        }
+      }
+      return false
+    }
+    return true
+  }
+  /**
+   * Устанавливает новый движок физики
+   */
+  setPhysicsEngine(physicsEngine) {
+    if (!physicsEngine) {
+      return
+    }
+    if (!physicsEngine.ball || !physicsEngine.colors) {
+      return
+    }
+    this.physics = physicsEngine
+    this.ball = this.physics.ball
+    this.colors = this.physics.colors
+  }
+  /**
+   * Рендерит один кадр с переданным состоянием.
+   * Удобно для внешнего цикла рендеринга.
+   * @param {object} state - Состояние для рендеринга.
+   */
+  drawFrame(state) {
+    if (!this.validateCanvas() || !state) {
+      return
+    }
+    try {
+      this.ctx.fillStyle = state.colorBg || this.colors.bg
+      this.fillRect(0, 0, this.canvas.width, this.canvas.height)
+      this.renderBall(state)
+    } catch (err) {
+      if (typeof globalThis?.logger?.warn === 'function') {
+        globalThis.logger.warn('Error drawing frame:', err)
+      }
+    }
+  }
+  /**
+   * Устанавливает цвет фона
+   */
+  setBackgroundColor(color) {
+    if (this.colors) {
+      this.colors.bg = color
+    }
+    this._cached.radius = null
+    this._cached.color = null
+  }
+}
+if (typeof globalThis !== 'undefined') {
+  globalThis.BallRenderer = BallRenderer
+}
+
+module.exports = BallRenderer
+
+
+/***/ },
+
+/***/ "./src/ui/shared-components.js"
+/*!*************************************!*\
+  !*** ./src/ui/shared-components.js ***!
+  \*************************************/
+(module) {
+
+"use strict";
+/* jshint -W033, -W104, -W119 */
+/* global globalThis, Map, module */
+
+/**
+ * SharedComponents - переиспользуемые компоненты для BilateralBound
+ * Содержит общую логику для controller и viewer
+ */
+
+class SharedComponents {
+  constructor() {
+    this.components = new Map()
+  }
+  /**
+   * Создает переиспользуемый компонент управления скоростью
+   */
+  createSpeedControl(container, options = {}) {
+    const defaultOptions = {
+      min: 5, // Новое минимальное значение - медленная скорость
+      max: 100, // Максимальное значение - быстрая скорость
+      defaultValue: 30, // Установлено значение "Средне" (30)
+      onSpeedChange: null,
+      showValue: true,
+      showLabels: true,
+      simple: true,
+      ...options
+    }
+    const component = {
+      container,
+      options: defaultOptions,
+      currentSpeed: defaultOptions.defaultValue,
+      elements: {},
+      render() {
+        const speedControl = document.createElement('div')
+        speedControl.className = 'speed-control'
+        if (defaultOptions.simple) {
+          speedControl.innerHTML = `
+  <div class="speed-info">
+  ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></div>` : ''}
+  </div>
+  <div class="speed-slider-container">
+  <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
+  <input type="range"
+  id="speedRange"
+  class="speed-range"
+  min="${defaultOptions.min}"
+  max="${defaultOptions.max}"
+  value="${defaultOptions.currentSpeed}"
+  step="1">
+  </div>
+  `
+        } else {
+          speedControl.innerHTML = `
+  <div class="speed-header">
+  <div class="speed-icon">⚡</div>
+  <div class="speed-info">
+  ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></div>` : ''}
+  </div>
+  <div class="speed-indicator">
+  <div class="speed-bar">
+  <div class="speed-fill" style="width: 40%"></div>
+  </div>
+  </div>
+  </div>
+  <div class="speed-controls">
+  <div class="speed-presets">
+  <button class="speed-preset slow" data-speed="20">🐌<span>${globalThis.i18n?.t('controller.speedSlow') || 'Slow'}</span></button>
+  <button class="speed-preset normal active" data-speed="40">⚡<span>${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></button>
+  <button class="speed-preset fast" data-speed="80">🚀<span>${globalThis.i18n?.t('controller.speedFast') || 'Fast'}</span></button>
+  </div>
+  <div class="speed-slider-container">
+  <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
+  <div class="speed-track">
+  <input type="range"
+  id="speedRange"
+  class="speed-range"
+  min="${defaultOptions.min}"
+  max="${defaultOptions.max}"
+  value="${defaultOptions.currentSpeed}"
+  step="1">
+  <div class="speed-marks">
+  <span class="mark" style="left: 0">0</span>
+  <span class="mark" style="left: 25%">25</span>
+  <span class="mark" style="left: 50%">50</span>
+  <span class="mark" style="left: 75%">75</span>
+  <span class="mark" style="left: 100%">100</span>
+  </div>
+  </div>
+  </div>
+  </div>
+  `
+        }
+        container.appendChild(speedControl)
+        this.setupElements()
+        this.setupEventListeners()
+        return this
+      },
+      setupElements() {
+        this.elements.range = container.querySelector('.speed-range')
+        this.elements.value = container.querySelector('.speed-value')
+        this.elements.display = container.querySelector('.speed-display')
+        this.elements.fill = container.querySelector('.speed-fill')
+        this.elements.presets = container.querySelectorAll('.speed-preset')
+      },
+      setupEventListeners() {
+        if (this.elements.range) {
+          this.elements.range.addEventListener('input', (e) => {
+            this.setSpeed(Number.parseInt(e.target.value, 10))
+          })
+        }
+        if (this.elements?.presets?.length) {
+          for (const preset of this.elements.presets) {
+            preset.addEventListener('click', () => {
+              const speed = Number.parseInt(preset.dataset.speed, 10)
+              this.setSpeed(speed)
+              this.updateActivePreset(speed)
+            })
+          }
+        }
+      },
+      updateActivePreset(speed) {
+        if (this.elements?.presets?.length === 0) {
+          return
+        }
+        for (const preset of this.elements.presets) {
+          preset.classList.remove('active')
+        }
+        let activePreset = null
+        if (speed <= 30) {
+          activePreset = 'slow'
+        } else if (speed <= 60) {
+          activePreset = 'normal'
+        } else {
+          activePreset = 'fast'
+        }
+        const activeElement = container.querySelector(
+          `.speed-preset.${activePreset}`
+        )
+        if (activeElement) {
+          activeElement.classList.add('active')
+        }
+      },
+      setSpeed(speed, silent = false) {
+        this.currentSpeed = Math.max(
+          this.options.min,
+          Math.min(this.options.max, speed)
+        )
+        if (this.elements.range) {
+          this.elements.range.value = this.currentSpeed
+        }
+        // Get speed category and color based on current speed
+        const { category, color } = this._getSpeedCategoryAndColor(
+          this.currentSpeed
+        )
+        if (this.elements.value) {
+          this.elements.value.textContent = category
+          this.elements.value.style.color = color
+        }
+        if (this.elements.fill) {
+          this.elements.fill.style.width = `${this.currentSpeed}%`
+          this.elements.fill.style.background = color
+        }
+        this.updateActivePreset(this.currentSpeed)
+        if (!silent && this.options.onSpeedChange) {
+          this.options.onSpeedChange(this.currentSpeed)
+        }
+      },
+      _getSpeedCategoryAndColor(speed) {
+        const t = (key) => globalThis.i18n?.t(key) || key
+        if (speed <= 15) {
+          return { category: t('controller.speedVerySlow'), color: '#22c55e' }
+        }
+        if (speed <= 25) {
+          return { category: t('controller.speedSlow'), color: '#3b82f6' }
+        }
+        if (speed <= 35) {
+          return { category: t('controller.speedMedium'), color: '#8b5cf6' }
+        }
+        if (speed <= 50) {
+          return { category: t('controller.speedFast'), color: '#f59e0b' }
+        }
+        return { category: t('controller.speedVeryFast'), color: '#ef4444' }
+      },
+      getSpeed() {
+        return this.currentSpeed
+      },
+      reset() {
+        this.setSpeed(this.options.defaultValue)
+      }
+    }
+    component.render()
+    // Refresh speed label on language change
+    globalThis.addEventListener('i18nLanguageChanged', () => {
+      component.setSpeed(component.currentSpeed, true)
+    })
+    return component
+  }
+  /**
+   * Создает переиспользуемый компонент управления цветом
+   */
+  createColorControl(container, options = {}) {
+    const defaultOptions = {
+      colors: [
+        '#60a5fa',
+        '#ef4444',
+        '#10b981',
+        '#f59e0b',
+        '#8b5cf6',
+        '#ec4899'
+      ],
+      defaultValue: null, // Будет установлен в colors[0] если не указан
+      onColorChange: null,
+      title: '🎨 Цвет',
+      ...options
+    }
+    const component = {
+      container,
+      options: defaultOptions,
+      currentColor: defaultOptions.defaultValue || defaultOptions.colors[0],
+      elements: {},
+      render() {
+        const colorControl = document.createElement('div')
+        colorControl.className = 'color-control'
+        colorControl.innerHTML = `
+  <h3>${defaultOptions.title}</h3>
+  <div class="color-palette">
+  ${defaultOptions.colors
+    .map(
+      (color) => `
+  <button class="color-btn"
+  data-color="${color}"
+  style="background-color: ${color}"
+  title="${color}"
+  aria-label="Color: ${color}">
+  </button>
+  `
+    )
+    .join('')}
+  </div>
+  `
+        container.appendChild(colorControl)
+        this.setupEventListeners()
+        this.setColor(this.currentColor)
+        return this
+      },
+      setupEventListeners() {
+        const buttons = container.querySelectorAll('.color-btn')
+        for (const button of buttons) {
+          button.addEventListener('click', () => {
+            const color = button.dataset.color
+            this.setColor(color)
+          })
+        }
+      },
+      setColor(color) {
+        this.currentColor = color
+        const buttons = container.querySelectorAll('.color-btn')
+        for (const btn of buttons) {
+          btn.classList.toggle('active', btn.dataset.color === color)
+        }
+        this.options.onColorChange?.(color)
+      }
+    }
+    return component.render()
+  }
+  /**
+   * Создает переиспользуемый компонент управления размером
+   */
+  createSizeControl(container, options = {}) {
+    const defaultOptions = {
+      sizes: [20, 40, 80, 100],
+      defaultValue: 20,
+      onSizeChange: null,
+      title: '📏 Размер',
+      ...options
+    }
+    const component = {
+      container,
+      options: defaultOptions,
+      currentSize: defaultOptions.defaultValue,
+      elements: {},
+      render() {
+        const sizeControl = document.createElement('div')
+        sizeControl.className = 'size-control'
+        sizeControl.innerHTML = `
+  <h3>${defaultOptions.title}</h3>
+  <div class="size-palette">
+  ${defaultOptions.sizes
+    .map(
+      (size, index) => `
+  <button class="size-btn"
+  data-size="${size}"
+  title="${size}px"
+  aria-label="Size: x${index + 1} (${size}px)">
+  x${index + 1}
+  </button>
+  `
+    )
+    .join('')}
+  </div>
+  `
+        container.appendChild(sizeControl)
+        this.setupEventListeners()
+        this.setSize(this.currentSize)
+        return this
+      },
+      setupEventListeners() {
+        const buttons = container.querySelectorAll('.size-btn')
+        for (const button of buttons) {
+          button.addEventListener('click', () => {
+            const size = Number.parseInt(button.dataset.size, 10)
+            this.setSize(size)
+          })
+        }
+      },
+      setSize(size) {
+        this.currentSize = size
+        const buttons = container.querySelectorAll('.size-btn')
+        for (const btn of buttons) {
+          btn.classList.toggle(
+            'active',
+            Number.parseInt(btn.dataset.size, 10) === size
+          )
+        }
+        this.options.onSizeChange?.(size)
+      }
+    }
+    return component.render()
+  }
+  /**
+   * Создает переиспользуемый компонент статуса
+   * @param {HTMLElement} container - Контейнер для компонента
+   * @param {Object} options - Опции компонента
+   * @returns {StatusIndicatorComponent} Объект компонента
+   */
+  createStatusIndicator(container, options = {}) {
+    const defaultOptions = {
+      title: 'Статус',
+      showIcon: true,
+      autoHide: false,
+      hideDelay: 3000,
+      ...options
+    }
+    const component = {
+      container,
+      options: defaultOptions,
+      currentStatus: 'idle',
+      elements: {},
+      render() {
+        const statusIndicator = document.createElement('div')
+        statusIndicator.className = 'status-indicator'
+        statusIndicator.innerHTML = `
+  <div class="status-content">
+  ${defaultOptions.showIcon ? '<span class="status-icon">⏳</span>' : ''}
+  <span class="status-text">${defaultOptions.title}</span>
+  </div>
+  `
+        container.appendChild(statusIndicator)
+        this.setupElements()
+        return this
+      },
+      setupElements() {
+        this.elements.container = container.querySelector('.status-indicator')
+        this.elements.icon = container.querySelector('.status-icon')
+        this.elements.text = container.querySelector('.status-text')
+      },
+      setStatus(status, message) {
+        this.currentStatus = status
+        if (this.elements.text) {
+          this.elements.text.textContent = message || ''
+        }
+        if (this.elements.icon) {
+          const icons = {
+            success: '✅',
+            warning: '⚠️',
+            error: '❌',
+            waiting: '⏳',
+            idle: '⏳'
+          }
+          this.elements.icon.textContent = icons[status] || '⏳'
+        }
+        if (this.elements.container) {
+          this.elements.container.className =
+            'status-indicator status-' + status
+        }
+      }
+    }
+    return component.render()
+  }
+}
+const sharedComponents = new SharedComponents()
+if (typeof globalThis !== 'undefined') {
+  globalThis.SharedComponents = SharedComponents
+  globalThis.sharedComponents = sharedComponents
+}
+
+module.exports = { SharedComponents, sharedComponents }
+
+
+/***/ }
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Check if module exists (development only)
+/******/ 		if (__webpack_modules__[moduleId] === undefined) {
+/******/ 			var e = new Error("Cannot find module '" + moduleId + "'");
+/******/ 			e.code = 'MODULE_NOT_FOUND';
+/******/ 			throw e;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			id: moduleId,
+/******/ 			loaded: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/node module decorator */
+/******/ 	(() => {
+/******/ 		__webpack_require__.nmd = (module) => {
+/******/ 			module.paths = [];
+/******/ 			if (!module.children) module.children = [];
+/******/ 			return module;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
+(() => {
+"use strict";
+/*!***********************!*\
+  !*** ./src/viewer.js ***!
+  \***********************/
+/* jshint esversion: 11, browser: true, node: true */
+/* global globalThis, localStorage, console, document, performance, PhysicsEngine, BallRenderer, WebSocketClient, WS_MSG, AudioManager, sharedComponents, getSessionIdFromUrl, logger, debugError, debugLog, debugWarn, RealtimeClient */
+
+// Initialize global state first
+if (!globalThis.__current) globalThis.__current = {}
+
+// Require dependencies (side effects populate globalThis)
+__webpack_require__(/*! ./core/debug-logger */ "./src/core/debug-logger.js")
+__webpack_require__(/*! ./config */ "./src/config.js")
+__webpack_require__(/*! ./common */ "./src/common.js")
+__webpack_require__(/*! ./i18n/constants */ "./src/i18n/constants.js")
+__webpack_require__(/*! ./i18n/i18n */ "./src/i18n/i18n.js")
+__webpack_require__(/*! ./i18n/language-selector */ "./src/i18n/language-selector.js")
+__webpack_require__(/*! ./audio/audio-manager */ "./src/audio/audio-manager.js")
+__webpack_require__(/*! ./rendering/renderer */ "./src/rendering/renderer.js")
+__webpack_require__(/*! ./network/websocket-client */ "./src/network/websocket-client.js")
+__webpack_require__(/*! ./network/realtime-client */ "./src/network/realtime-client.js")
+__webpack_require__(/*! ./network/csrf */ "./src/network/csrf.js")
+__webpack_require__(/*! ./ui/shared-components */ "./src/ui/shared-components.js")
+
+const PhysicsEngine = __webpack_require__(/*! @emdr/shared/physics-engine */ "../shared/physics-engine.js")
+const { applyAdaptiveSmoothing } = __webpack_require__(/*! @emdr/shared/smoothing-utils */ "../shared/smoothing-utils.js")
+globalThis.PhysicsEngine = PhysicsEngine
+
+// ============================================================================
+// Viewer Application Logic (moved from viewer.html inline <script>)
+// ============================================================================
+
+/**
+ * @typedef {Object} StatusIndicatorComponent
+ * @property {function(string, string): void} setStatus
+ */
+
+function showError(message) {
+  console.error('❌ Viewer Error:', message)
+  const loading = document.getElementById('loading')
+  if (loading) {
+    loading.textContent = '❌ ' + message
+    loading.style.color = '#ef4444'
+  }
+  // Используем ту же систему что и контроллер
+  if (globalThis.errorStateManager?.show) {
+    globalThis.errorStateManager.show('critical-error', {
+      title: globalThis.i18n?.t('viewer.errorTitle') || 'Connection Error',
+      message: message,
+      actions: [
+        {
+          label: globalThis.i18n?.t('viewer.reload') || 'Reload page',
+          callback: () => globalThis.location.reload()
+        }
+      ]
+    })
+  } else if (globalThis.emdrErrorOverlay) {
+    globalThis.emdrErrorOverlay.show({
+      title: globalThis.i18n?.t('viewer.errorTitle') || 'Connection Error',
+      message,
+      actionText: globalThis.i18n?.t('viewer.reload') || 'Reload page',
+      onAction: () => globalThis.location.reload()
+    })
+  } else {
+    alert(
+      `${globalThis.i18n?.t('viewer.errorTitle') || 'Connection Error'}\n\n${message}`
+    )
+  }
+}
+
+function hideLoading() {
+  const loading = document.getElementById('loading')
+  if (loading) {
+    loading.style.display = 'none'
+  }
+}
+
+// Centered banner over canvas for transient connection states
+let _bannerEl = null
+
+function _clearBanner() {
+  if (_bannerEl) {
+    while (_bannerEl.firstChild) _bannerEl.firstChild.remove()
+  }
+}
+
+function showConnectionBanner(message, icon = '⚠️') {
+  if (!_bannerEl) {
+    const style = document.createElement('style')
+    style.textContent = `
+      #viewerConnectionBanner {
+        position: fixed;
+        inset: 0;
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      #viewerConnectionBanner .vcb-card {
+        background: rgba(2, 6, 23, 0.88);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 16px;
+        padding: 28px 40px;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(239, 68, 68, 0.15), 0 8px 32px rgba(0,0,0,0.5);
+        animation: vcbFadeIn 0.3s ease;
+        max-width: 360px;
+      }
+      @keyframes vcbFadeIn {
+        from { opacity: 0; transform: scale(0.92) translateY(8px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      #viewerConnectionBanner .vcb-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        display: block;
+      }
+      #viewerConnectionBanner .vcb-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        line-height: 1.4;
+        letter-spacing: 0.01em;
+      }
+    `
+    document.head.appendChild(style)
+    _bannerEl = document.createElement('div')
+    _bannerEl.id = 'viewerConnectionBanner'
+    document.body.appendChild(_bannerEl)
+  }
+  _clearBanner()
+  const card = document.createElement('div')
+  card.className = 'vcb-card'
+  const iconEl = document.createElement('span')
+  iconEl.className = 'vcb-icon'
+  iconEl.textContent = icon
+  const textEl = document.createElement('span')
+  textEl.className = 'vcb-text'
+  textEl.textContent = message
+  card.appendChild(iconEl)
+  card.appendChild(textEl)
+  _bannerEl.appendChild(card)
+  _bannerEl.style.display = 'flex'
+}
+
+function hideConnectionBanner() {
+  if (_bannerEl) {
+    _bannerEl.style.display = 'none'
+    _clearBanner()
+  }
+}
+
+function resizeCanvas() {
+  const canvas = document.getElementById('viewerCanvas')
+  if (canvas) {
+    canvas.width = globalThis.innerWidth
+    canvas.height = globalThis.innerHeight
+    canvas.style.width = canvas.width + 'px'
+    canvas.style.height = canvas.height + 'px'
+    if (physicsEngine) {
+      physicsEngine.setWorldSize(globalThis.innerWidth, globalThis.innerHeight)
+    }
+  }
+}
+
+async function connectToSession(sessionId) {
+  try {
+    const response = await globalThis.csrfFetch(`/api/session/${sessionId}/viewer/connect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        screenSize: {
+          width: globalThis.innerWidth,
+          height: globalThis.innerHeight
+        }
+      })
+    })
+    if (response.ok) {
+      debugLog('✅ Viewer connected to session')
+    } else {
+      debugWarn('⚠️ Failed to connect viewer to session')
+    }
+  } catch (error) {
+    debugWarn('⚠️ Error connecting to session:', error)
+  }
+}
+
+function updateStatus(data) {
+  if (!globalThis.__current) {
+    globalThis.__current = {}
+  }
+  if (typeof data.controllerConnected === 'boolean') {
+    globalThis.__current.controllerConnected = data.controllerConnected
+    console.log(
+      '📊 [VIEWER] controllerConnected updated to:',
+      data.controllerConnected
+    )
+  }
+  if (!components.status) {
+    return
+  }
+  const isControllerConnected = data.controllerConnected === true
+  const isControllerDisconnected = data.controllerConnected === false
+  if (isControllerConnected) {
+    const msg =
+      globalThis.i18n?.t('viewer.controllerConnected') ||
+      'Controller connected'
+    components.status.setStatus('success', msg)
+  } else if (isControllerDisconnected) {
+    const msg =
+      globalThis.i18n?.t('viewer.waitingForController') ||
+      'Waiting for controller...'
+    components.status.setStatus('waiting', msg)
+  }
+}
+
+function onStateUpdate(state) {
+  if (
+    state &&
+    state.language &&
+    state.language !== localStorage.getItem('emdr-language')
+  ) {
+    onLanguageUpdate({ language: state.language })
+  }
+  if (physicsEngine && state) {
+    updatePhysicsFromState(state)
+  }
+  if (state && audioManager) {
+    updateAudioFromState(state)
+  }
+  if (state && typeof state.controllerConnected === 'boolean') {
+    updateStatus(state)
+  }
+}
+
+function updatePhysicsFromState(state) {
+  debugLog('📥 [VIEWER] Received state update:', state)
+
+  // Capture viewer's current ball position BEFORE applying server state.
+  // When server sends returnToCenter + paused, the server position is already
+  // at center — we need to animate from the viewer's current position, not snap.
+  const viewerBallX = physicsEngine.ball.x
+  const viewerBallY = physicsEngine.ball.y
+  const dxBefore = physicsEngine.centerX - viewerBallX
+  const dyBefore = physicsEngine.centerY - viewerBallY
+  const distBefore = Math.hypot(dxBefore, dyBefore)
+  const isReturningToCenter =
+    state.paused === true && distBefore > physicsEngine.options.centerSnapThreshold
+
+  // CLIENT-SIDE AUTHORITY: Parameter-based sync filter.
+  // If the ball is moving and the server velocity matches local velocity closely,
+  // AND the positional drift is below the correction threshold,
+  // strip x/y from the state command so applyCommand only processes parameters
+  // (speed, direction, paused) — not coordinates.
+  // This prevents server position updates from interrupting smooth local physics
+  // when the simulation is already in sync "by parameters".
+  const stateToApply = { ...state }
+  const isMoving = !physicsEngine.state.paused && !physicsEngine.state.stopping
+  if (
+    isMoving &&
+    stateToApply.paused !== true &&   // always honour pause/unpause fully
+    stateToApply.paused !== false &&
+    typeof stateToApply.x === 'number' &&
+    typeof stateToApply.y === 'number'
+  ) {
+    const serverVx = stateToApply.vx
+    const serverVy = stateToApply.vy
+    if (typeof serverVx === 'number' && typeof serverVy === 'number') {
+      const velDx = Math.abs(serverVx - physicsEngine.ball.vx)
+      const velDy = Math.abs(serverVy - physicsEngine.ball.vy)
+      const velocitiesMatch = velDx < 10 && velDy < 10
+      const posDrift = Math.hypot(
+        stateToApply.x - physicsEngine.ball.x,
+        stateToApply.y - physicsEngine.ball.y
+      )
+      const driftThreshold = physicsEngine.options.smoothing?.driftThresholdPx || 100
+      const isNearWall = physicsEngine._isNearWall()
+
+      // VECTOR GUARDING: If client and server disagree on direction near a wall,
+      // the client MUST remain authoritative.
+      const directionMismatchX = (serverVx * physicsEngine.ball.vx) < 0
+      const directionMismatchY = (serverVy * physicsEngine.ball.vy) < 0
+      const isMismatched = directionMismatchX || directionMismatchY
+
+      if (isNearWall || isMismatched || (velocitiesMatch && posDrift < driftThreshold)) {
+        // Drop coordinate fields if:
+        // 1. Near wall (immunity zone)
+        // 2. Trajectories mismatch (one has bounced, other hasn't)
+        // 3. Already in sync
+        const reason = isMismatched ? 'vec mismatch' : (isNearWall ? 'near wall' : ('drift=' + posDrift.toFixed(1) + 'px'))
+        debugLog('📥 [VIEWER] Skipping x/y: ' + reason)
+
+        delete stateToApply.x
+        delete stateToApply.y
+
+        // Also ignore direction from server if we are mismatched or near wall
+        if (isNearWall || isMismatched) {
+          delete stateToApply.lastDirection
+          delete stateToApply.dirX
+          delete stateToApply.dirY
+          delete stateToApply.vx
+          delete stateToApply.vy
+        }
+      }
+    }
+  }
+
+  physicsEngine.applyCommand(stateToApply)
+
+  // If server sent returnToCenter + paused, force seekingCenter animation
+  // from the viewer's pre-update position (not the snapped server position).
+  if (isReturningToCenter && !physicsEngine.state.seekingCenter) {
+    physicsEngine.state.seekingCenter = true
+    physicsEngine._seekCenterStart = {
+      x: viewerBallX,
+      y: viewerBallY,
+      ts: performance.now()
+    }
+    debugLog('🎯 [VIEWER] Forced seekCenter animation from viewer position', {
+      fromX: viewerBallX.toFixed(1),
+      fromY: viewerBallY.toFixed(1),
+      distBefore: distBefore.toFixed(1)
+    })
+  }
+
+  const isPaused = physicsEngine.state.paused
+  const isNotSeeking = !physicsEngine.state.seekingCenter
+  const isNotStopping = !physicsEngine.state.stopping
+  if (isPaused && isNotSeeking && isNotStopping) {
+    const dx = physicsEngine.centerX - physicsEngine.ball.x
+    const dy = physicsEngine.centerY - physicsEngine.ball.y
+    const distanceFromCenter = Math.hypot(dx, dy)
+    if (distanceFromCenter > 2) {
+      physicsEngine.state.seekingCenter = true
+      physicsEngine._seekCenterStart = {
+        x: physicsEngine.ball.x,
+        y: physicsEngine.ball.y,
+        ts: performance.now()
+      }
+    }
+  }
+  debugLog('📥 [VIEWER] Engine state after update:', {
+    paused: physicsEngine.state.paused,
+    seekingCenter: physicsEngine.state.seekingCenter
+  })
+}
+
+function updateAudioFromState(state) {
+  if (typeof state.soundEnabled === 'boolean') {
+    debugLog('🔊 [VIEWER] soundEnabled from state:', state.soundEnabled)
+    audioManager.setEnabled(state.soundEnabled)
+    checkAudioOverlay()
+  }
+  if (state.soundType) {
+    debugLog('🔊 [VIEWER] soundType from state:', state.soundType)
+    audioManager.setSoundType(state.soundType)
+  }
+}
+
+function onLanguageUpdate(data) {
+  const language = data?.language
+  if (!language) {
+    debugWarn('❌ Invalid language update data:', data)
+    return
+  }
+  debugLog('🌍 Language update received:', language)
+  if (globalThis.i18n && typeof globalThis.i18n.setLanguage === 'function') {
+    try {
+      globalThis.i18n.setLanguage(language)
+      debugLog('✅ Language applied:', language)
+    } catch (err) {
+      debugWarn('❌ Failed to apply language:', err.message)
+    }
+  } else {
+    debugWarn('⚠️ i18n not available for language update')
+  }
+}
+
+function setupEventListeners() {
+  globalThis.addEventListener('resize', () => {
+    resizeCanvas()
+    if (wsClient) {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(() => {
+        wsClient
+          .send('viewer_screen_size', {
+            width: globalThis.innerWidth,
+            height: globalThis.innerHeight
+          })
+          .catch(() => {})
+      }, 300)
+    }
+  })
+
+  globalThis.toggleFullscreen = function () {
+    const isFullscreen = !!document.fullscreenElement
+    if (!isFullscreen) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        debugWarn('Error attempting to enable fullscreen:', err)
+      })
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen().catch((err) => {
+        debugWarn('Error attempting to exit fullscreen:', err)
+      })
+    }
+  }
+
+  function updateFullscreenButton() {
+    const btn = document.querySelector('.fullscreen-btn')
+    if (!btn) return
+    const isFs = !!document.fullscreenElement
+    const key = isFs ? 'viewer.exitFullscreen' : 'viewer.fullscreen'
+    const fallback = isFs ? '⛶ Выйти' : '⛶ Полноэкранный'
+    btn.textContent = globalThis.i18n?.t ? globalThis.i18n.t(key) : fallback
+    if (btn instanceof HTMLElement) {
+      btn.dataset.i18n = key
+    }
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    updateFullscreenButton()
+    resizeCanvas()
+    if (wsClient) {
+      wsClient
+        .send('viewer_screen_size', {
+          width: globalThis.innerWidth,
+          height: globalThis.innerHeight
+        })
+        .catch(() => {})
+    }
+  })
+
+  globalThis.addEventListener('i18nReady', () => {
+    if (globalThis.i18n?.applyTranslations) {
+      globalThis.i18n.applyTranslations()
+    }
+    if (components.status?.currentStatus === 'idle') {
+      const msg = globalThis.i18n?.t('viewer.connecting') || 'Connecting...'
+      components.status.setStatus('idle', msg)
+    }
+  })
+
+  globalThis.addEventListener('i18nLanguageChanged', () => {
+    if (globalThis.i18n?.applyTranslations) {
+      globalThis.i18n.applyTranslations()
+    }
+    updateFullscreenButton()
+  })
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault()
+      if (wsClient && physicsEngine) {
+        const currentPaused = physicsEngine.state?.paused ?? true
+        const newPaused = !currentPaused
+        debugLog(
+          `[VIEWER] Space pressed: toggling pause from ${currentPaused} to ${newPaused}`
+        )
+        wsClient.send('viewer_update', { paused: newPaused })
+      }
+    }
+  })
+}
+
+// Global variables
+let wsClient
+let physicsEngine
+let ballRenderer
+let audioManager = null
+let audioActivated = false
+let pendingSoundEnabled = false
+const components = {}
+let resizeTimeout = null
+
+if (typeof globalThis !== 'undefined') {
+  globalThis.audioManager = audioManager
+  globalThis.audioActivated = audioActivated
+  globalThis.resetAudioActivation = function () {
+    localStorage.removeItem('bb_audioActivated')
+    audioActivated = false
+    globalThis.audioActivated = false
+    if (audioManager) {
+      checkAudioOverlay()
+    }
+    console.log(
+      '🔊 Audio activation state reset. Reload page to see unmute overlay again.'
+    )
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async function () {
+  debugLog('🚀 DOMContentLoaded fired')
+  debugLog(
+    '🔊 Audio activation state restored from localStorage:',
+    audioActivated
+  )
+  debugLog('🚀 Доступные глобальные объекты:', {
+    AudioManager: typeof AudioManager,
+    PhysicsEngine: typeof PhysicsEngine,
+    BallRenderer: typeof BallRenderer,
+    WebSocketClient: typeof WebSocketClient,
+    RealtimeClient: typeof RealtimeClient,
+    sharedComponents: typeof sharedComponents
+  })
+  try {
+    const sessionId = getSessionIdFromUrl()
+    if (!sessionId) {
+      showError('Session ID не найден в URL')
+      return
+    }
+    debugLog('📱 Session ID получен:', sessionId)
+    initializeComponents()
+    await initializeViewer(sessionId)
+  } catch (error) {
+    debugError('❌ Критическая ошибка инициализации:', error)
+    let errorMsg = error.message || error
+    if (
+      errorMsg?.includes('Session with this ID not found') ||
+      errorMsg?.includes('not found')
+    ) {
+      errorMsg =
+        'Session with this ID not found. Please check the URL and try again.'
+    } else if (errorMsg?.includes('Realtime connection')) {
+      errorMsg =
+        'Failed to connect to session. Please reload the page and try again.'
+    }
+    showError(errorMsg)
+  }
+})
+
+function initializeComponents() {
+  debugLog('📦 initializeComponents вызван')
+  if (typeof sharedComponents !== 'undefined') {
+    components.status = sharedComponents.createStatusIndicator(
+      document.getElementById('statusContainer'),
+      {
+        title:
+          (globalThis.i18n?.isReady &&
+            globalThis.i18n.t('viewer.connecting')) ||
+          'Connecting...',
+        showIcon: true,
+        autoHide: false
+      }
+    )
+  }
+  debugLog('📦 Status indicator создан')
+  debugLog('🔊 Проверка AudioManager:', typeof AudioManager)
+  const audioManagerLoaded = typeof AudioManager === 'function'
+  if (audioManagerLoaded) {
+    debugLog('🔊 AudioManager доступен, инициализируем сразу')
+    initAudioManager()
+  } else {
+    debugLog('🔊 AudioManager еще не загружен, ждем...')
+    let attempts = 0
+    const checkAudioManager = setInterval(() => {
+      attempts++
+      debugLog(
+        `🔊 Попытка ${attempts}/50 найти AudioManager:`,
+        typeof AudioManager
+      )
+      const isAudioManagerReady = typeof AudioManager === 'function'
+      if (isAudioManagerReady) {
+        clearInterval(checkAudioManager)
+        debugLog('🔊 AudioManager загружен, инициализируем')
+        initAudioManager()
+      }
+    }, 100)
+    setTimeout(() => {
+      clearInterval(checkAudioManager)
+      const audioManagerFailed = typeof AudioManager !== 'function'
+      if (audioManagerFailed) {
+        debugError('❌ AudioManager не загрузился за 5 секунд!')
+      }
+    }, 5000)
+  }
+}
+
+function initAudioManager() {
+  const audioManagerAvailable = typeof AudioManager !== 'undefined'
+  if (!audioManagerAvailable) {
+    debugWarn('AudioManager not loaded yet')
+    return
+  }
+  audioManager = new AudioManager()
+  globalThis.audioManager = audioManager
+  if (typeof logger !== 'undefined') {
+    logger.audio('AudioManager создан, enabled:', audioManager.enabled)
+  }
+  setupAudioActivationHandlers()
+  globalThis.checkAudioOverlay = checkAudioOverlay
+  const hasPendingSound = pendingSoundEnabled !== false
+  if (hasPendingSound) {
+    debugLog('🔊 Применяем отложенный soundEnabled:', pendingSoundEnabled)
+    audioManager.setEnabled(pendingSoundEnabled)
+    pendingSoundEnabled = false
+  }
+  checkAudioOverlay()
+}
+
+function setupAudioActivationHandlers() {
+  const initAudioContextOnFirstUserGesture = () => {
+    const shouldInitAudio =
+      audioActivated === false && audioManager && audioManager.enabled
+    if (!shouldInitAudio) return
+    audioManager.init()
+    audioActivated = true
+    globalThis.audioActivated = true
+    localStorage.setItem('bb_audioActivated', 'true')
+    if (typeof logger !== 'undefined') {
+      logger.audio(
+        '🖱️ Audio context initialized on user gesture (implicit click) - кнопка скрыта'
+      )
+    }
+    document.removeEventListener('click', initAudioContextOnFirstUserGesture)
+    document.removeEventListener(
+      'touchstart',
+      initAudioContextOnFirstUserGesture
+    )
+  }
+
+  document.addEventListener('click', initAudioContextOnFirstUserGesture, {
+    once: true
+  })
+  document.addEventListener('touchstart', initAudioContextOnFirstUserGesture, {
+    once: true
+  })
+
+  const unmuteBtn = document.getElementById('unmuteBtn')
+  const unMuteBtnExists = unmuteBtn !== null
+  if (!unMuteBtnExists) {
+    debugWarn('🔊 Unmute button НЕ найдена!')
+    return
+  }
+  if (typeof logger !== 'undefined') {
+    logger.audio('Unmute button найдена, добавляем обработчики')
+  }
+  unmuteBtn.addEventListener('click', () => {
+    activateAudio(initAudioContextOnFirstUserGesture)
+  })
+  unmuteBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault()
+    activateAudio(initAudioContextOnFirstUserGesture)
+  })
+
+  const viewerVolumeSlider = document.getElementById('viewerVolumeSlider')
+  if (viewerVolumeSlider) {
+    const handleVolumeChange = (event) => {
+      const input = event.target
+      if (input instanceof HTMLInputElement) {
+        const value = input.value
+        if (audioManager && value) {
+          audioManager.setVolume(value / 100)
+        }
+      }
+    }
+    viewerVolumeSlider.addEventListener('input', handleVolumeChange)
+  }
+}
+
+function activateAudio(initHandler) {
+  debugLog('🔘 [activateAudio] Функция вызвана')
+  if (!audioManager) {
+    debugWarn('❌ [activateAudio] audioManager не инициализирован!')
+    return
+  }
+  audioManager.init()
+  audioActivated = true
+  globalThis.audioActivated = true
+  localStorage.setItem('bb_audioActivated', 'true')
+  debugLog('✅ [activateAudio] audioActivated установлен на true')
+  checkAudioOverlay()
+  if (initHandler) {
+    document.removeEventListener('click', initHandler)
+    document.removeEventListener('touchstart', initHandler)
+  }
+  if (typeof logger !== 'undefined') {
+    logger.audio('✅ Audio activated by user gesture - кнопка нажата!')
+  }
+  sendAudioActivationNotification()
+}
+
+function sendAudioActivationNotification() {
+  const sessionId = getSessionIdFromUrl()
+  if (sessionId && wsClient) {
+    debugLog('📤 [activateAudio] Отправляем viewerAudioActivated на сервер')
+    wsClient
+      .send(WS_MSG.viewerAudioActivated, { activated: true })
+      .catch(() => {})
+  }
+}
+
+function checkAudioOverlay() {
+  const overlay = document.getElementById('unmuteOverlay')
+  if (!overlay) {
+    debugWarn('🔊 checkAudioOverlay: overlay element НЕ найден!')
+    return
+  }
+
+  const shouldShow = audioManager && audioManager.enabled && !audioActivated
+  overlay.classList.toggle('hidden', !shouldShow)
+
+  if (typeof logger !== 'undefined') {
+    if (shouldShow) {
+      logger.audio(
+        'Показываем unmute overlay - звук включен, но не активирован'
+      )
+    } else {
+      const reason = !audioManager
+        ? 'audioManager не инициализирован'
+        : !audioManager.enabled
+          ? 'звук отключен на контроллере'
+          : 'уже активирован'
+      logger.audio('Скрываем unmute overlay', { reason })
+    }
+  }
+
+  const audioControls = document.getElementById('viewerAudioControls')
+  if (audioControls) {
+    const isAudioActive = audioManager && audioActivated
+    audioControls.classList.toggle('hidden', !isAudioActive)
+    audioControls.style.display = isAudioActive ? 'flex' : 'none'
+  }
+}
+
+function onBounce(side, dirX, dirY) {
+  if (audioManager && audioManager.enabled && audioActivated) {
+    audioManager.playTick()
+  }
+  if (wsClient && physicsEngine) {
+    const ball = physicsEngine.ball
+    wsClient
+      .send('bounce', {
+        side: side,
+        x: ball.x,
+        y: ball.y,
+        dirX: dirX || 0,
+        dirY: dirY || 0,
+        timestamp: Date.now()
+      })
+      .catch((err) => {
+        debugWarn('Failed to send bounce:', err)
+      })
+  }
+}
+
+async function initializeViewer(sessionId) {
+  try {
+    debugLog('📱 Инициализация viewer для сессии:', sessionId)
+    hideLoading()
+    if (!globalThis.__current) {
+      globalThis.__current = {}
+    }
+    globalThis.__current.sessionId = sessionId
+    const canvas = document.getElementById('viewerCanvas')
+    if (!canvas) {
+      console.error('Canvas не найден')
+      return
+    }
+    resizeCanvas()
+    const bounceCallback = (bounceData) => {
+      onBounce(bounceData.side, bounceData.dirX, bounceData.dirY)
+    }
+    physicsEngine = new PhysicsEngine({
+      worldWidth: globalThis.innerWidth,
+      worldHeight: globalThis.innerHeight,
+      isViewer: true,
+      clientSimulation: true,
+      bounceCallback: bounceCallback
+    })
+    globalThis.physicsEngine = physicsEngine
+    physicsEngine.setWorldSize(globalThis.innerWidth, globalThis.innerHeight)
+    physicsEngine.setPaused(true)
+    ballRenderer = new BallRenderer(canvas, physicsEngine, {
+      localPhysics: true
+    })
+    physicsEngine.setRenderer(ballRenderer)
+    await connectToSession(sessionId)
+    wsClient = new RealtimeClient(sessionId, 'viewer')
+    // eslint-disable-next-line require-atomic-updates
+    globalThis.wsClient = wsClient
+    debugLog('✅ WebSocketClient создан')
+    setupWebSocketHandlers(wsClient, sessionId)
+    try {
+      await wsClient.connect()
+    } catch (error) {
+      debugWarn(
+        '⚠️ First connection attempt failed, will retry:',
+        error.message
+      )
+    }
+    if (ballRenderer) {
+      ballRenderer.start()
+    }
+    setupEventListeners()
+    setTimeout(() => {
+      const hotkeysHint = document.getElementById('hotkeysHint')
+      if (hotkeysHint) {
+        hotkeysHint.classList.add('hidden')
+      }
+    }, 10000)
+    debugLog('✅ Viewer успешно инициализирован')
+  } catch (error) {
+    debugError('❌ Ошибка инициализации viewer:', error)
+    showError(
+      (globalThis.i18n?.t('viewer.initError') || 'Initialization error: ') +
+        error.message
+    )
+  }
+}
+
+function setupWebSocketHandlers(wsClient, sessionId) {
+  async function fetchAndApplyState() {
+    try {
+      const resp = await globalThis.csrfFetch(`/api/session/${sessionId}/state`)
+      if (!resp.ok) return
+      const state = await resp.json()
+      onStateUpdate(state)
+      updateStatus(state)
+    } catch (e) {
+      debugWarn('Не удалось получить состояние через REST', e)
+    }
+  }
+
+  wsClient.on('open', () => {
+    debugLog('✅ WS connection established.')
+    hideConnectionBanner()
+    const connMsg =
+      globalThis.i18n?.t('viewer.connectionEstablished') ||
+      'Connection established'
+    components.status?.setStatus('success', connMsg)
+    debugLog('🔄 Fetching state via REST (first connect or reconnect)')
+    fetchAndApplyState().catch(() => {})
+    wsClient
+      .send('viewer_connected', {
+        timestamp: Date.now(),
+        sessionId: sessionId,
+        role: 'viewer',
+        screenSize: {
+          width: globalThis.innerWidth,
+          height: globalThis.innerHeight
+        }
+      })
+      .catch(() => {})
+  })
+
+  wsClient.on('close', () => {
+    debugWarn('🔌 WS connection closed.')
+    // Keep local physics running during transient disconnects.
+    // Hard pause+center here causes visible stutter; on reconnect we reconcile smoothly.
+    const lostMsg =
+      globalThis.i18n?.t('viewer.connectionLost') ||
+      'Connection lost. Reconnecting…'
+    showConnectionBanner(lostMsg, '🔄')
+  })
+
+  wsClient.on('error', (error) => {
+    handleWebSocketError(error)
+  })
+
+  wsClient.on('maxReconnectAttemptsReached', () => {
+    const msg =
+      globalThis.i18n?.t('viewer.connectionFailed') ||
+      'Cannot connect to the server. Please check your internet connection and reload the page.'
+    showError(msg)
+  })
+
+  wsClient.on('controller_status', (status) => {
+    debugLog('📊 Статус контроллера:', status)
+    updateStatus(status)
+  })
+
+  wsClient.on('controller_connected', (data) => {
+    console.log(
+      '📊 [VIEWER] Controller connected event received:',
+      JSON.stringify(data)
+    )
+    debugLog('📊 Controller connected event:', data)
+    hideConnectionBanner()
+    const hasControllerConnected =
+      typeof data.controllerConnected === 'boolean'
+    const statusData = hasControllerConnected
+      ? data
+      : { controllerConnected: true }
+    updateStatus(statusData)
+  })
+
+  wsClient.on('viewer_connected', (data) => {
+    debugLog('📊 [VIEWER] viewer_connected event received:', data)
+  })
+
+  wsClient.on('controller_disconnected', (data) => {
+    console.log(
+      '📊 [VIEWER] Controller disconnected event received:',
+      JSON.stringify(data)
+    )
+    debugLog('📊 Controller disconnected event:', data)
+    if (!globalThis.__current) globalThis.__current = {}
+    globalThis.__current.controllerConnected = false
+
+    const msg =
+      globalThis.i18n?.t('viewer.controllerDisconnected') ||
+      'Controller disconnected'
+    if (components.status) {
+      components.status.setStatus('warning', msg)
+    }
+    showConnectionBanner(msg, '🔌')
+  })
+
+  wsClient.on('state_update', (state) => {
+    // Hide disconnected modal if we are receiving updates
+    hideConnectionBanner()
+    onStateUpdate(state)
+  })
+  wsClient.on('initial_state', onStateUpdate)
+  wsClient.on('viewer_status', updateStatus)
+  wsClient.on('language_updated', onLanguageUpdate)
+
+  // Handle network metrics for adaptive smoothing
+  wsClient.on('net_metrics', ({ jitterMs }) => {
+    applyAdaptiveSmoothing(physicsEngine, jitterMs)
+  })
+
+  // Bounce ack - sync direction only; no position relay.
+  // Viewer runs pure local physics; no drift correction anchor needed.
+  wsClient.on('bounce_ack', (data) => {
+    if (!physicsEngine) return
+    const serverDirX = data.serverDirX
+    const serverDirY = data.serverDirY
+    if (typeof serverDirX === 'number' && typeof serverDirY === 'number') {
+      physicsEngine.state.lastDirection.x = serverDirX
+      physicsEngine.state.lastDirection.y = serverDirY
+      const pps = (physicsEngine.ball.speed / 100) * physicsEngine.options.maxSpeed
+      physicsEngine.ball.vx = serverDirX * pps
+      physicsEngine.ball.vy = serverDirY * pps
+    }
+  })
+}
+
+function handleWebSocketError(error) {
+  const isConnectionClosed = error?.type === 'connection_closed'
+  const isFirstAttemptError = error?.isFirstAttempt === true
+  const isControllerNeverConnected = !globalThis.__current?.controllerConnected
+  const shouldSuppressError =
+    isConnectionClosed && (isFirstAttemptError || isControllerNeverConnected)
+  if (shouldSuppressError) {
+    const reason = isFirstAttemptError
+      ? 'first attempt'
+      : 'controller not connected yet'
+    debugLog(`ℹ️ Realtime: ${error?.type} (${reason})`)
+    return
+  }
+  debugError('❌ WebSocket error:', error)
+  if (error?.type === 'connection') {
+    showError(
+      globalThis.i18n?.t('viewer.connectionError') || 'Connection error'
+    )
+  }
+}
+
+// simulateReconnectError реализован в controller.js для тестирования
+
+})();
+
+/******/ })()
+;
 //# sourceMappingURL=viewer.bundle.js.map

@@ -1390,9 +1390,9 @@ input:focus-visible + .slider {
 
 /* Constrain canvas when viewer not connected */
 .floating-preview:not(.viewer-connected) #preview {
-  max-width: 240px;
+  max-width: 320px;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
 }
 
 .floating-preview #preview {

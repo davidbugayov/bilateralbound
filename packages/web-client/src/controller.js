@@ -1207,7 +1207,7 @@ async function initializePreview() {
     return
   }
   // Drawing buffer для no-viewer state; display size управляется CSS
-  canvas.width = 240
+  canvas.width = 320
   canvas.height = 180
   canvas.style.width = ''
   canvas.style.height = ''
@@ -1270,15 +1270,17 @@ function showWaitingForViewer() {
       '⏳ Waiting for viewer connection'
     viewerInfo.classList.remove('hidden')
   }
-  // Сбрасываем инлайн стиль — CSS управляет размером до подключения viewer
+  // Сбрасываем canvas к no-viewer размеру немедленно, чтобы buffer совпадал с
+  // CSS display и мяч не становился сплюснутым до следующего rAF кадра
   const canvas = document.getElementById('preview')
   if (canvas) {
+    canvas.width = 320
+    canvas.height = 180
     canvas.style.width = ''
     canvas.style.height = ''
     if (previewPhysicsEngine) {
-      const width = canvas.width || 240
-      const height = canvas.height || 180
-      previewPhysicsEngine.setPosition(width / 2, height / 2)
+      previewPhysicsEngine.setWorldSize(320, 180)
+      previewPhysicsEngine.setPosition(160, 90)
       previewPhysicsEngine.setVelocity(0, 0)
       previewPhysicsEngine.setPaused(true)
     }
