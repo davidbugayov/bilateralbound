@@ -96,16 +96,11 @@ async function _initStandalone() {
   const canvas = getCanvas()
   if (!canvas) return false
 
-  // Всегда задаём начальный размер (дефолт canvas 300×150 не подходит)
-  const container = getContainer(canvas)
-  const containerRect = container.getBoundingClientRect()
-  const initialWidth = Math.min(containerRect.width - 40, 500)
-  const initialHeight = Math.min(400, initialWidth * 0.75)
-  const { w, h } = ensureMinSize(initialWidth, initialHeight)
-  canvas.width = w
-  canvas.height = h
-  canvas.style.width = canvas.width + 'px'
-  canvas.style.height = canvas.height + 'px'
+  // Задаём начальный drawing buffer; display size управляется CSS до подключения viewer
+  canvas.width = 240
+  canvas.height = 180
+  canvas.style.width = ''
+  canvas.style.height = ''
 
   try {
     // Создание physics engine
@@ -172,6 +167,12 @@ function showWaitingForViewer() {
       globalThis.i18n?.t('controller.waitingForViewerConnection') ||
       '⏳ Waiting for viewer connection'
     viewerInfo.classList.remove('hidden')
+  }
+  // Сбрасываем инлайн стиль — CSS берёт управление размером до reconnect viewer
+  const canvas = getCanvas()
+  if (canvas) {
+    canvas.style.width = ''
+    canvas.style.height = ''
   }
   _centerAndPauseBall()
 }

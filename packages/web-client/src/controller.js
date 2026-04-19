@@ -1206,16 +1206,11 @@ async function initializePreview() {
   if (!canvas) {
     return
   }
-  if (canvas.width === 0 || canvas.height === 0) {
-    const container = canvas.parentElement
-    const containerRect = container.getBoundingClientRect()
-    const initialWidth = Math.min(containerRect.width - 40, 500)
-    const initialHeight = Math.min(400, initialWidth * 0.75)
-    canvas.width = initialWidth
-    canvas.height = initialHeight
-    canvas.style.width = canvas.width + 'px'
-    canvas.style.height = canvas.height + 'px'
-  }
+  // Drawing buffer для no-viewer state; display size управляется CSS
+  canvas.width = 240
+  canvas.height = 180
+  canvas.style.width = ''
+  canvas.style.height = ''
   try {
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
@@ -1273,14 +1268,16 @@ function showWaitingForViewer() {
     viewerInfo.textContent =
       globalThis.i18n?.t('controller.waitingForViewerConnection') ||
       '⏳ Waiting for viewer connection'
-    viewerInfo.style.display = 'block'
+    viewerInfo.classList.remove('hidden')
   }
-  if (previewPhysicsEngine) {
-    const canvas = document.getElementById('preview')
-    if (canvas) {
-      // Ensure canvas has valid dimensions before centering
-      const width = canvas.width || 500
-      const height = canvas.height || 375
+  // Сбрасываем инлайн стиль — CSS управляет размером до подключения viewer
+  const canvas = document.getElementById('preview')
+  if (canvas) {
+    canvas.style.width = ''
+    canvas.style.height = ''
+    if (previewPhysicsEngine) {
+      const width = canvas.width || 240
+      const height = canvas.height || 180
       previewPhysicsEngine.setPosition(width / 2, height / 2)
       previewPhysicsEngine.setVelocity(0, 0)
       previewPhysicsEngine.setPaused(true)
@@ -1290,7 +1287,7 @@ function showWaitingForViewer() {
 function hideWaitingForViewer() {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.style.display = 'none'
+    viewerInfo.classList.add('hidden')
   }
 }
 /**
@@ -1336,7 +1333,6 @@ function updatePreviewSize(viewerScreenSize) {
     setCanvasDimensions(canvas, previewWidth, previewHeight)
     updatePhysicsEngineWorldSize(viewerScreenSize)
     recalculateDiagonalDirectionIfNeeded()
-    applyServerStateOrCenter()
     updateViewerInfo(viewerScreenSize)
   } else {
     showWaitingForViewer()
@@ -1414,7 +1410,7 @@ function updateViewerInfo(viewerScreenSize) {
   if (viewerInfo) {
     const label = globalThis.i18n?.t('controller.viewerSize') || 'Viewer'
     viewerInfo.textContent = `${label}: ${viewerScreenSize.width}×${viewerScreenSize.height}`
-    viewerInfo.style.display = 'block'
+    viewerInfo.classList.remove('hidden')
   }
 }
 /**
