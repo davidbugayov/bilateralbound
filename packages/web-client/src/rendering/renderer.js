@@ -302,8 +302,24 @@ class BallRenderer {
       (this.canvas.width !== worldW || this.canvas.height !== worldH)
     try {
       if (needsScale) {
+        const scaleX = this.canvas.width / worldW
+        const scaleY = this.canvas.height / worldH
         this.ctx.save()
-        this.ctx.scale(this.canvas.width / worldW, this.canvas.height / worldH)
+        if (Math.abs(scaleX - scaleY) < 0.001) {
+          // Aspect ratios match — simple uniform scale, no letterbox needed
+          this.ctx.scale(scaleX, scaleY)
+        } else {
+          // Aspect ratios differ (e.g. fullscreen on a different-AR monitor).
+          // Use uniform scale + letterbox so the ball stays circular.
+          const uniformScale = Math.min(scaleX, scaleY)
+          const offsetX = (this.canvas.width - worldW * uniformScale) / 2
+          const offsetY = (this.canvas.height - worldH * uniformScale) / 2
+          // Fill letterbox bars with background color
+          this.ctx.fillStyle = this.physics.colors.bg
+          this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+          this.ctx.translate(offsetX, offsetY)
+          this.ctx.scale(uniformScale, uniformScale)
+        }
       }
       this._renderFull(alpha)
       if (needsScale) {
