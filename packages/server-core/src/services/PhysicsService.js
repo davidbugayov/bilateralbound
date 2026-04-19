@@ -261,7 +261,9 @@ class PhysicsService {
 
   /**
    * Starts the single shared 60Hz physics loop that serves all sessions.
-   * Called once in the constructor. Replaces per-session setIntervals.
+   * Uses a self-correcting setTimeout instead of setInterval: each tick
+   * schedules the next one relative to the ideal fire time, so cumulative
+   * timer drift is automatically cancelled out rather than accumulating.
    * @private
    */
   _startSharedPhysicsLoop() {
@@ -269,66 +271,71 @@ class PhysicsService {
 
     const PHYSICS_TICK_RATE = 60
     const PHYSICS_DT = 1000 / PHYSICS_TICK_RATE
-    // Viewer uses pure client simulation — broadcasts are for drift correction
-    // 15Hz (every 4th tick) for smoother sync, reduces jitter from 380px to <10px
+    // 15Hz broadcast (every 4th tick) for drift correction
     const BROADCAST_EVERY_N_TICKS = 4
-    let _lastTickAt = Date.now()
 
-    this._sharedPhysicsLoop = setInterval(() => {
+    let _lastTickAt = Date.now()
+    // _nextTickAt tracks when this tick *should* have fired, not when it actually did.
+    // The next setTimeout delay = _nextTickAt - Date.now(), so late ticks are
+    // automatically compensated by an earlier next tick.
+    let _nextTickAt = Date.now() + PHYSICS_DT
+
+    const tick = () => {
       const now = Date.now()
       const elapsed = now - _lastTickAt
       this.analytics.recordPhysicsTick(elapsed)
-      // Use actual elapsed time (clamped to 3x nominal DT) so late-firing intervals
-      // don't cause server position to lag real time and trigger spurious drift corrections.
       const actualDt = Math.min(elapsed, PHYSICS_DT * 3) / 1000
       _lastTickAt = now
 
-      if (this.clientSimulationOnly) return
-
-      for (const session of this.repo.sessions.values()) {
-        // Pending deletion — remove and skip
-        if (session.pendingDeleteAt && Date.now() > session.pendingDeleteAt) {
-          this.repo.delete(session.id)
-          this.analytics.recordSessionEnded(session.id)
-          this.logger.logSession(
-            session.id,
-            'Session deleted after grace period'
-          )
-          continue
-        }
-
-        // No physics engine (freed on disconnect) — skip
-        if (!session.physicsEngine) continue
-
-        // Only run physics when viewers are connected
-        const hasViewers = this.webSocketManager
-          .getClients(session.id)
-          .some(({ info }) => info.role === 'viewer')
-        if (!hasViewers) continue
-
-       try {
-           this._withSoundPreserved(session, () => {
-             session.physicsEngine.update(actualDt)
-             Object.assign(session.ballState, session.physicsEngine.getState())
-           })
-
-          if (!session.ticks) session.ticks = 0
-          session.ticks++
-
-          if (session.ticks % BROADCAST_EVERY_N_TICKS === 0) {
-            session.lastStateUpdate = Date.now()
-            // Delta compression: send only changed fields
-            this.broadcast.broadcastState(session.id, {
-              deltaCompression: true
-            })
+      if (!this.clientSimulationOnly) {
+        for (const session of this.repo.sessions.values()) {
+          if (session.pendingDeleteAt && Date.now() > session.pendingDeleteAt) {
+            this.repo.delete(session.id)
+            this.analytics.recordSessionEnded(session.id)
+            this.logger.logSession(
+              session.id,
+              'Session deleted after grace period'
+            )
+            continue
           }
-        } catch (error) {
-          this.logger.error(
-            `Shared physics loop error for session ${session.id}: ${error.message}`
-          )
+
+          if (!session.physicsEngine) continue
+
+          const hasViewers = this.webSocketManager
+            .getClients(session.id)
+            .some(({ info }) => info.role === 'viewer')
+          if (!hasViewers) continue
+
+          try {
+            this._withSoundPreserved(session, () => {
+              session.physicsEngine.update(actualDt)
+              Object.assign(session.ballState, session.physicsEngine.getState())
+            })
+
+            if (!session.ticks) session.ticks = 0
+            session.ticks++
+
+            if (session.ticks % BROADCAST_EVERY_N_TICKS === 0) {
+              session.lastStateUpdate = Date.now()
+              this.broadcast.broadcastState(session.id, {
+                deltaCompression: true
+              })
+            }
+          } catch (error) {
+            this.logger.error(
+              `Shared physics loop error for session ${session.id}: ${error.message}`
+            )
+          }
         }
       }
-    }, PHYSICS_DT)
+
+      // Schedule next tick relative to ideal time, not actual time
+      _nextTickAt += PHYSICS_DT
+      const delay = Math.max(0, _nextTickAt - Date.now())
+      this._sharedPhysicsLoop = setTimeout(tick, delay)
+    }
+
+    this._sharedPhysicsLoop = setTimeout(tick, PHYSICS_DT)
   }
 }
 

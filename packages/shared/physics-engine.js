@@ -287,6 +287,13 @@ class PhysicsEngine {
     // Spring-damper state for continuous drift correction
     this._springState = { active: false, targetX: 0, targetY: 0, lastDt: 0 }
 
+    // Visual offset: decouples physics position from render position.
+    // When drift correction teleports ball.x/y, an equal+opposite offset is applied
+    // here so the rendered position doesn't change. The offset decays to zero over
+    // ~300ms, hiding the correction behind a smooth visual slide.
+    this._visualOffsetX = 0
+    this._visualOffsetY = 0
+
     // Fixed-timestep accumulator for deterministic simulation.
     // Ensures identical physics output regardless of caller FPS.
     this._accumulator = 0
@@ -411,6 +418,8 @@ class PhysicsEngine {
     this._prevPos.y = this.ball.y
     this._currPos.x = this.ball.x
     this._currPos.y = this.ball.y
+    this._visualOffsetX = 0
+    this._visualOffsetY = 0
 
     if (this.isViewer) {
       this.state.targetX = this.ball.x
@@ -523,6 +532,8 @@ class PhysicsEngine {
     this._lastServerPos = null
     this._springState.active = false
     this._springState._desyncStartTs = null
+    this._visualOffsetX = 0
+    this._visualOffsetY = 0
 
     const dx = this.centerX - this.ball.x
     const dy = this.centerY - this.ball.y
@@ -932,9 +943,9 @@ class PhysicsEngine {
     const a = typeof alpha === 'number' ? Math.max(0, Math.min(1, alpha)) : this.getInterpolationAlpha()
 
     this._interpBall.x =
-      this._prevPos.x + (this._currPos.x - this._prevPos.x) * a
+      this._prevPos.x + (this._currPos.x - this._prevPos.x) * a + this._visualOffsetX
     this._interpBall.y =
-      this._prevPos.y + (this._currPos.y - this._prevPos.y) * a
+      this._prevPos.y + (this._currPos.y - this._prevPos.y) * a + this._visualOffsetY
     this._interpBall.radius = this.ball.radius
     this._interpBall.colorBall = this.ball.colorBall || null
 
@@ -1060,11 +1071,28 @@ class PhysicsEngine {
     this._currPos.y = this.centerY
     this.state.targetX = this.centerX
     this.state.targetY = this.centerY
+    this._visualOffsetX = 0
+    this._visualOffsetY = 0
   }
 
   // ============================================
   // PRIVATE - PHYSICS UPDATE HELPERS
   // ============================================
+
+  /**
+   * Decays the visual offset toward zero each physics step.
+   * Half-life ~150ms: correction is 50% hidden at 150ms, 75% at 300ms.
+   * @param {number} dt - Fixed timestep in seconds
+   * @private
+   */
+  _decayVisualOffset(dt) {
+    if (this._visualOffsetX === 0 && this._visualOffsetY === 0) return
+    const factor = Math.pow(0.5, dt / 0.15)
+    this._visualOffsetX *= factor
+    this._visualOffsetY *= factor
+    if (Math.abs(this._visualOffsetX) < 0.05) this._visualOffsetX = 0
+    if (Math.abs(this._visualOffsetY) < 0.05) this._visualOffsetY = 0
+  }
 
   /**
    * Updates viewer physics
@@ -1086,6 +1114,8 @@ class PhysicsEngine {
     } else {
       this.updateClientPhysics(deltaTime)
     }
+
+    this._decayVisualOffset(deltaTime)
   }
 
   /**
@@ -1389,6 +1419,8 @@ class PhysicsEngine {
       if (drift > 200 && desyncDuration > 3000) {
         this.ball.x = serverX
         this.ball.y = serverY
+        this._visualOffsetX = 0
+        this._visualOffsetY = 0
         this._springState.active = false
         this._springState.driftMagnitude = 0
         this._springState._desyncStartTs = null
@@ -1454,8 +1486,16 @@ class PhysicsEngine {
       ? Math.min(25, 8 + (driftMag - 100) * 0.08)
       : 8
 
-    this.ball.x += clamp(correctionX, -maxCorrection, maxCorrection)
-    this.ball.y += clamp(correctionY, -maxCorrection, maxCorrection)
+    const appliedX = clamp(correctionX, -maxCorrection, maxCorrection)
+    const appliedY = clamp(correctionY, -maxCorrection, maxCorrection)
+
+    this.ball.x += appliedX
+    this.ball.y += appliedY
+
+    // Equal+opposite offset so the rendered position doesn't jump.
+    // Decays to zero over ~300ms via _decayVisualOffset().
+    this._visualOffsetX -= appliedX
+    this._visualOffsetY -= appliedY
   }
 
   // ============================================
