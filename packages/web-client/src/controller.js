@@ -1197,92 +1197,95 @@ function updateSpeed(speed) {
   }
 }
 async function initializePreview() {
-  showWaitingForViewer()
-  const previewWrap = document.getElementById('previewWrap')
+  showWaitingForViewer();
+  const previewWrap = document.getElementById('previewWrap');
   if (previewWrap) {
-    previewWrap.style.display = 'block'
+    previewWrap.style.display = 'block';
   }
-  const canvas = document.getElementById('preview')
+  const canvas = document.getElementById('preview');
   if (!canvas) {
-    return
+    return;
   }
-  // Drawing buffer для no-viewer state; display size управляется CSS
-  canvas.width = 320
-  canvas.height = 180
-  canvas.style.width = ''
-  canvas.style.height = ''
+  // Default drawing buffer: 800x400 (2:1 aspect ratio matches CSS).
+  // Both canvas and world size must be identical to avoid scaling distortion.
+  // When viewer connects, buffer is resized to match viewer's actual dimensions.
+  canvas.width = 800;
+  canvas.height = 400;
+  canvas.style.width = '';
+  canvas.style.height = '';
   try {
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
       isViewer: true, // Preview follows viewer physics (local simulation + drift correction)
-      clientSimulation: true // Use client-side physics like viewer for smooth motion
-    })
+      clientSimulation: true, // Use client-side physics like viewer for smooth motion
+    });
     try {
-      globalThis.__previewPhysics = previewPhysicsEngine
+      globalThis.__previewPhysics = previewPhysicsEngine;
     } catch (err) {
-      debugWarn('Unable to export preview physics engine:', err)
+      debugWarn('Unable to export preview physics engine:', err);
     }
-    previewPhysicsEngine.setPaused(true)
-    globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce())
+    previewPhysicsEngine.setPaused(true);
+    globalThis.addEventListener('bb_bounce', () => bbCounters.onBounce());
     if (globalThis.BBConfig?.smoothing) {
-      previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing)
+      previewPhysicsEngine.setSmoothingOptions(globalThis.BBConfig.smoothing);
     }
-    if (physicsInterval) clearInterval(physicsInterval)
-    physicsInterval = null // Physics now driven by renderPreviewLoop rAF
-    _previewRafLast = 0
-    requestAnimationFrame(renderPreviewLoop)
+    if (physicsInterval) clearInterval(physicsInterval);
+    physicsInterval = null; // Physics now driven by renderPreviewLoop rAF
+    _previewRafLast = 0;
+    requestAnimationFrame(renderPreviewLoop);
     globalThis.__previewRenderer = new BallRenderer(
       canvas,
       previewPhysicsEngine,
       {
-        localPhysics: true // Use accumulator-based alpha for smoother interpolation
-      }
-    )
-    globalThis.__previewCanvas = canvas
-    const canvasWidth = canvas.width
-    const canvasHeight = canvas.height
+        localPhysics: true, // Use accumulator-based alpha for smoother interpolation
+      },
+    );
+    globalThis.__previewCanvas = canvas;
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
     if (
       globalThis.__current.viewerScreenSize &&
       globalThis.__current.viewerScreenSize.width > 0
     ) {
       previewPhysicsEngine.setWorldSize(
         globalThis.__current.viewerScreenSize.width,
-        globalThis.__current.viewerScreenSize.height
-      )
-      const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2
-      const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2
-      previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY)
-      previewPhysicsEngine.setVelocity(0, 0)
+        globalThis.__current.viewerScreenSize.height,
+      );
+      const viewerCenterX = globalThis.__current.viewerScreenSize.width / 2;
+      const viewerCenterY = globalThis.__current.viewerScreenSize.height / 2;
+      previewPhysicsEngine.setPosition(viewerCenterX, viewerCenterY);
+      previewPhysicsEngine.setVelocity(0, 0);
     } else {
-      previewPhysicsEngine.setWorldSize(canvasWidth, canvasHeight)
-      previewPhysicsEngine.setPosition(canvasWidth / 2, canvasHeight / 2)
-      previewPhysicsEngine.setVelocity(0, 0)
+      previewPhysicsEngine.setWorldSize(canvasWidth, canvasHeight);
+      previewPhysicsEngine.setPosition(canvasWidth / 2, canvasHeight / 2);
+      previewPhysicsEngine.setVelocity(0, 0);
     }
   } catch {
     // Silently ignore canvas size errors
   }
 }
 function showWaitingForViewer() {
-  const viewerInfo = document.getElementById('viewerInfo')
+  const viewerInfo = document.getElementById('viewerInfo');
   if (viewerInfo) {
     viewerInfo.textContent =
       globalThis.i18n?.t('controller.waitingForViewerConnection') ||
-      '⏳ Waiting for viewer connection'
-    viewerInfo.classList.remove('hidden')
+      '⏳ Waiting for viewer connection';
+    viewerInfo.classList.remove('hidden');
   }
-  // Сбрасываем canvas к no-viewer размеру немедленно, чтобы buffer совпадал с
-  // CSS display и мяч не становился сплюснутым до следующего rAF кадра
-  const canvas = document.getElementById('preview')
+  // Set canvas to wider default size (800x400 = 2:1 aspect ratio to match CSS).
+  // This makes preview look like a real screen while waiting for viewer.
+  // Both canvas dimensions and world size must be identical to avoid scaling.
+  const canvas = document.getElementById('preview');
   if (canvas) {
-    canvas.width = 320
-    canvas.height = 180
-    canvas.style.width = ''
-    canvas.style.height = ''
+    canvas.width = 800;
+    canvas.height = 400;
+    canvas.style.width = '';
+    canvas.style.height = '';
     if (previewPhysicsEngine) {
-      previewPhysicsEngine.setWorldSize(320, 180)
-      previewPhysicsEngine.setPosition(160, 90)
-      previewPhysicsEngine.setVelocity(0, 0)
-      previewPhysicsEngine.setPaused(true)
+      previewPhysicsEngine.setWorldSize(800, 400);
+      previewPhysicsEngine.setPosition(400, 200);
+      previewPhysicsEngine.setVelocity(0, 0);
+      previewPhysicsEngine.setPaused(true);
     }
   }
 }
