@@ -1390,7 +1390,7 @@ input:focus-visible + .slider {
 
 /* Constrain canvas when viewer not connected: centered, not full-bleed */
 .floating-preview:not(.viewer-connected) #preview {
-  max-width: 560px;
+  max-width: 460px;
 }
 
 .floating-preview #preview {
