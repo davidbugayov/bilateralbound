@@ -1313,7 +1313,8 @@ input:focus-visible + .slider {
 
 .floating-preview.viewer-connected {
   max-height: none;
-  overflow: visible;
+  min-height: fit-content;
+  overflow: hidden;
 }
 
 /* Header row */
