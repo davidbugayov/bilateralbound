@@ -1388,10 +1388,16 @@ input:focus-visible + .slider {
   padding: 12px 0;
 }
 
+/* Constrain canvas when viewer not connected: centered, not full-bleed */
+.floating-preview:not(.viewer-connected) #preview {
+  max-width: 560px;
+}
+
 .floating-preview #preview {
   display: block;
   max-width: 100%;
-  aspect-ratio: 2 / 1;
+  /* auto = uses canvas intrinsic ratio (width/height attrs), correct for both states */
+  aspect-ratio: auto;
 }
 
 /* Viewer info badge below canvas */
