@@ -1313,8 +1313,7 @@ input:focus-visible + .slider {
 
 .floating-preview.viewer-connected {
   max-height: none;
-  min-height: fit-content;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Header row */
@@ -1387,6 +1386,9 @@ input:focus-visible + .slider {
   justify-content: center;
   align-items: center;
   padding: 12px 0;
+  /* prevent tall portrait viewers from pushing viewer-info outside the card */
+  max-height: 65vh;
+  overflow: hidden;
 }
 
 /* Constrain canvas when viewer not connected: centered, not full-bleed */
@@ -1397,8 +1399,6 @@ input:focus-visible + .slider {
 .floating-preview #preview {
   display: block;
   max-width: 100%;
-  /* auto = uses canvas intrinsic ratio (width/height attrs), correct for both states */
-  aspect-ratio: auto;
 }
 
 /* Viewer info badge below canvas */

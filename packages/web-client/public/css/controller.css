@@ -656,7 +656,7 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 
 /* Center col: preview fills remaining height */
 .controller-center-col #previewWrap {
-  flex: 1 0 auto;
+  flex: 1;
   min-height: 200px;
   display: flex;
   flex-direction: column;
