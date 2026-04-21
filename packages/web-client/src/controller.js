@@ -775,6 +775,7 @@ function physicsLoop() {
   }
 }
 function renderPreviewLoop(timestamp) {
+  bbCounters.tick(timestamp)
   if (!previewPhysicsEngine || !globalThis.__previewRenderer) {
     requestAnimationFrame(renderPreviewLoop)
     return
