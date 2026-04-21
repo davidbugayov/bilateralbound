@@ -20,12 +20,22 @@ const bbCounters = {
   _lastSpeedMeasurement: 0,
   _measurementInterval: null,
   _currentPassesPerSecond: 0,
+  autoStopPasses: 0,
+  autoStopSeconds: 0,
+  onAutoStop: null,
+  _autoStopFired: false,
+  $countdownRow: null,
+  $countdownPasses: null,
+  $countdownSeconds: null,
   initDom() {
     this.$timer = document.getElementById('bbTimer')
     this.$passes = document.getElementById('bbPasses')
     this.$sets = document.getElementById('bbSets')
     this.$passesPerSecond = document.getElementById('bbPassesPerSecond')
     this.$speedInfo = document.getElementById('speedInfo')
+    this.$countdownRow = document.getElementById('autoStopCountdownRow')
+    this.$countdownPasses = document.getElementById('autoStopCountdownPasses')
+    this.$countdownSeconds = document.getElementById('autoStopCountdownSeconds')
     const resetBtn = document.getElementById('bbResetBtn')
     if (resetBtn) {
       resetBtn.addEventListener('click', () => this.resetAll())
@@ -59,6 +69,7 @@ const bbCounters = {
     this.running = true
     this.lastTickTs = performance.now()
     this._passesHistory = []
+    this._autoStopFired = false
   },
   stop(incrementSet = false) {
     this.tick(performance.now())
@@ -92,6 +103,11 @@ const bbCounters = {
     if (this.bounceHits % 2 === 0) {
       this.passes += 1
       this.addPassMeasurement()
+      if (this.autoStopPasses > 0 && this.passes >= this.autoStopPasses) {
+        this.render()
+        this._triggerAutoStop()
+        return
+      }
     }
     this.render()
   },
@@ -101,11 +117,21 @@ const bbCounters = {
     if (dt > 0) {
       this.timerMs += dt
       this.lastTickTs = nowTs
+      if (this.autoStopSeconds > 0 && !this._autoStopFired && this.timerMs / 1000 >= this.autoStopSeconds) {
+        this._triggerAutoStop()
+        return
+      }
       if (!this?._lastRenderTs || nowTs - (this._lastRenderTs || 0) > 100) {
         this._lastRenderTs = nowTs
         this.render()
       }
     }
+  },
+  _triggerAutoStop() {
+    if (this._autoStopFired) return
+    this._autoStopFired = true
+    this.render()
+    this.onAutoStop?.()
   },
   formatTime(ms) {
     const totalSec = Math.floor(ms / 1000)
@@ -117,7 +143,36 @@ const bbCounters = {
     if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
     if (this.$passes) this.$passes.textContent = String(this.passes)
     if (this.$sets) this.$sets.textContent = String(this.sets)
+    this._renderCountdown()
     this.renderSpeedInfo()
+  },
+  _renderCountdown() {
+    if (!this.$countdownRow) return
+    const hasPasses = this.autoStopPasses > 0
+    const hasSeconds = this.autoStopSeconds > 0
+    const visible = (hasPasses || hasSeconds) && this.running
+    this.$countdownRow.style.display = visible ? 'flex' : 'none'
+    if (!visible) return
+    if (this.$countdownPasses) {
+      if (hasPasses) {
+        const rem = Math.max(0, this.autoStopPasses - this.passes)
+        const label = globalThis.i18n?.t('controller.autoStopPassesLabel') || 'пасов'
+        this.$countdownPasses.textContent = `${rem} ${label}`
+        this.$countdownPasses.style.display = ''
+      } else {
+        this.$countdownPasses.style.display = 'none'
+      }
+    }
+    if (this.$countdownSeconds) {
+      if (hasSeconds) {
+        const rem = Math.max(0, this.autoStopSeconds - Math.floor(this.timerMs / 1000))
+        const label = globalThis.i18n?.t('controller.autoStopSecondsLabel') || 'сек'
+        this.$countdownSeconds.textContent = `${rem} ${label}`
+        this.$countdownSeconds.style.display = ''
+      } else {
+        this.$countdownSeconds.style.display = 'none'
+      }
+    }
   },
   renderSpeedInfo() {
     if (this.$passesPerSecond) {

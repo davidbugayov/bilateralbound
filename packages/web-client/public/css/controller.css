@@ -848,6 +848,20 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   font-size: 13px;
 }
 
+.autostop-countdown-row {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  margin-top: 2px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.autostop-countdown-val {
+  color: #22d3ee;
+  font-weight: 600;
+}
+
 /* Left col: tighter gap and card padding to fit all content without scroll */
 .controller-left-col {
   gap: 6px;

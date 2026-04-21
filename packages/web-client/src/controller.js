@@ -84,6 +84,7 @@ const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
 document.addEventListener('DOMContentLoaded', () => {
   initializeController().catch(debugError)
   bbCounters.initDom()
+  bbCounters.onAutoStop = () => _setPlayPauseState(false)
   const autoStopPassesInput = document.getElementById('autoStopPassesInput')
   const autoStopSecondsInput = document.getElementById('autoStopSecondsInput')
   if (autoStopPassesInput) {
