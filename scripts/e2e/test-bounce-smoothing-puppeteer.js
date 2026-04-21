@@ -38,7 +38,9 @@ async function reserveSession(sessionId) {
     await fetch(`${BASE_URL}/api/session/${sessionId}/reserve`, {
       method: 'POST'
     })
-  } catch {}
+  } catch {
+    // Best-effort cleanup: reserve may fail if session is already gone.
+  }
 }
 
 /**
@@ -177,7 +179,7 @@ function analyzePostBounceSmoothness(positions, bounceIndices) {
 }
 
 async function main() {
-  console.log(`\n🧪 E2E Bounce Smoothing Test\n`)
+  console.log('\n🧪 E2E Bounce Smoothing Test\n')
   console.log(`📍 Server: ${BASE_URL}\n`)
 
   try {
@@ -283,7 +285,7 @@ async function main() {
     )
 
     // Print analysis
-    console.log(`📈 ANALYSIS RESULTS:\n`)
+    console.log('📈 ANALYSIS RESULTS:\n')
     console.log(`  Total samples: ${positions.length}`)
     console.log(
       `  Duration: ${((positions[positions.length - 1].timestamp - positions[0].timestamp) / 1000).toFixed(1)}s`
@@ -292,7 +294,7 @@ async function main() {
     console.log(`  Jitter events (Δvel > 150px/s): ${jitter.length}\n`)
 
     if (bounces.length > 0) {
-      console.log(`🔄 Bounces:\n`)
+      console.log('🔄 Bounces:\n')
       bounces.slice(0, 5).forEach((bounce) => {
         console.log(
           `   [${bounce.index}] ${bounce.type.toUpperCase()} ` +
@@ -304,7 +306,7 @@ async function main() {
     }
 
     if (postBounceSmoothing.length > 0) {
-      console.log(`✅ Post-Bounce Smoothness Check:\n`)
+      console.log('✅ Post-Bounce Smoothness Check:\n')
       postBounceSmoothing.forEach((result) => {
         console.log(
           `   Bounce@${result.bounceIdx}: ${result.postBounceVelocity}px/s ${result.status}`
@@ -314,7 +316,7 @@ async function main() {
     }
 
     if (jitter.length > 0 && jitter.length <= 3) {
-      console.log(`⚠️ Jitter Events (first 3):\n`)
+      console.log('⚠️ Jitter Events (first 3):\n')
       jitter.slice(0, 3).forEach((event) => {
         console.log(
           `   [${event.index}] ${event.prevVel} → ${event.currVel}px/s (Δ ${event.change})`
@@ -369,4 +371,3 @@ async function main() {
 }
 
 main()
-

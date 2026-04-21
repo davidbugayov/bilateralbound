@@ -243,7 +243,7 @@
    */
   async function copy(elementId, successMessage) {
     const element = document.getElementById(elementId)
-    
+
     const i18n = globalThis.i18n
     const getLoc = (key, fallback) => (i18n && i18n.t(key) !== key ? i18n.t(key) : fallback)
 

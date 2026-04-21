@@ -171,7 +171,7 @@ function analyzePostBounceSmoothing(samples, bounceIndices, velocities) {
 }
 
 async function runBounceSmoothingTest() {
-  console.log(`\n🧪 E2E Bounce Smoothing Test\n`)
+  console.log('\n🧪 E2E Bounce Smoothing Test\n')
   console.log(`📍 Server: ${BASE_URL}\n`)
 
   try {
@@ -187,23 +187,23 @@ async function runBounceSmoothingTest() {
 
     // 2. Connect controller
     console.log('2️⃣ Connecting controller...')
-    const controllerRes = await makeRequest(
+    await makeRequest(
       `/api/session/${sessionId}/controller/connect`,
       'POST',
       {}
     )
-    console.log(`✅ Controller connected\n`)
+    console.log('✅ Controller connected\n')
 
     // 3. Connect viewer
     console.log('3️⃣ Connecting viewer with screen size 1920x1080...')
-    const viewerRes = await makeRequest(
+    await makeRequest(
       `/api/session/${sessionId}/viewer/connect`,
       'POST',
       {
         screenSize: { width: 1920, height: 1080 }
       }
     )
-    console.log(`✅ Viewer connected\n`)
+    console.log('✅ Viewer connected\n')
 
     // 4. Start horizontal movement (to trigger left/right bounces)
     console.log('4️⃣ Starting rightward movement (50% speed)...')
@@ -353,6 +353,4 @@ async function runBounceSmoothingTest() {
 }
 
 runBounceSmoothingTest()
-
-
 

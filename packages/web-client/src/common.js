@@ -254,7 +254,7 @@ class ThemeManager {
  */
 async function copy(elementId, successMessage) {
   const element = document.getElementById(elementId)
-  
+
   const i18n = globalThis.i18n
   // helper to get localized strings or fallback
   const getLoc = (key, fallback) => (i18n && i18n.t(key) !== key ? i18n.t(key) : fallback)
@@ -276,7 +276,7 @@ async function copy(elementId, successMessage) {
       // Use standard Success title and localized message
       const title = getLoc('controller.success', 'Success')
       const msg = successMessage || getLoc('controller.linkCopied', 'Ссылка скопирована')
-      
+
       // showSuccessNotification expects (title, message)
       if (globalThis.showSuccessNotification.length >= 2) {
         globalThis.showSuccessNotification(title, msg)

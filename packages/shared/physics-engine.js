@@ -1477,8 +1477,8 @@ class PhysicsEngine {
     const dy = this._springState.targetY - this.ball.y
 
     // Smooth proportional correction toward the moving target
-    let correctionX = dx * stiffness * dt
-    let correctionY = dy * stiffness * dt
+    const correctionX = dx * stiffness * dt
+    const correctionY = dy * stiffness * dt
 
     // Adaptive maxCorrection based on drift magnitude
     const driftMag = this._springState.driftMagnitude || 0
