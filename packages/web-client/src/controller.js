@@ -2285,11 +2285,12 @@ function showNotification(message, type = 'info') {
   try {
     // Используем errorStateManager для отображения уведомлений
     if (globalThis.errorStateManager?.show) {
+      const t = globalThis.i18n?.t.bind(globalThis.i18n)
       const titles = {
-        info: 'Info',
-        success: 'Success',
-        warning: 'Warning',
-        error: 'Error'
+        info: t?.('controller.info') || 'Info',
+        success: t?.('controller.success') || 'Success',
+        warning: t?.('controller.warning') || 'Warning',
+        error: t?.('controller.errored') || 'Error'
       }
       globalThis.errorStateManager.show(`notification-${type}`, {
         title: titles[type] || 'Info',
