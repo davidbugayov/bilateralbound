@@ -79,8 +79,34 @@ let _previewRafLast = 0 // Timestamp последнего rAF кадра для 
 let previewFsCanvas = null
 let previewFsRenderer = null
 let isPreviewFullscreen = false
+let _syncMonitorTimer = null
 let fsPanelHideTimer = null
 const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
+
+function startSyncMonitor() {
+  stopSyncMonitor()
+  _syncMonitorTimer = setInterval(() => {
+    if (!previewPhysicsEngine || !wsClient?.isConnected) return
+    if (previewPhysicsEngine.state?.paused || previewPhysicsEngine.state?.stopping)
+      return
+    const diag = previewPhysicsEngine.getSyncDiagnostics
+      ? previewPhysicsEngine.getSyncDiagnostics()
+      : null
+    if (!diag) return
+    if (diag.driftPx > 120 || diag.jitterMs > 35) {
+      debugWarn(
+        `[SYNC_MONITOR][controller] drift=${diag.driftPx}px jitter=${diag.jitterMs}ms spring=${diag.springActive}`
+      )
+    }
+  }, 2000)
+}
+
+function stopSyncMonitor() {
+  if (_syncMonitorTimer) {
+    clearInterval(_syncMonitorTimer)
+    _syncMonitorTimer = null
+  }
+}
 document.addEventListener('DOMContentLoaded', () => {
   initializeController().catch(debugError)
   bbCounters.initDom()
@@ -335,6 +361,7 @@ async function initializeWebSocketClient(sessionId) {
 function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   let lastPlayingState = false
   wsClient.on('open', (event) => {
+    startSyncMonitor()
     // isInitializing stays true until initial_state arrives (prevents warning on page open).
     // On reconnection reset immediately — initial_state won't arrive again.
     if (event?.isReconnection && globalThis.__current) {
@@ -405,6 +432,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     })
   })
   wsClient.on('close', (event) => {
+    stopSyncMonitor()
     updateConnectionStatus(false)
     lastPlayingState = isPlaying
     if (event.code === 1006) {

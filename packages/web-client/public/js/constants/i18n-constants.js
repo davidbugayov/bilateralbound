@@ -114,4 +114,4 @@
   if (typeof module !== 'undefined' && module && module.exports) {
     module.exports = I18nConstants
   }
-})(typeof globalThis !== 'undefined' ? globalThis : this)
+})(typeof globalThis !== 'undefined' ? globalThis : window)

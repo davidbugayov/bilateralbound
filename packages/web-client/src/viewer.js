@@ -1,5 +1,5 @@
 /* jshint esversion: 11, browser: true, node: true */
-/* global globalThis, localStorage, console, document, performance, PhysicsEngine, BallRenderer, WebSocketClient, WS_MSG, AudioManager, sharedComponents, getSessionIdFromUrl, logger, debugError, debugLog, debugWarn, RealtimeClient */
+/* global globalThis, localStorage, console, document, performance, BallRenderer, WebSocketClient, WS_MSG, AudioManager, sharedComponents, getSessionIdFromUrl, logger, debugError, debugLog, debugWarn, RealtimeClient */
 'use strict'
 // Initialize global state first
 if (!globalThis.__current) globalThis.__current = {}
@@ -73,6 +73,31 @@ function hideLoading() {
 
 // Centered banner over canvas for transient connection states
 let _bannerEl = null
+let _syncMonitorTimer = null
+
+function startSyncMonitor() {
+  stopSyncMonitor()
+  _syncMonitorTimer = setInterval(() => {
+    if (!physicsEngine || !wsClient?.isConnected) return
+    if (physicsEngine.state?.paused || physicsEngine.state?.stopping) return
+    const diag = physicsEngine.getSyncDiagnostics
+      ? physicsEngine.getSyncDiagnostics()
+      : null
+    if (!diag) return
+    if (diag.driftPx > 120 || diag.jitterMs > 35) {
+      debugWarn(
+        `[SYNC_MONITOR][viewer] drift=${diag.driftPx}px jitter=${diag.jitterMs}ms spring=${diag.springActive}`
+      )
+    }
+  }, 2000)
+}
+
+function stopSyncMonitor() {
+  if (_syncMonitorTimer) {
+    clearInterval(_syncMonitorTimer)
+    _syncMonitorTimer = null
+  }
+}
 
 function _clearBanner() {
   if (_bannerEl) {
@@ -821,6 +846,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
 
   wsClient.on('open', () => {
     debugLog('✅ WS connection established.')
+    startSyncMonitor()
     hideConnectionBanner()
     const connMsg =
       globalThis.i18n?.t('viewer.connectionEstablished') ||
@@ -843,6 +869,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
 
   wsClient.on('close', () => {
     debugWarn('🔌 WS connection closed.')
+    stopSyncMonitor()
     // Keep local physics running during transient disconnects.
     // Hard pause+center here causes visible stutter; on reconnect we reconcile smoothly.
     const lostMsg =

@@ -134,20 +134,20 @@ if (typeof EMDRErrorOverlay === 'undefined') {
 
   const NS = 'http://www.w3.org/2000/svg'
 
-  function makeSvg(attrs, ...children) {
+  const makeSvg = function(attrs, ...children) {
     const svg = document.createElementNS(NS, 'svg')
     for (const [k, v] of Object.entries(attrs)) svg.setAttribute(k, v)
     for (const child of children) svg.appendChild(child)
     return svg
   }
 
-  function svgEl(tag, attrs) {
+  const svgEl = function(tag, attrs) {
     const el = document.createElementNS(NS, tag)
     for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v)
     return el
   }
 
-  function makeAlertIcon() {
+  const makeAlertIcon = function() {
     return makeSvg(
       {
         width: '24',
@@ -165,7 +165,7 @@ if (typeof EMDRErrorOverlay === 'undefined') {
     )
   }
 
-  function makeCloseIcon() {
+  const makeCloseIcon = function() {
     return makeSvg(
       {
         width: '24',
