@@ -287,6 +287,9 @@ class PhysicsEngine {
     // Spring-damper state for continuous drift correction
     this._springState = { active: false, targetX: 0, targetY: 0, lastDt: 0 }
 
+    // Speed transition: smooths instantaneous speed changes on viewer (clientSimulation only)
+    this._speedTransition = null
+
     // Visual offset: decouples physics position from render position.
     // When drift correction teleports ball.x/y, an equal+opposite offset is applied
     // here so the rendered position doesn't change. The offset decays to zero over
@@ -373,6 +376,25 @@ class PhysicsEngine {
    */
   updateJitter(jitterMs) {
     this._currentJitterMs = jitterMs
+  }
+
+  /**
+   * Returns lightweight sync diagnostics for runtime monitoring.
+   * @returns {{driftPx:number,jitterMs:number,springActive:boolean}}
+   */
+  getSyncDiagnostics() {
+    let driftPx = 0
+    if (this._lastServerPos) {
+      const dx = this._lastServerPos.x - this.ball.x
+      const dy = this._lastServerPos.y - this.ball.y
+      driftPx = Math.round(Math.hypot(dx, dy) * 10) / 10
+    }
+
+    return {
+      driftPx,
+      jitterMs: Number(this._currentJitterMs) || 0,
+      springActive: this._springState?.active === true
+    }
   }
 
   // ============================================
@@ -527,6 +549,8 @@ class PhysicsEngine {
     this.state.smoothVy = 0
     this.ball.vx = 0
     this.ball.vy = 0
+
+    this._speedTransition = null
 
     // Clear drift correction state during pause to prevent conflict with seek-center animation
     this._lastServerPos = null
@@ -797,6 +821,8 @@ class PhysicsEngine {
    * @param {string} side - Bounce side: 'left', 'right', 'top', 'bottom'
    */
   handleBounce(side) {
+    // Cancel speed transition on bounce — bounce is a natural velocity discontinuity
+    this._speedTransition = null
     const pps = calculatePixelsPerSecond(
       this.ball.speed,
       this.options.maxSpeed
@@ -1013,6 +1039,8 @@ class PhysicsEngine {
     this.state.targetVy = 0
     this.state.targetX = this.centerX
     this.state.targetY = this.centerY
+
+    this._speedTransition = null
   }
 
   // ============================================
@@ -1183,13 +1211,32 @@ class PhysicsEngine {
   }
 
   /**
+   * Returns interpolated speed during a viewer-side speed transition.
+   * Falls back to ball.speed when no transition is active.
+   * Only set for isViewer+clientSimulation instances.
+   * @returns {number}
+   * @private
+   */
+  _getEffectiveSpeed() {
+    if (!this._speedTransition) return this.ball.speed
+    const elapsed = performance.now() - this._speedTransition.startTs
+    if (elapsed >= this._speedTransition.duration) {
+      this._speedTransition = null
+      return this.ball.speed
+    }
+    const t = elapsed / this._speedTransition.duration
+    const eased = 1 - (1 - t) * (1 - t)
+    return this._speedTransition.from + (this._speedTransition.to - this._speedTransition.from) * eased
+  }
+
+  /**
    * Calculates client velocity
    * @returns {{vx: number, vy: number}}
    * @private
    */
   _calculateClientVelocity() {
     const pps = calculatePixelsPerSecond(
-      this.ball.speed,
+      this._getEffectiveSpeed(),
       this.options.maxSpeed
     )
     return {
@@ -1207,7 +1254,7 @@ class PhysicsEngine {
     const dirX = this.state.lastDirection.x || 0
     const dirY = this.state.lastDirection.y || 0
     const pps = calculatePixelsPerSecond(
-      this.ball.speed,
+      this._getEffectiveSpeed(),
       this.options.maxSpeed
     )
 
@@ -1738,6 +1785,15 @@ class PhysicsEngine {
   _handleViewerSpeedUpdate(command) {
     if (command.speed === undefined) return
 
+    if (!this.state.paused && this.options.clientSimulation && this.ball.speed !== command.speed) {
+      this._speedTransition = {
+        from: this.ball.speed,
+        to: command.speed,
+        startTs: performance.now(),
+        duration: 100
+      }
+    }
+
     this.setSpeed(command.speed)
 
     if (!this.state.paused) {
@@ -1799,7 +1855,7 @@ class PhysicsEngine {
    */
   _updatePredictionBase() {
     const pps = calculatePixelsPerSecond(
-      this.ball.speed,
+      this._getEffectiveSpeed(),
       this.options.maxSpeed
     )
     const dx = this.state.lastDirection.x || 0
