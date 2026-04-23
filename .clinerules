@@ -132,7 +132,7 @@ cp .env.example .env
 
 **All development on `main`**; prod branch `stable` updated manually when ready. UFW: ports 22, 80, 443 (TCP), 500/udp, 4500/udp (VPN)
 
-## VPS Server — 213.139.229.44
+## VPS Server — 90.156.254.190
 
 **OS**: Ubuntu, Linux 6.18, Node.js v22.22.0, RAM 4GB
 
@@ -154,7 +154,7 @@ cp .env.example .env
 ### Manage services
 
 ```bash
-ssh root@213.139.229.44
+ssh -o StrictHostKeyChecking=no root@90.156.254.190
 
 systemctl status emdrbilateral-online.service
 systemctl restart emdrbilateral-online.service

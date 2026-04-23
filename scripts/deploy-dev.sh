@@ -33,7 +33,7 @@ log "🚀 Starting deployment to dev.emdrbilateral.online ($BRANCH branch)..."
 
 # 1. Pull and build
 log "📥 Pulling code from $BRANCH..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "Git pull failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Git pull failed"
 set -e
 cd /var/www/dev.emdrbilateral.online
 git fetch --all
@@ -43,7 +43,7 @@ log_success "Code pulled"
 
 # 2. Install dependencies
 log "📦 Installing dependencies..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "npm install failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "npm install failed"
 set -e
 cd /var/www/dev.emdrbilateral.online
 npm install
@@ -52,7 +52,7 @@ log_success "Dependencies installed"
 
 # 3. Build web-client (CRITICAL STEP)
 log "🔨 Building web-client..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "Build failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build failed"
 set -e
 cd /var/www/dev.emdrbilateral.online
 npm run build
@@ -61,7 +61,7 @@ log_success "Build completed"
 
 # 4. Restart service
 log "🔄 Restarting $SERVICE..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "Service restart failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Service restart failed"
 systemctl restart emdrbilateral-dev
 sleep 2
 ENDSSH
@@ -71,7 +71,7 @@ log_success "Service restarted"
 log "⏳ Waiting for service to be healthy..."
 RETRY_COUNT=0
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if ssh root@$SERVER "systemctl is-active emdrbilateral-dev >/dev/null 2>&1"; then
+    if ssh -o StrictHostKeyChecking=no root@$SERVER "systemctl is-active emdrbilateral-dev >/dev/null 2>&1"; then
         log_success "Service is running"
         break
     fi
@@ -84,7 +84,7 @@ done
 
 # 6. Verify deployment
 log "📊 Deployment Info:"
-ssh root@$SERVER bash << 'ENDSSH'
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH'
 echo "  Latest commit:"
 cd /var/www/dev.emdrbilateral.online && git log --oneline -1 | sed 's/^/    /'
 echo ""

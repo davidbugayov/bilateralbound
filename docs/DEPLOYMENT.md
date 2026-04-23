@@ -2,7 +2,7 @@
 
 ## VPS Сервер
 
-- **IP**: 213.139.229.44
+- **IP**: 90.156.254.190
 - **ОС**: Linux (Debian/Ubuntu)
 - **Пользователь**: root
 - **Порт SSH**: 22
@@ -90,7 +90,7 @@ pm2 restart bilateral-bound-dev
 ### Для Development
 
 ```bash
-sshpass -p 'PASSWORD' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
+sshpass -p 'PASSWORD' ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
   "cd /var/www/dev.emdrbilateral.online && \
    git pull origin stable-enhanced && \
    npm install --production && \
@@ -102,7 +102,7 @@ sshpass -p 'PASSWORD' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
 ### Для Production
 
 ```bash
-sshpass -p 'PASSWORD' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
+sshpass -p 'PASSWORD' ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
   "cd /var/www/emdrbilateral.online && \
    git pull origin stable && \
    npm install --production && \
@@ -117,7 +117,7 @@ sshpass -p 'PASSWORD' ssh -o StrictHostKeyChecking=no root@213.139.229.44 \
 
 ```bash
 # Подключиться к серверу
-ssh root@213.139.229.44
+ssh -o StrictHostKeyChecking=no root@90.156.254.190
 
 # Проверить запущенные процессы
 ps aux | grep node

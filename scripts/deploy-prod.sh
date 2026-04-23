@@ -30,7 +30,7 @@ wait_for_service() {
     log "⏳ Waiting for $service to be healthy..."
     RETRY_COUNT=0
     while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-        if ssh root@$SERVER "systemctl is-active $service >/dev/null 2>&1"; then
+        if ssh -o StrictHostKeyChecking=no root@$SERVER "systemctl is-active $service >/dev/null 2>&1"; then
             log_success "$service is running"
             return 0
         fi
@@ -47,7 +47,7 @@ log "🚀 Starting production deployment ($BRANCH branch)..."
 # 1. Deploy emdrbilateral.online
 log "📍 Deploying emdrbilateral.online..."
 log "  📥 Pulling code..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .online failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .online failed"
 set -e
 cd /var/www/emdrbilateral.online
 git fetch --all
@@ -55,14 +55,14 @@ git reset --hard origin/stable
 ENDSSH
 
 log "  📦 Installing dependencies..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "npm install for .online failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "npm install for .online failed"
 set -e
 cd /var/www/emdrbilateral.online
 npm install
 ENDSSH
 
 log "  🔨 Building..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "Build for .online failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build for .online failed"
 set -e
 cd /var/www/emdrbilateral.online
 npm run build
@@ -72,7 +72,7 @@ log_success "emdrbilateral.online built and ready"
 # 2. Deploy emdrbilateral.ru
 log "📍 Deploying emdrbilateral.ru..."
 log "  📥 Pulling code..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .ru failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .ru failed"
 set -e
 cd /var/www/emdrbilateral.ru
 git fetch --all
@@ -80,14 +80,14 @@ git reset --hard origin/stable
 ENDSSH
 
 log "  📦 Installing dependencies..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "npm install for .ru failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "npm install for .ru failed"
 set -e
 cd /var/www/emdrbilateral.ru
 npm install
 ENDSSH
 
 log "  🔨 Building..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "Build for .ru failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build for .ru failed"
 set -e
 cd /var/www/emdrbilateral.ru
 npm run build
@@ -96,7 +96,7 @@ log_success "emdrbilateral.ru built and ready"
 
 # 3. Restart both services
 log "🔄 Restarting services..."
-ssh root@$SERVER bash << 'ENDSSH' || log_error "Service restart failed"
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Service restart failed"
 systemctl restart emdrbilateral-online emdrbilateral-ru
 sleep 2
 ENDSSH
@@ -108,7 +108,7 @@ wait_for_service "emdrbilateral-ru"
 
 # 5. Verify deployment
 log "📊 Deployment Info:"
-ssh root@$SERVER bash << 'ENDSSH'
+ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH'
 echo "  emdrbilateral.online:"
 cd /var/www/emdrbilateral.online && git log --oneline -1 | sed 's/^/    /'
 systemctl status emdrbilateral-online --no-pager | grep -E "Active|Main PID" | sed 's/^/    /'

@@ -137,7 +137,7 @@ Shared: `packages/shared/physics-engine.js` — deterministic 60Hz fixed-step ph
 
 **All development on `main`**; prod branch `stable` updated manually when ready.
 
-## VPS Server — 213.139.229.44
+## VPS Server — 90.156.254.190
 
 **OS**: Ubuntu, Linux 6.18, Node.js v22.22.0, RAM 4GB
 
