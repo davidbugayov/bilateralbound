@@ -1,7 +1,7 @@
 {
   "esversion": 11,
-  "node": false,
-  "browser": true,
+  "node": true,
+  "browser": false,
   "strict": false,
   "asi": true,
   "boss": true,
@@ -50,19 +50,6 @@
     "CustomEvent": true,
     "Path2D": true,
     "requestAnimationFrame": true,
-    "cancelAnimationFrame": true,
-    "window": true,
-    "document": true,
-    "localStorage": true,
-    "sessionStorage": true,
-    "location": true,
-    "navigator": true,
-    "WebSocket": true,
-    "RTCPeerConnection": true,
-    "RTCSessionDescription": true,
-    "RTCIceCandidate": true,
-    "URL": true,
-    "URLSearchParams": true,
-    "logger": true
+    "cancelAnimationFrame": true
   }
 }

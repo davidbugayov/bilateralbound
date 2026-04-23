@@ -1,10 +1,10 @@
+/* jshint esversion: 11, browser: true, node: true */
+/* global PhysicsEngine, BallRenderer, debugWarn, globalThis */
 'use strict'
 /**
  * PreviewManager — единый модуль управления превью контроллера
  * @module application/controller/preview-manager
  */
-/* jshint esversion: 11, browser: true, node: true */
-/* global PhysicsEngine, BallRenderer, debugWarn, globalThis */
 
 // ============================================================================
 // Приватное состояние

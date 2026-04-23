@@ -1038,7 +1038,11 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   justify-content: center;
   gap: 6px;
   padding: 14px 8px 12px;
-  background: linear-gradient(145deg, rgb(15 23 42 / 70%) 0%, rgb(30 41 59 / 60%) 100%);
+  background: linear-gradient(
+    145deg,
+    rgb(15 23 42 / 70%) 0%,
+    rgb(30 41 59 / 60%) 100%
+  );
   border: 2px solid #334155;
   border-radius: 12px;
   color: #cbd5e1;
@@ -1059,13 +1063,21 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, transparent 0%, rgb(255 255 255 / 3%) 100%);
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgb(255 255 255 / 3%) 100%
+  );
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
 .preset-card:hover {
-  background: linear-gradient(145deg, rgb(30 41 59 / 90%) 0%, rgb(51 65 85 / 80%) 100%);
+  background: linear-gradient(
+    145deg,
+    rgb(30 41 59 / 90%) 0%,
+    rgb(51 65 85 / 80%) 100%
+  );
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgb(0 0 0 / 40%);
   color: #f1f5f9;

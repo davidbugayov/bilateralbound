@@ -1,6 +1,6 @@
-'use strict'
 /* jshint esversion: 11, browser: true, node: true, -W119 */
 /* global globalThis, WS_MSG, sharedComponents, throttle, AudioManager, BallRenderer, getSessionIdFromUrl, RealtimeClient, debugWarn, debugError */
+'use strict'
 // Require dependencies (side effects populate globalThis)
 require('./core/debug-logger')
 require('./config')

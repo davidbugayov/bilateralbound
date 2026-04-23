@@ -1,4 +1,4 @@
-/* jshint -W033, -W104, -W119 */
+/* jshint esversion: 11, -W033, -W104, -W119 */
 /* global globalThis, Map, module */
 'use strict'
 /**

@@ -1,6 +1,6 @@
 {
   "name": "@emdr/web-client",
-  "version": "2.39.521",
+  "version": "2.39.522",
   "description": "EMDR therapy web client",
   "main": "public/index.html",
   "type": "commonjs",
@@ -10,9 +10,6 @@
     "build:dev": "webpack --mode development",
     "watch": "webpack --watch --mode development",
     "serve": "npx serve -s public",
-    "lint": "eslint public/js --ext .js",
-    "lint:fix": "eslint public/js --ext .js --fix",
-    "lint:report": "eslint public/js --ext .js --format json > ../reports/eslint-web-client.json 2>&1 || true",
     "lint:sonarqube": "node sonar-scanner.js"
   },
   "keywords": [

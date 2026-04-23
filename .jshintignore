@@ -1,0 +1,10 @@
+node_modules/**
+**/node_modules/**
+packages/web-client/dist/**
+packages/web-client/public/dist/**
+coverage/**
+build/**
+out/**
+.next/**
+*.sh
+

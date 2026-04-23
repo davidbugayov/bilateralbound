@@ -1,4 +1,4 @@
-/* jshint node: true, esversion: 8, strict: true */
+/* jshint node: true, esversion: 11, strict: true */
 'use strict';
 
 const scanner = require('sonarqube-scanner').default;
