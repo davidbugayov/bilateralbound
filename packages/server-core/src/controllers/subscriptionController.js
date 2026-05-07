@@ -97,12 +97,19 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         return
       }
 
-      if (text.startsWith('/start subscribe_') || text.startsWith('/subscribe ')) {
-        // Extract sessionId: /start subscribe_SESSIONID or /subscribe SESSIONID
-        const parts = text.split(/\s+|_/).filter(Boolean)
-        const sessionId = parts[1] || (text.includes('subscribe_') ? text.split('subscribe_')[1]?.trim() : '')
-
-        if (!sessionId || sessionId.length < 3) {
+      // Handle deep links from site: /start anna_2025, /start subscribe_anna_2025, /subscribe anna_2025
+      if (text.startsWith('/start ') || text.startsWith('/subscribe ')) {
+        // Extract sessionId
+        let sessionId = ''
+        if (text.includes('subscribe_')) {
+          // /start subscribe_SESSIONID
+          sessionId = text.split('subscribe_')[1]?.trim() || ''
+        } else {
+          // /start SESSIONID or /subscribe SESSIONID
+          sessionId = text.split(/\s+/).slice(1).join('').trim()
+        }
+        // Validate format (3-32 chars, alphanumeric/dash/underscore)
+        if (!sessionId || !/^[A-Za-z0-9_-]{3,32}$/.test(sessionId)) {
           const msg = lang === 'ru'
             ? '❌ <b>Неверный ID клиента.</b>\n\n' +
               'Перейдите на emdrbilateral.ru, введите ID клиента ' +
