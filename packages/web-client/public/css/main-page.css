@@ -1,6 +1,6 @@
 /* ===== MAIN PAGE — REDESIGN 2026 ===== */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800;900&family=Noto+Sans:wght@300;400;500;600;700&display=swap");
 
 /* ── Design tokens ── */
 :root {
@@ -9,16 +9,17 @@
   --mp-surface-3: #0d1426;
   --mp-border: rgb(255 255 255 / 6%);
   --mp-border-strong: rgb(255 255 255 / 12%);
-  --mp-blue: #2563eb;
-  --mp-blue-light: #3b82f6;
+  --mp-blue: #0891b2;
+  --mp-blue-light: #0ea5e9;
+  --mp-blue-dark: #0e7490;
   --mp-cyan: #22d3ee;
   --mp-cyan-dim: #06b6d4;
   --mp-text: #e2e8f0;
   --mp-muted: #64748b;
   --mp-subtle: #94a3b8;
   --mp-radius: 14px;
-  --mp-font-display: "Inter", system-ui, sans-serif;
-  --mp-font-body: "Inter", system-ui, sans-serif;
+  --mp-font-display: "Figtree", system-ui, sans-serif;
+  --mp-font-body: "Noto Sans", system-ui, sans-serif;
 
   /* Legacy vars kept for header/language-selector */
   --bg-card: var(--mp-surface);
@@ -27,7 +28,7 @@
   --text-primary: var(--mp-text);
   --text-secondary: var(--mp-muted);
   --border-color: var(--mp-border);
-  --hover-bg: rgb(37 99 235 / 8%);
+  --hover-bg: rgb(8 145 178 / 10%);
 }
 
 body.light-theme {
@@ -47,7 +48,7 @@ body.light-theme {
   --text-primary: var(--mp-text);
   --text-secondary: var(--mp-muted);
   --border-color: var(--mp-border);
-  --hover-bg: rgb(37 99 235 / 8%);
+  --hover-bg: rgb(8 145 178 / 10%);
 }
 
 /* ── Layout ── */
@@ -154,7 +155,7 @@ body.light-theme {
 }
 
 .language-option--active {
-  background: rgb(37 99 235 / 10%);
+  background: rgb(8 145 178 / 10%);
   color: var(--mp-blue-light);
   font-weight: 600;
   border-left: 2px solid var(--mp-blue);
@@ -207,17 +208,17 @@ body.light-theme {
   background:
     radial-gradient(
       circle at 50% 50%,
-      rgb(37 99 235 / 15%) 0%,
+      rgb(8 145 178 / 15%) 0%,
       transparent 55%
     ),
     radial-gradient(
       ellipse at 15% 110%,
-      rgb(37 99 235 / 8%) 0%,
+      rgb(8 145 178 / 8%) 0%,
       transparent 45%
     ),
     radial-gradient(
       ellipse at 85% 80%,
-      rgb(139 92 246 / 5%) 0%,
+      rgb(6 182 212 / 5%) 0%,
       transparent 40%
     );
   pointer-events: none;
@@ -235,7 +236,7 @@ body.light-theme {
     90deg,
     transparent,
     rgb(34 211 238 / 40%),
-    rgb(59 130 246 / 40%),
+    rgb(6 182 212 / 40%),
     transparent
   );
   pointer-events: none;
@@ -303,7 +304,7 @@ body.light-theme {
   font-family: var(--mp-font-display);
   font-size: clamp(1.4rem, 3.5vw, 2.2rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #fff 0%, #22d3ee 55%, #60a5fa 100%);
+  background: linear-gradient(135deg, #fff 0%, #22d3ee 55%, #0ea5e9 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
@@ -327,7 +328,7 @@ body.light-theme {
   font-size: 0.95rem;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
   border: none;
   padding: 12px 36px;
   border-radius: 9999px;
@@ -347,7 +348,7 @@ body.light-theme {
   100% {
     box-shadow:
       0 0 0 1px rgb(6 182 212 / 30%),
-      0 0 32px rgb(37 99 235 / 50%),
+      0 0 32px rgb(8 145 178 / 50%),
       0 0 56px rgb(34 211 238 / 30%),
       0 4px 12px rgb(0 0 0 / 30%);
   }
@@ -355,7 +356,7 @@ body.light-theme {
   50% {
     box-shadow:
       0 0 0 1px rgb(34 211 238 / 45%),
-      0 0 48px rgb(37 99 235 / 70%),
+      0 0 48px rgb(8 145 178 / 70%),
       0 0 80px rgb(34 211 238 / 50%),
       0 4px 16px rgb(0 0 0 / 30%);
   }
@@ -406,7 +407,7 @@ body.light-theme {
 
 .cta-btn:hover {
   transform: translateY(-3px) scale(1.02);
-  background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
   box-shadow:
     0 0 0 1px rgb(34 211 238 / 40%),
     0 12px 40px rgb(6 182 212 / 50%),
@@ -444,8 +445,8 @@ body.light-theme {
   gap: 5px;
   font-size: 0.68rem;
   color: var(--mp-muted);
-  background: rgb(37 99 235 / 6%);
-  border: 1px solid rgb(37 99 235 / 18%);
+  background: rgb(8 145 178 / 6%);
+  border: 1px solid rgb(8 145 178 / 18%);
   border-radius: 6px;
   padding: 4px 8px;
   max-width: 160px;
@@ -460,8 +461,8 @@ body.light-theme {
   height: 16px;
   min-width: 16px;
   border-radius: 50%;
-  background: rgb(37 99 235 / 20%);
-  border: 1px solid rgb(37 99 235 / 40%);
+  background: rgb(8 145 178 / 20%);
+  border: 1px solid rgb(8 145 178 / 40%);
   color: var(--mp-blue-light);
   font-size: 0.65rem;
   font-weight: 700;
@@ -590,7 +591,7 @@ body.light-theme {
 
 .tool-btn,
 .main-button.btn-short {
-  background: linear-gradient(135deg, #2563eb 0%, #22d3ee 100%);
+  background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-cyan) 100%);
   color: #fff;
   border: none;
   padding: 11px 16px;
@@ -607,7 +608,7 @@ body.light-theme {
 .tool-btn:hover,
 .main-button.btn-short:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgb(37 99 235 / 40%);
+  box-shadow: 0 6px 20px rgb(8 145 178 / 40%);
 }
 
 .tool-btn:disabled,
@@ -683,8 +684,8 @@ body.light-theme {
 }
 
 .tip-box {
-  background: rgb(37 99 235 / 7%);
-  border: 1px solid rgb(37 99 235 / 18%);
+  background: rgb(8 145 178 / 7%);
+  border: 1px solid rgb(8 145 178 / 18%);
   border-radius: 8px;
   padding: 9px 12px;
 }
@@ -728,7 +729,7 @@ body.light-theme {
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgb(37 99 235 / 8%) 0%,
+    rgb(8 145 178 / 8%) 0%,
     rgb(34 211 238 / 8%) 100%
   );
   border-radius: 18px;
@@ -754,7 +755,7 @@ body.light-theme {
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #2563eb 0%, #22d3ee 100%);
+  background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-cyan) 100%);
   border-radius: 12px;
   font-size: 1.25rem;
   line-height: 1;
@@ -880,8 +881,61 @@ body.light-theme {
   line-height: 1.5;
 }
 
+/* ── Magic UI + bento grid enhancements ── */
+.tool-card,
+.feature-item,
+.pricing-card,
+.info-details {
+  /* Gradient border sheen on hover (Magic UI bento glass) */
+  position: relative;
+}
+
+/* Gradient border that appears on hover (bento grid effect) */
+.tool-card::after,
+.feature-item::after,
+.pricing-card::after,
+.info-details::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    transparent 20%,
+    rgb(34 211 238 / 20%) 40%,
+    rgb(8 145 178 / 25%) 60%,
+    transparent 80%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.tool-card:hover::after,
+.feature-item:hover::after,
+.pricing-card:hover::after,
+.info-details:hover::after {
+  opacity: 1;
+}
+
+/* Enhanced hover shadow for bento feel */
+.feature-item:hover,
+.tool-card:hover,
+.pricing-card:hover {
+  box-shadow:
+    0 8px 32px rgb(34 211 238 / 8%),
+    0 1px 3px rgb(0 0 0 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 3%);
+}
+
 /* ── Footer ── */
 .page-footer-container {
+
   text-align: center;
 }
 
@@ -902,13 +956,13 @@ body.light-theme {
     90deg,
     transparent,
     rgb(6 182 212 / 30%),
-    rgb(37 99 235 / 30%),
+    rgb(8 145 178 / 30%),
     transparent
   );
 }
 
 .light-theme .hero__brand h1 {
-  background: linear-gradient(135deg, #0f172a 0%, #0891b2 50%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #0891b2 50%, #0ea5e9 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -919,8 +973,8 @@ body.light-theme {
 }
 
 .light-theme .feature-item:hover {
-  background: rgb(37 99 235 / 4%);
-  border-color: rgb(37 99 235 / 25%);
+  background: rgb(8 145 178 / 4%);
+  border-color: rgb(8 145 178 / 25%);
 }
 
 .light-theme .tool-card,
@@ -1086,7 +1140,7 @@ body.light-theme {
   font-family: var(--mp-font-display);
   font-size: clamp(1rem, 2.5vw, 1.3rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #fff 0%, #22d3ee 55%, #60a5fa 100%);
+  background: linear-gradient(135deg, #fff 0%, #22d3ee 55%, #0ea5e9 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
@@ -1131,7 +1185,7 @@ body.light-theme {
 
 .pricing-card--premium {
   border-color: rgb(34 211 238 / 20%);
-  background: linear-gradient(135deg, rgb(37 99 235 / 6%) 0%, rgb(34 211 238 / 6%) 100%);
+  background: linear-gradient(135deg, rgb(8 145 178 / 6%) 0%, rgb(34 211 238 / 6%) 100%);
 }
 
 .pricing-card--premium:hover {
@@ -1144,7 +1198,7 @@ body.light-theme {
   top: -10px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #2563eb 0%, #22d3ee 100%);
+  background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-cyan) 100%);
   color: #fff;
   font-size: 0.65rem;
   font-weight: 700;
@@ -1185,7 +1239,7 @@ body.light-theme {
 }
 
 .pricing-card--premium .pricing-card__price {
-  background: linear-gradient(135deg, #22d3ee 0%, #60a5fa 100%);
+  background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1252,14 +1306,14 @@ body.light-theme {
 }
 
 .pricing-card__tag--current {
-  background: rgb(37 99 235 / 12%);
-  border-color: rgb(59 130 246 / 30%);
+  background: rgb(8 145 178 / 12%);
+  border-color: rgb(14 165 233 / 30%);
   color: var(--mp-blue-light);
 }
 
 .pricing-card__cta {
   width: 100%;
-  background: linear-gradient(135deg, #2563eb 0%, #22d3ee 100%);
+  background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-cyan) 100%);
   color: #fff;
   border: none;
   padding: 11px 16px;
@@ -1274,7 +1328,7 @@ body.light-theme {
 
 .pricing-card__cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgb(37 99 235 / 40%);
+  box-shadow: 0 6px 20px rgb(8 145 178 / 40%);
 }
 
 .pricing-card__cta:disabled {
@@ -1373,7 +1427,7 @@ body.light-theme {
 }
 
 .subscription-activate__btn {
-  background: linear-gradient(135deg, #2563eb 0%, #22d3ee 100%);
+  background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-cyan) 100%);
   color: #fff;
   border: none;
   padding: 10px 18px;
@@ -1389,7 +1443,7 @@ body.light-theme {
 
 .subscription-activate__btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgb(37 99 235 / 40%);
+  box-shadow: 0 6px 20px rgb(8 145 178 / 40%);
 }
 
 .subscription-activate__btn:disabled {
@@ -1412,18 +1466,18 @@ body.light-theme {
 }
 
 .light-theme .pricing-card--premium {
-  background: linear-gradient(135deg, rgb(37 99 235 / 4%) 0%, rgb(34 211 238 / 4%) 100%);
-  border-color: rgb(37 99 235 / 18%);
+  background: linear-gradient(135deg, rgb(8 145 178 / 4%) 0%, rgb(34 211 238 / 4%) 100%);
+  border-color: rgb(8 145 178 / 18%);
 }
 
 .light-theme .pricing-section__title {
-  background: linear-gradient(135deg, #0f172a 0%, #0891b2 50%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #0891b2 50%, #0ea5e9 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .light-theme .pricing-card--premium .pricing-card__price {
-  background: linear-gradient(135deg, #0891b2 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #0891b2 0%, #0ea5e9 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1453,5 +1507,88 @@ body.light-theme {
   .pricing-grid {
     grid-template-columns: 1fr;
     max-width: 360px;
+  }
+}
+
+/* ── Language selector (lang-code + lang-name) ── */
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-code {
+  font-weight: 700;
+  font-size: 0.72rem;
+  min-width: 26px;
+  color: var(--mp-muted);
+}
+
+.lang-name {
+  flex: 1;
+}
+
+/* ── Reduced motion preferences ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .hero__ball-svg {
+    animation: none;
+  }
+
+  .cta-btn {
+    animation: none;
+  }
+
+  .cta-btn::before {
+    animation: none;
+  }
+}
+
+/* ── Very small screens (< 400px) ── */
+@media (width <= 400px) {
+  .main-wrap {
+    padding: 0 12px 40px;
+  }
+
+  .header-controls {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .hero {
+    padding: 20px 12px 18px;
+  }
+
+  .hero__brand h1 {
+    font-size: 1.4rem;
+  }
+
+  .cta-btn {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
+
+  .feature-item {
+    padding: 16px 12px;
+  }
+
+  .tool-card {
+    padding: 20px 16px;
+  }
+
+  .pricing-card {
+    padding: 20px 16px;
+  }
+
+  .language-selector__dropdown {
+    min-width: 150px;
+    right: -10px;
   }
 }

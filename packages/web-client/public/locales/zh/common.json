@@ -51,7 +51,9 @@
     "controllerLabel": "🎮 治疗师链接（Controller）：",
     "copyBtnLabelClient": "复制客户链接",
     "copyBtnLabelController": "复制治疗师链接",
-    "tip": "💡 <strong>保存这些链接！</strong>它们是永久的，将始终有效。将viewer链接发送给客户，自己打开controller链接来管理会话。"
+    "tip": "💡 <strong>保存这些链接！</strong>它们是永久的，将始终有效。将viewer链接发送给客户，自己打开controller链接来管理会话。",
+    "errorCreating": "链接创建错误：",
+    "errorCreatingSubscription": "需要订阅。通过 @emdrbilateral_bot 获取高级计划"
   },
   "restore": {
     "heading": "🔄 通过ID恢复会话",

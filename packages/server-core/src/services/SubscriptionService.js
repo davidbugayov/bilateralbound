@@ -4,29 +4,38 @@
 const fs = require('node:fs')
 const path = require('node:path')
 
-const SUBSCRIPTIONS_FILE = path.join(__dirname, '..', '..', 'data', 'subscriptions.json')
 const DEFAULT_DURATION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
 
 /**
  * In-memory subscription store with JSON file persistence.
- * Survives server restarts by writing to subscriptions.json on every change.
- * Subscriptions are tied to a token (Telegram-generated) and tracked per session.
+ *
+ * Subscriptions are tied to a Telegram user ID (telegramUserId from Telegram API),
+ * NOT to a custom session ID. A user can have multiple custom IDs linked to one
+ * subscription (e.g. anna_2025, client-ivan, session42 — all under one Telegram account).
+ *
+ * Data model:
+ *   _subscriptions: Map<telegramUserId, { token, activatedAt, expiresAt, starsAmount }>
+ *   _customIdIndex: Map<customId, telegramUserId>
+ *   totalStars: number
  */
 class SubscriptionService {
   /**
    * @param {Object} options
    * @param {Object} options.logger
    * @param {number} options.durationMs - Subscription validity (default 30 days)
-   * @param {string} options.dataDir - Path to data directory (default: server-core/data/)
+   * @param {string} options.dataDir - Path to data directory
    */
   constructor({ logger, durationMs, dataDir } = {}) {
     this.logger = logger || console
     this.durationMs = durationMs || DEFAULT_DURATION_MS
 
-    // Map<sessionId, { token, activatedAt, expiresAt }>
+    /** Map<telegramUserId, { token, activatedAt, expiresAt, starsAmount }> */
     this._subscriptions = new Map()
 
-    // Map<token, sessionId> — for dedup and lookup by token
+    /** Map<customId, telegramUserId> — links customer IDs to a Telegram user */
+    this._customIdIndex = new Map()
+
+    /** Map<token, telegramUserId> — dedup and lookup by payment token */
     this._tokenIndex = new Map()
 
     // Total Stars received (for analytics)
@@ -48,48 +57,47 @@ class SubscriptionService {
   // ---------------------------------------------------------------------------
 
   /**
-   * Activate subscription for a session using a Telegram payment token.
-   * Tokens must be unique — reusing a token is idempotent (returns same sessionId).
-   * @param {string} sessionId
-   * @param {string} token - Telegram invoice token
+   * Activate subscription for a Telegram user.
+   * Tokens must be unique — reusing a token is idempotent.
+   * @param {number} telegramUserId - Telegram user ID
+   * @param {string} token - Telegram payment charge ID
    * @param {number} starsAmount - Stars paid
    * @returns {{ success: boolean, expiresAt: number, error?: string }}
    */
-  activate(sessionId, token, starsAmount) {
-    if (!sessionId || !token) {
-      return { success: false, error: 'Missing sessionId or token' }
+  activate(telegramUserId, token, starsAmount) {
+    if (!telegramUserId || !token) {
+      return { success: false, error: 'Missing telegramUserId or token' }
     }
 
     // Dedup: if token already used, return existing subscription info
-    const existingSessionId = this._tokenIndex.get(token)
-    if (existingSessionId) {
-      const existing = this._subscriptions.get(existingSessionId)
+    const existingUserId = this._tokenIndex.get(token)
+    if (existingUserId) {
+      const existing = this._subscriptions.get(existingUserId)
       if (existing && existing.expiresAt > Date.now()) {
-        // If the same session, just return success. If different, error.
-        if (existingSessionId === sessionId) {
+        if (existingUserId === telegramUserId) {
           return { success: true, expiresAt: existing.expiresAt, reactivated: false }
         }
-        return { success: false, error: 'This payment token is already used for another session' }
+        return { success: false, error: 'This payment token is already used for another user' }
       }
-      // Token used but expired — clean up and allow reuse
+      // Token used but expired — clean up
       this._removeByToken(token)
     }
 
     const now = Date.now()
     const expiresAt = now + this.durationMs
 
-    this._subscriptions.set(sessionId, {
+    this._subscriptions.set(telegramUserId, {
       token,
       activatedAt: now,
       expiresAt,
       starsAmount: starsAmount || 0
     })
-    this._tokenIndex.set(token, sessionId)
+    this._tokenIndex.set(token, telegramUserId)
     this.totalStars += starsAmount || 0
 
     this._saveToDisk()
     this.logger.info(
-      { sessionId, token, expiresAt: new Date(expiresAt).toISOString(), stars: starsAmount },
+      { telegramUserId, token, expiresAt: new Date(expiresAt).toISOString(), stars: starsAmount },
       'Subscription activated'
     )
 
@@ -97,18 +105,18 @@ class SubscriptionService {
   }
 
   /**
-   * Check if a session has an active subscription.
-   * Cleans up expired entries on access.
-   * @param {string} sessionId
+   * Check if a Telegram user has an active subscription.
+   * @param {number} telegramUserId
    * @returns {boolean}
    */
-  isActive(sessionId) {
+  isActive(telegramUserId) {
     this._purgeExpired()
-    const sub = this._subscriptions.get(sessionId)
+    const sub = this._subscriptions.get(telegramUserId)
     if (!sub) return false
     if (sub.expiresAt <= Date.now()) {
-      this._subscriptions.delete(sessionId)
+      this._subscriptions.delete(telegramUserId)
       this._tokenIndex.delete(sub.token)
+      this._removeCustomIdsForUser(telegramUserId)
       this._saveToDisk()
       return false
     }
@@ -116,42 +124,99 @@ class SubscriptionService {
   }
 
   /**
-   * Check if a specific premium feature is allowed for a session.
-   * @param {string} sessionId
-   * @param {string} feature - Feature name: 'permanent_links', 'session_management', 'extended_session', 'priority_support'
+   * Check if a custom session ID can be used (its owner has active subscription).
+   * @param {string} customId
    * @returns {boolean}
    */
-  isFeatureAllowed(sessionId, feature) {
-    // All features require an active subscription
-    return this.isActive(sessionId)
+  isCustomIdAllowed(customId) {
+    if (!customId) return false
+    const telegramUserId = this._customIdIndex.get(customId)
+    if (!telegramUserId) return false
+    return this.isActive(telegramUserId)
   }
 
   /**
-   * Get subscription info for a session.
-   * @param {string} sessionId
-   * @returns {{ active: boolean, activatedAt: number|null, expiresAt: number|null, starsAmount: number|null }|null}
+   * Link a custom ID to a Telegram user.
+   * Idempotent — if already linked to the same user, returns success.
+   * @param {string} customId
+   * @param {number} telegramUserId
+   * @returns {{ success: boolean, error?: string }}
    */
-  getStatus(sessionId) {
+  linkCustomId(customId, telegramUserId) {
+    if (!customId || !telegramUserId) {
+      return { success: false, error: 'Missing customId or telegramUserId' }
+    }
+
+    const existingOwner = this._customIdIndex.get(customId)
+    if (existingOwner === telegramUserId) {
+      return { success: true } // Already linked to this user
+    }
+    if (existingOwner) {
+      return { success: false, error: 'This Client ID is already linked to another user' }
+    }
+
+    this._customIdIndex.set(customId, telegramUserId)
+    this._saveToDisk()
+    this.logger.info({ customId, telegramUserId }, 'Custom ID linked to user')
+    return { success: true }
+  }
+
+  /**
+   * Get subscription info for a Telegram user.
+   * @param {number} telegramUserId
+   * @returns {{ active: boolean, activatedAt: number|null, expiresAt: number|null, starsAmount: number|null, customIds: string[] }}
+   */
+  getStatus(telegramUserId) {
     this._purgeExpired()
-    const sub = this._subscriptions.get(sessionId)
+    const sub = this._subscriptions.get(telegramUserId)
     if (!sub || sub.expiresAt <= Date.now()) {
       if (sub) {
-        this._subscriptions.delete(sessionId)
+        this._subscriptions.delete(telegramUserId)
         this._tokenIndex.delete(sub.token)
+        this._removeCustomIdsForUser(telegramUserId)
         this._saveToDisk()
       }
-      return { active: false, activatedAt: null, expiresAt: null, starsAmount: null }
+      return {
+        active: false,
+        activatedAt: null,
+        expiresAt: null,
+        starsAmount: null,
+        customIds: []
+      }
+    }
+    // Collect all custom IDs linked to this user
+    const customIds = []
+    for (const [cid, uid] of this._customIdIndex) {
+      if (uid === telegramUserId) customIds.push(cid)
     }
     return {
       active: true,
       activatedAt: sub.activatedAt,
       expiresAt: sub.expiresAt,
-      starsAmount: sub.starsAmount
+      starsAmount: sub.starsAmount,
+      customIds
     }
   }
 
   /**
-   * Get total number of active subscriptions.
+   * Get subscription status for a custom ID.
+   * Looks up the telegramUserId from the customId index and returns full status.
+   * @param {string} customId
+   * @returns {{ active: boolean, activatedAt: number|null, expiresAt: number|null, starsAmount: number|null, telegramUserId: number|null }}
+   */
+  getStatusForCustomId(customId) {
+    if (!customId) {
+      return { active: false, activatedAt: null, expiresAt: null, starsAmount: null, telegramUserId: null }
+    }
+    const telegramUserId = this._customIdIndex.get(customId)
+    if (!telegramUserId) {
+      return { active: false, activatedAt: null, expiresAt: null, starsAmount: null, telegramUserId: null }
+    }
+    return this.getStatus(telegramUserId)
+  }
+
+  /**
+   * Get total number of unique users with active subscriptions.
    * @returns {number}
    */
   getActiveCount() {
@@ -169,10 +234,10 @@ class SubscriptionService {
 
   /**
    * Handle Telegram pre_checkout_query (validate availability).
-   * @param {string} sessionId
+   * @param {string} customId
    * @returns {boolean}
    */
-  canAcceptPayment(sessionId) {
+  canAcceptPayment(customId) {
     // Always true — no limits on how many subscriptions we can sell
     return true
   }
@@ -185,10 +250,11 @@ class SubscriptionService {
   _purgeExpired() {
     const now = Date.now()
     let dirty = false
-    for (const [sessionId, sub] of this._subscriptions) {
+    for (const [userId, sub] of this._subscriptions) {
       if (sub.expiresAt <= now) {
-        this._subscriptions.delete(sessionId)
+        this._subscriptions.delete(userId)
         this._tokenIndex.delete(sub.token)
+        this._removeCustomIdsForUser(userId)
         dirty = true
       }
     }
@@ -197,10 +263,20 @@ class SubscriptionService {
 
   /** Remove subscription by token */
   _removeByToken(token) {
-    const sessionId = this._tokenIndex.get(token)
-    if (sessionId) {
-      this._subscriptions.delete(sessionId)
+    const userId = this._tokenIndex.get(token)
+    if (userId) {
+      this._subscriptions.delete(userId)
       this._tokenIndex.delete(token)
+      this._removeCustomIdsForUser(userId)
+    }
+  }
+
+  /** Remove all custom IDs for a user */
+  _removeCustomIdsForUser(telegramUserId) {
+    for (const [cid, uid] of this._customIdIndex) {
+      if (uid === telegramUserId) {
+        this._customIdIndex.delete(cid)
+      }
     }
   }
 
@@ -224,20 +300,32 @@ class SubscriptionService {
       }
       const raw = fs.readFileSync(this._filePath, 'utf-8')
       const data = JSON.parse(raw)
+
+      // New format: subscriptions keyed by telegramUserId
       if (data.subscriptions && Array.isArray(data.subscriptions)) {
         for (const entry of data.subscriptions) {
-          this._subscriptions.set(entry.sessionId, {
+          // Support both old (sessionId key) and new (telegramUserId key) formats
+          const userId = entry.telegramUserId || entry.sessionId
+          this._subscriptions.set(userId, {
             token: entry.token,
             activatedAt: entry.activatedAt,
             expiresAt: entry.expiresAt,
             starsAmount: entry.starsAmount || 0
           })
-          this._tokenIndex.set(entry.token, entry.sessionId)
+          this._tokenIndex.set(entry.token, userId)
         }
       }
+
+      // Load custom ID index
+      if (data.customIds && Array.isArray(data.customIds)) {
+        for (const link of data.customIds) {
+          this._customIdIndex.set(link.customId, link.telegramUserId)
+        }
+      }
+
       this.totalStars = data.totalStars || 0
       this.logger.info(
-        { count: this._subscriptions.size },
+        { count: this._subscriptions.size, customIds: this._customIdIndex.size },
         'Subscriptions loaded from disk'
       )
     } catch (err) {
@@ -249,12 +337,16 @@ class SubscriptionService {
   _saveToDisk() {
     const data = {
       totalStars: this.totalStars,
-      subscriptions: Array.from(this._subscriptions.entries()).map(([sessionId, sub]) => ({
-        sessionId,
+      subscriptions: Array.from(this._subscriptions.entries()).map(([userId, sub]) => ({
+        telegramUserId: userId,
         token: sub.token,
         activatedAt: sub.activatedAt,
         expiresAt: sub.expiresAt,
         starsAmount: sub.starsAmount
+      })),
+      customIds: Array.from(this._customIdIndex.entries()).map(([customId, userId]) => ({
+        customId,
+        telegramUserId: userId
       }))
     }
     try {

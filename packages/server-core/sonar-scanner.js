@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /* jshint node: true, esversion: 11, strict: true */
-'use strict';
+'use strict'
 
-const scanner = require('sonarqube-scanner').default;
-const path = require('path');
-const fs = require('fs');
+const scanner = require('sonarqube-scanner').default
+const path = require('path')
+const fs = require('fs')
 
-const serverCoreDir = __dirname;
+const serverCoreDir = __dirname
 
 /**
  * Validates environment before scan
@@ -15,12 +15,12 @@ const serverCoreDir = __dirname;
 function validateEnvironment() {
   if (!fs.existsSync(path.join(serverCoreDir, 'server'))) {
     throw new Error(
-      `Server directory not found: ${path.join(serverCoreDir, 'server')}`,
-    );
+      `Server directory not found: ${path.join(serverCoreDir, 'server')}`
+    )
   }
 
   if (!process.env.SONARQUBE_TOKEN) {
-    throw new Error('SONARQUBE_TOKEN environment variable is not set');
+    throw new Error('SONARQUBE_TOKEN environment variable is not set')
   }
 }
 
@@ -41,9 +41,9 @@ const scannerOptions = {
     'sonar.sourceEncoding': 'UTF-8',
     'sonar.qualitygate.wait': 'true',
     'sonar.qualitygate.timeout': '300',
-    'sonar.javascript.lcov.reportPaths': 'coverage/lcov.info',
-  },
-};
+    'sonar.javascript.lcov.reportPaths': 'coverage/lcov.info'
+  }
+}
 
 /**
  * Runs SonarQube scan
@@ -51,34 +51,34 @@ const scannerOptions = {
  */
 async function runScan() {
   try {
-    validateEnvironment();
-    console.log('🚀 Starting SonarQube analysis for Server Core...');
-    console.log(`📍 Server: ${scannerOptions.serverUrl}`);
-    console.log(`📦 Project: ${scannerOptions.options['sonar.projectKey']}`);
-    console.log(`📂 Base directory: ${serverCoreDir}`);
+    validateEnvironment()
+    console.log('🚀 Starting SonarQube analysis for Server Core...')
+    console.log(`📍 Server: ${scannerOptions.serverUrl}`)
+    console.log(`📦 Project: ${scannerOptions.options['sonar.projectKey']}`)
+    console.log(`📂 Base directory: ${serverCoreDir}`)
 
     await scanner(scannerOptions, () => {
-      console.log('✅ SonarQube analysis completed successfully');
+      console.log('✅ SonarQube analysis completed successfully')
       console.log(
         '📊 View results at:',
-        `${scannerOptions.serverUrl}/dashboard?id=${scannerOptions.options['sonar.projectKey']}`,
-      );
-      process.exit(0);
-    });
+        `${scannerOptions.serverUrl}/dashboard?id=${scannerOptions.options['sonar.projectKey']}`
+      )
+      process.exit(0)
+    })
   } catch (error) {
-    console.error('❌ SonarQube analysis failed');
-    console.error('Error:', error?.message || error);
+    console.error('❌ SonarQube analysis failed')
+    console.error('Error:', error?.message || error)
 
     if (error?.message?.includes('ECONNREFUSED')) {
-      console.error('⚠️  Cannot connect to SonarQube server');
+      console.error('⚠️  Cannot connect to SonarQube server')
       console.error(
-        `   Ensure SonarQube is running at ${scannerOptions.serverUrl}`,
-      );
+        `   Ensure SonarQube is running at ${scannerOptions.serverUrl}`
+      )
     }
 
-    process.exit(1);
+    process.exit(1)
   }
 }
 
 // Run the scan
-runScan();
+runScan()

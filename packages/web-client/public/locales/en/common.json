@@ -57,6 +57,7 @@
     "createdNotification": "🎉 Permanent links created!",
     "errorUnknown": "Unknown error",
     "errorCreating": "Error creating links: ",
+    "errorCreatingSubscription": "Subscription required. Get a Premium plan via @emdrbilateral_bot",
     "validationEmpty": "❌ Please enter a client ID",
     "validationFormat": "❌ Invalid format. Use only latin letters, numbers, _ or - (3-32 characters)"
   },
@@ -342,7 +343,7 @@
   "subscription": {
     "heading": "Premium Plan",
     "subtitle": "Permanent session links for professionals",
-    "price": "100 ⭐ Stars / month",
+    "price": "75 ⭐ Stars / month",
     "benefit1": "Custom permanent session IDs (e.g. anna_2025)",
     "benefit2": "Links never expire — reuse with the same client",
     "benefit3": "Priority support",
@@ -361,4 +362,5 @@
     "activated": "✅ Subscription activated!",
     "sessionIdLabel": "Your session ID"
   }
+}
 

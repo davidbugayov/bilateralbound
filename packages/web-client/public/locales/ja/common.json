@@ -58,6 +58,7 @@
     "createdNotification": "🎉 永続リンクが作成されました！",
     "errorUnknown": "不明なエラー",
     "errorCreating": "リンク作成エラー: ",
+    "errorCreatingSubscription": "購読が必要です。@emdrbilateral_bot からプレミアムプランを入手してください",
     "validationEmpty": "❌ クライアントIDを入力してください",
     "validationFormat": "❌ 無効な形式。ラテン文字、数字、_または-のみ使用可能（3-32文字）"
   },

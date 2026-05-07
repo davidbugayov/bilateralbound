@@ -57,10 +57,11 @@ function registerSessionRoutes(
     const { sessionId } = req.params
     try {
       // Gate: subscription required for custom session IDs
-      if (subscriptionService && !subscriptionService.isActive(sessionId)) {
+      if (subscriptionService && !subscriptionService.isCustomIdAllowed(sessionId)) {
         return res.status(402).json({
           error: 'Subscription required',
-          message: 'Permanent session links require an active subscription. Get it at https://t.me/BilateralBoundBot'
+          i18nKey: 'links.errorCreatingSubscription',
+          message: 'Permanent session links require an active Premium subscription. Get it via @emdrbilateral_bot'
         })
       }
 

@@ -191,38 +191,41 @@
       document.body.classList.remove('dark-theme', 'light-theme')
       if (savedTheme === 'light') {
         document.body.classList.add('light-theme')
-        this.updateThemeButton('☀️')
       } else {
         document.body.classList.add('dark-theme')
-        this.updateThemeButton('🌙')
       }
+      this.updateThemeButton(savedTheme === 'light')
     }
     /**
      * Cycles through themes: dark -> light -> dark
      */
     toggleTheme() {
       const body = document.body
-      const hasLightClass = body.classList.contains('light-theme')
+      const isLight = body.classList.contains('light-theme')
       body.classList.remove('dark-theme', 'light-theme')
-      if (hasLightClass) {
+      if (isLight) {
         body.classList.add('dark-theme')
         localStorage.setItem(this.themeKey, 'dark')
-        this.updateThemeButton('🌙')
+        this.updateThemeButton(false)
       } else {
         body.classList.add('light-theme')
         localStorage.setItem(this.themeKey, 'light')
-        this.updateThemeButton('☀️')
+        this.updateThemeButton(true)
       }
       globalThis.dispatchEvent(new CustomEvent('bb_theme_changed'))
     }
     /**
-     * Updates the theme toggle button text/icon
+     * Toggles SVG icons in the theme button: show sun for light, moon for dark
      * @private
      */
-    updateThemeButton(text) {
+    updateThemeButton(isLight) {
       const btn = document.getElementById('themeToggleBtn')
-      if (btn) {
-        btn.innerHTML = text
+      if (!btn) return
+      const sunIcon = btn.querySelector('.icon-sun')
+      const moonIcon = btn.querySelector('.icon-moon')
+      if (sunIcon && moonIcon) {
+        sunIcon.style.display = isLight ? '' : 'none'
+        moonIcon.style.display = isLight ? 'none' : ''
       }
     }
     /**

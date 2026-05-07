@@ -58,6 +58,7 @@
     "createdNotification": "🎉 Permanente Links erstellt!",
     "errorUnknown": "Unbekannter Fehler",
     "errorCreating": "Fehler beim Erstellen von Links: ",
+    "errorCreatingSubscription": "Abonnement erforderlich. Holen Sie sich einen Premium-Plan über @emdrbilateral_bot",
     "validationEmpty": "❌ Bitte geben Sie eine Klienten-ID ein",
     "validationFormat": "❌ Ungültiges Format. Verwenden Sie nur lateinische Buchstaben, Zahlen, _ oder - (3-32 Zeichen)"
   },

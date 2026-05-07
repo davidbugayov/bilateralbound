@@ -12,7 +12,7 @@
 html,
 body {
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif !important;
+    "Figtree", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Arial, sans-serif !important;
 }
 
 /* Fix session info empty block — show timestamp */
@@ -929,12 +929,12 @@ input:focus-visible + .slider {
 }
 
 .preset-card[data-preset-id="dynamic"] {
-  border-color: rgb(37 99 235 / 40%);
+  border-color: rgb(8 145 178 / 40%);
 }
 
 .preset-card[data-preset-id="dynamic"]:hover {
-  border-color: #2563eb;
-  box-shadow: 0 4px 14px rgb(37 99 235 / 25%);
+  border-color: #0891b2;
+  box-shadow: 0 4px 14px rgb(8 145 178 / 25%);
 }
 
 /* ========================================
