@@ -115,27 +115,26 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           return
         }
 
-        const payText = lang === 'ru' ? '💎 Оплатить 75 ⭐' : '💎 Pay 75 ⭐'
-        const msg = lang === 'ru'
-          ? '📋 <b>Оформление подписки для:</b> <code>' + sessionId + '</code>\n\n' +
-            'Premium Plan — <b>75 ⭐/мес</b>\n' +
-            '✅ Постоянные ID сессий\n' +
-            '✅ Ссылки никогда не истекают\n' +
-            '✅ Приоритетная поддержка\n\n' +
-            'Нажмите кнопку ниже для оплаты Telegram Stars.'
-          : '📋 <b>Subscribing for:</b> <code>' + sessionId + '</code>\n\n' +
-            'Premium Plan — <b>75 ⭐/month</b>\n' +
-            '✅ Custom permanent session IDs\n' +
-            '✅ Links never expire\n' +
-            '✅ Priority support\n\n' +
-            'Click the button below to pay with Telegram Stars.'
+        const title = lang === 'ru' ? 'EMDR Premium Подписка' : 'EMDR Premium Subscription'
+        const desc = lang === 'ru'
+          ? 'Постоянные ссылки для сессий ваших клиентов. Действует 30 дней.'
+          : 'Permanent session links for your clients. Valid for 30 days.'
+        const label = lang === 'ru' ? 'Premium Plan (30 дней)' : 'Premium Plan (30 days)'
 
-        telegramBot?.sendMessage(chatId, msg, {
-          reply_markup: JSON.stringify({
-            inline_keyboard: [[
-              { text: payText, pay: true }
-            ]]
-          })
+        // Send real invoice via Telegram API — this creates a native pay button
+        telegramBot?.sendInvoice(chatId, sessionId, 75, {
+          title,
+          description: desc,
+          label
+        }).then(function (resp) {
+          if (!resp?.ok) {
+            telegramBot?.sendMessage(
+              chatId,
+              lang === 'ru'
+                ? '❌ Не удалось создать счёт. Попробуйте позже.'
+                : '❌ Failed to create invoice. Try again later.'
+            )
+          }
         })
         return
       }
