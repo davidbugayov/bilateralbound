@@ -386,6 +386,21 @@
     "activateBtn": "Активировать",
     "activating": "Активация...",
     "activated": "✅ Подписка активирована!",
-    "sessionIdLabel": "Ваш ID сессии"
+    "sessionIdLabel": "Ваш ID сессии",
+    "managementTitle": "Управление подпиской",
+    "managementDesc": "Управляйте своей премиум-подпиской: проверьте статус, продлите или отмените.",
+    "customIdLabel": "Ваш Custom ID",
+    "customIdPlaceholder": "Введите ваш custom client ID",
+    "renewBtn": "Продлить подписку",
+    "cancelBtn": "Отменить подписку",
+    "autorenewBtn": "Автопродление",
+    "customIdRequired": "❌ Пожалуйста, введите ваш custom client ID",
+    "renewed": "✅ Подписка продлена!",
+    "cancelled": "✅ Подписка отменена",
+    "cancelConfirm": "Вы уверены, что хотите отменить подписку?",
+    "autorenewOn": "Автопродление: Вкл",
+    "autorenewOff": "Автопродление: Выкл",
+    "autorenewEnabled": "✅ Автопродление включено",
+    "autorenewDisabled": "Автопродление отключено"
   }
 }

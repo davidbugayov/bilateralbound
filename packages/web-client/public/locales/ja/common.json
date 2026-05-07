@@ -369,6 +369,21 @@
     "activateBtn": "アクティベート",
     "activating": "アクティベート中...",
     "activated": "✅ 購読がアクティベートされました！",
-    "sessionIdLabel": "セッションID"
+    "sessionIdLabel": "セッションID",
+    "managementTitle": "サブスクリプション管理",
+    "managementDesc": "プレミアムサブスクリプションを管理：ステータス確認、更新、キャンセル。",
+    "customIdLabel": "カスタムID",
+    "customIdPlaceholder": "カスタムクライアントIDを入力",
+    "renewBtn": "サブスクリプションを更新",
+    "cancelBtn": "サブスクリプションをキャンセル",
+    "autorenewBtn": "自動更新",
+    "customIdRequired": "❌ カスタムクライアントIDを入力してください",
+    "renewed": "✅ サブスクリプションが更新されました！",
+    "cancelled": "✅ サブスクリプションがキャンセルされました",
+    "cancelConfirm": "サブスクリプションをキャンセルしてもよろしいですか？",
+    "autorenewOn": "自動更新：オン",
+    "autorenewOff": "自動更新：オフ",
+    "autorenewEnabled": "✅ 自動更新が有効になりました",
+    "autorenewDisabled": "自動更新が無効になりました"
   }
 }

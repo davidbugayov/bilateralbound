@@ -360,7 +360,22 @@
     "activateBtn": "Activate",
     "activating": "Activating...",
     "activated": "✅ Subscription activated!",
-    "sessionIdLabel": "Your session ID"
+    "sessionIdLabel": "Your session ID",
+    "managementTitle": "Subscription Management",
+    "managementDesc": "Manage your premium subscription: check status, renew, or cancel.",
+    "customIdLabel": "Your Custom ID",
+    "customIdPlaceholder": "Enter your custom client ID",
+    "renewBtn": "Renew Subscription",
+    "cancelBtn": "Cancel Subscription",
+    "autorenewBtn": "Toggle Auto-Renew",
+    "customIdRequired": "❌ Please enter your custom client ID",
+    "renewed": "✅ Subscription renewed!",
+    "cancelled": "✅ Subscription cancelled",
+    "cancelConfirm": "Are you sure you want to cancel your subscription?",
+    "autorenewOn": "Auto-Renew: On",
+    "autorenewOff": "Auto-Renew: Off",
+    "autorenewEnabled": "✅ Auto-renew enabled",
+    "autorenewDisabled": "Auto-renew disabled"
   }
 }
 

@@ -355,6 +355,21 @@
     "activateBtn": "激活",
     "activating": "激活中...",
     "activated": "✅ 订阅已激活！",
-    "sessionIdLabel": "您的会话ID"
+    "sessionIdLabel": "您的会话ID",
+    "managementTitle": "订阅管理",
+    "managementDesc": "管理您的高级订阅：检查状态、续订或取消。",
+    "customIdLabel": "您的自定义ID",
+    "customIdPlaceholder": "输入您的自定义客户端ID",
+    "renewBtn": "续订订阅",
+    "cancelBtn": "取消订阅",
+    "autorenewBtn": "自动续订",
+    "customIdRequired": "❌ 请输入您的自定义客户端ID",
+    "renewed": "✅ 订阅已续订！",
+    "cancelled": "✅ 订阅已取消",
+    "cancelConfirm": "您确定要取消订阅吗？",
+    "autorenewOn": "自动续订：开",
+    "autorenewOff": "自动续订：关",
+    "autorenewEnabled": "✅ 自动续订已启用",
+    "autorenewDisabled": "自动续订已禁用"
   }
 }

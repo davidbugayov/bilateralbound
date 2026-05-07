@@ -369,6 +369,21 @@
     "activateBtn": "Aktivieren",
     "activating": "Wird aktiviert...",
     "activated": "✅ Abonnement aktiviert!",
-    "sessionIdLabel": "Ihre Sitzungs-ID"
+    "sessionIdLabel": "Ihre Sitzungs-ID",
+    "managementTitle": "Abonnement-Verwaltung",
+    "managementDesc": "Verwalten Sie Ihr Premium-Abonnement: Status prüfen, verlängern oder kündigen.",
+    "customIdLabel": "Ihre Custom ID",
+    "customIdPlaceholder": "Geben Sie Ihre custom client ID ein",
+    "renewBtn": "Abonnement verlängern",
+    "cancelBtn": "Abonnement kündigen",
+    "autorenewBtn": "Auto-Verlängerung",
+    "customIdRequired": "❌ Bitte geben Sie Ihre custom client ID ein",
+    "renewed": "✅ Abonnement verlängert!",
+    "cancelled": "✅ Abonnement gekündigt",
+    "cancelConfirm": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?",
+    "autorenewOn": "Auto-Verlängerung: Ein",
+    "autorenewOff": "Auto-Verlängerung: Aus",
+    "autorenewEnabled": "✅ Auto-Verlängerung aktiviert",
+    "autorenewDisabled": "Auto-Verlängerung deaktiviert"
   }
 }

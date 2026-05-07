@@ -362,6 +362,21 @@
     "activateBtn": "Ativar",
     "activating": "Ativando...",
     "activated": "✅ Assinatura ativada!",
-    "sessionIdLabel": "Seu ID de sessão"
+    "sessionIdLabel": "Seu ID de sessão",
+    "managementTitle": "Gerenciamento de Assinatura",
+    "managementDesc": "Gerencie sua assinatura premium: verifique o status, renove ou cancele.",
+    "customIdLabel": "Seu Custom ID",
+    "customIdPlaceholder": "Digite seu custom client ID",
+    "renewBtn": "Renovar Assinatura",
+    "cancelBtn": "Cancelar Assinatura",
+    "autorenewBtn": "Renovação Auto.",
+    "customIdRequired": "❌ Por favor, digite seu custom client ID",
+    "renewed": "✅ Assinatura renovada!",
+    "cancelled": "✅ Assinatura cancelada",
+    "cancelConfirm": "Tem certeza de que deseja cancelar sua assinatura?",
+    "autorenewOn": "Renovação Auto.: Ligada",
+    "autorenewOff": "Renovação Auto.: Desligada",
+    "autorenewEnabled": "✅ Renovação automática ativada",
+    "autorenewDisabled": "Renovação automática desativada"
   }
 }

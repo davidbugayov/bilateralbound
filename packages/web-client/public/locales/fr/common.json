@@ -369,6 +369,21 @@
     "activateBtn": "Activer",
     "activating": "Activation...",
     "activated": "✅ Abonnement activé!",
-    "sessionIdLabel": "Votre ID de session"
+    "sessionIdLabel": "Votre ID de session",
+    "managementTitle": "Gestion de l'abonnement",
+    "managementDesc": "Gérez votre abonnement premium : vérifiez le statut, renouvelez ou annulez.",
+    "customIdLabel": "Votre Custom ID",
+    "customIdPlaceholder": "Entrez votre custom client ID",
+    "renewBtn": "Renouveler l'abonnement",
+    "cancelBtn": "Annuler l'abonnement",
+    "autorenewBtn": "Renouvellement auto.",
+    "customIdRequired": "❌ Veuillez entrer votre custom client ID",
+    "renewed": "✅ Abonnement renouvelé !",
+    "cancelled": "✅ Abonnement annulé",
+    "cancelConfirm": "Êtes-vous sûr de vouloir annuler votre abonnement ?",
+    "autorenewOn": "Renouvellement auto. : Activé",
+    "autorenewOff": "Renouvellement auto. : Désactivé",
+    "autorenewEnabled": "✅ Renouvellement auto. activé",
+    "autorenewDisabled": "Renouvellement auto. désactivé"
   }
 }

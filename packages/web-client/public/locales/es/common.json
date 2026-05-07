@@ -369,6 +369,21 @@
     "activateBtn": "Activar",
     "activating": "Activando...",
     "activated": "✅ ¡Suscripción activada!",
-    "sessionIdLabel": "Tu ID de sesión"
+    "sessionIdLabel": "Tu ID de sesión",
+    "managementTitle": "Gestión de Suscripción",
+    "managementDesc": "Administre su suscripción premium: verifique el estado, renueve o cancele.",
+    "customIdLabel": "Su Custom ID",
+    "customIdPlaceholder": "Ingrese su custom client ID",
+    "renewBtn": "Renovar Suscripción",
+    "cancelBtn": "Cancelar Suscripción",
+    "autorenewBtn": "Auto-Renovación",
+    "customIdRequired": "❌ Por favor, ingrese su custom client ID",
+    "renewed": "✅ ¡Suscripción renovada!",
+    "cancelled": "✅ Suscripción cancelada",
+    "cancelConfirm": "¿Está seguro de que desea cancelar su suscripción?",
+    "autorenewOn": "Auto-Renovación: Activado",
+    "autorenewOff": "Auto-Renovación: Desactivado",
+    "autorenewEnabled": "✅ Auto-renovación activada",
+    "autorenewDisabled": "Auto-renovación desactivada"
   }
 }
