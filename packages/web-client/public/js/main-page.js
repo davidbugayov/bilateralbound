@@ -348,19 +348,59 @@
   }
 
   /**
-   * Handle subscribe button click — open Telegram bot
+   * Handle subscribe button click.
+   * 1. If customId is entered, check if already linked to active subscription.
+   * 2. If already active → show message, don't redirect (no repeat payment).
+   * 3. If not active → open Telegram bot with /start customId.
    */
-  function handleSubscribeClick() {
+  async function handleSubscribeClick() {
     const customId = document.getElementById('customClientId')?.value.trim()
+    const subscribeBtn = document.getElementById('subscribeBtn')
     let botLink =
       globalThis.__config?.telegramBotLink ||
       'https://t.me/emdrbilateral_bot'
 
-    // Pass custom ID to bot if entered
-    if (customId && validateClientId(customId)) {
-      botLink += '?start=' + encodeURIComponent(customId)
+    if (!customId || !validateClientId(customId)) {
+      // No customId — just open bot
+      window.open(botLink, '_blank')
+      return
     }
 
+    // Check if this customId is already linked to an active subscription
+    const originalText = subscribeBtn ? subscribeBtn.innerHTML : ''
+    try {
+      if (subscribeBtn) {
+        subscribeBtn.innerHTML = globalThis.i18n?.t('subscription.checking') || '⏳ Checking...'
+        subscribeBtn.disabled = true
+      }
+
+      const response = await fetch('/api/subscription/' + encodeURIComponent(customId) + '/check', {
+        method: 'POST'
+      })
+      const data = await response.json()
+
+      if (data.active) {
+        // Already subscribed — no need to open Telegram
+        const messageEl = document.getElementById('subStatusMessage')
+        if (messageEl) {
+          messageEl.textContent =
+            globalThis.i18n?.t('subscription.alreadyActive') || '✅ Premium Active — create permanent links above!'
+          messageEl.style.color = '#22c55e'
+        }
+        return
+      }
+    } catch (_err) {
+      // If check fails, proceed to Telegram anyway
+      console.warn('⚠️ Subscription check failed, proceeding to Telegram:', _err)
+    } finally {
+      if (subscribeBtn) {
+        subscribeBtn.innerHTML = originalText
+        subscribeBtn.disabled = false
+      }
+    }
+
+    // Not subscribed — open Telegram bot with customId
+    botLink += '?start=' + encodeURIComponent(customId)
     window.open(botLink, '_blank')
   }
 
