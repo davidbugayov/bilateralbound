@@ -88,6 +88,74 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   })
 
   // ------------------------------------------------------------------
+  // POST /api/subscription/:customId/renew
+  // Renew subscription for a custom ID owner
+  // ------------------------------------------------------------------
+  app.post('/api/subscription/:customId/renew', (req, res) => {
+    const { customId } = req.params
+    if (!customId || !/^[A-Za-z0-9_-]{3,32}$/.test(customId)) {
+      return res.status(400).json({ error: 'Invalid customId format' })
+    }
+    const status = subscriptionService.getStatusForCustomId
+      ? subscriptionService.getStatusForCustomId(customId)
+      : null
+    if (!status || !status.active || !status.telegramUserId) {
+      return res.status(402).json({ error: 'No active subscription for this custom ID' })
+    }
+    const result = subscriptionService.renew(status.telegramUserId)
+    if (!result.success) {
+      return res.status(400).json({ error: result.error })
+    }
+    res.json(result)
+  })
+
+  // ------------------------------------------------------------------
+  // POST /api/subscription/:customId/cancel
+  // Cancel subscription for a custom ID owner
+  // ------------------------------------------------------------------
+  app.post('/api/subscription/:customId/cancel', (req, res) => {
+    const { customId } = req.params
+    if (!customId || !/^[A-Za-z0-9_-]{3,32}$/.test(customId)) {
+      return res.status(400).json({ error: 'Invalid customId format' })
+    }
+    const status = subscriptionService.getStatusForCustomId
+      ? subscriptionService.getStatusForCustomId(customId)
+      : null
+    if (!status || !status.telegramUserId) {
+      return res.status(402).json({ error: 'No subscription linked to this custom ID' })
+    }
+    const cancelResult = subscriptionService.cancel(status.telegramUserId)
+    if (!cancelResult.success) {
+      return res.status(400).json({ error: cancelResult.error })
+    }
+    res.json(cancelResult)
+  })
+
+  // ------------------------------------------------------------------
+  // POST /api/subscription/:customId/autorenew
+  // Toggle auto-renew for a custom ID owner
+  // Body: { enabled: boolean }
+  // ------------------------------------------------------------------
+  app.post('/api/subscription/:customId/autorenew', (req, res) => {
+    const { customId } = req.params
+    if (!customId || !/^[A-Za-z0-9_-]{3,32}$/.test(customId)) {
+      return res.status(400).json({ error: 'Invalid customId format' })
+    }
+    const enabled = req.body?.enabled === true
+    const status = subscriptionService.getStatusForCustomId
+      ? subscriptionService.getStatusForCustomId(customId)
+      : null
+    if (!status || !status.telegramUserId) {
+      return res.status(402).json({ error: 'No subscription linked to this custom ID' })
+    }
+    const arResult = subscriptionService.setAutoRenew(status.telegramUserId, enabled)
+    if (!arResult.success) {
+      return res.status(400).json({ error: arResult.error })
+    }
+    res.json(arResult)
+  })
+
+  // ------------------------------------------------------------------
   // POST /api/subscription/webhook
   // Telegram Bot webhook endpoint (Telegram Stars payments)
   // Body: Telegram Update object — https://core.telegram.org/bots/api#update
@@ -180,6 +248,90 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
             )
           }
         })
+        return
+      }
+
+      // ---- /status — check subscription status ----
+      if (msgText === '/status') {
+        const status = subscriptionService.getStatus(telegramUserId)
+        var statusMsg
+        if (status.active) {
+          var expDate = new Date(status.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
+          statusMsg = (lang === 'ru'
+            ? '✅ <b>Подписка активна</b>\n\n' +
+              'Истекает: ' + expDate + '\n' +
+              'Клиентов: ' + (status.customIds?.length || 0) + '\n' +
+              'Автосписание: ' + (status.autoRenew ? '✅ Вкл' : '❌ Выкл')
+            : '✅ <b>Subscription Active</b>\n\n' +
+              'Expires: ' + expDate + '\n' +
+              'Clients: ' + (status.customIds?.length || 0) + '\n' +
+              'Auto-renew: ' + (status.autoRenew ? '✅ On' : '❌ Off'))
+        } else {
+          statusMsg = lang === 'ru'
+            ? '❌ <b>Нет активной подписки</b>\n\n' +
+              'Используйте /start для оформления.'
+            : '❌ <b>No Active Subscription</b>\n\n' +
+              'Use /start to subscribe.'
+        }
+        telegramBot?.sendMessage(chatId, statusMsg)
+        return
+      }
+
+      // ---- /renew — extend subscription ----
+      if (msgText === '/renew') {
+        const renewResult = subscriptionService.renew(telegramUserId)
+        var renewMsg
+        if (renewResult.success) {
+          var newExp = new Date(renewResult.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
+          renewMsg = lang === 'ru'
+            ? '✅ <b>Подписка продлена!</b>\n\nНовая дата истечения: ' + newExp
+            : '✅ <b>Subscription renewed!</b>\n\nNew expiry date: ' + newExp
+        } else {
+          renewMsg = lang === 'ru'
+            ? '❌ ' + (renewResult.error || 'Не удалось продлить подписку')
+            : '❌ ' + (renewResult.error || 'Failed to renew subscription')
+        }
+        telegramBot?.sendMessage(chatId, renewMsg)
+        return
+      }
+
+      // ---- /cancel — cancel subscription ----
+      if (msgText === '/cancel') {
+        const cancelResult = subscriptionService.cancel(telegramUserId)
+        var cancelMsg
+        if (cancelResult.success) {
+          cancelMsg = lang === 'ru'
+            ? '❌ <b>Подписка отменена.</b>\n\nВсе ваши клиенты отвязаны. Если передумаете — используйте /start.'
+            : '❌ <b>Subscription cancelled.</b>\n\nAll clients unlinked. Change your mind? Use /start.'
+        } else {
+          cancelMsg = lang === 'ru'
+            ? '❌ ' + (cancelResult.error || 'Не удалось отменить подписку')
+            : '❌ ' + (cancelResult.error || 'Failed to cancel subscription')
+        }
+        telegramBot?.sendMessage(chatId, cancelMsg)
+        return
+      }
+
+      // ---- /autorenew — toggle auto-renew ----
+      if (msgText === '/autorenew') {
+        var status2 = subscriptionService.getStatus(telegramUserId)
+        var newVal = !(status2.autoRenew || false)
+        var arResult = subscriptionService.setAutoRenew(telegramUserId, newVal)
+        var arMsg
+        if (arResult.success) {
+          arMsg = lang === 'ru'
+            ? (arResult.autoRenew
+                ? '✅ <b>Автосписание включено.</b>\n\nПодписка будет продлеваться автоматически каждые 30 дней.'
+                : '❌ <b>Автосписание выключено.</b>\n\nПодписку нужно продлевать вручную командой /renew.')
+            : (arResult.autoRenew
+                ? '✅ <b>Auto-renew enabled.</b>\n\nYour subscription will renew automatically every 30 days.'
+                : '❌ <b>Auto-renew disabled.</b>\n\nYou will need to manually renew with /renew.')
+        } else {
+          arMsg = lang === 'ru'
+            ? '❌ ' + (arResult.error || 'Не удалось изменить автосписание')
+            : '❌ ' + (arResult.error || 'Failed to toggle auto-renew')
+        }
+        telegramBot?.sendMessage(chatId, arMsg)
         return
       }
     }

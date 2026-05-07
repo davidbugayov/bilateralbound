@@ -1,6 +1,6 @@
 /* ===== MAIN PAGE — REDESIGN 2026 ===== */
 
-@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800;900&family=Noto+Sans:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 /* ── Design tokens ── */
 :root {
@@ -9,17 +9,17 @@
   --mp-surface-3: #0d1426;
   --mp-border: rgb(255 255 255 / 6%);
   --mp-border-strong: rgb(255 255 255 / 12%);
-  --mp-blue: #0891b2;
-  --mp-blue-light: #0ea5e9;
-  --mp-blue-dark: #0e7490;
-  --mp-cyan: #22d3ee;
-  --mp-cyan-dim: #06b6d4;
+  --mp-blue: #2563eb;
+  --mp-blue-light: #3b82f6;
+  --mp-blue-dark: #1d4ed8;
+  --mp-cyan: #3b82f6;
+  --mp-cyan-dim: #2563eb;
   --mp-text: #e2e8f0;
   --mp-muted: #64748b;
   --mp-subtle: #94a3b8;
   --mp-radius: 14px;
-  --mp-font-display: "Figtree", system-ui, sans-serif;
-  --mp-font-body: "Noto Sans", system-ui, sans-serif;
+  --mp-font-display: "Inter", system-ui, sans-serif;
+  --mp-font-body: "Inter", system-ui, sans-serif;
 
   /* Legacy vars kept for header/language-selector */
   --bg-card: var(--mp-surface);
@@ -28,7 +28,7 @@
   --text-primary: var(--mp-text);
   --text-secondary: var(--mp-muted);
   --border-color: var(--mp-border);
-  --hover-bg: rgb(8 145 178 / 10%);
+  --hover-bg: rgb(37 99 235 / 10%);
 }
 
 body.light-theme {
@@ -48,7 +48,7 @@ body.light-theme {
   --text-primary: var(--mp-text);
   --text-secondary: var(--mp-muted);
   --border-color: var(--mp-border);
-  --hover-bg: rgb(8 145 178 / 10%);
+  --hover-bg: rgb(37 99 235 / 10%);
 }
 
 /* ── Layout ── */
@@ -155,7 +155,7 @@ body.light-theme {
 }
 
 .language-option--active {
-  background: rgb(8 145 178 / 10%);
+  background: rgb(37 99 235 / 10%);
   color: var(--mp-blue-light);
   font-weight: 600;
   border-left: 2px solid var(--mp-blue);
@@ -208,17 +208,17 @@ body.light-theme {
   background:
     radial-gradient(
       circle at 50% 50%,
-      rgb(8 145 178 / 15%) 0%,
+      rgb(37 99 235 / 15%) 0%,
       transparent 55%
     ),
     radial-gradient(
       ellipse at 15% 110%,
-      rgb(8 145 178 / 8%) 0%,
+      rgb(37 99 235 / 8%) 0%,
       transparent 45%
     ),
     radial-gradient(
       ellipse at 85% 80%,
-      rgb(6 182 212 / 5%) 0%,
+      rgb(59 130 246 / 5%) 0%,
       transparent 40%
     );
   pointer-events: none;
@@ -235,8 +235,8 @@ body.light-theme {
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(34 211 238 / 40%),
-    rgb(6 182 212 / 40%),
+    rgb(59 130 246 / 40%),
+    rgb(37 99 235 / 40%),
     transparent
   );
   pointer-events: none;
@@ -268,8 +268,8 @@ body.light-theme {
 
 .hero__ball-svg {
   animation: heroBallBounce 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 10px #22d3ee)
-    drop-shadow(0 0 22px rgb(34 211 238 / 55%));
+  filter: drop-shadow(0 0 10px #3b82f6)
+    drop-shadow(0 0 22px rgb(59 130 246 / 55%));
 }
 
 @keyframes heroBallBounce {
@@ -304,7 +304,7 @@ body.light-theme {
   font-family: var(--mp-font-display);
   font-size: clamp(1.4rem, 3.5vw, 2.2rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #fff 0%, #22d3ee 55%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #fff 0%, #3b82f6 55%, #2563eb 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
@@ -328,7 +328,7 @@ body.light-theme {
   font-size: 0.95rem;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: none;
   padding: 12px 36px;
   border-radius: 9999px;
@@ -347,17 +347,17 @@ body.light-theme {
   0%,
   100% {
     box-shadow:
-      0 0 0 1px rgb(6 182 212 / 30%),
-      0 0 32px rgb(8 145 178 / 50%),
-      0 0 56px rgb(34 211 238 / 30%),
+      0 0 0 1px rgb(59 130 246 / 30%),
+      0 0 32px rgb(37 99 235 / 50%),
+      0 0 56px rgb(59 130 246 / 30%),
       0 4px 12px rgb(0 0 0 / 30%);
   }
 
   50% {
     box-shadow:
-      0 0 0 1px rgb(34 211 238 / 45%),
-      0 0 48px rgb(8 145 178 / 70%),
-      0 0 80px rgb(34 211 238 / 50%),
+      0 0 0 1px rgb(59 130 246 / 45%),
+      0 0 48px rgb(37 99 235 / 70%),
+      0 0 80px rgb(59 130 246 / 50%),
       0 4px 16px rgb(0 0 0 / 30%);
   }
 }
@@ -407,10 +407,10 @@ body.light-theme {
 
 .cta-btn:hover {
   transform: translateY(-3px) scale(1.02);
-  background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   box-shadow:
-    0 0 0 1px rgb(34 211 238 / 40%),
-    0 12px 40px rgb(6 182 212 / 50%),
+    0 0 0 1px rgb(59 130 246 / 40%),
+    0 12px 40px rgb(59 130 246 / 50%),
     0 4px 12px rgb(0 0 0 / 25%);
 }
 
@@ -445,8 +445,8 @@ body.light-theme {
   gap: 5px;
   font-size: 0.68rem;
   color: var(--mp-muted);
-  background: rgb(8 145 178 / 6%);
-  border: 1px solid rgb(8 145 178 / 18%);
+  background: rgb(37 99 235 / 6%);
+  border: 1px solid rgb(37 99 235 / 18%);
   border-radius: 6px;
   padding: 4px 8px;
   max-width: 160px;
@@ -461,8 +461,8 @@ body.light-theme {
   height: 16px;
   min-width: 16px;
   border-radius: 50%;
-  background: rgb(8 145 178 / 20%);
-  border: 1px solid rgb(8 145 178 / 40%);
+  background: rgb(37 99 235 / 20%);
+  border: 1px solid rgb(37 99 235 / 40%);
   color: var(--mp-blue-light);
   font-size: 0.65rem;
   font-weight: 700;
@@ -497,8 +497,8 @@ body.light-theme {
 }
 
 .tool-card:hover {
-  border-color: rgb(34 211 238 / 25%);
-  box-shadow: 0 8px 32px rgb(34 211 238 / 8%);
+  border-color: rgb(59 130 246 / 25%);
+  box-shadow: 0 8px 32px rgb(59 130 246 / 8%);
 }
 
 .tool-card::before {
@@ -511,7 +511,7 @@ body.light-theme {
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(34 211 238 / 30%),
+    rgb(59 130 246 / 30%),
     transparent
   );
   pointer-events: none;
@@ -586,7 +586,7 @@ body.light-theme {
 .input-field:focus {
   border-color: var(--mp-cyan);
   background: rgb(255 255 255 / 8%);
-  box-shadow: 0 0 0 3px rgb(34 211 238 / 12%);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 12%);
 }
 
 .tool-btn,
@@ -608,7 +608,7 @@ body.light-theme {
 .tool-btn:hover,
 .main-button.btn-short:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgb(8 145 178 / 40%);
+  box-shadow: 0 6px 20px rgb(37 99 235 / 40%);
 }
 
 .tool-btn:disabled,
@@ -684,8 +684,8 @@ body.light-theme {
 }
 
 .tip-box {
-  background: rgb(8 145 178 / 7%);
-  border: 1px solid rgb(8 145 178 / 18%);
+  background: rgb(37 99 235 / 7%);
+  border: 1px solid rgb(37 99 235 / 18%);
   border-radius: 8px;
   padding: 9px 12px;
 }
@@ -729,8 +729,8 @@ body.light-theme {
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgb(8 145 178 / 8%) 0%,
-    rgb(34 211 238 / 8%) 100%
+    rgb(37 99 235 / 8%) 0%,
+    rgb(59 130 246 / 8%) 100%
   );
   border-radius: 18px;
   opacity: 0;
@@ -738,10 +738,10 @@ body.light-theme {
 }
 
 .feature-item:hover {
-  border-color: rgb(34 211 238 / 30%);
+  border-color: rgb(59 130 246 / 30%);
   transform: translateY(-5px);
   box-shadow:
-    0 10px 36px rgb(34 211 238 / 10%),
+    0 10px 36px rgb(59 130 246 / 10%),
     0 2px 8px rgb(0 0 0 / 30%);
 }
 
@@ -903,8 +903,8 @@ body.light-theme {
   background: linear-gradient(
     135deg,
     transparent 20%,
-    rgb(34 211 238 / 20%) 40%,
-    rgb(8 145 178 / 25%) 60%,
+    rgb(59 130 246 / 20%) 40%,
+    rgb(37 99 235 / 25%) 60%,
     transparent 80%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box,
@@ -928,7 +928,7 @@ body.light-theme {
 .tool-card:hover,
 .pricing-card:hover {
   box-shadow:
-    0 8px 32px rgb(34 211 238 / 8%),
+    0 8px 32px rgb(59 130 246 / 8%),
     0 1px 3px rgb(0 0 0 / 10%),
     inset 0 1px 0 rgb(255 255 255 / 3%);
 }
@@ -955,14 +955,14 @@ body.light-theme {
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(6 182 212 / 30%),
-    rgb(8 145 178 / 30%),
+    rgb(59 130 246 / 30%),
+    rgb(37 99 235 / 30%),
     transparent
   );
 }
 
 .light-theme .hero__brand h1 {
-  background: linear-gradient(135deg, #0f172a 0%, #0891b2 50%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #2563eb 50%, #3b82f6 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -973,8 +973,8 @@ body.light-theme {
 }
 
 .light-theme .feature-item:hover {
-  background: rgb(8 145 178 / 4%);
-  border-color: rgb(8 145 178 / 25%);
+  background: rgb(37 99 235 / 4%);
+  border-color: rgb(37 99 235 / 25%);
 }
 
 .light-theme .tool-card,
@@ -995,7 +995,7 @@ body.light-theme {
 
 .light-theme .input-field:focus {
   border-color: var(--mp-cyan-dim);
-  box-shadow: 0 0 0 3px rgb(6 182 212 / 12%);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 12%);
 }
 
 .light-theme .tool-card .link-group__input {
@@ -1142,7 +1142,7 @@ body.light-theme {
   font-family: var(--mp-font-display);
   font-size: clamp(1rem, 2.5vw, 1.3rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #fff 0%, #22d3ee 55%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #fff 0%, #3b82f6 55%, #2563eb 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
@@ -1187,13 +1187,13 @@ body.light-theme {
 }
 
 .pricing-card--premium {
-  border-color: rgb(34 211 238 / 20%);
-  background: linear-gradient(135deg, rgb(8 145 178 / 6%) 0%, rgb(34 211 238 / 6%) 100%);
+  border-color: rgb(59 130 246 / 20%);
+  background: linear-gradient(135deg, rgb(37 99 235 / 6%) 0%, rgb(59 130 246 / 6%) 100%);
 }
 
 .pricing-card--premium:hover {
-  border-color: rgb(34 211 238 / 35%);
-  box-shadow: 0 8px 32px rgb(34 211 238 / 12%);
+  border-color: rgb(59 130 246 / 35%);
+  box-shadow: 0 8px 32px rgb(59 130 246 / 12%);
 }
 
 .pricing-card__badge {
@@ -1242,7 +1242,7 @@ body.light-theme {
 }
 
 .pricing-card--premium .pricing-card__price {
-  background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1309,8 +1309,8 @@ body.light-theme {
 }
 
 .pricing-card__tag--current {
-  background: rgb(8 145 178 / 12%);
-  border-color: rgb(14 165 233 / 30%);
+  background: rgb(37 99 235 / 12%);
+  border-color: rgb(59 130 246 / 30%);
   color: var(--mp-blue-light);
 }
 
@@ -1331,7 +1331,7 @@ body.light-theme {
 
 .pricing-card__cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgb(8 145 178 / 40%);
+  box-shadow: 0 6px 20px rgb(37 99 235 / 40%);
 }
 
 .pricing-card__cta:disabled {
@@ -1426,7 +1426,7 @@ body.light-theme {
 
 .subscription-activate__input:focus {
   border-color: var(--mp-cyan);
-  box-shadow: 0 0 0 3px rgb(34 211 238 / 12%);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 12%);
 }
 
 .subscription-activate__btn {
@@ -1446,7 +1446,7 @@ body.light-theme {
 
 .subscription-activate__btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgb(8 145 178 / 40%);
+  box-shadow: 0 6px 20px rgb(37 99 235 / 40%);
 }
 
 .subscription-activate__btn:disabled {
@@ -1469,18 +1469,18 @@ body.light-theme {
 }
 
 .light-theme .pricing-card--premium {
-  background: linear-gradient(135deg, rgb(8 145 178 / 4%) 0%, rgb(34 211 238 / 4%) 100%);
-  border-color: rgb(8 145 178 / 18%);
+  background: linear-gradient(135deg, rgb(37 99 235 / 4%) 0%, rgb(59 130 246 / 4%) 100%);
+  border-color: rgb(37 99 235 / 18%);
 }
 
 .light-theme .pricing-section__title {
-  background: linear-gradient(135deg, #0f172a 0%, #0891b2 50%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #2563eb 50%, #2563eb 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .light-theme .pricing-card--premium .pricing-card__price {
-  background: linear-gradient(135deg, #0891b2 0%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #2563eb 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1502,7 +1502,7 @@ body.light-theme {
 
 .light-theme .subscription-activate__input:focus {
   border-color: var(--mp-cyan-dim);
-  box-shadow: 0 0 0 3px rgb(6 182 212 / 12%);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 12%);
 }
 
 /* ── SUBSCRIPTION HUB (unified activation + management) ── */
@@ -1530,8 +1530,8 @@ body.light-theme {
 }
 
 .subscription-hub__panel:hover {
-  border-color: rgb(34 211 238 / 20%);
-  box-shadow: 0 4px 20px rgb(34 211 238 / 6%);
+  border-color: rgb(59 130 246 / 20%);
+  box-shadow: 0 4px 20px rgb(59 130 246 / 6%);
 }
 
 .subscription-hub__panel::before {
@@ -1544,7 +1544,7 @@ body.light-theme {
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(34 211 238 / 25%),
+    rgb(59 130 246 / 25%),
     transparent
   );
   pointer-events: none;
@@ -1632,7 +1632,7 @@ body.light-theme {
 
 .subscription-hub__actions .main-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgb(8 145 178 / 35%);
+  box-shadow: 0 4px 16px rgb(37 99 235 / 35%);
 }
 
 .subscription-hub__actions .main-button--danger {
@@ -1707,8 +1707,8 @@ body.light-theme {
 }
 
 .permanent-links-card:hover {
-  border-color: rgb(34 211 238 / 25%);
-  box-shadow: 0 8px 32px rgb(34 211 238 / 8%);
+  border-color: rgb(59 130 246 / 25%);
+  box-shadow: 0 8px 32px rgb(59 130 246 / 8%);
 }
 
 .permanent-links-card::before {
@@ -1721,7 +1721,7 @@ body.light-theme {
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(34 211 238 / 30%),
+    rgb(59 130 246 / 30%),
     transparent
   );
   pointer-events: none;
@@ -1737,8 +1737,8 @@ body.light-theme {
   background: linear-gradient(
     135deg,
     transparent 20%,
-    rgb(34 211 238 / 20%) 40%,
-    rgb(8 145 178 / 25%) 60%,
+    rgb(59 130 246 / 20%) 40%,
+    rgb(37 99 235 / 25%) 60%,
     transparent 80%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box,
@@ -1784,7 +1784,7 @@ body.light-theme {
 }
 
 .light-theme .subscription-hub__panel:hover {
-  border-color: rgb(8 145 178 / 20%);
+  border-color: rgb(37 99 235 / 20%);
 }
 
 .light-theme .permanent-links-card {
@@ -1797,7 +1797,7 @@ body.light-theme {
 }
 
 .light-theme .subscription-unified__title {
-  background: linear-gradient(135deg, #0f172a 0%, #0891b2 50%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #2563eb 50%, #2563eb 100%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }

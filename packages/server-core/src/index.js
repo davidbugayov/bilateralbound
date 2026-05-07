@@ -73,6 +73,7 @@ const telegramBot = config.subscription.STARS_BOT_TOKEN
   : null
 if (telegramBot) {
   telegramBot.setWebhook()
+  telegramBot.setMyCommands()
 }
 const sessionService = new SessionService(
   sessionRepository,

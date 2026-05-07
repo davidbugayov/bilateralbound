@@ -151,6 +151,36 @@ class TelegramBotService {
   }
 
   // ---------------------------------------------------------------------------
+  // Bot commands menu
+  // ---------------------------------------------------------------------------
+
+  /** Set the bot's command list (shown in Telegram menu) */
+  async setMyCommands() {
+    if (!this.isConfigured) return false
+    try {
+      const res = await this._call('setMyCommands', {
+        commands: [
+          { command: 'start', description: 'Start the bot / get subscription info' },
+          { command: 'status', description: 'Check your subscription status' },
+          { command: 'renew', description: 'Extend your subscription by 30 days' },
+          { command: 'autorenew', description: 'Toggle auto-renew on/off' },
+          { command: 'cancel', description: 'Cancel your subscription' }
+        ],
+        scope: { type: 'all_private_chats' }
+      })
+      if (res.ok) {
+        this.logger.info('Bot commands menu set')
+      } else {
+        this.logger.error({ res }, 'Failed to set bot commands')
+      }
+      return res.ok
+    } catch (err) {
+      this.logger.error({ err }, 'setMyCommands error')
+      return false
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Deep link helpers
   // ---------------------------------------------------------------------------
 

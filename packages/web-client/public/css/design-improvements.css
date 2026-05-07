@@ -2,7 +2,7 @@
 
 /* Style: Accessible & Ethical (WCAG AAA compliant) */
 
-/* Colors: Medical teal (#0891B2) + health green (#22C55E) */
+/* Colors: Medical blue (#2563eb) + health green (#22C55E) */
 
 /* Fonts: System fonts (wide, native) */
 
@@ -69,7 +69,7 @@ input:focus-visible,
 select:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid #0891b2;
+  outline: 3px solid #2563eb;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -77,8 +77,8 @@ a:focus-visible,
 /* Dark theme focus */
 button:focus-visible,
 a:focus-visible {
-  outline-color: #22d3ee;
-  box-shadow: 0 0 0 4px rgb(34 211 238 / 25%);
+  outline-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgb(59 130 246 / 25%);
 }
 
 /* Light theme focus */
@@ -86,8 +86,8 @@ a:focus-visible {
 .light-theme a:focus-visible,
 .light-theme input:focus-visible,
 .light-theme select:focus-visible {
-  outline-color: #0891b2;
-  box-shadow: 0 0 0 4px rgb(8 145 178 / 25%);
+  outline-color: #2563eb;
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 25%);
 }
 
 /* ========================================
@@ -143,7 +143,7 @@ a:focus-visible {
 .control-section h3 #curSid {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;
-  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #3b82f6 100%);
   background-clip: text;
   color: transparent;
   font-weight: 800;
@@ -391,7 +391,7 @@ a:focus-visible {
   font-weight: 700 !important;
   min-height: 52px !important;
   padding: 14px 28px !important;
-  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%) !important;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
   border: none !important;
   border-radius: 12px !important;
   letter-spacing: 0.02em;
@@ -403,15 +403,15 @@ a:focus-visible {
 
 .session-start-btn:hover {
   transform: translateY(-2px) scale(1.02) !important;
-  background: linear-gradient(135deg, #0e7490 0%, #155e75 100%) !important;
+  background: linear-gradient(135deg, #1d4ed8 0%, #155e75 100%) !important;
   box-shadow:
-    0 8px 25px rgb(8 145 178 / 35%),
-    0 0 40px rgb(8 145 178 / 20%) !important;
+    0 8px 25px rgb(37 99 235 / 35%),
+    0 0 40px rgb(37 99 235 / 20%) !important;
 }
 
 .session-start-btn:active {
   transform: translateY(0) scale(0.98) !important;
-  box-shadow: 0 2px 10px rgb(8 145 178 / 25%) !important;
+  box-shadow: 0 2px 10px rgb(37 99 235 / 25%) !important;
 }
 
 /* Playing state - calm pulse instead of aggressive glow */
@@ -478,7 +478,7 @@ a:focus-visible {
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(34 211 238 / 25%),
+    rgb(59 130 246 / 25%),
     transparent
   );
 }
@@ -515,12 +515,12 @@ a:focus-visible {
 }
 
 .dir-btn.active {
-  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
-  border-color: #22d3ee;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #3b82f6;
   color: #fff;
   box-shadow:
-    0 4px 12px rgb(8 145 178 / 30%),
-    0 0 0 2px rgb(34 211 238 / 20%);
+    0 4px 12px rgb(37 99 235 / 30%),
+    0 0 0 2px rgb(59 130 246 / 20%);
 }
 
 .dir-btn.active .dir-lbl {
@@ -528,8 +528,8 @@ a:focus-visible {
 }
 
 .light-theme .dir-btn.active {
-  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
-  border-color: #0891b2;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #2563eb;
   color: #fff;
 }
 
@@ -596,7 +596,7 @@ a:focus-visible {
   gap: 10px;
   box-shadow:
     0 25px 60px rgb(0 0 0 / 50%),
-    0 0 40px rgb(8 145 178 / 10%),
+    0 0 40px rgb(37 99 235 / 10%),
     inset 0 1px 0 rgb(255 255 255 / 5%);
   backdrop-filter: blur(16px);
 }
@@ -605,7 +605,7 @@ a:focus-visible {
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(34 211 238 / 30%),
+    rgb(59 130 246 / 30%),
     transparent
   );
 }
@@ -746,8 +746,8 @@ a:focus-visible {
 }
 
 .settings-select:focus {
-  border-color: #22d3ee;
-  box-shadow: 0 0 0 3px rgb(34 211 238 / 20%);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 20%);
 }
 
 .light-theme .settings-select {
@@ -761,8 +761,8 @@ a:focus-visible {
 }
 
 .light-theme .settings-select:focus {
-  border-color: #0891b2;
-  box-shadow: 0 0 0 3px rgb(8 145 178 / 15%);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 15%);
 }
 
 /* ========================================
@@ -782,7 +782,7 @@ a:focus-visible {
 }
 
 #controllerVolumeSlider::-webkit-slider-thumb {
-  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #3b82f6 100%);
   border: 2px solid #fff;
   transition:
     transform 0.15s ease,
@@ -793,7 +793,7 @@ a:focus-visible {
   transform: scale(1.15);
   box-shadow:
     0 3px 10px rgb(0 0 0 / 40%),
-    0 0 0 4px rgb(34 211 238 / 30%);
+    0 0 0 4px rgb(59 130 246 / 30%);
 }
 
 .light-theme #controllerVolumeSlider {
@@ -802,18 +802,18 @@ a:focus-visible {
 }
 
 .light-theme #controllerVolumeSlider::-webkit-slider-thumb {
-  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   border: 2px solid #fff;
 }
 
 .settings-volume-value {
-  color: #22d3ee;
+  color: #3b82f6;
   font-weight: 600;
   font-size: 0.82rem;
 }
 
 .light-theme .settings-volume-value {
-  color: #0891b2;
+  color: #2563eb;
 }
 
 /* ========================================
@@ -843,7 +843,7 @@ a:focus-visible {
 }
 
 input:checked + .slider {
-  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #3b82f6 100%);
 }
 
 input:checked + .slider::before {
@@ -852,7 +852,7 @@ input:checked + .slider::before {
 }
 
 input:focus-visible + .slider {
-  outline: 2px solid rgb(34 211 238 / 55%);
+  outline: 2px solid rgb(59 130 246 / 55%);
   outline-offset: 2px;
 }
 
@@ -861,11 +861,11 @@ input:focus-visible + .slider {
 }
 
 .light-theme input:checked + .slider {
-  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 .light-theme input:focus-visible + .slider {
-  outline-color: rgb(8 145 178 / 55%);
+  outline-color: rgb(37 99 235 / 55%);
 }
 
 /* ========================================
@@ -902,12 +902,12 @@ input:focus-visible + .slider {
 
 /* Preset accent colors - updated for medical teal theme */
 .preset-card[data-preset-id="relaxation"] {
-  border-color: rgb(8 145 178 / 40%);
+  border-color: rgb(37 99 235 / 40%);
 }
 
 .preset-card[data-preset-id="relaxation"]:hover {
-  border-color: #0891b2;
-  box-shadow: 0 4px 14px rgb(8 145 178 / 25%);
+  border-color: #2563eb;
+  box-shadow: 0 4px 14px rgb(37 99 235 / 25%);
 }
 
 .preset-card[data-preset-id="activation"] {
@@ -929,12 +929,12 @@ input:focus-visible + .slider {
 }
 
 .preset-card[data-preset-id="dynamic"] {
-  border-color: rgb(8 145 178 / 40%);
+  border-color: rgb(37 99 235 / 40%);
 }
 
 .preset-card[data-preset-id="dynamic"]:hover {
-  border-color: #0891b2;
-  box-shadow: 0 4px 14px rgb(8 145 178 / 25%);
+  border-color: #2563eb;
+  box-shadow: 0 4px 14px rgb(37 99 235 / 25%);
 }
 
 /* ========================================
@@ -960,8 +960,8 @@ input:focus-visible + .slider {
 }
 
 .link-group__input:focus {
-  border-color: #22d3ee;
-  box-shadow: 0 0 0 3px rgb(34 211 238 / 15%);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 15%);
   outline: none;
 }
 
@@ -972,14 +972,14 @@ input:focus-visible + .slider {
 }
 
 .light-theme .link-group__input:focus {
-  border-color: #0891b2;
-  box-shadow: 0 0 0 3px rgb(8 145 178 / 15%);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 15%);
 }
 
 /* Copy button */
 .copy-btn {
   padding: 10px 16px;
-  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   border: none;
   border-radius: 10px;
   color: #fff;
@@ -999,7 +999,7 @@ input:focus-visible + .slider {
 
 .copy-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgb(8 145 178 / 35%);
+  box-shadow: 0 4px 12px rgb(37 99 235 / 35%);
 }
 
 .copy-btn:active {
@@ -1060,8 +1060,8 @@ input:focus-visible + .slider {
 }
 
 .autostop-input:focus {
-  border-color: #22d3ee;
-  box-shadow: 0 0 0 3px rgb(34 211 238 / 15%);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 15%);
   outline: none;
 }
 
@@ -1083,8 +1083,8 @@ input:focus-visible + .slider {
 }
 
 .light-theme .autostop-input:focus {
-  border-color: #0891b2;
-  box-shadow: 0 0 0 3px rgb(8 145 178 / 15%);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 15%);
 }
 
 .light-theme .autostop-input::placeholder {
@@ -1114,10 +1114,10 @@ input:focus-visible + .slider {
 }
 
 .color-btn.active {
-  border-color: #22d3ee;
+  border-color: #3b82f6;
   box-shadow:
-    0 0 0 3px rgb(34 211 238 / 25%),
-    0 4px 12px rgb(34 211 238 / 30%);
+    0 0 0 3px rgb(59 130 246 / 25%),
+    0 4px 12px rgb(59 130 246 / 30%);
   transform: scale(1.08);
 }
 
@@ -1132,10 +1132,10 @@ input:focus-visible + .slider {
 }
 
 .light-theme .color-btn.active {
-  border-color: #0891b2;
+  border-color: #2563eb;
   box-shadow:
-    0 0 0 3px rgb(8 145 178 / 20%),
-    0 4px 8px rgb(8 145 178 / 15%);
+    0 0 0 3px rgb(37 99 235 / 20%),
+    0 4px 8px rgb(37 99 235 / 15%);
 }
 
 /* ========================================
@@ -1495,7 +1495,7 @@ header {
 .settings-sound-header__icon {
   background: linear-gradient(
     135deg,
-    rgb(8 145 178 / 15%) 0%,
+    rgb(37 99 235 / 15%) 0%,
     rgb(14 116 144 / 10%) 100%
   );
   border-radius: 10px;
@@ -1505,7 +1505,7 @@ header {
 .settings-row:hover .settings-sound-header__icon {
   background: linear-gradient(
     135deg,
-    rgb(8 145 178 / 20%) 0%,
+    rgb(37 99 235 / 20%) 0%,
     rgb(14 116 144 / 15%) 100%
   );
 }
@@ -1513,7 +1513,7 @@ header {
 .light-theme .settings-sound-header__icon {
   background: linear-gradient(
     135deg,
-    rgb(8 145 178 / 8%) 0%,
+    rgb(37 99 235 / 8%) 0%,
     rgb(14 116 144 / 5%) 100%
   );
 }
@@ -1525,7 +1525,7 @@ header {
 .settings-row__icon {
   background: linear-gradient(
     135deg,
-    rgb(8 145 178 / 15%) 0%,
+    rgb(37 99 235 / 15%) 0%,
     rgb(14 116 144 / 10%) 100%
   );
 }
@@ -1533,7 +1533,7 @@ header {
 .settings-row:hover .settings-row__icon {
   background: linear-gradient(
     135deg,
-    rgb(8 145 178 / 20%) 0%,
+    rgb(37 99 235 / 20%) 0%,
     rgb(14 116 144 / 15%) 100%
   );
 }
@@ -1541,7 +1541,7 @@ header {
 .light-theme .settings-row__icon {
   background: linear-gradient(
     135deg,
-    rgb(8 145 178 / 8%) 0%,
+    rgb(37 99 235 / 8%) 0%,
     rgb(14 116 144 / 5%) 100%
   );
 }
@@ -1658,7 +1658,7 @@ header {
 /* Remove gradient shift animation from card h1 */
 .card h1 {
   animation: none;
-  background: linear-gradient(135deg, #0891b2, #22d3ee, #4ade80);
+  background: linear-gradient(135deg, #2563eb, #3b82f6, #4ade80);
   background-size: 100% 100%;
 }
 
@@ -1771,7 +1771,7 @@ header {
 
 body::before {
   background:
-    radial-gradient(circle at 20% 80%, rgb(8 145 178 / 6%) 0%, transparent 45%),
+    radial-gradient(circle at 20% 80%, rgb(37 99 235 / 6%) 0%, transparent 45%),
     radial-gradient(
       circle at 80% 20%,
       rgb(14 116 144 / 5%) 0%,

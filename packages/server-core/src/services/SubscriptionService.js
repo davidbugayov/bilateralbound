@@ -14,7 +14,7 @@ const DEFAULT_DURATION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
  * subscription (e.g. anna_2025, client-ivan, session42 — all under one Telegram account).
  *
  * Data model:
- *   _subscriptions: Map<telegramUserId, { token, activatedAt, expiresAt, starsAmount }>
+ *   _subscriptions: Map<telegramUserId, { token, activatedAt, expiresAt, starsAmount, autoRenew }>
  *   _customIdIndex: Map<customId, telegramUserId>
  *   totalStars: number
  */
@@ -29,7 +29,7 @@ class SubscriptionService {
     this.logger = logger || console
     this.durationMs = durationMs || DEFAULT_DURATION_MS
 
-    /** Map<telegramUserId, { token, activatedAt, expiresAt, starsAmount }> */
+    /** Map<telegramUserId, { token, activatedAt, expiresAt, starsAmount, autoRenew }> */
     this._subscriptions = new Map()
 
     /** Map<customId, telegramUserId> — links customer IDs to a Telegram user */
@@ -90,7 +90,8 @@ class SubscriptionService {
       token,
       activatedAt: now,
       expiresAt,
-      starsAmount: starsAmount || 0
+      starsAmount: starsAmount || 0,
+      autoRenew: false
     })
     this._tokenIndex.set(token, telegramUserId)
     this.totalStars += starsAmount || 0
@@ -164,7 +165,7 @@ class SubscriptionService {
   /**
    * Get subscription info for a Telegram user.
    * @param {number} telegramUserId
-   * @returns {{ active: boolean, activatedAt: number|null, expiresAt: number|null, starsAmount: number|null, customIds: string[] }}
+     * @returns {{ active: boolean, activatedAt: number|null, expiresAt: number|null, starsAmount: number|null, autoRenew: boolean, customIds: string[] }}
    */
   getStatus(telegramUserId) {
     this._purgeExpired()
@@ -181,6 +182,7 @@ class SubscriptionService {
         activatedAt: null,
         expiresAt: null,
         starsAmount: null,
+        autoRenew: false,
         customIds: []
       }
     }
@@ -194,6 +196,7 @@ class SubscriptionService {
       activatedAt: sub.activatedAt,
       expiresAt: sub.expiresAt,
       starsAmount: sub.starsAmount,
+      autoRenew: sub.autoRenew || false,
       customIds
     }
   }
@@ -240,6 +243,87 @@ class SubscriptionService {
   canAcceptPayment(customId) {
     // Always true — no limits on how many subscriptions we can sell
     return true
+  }
+
+  /**
+   * Renew a subscription — extend expiresAt by durationMs from now.
+   * If subscription does not exist, returns error.
+   * @param {number} telegramUserId
+   * @returns {{ success: boolean, expiresAt: number, error?: string }}
+   */
+  renew(telegramUserId) {
+    if (!telegramUserId) {
+      return { success: false, error: 'Missing telegramUserId' }
+    }
+
+    const sub = this._subscriptions.get(telegramUserId)
+    if (!sub) {
+      return { success: false, error: 'No subscription found for this user' }
+    }
+
+    const now = Date.now()
+    // If expired, start from now; otherwise extend from current expiresAt
+    const base = sub.expiresAt > now ? sub.expiresAt : now
+    sub.expiresAt = base + this.durationMs
+
+    this._saveToDisk()
+    this.logger.info(
+      { telegramUserId, expiresAt: new Date(sub.expiresAt).toISOString() },
+      'Subscription renewed'
+    )
+
+    return { success: true, expiresAt: sub.expiresAt }
+  }
+
+  /**
+   * Cancel a subscription — deactivate immediately and remove all custom IDs.
+   * @param {number} telegramUserId
+   * @returns {{ success: boolean, error?: string }}
+   */
+  cancel(telegramUserId) {
+    if (!telegramUserId) {
+      return { success: false, error: 'Missing telegramUserId' }
+    }
+
+    const sub = this._subscriptions.get(telegramUserId)
+    if (!sub) {
+      return { success: false, error: 'No subscription found for this user' }
+    }
+
+    this._subscriptions.delete(telegramUserId)
+    this._tokenIndex.delete(sub.token)
+    this._removeCustomIdsForUser(telegramUserId)
+    this._saveToDisk()
+
+    this.logger.info({ telegramUserId }, 'Subscription cancelled')
+    return { success: true }
+  }
+
+  /**
+   * Enable or disable auto-renew for a subscription.
+   * @param {number} telegramUserId
+   * @param {boolean} enabled
+   * @returns {{ success: boolean, autoRenew: boolean, error?: string }}
+   */
+  setAutoRenew(telegramUserId, enabled) {
+    if (!telegramUserId) {
+      return { success: false, error: 'Missing telegramUserId' }
+    }
+
+    const sub = this._subscriptions.get(telegramUserId)
+    if (!sub) {
+      return { success: false, error: 'No subscription found for this user' }
+    }
+
+    sub.autoRenew = !!enabled
+    this._saveToDisk()
+
+    this.logger.info(
+      { telegramUserId, autoRenew: sub.autoRenew },
+      'Auto-renew ' + (sub.autoRenew ? 'enabled' : 'disabled')
+    )
+
+    return { success: true, autoRenew: sub.autoRenew }
   }
 
   // ---------------------------------------------------------------------------
@@ -310,7 +394,8 @@ class SubscriptionService {
             token: entry.token,
             activatedAt: entry.activatedAt,
             expiresAt: entry.expiresAt,
-            starsAmount: entry.starsAmount || 0
+            starsAmount: entry.starsAmount || 0,
+            autoRenew: entry.autoRenew || false
           })
           this._tokenIndex.set(entry.token, userId)
         }
@@ -342,7 +427,8 @@ class SubscriptionService {
         token: sub.token,
         activatedAt: sub.activatedAt,
         expiresAt: sub.expiresAt,
-        starsAmount: sub.starsAmount
+        starsAmount: sub.starsAmount,
+        autoRenew: sub.autoRenew || false
       })),
       customIds: Array.from(this._customIdIndex.entries()).map(([customId, userId]) => ({
         customId,
