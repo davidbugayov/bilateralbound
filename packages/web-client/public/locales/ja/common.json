@@ -384,6 +384,11 @@
     "autorenewOn": "自動更新：オン",
     "autorenewOff": "自動更新：オフ",
     "autorenewEnabled": "✅ 自動更新が有効になりました",
-    "autorenewDisabled": "自動更新が無効になりました"
+    "autorenewDisabled": "自動更新が無効になりました",
+    "activateDesc": "カスタムクライアントIDとTelegramユーザーIDを入力して、有料サブスクリプションをこのブラウザにリンクします。アクティベーション後は、どのデバイスからでも永続リンクを作成できます。",
+    "activateTgLabel": "TelegramユーザーID",
+    "activateTgPlaceholder": "TelegramユーザーID（@userinfobotで確認）",
+    "activateTgRequired": "❌ TelegramユーザーIDを入力してください",
+    "activateTgInvalid": "❌ 無効なTelegramユーザーID — 数字である必要があります"
   }
 }

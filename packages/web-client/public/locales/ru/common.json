@@ -143,8 +143,7 @@
     "hotkeysHint": "— Пауза/Старт",
     "volumeLabel": "Громкость",
     "initError": "Ошибка инициализации: ",
-    "reload": "Перезагрузить страницу",
-    "errorTitle": "Ошибка соединения"
+    "reload": "Перезагрузить страницу"
   },
   "test": {
     "title": "🌐 Language Selector - Тестирование",
@@ -401,6 +400,11 @@
     "autorenewOn": "Автопродление: Вкл",
     "autorenewOff": "Автопродление: Выкл",
     "autorenewEnabled": "✅ Автопродление включено",
-    "autorenewDisabled": "Автопродление отключено"
+    "autorenewDisabled": "Автопродление отключено",
+    "activateDesc": "Введите ваш custom client ID и Telegram User ID, чтобы привязать оплаченную подписку к этому браузеру. После активации вы сможете создавать постоянные ссылки с любого устройства.",
+    "activateTgLabel": "Telegram User ID",
+    "activateTgPlaceholder": "Ваш Telegram User ID (узнайте в @userinfobot)",
+    "activateTgRequired": "❌ Пожалуйста, введите ваш Telegram User ID",
+    "activateTgInvalid": "❌ Неверный Telegram User ID — должно быть числом"
   }
 }

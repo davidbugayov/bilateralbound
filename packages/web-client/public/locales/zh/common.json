@@ -370,6 +370,11 @@
     "autorenewOn": "自动续订：开",
     "autorenewOff": "自动续订：关",
     "autorenewEnabled": "✅ 自动续订已启用",
-    "autorenewDisabled": "自动续订已禁用"
+    "autorenewDisabled": "自动续订已禁用",
+    "activateDesc": "输入您的自定义客户端ID和Telegram用户ID，将您的付费订阅与此浏览器关联。激活后，您可以从任何设备创建永久链接。",
+    "activateTgLabel": "Telegram用户ID",
+    "activateTgPlaceholder": "您的Telegram用户ID（从@userinfobot获取）",
+    "activateTgRequired": "❌ 请输入您的Telegram用户ID",
+    "activateTgInvalid": "❌ 无效的Telegram用户ID — 必须是数字"
   }
 }

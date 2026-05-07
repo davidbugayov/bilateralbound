@@ -384,6 +384,11 @@
     "autorenewOn": "Renouvellement auto. : Activé",
     "autorenewOff": "Renouvellement auto. : Désactivé",
     "autorenewEnabled": "✅ Renouvellement auto. activé",
-    "autorenewDisabled": "Renouvellement auto. désactivé"
+    "autorenewDisabled": "Renouvellement auto. désactivé",
+    "activateDesc": "Entrez votre custom client ID et votre ID Telegram pour lier votre abonnement payant à ce navigateur. Après activation, vous pourrez créer des liens permanents depuis n'importe quel appareil.",
+    "activateTgLabel": "ID Telegram",
+    "activateTgPlaceholder": "Votre ID Telegram (obtenez-le via @userinfobot)",
+    "activateTgRequired": "❌ Veuillez entrer votre ID Telegram",
+    "activateTgInvalid": "❌ ID Telegram invalide — doit être un nombre"
   }
 }

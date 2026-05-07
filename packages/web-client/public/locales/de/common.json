@@ -384,6 +384,11 @@
     "autorenewOn": "Auto-Verlängerung: Ein",
     "autorenewOff": "Auto-Verlängerung: Aus",
     "autorenewEnabled": "✅ Auto-Verlängerung aktiviert",
-    "autorenewDisabled": "Auto-Verlängerung deaktiviert"
+    "autorenewDisabled": "Auto-Verlängerung deaktiviert",
+    "activateDesc": "Geben Sie Ihre Custom Client ID und Telegram User ID ein, um Ihr bezahltes Abonnement mit diesem Browser zu verknüpfen. Nach der Aktivierung können Sie von jedem Gerät aus permanente Links erstellen.",
+    "activateTgLabel": "Telegram User ID",
+    "activateTgPlaceholder": "Ihre Telegram User ID (erhalten Sie von @userinfobot)",
+    "activateTgRequired": "❌ Bitte geben Sie Ihre Telegram User ID ein",
+    "activateTgInvalid": "❌ Ungültige Telegram User ID — muss eine Zahl sein"
   }
 }
