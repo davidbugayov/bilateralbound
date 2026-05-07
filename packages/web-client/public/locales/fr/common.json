@@ -336,16 +336,38 @@
   },
   "features": {
     "bilateral": "Stimulation bilatérale",
-    "bilateralDesc": "La balle active les deux hémisphères cérébraux pour traiter les traumatismes",
+    "bilateralDesc": "La balle en mouvement active les deux hémisphères cérébraux pour le traitement des traumatismes",
     "remote": "Séances à distance",
     "remoteDesc": "Le thérapeute contrôle, le client observe depuis n'importe quel appareil",
     "realtime": "Synchronisation en temps réel",
-    "realtimeDesc": "Connexion WebSocket avec précision à la milliseconde, sans délai",
+    "realtimeDesc": "Connexion WebSocket avec une précision milliseconde, sans décalage",
     "audio": "Audio bilatéral",
     "audioDesc": "Le son alterne entre l'oreille gauche et droite pour un effet bilatéral complet",
     "links": "Liens permanents",
-    "linksDesc": "Enregistrez les liens et réutilisez-les avec le même client à chaque fois",
+    "linksDesc": "Enregistrez les liens de session et réutilisez-les avec le même client",
     "free": "Gratuit",
-    "freeDesc": "Sans inscription ni abonnement — ouvert aux thérapeutes du monde entier"
+    "freeDesc": "Pas d'inscription, pas d'abonnement — ouvert aux thérapeutes du monde entier"
+  },
+  "subscription": {
+    "heading": "Plan Premium",
+    "subtitle": "Liens de session permanents pour les professionnels",
+    "price": "75 ⭐ Stars / mois",
+    "benefit1": "IDs de session personnalisées permanentes (ex: anna_2025)",
+    "benefit2": "Les liens n'expirent jamais — réutilisables avec le même client",
+    "benefit3": "Support prioritaire",
+    "cta": "S'abonner via Telegram",
+    "alreadyActive": "✅ Premium Actif",
+    "expiresAt": "Expire le:",
+    "checkStatus": "Vérifier l'abonnement",
+    "checking": "Vérification...",
+    "required": "Abonnement requis",
+    "requiredMessage": "Les liens permanents nécessitent un abonnement Premium actif. Obtenez-le via Telegram.",
+    "activateTitle": "Vous avez déjà un abonnement?",
+    "activateLabel": "Entrez votre code d'activation",
+    "activatePlaceholder": "Jeton de paiement ou code...",
+    "activateBtn": "Activer",
+    "activating": "Activation...",
+    "activated": "✅ Abonnement activé!",
+    "sessionIdLabel": "Votre ID de session"
   }
 }

@@ -347,5 +347,27 @@
     "linksDesc": "セッションリンクを保存し、同じクライアントと何度でも再利用できます",
     "free": "無料",
     "freeDesc": "登録不要、サブスクリプション不要 — 世界中のセラピストが利用できます"
+  },
+  "subscription": {
+    "heading": "プレミアムプラン",
+    "subtitle": "プロフェッショナルのための永続セッションリンク",
+    "price": "75 ⭐ Stars / 月",
+    "benefit1": "カスタム永続セッションID（例: anna_2025）",
+    "benefit2": "リンクは期限切れになりません — 同じクライアントと再利用可能",
+    "benefit3": "優先サポート",
+    "cta": "Telegramで購読",
+    "alreadyActive": "✅ プレミアムアクティブ",
+    "expiresAt": "有効期限:",
+    "checkStatus": "購読状態を確認",
+    "checking": "確認中...",
+    "required": "購読が必要です",
+    "requiredMessage": "永続リンクにはアクティブなプレミアム購読が必要です。Telegramボットからご利用いただけます。",
+    "activateTitle": "すでに購読していますか？",
+    "activateLabel": "アクティベーションコードを入力",
+    "activatePlaceholder": "支払いトークンまたはコード...",
+    "activateBtn": "アクティベート",
+    "activating": "アクティベート中...",
+    "activated": "✅ 購読がアクティベートされました！",
+    "sessionIdLabel": "セッションID"
   }
 }

@@ -332,5 +332,27 @@
     "linksDesc": "保存会话链接，每次都可以与同一客户重复使用",
     "free": "免费使用",
     "freeDesc": "无需注册，无需订阅 — 向全球治疗师开放"
+  },
+  "subscription": {
+    "heading": "高级计划",
+    "subtitle": "为专业人士提供永久会话链接",
+    "price": "75 ⭐ Stars / 月",
+    "benefit1": "自定义永久会话ID（例如 anna_2025）",
+    "benefit2": "链接永不过期 — 可重复与同一客户使用",
+    "benefit3": "优先支持",
+    "cta": "通过Telegram订阅",
+    "alreadyActive": "✅ 高级账户已激活",
+    "expiresAt": "到期时间:",
+    "checkStatus": "检查订阅状态",
+    "checking": "检查中...",
+    "required": "需要订阅",
+    "requiredMessage": "永久链接需要有效的高级订阅。通过Telegram机器人获取。",
+    "activateTitle": "已有订阅？",
+    "activateLabel": "输入您的激活码",
+    "activatePlaceholder": "支付令牌或代码...",
+    "activateBtn": "激活",
+    "activating": "激活中...",
+    "activated": "✅ 订阅已激活！",
+    "sessionIdLabel": "您的会话ID"
   }
 }

@@ -336,16 +336,38 @@
   },
   "features": {
     "bilateral": "Estimulación bilateral",
-    "bilateralDesc": "La pelota activa ambos hemisferios cerebrales para procesar traumas",
+    "bilateralDesc": "La pelota en movimiento activa ambos hemisferios cerebrales para procesar traumas",
     "remote": "Sesiones remotas",
     "remoteDesc": "El terapeuta controla, el cliente observa desde cualquier dispositivo",
     "realtime": "Sincronización en tiempo real",
     "realtimeDesc": "Conexión WebSocket con precisión de milisegundos, sin retraso",
     "audio": "Audio bilateral",
-    "audioDesc": "El sonido alterna entre oído izquierdo y derecho para efecto bilateral completo",
+    "audioDesc": "El sonido alterna entre oído izquierdo y derecho para un efecto bilateral completo",
     "links": "Enlaces permanentes",
-    "linksDesc": "Guarda los enlaces y reutilízalos con el mismo cliente siempre",
+    "linksDesc": "Guarde enlaces de sesiones y reutilícelos con el mismo cliente",
     "free": "Gratis",
-    "freeDesc": "Sin registro ni suscripción — abierto para terapeutas de todo el mundo"
+    "freeDesc": "Sin registro, sin suscripción — abierto para terapeutas de todo el mundo"
+  },
+  "subscription": {
+    "heading": "Plan Premium",
+    "subtitle": "Enlaces de sesión permanentes para profesionales",
+    "price": "75 ⭐ Stars / mes",
+    "benefit1": "IDs de sesión personalizadas permanentes (ej. anna_2025)",
+    "benefit2": "Los enlaces nunca caducan — reutilizables con el mismo cliente",
+    "benefit3": "Soporte prioritario",
+    "cta": "Suscribirse vía Telegram",
+    "alreadyActive": "✅ Premium Activo",
+    "expiresAt": "Expira:",
+    "checkStatus": "Verificar suscripción",
+    "checking": "Verificando...",
+    "required": "Suscripción requerida",
+    "requiredMessage": "Los enlaces permanentes requieren una suscripción Premium activa. Consíguela vía Telegram.",
+    "activateTitle": "¿Ya tienes una suscripción?",
+    "activateLabel": "Ingresa tu código de activación",
+    "activatePlaceholder": "Token de pago o código...",
+    "activateBtn": "Activar",
+    "activating": "Activando...",
+    "activated": "✅ ¡Suscripción activada!",
+    "sessionIdLabel": "Tu ID de sesión"
   }
 }

@@ -347,5 +347,27 @@
     "linksDesc": "Sitzungslinks speichern und immer wieder mit demselben Klienten verwenden",
     "free": "Kostenlos",
     "freeDesc": "Keine Registrierung, kein Abonnement — offen für Therapeuten weltweit"
+  },
+  "subscription": {
+    "heading": "Premium Plan",
+    "subtitle": "Permanente Sitzungslinks für Profis",
+    "price": "75 ⭐ Stars / Monat",
+    "benefit1": "Benutzerdefinierte permanente Sitzungs-IDs (z.B. anna_2025)",
+    "benefit2": "Links laufen nie ab — immer mit demselben Klienten verwendbar",
+    "benefit3": "Prioritäts-Support",
+    "cta": "Über Telegram abonnieren",
+    "alreadyActive": "✅ Premium Aktiv",
+    "expiresAt": "Läuft ab:",
+    "checkStatus": "Abonnement prüfen",
+    "checking": "Prüfe...",
+    "required": "Abonnement erforderlich",
+    "requiredMessage": "Permanente Links erfordern ein aktives Premium-Abonnement. Erhältlich über Telegram Bot.",
+    "activateTitle": "Bereits ein Abonnement?",
+    "activateLabel": "Aktivierungscode eingeben",
+    "activatePlaceholder": "Zahlungstoken oder Code...",
+    "activateBtn": "Aktivieren",
+    "activating": "Wird aktiviert...",
+    "activated": "✅ Abonnement aktiviert!",
+    "sessionIdLabel": "Ihre Sitzungs-ID"
   }
 }

@@ -340,5 +340,27 @@
     "linksDesc": "Salve os links e reutilize com o mesmo cliente sempre",
     "free": "Gratuito",
     "freeDesc": "Sem registro, sem assinatura — aberto para terapeutas em todo o mundo"
+  },
+  "subscription": {
+    "heading": "Plano Premium",
+    "subtitle": "Links de sessão permanentes para profissionais",
+    "price": "75 ⭐ Stars / mês",
+    "benefit1": "IDs de sessão personalizadas permanentes (ex: anna_2025)",
+    "benefit2": "Links nunca expiram — reutilizáveis com o mesmo cliente",
+    "benefit3": "Suporte prioritário",
+    "cta": "Assinar via Telegram",
+    "alreadyActive": "✅ Premium Ativo",
+    "expiresAt": "Expira em:",
+    "checkStatus": "Verificar assinatura",
+    "checking": "Verificando...",
+    "required": "Assinatura necessária",
+    "requiredMessage": "Links permanentes requerem uma assinatura Premium ativa. Obtenha via Telegram.",
+    "activateTitle": "Já tem uma assinatura?",
+    "activateLabel": "Insira seu código de ativação",
+    "activatePlaceholder": "Token de pagamento ou código...",
+    "activateBtn": "Ativar",
+    "activating": "Ativando...",
+    "activated": "✅ Assinatura ativada!",
+    "sessionIdLabel": "Seu ID de sessão"
   }
 }
