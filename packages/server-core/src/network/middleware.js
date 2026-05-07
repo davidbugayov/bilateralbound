@@ -40,12 +40,13 @@ function csrfProtection(req, res, next) {
     return next()
   }
 
-  // Skip CSRF for health check, analytics, and session reserve (used by E2E tests)
+  // Skip CSRF for health check, analytics, session reserve, and Telegram webhook
   const url = req.originalUrl || req.url || req.path
   if (
     req.path === '/health' ||
     req.path === '/api/analytics' ||
-    url.includes('/reserve')
+    url.includes('/reserve') ||
+    url.includes('/api/subscription/webhook')
   ) {
     return next()
   }
