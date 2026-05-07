@@ -340,6 +340,189 @@
   }
 
   /**
+   * Subscription-related state
+   */
+  let __currentCheckedCustomId = null
+
+  /**
+   * Check subscription status for a custom ID
+   */
+  async function checkSubscriptionStatus(customId) {
+    const statusEl = document.getElementById('subscriptionStatus')
+    const activateEl = document.getElementById('activateSubscription')
+    const msgEl = document.getElementById('activationMessage')
+
+    if (!customId || !validateClientId(customId)) {
+      if (statusEl) statusEl.hidden = true
+      if (activateEl) activateEl.hidden = true
+      return
+    }
+
+    __currentCheckedCustomId = customId
+
+    try {
+      const response = await fetch(
+        '/api/subscription/' + encodeURIComponent(customId) + '/check',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+      )
+
+      if (!response.ok) {
+        if (statusEl) statusEl.hidden = true
+        if (activateEl) activateEl.hidden = true
+        return
+      }
+
+      const data = await response.json()
+
+      if (statusEl) {
+        if (data.active) {
+          statusEl.hidden = false
+          const expiryEl = document.getElementById('subscriptionExpiry')
+          if (expiryEl && data.subscription?.expiresAt) {
+            expiryEl.textContent = new Date(
+              data.subscription.expiresAt
+            ).toLocaleDateString()
+          }
+        } else {
+          statusEl.hidden = true
+        }
+      }
+
+      if (activateEl) {
+        activateEl.hidden = data.active
+      }
+
+      if (msgEl) msgEl.textContent = ''
+    } catch (err) {
+      console.error('⚠️ Subscription check failed:', err)
+      if (statusEl) statusEl.hidden = true
+      if (activateEl) activateEl.hidden = true
+    }
+  }
+
+  /**
+   * Activate subscription with payment code
+   */
+  async function activateSubscription() {
+    const input = document.getElementById('activationCode')
+    const btn = document.getElementById('activateBtn')
+    const msgEl = document.getElementById('activationMessage')
+
+    if (!input || !btn || !msgEl) return
+
+    const code = input.value.trim()
+    const customId = __currentCheckedCustomId
+
+    if (!code) {
+      msgEl.textContent =
+        globalThis.i18n?.t('subscription.activatePlaceholder') ||
+        'Please enter your activation code'
+      msgEl.style.color = '#f87171'
+      return
+    }
+
+    if (!customId || !validateClientId(customId)) {
+      msgEl.textContent =
+        globalThis.i18n?.t('subscription.sessionIdLabel') ||
+        'Please enter a valid Client ID first'
+      msgEl.style.color = '#f87171'
+      return
+    }
+
+    const originalBtnText = btn.innerHTML
+    try {
+      btn.innerHTML =
+        globalThis.i18n?.t('subscription.activating') || '⏳ Activating...'
+      btn.disabled = true
+      msgEl.textContent = ''
+      msgEl.style.color = ''
+
+      const response = await globalThis.csrfFetch(
+        '/api/subscription/' + encodeURIComponent(customId) + '/activate',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentToken: code })
+        }
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(function () {
+          return { error: 'Activation failed' }
+        })
+        throw new Error(errorData.error || 'HTTP ' + response.status)
+      }
+
+      const data = await response.json()
+      if (data.success) {
+        msgEl.textContent =
+          globalThis.i18n?.t('subscription.activated') ||
+          '✅ Subscription activated!'
+        msgEl.style.color = '#4ade80'
+
+        // Re-check status to show active state
+        checkSubscriptionStatus(customId)
+      }
+    } catch (err) {
+      console.error('❌ Activation error:', err)
+      msgEl.textContent = '❌ ' + err.message
+      msgEl.style.color = '#f87171'
+    } finally {
+      btn.innerHTML = originalBtnText
+      btn.disabled = false
+    }
+  }
+
+  /**
+   * Handle subscribe button click — open Telegram bot
+   */
+  function handleSubscribeClick() {
+    const customId = document.getElementById('customClientId')?.value.trim()
+    let botLink =
+      globalThis.__config?.telegramBotLink ||
+      'https://t.me/emdrbilateral_bot'
+
+    // Pass custom ID to bot if entered
+    if (customId && validateClientId(customId)) {
+      botLink += '?start=' + encodeURIComponent(customId)
+    }
+
+    window.open(botLink, '_blank')
+  }
+
+  /**
+   * Initialize subscription UI
+   */
+  function initSubscriptionUI() {
+    // Subscribe button
+    const subscribeBtn = document.getElementById('subscribeBtn')
+    if (subscribeBtn) {
+      subscribeBtn.addEventListener('click', handleSubscribeClick)
+    }
+
+    // Activate button
+    const activateBtn = document.getElementById('activateBtn')
+    if (activateBtn) {
+      activateBtn.addEventListener('click', activateSubscription)
+    }
+
+    // Check subscription on client ID input
+    const clientIdInput = document.getElementById('customClientId')
+    if (clientIdInput) {
+      let checkTimer = null
+      clientIdInput.addEventListener('input', function (e) {
+        clearTimeout(checkTimer)
+        checkTimer = setTimeout(function () {
+          checkSubscriptionStatus(e.target.value.trim())
+        }, 500)
+      })
+    }
+
+    // Also check subscription when links are generated successfully
+    // (handled in generatePermanentLinks success path)
+  }
+
+  /**
    * Initialize main page functionality
    */
   function init() {
@@ -395,6 +578,9 @@
         }
       })
     }
+
+    // Initialize subscription UI
+    initSubscriptionUI()
 
     // Theme toggle initialization with retry
     if (!initThemeToggle()) {

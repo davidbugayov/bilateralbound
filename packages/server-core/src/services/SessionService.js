@@ -28,13 +28,14 @@ class SessionService {
    * @param {Object} options.logger
    * @param {Object} options.analytics
    * @param {Map} options.apiCache
+   * @param {Object} [options.subscriptionService] - Optional subscription gating
    */
   constructor(
     sessionRepository,
     physicsService,
     broadcastService,
     webSocketManager,
-    { logger, analytics, apiCache }
+    { logger, analytics, apiCache, subscriptionService }
   ) {
     this.repo = sessionRepository
     this.physics = physicsService
@@ -43,7 +44,24 @@ class SessionService {
     this.logger = logger
     this.analytics = analytics
     this.apiCache = apiCache
+    this.subscriptionService = subscriptionService
   }
+  /**
+   * Check if session is allowed to use custom (permanent) session IDs.
+   * Requires an active subscription. Free tier gets auto-generated IDs only.
+   * @param {string} sessionId
+   * @returns {boolean}
+   */
+  isReserveAllowed(sessionId) {
+    if (!this.subscriptionService) {
+      // No subscription system configured — allow for backward compat
+      return true
+    }
+    return this.subscriptionService.isActive(sessionId)
+  }
+
+  /**
+   * Gets session by ID
 
   /**
    * Creates a new session with physics engine

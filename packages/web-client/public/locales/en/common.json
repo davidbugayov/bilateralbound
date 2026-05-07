@@ -335,7 +335,30 @@
     "audioDesc": "Sound alternates between left and right ear for full bilateral effect",
     "links": "Permanent links",
     "linksDesc": "Save session links and reuse with the same client every time",
-    "free": "Free to use",
-    "freeDesc": "No registration, no subscription — open for therapists worldwide"
+    "free": "Free Plan",
+    "freeDesc": "Generate random sessions instantly — no registration needed",
+    "premiumDesc": "Permanent custom links (your own ID), extended session management"
+  },
+  "subscription": {
+    "heading": "Premium Plan",
+    "subtitle": "Permanent session links for professionals",
+    "price": "100 ⭐ Stars / month",
+    "benefit1": "Custom permanent session IDs (e.g. anna_2025)",
+    "benefit2": "Links never expire — reuse with the same client",
+    "benefit3": "Priority support",
+    "cta": "Subscribe via Telegram",
+    "alreadyActive": "✅ Premium Active",
+    "expiresAt": "Expires:",
+    "checkStatus": "Check subscription",
+    "checking": "Checking...",
+    "required": "Subscription required",
+    "requiredMessage": "Permanent links require an active Premium subscription. Get it via Telegram bot.",
+    "activateTitle": "Already have a subscription?",
+    "activateLabel": "Enter your activation code",
+    "activatePlaceholder": "Payment token or code...",
+    "activateBtn": "Activate",
+    "activating": "Activating...",
+    "activated": "✅ Subscription activated!",
+    "sessionIdLabel": "Your session ID"
   }
-}
+

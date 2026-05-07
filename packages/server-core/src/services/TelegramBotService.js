@@ -1,0 +1,190 @@
+/* jshint node: true, esversion: 11, strict: true */
+'use strict'
+
+/**
+ * Minimal Telegram Bot API client for Star payments + subscription flow.
+ * Node.js native — no external dependencies.
+ *
+ * API docs: https://core.telegram.org/bots/api#payments
+ * Stars: https://core.telegram.org/bots/payments#stars
+ */
+
+const TELEGRAM_API_BASE = 'https://api.telegram.org/bot'
+
+class TelegramBotService {
+  /**
+   * @param {Object} opts
+   * @param {string} opts.token — Bot token from @BotFather
+   * @param {string} opts.providerToken — Telegram Star provider token (usually empty for Stars)
+   * @param {string} opts.webhookUrl — Public HTTPS URL for webhook
+   * @param {string} opts.botUsername — Bot username (for deep links)
+   * @param {Object} opts.logger
+   */
+  constructor({ token, providerToken, webhookUrl, botUsername, logger } = {}) {
+    this.token = token || ''
+    this.providerToken = providerToken || ''
+    this.webhookUrl = webhookUrl || ''
+    this.botUsername = botUsername || ''
+    this.logger = logger || console
+    this._apiBase = TELEGRAM_API_BASE + this.token
+  }
+
+  get isConfigured() {
+    return this.token.length > 0
+  }
+
+  // ---------------------------------------------------------------------------
+  // Webhook setup
+  // ---------------------------------------------------------------------------
+
+  /** Register (or update) the webhook URL */
+  async setWebhook() {
+    if (!this.isConfigured) return false
+    if (!this.webhookUrl) {
+      this.logger.warn('Webhook URL not configured — cannot set webhook')
+      return false
+    }
+    try {
+      const res = await this._call('setWebhook', {
+        url: this.webhookUrl + '/api/subscription/webhook',
+        max_connections: 10,
+        allowed_updates: [
+          'message',
+          'pre_checkout_query',
+          'successful_payment'
+        ]
+      })
+      if (res.ok) {
+        this.logger.info({ webhookUrl: this.webhookUrl }, 'Telegram webhook set')
+      } else {
+        this.logger.error({ res }, 'Failed to set Telegram webhook')
+      }
+      return res.ok
+    } catch (err) {
+      this.logger.error({ err }, 'Telegram setWebhook error')
+      return false
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Messages
+  // ---------------------------------------------------------------------------
+
+  /** Send a text message to a chat */
+  async sendMessage(chatId, text, opts = {}) {
+    if (!this.isConfigured) return null
+    try {
+      return await this._call('sendMessage', {
+        chat_id: chatId,
+        text,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        ...opts
+      })
+    } catch (err) {
+      this.logger.error({ err, chatId }, 'sendMessage failed')
+      return null
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Payments (Telegram Stars)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Answer a pre_checkout_query (required for Star payments).
+   * @param {string} queryId — pre_checkout_query.id
+   * @param {boolean} ok — true to accept, false to reject
+   * @param {string} [errorMessage] — required if ok=false
+   */
+  async answerPreCheckoutQuery(queryId, ok, errorMessage) {
+    if (!this.isConfigured) return false
+    try {
+      const res = await this._call('answerPreCheckoutQuery', {
+        pre_checkout_query_id: queryId,
+        ok,
+        error_message: errorMessage || undefined
+      })
+      return res.ok
+    } catch (err) {
+      this.logger.error({ err, queryId }, 'answerPreCheckoutQuery failed')
+      return false
+    }
+  }
+
+  /**
+   * Create a payment invoice and send it to a chat.
+   * Uses Telegram Stars as currency (XTR).
+   *
+   * @param {number} chatId
+   * @param {string} sessionId — payload for pre_checkout_query
+   * @param {number} starsAmount
+   * @param {Object} opts
+   */
+  async sendInvoice(chatId, sessionId, starsAmount, opts = {}) {
+    if (!this.isConfigured) return null
+    try {
+      return await this._call('sendInvoice', {
+        chat_id: chatId,
+        title: opts.title || 'EMDR Premium Subscription',
+        description:
+          opts.description ||
+          'Permanent session links for your clients. Valid for 30 days.',
+        payload: sessionId,
+        provider_token: this.providerToken,
+        currency: 'XTR',
+        prices: [
+          { label: opts.label || 'Premium Plan (30 days)', amount: starsAmount }
+        ],
+        max_tip_amount: 0,
+        suggested_tip_amounts: [],
+        need_email: false,
+        need_phone_number: false,
+        need_shipping_address: false,
+        is_flexible: false,
+        ...opts
+      })
+    } catch (err) {
+      this.logger.error({ err, chatId }, 'sendInvoice failed')
+      return null
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Deep link helpers
+  // ---------------------------------------------------------------------------
+
+  /** Generate a deep link: https://t.me/bot?start=payload */
+  getDeepLink(payload) {
+    const bot = this.botUsername || 'emdrbilateral_bot'
+    return `https://t.me/${bot}?start=${encodeURIComponent(payload || '')}`
+  }
+
+  /** Generate a deep link for subscription: https://t.me/bot?start=subscribe_sessionId */
+  getSubscribeLink(sessionId) {
+    return this.getDeepLink('subscribe_' + sessionId)
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private — raw API call
+  // ---------------------------------------------------------------------------
+
+  async _call(method, params) {
+    if (!this.isConfigured) {
+      throw new Error('Telegram bot not configured — token missing')
+    }
+    const url = `${this._apiBase}/${method}`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    })
+    if (!response.ok) {
+      const text = await response.text()
+      throw new Error(`Telegram API ${method}: ${response.status} ${text}`)
+    }
+    return response.json()
+  }
+}
+
+module.exports = TelegramBotService

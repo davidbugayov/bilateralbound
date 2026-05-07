@@ -7,7 +7,8 @@ function registerSessionRoutes(
   sessionService,
   apiCache,
   analytics,
-  { requireSession, logger }
+  { requireSession, logger },
+  subscriptionService
 ) {
   // Health check (from expressApp L466-474)
   app.get('/health', (req, res) => {
@@ -51,9 +52,18 @@ function registerSessionRoutes(
   })
 
   // Reserve/create permanent link — idempotent (from expressApp L701-723)
+  // Subscription gating: only premium users can reserve custom/permanent links
   app.post('/api/session/:sessionId/reserve', (req, res) => {
     const { sessionId } = req.params
     try {
+      // Gate: subscription required for custom session IDs
+      if (subscriptionService && !subscriptionService.isActive(sessionId)) {
+        return res.status(402).json({
+          error: 'Subscription required',
+          message: 'Permanent session links require an active subscription. Get it at https://t.me/BilateralBoundBot'
+        })
+      }
+
       const session = sessionService.findOrCreateSession(sessionId)
       if (!session) {
         return res

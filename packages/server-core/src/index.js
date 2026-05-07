@@ -9,6 +9,8 @@ const BroadcastService = require('./services/BroadcastService')
 const PhysicsService = require('./services/PhysicsService')
 const SessionService = require('./services/SessionService')
 const LocalizationService = require('./services/LocalizationService')
+const SubscriptionService = require('./services/SubscriptionService')
+const TelegramBotService = require('./services/TelegramBotService')
 const {
   setupMiddleware,
   requireSession,
@@ -22,6 +24,7 @@ const { registerSeoRoutes } = require('./controllers/seoController')
 const {
   registerStaticRoutes
 } = require('./controllers/static_routes_controller')
+const { registerSubscriptionRoutes } = require('./controllers/subscriptionController')
 
 // 1. App + Plugins
 const app = express()
@@ -53,12 +56,30 @@ const physicsService = new PhysicsService(
     analytics
   }
 )
+const subscriptionService = new SubscriptionService({
+  logger,
+  durationMs: config.subscription.SUBSCRIPTION_DURATION_MS
+})
+
+// Telegram bot — only initialised if a token is provided via env
+const telegramBot = config.subscription.STARS_BOT_TOKEN
+  ? new TelegramBotService({
+      token: config.subscription.STARS_BOT_TOKEN,
+      providerToken: config.subscription.STARS_PROVIDER_TOKEN || '',
+      webhookUrl: config.subscription.WEBHOOK_URL || '',
+      botUsername: config.subscription.BOT_USERNAME,
+      logger
+    })
+  : null
+if (telegramBot) {
+  telegramBot.setWebhook()
+}
 const sessionService = new SessionService(
   sessionRepository,
   physicsService,
   broadcastService,
   webSocketManager,
-  { logger, analytics, apiCache }
+  { logger, analytics, apiCache, subscriptionService }
 )
 const localizationService = new LocalizationService(config, logger)
 
@@ -80,7 +101,9 @@ app.use((req, res, next) => {
   next()
 })
 
-registerSessionRoutes(app, sessionService, apiCache, analytics, mw)
+registerSessionRoutes(app, sessionService, apiCache, analytics, mw, subscriptionService)
+registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot })
+
 registerViewerRoutes(
   app,
   sessionService,
