@@ -47,17 +47,17 @@ class SessionService {
     this.subscriptionService = subscriptionService
   }
   /**
-   * Check if session is allowed to use custom (permanent) session IDs.
-   * Requires an active subscription. Free tier gets auto-generated IDs only.
-   * @param {string} sessionId
+   * Check if a custom session ID is allowed to use permanent links.
+   * Uses isCustomIdAllowed() which resolves the customId → telegramUserId chain.
+   * @param {string} customId
    * @returns {boolean}
    */
-  isReserveAllowed(sessionId) {
+  isReserveAllowed(customId) {
     if (!this.subscriptionService) {
       // No subscription system configured — allow for backward compat
       return true
     }
-    return this.subscriptionService.isActive(sessionId)
+    return this.subscriptionService.isCustomIdAllowed(customId)
   }
 
   /**
