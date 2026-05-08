@@ -69,6 +69,18 @@ function registerStaticRoutes(
   // Test file serving (from expressApp L654)
   app.use('/test', express.static(path.join(__dirname, '..', '..')))
 
+  // Privacy page (client-side i18n, no server-side localization needed)
+  app.get('/privacy', (req, res) => {
+    const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
+    res.sendFile(path.join(publicPath, 'privacy.html'))
+  })
+
+  // Public offer page (client-side i18n, no server-side localization needed)
+  app.get('/offer', (req, res) => {
+    const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
+    res.sendFile(path.join(publicPath, 'offer.html'))
+  })
+
   // Viewer HTML (from expressApp L941-949)
   app.get('/s/:sessionId', (req, res) => {
     const session = sessionService.getSession(req.params.sessionId)
