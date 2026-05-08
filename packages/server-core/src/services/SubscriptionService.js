@@ -268,7 +268,7 @@ class SubscriptionService {
    * @returns {string} Language code (e.g. 'ru', 'en')
    */
   getUserLanguage(telegramUserId) {
-    return this._userLanguages.get(telegramUserId) || 'en'
+    return this._userLanguages.get(telegramUserId) || null
   }
 
   /**

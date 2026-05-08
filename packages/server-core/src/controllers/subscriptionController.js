@@ -231,6 +231,36 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           rest = rest.replace(/__lang_[a-z]{2}(-[A-Z]{2})?$/, '')
         }
 
+        // If after stripping lang suffix rest is empty, treat as plain /start (welcome message)
+        if (!rest) {
+          const siteUrl = lang === 'ru'
+            ? 'https://emdrbilateral.ru'
+            : 'https://emdrbilateral.online'
+
+          const msg = lang === 'ru'
+            ? '<b>👋 Добро пожаловать в BilateralBound Premium!</b>\n\n' +
+              'Этот бот управляет подпиской на EMDR-инструмент.\n\n' +
+              '👉 <b>Как подписаться:</b>\n' +
+              '1. Перейдите на <a href="' + siteUrl + '">' + siteUrl + '</a>\n' +
+              '2. Введите название клиента (например, anna_2025)\n' +
+              '3. Нажмите «Subscribe via Telegram»\n' +
+              '4. Оплатите 75 ⭐ здесь в боте\n\n' +
+              '<b>Один платёж — все ваши клиенты.</b>\n' +
+              'После оплаты вы сможете создавать сколько угодно постоянных ссылок.'
+            : '<b>👋 Welcome to BilateralBound Premium!</b>\n\n' +
+              'This bot handles your EMDR tool subscription.\n\n' +
+              '👉 <b>How to subscribe:</b>\n' +
+              '1. Go to <a href="' + siteUrl + '">' + siteUrl + '</a>\n' +
+              '2. Enter a Client Name (e.g. anna_2025)\n' +
+              '3. Click "Subscribe via Telegram"\n' +
+              '4. Pay 75 Stars here in the bot\n\n' +
+              '<b>One payment — all your clients.</b>\n' +
+              'After payment you can create unlimited permanent links.'
+
+          telegramBot?.sendMessage(chatId, msg)
+          return
+        }
+
         // Check if already subscribed
         const isSubscribed = subscriptionService.isActive(telegramUserId)
 
