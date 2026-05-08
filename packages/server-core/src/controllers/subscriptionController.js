@@ -7,7 +7,11 @@
  *
  * Key change: subscriptions are tied to telegramUserId, NOT to customId.
  * After payment, the customId is linked to the user's Telegram account.
+ *
+ * Bot messages support 8 languages via bot-translations.js.
  */
+
+const { t, siteUrl, dateLocale, autoRenewText } = require('../services/bot-translations')
 
 function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot }) {
   if (!subscriptionService) {
@@ -156,6 +160,33 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   })
 
   // ------------------------------------------------------------------
+  // Helper: detect user language from update and persist it
+  // Priority: 1) stored preference, 2) __lang_XX from payload, 3) Telegram language_code, 4) 'en'
+  // ------------------------------------------------------------------
+  function detectLanguage(update) {
+    let lang = update.message?.from?.language_code || 'en'
+    let langFromPayload = null
+    if (update.message?.text && update.message.text.startsWith('/start ')) {
+      const payloadMatch = update.message.text.match(/__lang_([a-z]{2}(-[A-Z]{2})?)$/)
+      if (payloadMatch) {
+        langFromPayload = payloadMatch[1]
+        lang = langFromPayload
+        const senderId = update.message?.from?.id
+        if (senderId) {
+          subscriptionService.setUserLanguage(senderId, lang)
+        }
+      }
+    }
+    // Resolve stored language preference (overrides Telegram locale)
+    const telegramUserId = update.message?.from?.id
+    if (telegramUserId) {
+      const storedLang = subscriptionService.getUserLanguage(telegramUserId)
+      if (storedLang) lang = storedLang
+    }
+    return lang
+  }
+
+  // ------------------------------------------------------------------
   // POST /api/subscription/webhook
   // Telegram Bot webhook endpoint (Telegram Stars payments)
   // Body: Telegram Update object — https://core.telegram.org/bots/api#update
@@ -166,38 +197,19 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
     // Respond quickly — Telegram expects 200 within a few seconds
     res.status(200).json({ ok: true })
 
-    // Detect user language: prefer site language from start payload over Telegram locale
-    let lang = update.message?.from?.language_code || 'en'
-    let langFromPayload = null
-    if (update.message?.text && update.message.text.startsWith('/start ')) {
-      const payloadMatch = update.message.text.match(/__lang_([a-z]{2}(-[A-Z]{2})?)$/)
-      if (payloadMatch) {
-        langFromPayload = payloadMatch[1]
-        lang = langFromPayload
-        // Persist language preference for this user
-        const senderId = update.message?.from?.id
-        if (senderId) {
-          subscriptionService.setUserLanguage(senderId, lang)
-        }
-      }
-    }
+    // Detect user language
+    const lang = detectLanguage(update)
 
     // ---- /start command — send welcome + invoice ----
     if (update.message?.text) {
       const { chat, from } = update.message
       const chatId = chat.id
-      const telegramUserId = from.id
 
       const msgText = update.message.text
 
-      // Resolve stored language preference (from previous /start __lang_ru payload)
-      const storedLang = subscriptionService.getUserLanguage(telegramUserId)
-      if (storedLang) lang = storedLang
-
       if (msgText === '/start') {
-        const siteUrl = lang === 'ru'
-          ? 'https://emdrbilateral.ru'
-          : 'https://emdrbilateral.online'
+        const sUrl = siteUrl(lang)
+        const telegramUserId = from.id
 
         // Check if already subscribed
         const isSubscribed = subscriptionService.isActive(telegramUserId)
@@ -205,60 +217,27 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         if (isSubscribed) {
           // Already subscribed — show status
           const status = subscriptionService.getStatus(telegramUserId)
-          const expDate = new Date(status.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
-          const statusMsg = lang === 'ru'
-            ? '✅ <b>Подписка уже активна!</b>\n\n' +
-              'Истекает: ' + expDate + '\n' +
-              'Клиентов: ' + (status.customIds?.length || 0) + '\n\n' +
-              'Возвращайтесь на сайт — ссылки готовы!'
-            : '✅ <b>Subscription already active!</b>\n\n' +
-              'Expires: ' + expDate + '\n' +
-              'Clients: ' + (status.customIds?.length || 0) + '\n\n' +
-              'Go back to the site — links are ready!'
+          const expDate = new Date(status.expiresAt).toLocaleDateString(dateLocale(lang))
+          const statusMsg = t('already_subscribed', lang, {
+            expDate,
+            clients: String(status.customIds?.length || 0)
+          })
           telegramBot?.sendMessage(chatId, statusMsg)
           return
         }
 
         // Not subscribed — send welcome + invoice
-        const msg = lang === 'ru'
-          ? '<b>👋 Добро пожаловать в BilateralBound Premium!</b>\n\n' +
-            'Этот бот управляет подпиской на EMDR-инструмент.\n\n' +
-            '👉 <b>Как подписаться:</b>\n' +
-            '1. Перейдите на <a href="' + siteUrl + '">' + siteUrl + '</a>\n' +
-            '2. Введите название клиента (например, anna_2025)\n' +
-            '3. Нажмите «Subscribe via Telegram»\n\n' +
-            '<b>Или оплатите прямо сейчас 👇</b>\n' +
-            'После оплаты вы сможете создавать постоянные ссылки для любых клиентов.'
-          : '<b>👋 Welcome to BilateralBound Premium!</b>\n\n' +
-            'This bot handles your EMDR tool subscription.\n\n' +
-            '👉 <b>How to subscribe:</b>\n' +
-            '1. Go to <a href="' + siteUrl + '">' + siteUrl + '</a>\n' +
-            '2. Enter a Client Name (e.g. anna_2025)\n' +
-            '3. Click "Subscribe via Telegram"\n\n' +
-            '<b>Or pay right now 👇</b>\n' +
-            'After payment you can create permanent links for any clients.'
-
+        const msg = t('welcome_new', lang, { siteUrl: sUrl })
         telegramBot?.sendMessage(chatId, msg)
 
         // Send invoice directly for plain /start (payload = telegramUserId)
-        const title = lang === 'ru' ? 'EMDR Premium Подписка' : 'EMDR Premium Subscription'
-        const description = lang === 'ru'
-          ? 'Доступ ко всем функциям на 30 дней. Постоянные ссылки для всех ваших клиентов.'
-          : 'Full access for 30 days. Permanent links for all your clients.'
-        const label = lang === 'ru' ? 'Premium (30 дней)' : 'Premium (30 days)'
-
         telegramBot?.sendInvoice(chatId, String(telegramUserId), 75, {
-          title,
-          description,
-          label
+          title: t('invoice_title', lang),
+          description: t('invoice_description_plain', lang),
+          label: t('invoice_label_plain', lang)
         }).then(function (resp) {
           if (!resp?.ok) {
-            telegramBot?.sendMessage(
-              chatId,
-              lang === 'ru'
-                ? '❌ Не удалось создать счёт. Попробуйте позже.'
-                : '❌ Failed to create invoice. Try again later.'
-            )
+            telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
           }
         })
         return
@@ -267,38 +246,18 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
       // Handle /start customId deep links from the site
       if (msgText.startsWith('/start ')) {
+        const telegramUserId = from.id
         let rest = msgText.slice(7).trim()
         // Strip language suffix from customId if present (e.g. "anna_2025__lang_ru" → "anna_2025")
-        if (langFromPayload) {
+        const payloadMatch = msgText.match(/__lang_([a-z]{2}(-[A-Z]{2})?)$/)
+        if (payloadMatch) {
           rest = rest.replace(/__lang_[a-z]{2}(-[A-Z]{2})?$/, '')
         }
 
         // If after stripping lang suffix rest is empty, treat as plain /start (welcome message)
         if (!rest) {
-          const siteUrl = lang === 'ru'
-            ? 'https://emdrbilateral.ru'
-            : 'https://emdrbilateral.online'
-
-          const msg = lang === 'ru'
-            ? '<b>👋 Добро пожаловать в BilateralBound Premium!</b>\n\n' +
-              'Этот бот управляет подпиской на EMDR-инструмент.\n\n' +
-              '👉 <b>Как подписаться:</b>\n' +
-              '1. Перейдите на <a href="' + siteUrl + '">' + siteUrl + '</a>\n' +
-              '2. Введите название клиента (например, anna_2025)\n' +
-              '3. Нажмите «Subscribe via Telegram»\n' +
-              '4. Оплатите 75 ⭐ здесь в боте\n\n' +
-              '<b>Один платёж — все ваши клиенты.</b>\n' +
-              'После оплаты вы сможете создавать сколько угодно постоянных ссылок.'
-            : '<b>👋 Welcome to BilateralBound Premium!</b>\n\n' +
-              'This bot handles your EMDR tool subscription.\n\n' +
-              '👉 <b>How to subscribe:</b>\n' +
-              '1. Go to <a href="' + siteUrl + '">' + siteUrl + '</a>\n' +
-              '2. Enter a Client Name (e.g. anna_2025)\n' +
-              '3. Click "Subscribe via Telegram"\n' +
-              '4. Pay 75 Stars here in the bot\n\n' +
-              '<b>One payment — all your clients.</b>\n' +
-              'After payment you can create unlimited permanent links.'
-
+          const sUrl = siteUrl(lang)
+          const msg = t('welcome_short', lang, { siteUrl: sUrl })
           telegramBot?.sendMessage(chatId, msg)
           return
         }
@@ -310,35 +269,20 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           // Already subscribed — link this customId automatically
           const linkResult = subscriptionService.linkCustomId(rest, telegramUserId)
           const msg = linkResult.success
-            ? (lang === 'ru'
-                ? '✅ Клиент <code>' + rest + '</code> привязан к вашему аккаунту!\n\n' +
-                  'Возвращайтесь на сайт — ссылки готовы.'
-                : '✅ Client <code>' + rest + '</code> linked to your account!\n\n' +
-                  'Go back to the site — links are ready.')
-            : '❌ ' + linkResult.error
+            ? t('client_linked', lang, { customId: rest })
+            : t('client_already_linked', lang)
           telegramBot?.sendMessage(chatId, msg)
           return
         }
 
         // Not subscribed — send invoice
-        const title = lang === 'ru' ? 'EMDR Premium Подписка' : 'EMDR Premium Subscription'
-        const description = lang === 'ru'
-          ? 'Постоянные ссылки для всех ваших клиентов. Действует 30 дней.'
-          : 'Permanent links for all your clients. Valid for 30 days.'
-        const label = lang === 'ru' ? 'Premium (30 дней)' : 'Premium (30 days)'
-
         telegramBot?.sendInvoice(chatId, rest, 75, {
-          title,
-          description,
-          label
+          title: t('invoice_title', lang),
+          description: t('invoice_description_custom', lang),
+          label: t('invoice_label_custom', lang)
         }).then(function (resp) {
           if (!resp?.ok) {
-            telegramBot?.sendMessage(
-              chatId,
-              lang === 'ru'
-                ? '❌ Не удалось создать счёт. Попробуйте позже.'
-                : '❌ Failed to create invoice. Try again later.'
-            )
+            telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
           }
         })
         return
@@ -346,25 +290,18 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
       // ---- /status — check subscription status ----
       if (msgText === '/status') {
+        const telegramUserId = from.id
         const status = subscriptionService.getStatus(telegramUserId)
         let statusMsg
         if (status.active) {
-          const expDate = new Date(status.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
-          statusMsg = (lang === 'ru'
-            ? '✅ <b>Подписка активна</b>\n\n' +
-              'Истекает: ' + expDate + '\n' +
-              'Клиентов: ' + (status.customIds?.length || 0) + '\n' +
-              'Автосписание: ' + (status.autoRenew ? '✅ Вкл' : '❌ Выкл')
-            : '✅ <b>Subscription Active</b>\n\n' +
-              'Expires: ' + expDate + '\n' +
-              'Clients: ' + (status.customIds?.length || 0) + '\n' +
-              'Auto-renew: ' + (status.autoRenew ? '✅ On' : '❌ Off'))
+          const expDate = new Date(status.expiresAt).toLocaleDateString(dateLocale(lang))
+          statusMsg = t('status_active', lang, {
+            expDate,
+            clients: String(status.customIds?.length || 0),
+            autoRenew: autoRenewText(lang, status.autoRenew)
+          })
         } else {
-          statusMsg = lang === 'ru'
-            ? '❌ <b>Нет активной подписки</b>\n\n' +
-              'Используйте /start для оформления.'
-            : '❌ <b>No Active Subscription</b>\n\n' +
-              'Use /start to subscribe.'
+          statusMsg = t('status_inactive', lang)
         }
         telegramBot?.sendMessage(chatId, statusMsg)
         return
@@ -372,17 +309,19 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
       // ---- /renew — extend subscription ----
       if (msgText === '/renew') {
+        const telegramUserId = from.id
         const renewResult = subscriptionService.renew(telegramUserId)
         let renewMsg
         if (renewResult.success) {
-          const newExp = new Date(renewResult.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
-          renewMsg = lang === 'ru'
-            ? '✅ <b>Подписка продлена!</b>\n\nНовая дата истечения: ' + newExp
-            : '✅ <b>Subscription renewed!</b>\n\nNew expiry date: ' + newExp
+          const newExp = new Date(renewResult.expiresAt).toLocaleDateString(dateLocale(lang))
+          renewMsg = t('renew_success', lang, { expDate: newExp })
         } else {
-          renewMsg = lang === 'ru'
-            ? '❌ ' + (renewResult.error || 'Не удалось продлить подписку')
-            : '❌ ' + (renewResult.error || 'Failed to renew subscription')
+          // Translate known errors from SubscriptionService (always English)
+          if (renewResult.error?.includes('No subscription')) {
+            renewMsg = t('renew_no_subscription', lang)
+          } else {
+            renewMsg = t('renew_failed', lang)
+          }
         }
         telegramBot?.sendMessage(chatId, renewMsg)
         return
@@ -390,16 +329,18 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
       // ---- /cancel — cancel subscription ----
       if (msgText === '/cancel') {
+        const telegramUserId = from.id
         const cancelResult = subscriptionService.cancel(telegramUserId)
         let cancelMsg
         if (cancelResult.success) {
-          cancelMsg = lang === 'ru'
-            ? '❌ <b>Подписка отменена.</b>\n\nВсе ваши клиенты отвязаны. Если передумаете — используйте /start.'
-            : '❌ <b>Subscription cancelled.</b>\n\nAll clients unlinked. Change your mind? Use /start.'
+          cancelMsg = t('cancel_success', lang)
         } else {
-          cancelMsg = lang === 'ru'
-            ? '❌ ' + (cancelResult.error || 'Не удалось отменить подписку')
-            : '❌ ' + (cancelResult.error || 'Failed to cancel subscription')
+          // Translate known errors from SubscriptionService (always English)
+          if (cancelResult.error?.includes('No subscription')) {
+            cancelMsg = t('cancel_no_subscription', lang)
+          } else {
+            cancelMsg = t('cancel_failed', lang)
+          }
         }
         telegramBot?.sendMessage(chatId, cancelMsg)
         return
@@ -407,22 +348,22 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
       // ---- /autorenew — toggle auto-renew ----
       if (msgText === '/autorenew') {
+        const telegramUserId = from.id
         const status2 = subscriptionService.getStatus(telegramUserId)
         const newVal = !(status2.autoRenew || false)
         const arResult = subscriptionService.setAutoRenew(telegramUserId, newVal)
         let arMsg
         if (arResult.success) {
-          arMsg = lang === 'ru'
-            ? (arResult.autoRenew
-                ? '✅ <b>Автосписание включено.</b>\n\nПодписка будет продлеваться автоматически каждые 30 дней.'
-                : '❌ <b>Автосписание выключено.</b>\n\nПодписку нужно продлевать вручную командой /renew.')
-            : (arResult.autoRenew
-                ? '✅ <b>Auto-renew enabled.</b>\n\nYour subscription will renew automatically every 30 days.'
-                : '❌ <b>Auto-renew disabled.</b>\n\nYou will need to manually renew with /renew.')
+          arMsg = arResult.autoRenew
+            ? t('autorenew_enabled', lang)
+            : t('autorenew_disabled', lang)
         } else {
-          arMsg = lang === 'ru'
-            ? '❌ ' + (arResult.error || 'Не удалось изменить автосписание')
-            : '❌ ' + (arResult.error || 'Failed to toggle auto-renew')
+          // Translate known errors from SubscriptionService (always English)
+          if (arResult.error?.includes('No subscription')) {
+            arMsg = t('autorenew_no_subscription', lang)
+          } else {
+            arMsg = t('autorenew_failed', lang)
+          }
         }
         telegramBot?.sendMessage(chatId, arMsg)
         return
@@ -433,13 +374,14 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
     if (update.pre_checkout_query) {
       const { id, invoice_payload: customId } = update.pre_checkout_query
       const qLang = update.pre_checkout_query.from?.language_code || 'en'
-      const errMsg = qLang === 'ru' ? 'Неверный запрос' : 'Invalid request'
+      const storedQLang = subscriptionService.getUserLanguage(update.pre_checkout_query.from?.id)
+      const effectiveQLang = storedQLang || qLang
 
       if (customId && subscriptionService.canAcceptPayment(customId)) {
         telegramBot?.answerPreCheckoutQuery(id, true)
         logger.info({ preCheckoutQueryId: id, customId }, 'Pre-checkout approved')
       } else {
-        telegramBot?.answerPreCheckoutQuery(id, false, errMsg)
+        telegramBot?.answerPreCheckoutQuery(id, false, t('pre_checkout_invalid', effectiveQLang))
         logger.warn({ preCheckoutQueryId: id, customId }, 'Pre-checkout rejected')
       }
       return
@@ -454,7 +396,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         telegram_payment_charge_id: chargeId,
         total_amount: starsAmount
       } = update.message.successful_payment
-      const pLang = subscriptionService.getUserLanguage(telegramUserId)
+      const pLang = subscriptionService.getUserLanguage(telegramUserId) || 'en'
 
       logger.info(
         { telegramUserId, customId, chargeId, starsAmount },
@@ -479,29 +421,16 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
             : 'Subscription activated and customId linked'
         )
 
-        const msg = pLang === 'ru'
-          ? '✅ <b>Оплата прошла успешно!</b>\n\n' +
-            '🎉 Ваша подписка активна!\n' +
-            'Истекает: ' + new Date(result.expiresAt).toLocaleDateString('ru-RU') + '\n\n' +
-            'Теперь вы можете создавать постоянные ссылки для <b>любых клиентов</b>.\n\n' +
-            'Перейдите на <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>, ' +
-            'введите название клиента и нажмите "Create" — ссылки готовы! 🎉'
-          : '✅ <b>Payment successful!</b>\n\n' +
-            '🎉 Your subscription is now active!\n' +
-            'Expires: ' + new Date(result.expiresAt).toLocaleDateString() + '\n\n' +
-            'You can now create permanent links for <b>any clients</b>.\n\n' +
-            'Go to <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>, ' +
-            'enter a client name and click "Create" — links are ready! 🎉'
+        const msg = t('payment_success', pLang, {
+          expDate: new Date(result.expiresAt).toLocaleDateString(dateLocale(pLang)),
+          siteUrl: siteUrl(pLang)
+        })
 
         telegramBot?.sendMessage(chatId, msg)
       } else {
         logger.warn({ telegramUserId, chargeId, error: result.error }, 'Activation failed')
 
-        const msg = pLang === 'ru'
-          ? '❌ <b>Ошибка активации:</b>\n\n' + result.error + '\n\n' +
-            'Пожалуйста, свяжитесь с поддержкой.'
-          : '❌ <b>Activation error:</b>\n\n' + result.error + '\n\n' +
-            'Please contact support.'
+        const msg = t('payment_failed', pLang, { error: result.error || 'Unknown error' })
 
         telegramBot?.sendMessage(chatId, msg)
       }

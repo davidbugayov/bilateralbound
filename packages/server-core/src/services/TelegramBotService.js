@@ -10,6 +10,7 @@
  */
 
 const TELEGRAM_API_BASE = 'https://api.telegram.org/bot'
+const { getCommandsForLang } = require('./bot-translations')
 
 class TelegramBotService {
   /**
@@ -154,22 +155,19 @@ class TelegramBotService {
   // Bot commands menu
   // ---------------------------------------------------------------------------
 
-  /** Set the bot's command list (shown in Telegram menu) */
-  async setMyCommands() {
+  /**
+   * Set the bot's command list (shown in Telegram menu).
+   * @param {string} [lang='en'] - Language for command descriptions
+   */
+  async setMyCommands(lang = 'en') {
     if (!this.isConfigured) return false
     try {
       const res = await this._call('setMyCommands', {
-        commands: [
-          { command: 'start', description: 'Start the bot / get subscription info' },
-          { command: 'status', description: 'Check your subscription status' },
-          { command: 'renew', description: 'Extend your subscription by 30 days' },
-          { command: 'autorenew', description: 'Toggle auto-renew on/off' },
-          { command: 'cancel', description: 'Cancel your subscription' }
-        ],
+        commands: getCommandsForLang(lang),
         scope: { type: 'all_private_chats' }
       })
       if (res.ok) {
-        this.logger.info('Bot commands menu set')
+        this.logger.info({ lang }, 'Bot commands menu set')
       } else {
         this.logger.error({ res }, 'Failed to set bot commands')
       }
