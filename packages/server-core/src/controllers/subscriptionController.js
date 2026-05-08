@@ -190,6 +190,10 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
       const msgText = update.message.text
 
+      // Resolve stored language preference (from previous /start __lang_ru payload)
+      const storedLang = subscriptionService.getUserLanguage(telegramUserId)
+      if (storedLang) lang = storedLang
+
       if (msgText === '/start') {
         const siteUrl = lang === 'ru'
           ? 'https://emdrbilateral.ru'
@@ -267,10 +271,6 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         })
         return
       }
-
-      // Resolve stored language preference for subsequent commands (status, renew, cancel, autorenew)
-      const storedLang = subscriptionService.getUserLanguage(telegramUserId)
-      if (storedLang) lang = storedLang
 
       // ---- /status — check subscription status ----
       if (msgText === '/status') {
