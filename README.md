@@ -2,120 +2,98 @@
 
 Профессиональная платформа для EMDR-терапии с билатеральной стимуляцией в реальном времени.
 
-[![Version](https://img.shields.io/badge/version-2.39.125-blue.svg)](https://github.com/davidbugaev/bilateral_bound)
+[![Version](https://img.shields.io/badge/version-2.39.553-blue.svg)](https://github.com/davidbugaev/bilateral_bound)
 [![License](https://img.shields.io/badge/license-ISC-green.svg)](LICENSE)
-[![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/)
 
-## 🚀 Новое в версии 2.39.125
+## Обзор
 
-### ✅ Bounce Sync - Синхронизация при отскоке
+Терапевт (controller) управляет движением шара через bilateral stimulation; пациент (viewer) наблюдает в реальном времени через WebSocket. Движение шара синхронизируется детерминированно — оба клиента запускают одинаковую физику локально, сервер передаёт только параметры (скорость, направление, цвет).
 
-- **🎯 Точная синхронизация**: Позиция мяча синхронизируется при каждом ударе о стену
-- **📡 SSE transport**: Viewer отправляет позицию → Server → Controller preview
-- **⚡ Мгновенная коррекция**: Preview контроллера точно следует за viewer
+Дополнительно: Telegram бот (@emdrbilateral_bot) для подписок через Telegram Stars (75 Stars / 30 дней).
 
-### 🌍 Полная мультиязычность (i18n)
-
-- **8 языков**: EN, RU, DE, ES, FR, PT, JA, ZH
-- **100% покрытие**: Все элементы UI локализованы
-- **Авто-определение**: Язык браузера определяется автоматически
-- **Без мерцания**: Загрузка языка до отображения контента
-
-### ⚡ Оптимизации производительности
-
-- **Service Worker**: Offline кэширование статических файлов
-- **Lazy loading audio**: Звуки загружаются при первом включении
-- **LRU сессии**: O(1) удаление старых сессий (MAX_SESSIONS=1000)
-- **Gzip компрессия**: Сжатие HTTP ответов
-
-### ✅ E2E тесты: 18/18
-
-- Синхронизация viewer ↔ controller
-- Переключение языков
-- SSE соединение
-- Физический движок
-
-## 📡 Архитектура синхронизации (SSE)
+## 📡 Архитектура синхронизации
 
 ```
-┌─────────────┐     SSE      ┌─────────────┐     SSE      ┌─────────────┐
-│   Viewer    │ ◄──────────► │   Server    │ ◄──────────► │ Controller  │
-│  (клиент)   │   bounce     │  (Node.js)  │  bounce_sync │  (терапевт) │
-└─────────────┘              └─────────────┘              └─────────────┘
-      │                            │                            │
-      │  POST /viewer/bounce       │                            │
-      │  {x, y, side, dir}         │                            │
-      │ ─────────────────────────► │                            │
-      │                            │  SSE: bounce_sync          │
-      │                            │  {x, y, side, dir}         │
-      │                            │ ──────────────────────────►│
-      │                            │                            │
-      │                            │  Preview синхронизируется  │
+┌─────────────┐   WebSocket    ┌─────────────┐   WebSocket    ┌─────────────┐
+│   Viewer    │ ◄───────────► │   Server    │ ◄───────────► │ Controller  │
+│  (пациент)  │   state_update │  (Node.js)  │  bounce_sync  │  (терапевт) │
+└─────────────┘   + bounce     └─────────────┘   (direction)  └─────────────┘
 ```
 
-**Транспорт**: SSE по умолчанию, WebSocket как fallback
+**Ключевой принцип**: обе стороны запускают детерминированную физику на 60Hz локально. Сервер транслирует только изменившиеся параметры (speed, direction, radius, colors, paused) 15 раз/сек. Отскоки синхронизируются через WebSocket события.
 
 ## 📁 Структура проекта
 
 ```
 bilateral_bound/
 ├── packages/
-│   ├── server-core/              # Backend (Node.js + SSE)
-│   │   └── server/
-│   │       ├── network/          # Express + SSE endpoints
-│   │       ├── session/          # SessionManager, SSEManager
-│   │       └── utils/            # Валидация, логирование
-│   └── web-client/               # Frontend
-│       └── public/
-│           ├── js/
-│           │   ├── physics-engine.js   # Физика мяча
-│           │   ├── sse-client.js       # SSE клиент
-│           │   ├── i18n/               # Локализация
-│           │   └── controller.js       # Контроллер
-│           ├── locales/                # 8 языков
-│           └── sw.js                   # Service Worker
-├── scripts/e2e/                  # E2E тесты (18 тестов)
+│   ├── server-core/              # Backend (Node.js + Express + WebSocket)
+│   │   └── src/
+│   │       ├── controllers/      # REST API handlers
+│   │       ├── network/          # WebSocket server, middleware
+│   │       ├── services/         # Session, Physics, Broadcast, Subscription, Telegram bot
+│   │       └── repositories/     # In-memory session storage (LRU)
+│   ├── web-client/               # Frontend (Vanilla JS + webpack)
+│   │   ├── src/                  # Исходники (viewer, controller, renderer, network)
+│   │   └── public/               # Статика (HTML, CSS, locales, Service Worker)
+│   └── shared/                   # Shared physics engine (детерминированный)
+├── scripts/e2e/                  # E2E тесты (Puppeteer)
 └── docs/                         # Документация
 ```
 
 ## 🚀 Быстрый старт
 
 ```bash
-# Клонировать и установить
+# Предварительные требования: Node.js v22+
 git clone https://github.com/davidbugaev/bilateral_bound.git
 cd bilateral_bound
 npm install
 
-# Запустить dev сервер
+# Запустить dev сервер (сервер + webpack watch одновременно)
 npm run dev
 ```
 
 Приложение: `http://localhost:3000`
 
-## 🛠 Команды
+## 🛠 Основные команды
 
 ```bash
-npm run dev          # Dev server
-npm start            # Production server
-npm run e2e          # E2E тесты (18 тестов)
-npm run lint         # ESLint
-npm run deploy:dev   # Deploy to dev
+npm run dev              # Dev сервер (hot-reload)
+npm start                # Production сборка + запуск
+npm test                 # E2E тесты
+npm run lint             # ESLint
+npm run format           # Prettier
+
+# Деплой (требуется DEPLOY_PASSWORD)
+npm run deploy:dev       # На dev.emdrbilateral.online
+npm run deploy:prod      # На emdrbilateral.online + emdrbilateral.ru
 ```
 
 ## 🌐 Окружения
 
-| Environment | URL                              | Branch   |
-| ----------- | -------------------------------- | -------- |
-| Development | https://dev.emdrbilateral.online | `main`   |
-| Production  | https://emdrbilateral.online     | `stable` |
+| Environment | URL                              | Branch   | Service                     | Port |
+| ----------- | -------------------------------- | -------- | --------------------------- | ---- |
+| Development | https://dev.emdrbilateral.online | `main`   | `emdrbilateral-dev`         | 3003 |
+| Production  | https://emdrbilateral.online     | `stable` | `emdrbilateral-online`      | 8080 |
+| Production  | https://emdrbilateral.ru         | `stable` | `emdrbilateral-ru`          | 8081 |
+
+## Telegram Bot / Подписки
+
+- **Бот**: [@emdrbilateral_bot](https://t.me/emdrbilateral_bot)
+- **Платежи**: Telegram Stars (валюта XTR)
+- **Цена**: 75 Stars за 30 дней подписки
+- **Переменные**: `STARS_BOT_TOKEN` (обязательно), `STARS_PROVIDER_TOKEN` (опционально, для XTR обычно пустой)
 
 ## 🔧 Технологии
 
-**Backend**: Node.js, Express, SSE (primary), WebSocket (fallback)  
-**Frontend**: Vanilla JS (ES6+), CSS3, Service Worker  
-**i18n**: 8 языков, lazy loading  
-**Quality**: ESLint 9, E2E tests (Puppeteer)  
-**DevOps**: PM2, Nginx, GitHub
+**Backend**: Node.js, Express, WebSocket (ws)
+**Frontend**: Vanilla JS (ES6+), webpack, Canvas API, CSS3, Service Worker
+**i18n**: 8 языков (EN, RU, DE, ES, FR, PT, JA, ZH)
+**Quality**: ESLint 9, Stylelint, Prettier, E2E (Puppeteer)
+**DevOps**: systemd, Nginx, Let's Encrypt, GitHub
+**Payments**: Telegram Stars (XTR)
+**VPN**: StrongSwan IKEv2/IPsec
 
 ## 📄 Лицензия
 
@@ -123,10 +101,10 @@ npm run deploy:dev   # Deploy to dev
 
 ## 👤 Автор
 
-**Bugaev David** - [@davidbugaev](https://github.com/davidbugaev)
+**Bugaev David** — [@davidbugaev](https://github.com/davidbugaev)
 
 ---
 
 <div align="center">
-⚡ <b>BilateralBound v2.39.125</b> - Made with ❤️ for EMDR therapists
+⚡ <b>BilateralBound v2.39.553</b> — Made with ❤️ for EMDR therapists
 </div>

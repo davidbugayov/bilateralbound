@@ -3,178 +3,174 @@
 ## VPS Сервер
 
 - **IP**: 90.156.254.190
-- **ОС**: Linux (Debian/Ubuntu)
+- **ОС**: Ubuntu, Linux 6.18
+- **Node.js**: v22.22.0
+- **RAM**: 4GB
 - **Пользователь**: root
 - **Порт SSH**: 22
 
-## Структура на VPS
+## Окружения
 
-```
-/var/www/
-├── dev.emdrbilateral.online/     # Development окружение
-│   ├── packages/
-│   ├── package.json
-│   ├── scripts/
-│   └── ... (полная копия проекта)
-└── emdrbilateral.online/         # Production окружение
-    ├── packages/
-    ├── package.json
-    ├── scripts/
-    └── ... (полная копия проекта)
+| Окружение  | URL                              | Директория                           | Ветка  | systemd                    | Порт |
+|------------|----------------------------------|--------------------------------------|--------|----------------------------|------|
+| Dev        | https://dev.emdrbilateral.online | `/var/www/dev.emdrbilateral.online`  | main   | `emdrbilateral-dev`        | 3003 |
+| Production | https://emdrbilateral.online     | `/var/www/emdrbilateral.online`      | stable | `emdrbilateral-online`     | 8080 |
+| Production | https://emdrbilateral.ru         | `/var/www/emdrbilateral.online`      | stable | `emdrbilateral-ru`         | 8081 |
+
+Оба production домена из одной директории, но разные systemd сервисы на разных портах.
+
+## Nginx
+
+- `/etc/nginx/sites-enabled/emdrbilateral` — .online (→ 8080) и .ru (→ 8081)
+- `/etc/nginx/sites-enabled/dev.emdrbilateral.online` — dev (→ 3003)
+- WebSocket (wss) проходит через стандартный reverse proxy
+
+## Управление сервисами
+
+```bash
+ssh -o StrictHostKeyChecking=no root@90.156.254.190
+
+# Статус
+systemctl status emdrbilateral-dev
+systemctl status emdrbilateral-online
+systemctl status emdrbilateral-ru
+
+# Рестарт
+systemctl restart emdrbilateral-dev
+systemctl restart emdrbilateral-online
+systemctl restart emdrbilateral-ru
+
+# Логи
+journalctl -u emdrbilateral-dev -n 50 --no-pager
+journalctl -u emdrbilateral-online -n 50 --no-pager
+journalctl -u emdrbilateral-ru -n 50 --no-pager
+
+# Список Node.js процессов
+ss -tlnp | grep node
 ```
 
-## Сайты и домены
+## Деплой через npm скрипты
+
+### Настройка
+
+Перед деплоем установите `DEPLOY_PASSWORD`:
+
+```bash
+export DEPLOY_PASSWORD='password_here'
+# Или создайте .env файл (он в .gitignore):
+cp .env.example .env
+# Отредактируйте .env и добавьте DEPLOY_PASSWORD
+```
 
 ### Development
 
-- **URL**: https://dev.emdrbilateral.online
-- **Тип**: Развернуто по ветке `main`
-- **Путь**: `/var/www/dev.emdrbilateral.online`
-- **Статус**: Включено
-- **Использование**: Тестирование новых функций
+```bash
+npm run deploy:dev          # git pull origin/main → npm install → npm run build → restart
+npm run deploy:dev:status   # Статус systemd
+npm run deploy:dev:logs     # Логи (journalctl)
+```
 
 ### Production
 
-- **URL**: https://emdrbilateral.online (основной) или https://emdrbilateral.ru (альтернативный)
-- **Тип**: Развернуто по ветке `stable`
-- **Путь**: `/var/www/emdrbilateral.online`
-- **Статус**: Включено
-- **Использование**: Основной рабочий сайт
-- **Примечание**: Оба домена обслуживаются одним Node.js процессом
+```bash
+npm run deploy:prod           # git pull origin/stable → npm install → npm run build → restart обоих
+npm run deploy:prod:status    # Статус systemd
+npm run deploy:prod:logs      # Логи (journalctl)
+```
 
-## Процессы Node.js
+## Переменные окружения
 
-Каждое окружение запускает отдельный Node.js процесс:
+| Переменная            | Где требуется   | Описание                                       |
+|-----------------------|-----------------|-------------------------------------------------|
+| `DEPLOY_PASSWORD`     | Для деплоя      | Пароль для SSH деплоя                           |
+| `STARS_BOT_TOKEN`     | Для подписок    | Telegram Bot токен (@emdrbilateral_bot)         |
+| `STARS_PROVIDER_TOKEN`| Опционально     | Telegram Stars provider_token (обычно пусто для XTR) |
+
+## Архитектура приложения
+
+Monorepo с npm workspaces:
+
+```
+bilateral_bound/
+├── packages/
+│   ├── server-core/         # Node.js + Express сервер (src/index.js)
+│   ├── web-client/          # Vanilla JS фронтенд (webpack, src/ → dist/)
+│   └── shared/              # Детерминистический physics engine
+├── package.json             # Корневой package.json с workspace скриптами
+└── scripts/                 # Скрипты деплоя (deploy-dev.sh, deploy-prod.sh)
+```
+
+### Entry point
 
 ```bash
 # Development
-node /var/www/dev.emdrbilateral.online/packages/server-core/server/index.js
+node /var/www/dev.emdrbilateral.online/packages/server-core/src/index.js
 
-# Production
-node /var/www/emdrbilateral.online/packages/server-core/server/index.js
+# Production (.online)
+node /var/www/emdrbilateral.online/packages/server-core/src/index.js
+
+# Production (.ru) — тот же файл, разный systemd сервис
+node /var/www/emdrbilateral.online/packages/server-core/src/index.js
 ```
 
-## Nginx конфигурация
+## WebSocket и синхронизация
 
-Оба сайта настроены в Nginx с:
+- **Единственный транспорт**: WebSocket (не SSE, не REST polling)
+- **Endpoint**: `wss://host/?sessionId=:id&role=viewer|controller`
+- **Heartbeat**: 25с клиент → 30с сервер
+- **Auto-reconnect**: exponential backoff, макс 50 попыток
+- **Детерминистическая синхронизация**: сервер передаёт только параметры (speed, dirX, dirY, paused, radius, colorBall, colorBg), позиция вычисляется локально на 60Hz
 
-- **SSL/TLS** (Let's Encrypt)
-- **Reverse proxy** на Node.js приложение
-- **Compression** для оптимизации
-- **HTTP/2** поддержка
-- **Gzip** для static файлов
+## Telegram Bot
 
-## Деплой через Git
+- **Бот**: @emdrbilateral_bot
+- **Платежи**: Telegram Stars (валюта XTR, provider_token не нужен)
+- **Цена**: 75 Stars за 30 дней
+- **Webhook**: `POST /api/subscription/webhook`
+- **Команды**: /start, /status, /renew, /cancel, /autorenew
+- **Языки**: 8 языков (EN, RU, DE, ES, FR, PT, JA, ZH)
 
-### Development деплой
-
-```bash
-# На локальной машине
-cd bilateral_bound
-git add -A
-git commit -m "Fix: описание изменений"
-git push origin main
-```
-
-### Автоматическое обновление на dev сервере
-
-```bash
-# На VPS сервере
-cd /var/www/dev.emdrbilateral.online
-git pull origin main
-pm2 restart bilateral-bound-dev
-```
-
-## Ручной деплой по SSH
-
-### Для Development
-
-```bash
-sshpass -p 'PASSWORD' ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
-  "cd /var/www/dev.emdrbilateral.online && \
-   git pull origin stable-enhanced && \
-   npm install --production && \
-   pkill -f 'node.*packages/server-core' && \
-   sleep 2 && \
-   nohup node packages/server-core/server/index.js > /tmp/server-dev.log 2>&1 &"
-```
-
-### Для Production
-
-```bash
-sshpass -p 'PASSWORD' ssh -o StrictHostKeyChecking=no root@90.156.254.190 \
-  "cd /var/www/emdrbilateral.online && \
-   git pull origin stable && \
-   npm install --production && \
-   pkill -f 'node.*packages/server-core' && \
-   sleep 2 && \
-   nohup node packages/server-core/server/index.js > /tmp/server-prod.log 2>&1 &"
-```
-
-## Проверка статуса
-
-### SSH подключение
-
-```bash
-# Подключиться к серверу
-ssh -o StrictHostKeyChecking=no root@90.156.254.190
-
-# Проверить запущенные процессы
-ps aux | grep node
-
-# Проверить логи development
-tail -f /tmp/server-dev.log
-
-# Проверить логи production
-tail -f /tmp/server-prod.log
-```
-
-### HTTP проверка
+## Health check
 
 ```bash
 # Development
 curl https://dev.emdrbilateral.online/api/health
 
-# Production (оба домена обслуживаются одним сервером)
+# Production
 curl https://emdrbilateral.online/api/health
 curl https://emdrbilateral.ru/api/health
 ```
 
-## Проблемы и решения
+## Troubleshooting
 
-### Сервер не запускается
-
-```bash
-# Проверить логи
-tail -100 /tmp/server-dev.log
-
-# Убить старые процессы
-pkill -9 -f 'node.*packages/server-core'
-
-# Запустить вручную
-cd /var/www/dev.emdrbilateral.online
-PORT=3000 node packages/server-core/server/index.js
-```
-
-### Высокое использование памяти
+### Сервис в crash-loop (EADDRINUSE)
 
 ```bash
-# Проверить использование памяти
-ps aux | grep node
-
-# Перезапустить сервер
-pkill -f 'node.*packages/server-core'
-sleep 2
-nohup node /var/www/dev.emdrbilateral.online/packages/server-core/server/index.js > /tmp/server-dev.log 2>&1 &
+ssh root@90.156.254.190
+systemctl stop emdrbilateral-dev
+kill -9 $(lsof -t -i:3003 2>/dev/null)
+sleep 3
+systemctl start emdrbilateral-dev
 ```
+
+### Cron-скрипт мониторинга
+
+`/usr/local/bin/check-services.sh` запускается каждые 5 минут и автоматически рестартует упавший сервис.
+
+### VPN (StrongSwan IKEv2)
+
+После перезагрузки VPS iptables NAT правила сбрасываются:
+
+```bash
+iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o eth0 -j MASQUERADE
+iptables -A FORWARD -s 10.10.10.0/24 -j ACCEPT
+iptables -A FORWARD -d 10.10.10.0/24 -j ACCEPT
+```
+
+Правила сохранены в `/etc/iptables.rules` и авто-восстанавливаются через `/etc/networkd-dispatcher/routable.d/50-iptables-restore`.
 
 ## Версионирование
 
-Версия автоматически обновляется в:
+Текущая версия: **2.39.553**
 
-- `package.json`
-- `packages/server-core/package.json`
-- `packages/web-client/package.json`
-- `packages/web-client/public/*.html` файлах
-
-Текущая версия: **2.39.125**
+Версия автоматически обновляется во всех `package.json` через `npm run version:update` (pre-commit hook).

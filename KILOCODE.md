@@ -2,14 +2,11 @@
 
 ## Project Context
 
-EMDR BilateralBound — web platform for EMDR therapy. Therapist controller manages bilateral ball movement, patient viewer observes in real time via WebSocket.
+EMDR BilateralBound — web platform for EMDR therapy. Therapist (controller) manages bilateral ball movement via WebSocket; patient (viewer) observes in real time.
 
 Source baseline:
 - [`CLAUDE.md`](CLAUDE.md)
 - [`.clinerules`](.clinerules)
-- [`../../.cline/data/settings/cline_mcp_settings.json`](../../.cline/data/settings/cline_mcp_settings.json)
-- [`../../.agents/skills/tdd-workflow/SKILL.md`](../../.agents/skills/tdd-workflow/SKILL.md)
-- [`../../.agents/skills/backend-patterns/SKILL.md`](../../.agents/skills/backend-patterns/SKILL.md)
 
 Conflict priority:
 1. [`CLAUDE.md`](CLAUDE.md)
@@ -20,7 +17,7 @@ Conflict priority:
 
 - Respond in the language of the user. For this project, Russian is preferred in user communication.
 - Code comments must be in English.
-- User-facing UI strings must go through i18n.
+- User-facing UI strings must go through i18n (`globalThis.i18n?.t('key') || 'English fallback'`).
 - Never hardcode localized strings directly in UI.
 
 ## Hard Rules
@@ -33,86 +30,47 @@ Conflict priority:
 
 ## Architecture Guardrails
 
-- Monorepo workspace: server, web client, and shared logic.
-- Real-time transport is WebSocket.
-- Keep deterministic sync behavior between controller and viewer.
-- Never introduce per-frame position correction that causes jitter.
-- Prefer event-based correction on fresh server events.
-- Keep client and server physics assumptions aligned when touching movement/sync logic.
+- Monorepo workspace: `packages/server-core` (Node.js + Express), `packages/web-client` (Vanilla JS, webpack), `packages/shared` (physics engine).
+- Real-time transport is **WebSocket** only (no SSE, no REST polling).
+- **Deterministic sync**: both viewer and controller run local physics at 60Hz with identical params (speed, dirX, dirY, paused, radius, colorBall, colorBg) → identical trajectory without position relay.
+- Server broadcasts parameter-only state at 15Hz using delta compression.
+- **Never relay position per-frame** — causes spring-damper jitter. Correct only on fresh server events.
+- Bounce events: viewer detects locally → sends `bounce` (direction only) → server relays `bounce_sync` to controller.
+- Play/pause guards: `__ignoreServerPausedUntilTs` (800ms) and `__ignoreServerDirectionUntilTs` (1500ms) prevent server overriding recent user actions.
+- Viewer pause animation: `seekingCenter` state with 400ms ease-out return-to-center.
+- `returnToCenter: true` in controller update: skips deceleration, snaps server ball to center, viewer animates to center.
+
+## Subscription / Telegram Bot
+
+- Bot: `@emdrbilateral_bot`
+- Payments: Telegram Stars (XTR currency, no provider_token needed)
+- Price: 75 Stars / 30 days
+- Webhook endpoint: `POST /api/subscription/webhook`
+- Commands: /start, /status, /renew, /cancel, /autorenew
+- Subscriptions tied to `telegramUserId`; custom IDs linked to users
+- 8 languages supported via `bot-translations.js`
 
 ## Conventions
 
 - i18n usage pattern: `globalThis.i18n?.t('key') || 'English fallback'`.
-- Module export pattern in browser scripts uses guarded global assignment to avoid double-load.
-- Preserve global session-state conventions already used by the project.
-- Respect current WebSocket endpoint role/sessionId model.
+- Module export pattern in browser scripts: IIFE guarded by `if (typeof globalThis.ModuleName !== 'undefined')` to prevent double-load.
+- Global state via `globalThis.__current` (sessionId, isPlaying, viewerConnected, etc.).
+- WebSocket endpoint: `ws://host/?sessionId=:id&role=viewer|controller` — auto-reconnect, heartbeat every 25s.
+- Session IDs: auto-generated 6-char UUID prefix, or custom 3-32 chars (alphanumeric/dash/underscore).
+- E2E tests: Puppeteer-based, use `domcontentloaded` (not `networkidle0`).
 
 ## Sensitive Files
 
 Do not modify without explicit instruction:
-- Shared physics engine files
-- WebSocket routing and transport-critical files
-- Broadcast/sync services
-- Viewer runtime logic
-- Reconnect-critical WebSocket client code
-
-## MCP Servers From Cline
-
-Reference source: [`../../.cline/data/settings/cline_mcp_settings.json`](../../.cline/data/settings/cline_mcp_settings.json)
-
-### `ruflo`
-
-- enabled: `disabled: false`
-- timeout: `60`
-- transport: `type: stdio`
-- command: `npx`
-- args: `ruflo@latest mcp start`
-- env: `{}`
-- policy: large `autoApprove` allowlist is configured in source and should be imported as-is unless security policy requires narrowing.
-
-### `context7`
-
-- server is present in source config and should be migrated with its server fields (`disabled`, `timeout`, `type`, `command`, `args`, `env`, `autoApprove`) from the same file.
-
-## Skills Activation
-
-### `tdd-workflow`
-
-Source: [`../../.agents/skills/tdd-workflow/SKILL.md`](../../.agents/skills/tdd-workflow/SKILL.md)
-
-Activate when:
-- New feature development
-- Bug fixing
-- Refactoring
-- New API endpoints/components
-
-Mandatory workflow:
-1. RED: add/execute tests first, validate failing reason is relevant.
-2. GREEN: implement minimal fix, rerun relevant tests.
-3. REFACTOR: improve code while keeping tests green.
-4. Verify coverage target and critical edge/error/boundary cases.
-
-### `backend-patterns`
-
-Source: [`../../.agents/skills/backend-patterns/SKILL.md`](../../.agents/skills/backend-patterns/SKILL.md)
-
-Activate when:
-- Designing API endpoints
-- Changing repository/service/controller layers
-- Optimizing DB/query behavior
-- Building middleware, caching, transactions, backend reliability behavior
-
-Core expectations:
-- Clear REST semantics
-- Separation of concerns between controller/service/repository
-- Safe validation and error handling
-- Query optimization and N+1 prevention
-- Practical caching and transaction patterns where relevant
+- `packages/shared/physics-engine.js` — deterministic physics; changes break viewer/controller sync
+- `packages/server-core/src/network/webSocketServer.js` — WS message routing
+- `packages/server-core/src/services/BroadcastService.js` — delta compression, event relay
+- `packages/web-client/src/network/websocket-client.js` — client reconnection logic
+- `packages/web-client/src/viewer.js` — patient-facing; therapeutic UX matters
+- `.env` files
 
 ## Validation Checklist
 
 - All key rule blocks from [`CLAUDE.md`](CLAUDE.md) are represented.
 - Project-specific constraints from [`.clinerules`](.clinerules) are represented where not conflicting.
 - Conflict resolution follows declared priority with [`CLAUDE.md`](CLAUDE.md) winning.
-- MCP section references the actual Cline source config.
-- Skills section captures activation criteria and operational requirements, not unrelated boilerplate examples.
