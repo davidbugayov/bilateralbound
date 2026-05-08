@@ -56,11 +56,12 @@ body.light-theme {
 .main-wrap {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 32px 56px;
+  padding: 0 32px 40px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 10px;
 }
+
 
 /* ── Header controls ── */
 .header-controls {
@@ -1141,10 +1142,11 @@ body.light-theme {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px 0;
+  gap: 6px;
+  padding: 8px 0 4px;
   animation: fadeUp 0.5s 0.15s ease both;
 }
+
 
 .pricing-section__title,
 .subscription-unified__title {
