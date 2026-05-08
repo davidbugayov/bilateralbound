@@ -361,7 +361,9 @@
       'https://t.me/emdrbilateral_bot'
 
     if (!customId || !validateClientId(customId)) {
-      // No customId — just open bot
+      // No customId — open bot with site language
+      const siteLang = globalThis.i18n?.currentLanguage || 'en'
+      botLink += '?start=__lang_' + siteLang
       window.open(botLink, '_blank')
       return
     }

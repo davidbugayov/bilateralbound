@@ -174,6 +174,11 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
       if (payloadMatch) {
         langFromPayload = payloadMatch[1]
         lang = langFromPayload
+        // Persist language preference for this user
+        const senderId = update.message?.from?.id
+        if (senderId) {
+          subscriptionService.setUserLanguage(senderId, lang)
+        }
       }
     }
 
@@ -262,6 +267,10 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         })
         return
       }
+
+      // Resolve stored language preference for subsequent commands (status, renew, cancel, autorenew)
+      const storedLang = subscriptionService.getUserLanguage(telegramUserId)
+      if (storedLang) lang = storedLang
 
       // ---- /status — check subscription status ----
       if (msgText === '/status') {
@@ -373,7 +382,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         telegram_payment_charge_id: chargeId,
         total_amount: starsAmount
       } = update.message.successful_payment
-      const pLang = update.message.from?.language_code || 'en'
+      const pLang = subscriptionService.getUserLanguage(telegramUserId)
 
       logger.info(
         { telegramUserId, customId, chargeId, starsAmount },

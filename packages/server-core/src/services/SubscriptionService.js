@@ -38,6 +38,9 @@ class SubscriptionService {
     /** Map<token, telegramUserId> — dedup and lookup by payment token */
     this._tokenIndex = new Map()
 
+    /** Map<telegramUserId, string> — user's language preference (from /start payload) */
+    this._userLanguages = new Map()
+
     // Total Stars received (for analytics)
     this.totalStars = 0
 
@@ -246,6 +249,29 @@ class SubscriptionService {
   }
 
   /**
+   * Store the user's language preference (from /start __lang_ru payload).
+   * Persisted to disk for use in subsequent commands (status/renew/cancel/autorenew).
+   * @param {number} telegramUserId
+   * @param {string} lang - Language code (e.g. 'ru', 'en')
+   */
+  setUserLanguage(telegramUserId, lang) {
+    if (!telegramUserId || !lang) return
+    this._userLanguages.set(telegramUserId, lang)
+    this._saveToDisk()
+    this.logger.info({ telegramUserId, lang }, 'User language stored')
+  }
+
+  /**
+   * Retrieve stored language preference for a user.
+   * Falls back to 'en' if not set.
+   * @param {number} telegramUserId
+   * @returns {string} Language code (e.g. 'ru', 'en')
+   */
+  getUserLanguage(telegramUserId) {
+    return this._userLanguages.get(telegramUserId) || 'en'
+  }
+
+  /**
    * Renew a subscription — extend expiresAt by durationMs from now.
    * If subscription does not exist, returns error.
    * @param {number} telegramUserId
@@ -408,9 +434,16 @@ class SubscriptionService {
         }
       }
 
+      // Load user language preferences
+      if (data.userLanguages && typeof data.userLanguages === 'object') {
+        for (const [userId, lang] of Object.entries(data.userLanguages)) {
+          this._userLanguages.set(Number(userId), lang)
+        }
+      }
+
       this.totalStars = data.totalStars || 0
       this.logger.info(
-        { count: this._subscriptions.size, customIds: this._customIdIndex.size },
+        { count: this._subscriptions.size, customIds: this._customIdIndex.size, languages: this._userLanguages.size },
         'Subscriptions loaded from disk'
       )
     } catch (err) {
@@ -420,6 +453,12 @@ class SubscriptionService {
 
   /** Persist subscriptions to JSON file */
   _saveToDisk() {
+    // Serialize userLanguages Map to plain object
+    const userLanguages = {}
+    for (const [userId, lang] of this._userLanguages) {
+      userLanguages[userId] = lang
+    }
+
     const data = {
       totalStars: this.totalStars,
       subscriptions: Array.from(this._subscriptions.entries()).map(([userId, sub]) => ({
@@ -433,7 +472,8 @@ class SubscriptionService {
       customIds: Array.from(this._customIdIndex.entries()).map(([customId, userId]) => ({
         customId,
         telegramUserId: userId
-      }))
+      })),
+      userLanguages
     }
     try {
       fs.writeFileSync(this._filePath, JSON.stringify(data, null, 2), 'utf-8')
