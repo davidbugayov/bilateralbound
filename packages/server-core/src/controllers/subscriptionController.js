@@ -166,8 +166,16 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
     // Respond quickly — Telegram expects 200 within a few seconds
     res.status(200).json({ ok: true })
 
-    // Detect user language from Telegram
-    const lang = update.message?.from?.language_code || 'en'
+    // Detect user language: prefer site language from start payload over Telegram locale
+    let lang = update.message?.from?.language_code || 'en'
+    let langFromPayload = null
+    if (update.message?.text && update.message.text.startsWith('/start ')) {
+      const payloadMatch = update.message.text.match(/__lang_([a-z]{2}(-[A-Z]{2})?)$/)
+      if (payloadMatch) {
+        langFromPayload = payloadMatch[1]
+        lang = langFromPayload
+      }
+    }
 
     // ---- /start command — send welcome + invoice ----
     if (update.message?.text) {
@@ -208,7 +216,11 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
       // Handle /start customId deep links from the site
       if (msgText.startsWith('/start ')) {
-        const rest = msgText.slice(7).trim()
+        let rest = msgText.slice(7).trim()
+        // Strip language suffix from customId if present (e.g. "anna_2025__lang_ru" → "anna_2025")
+        if (langFromPayload) {
+          rest = rest.replace(/__lang_[a-z]{2}(-[A-Z]{2})?$/, '')
+        }
 
         // Check if already subscribed
         const isSubscribed = subscriptionService.isActive(telegramUserId)
@@ -254,9 +266,9 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
       // ---- /status — check subscription status ----
       if (msgText === '/status') {
         const status = subscriptionService.getStatus(telegramUserId)
-        var statusMsg
+        let statusMsg
         if (status.active) {
-          var expDate = new Date(status.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
+          const expDate = new Date(status.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
           statusMsg = (lang === 'ru'
             ? '✅ <b>Подписка активна</b>\n\n' +
               'Истекает: ' + expDate + '\n' +
@@ -280,9 +292,9 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
       // ---- /renew — extend subscription ----
       if (msgText === '/renew') {
         const renewResult = subscriptionService.renew(telegramUserId)
-        var renewMsg
+        let renewMsg
         if (renewResult.success) {
-          var newExp = new Date(renewResult.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
+          const newExp = new Date(renewResult.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
           renewMsg = lang === 'ru'
             ? '✅ <b>Подписка продлена!</b>\n\nНовая дата истечения: ' + newExp
             : '✅ <b>Subscription renewed!</b>\n\nNew expiry date: ' + newExp
@@ -298,7 +310,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
       // ---- /cancel — cancel subscription ----
       if (msgText === '/cancel') {
         const cancelResult = subscriptionService.cancel(telegramUserId)
-        var cancelMsg
+        let cancelMsg
         if (cancelResult.success) {
           cancelMsg = lang === 'ru'
             ? '❌ <b>Подписка отменена.</b>\n\nВсе ваши клиенты отвязаны. Если передумаете — используйте /start.'
@@ -314,10 +326,10 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
       // ---- /autorenew — toggle auto-renew ----
       if (msgText === '/autorenew') {
-        var status2 = subscriptionService.getStatus(telegramUserId)
-        var newVal = !(status2.autoRenew || false)
-        var arResult = subscriptionService.setAutoRenew(telegramUserId, newVal)
-        var arMsg
+        const status2 = subscriptionService.getStatus(telegramUserId)
+        const newVal = !(status2.autoRenew || false)
+        const arResult = subscriptionService.setAutoRenew(telegramUserId, newVal)
+        let arMsg
         if (arResult.success) {
           arMsg = lang === 'ru'
             ? (arResult.autoRenew

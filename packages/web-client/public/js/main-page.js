@@ -399,8 +399,9 @@
       }
     }
 
-    // Not subscribed — open Telegram bot with customId
-    botLink += '?start=' + encodeURIComponent(customId)
+    // Not subscribed — open Telegram bot with customId + site language
+    const siteLang = globalThis.i18n?.currentLanguage || 'en'
+    botLink += '?start=' + encodeURIComponent(customId + '__lang_' + siteLang)
     window.open(botLink, '_blank')
   }
 
