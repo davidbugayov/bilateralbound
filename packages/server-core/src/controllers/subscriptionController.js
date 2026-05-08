@@ -228,7 +228,8 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
         // Not subscribed — send welcome + invoice
         const msg = t('welcome_new', lang, { siteUrl: sUrl })
-        telegramBot?.sendMessage(chatId, msg)
+        const msgResult = telegramBot?.sendMessage(chatId, msg)
+        logger.info({ chatId, msgSent: !!msgResult }, '/start welcome sent')
 
         // Send invoice directly for plain /start (payload = telegramUserId)
         telegramBot?.sendInvoice(chatId, String(telegramUserId), 75, {
@@ -236,6 +237,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           description: t('invoice_description_plain', lang),
           label: t('invoice_label_plain', lang)
         }).then(function (resp) {
+          logger.info({ chatId, respOk: resp?.ok, respCode: resp?.error_code }, '/start invoice response')
           if (!resp?.ok) {
             telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
           }

@@ -124,15 +124,15 @@ class TelegramBotService {
    */
   async sendInvoice(chatId, sessionId, starsAmount, opts = {}) {
     if (!this.isConfigured) return null
+    const providerToken = this.providerToken || undefined
     try {
-      return await this._call('sendInvoice', {
+      const payload = {
         chat_id: chatId,
         title: opts.title || 'EMDR Premium Subscription',
         description:
           opts.description ||
           'Permanent session links for your clients. Valid for 30 days.',
         payload: sessionId,
-        provider_token: this.providerToken,
         currency: 'XTR',
         prices: [
           { label: opts.label || 'Premium Plan (30 days)', amount: starsAmount }
@@ -142,14 +142,22 @@ class TelegramBotService {
         need_email: false,
         need_phone_number: false,
         need_shipping_address: false,
-        is_flexible: false,
-        ...opts
-      })
+        is_flexible: false
+      }
+      // provider_token is optional for XTR (Telegram Stars) — omit entirely if empty
+      if (providerToken) {
+        payload.provider_token = providerToken
+      }
+
+      const res = await this._call('sendInvoice', payload)
+      this.logger.info({ chatId, sessionId, starsAmount, ok: res?.ok }, 'sendInvoice result')
+      return res
     } catch (err) {
-      this.logger.error({ err, chatId }, 'sendInvoice failed')
+      this.logger.error({ err, chatId, sessionId, starsAmount }, 'sendInvoice failed')
       return null
     }
   }
+
 
   // ---------------------------------------------------------------------------
   // Bot commands menu
