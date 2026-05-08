@@ -945,14 +945,278 @@ body.light-theme {
 
 /* ── Footer ── */
 .page-footer-container {
-
+  margin-top: 48px;
+  padding: 32px 24px;
   text-align: center;
+  border-top: 1px solid var(--mp-border);
+  background: var(--mp-surface-2);
+  border-radius: var(--mp-radius);
 }
 
 .footer {
-  font-size: 0.7rem;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* Footer heading "Contact & Links" */
+.footer-contact__heading {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--mp-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 18px;
+}
+
+/* Horizontal flex row of contact items */
+.footer-contact__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 0;
+  margin-bottom: 20px;
+}
+
+/* Each contact item (icon + link) */
+.footer-contact__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease,
+    box-shadow 0.25s ease;
+  cursor: default;
+  /* Subtle separator dot after each item except last */
+}
+.footer-contact__item:not(:last-child)::after {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin-left: 12px;
+  border-radius: 50%;
+  background: var(--mp-border-strong);
+  vertical-align: middle;
+  opacity: 0.5;
+}
+
+.footer-contact__item:hover {
+  background: rgb(37 99 235 / 8%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 15%);
+}
+
+/* SVG icon inside each item */
+.footer-icon {
+  flex-shrink: 0;
+  color: var(--mp-blue-light);
+  opacity: 0.8;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.footer-contact__item:hover .footer-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* GitHub icon is filled (not stroke), handle separately */
+.footer-icon--github {
   color: var(--mp-muted);
-  opacity: 0.4;
+}
+
+.footer-contact__item:hover .footer-icon--github {
+  color: var(--mp-text);
+}
+
+/* Link text */
+.footer-contact__link {
+  font-size: 0.8rem;
+  color: var(--mp-subtle);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.footer-contact__item:hover .footer-contact__link {
+  color: var(--mp-text);
+}
+
+/* Version text at the bottom */
+.footer__version {
+  font-size: 0.65rem;
+  color: var(--mp-muted);
+  opacity: 0.5;
+  margin: 0;
+}
+
+/* ── Cookie Consent Banner ── */
+.cookie-consent {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  max-width: 520px;
+  width: calc(100% - 40px);
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 9999;
+  border-radius: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Glassmorphism */
+  background: rgb(8 14 28 / 88%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgb(255 255 255 / 8%);
+  box-shadow:
+    0 8px 32px rgb(0 0 0 / 40%),
+    0 2px 8px rgb(0 0 0 / 20%);
+}
+
+.cookie-consent--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.cookie-consent--hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.3s ease;
+}
+
+.cookie-consent__text {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--mp-subtle);
+}
+
+.cookie-consent__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cookie-consent__btn {
+  padding: 8px 20px;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  border: none;
+}
+
+.cookie-consent__btn--decline {
+  background: rgb(255 255 255 / 6%);
+  color: var(--mp-muted);
+  border: 1px solid rgb(255 255 255 / 8%);
+}
+
+.cookie-consent__btn--decline:hover {
+  background: rgb(255 255 255 / 10%);
+  color: var(--mp-text);
+}
+
+.cookie-consent__btn--accept {
+  background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-blue-light) 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px rgb(37 99 235 / 30%);
+}
+
+.cookie-consent__btn--accept:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgb(37 99 235 / 45%);
+}
+
+/* ── Footer: Light theme overrides ── */
+.light-theme .page-footer-container {
+  background: rgb(248 250 252 / 80%);
+  border-color: rgb(0 0 0 / 6%);
+}
+
+.light-theme .footer-contact__item:hover {
+  background: rgb(37 99 235 / 6%);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 6%);
+}
+
+.light-theme .footer-icon {
+  color: var(--mp-blue);
+}
+
+.light-theme .footer-icon--github {
+  color: var(--mp-muted);
+}
+
+.light-theme .footer-contact__item:hover .footer-icon--github {
+  color: #0f172a;
+}
+
+.light-theme .footer-contact__item:hover .footer-contact__link {
+  color: #0f172a;
+}
+
+.light-theme .footer__version {
+  color: var(--mp-muted);
+}
+
+/* ── Cookie: Light theme overrides ── */
+.light-theme .cookie-consent {
+  background: rgb(255 255 255 / 92%);
+  border-color: rgb(0 0 0 / 10%);
+  box-shadow:
+    0 8px 32px rgb(0 0 0 / 12%),
+    0 2px 8px rgb(0 0 0 / 6%);
+}
+
+.light-theme .cookie-consent__text {
+  color: #475569;
+}
+
+.light-theme .cookie-consent__btn--decline {
+  background: rgb(0 0 0 / 4%);
+  color: #64748b;
+  border-color: rgb(0 0 0 / 8%);
+}
+
+.light-theme .cookie-consent__btn--decline:hover {
+  background: rgb(0 0 0 / 8%);
+  color: #0f172a;
+}
+
+/* ── Footer responsive ── */
+@media (width <= 700px) {
+  .page-footer-container {
+    padding: 24px 16px;
+  }
+
+  .footer-contact__links {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .footer-contact__item:not(:last-child)::after {
+    display: none;
+  }
+
+  .footer-contact__item {
+    padding: 6px 12px;
+  }
 }
 
 /* ── Light theme overrides ── */
