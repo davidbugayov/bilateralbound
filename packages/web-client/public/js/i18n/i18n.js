@@ -37,12 +37,14 @@
     },
 
     _notifyReady() {
-      // Remove anti-flash cloak
+      // Remove ALL anti-flash cloak elements (lang-preload.js creates one,
+      // and privacy/offer HTML pages also have one — only removing the first
+      // leaves the second in place, keeping content invisible)
       if (typeof document !== 'undefined') {
-        const cloak = document.getElementById('i18n-cloak')
-        if (cloak) cloak.remove()
+        document.querySelectorAll('#i18n-cloak').forEach((el) => el.remove())
         document.documentElement.classList.add('i18n-ready')
       }
+
 
       if (this.isReady) return
       this.isReady = true
