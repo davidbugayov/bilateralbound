@@ -199,29 +199,71 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           ? 'https://emdrbilateral.ru'
           : 'https://emdrbilateral.online'
 
+        // Check if already subscribed
+        const isSubscribed = subscriptionService.isActive(telegramUserId)
+
+        if (isSubscribed) {
+          // Already subscribed — show status
+          const status = subscriptionService.getStatus(telegramUserId)
+          const expDate = new Date(status.expiresAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')
+          const statusMsg = lang === 'ru'
+            ? '✅ <b>Подписка уже активна!</b>\n\n' +
+              'Истекает: ' + expDate + '\n' +
+              'Клиентов: ' + (status.customIds?.length || 0) + '\n\n' +
+              'Возвращайтесь на сайт — ссылки готовы!'
+            : '✅ <b>Subscription already active!</b>\n\n' +
+              'Expires: ' + expDate + '\n' +
+              'Clients: ' + (status.customIds?.length || 0) + '\n\n' +
+              'Go back to the site — links are ready!'
+          telegramBot?.sendMessage(chatId, statusMsg)
+          return
+        }
+
+        // Not subscribed — send welcome + invoice
         const msg = lang === 'ru'
           ? '<b>👋 Добро пожаловать в BilateralBound Premium!</b>\n\n' +
             'Этот бот управляет подпиской на EMDR-инструмент.\n\n' +
             '👉 <b>Как подписаться:</b>\n' +
             '1. Перейдите на <a href="' + siteUrl + '">' + siteUrl + '</a>\n' +
             '2. Введите название клиента (например, anna_2025)\n' +
-            '3. Нажмите «Subscribe via Telegram»\n' +
-            '4. Оплатите 75 ⭐ здесь в боте\n\n' +
-            '<b>Один платёж — все ваши клиенты.</b>\n' +
-            'После оплаты вы сможете создавать сколько угодно постоянных ссылок.'
+            '3. Нажмите «Subscribe via Telegram»\n\n' +
+            '<b>Или оплатите прямо сейчас 👇</b>\n' +
+            'После оплаты вы сможете создавать постоянные ссылки для любых клиентов.'
           : '<b>👋 Welcome to BilateralBound Premium!</b>\n\n' +
             'This bot handles your EMDR tool subscription.\n\n' +
             '👉 <b>How to subscribe:</b>\n' +
             '1. Go to <a href="' + siteUrl + '">' + siteUrl + '</a>\n' +
             '2. Enter a Client Name (e.g. anna_2025)\n' +
-            '3. Click "Subscribe via Telegram"\n' +
-            '4. Pay 75 Stars here in the bot\n\n' +
-            '<b>One payment — all your clients.</b>\n' +
-            'After payment you can create unlimited permanent links.'
+            '3. Click "Subscribe via Telegram"\n\n' +
+            '<b>Or pay right now 👇</b>\n' +
+            'After payment you can create permanent links for any clients.'
 
         telegramBot?.sendMessage(chatId, msg)
+
+        // Send invoice directly for plain /start (payload = telegramUserId)
+        const title = lang === 'ru' ? 'EMDR Premium Подписка' : 'EMDR Premium Subscription'
+        const description = lang === 'ru'
+          ? 'Доступ ко всем функциям на 30 дней. Постоянные ссылки для всех ваших клиентов.'
+          : 'Full access for 30 days. Permanent links for all your clients.'
+        const label = lang === 'ru' ? 'Premium (30 дней)' : 'Premium (30 days)'
+
+        telegramBot?.sendInvoice(chatId, String(telegramUserId), 75, {
+          title,
+          description,
+          label
+        }).then(function (resp) {
+          if (!resp?.ok) {
+            telegramBot?.sendMessage(
+              chatId,
+              lang === 'ru'
+                ? '❌ Не удалось создать счёт. Попробуйте позже.'
+                : '❌ Failed to create invoice. Try again later.'
+            )
+          }
+        })
         return
       }
+
 
       // Handle /start customId deep links from the site
       if (msgText.startsWith('/start ')) {
@@ -424,11 +466,17 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
       if (result.success) {
         // 2. Link the customId to this user
-        subscriptionService.linkCustomId(customId, telegramUserId)
+        // Skip for plain /start — payload is telegramUserId as numeric string, not a real customId
+        const isNumericPayload = /^\d+$/.test(customId) && String(customId) === String(telegramUserId)
+        if (!isNumericPayload) {
+          subscriptionService.linkCustomId(customId, telegramUserId)
+        }
 
         logger.info(
           { telegramUserId, customId, chargeId, expiresAt: new Date(result.expiresAt).toISOString() },
-          'Subscription activated and customId linked'
+          isNumericPayload
+            ? 'Subscription activated (plain /start, no customId to link)'
+            : 'Subscription activated and customId linked'
         )
 
         const msg = pLang === 'ru'
