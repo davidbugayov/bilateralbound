@@ -482,6 +482,12 @@ function setupEventListeners() {
         wsClient.send('viewer_update', { paused: newPaused })
       }
     }
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      if (typeof globalThis.toggleFullscreen === 'function') {
+        globalThis.toggleFullscreen()
+      }
+    }
   })
 }
 
