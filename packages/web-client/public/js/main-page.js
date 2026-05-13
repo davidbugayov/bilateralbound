@@ -182,17 +182,20 @@
 
       if (!response.ok) {
         const errorData = await response.json().catch(function () {
-          return {
-            error: globalThis.i18n?.t('links.errorUnknown') || 'Unknown error'
-          }
+          return { error: globalThis.i18n?.t('links.errorUnknown') || 'Unknown error' }
         })
-        // If server provided an i18nKey, use localized text as the error message
+
+        // Subscription required (402) — show inline support prompt
+        if (response.status === 402) {
+          const prompt = document.getElementById('subscribePrompt')
+          if (prompt) prompt.style.display = 'flex'
+          if (container) container.style.display = 'none'
+          updateValidationMessage('', false)
+          return
+        }
+
         if (errorData.i18nKey) {
-          throw new Error(
-            globalThis.i18n?.t(errorData.i18nKey) ||
-            errorData.error ||
-            'HTTP ' + response.status
-          )
+          throw new Error(globalThis.i18n?.t(errorData.i18nKey) || errorData.error || 'HTTP ' + response.status)
         }
         throw new Error(errorData.error || 'HTTP ' + response.status)
       }
@@ -201,6 +204,10 @@
       if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl
       if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl
       if (container) container.style.display = 'block'
+
+      // Hide subscription prompt if previously shown
+      const prompt = document.getElementById('subscribePrompt')
+      if (prompt) prompt.style.display = 'none'
 
       setupUrlInputClick(viewerUrlInput)
       setupUrlInputClick(controllerUrlInput)

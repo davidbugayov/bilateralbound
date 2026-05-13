@@ -300,11 +300,18 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           rest = rest.replace(/__lang_[a-z]{2}(-[A-Z]{2})?$/, '')
         }
 
-        // If after stripping lang suffix rest is empty, treat as plain /start (welcome message)
+        // If after stripping lang suffix rest is empty, treat as from site — send invoice directly
         if (!rest) {
-          const sUrl = siteUrl(lang)
-          const msg = t('welcome_short', lang, { siteUrl: sUrl })
-          telegramBot?.sendMessage(chatId, msg)
+          // User came from site without customId — send invoice immediately
+          telegramBot?.sendInvoice(chatId, String(telegramUserId), STARS_PRICE, {
+            title: t('invoice_title', lang),
+            description: t('invoice_description_plain', lang),
+            label: t('invoice_label_plain', lang)
+          }).then(function (resp) {
+            if (!resp?.ok) {
+              telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
+            }
+          })
           return
         }
 

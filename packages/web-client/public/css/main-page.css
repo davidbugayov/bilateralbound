@@ -2168,3 +2168,141 @@ body.light-theme {
     right: -10px;
   }
 }
+
+/* ── Client Portal (merged section) ── */
+.client-portal {
+  max-width: 680px;
+  margin: 0 auto 32px;
+}
+
+.tool-card--wide {
+  max-width: none;
+}
+
+/* Inline subscription prompt (shown when 402) */
+.subscribe-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  margin-top: 16px;
+  background: linear-gradient(135deg, #faf5ff, #f5f0ff);
+  border: 1px solid #d8b4fe;
+  border-radius: 12px;
+}
+
+.subscribe-prompt__icon {
+  flex-shrink: 0;
+  color: #a855f7;
+}
+
+.subscribe-prompt__text {
+  flex: 1 1 200px;
+  margin: 0;
+  font-size: 0.925rem;
+  color: #4c1d95;
+}
+
+.subscribe-prompt__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #8b5cf6;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.925rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.subscribe-prompt__btn:hover {
+  background: #7c3aed;
+}
+
+.subscribe-prompt__status {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  min-height: 1.2em;
+}
+
+/* Restore details (collapsible) */
+.restore-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.restore-details summary {
+  cursor: pointer;
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: #6d28d9;
+  user-select: none;
+}
+
+.restore-details__body {
+  margin-top: 12px;
+}
+
+/* ── Supporter section ── */
+.supporter-section {
+  max-width: 680px;
+  margin: 0 auto 32px;
+}
+
+.supporter-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+}
+
+.supporter-card__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 200px;
+}
+
+.supporter-card__icon {
+  flex-shrink: 0;
+  color: #ef4444;
+}
+
+.supporter-card__left strong {
+  font-size: 1rem;
+  color: var(--text-primary, #0f172a);
+}
+
+.supporter-card__price {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #64748b);
+  margin-top: 2px;
+}
+
+.supporter-card__right {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1 1 auto;
+}
+
+.supporter-card__benefit {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  background: #f0fdf4;
+  color: #166534;
+  border-radius: 100px;
+  white-space: nowrap;
+}
