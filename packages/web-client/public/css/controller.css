@@ -654,9 +654,15 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   min-width: 0;
 }
 
+/* Center col: scrollable, preview natural size */
+.controller-center-col {
+  overflow-y: auto;
+  max-height: calc(100vh - 32px);
+}
+
 /* Center col: preview fills remaining height */
 .controller-center-col #previewWrap {
-  flex: 1;
+  flex-shrink: 0;
   min-height: 200px;
   display: flex;
   flex-direction: column;
