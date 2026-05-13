@@ -1834,6 +1834,10 @@ function updateViewerStatusUI() {
       viewerStatusEl.classList.remove('disconnected')
       viewerStatusEl.style.fontWeight = '600'
       hideWaitingForViewer()
+      // Show screen size if available, otherwise keep waiting message
+      if (globalThis.__current.viewerScreenSize?.width > 0) {
+        updateViewerInfo(globalThis.__current.viewerScreenSize)
+      }
       if (globalThis.__current.viewerScreenSize?.width > 0) {
         updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
