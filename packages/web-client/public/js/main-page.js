@@ -390,11 +390,17 @@
 
       if (data.active) {
         // Already subscribed — no need to open Telegram
-        const messageEl = document.getElementById('subStatusMessage')
+        var messageEl = document.getElementById('subStatusMessage')
         if (messageEl) {
           messageEl.textContent =
             globalThis.i18n?.t('subscription.alreadyActive') || '✅ Premium Active — create permanent links above!'
           messageEl.style.color = '#22c55e'
+        }
+        var promptStatusEl = document.getElementById('subscribePromptStatus')
+        if (promptStatusEl) {
+          promptStatusEl.textContent =
+            globalThis.i18n?.t('subscription.alreadyActive') || '✅ Premium Active — create permanent links above!'
+          promptStatusEl.style.color = '#22c55e'
         }
         return
       }
@@ -442,12 +448,19 @@
           btn.innerHTML = originalText
           btn.disabled = false
         }
-        const messageEl = document.getElementById('subStatusMessage')
-        if (messageEl) {
-          messageEl.textContent =
+        var msgEl = document.getElementById('subStatusMessage')
+        if (msgEl) {
+          msgEl.textContent =
             globalThis.i18n?.t('subscription.pollingTimeout') ||
             '⏰ Payment not detected. Complete payment in Telegram and try again.'
-          messageEl.style.color = '#f59e0b'
+          msgEl.style.color = '#f59e0b'
+        }
+        var promptMsgEl = document.getElementById('subscribePromptStatus')
+        if (promptMsgEl) {
+          promptMsgEl.textContent =
+            globalThis.i18n?.t('subscription.pollingTimeout') ||
+            '⏰ Payment not detected. Complete payment in Telegram and try again.'
+          promptMsgEl.style.color = '#f59e0b'
         }
         return
       }
@@ -465,12 +478,19 @@
             btn.className = (btn.className || '') + ' pricing-card__cta--success'
             btn.disabled = true
           }
-          const messageEl = document.getElementById('subStatusMessage')
-          if (messageEl) {
-            messageEl.textContent =
+          var msgEl2 = document.getElementById('subStatusMessage')
+          if (msgEl2) {
+            msgEl2.textContent =
               globalThis.i18n?.t('subscription.pollingSuccess') ||
               '✅ Payment confirmed! Your Premium is active — create permanent links above!'
-            messageEl.style.color = '#22c55e'
+            msgEl2.style.color = '#22c55e'
+          }
+          var promptMsgEl2 = document.getElementById('subscribePromptStatus')
+          if (promptMsgEl2) {
+            promptMsgEl2.textContent =
+              globalThis.i18n?.t('subscription.pollingSuccess') ||
+              '✅ Payment confirmed! Your Premium is active — create permanent links above!'
+            promptMsgEl2.style.color = '#22c55e'
           }
         }
         // Otherwise keep polling
