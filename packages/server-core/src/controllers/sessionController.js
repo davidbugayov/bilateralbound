@@ -61,7 +61,7 @@ function registerSessionRoutes(
         return res.status(402).json({
           error: 'Subscription required',
           i18nKey: 'links.errorCreatingSubscription',
-          message: 'Permanent session links require an active Premium subscription. Get it via @emdrbilateral_bot'
+          message: 'Permanent session links require an active subscription. Support the project via @emdrbilateral_bot'
         })
       }
 
