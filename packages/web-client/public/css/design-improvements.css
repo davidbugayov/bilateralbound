@@ -1306,11 +1306,12 @@ input:focus-visible + .slider {
   overflow: hidden;
   padding: 0;
   border-radius: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 .floating-preview.viewer-connected {
   max-height: none;
-  overflow: visible;
 }
 
 /* Header row */
@@ -1394,10 +1395,8 @@ input:focus-visible + .slider {
   justify-content: center;
   align-items: center;
   padding: 12px 0;
-
-  /* prevent tall portrait viewers from pushing viewer-info outside the card */
-  max-height: 65vh;
-  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Constrain canvas when viewer not connected: centered, not full-bleed */
@@ -1408,6 +1407,7 @@ input:focus-visible + .slider {
 .floating-preview #preview {
   display: block;
   max-width: 100%;
+  max-height: 100%;
 }
 
 /* Viewer info badge below canvas */
@@ -1422,6 +1422,7 @@ input:focus-visible + .slider {
   border: 1px solid rgb(51 65 85 / 40%);
   border-radius: 8px;
   max-width: fit-content;
+  flex-shrink: 0;
 }
 
 /* Light theme overrides */
