@@ -405,6 +405,72 @@
     const siteLang = globalThis.i18n?.currentLanguage || 'en'
     botLink += '?start=' + encodeURIComponent(customId + '__lang_' + siteLang)
     window.open(botLink, '_blank')
+
+    // Start polling subscription status — user pays in bot and returns here
+    startSubscriptionPolling(customId, subscribeBtn)
+  }
+
+  /**
+   * Poll subscription check after opening Telegram bot.
+   * Polls every 3 seconds for up to 2 minutes (40 attempts).
+   * Shows progress feedback on the subscribe button.
+   */
+  function startSubscriptionPolling(customId, btn) {
+    const MAX_POLLS = 40
+    const POLL_INTERVAL = 3000
+    let attempts = 0
+    const originalText = btn ? btn.innerHTML : ''
+
+    // Show initial polling state
+    if (btn) {
+      btn.innerHTML = globalThis.i18n?.t('subscription.polling') || '⏳ Waiting for payment...'
+      btn.disabled = true
+    }
+
+    const poll = setInterval(async function () {
+      attempts++
+      if (attempts > MAX_POLLS) {
+        clearInterval(poll)
+        if (btn) {
+          btn.innerHTML = originalText
+          btn.disabled = false
+        }
+        const messageEl = document.getElementById('subStatusMessage')
+        if (messageEl) {
+          messageEl.textContent =
+            globalThis.i18n?.t('subscription.pollingTimeout') ||
+            '⏰ Payment not detected. Complete payment in Telegram and try again.'
+          messageEl.style.color = '#f59e0b'
+        }
+        return
+      }
+
+      try {
+        const response = await fetch('/api/subscription/' + encodeURIComponent(customId) + '/check', {
+          method: 'POST'
+        })
+        const data = await response.json()
+
+        if (data.active) {
+          clearInterval(poll)
+          if (btn) {
+            btn.innerHTML = globalThis.i18n?.t('subscription.activated') || '✅ Activated!'
+            btn.className = (btn.className || '') + ' pricing-card__cta--success'
+            btn.disabled = true
+          }
+          const messageEl = document.getElementById('subStatusMessage')
+          if (messageEl) {
+            messageEl.textContent =
+              globalThis.i18n?.t('subscription.pollingSuccess') ||
+              '✅ Payment confirmed! Your Premium is active — create permanent links above!'
+            messageEl.style.color = '#22c55e'
+          }
+        }
+        // Otherwise keep polling
+      } catch (_err) {
+        // Silently retry
+      }
+    }, POLL_INTERVAL)
   }
 
   /**
@@ -539,53 +605,45 @@
   }
 
   /**
-   * Renew subscription for a custom ID
+   * Renew subscription — opens Telegram bot for payment (75 ⭐).
    */
   async function renewSubscription() {
     const customId = document.getElementById('subCustomId')?.value.trim()
     const messageEl = document.getElementById('subStatusMessage')
-    const renewBtn = document.getElementById('subRenewBtn')
 
-    if (!customId) return
-
-    const originalText = renewBtn ? renewBtn.innerHTML : ''
-    try {
-      if (renewBtn) {
-        renewBtn.innerHTML = globalThis.i18n?.t('subscription.checking') || '⏳ Processing...'
-        renewBtn.disabled = true
-      }
-
-      const response = await globalThis.csrfFetch(
-        '/api/subscription/' + encodeURIComponent(customId) + '/renew',
-        { method: 'POST' }
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'HTTP ' + response.status)
-      }
-
+    if (!customId) {
       if (messageEl) {
         messageEl.textContent =
-          globalThis.i18n?.t('subscription.renewed') || '✅ Subscription renewed!'
-        messageEl.style.color = '#22c55e'
-      }
-
-      // Refresh status
-      await checkSubscriptionStatus()
-    } catch (error) {
-      console.error('❌ Subscription renew error:', error)
-      if (messageEl) {
-        messageEl.textContent = '❌ ' + error.message
+          globalThis.i18n?.t('subscription.customIdRequired') || '❌ Please enter your custom client ID'
         messageEl.style.color = '#ef4444'
       }
-    } finally {
-      if (renewBtn) {
-        renewBtn.innerHTML = originalText
-        renewBtn.disabled = false
-      }
+      return
     }
+
+    if (!validateClientId(customId)) {
+      if (messageEl) {
+        messageEl.textContent =
+          globalThis.i18n?.t('links.validationFormat') || '❌ Invalid format'
+        messageEl.style.color = '#ef4444'
+      }
+      return
+    }
+
+    // Open Telegram bot for renewal payment
+    const siteLang = globalThis.i18n?.currentLanguage || 'en'
+    const botLink =
+      (globalThis.__config?.telegramBotLink || 'https://t.me/emdrbilateral_bot') +
+      '?start=' + encodeURIComponent('renew_' + customId + '__lang_' + siteLang)
+    window.open(botLink, '_blank')
+
+    if (messageEl) {
+      messageEl.textContent =
+        globalThis.i18n?.t('subscription.polling') || '⏳ Complete payment in Telegram...'
+      messageEl.style.color = '#f59e0b'
+    }
+
+    // Start polling for renewal confirmation
+    startSubscriptionPolling(customId, null)
   }
 
   /**

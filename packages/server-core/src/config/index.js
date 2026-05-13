@@ -36,6 +36,8 @@ module.exports = {
     STARS_PROVIDER_TOKEN: process.env.STARS_PROVIDER_TOKEN || '',
     PRICE_STARS: Number.parseInt(process.env.PRICE_STARS || '75', 10), // 75 Stars (~100 RUB)
     SUBSCRIPTION_DURATION_MS: 30 * 24 * 60 * 60 * 1000, // 30 days
+    TEST_MODE:
+      String(process.env.SUBSCRIPTION_TEST_MODE || '').toLowerCase() === 'true',
     BOT_USERNAME: process.env.BOT_USERNAME || 'emdrbilateral_bot',
     WEBHOOK_URL: process.env.WEBHOOK_URL || '',
     WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || ''

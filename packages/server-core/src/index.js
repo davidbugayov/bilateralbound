@@ -58,7 +58,8 @@ const physicsService = new PhysicsService(
 )
 const subscriptionService = new SubscriptionService({
   logger,
-  durationMs: config.subscription.SUBSCRIPTION_DURATION_MS
+  durationMs: config.subscription.SUBSCRIPTION_DURATION_MS,
+  testMode: config.subscription.TEST_MODE
 })
 
 // Telegram bot — only initialised if a token is provided via env
@@ -103,7 +104,12 @@ app.use((req, res, next) => {
 })
 
 registerSessionRoutes(app, sessionService, apiCache, analytics, mw, subscriptionService)
-registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot })
+registerSubscriptionRoutes(app, subscriptionService, {
+  logger,
+  telegramBot,
+  priceStars: config.subscription.PRICE_STARS,
+  testMode: config.subscription.TEST_MODE
+})
 
 registerViewerRoutes(
   app,

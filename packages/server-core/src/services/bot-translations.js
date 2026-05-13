@@ -341,7 +341,49 @@ const TRANSLATIONS = {
     zh: '❌ <b>没有有效的订阅</b>\n\n使用 /start 订阅。'
   },
 
-  // ── /renew ──
+  // ── /renew (renewal invoice) ──
+  renew_invoice_title: {
+    en: 'EMDR Premium — Renew',
+    ru: 'EMDR Premium — Продление',
+    es: 'EMDR Premium — Renovar',
+    fr: 'EMDR Premium — Renouveler',
+    de: 'EMDR Premium — Verlängern',
+    pt: 'EMDR Premium — Renovar',
+    ja: 'EMDR プレミアム — 更新',
+    zh: 'EMDR 高级 — 续期'
+  },
+  renew_invoice_description: {
+    en: 'Extend your Premium subscription for another 30 days.',
+    ru: 'Продлите Premium подписку ещё на 30 дней.',
+    es: 'Extiende tu suscripción Premium por otros 30 días.',
+    fr: 'Prolongez votre abonnement Premium de 30 jours.',
+    de: 'Verlängern Sie Ihr Premium-Abonnement um weitere 30 Tage.',
+    pt: 'Estenda sua assinatura Premium por mais 30 dias.',
+    ja: 'プレミアムサブスクリプションをさらに30日間延長します。',
+    zh: '将您的高级订阅再延长30天。'
+  },
+  renew_invoice_label: {
+    en: 'Renewal (30 days)',
+    ru: 'Продление (30 дней)',
+    es: 'Renovación (30 días)',
+    fr: 'Renouvellement (30 jours)',
+    de: 'Verlängerung (30 Tage)',
+    pt: 'Renovação (30 dias)',
+    ja: '更新（30日間）',
+    zh: '续期（30天）'
+  },
+  renew_payment_success: {
+    en: '✅ <b>Subscription renewed!</b>\n\n🎉 Your Premium is extended!\nNew expiry date: {expDate}',
+    ru: '✅ <b>Подписка продлена!</b>\n\n🎉 Premium продлён!\nНовая дата истечения: {expDate}',
+    es: '✅ <b>¡Suscripción renovada!</b>\n\n🎉 ¡Tu Premium ha sido extendido!\nNueva fecha de vencimiento: {expDate}',
+    fr: '✅ <b>Abonnement renouvelé !</b>\n\n🎉 Votre Premium est prolongé !\nNouvelle date d\'expiration : {expDate}',
+    de: '✅ <b>Abonnement verlängert!</b>\n\n🎉 Ihr Premium wurde verlängert!\nNeues Ablaufdatum: {expDate}',
+    pt: '✅ <b>Assinatura renovada!</b>\n\n🎉 Seu Premium foi estendido!\nNova data de expiração: {expDate}',
+    ja: '✅ <b>サブスクリプションが更新されました！</b>\n\n🎉 プレミアムが延長されました！\n新しい期限: {expDate}',
+    zh: '✅ <b>订阅已续期！</b>\n\n🎉 您的高级版已延长！\n新到期日: {expDate}'
+  },
+
+  // ── /renew (legacy free extension — removed, kept for backward compat) ──
   renew_success: {
     en: '✅ <b>Subscription renewed!</b>\n\nNew expiry date: {expDate}',
     ru: '✅ <b>Подписка продлена!</b>\n\nНовая дата истечения: {expDate}',

@@ -25,9 +25,10 @@ class SubscriptionService {
    * @param {number} options.durationMs - Subscription validity (default 30 days)
    * @param {string} options.dataDir - Path to data directory
    */
-  constructor({ logger, durationMs, dataDir } = {}) {
+  constructor({ logger, durationMs, dataDir, testMode } = {}) {
     this.logger = logger || console
     this.durationMs = durationMs || DEFAULT_DURATION_MS
+    this._testMode = !!testMode
 
     /** Map<telegramUserId, { token, activatedAt, expiresAt, starsAmount, autoRenew }> */
     this._subscriptions = new Map()
@@ -129,11 +130,18 @@ class SubscriptionService {
 
   /**
    * Check if a custom session ID can be used (its owner has active subscription).
+   * In test mode, IDs starting with '__test_' bypass the subscription check.
    * @param {string} customId
    * @returns {boolean}
    */
   isCustomIdAllowed(customId) {
     if (!customId) return false
+
+    // Test mode bypass: any ID starting with '__test_' is always allowed
+    if (this._testMode && customId.startsWith('__test_')) {
+      return true
+    }
+
     const telegramUserId = this._customIdIndex.get(customId)
     if (!telegramUserId) return false
     return this.isActive(telegramUserId)

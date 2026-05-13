@@ -13,7 +13,8 @@
 
 const { t, siteUrl, dateLocale, autoRenewText } = require('../services/bot-translations')
 
-function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot }) {
+function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, priceStars, testMode }) {
+  const STARS_PRICE = priceStars || 75
   if (!subscriptionService) {
     logger.warn('SubscriptionService not provided — subscription routes disabled')
     return
@@ -187,6 +188,49 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   }
 
   // ------------------------------------------------------------------
+  // POST /api/subscription/test-activate (TEST MODE ONLY)
+  // Simulates a successful payment — activates subscription and links customId.
+  // Only available when SUBSCRIPTION_TEST_MODE=true and only from localhost.
+  // Body: { telegramUserId: number, customId: string }
+  // ------------------------------------------------------------------
+  app.post('/api/subscription/test-activate', (req, res) => {
+    if (!testMode) {
+      return res.status(404).json({ error: 'Not found' })
+    }
+    const remoteAddr = req.socket?.remoteAddress
+    const isLocal =
+      remoteAddr === '127.0.0.1' ||
+      remoteAddr === '::1' ||
+      remoteAddr === '::ffff:127.0.0.1'
+    if (!isLocal) {
+      return res.status(403).json({ error: 'Localhost only' })
+    }
+
+    const { telegramUserId, customId } = req.body || {}
+    const tgId = Number.parseInt(telegramUserId, 10)
+    if (!tgId || !customId) {
+      return res.status(400).json({ error: 'Missing telegramUserId or customId' })
+    }
+
+    // Use a fake charge ID for test
+    const testToken = 'test_' + Date.now()
+    const result = subscriptionService.activate(tgId, testToken, 75)
+    if (!result.success) {
+      return res.status(400).json({ error: result.error })
+    }
+
+    subscriptionService.linkCustomId(customId, tgId)
+    logger.info({ telegramUserId: tgId, customId, testToken }, 'TEST: subscription activated')
+
+    res.json({
+      success: true,
+      customId,
+      telegramUserId: tgId,
+      expiresAt: new Date(result.expiresAt).toISOString()
+    })
+  })
+
+  // ------------------------------------------------------------------
   // POST /api/subscription/webhook
   // Telegram Bot webhook endpoint (Telegram Stars payments)
   // Body: Telegram Update object — https://core.telegram.org/bots/api#update
@@ -232,7 +276,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         logger.info({ chatId, msgSent: !!msgResult }, '/start welcome sent')
 
         // Send invoice directly for plain /start (payload = telegramUserId)
-        telegramBot?.sendInvoice(chatId, String(telegramUserId), 75, {
+        telegramBot?.sendInvoice(chatId, String(telegramUserId), STARS_PRICE, {
           title: t('invoice_title', lang),
           description: t('invoice_description_plain', lang),
           label: t('invoice_label_plain', lang)
@@ -277,8 +321,24 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           return
         }
 
+        // Check if this is a renewal request (renew_ prefix)
+        if (rest.startsWith('renew_')) {
+          const renewCustomId = rest.slice(6) // remove 'renew_' prefix
+          // Send renewal invoice
+          telegramBot?.sendInvoice(chatId, 'renew_' + String(telegramUserId), STARS_PRICE, {
+            title: t('renew_invoice_title', lang),
+            description: t('renew_invoice_description', lang),
+            label: t('renew_invoice_label', lang)
+          }).then(function (resp) {
+            if (!resp?.ok) {
+              telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
+            }
+          })
+          return
+        }
+
         // Not subscribed — send invoice
-        telegramBot?.sendInvoice(chatId, rest, 75, {
+        telegramBot?.sendInvoice(chatId, rest, STARS_PRICE, {
           title: t('invoice_title', lang),
           description: t('invoice_description_custom', lang),
           label: t('invoice_label_custom', lang)
@@ -309,23 +369,26 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         return
       }
 
-      // ---- /renew — extend subscription ----
+      // ---- /renew — send renewal invoice ----
       if (msgText === '/renew') {
         const telegramUserId = from.id
-        const renewResult = subscriptionService.renew(telegramUserId)
-        let renewMsg
-        if (renewResult.success) {
-          const newExp = new Date(renewResult.expiresAt).toLocaleDateString(dateLocale(lang))
-          renewMsg = t('renew_success', lang, { expDate: newExp })
-        } else {
-          // Translate known errors from SubscriptionService (always English)
-          if (renewResult.error?.includes('No subscription')) {
-            renewMsg = t('renew_no_subscription', lang)
-          } else {
-            renewMsg = t('renew_failed', lang)
-          }
+
+        // Check that user has a subscription to renew
+        if (!subscriptionService.isActive(telegramUserId)) {
+          telegramBot?.sendMessage(chatId, t('renew_no_subscription', lang))
+          return
         }
-        telegramBot?.sendMessage(chatId, renewMsg)
+
+        // Send renewal invoice — payment will extend the subscription
+        telegramBot?.sendInvoice(chatId, 'renew_' + String(telegramUserId), STARS_PRICE, {
+          title: t('renew_invoice_title', lang),
+          description: t('renew_invoice_description', lang),
+          label: t('renew_invoice_label', lang)
+        }).then(function (resp) {
+          if (!resp?.ok) {
+            telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
+          }
+        })
         return
       }
 
@@ -405,32 +468,44 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         'Telegram Stars payment received'
       )
 
-      // 1. Activate subscription for this Telegram user
-      const result = subscriptionService.activate(telegramUserId, chargeId, starsAmount)
+      // Check if this is a renewal (payload starts with 'renew_')
+      const isRenewal = typeof customId === 'string' && customId.startsWith('renew_')
+
+      let result
+      if (isRenewal) {
+        // Renewal — extend existing subscription
+        result = subscriptionService.renew(telegramUserId)
+      } else {
+        // New subscription
+        result = subscriptionService.activate(telegramUserId, chargeId, starsAmount)
+
+        if (result.success) {
+          // Link the customId to this user (skip for plain /start — payload is telegramUserId)
+          const isNumericPayload = /^\d+$/.test(customId) && String(customId) === String(telegramUserId)
+          if (!isNumericPayload) {
+            subscriptionService.linkCustomId(customId, telegramUserId)
+          }
+        }
+      }
 
       if (result.success) {
-        // 2. Link the customId to this user
-        // Skip for plain /start — payload is telegramUserId as numeric string, not a real customId
-        const isNumericPayload = /^\d+$/.test(customId) && String(customId) === String(telegramUserId)
-        if (!isNumericPayload) {
-          subscriptionService.linkCustomId(customId, telegramUserId)
-        }
-
         logger.info(
           { telegramUserId, customId, chargeId, expiresAt: new Date(result.expiresAt).toISOString() },
-          isNumericPayload
-            ? 'Subscription activated (plain /start, no customId to link)'
-            : 'Subscription activated and customId linked'
+          isRenewal ? 'Subscription renewed via payment' : 'Subscription activated and customId linked'
         )
 
-        const msg = t('payment_success', pLang, {
-          expDate: new Date(result.expiresAt).toLocaleDateString(dateLocale(pLang)),
-          siteUrl: siteUrl(pLang)
-        })
+        const msg = isRenewal
+          ? t('renew_payment_success', pLang, {
+              expDate: new Date(result.expiresAt).toLocaleDateString(dateLocale(pLang))
+            })
+          : t('payment_success', pLang, {
+              expDate: new Date(result.expiresAt).toLocaleDateString(dateLocale(pLang)),
+              siteUrl: siteUrl(pLang)
+            })
 
         telegramBot?.sendMessage(chatId, msg)
       } else {
-        logger.warn({ telegramUserId, chargeId, error: result.error }, 'Activation failed')
+        logger.warn({ telegramUserId, chargeId, error: result.error }, 'Activation/renewal failed')
 
         const msg = t('payment_failed', pLang, { error: result.error || 'Unknown error' })
 
