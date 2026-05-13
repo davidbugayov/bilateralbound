@@ -190,7 +190,7 @@ class ControllerSettingsManager {
       speed: globalThis.components?.speed?.getSpeed?.() ?? 40,
       colorBall: colorBtn?.style?.backgroundColor ?? '#60a5fa',
       colorBg: document.body.style.backgroundColor || '#020617',
-      size: document.querySelector('.size-btn.active')?.dataset?.size ?? 20,
+      size: document.querySelector('.size-btn.active')?.dataset?.size ?? 40,
       direction: globalThis.currentDirectionMode || 'horizontal'
     }
     this.savePresets()
@@ -339,7 +339,7 @@ class ControllerSettingsManager {
       direction: globalThis.currentDirectionMode || 'horizontal',
       ballColor: colorBtn?.style?.backgroundColor ?? '#60a5fa',
       bgColor: document.body.style.backgroundColor || '#020617',
-      ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 20
+      ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 40
     }
   }
   /**
@@ -562,7 +562,7 @@ class ControllerSettingsManager {
         ballColor: colorBtn?.style?.backgroundColor ?? '#60a5fa',
         bgColor: document.body.style.backgroundColor || '#020617',
         ballSize:
-          document.querySelector('.size-btn.active')?.dataset?.size ?? 20,
+          document.querySelector('.size-btn.active')?.dataset?.size ?? 40,
         isPlaying: globalThis.isPlaying || false
       },
       viewerConnected: globalThis.__current?.viewerConnected ?? false,

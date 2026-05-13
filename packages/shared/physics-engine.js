@@ -46,7 +46,7 @@ const MAX_ACCUMULATOR = FIXED_DT * 3
 const DEFAULT_OPTIONS = {
   worldWidth: 800,
   worldHeight: 600,
-  ballRadius: 20,
+  ballRadius: 40,
   minSpeed: 50,
   maxSpeed: 5000,
   defaultSpeed: 30,

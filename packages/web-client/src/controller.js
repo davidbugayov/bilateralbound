@@ -1052,7 +1052,7 @@ function _initializeSizeControl() {
   }
   components.size = sharedComponents.createSizeControl(container, {
     sizes: [20, 40, 80, 100],
-    defaultValue: 20,
+    defaultValue: 40,
     title: '',
     onSizeChange: (size) => {
       setBallSize(size)

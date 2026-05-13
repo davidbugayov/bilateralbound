@@ -82,7 +82,7 @@ class SessionRepository {
     // Создаем базовый ballState с дефолтными значениями
     const defaultBallState = {
       speed: 30,
-      radius: 20,
+      radius: 40,
       colorBall: '#60a5fa',
       colorBg: '#020617',
       paused: true,

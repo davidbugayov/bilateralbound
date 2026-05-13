@@ -34,7 +34,7 @@ class PhysicsService {
    */
   initializeEngine(session) {
     session.physicsEngine = new PhysicsEngine({
-      ballRadius: session.ballState.radius || 20,
+      ballRadius: session.ballState.radius || 40,
       maxSpeed: 5000
     })
     this._initCallbacks(session)
