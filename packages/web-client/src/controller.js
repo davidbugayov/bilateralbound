@@ -779,12 +779,12 @@ function applyServerStateToPreview(state) {
     if (isPlaying !== newIsPlaying) {
       isPlaying = newIsPlaying
       updatePlayPauseButton()
-      // Show notification when viewer toggles play/pause
+      // Show notification when viewer toggles play/pause (no title, just message)
       const _t = (k, fallback) => globalThis.i18n?.t(k) || fallback
       if (state.paused) {
-        showNotification(_t('controller.viewerStopped', 'Viewer stopped'), 'info')
+        globalThis.notificationSystem?.info('', _t('controller.viewerStopped', 'Viewer stopped'))
       } else {
-        showNotification(_t('controller.viewerStarted', 'Viewer started'), 'success')
+        globalThis.notificationSystem?.info('', _t('controller.viewerStarted', 'Viewer started'))
       }
     }
     if (state.paused) {
