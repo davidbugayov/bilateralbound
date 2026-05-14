@@ -1787,50 +1787,10 @@ body::before {
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  padding: 32px 0 40px;
+  padding: 18px 0 36px;
   max-width: 680px;
   margin: 0 auto;
   animation: fadeUp 0.5s 0.1s ease both;
-}
-
-/* ── Header ── */
-.premium-hub__header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
-}
-
-.premium-hub__icon-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-cyan) 100%);
-  border-radius: 14px;
-  margin-bottom: 4px;
-  color: #fff;
-  box-shadow: 0 4px 16px rgb(37 99 235 / 25%);
-}
-
-.premium-hub__title {
-  font-family: var(--mp-font-display);
-  font-size: clamp(1.05rem, 2.5vw, 1.3rem);
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--mp-text) 0%, var(--mp-blue-light) 60%, var(--mp-cyan) 100%);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.premium-hub__subtitle {
-  font-size: 0.78rem;
-  color: var(--mp-muted);
-  margin: 0;
-  line-height: 1.5;
 }
 
 /* ── Top Grid (Links + Plan) ── */
@@ -1846,8 +1806,8 @@ body::before {
   background: var(--mp-surface);
   backdrop-filter: blur(12px);
   border: 1px solid var(--mp-border);
-  border-radius: 18px;
-  padding: 22px 20px;
+  border-radius: 20px;
+  padding: 24px 22px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1857,9 +1817,9 @@ body::before {
 }
 
 .hub-card:hover {
-  transform: translateY(-2px);
-  border-color: rgb(59 130 246 / 20%);
-  box-shadow: 0 8px 28px rgb(37 99 235 / 8%);
+  transform: translateY(-3px);
+  border-color: rgb(59 130 246 / 25%);
+  box-shadow: 0 10px 32px rgb(37 99 235 / 12%), 0 0 0 1px rgb(59 130 246 / 6%);
 }
 
 /* Gradient top border accent */
@@ -2519,7 +2479,7 @@ body::before {
 /* ── Responsive ── */
 @media (width <= 600px) {
   .premium-hub {
-    padding: 24px 0 32px;
+    padding: 14px 0 28px;
   }
 
   .premium-hub__grid {
@@ -2656,12 +2616,6 @@ body::before {
 
 .light-theme .hub-restore summary:hover {
   color: var(--mp-blue);
-}
-
-.light-theme .premium-hub__title {
-  background: linear-gradient(135deg, #0f172a 0%, #2563eb 55%, #2563eb 100%);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 /* ── Reduced Motion ── */
