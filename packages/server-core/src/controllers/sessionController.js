@@ -52,17 +52,31 @@ function registerSessionRoutes(
   })
 
   // Reserve/create permanent link — idempotent (from expressApp L701-723)
-  // Subscription gating: only premium users can reserve custom/permanent links
+  // Subscription gating: only premium users can reserve custom/permanent links.
+  // Accepts optional proofCustomId body param — if sessionId is not linked but
+  // proofCustomId belongs to an active subscription, auto-link sessionId to same user.
   app.post('/api/session/:sessionId/reserve', (req, res) => {
     const { sessionId } = req.params
     try {
-      // Gate: subscription required for custom session IDs
       if (subscriptionService && !subscriptionService.isCustomIdAllowed(sessionId)) {
-        return res.status(402).json({
-          error: 'Subscription required',
-          i18nKey: 'links.errorCreatingSubscription',
-          message: 'Permanent session links require an active subscription. Support the project via @emdrbilateral_bot'
-        })
+        // Check if a proofCustomId is provided and linked to an active subscription
+        const proofCustomId = (req.body && req.body.proofCustomId) || null
+        if (proofCustomId && subscriptionService.isCustomIdAllowed(proofCustomId)) {
+          // Auto-link the new sessionId to the same subscription owner
+          const proofOwner = subscriptionService.getCustomIdOwner(proofCustomId)
+          if (proofOwner) {
+            subscriptionService.linkCustomId(sessionId, proofOwner)
+            // Fall through — isCustomIdAllowed will now return true
+          }
+        }
+        // Re-check after potential auto-link
+        if (!subscriptionService.isCustomIdAllowed(sessionId)) {
+          return res.status(402).json({
+            error: 'Subscription required',
+            i18nKey: 'links.errorCreatingSubscription',
+            message: 'Permanent session links require an active subscription. Support the project via @emdrbilateral_bot'
+          })
+        }
       }
 
       const session = sessionService.findOrCreateSession(sessionId)

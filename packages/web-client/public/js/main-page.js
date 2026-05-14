@@ -175,9 +175,13 @@
         false
       )
 
+      // Send proofCustomId if we have a linked subscription — allows auto-linking new IDs
+      const proofCustomId = localStorage.getItem('subscriptionProofId') || null
+      const body = proofCustomId ? JSON.stringify({ proofCustomId }) : '{}'
       const response = await globalThis.csrfFetch('/api/session/' + clientId + '/reserve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: body
       })
 
       if (!response.ok) {
@@ -390,6 +394,9 @@
 
       if (data.active) {
         // Already subscribed — no need to open Telegram
+        localStorage.setItem('subscriptionProofId', customId)
+        var promptHide2 = document.getElementById('subscribePrompt')
+        if (promptHide2) promptHide2.style.display = 'none'
         var messageEl = document.getElementById('subStatusMessage')
         if (messageEl) {
           messageEl.textContent =
@@ -473,6 +480,10 @@
 
         if (data.active) {
           clearInterval(poll)
+          // Store proof and hide subscribe prompt
+          localStorage.setItem('subscriptionProofId', customId)
+          var promptHide = document.getElementById('subscribePrompt')
+          if (promptHide) promptHide.style.display = 'none'
           if (btn) {
             btn.innerHTML = globalThis.i18n?.t('subscription.activated') || '✅ Activated!'
             btn.className = (btn.className || '') + ' pricing-card__cta--success'
@@ -571,6 +582,11 @@
       }
       if (statusText) {
         if (data.active) {
+          // Store this customId as subscription proof for auto-linking new permanent links
+          localStorage.setItem('subscriptionProofId', customId)
+          // Hide the subscribe prompt in the permanent links card
+          var promptEl = document.getElementById('subscribePrompt')
+          if (promptEl) promptEl.style.display = 'none'
           const expires = data.subscription?.expiresAt
             ? new Date(data.subscription?.expiresAt).toLocaleDateString()
             : '—'
@@ -586,6 +602,7 @@
                 '</small>'
               : '')
         } else {
+          localStorage.removeItem('subscriptionProofId')
           statusText.innerHTML =
             '<span style="color:#ef4444">' +
             (globalThis.i18n?.t('subscription.required') || 'Subscription required') +
@@ -863,6 +880,11 @@
         messageEl.style.color = '#22c55e'
       }
 
+      // Store proof and hide subscribe prompt in permanent links card
+      localStorage.setItem('subscriptionProofId', customId)
+      var promptEl2 = document.getElementById('subscribePrompt')
+      if (promptEl2) promptEl2.style.display = 'none'
+
       // Refresh status to show management UI
       await checkSubscriptionStatus()
     } catch (error) {
@@ -993,6 +1015,19 @@
     // Initialize subscription UI
     initSubscriptionUI()
     initSubscriptionManagementUI()
+
+    // If we have a stored subscription proof, hide the subscribe prompt on page load
+    // and pre-fill the customId input in subscription management
+    var savedProof = localStorage.getItem('subscriptionProofId')
+    if (savedProof) {
+      var promptEl3 = document.getElementById('subscribePrompt')
+      if (promptEl3) promptEl3.style.display = 'none'
+      // Also pre-fill the subscription management customId for convenience
+      var subCustomIdInput = document.getElementById('subCustomId')
+      if (subCustomIdInput && !subCustomIdInput.value) {
+        subCustomIdInput.value = savedProof
+      }
+    }
 
     // Export for global access
     window.subscriptionManagement = {

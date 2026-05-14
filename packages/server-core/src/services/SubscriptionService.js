@@ -148,6 +148,17 @@ class SubscriptionService {
   }
 
   /**
+   * Get the telegramUserId that owns a custom ID.
+   * Does NOT check subscription status — just returns the owner.
+   * @param {string} customId
+   * @returns {number|null}
+   */
+  getCustomIdOwner(customId) {
+    if (!customId) return null
+    return this._customIdIndex.get(customId) || null
+  }
+
+  /**
    * Link a custom ID to a Telegram user.
    * Idempotent — if already linked to the same user, returns success.
    * @param {string} customId
