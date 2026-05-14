@@ -55,7 +55,7 @@
     "creatingLinks": "Creating permanent links...",
     "createdSuccess": "✅ Links created successfully!",
     "createdNotification": "🎉 Permanent links created!",
-    "copied": "✅ Link copied!",
+    "copied": "Link copied!",
     "yourLinks": "Your permanent links",
     "errorUnknown": "Unknown error",
     "errorCreating": "Error creating links: ",

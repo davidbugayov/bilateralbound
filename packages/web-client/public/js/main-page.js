@@ -949,7 +949,7 @@
             document.execCommand('copy')
             if (window.showSuccessNotification) {
               window.showSuccessNotification(
-                globalThis.i18n?.t('links.copied') || '✅ Link copied!'
+                globalThis.i18n?.t('links.copied') || 'Link copied!'
               )
             }
           }
