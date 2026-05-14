@@ -943,12 +943,15 @@
         else if (action === 'generate-links') generatePermanentLinks()
         else if (action === 'load-session') loadSession()
         else if (action === 'copy') {
-          const input = this.closest(
-            '.link-group__input-wrapper, .input-group'
-          )?.querySelector('input')
+          var input = this.closest('.hub-link-full, .link-group__input-wrapper, .input-group')?.querySelector('input')
           if (input) {
             input.select()
             document.execCommand('copy')
+            if (window.showSuccessNotification) {
+              window.showSuccessNotification(
+                globalThis.i18n?.t('links.copied') || '✅ Link copied!'
+              )
+            }
           }
         }
       })
