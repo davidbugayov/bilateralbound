@@ -2115,37 +2115,39 @@ body::before {
   gap: 10px;
 }
 
-/* Single link row — horizontal: badge + input + copy */
+/* Single link row — vertical: label above, then input + copy */
 .hub-link-full {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.hub-link-full__badge {
+.hub-link-full__label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 12px;
-  border-radius: 7px;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.hub-link-full__badge svg {
-  flex-shrink: 0;
-}
-
-.hub-link-full__badge--viewer {
-  background: rgb(34 197 94 / 12%);
   color: #16a34a;
 }
 
-.hub-link-full__badge--ctrl {
-  background: rgb(245 158 11 / 12%);
+.hub-link-full__label svg {
+  flex-shrink: 0;
+  color: #16a34a;
+}
+
+.hub-link-full__label--ctrl {
   color: #d97706;
+}
+
+.hub-link-full__label--ctrl svg {
+  color: #d97706;
+}
+
+.hub-link-full__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .hub-link-full__input {
@@ -2680,14 +2682,10 @@ body::before {
 
 /* ── Responsive: full-width link rows stack on mobile ── */
 @media (width <= 600px) {
-  .hub-link-full {
+  .hub-link-full__row {
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
-  }
-
-  .hub-link-full__badge {
-    align-self: flex-start;
   }
 
   .hub-link-full__input {

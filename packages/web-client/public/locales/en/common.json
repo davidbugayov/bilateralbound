@@ -55,11 +55,18 @@
     "creatingLinks": "Creating permanent links...",
     "createdSuccess": "✅ Links created successfully!",
     "createdNotification": "🎉 Permanent links created!",
+    "copied": "✅ Link copied!",
+    "yourLinks": "Your permanent links",
     "errorUnknown": "Unknown error",
     "errorCreating": "Error creating links: ",
     "errorCreatingSubscription": "Subscription required. Support the project via @emdrbilateral_bot",
     "validationEmpty": "❌ Please enter a client ID",
     "validationFormat": "❌ Invalid format. Use only latin letters, numbers, _ or - (3-32 characters)"
+  },
+  "premiumHub": {
+    "title": "Premium Hub",
+    "subtitle": "Permanent links & subscription — manage everything in one place",
+    "manageTitle": "Manage Subscription"
   },
   "restore": {
     "heading": "🔄 Restore session by ID",
@@ -68,6 +75,7 @@
     "placeholder": "Enter session ID...",
     "loadBtn": "📥 Load",
     "foundTitle": "✅ Session found!",
+    "linksFound": "Restored session links",
     "loading": "⏳ Loading...",
     "checking": "Checking session...",
     "notFound": "Session with this ID not found.",
@@ -459,7 +467,7 @@
     "activateBtn": "Link Subscription",
     "activating": "Linking...",
     "activated": "✅ Subscription linked!",
-    "activateDesc": "If you already paid via Telegram (plain /start without a custom ID), enter your Custom ID and Telegram User ID to link them.",
+    "activateDesc": "If you already paid via Telegram (plain /start without a custom ID), enter your Custom ID and Telegram User ID to link them. How to get your Telegram User ID: open @userinfobot in Telegram, send /start — it will reply with your numeric ID.",
     "activateTgLabel": "Telegram User ID",
     "activateTgPlaceholder": "Your Telegram User ID (get it from @userinfobot)",
     "activateTgRequired": "❌ Please enter your Telegram User ID",

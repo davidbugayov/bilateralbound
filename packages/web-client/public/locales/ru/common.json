@@ -57,11 +57,18 @@
     "creatingLinks": "Создание постоянных ссылок...",
     "createdSuccess": "✅ Ссылки успешно созданы!",
     "createdNotification": "🎉 Постоянные ссылки созданы!",
+    "copied": "✅ Ссылка скопирована!",
+    "yourLinks": "Ваши постоянные ссылки",
     "errorUnknown": "Неизвестная ошибка",
     "errorCreating": "Ошибка создания ссылок: ",
     "errorCreatingSubscription": "Требуется подписка. Поддержите проект через @emdrbilateral_bot",
     "validationEmpty": "❌ Пожалуйста, введите ID клиента",
     "validationFormat": "❌ Неверный формат. Используйте только латиницу, цифры, _ или - (3-32 символа)"
+  },
+  "premiumHub": {
+    "title": "Premium Hub",
+    "subtitle": "Постоянные ссылки и подписка — всё в одном месте",
+    "manageTitle": "Управление подпиской"
   },
   "restore": {
     "heading": "🔄 Восстановить сессию по ID",
@@ -70,6 +77,7 @@
     "placeholder": "Введите ID сессии...",
     "loadBtn": "📥 Загрузить",
     "foundTitle": "✅ Сессия найдена!",
+    "linksFound": "Восстановленные ссылки",
     "loading": "⏳ Загрузка...",
     "checking": "Проверка сессии...",
     "notFound": "Сессия с таким ID не найдена.",
@@ -485,7 +493,7 @@
     "activateBtn": "Привязать подписку",
     "activating": "Привязка...",
     "activated": "✅ Подписка привязана!",
-    "activateDesc": "Если вы уже оплатили через Telegram (простой /start без custom ID), введите ваш Custom ID и Telegram User ID чтобы привязать их.",
+    "activateDesc": "Если вы уже оплатили через Telegram (простой /start без custom ID), введите ваш Custom ID и Telegram User ID чтобы привязать их. Как узнать Telegram User ID: откройте @userinfobot в Telegram, отправьте /start — бот пришлёт ваш числовой ID.",
     "activateTgLabel": "Telegram User ID",
     "activateTgPlaceholder": "Ваш Telegram User ID (узнайте в @userinfobot)",
     "activateTgRequired": "❌ Пожалуйста, введите ваш Telegram User ID",
