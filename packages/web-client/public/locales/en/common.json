@@ -468,6 +468,7 @@
     "activating": "Linking...",
     "activated": "✅ Subscription linked!",
     "activateDesc": "If you already paid via Telegram (plain /start without a custom ID), enter your Custom ID and Telegram User ID to link them. How to get your Telegram User ID: open @userinfobot in Telegram, send /start — it will reply with your numeric ID.",
+     "activateDescInline": "If you already paid via Telegram, enter your Telegram User ID to link your subscription.",
     "activateTgLabel": "Telegram User ID",
     "activateTgPlaceholder": "Your Telegram User ID (get it from @userinfobot)",
     "activateTgRequired": "❌ Please enter your Telegram User ID",

@@ -571,14 +571,14 @@
       }
       if (statusText) {
         if (data.active) {
-          const expires = data.expiresAt
-            ? new Date(data.expiresAt).toLocaleDateString()
+          const expires = data.subscription?.expiresAt
+            ? new Date(data.subscription?.expiresAt).toLocaleDateString()
             : '—'
           statusText.innerHTML =
             '<strong>' +
             (globalThis.i18n?.t('subscription.alreadyActive') || '✅ Premium Active') +
             '</strong>' +
-            (data.expiresAt
+            (data.subscription?.expiresAt
               ? '<br><small>' +
                 (globalThis.i18n?.t('subscription.expiresAt') || 'Expires:') +
                 ' ' +
@@ -599,16 +599,21 @@
         // Update auto-renew button
         const autoRenewBtn = document.getElementById('subAutoRenewBtn')
         if (autoRenewBtn) {
-          const isAutoRenew = data.autoRenew === true
+          const isAutoRenew = data.subscription?.autoRenew === true
           autoRenewBtn.dataset.autoRenew = String(isAutoRenew)
           const label = isAutoRenew
             ? (globalThis.i18n?.t('subscription.autorenewOn') || 'Auto-Renew: On')
             : (globalThis.i18n?.t('subscription.autorenewOff') || 'Auto-Renew: Off')
-          autoRenewBtn.querySelector('span').textContent = label
+          autoRenewBtn.textContent = label
           autoRenewBtn.className = 'main-button' + (isAutoRenew ? ' main-button--success' : '')
         }
       }
 
+      // Show/hide inline activation section
+      const activationInline = document.getElementById('subActivationInline')
+      if (activationInline) {
+        activationInline.style.display = data.active ? 'none' : 'block'
+      }
       if (messageEl) {
         messageEl.textContent = data.active
           ? ''
@@ -619,6 +624,8 @@
       console.error('❌ Subscription check error:', error)
       if (statusEl) statusEl.style.display = 'none'
       if (actionsEl) actionsEl.style.display = 'none'
+      const activationInlineErr = document.getElementById('subActivationInline')
+      if (activationInlineErr) activationInlineErr.style.display = 'none'
       if (messageEl) {
         messageEl.textContent = '❌ ' + error.message
         messageEl.style.color = '#ef4444'
@@ -742,10 +749,10 @@
     const currentState = autoRenewBtn ? autoRenewBtn.dataset.autoRenew === 'true' : false
     const newState = !currentState
 
-    const originalText = autoRenewBtn ? autoRenewBtn.innerHTML : ''
+    const originalText = autoRenewBtn ? autoRenewBtn.textContent : ''
     try {
       if (autoRenewBtn) {
-        autoRenewBtn.innerHTML = globalThis.i18n?.t('subscription.checking') || '⏳ Processing...'
+        autoRenewBtn.textContent = globalThis.i18n?.t('subscription.checking') || '⏳ Processing...'
         autoRenewBtn.disabled = true
       }
 
@@ -770,7 +777,7 @@
         const label = data.autoRenew
           ? (globalThis.i18n?.t('subscription.autorenewOn') || 'Auto-Renew: On')
           : (globalThis.i18n?.t('subscription.autorenewOff') || 'Auto-Renew: Off')
-        autoRenewBtn.querySelector('span').textContent = label
+        autoRenewBtn.textContent = label
         autoRenewBtn.className = 'main-button' + (data.autoRenew ? ' main-button--success' : '')
       }
 
@@ -788,7 +795,7 @@
       }
     } finally {
       if (autoRenewBtn) {
-        autoRenewBtn.innerHTML = originalText
+        autoRenewBtn.textContent = originalText
         autoRenewBtn.disabled = false
       }
     }
@@ -798,10 +805,10 @@
    * Activate subscription — link customId to an existing paid subscription
    */
   async function activateSubscription() {
-    const customId = document.getElementById('subActivateCustomId')?.value.trim()
-    const telegramUserId = document.getElementById('subActivateTgId')?.value.trim()
-    const messageEl = document.getElementById('subActivateMessage')
-    const activateBtn = document.getElementById('subActivateBtn')
+    const customId = document.getElementById('subCustomId')?.value.trim()
+    const telegramUserId = document.getElementById('subActivateTgIdInline')?.value.trim()
+    const messageEl = document.getElementById('subActivateMessageInline')
+    const activateBtn = document.getElementById('subActivateBtnInline')
 
     if (!customId) {
       if (messageEl) {
@@ -831,10 +838,10 @@
       return
     }
 
-    const originalText = activateBtn ? activateBtn.innerHTML : ''
+    const originalText = activateBtn ? activateBtn.textContent : ''
     try {
       if (activateBtn) {
-        activateBtn.innerHTML = globalThis.i18n?.t('subscription.activating') || '⏳ Activating...'
+        activateBtn.textContent = globalThis.i18n?.t('subscription.activating') || '⏳ Activating...'
         activateBtn.disabled = true
       }
 
@@ -855,6 +862,9 @@
           globalThis.i18n?.t('subscription.activated') || '✅ Subscription activated!'
         messageEl.style.color = '#22c55e'
       }
+
+      // Refresh status to show management UI
+      await checkSubscriptionStatus()
     } catch (error) {
       console.error('❌ Subscription activation error:', error)
       if (messageEl) {
@@ -863,7 +873,7 @@
       }
     } finally {
       if (activateBtn) {
-        activateBtn.innerHTML = originalText
+        activateBtn.textContent = originalText
         activateBtn.disabled = false
       }
     }
@@ -875,23 +885,14 @@
   function initSubscriptionManagementUI() {
     const checkBtn = document.getElementById('subCheckBtn')
 
-    // Activation button
-    const activateBtn = document.getElementById('subActivateBtn')
-    if (activateBtn) {
-      activateBtn.addEventListener('click', activateSubscription)
+    // Inline activation button (shown when no subscription found)
+    const activateBtnInline = document.getElementById('subActivateBtnInline')
+    if (activateBtnInline) {
+      activateBtnInline.addEventListener('click', activateSubscription)
     }
-    const activateCustomIdInput = document.getElementById('subActivateCustomId')
-    if (activateCustomIdInput) {
-      activateCustomIdInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault()
-          activateSubscription()
-        }
-      })
-    }
-    const activateTgIdInput = document.getElementById('subActivateTgId')
-    if (activateTgIdInput) {
-      activateTgIdInput.addEventListener('keypress', function (e) {
+    const activateTgIdInputInline = document.getElementById('subActivateTgIdInline')
+    if (activateTgIdInputInline) {
+      activateTgIdInputInline.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
           e.preventDefault()
           activateSubscription()

@@ -494,6 +494,7 @@
     "activating": "Привязка...",
     "activated": "✅ Подписка привязана!",
     "activateDesc": "Если вы уже оплатили через Telegram (простой /start без custom ID), введите ваш Custom ID и Telegram User ID чтобы привязать их. Как узнать Telegram User ID: откройте @userinfobot в Telegram, отправьте /start — бот пришлёт ваш числовой ID.",
+     "activateDescInline": "Если вы уже оплатили через Telegram, введите ваш Telegram User ID чтобы привязать подписку.",
     "activateTgLabel": "Telegram User ID",
     "activateTgPlaceholder": "Ваш Telegram User ID (узнайте в @userinfobot)",
     "activateTgRequired": "❌ Пожалуйста, введите ваш Telegram User ID",

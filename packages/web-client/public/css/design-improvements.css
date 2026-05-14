@@ -2414,6 +2414,22 @@ body::before {
   line-height: 1.4;
 }
 
+/* ── Inline Activation ── */
+.hub-activation-inline {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgb(251 191 36 / 8%);
+  border: 1px solid rgb(251 191 36 / 20%);
+  border-radius: 10px;
+}
+
+.hub-activation-inline__desc {
+  font-size: 0.73rem;
+  color: var(--mp-muted);
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
 /* ── Status Display ── */
 .hub-status {
   display: flex;
