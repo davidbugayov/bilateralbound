@@ -2079,6 +2079,99 @@ body::before {
   opacity: 0.6;
 }
 
+/* ── Full-Width Generated Links (below grid) ── */
+.hub-links-full {
+  width: 100%;
+  background: var(--mp-surface);
+  border: 1.5px solid rgb(34 197 94 / 18%);
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  animation: fadeUp 0.35s ease both;
+}
+
+.hub-links-full__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: rgb(34 197 94 / 6%);
+  border-bottom: 1px solid rgb(34 197 94 / 10%);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #22c55e;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hub-links-full__header svg {
+  color: #22c55e;
+}
+
+.hub-links-full__rows {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Single link row — horizontal: badge + input + copy */
+.hub-link-full {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-link-full__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 72px;
+  justify-content: center;
+}
+
+.hub-link-full__badge svg {
+  flex-shrink: 0;
+}
+
+.hub-link-full__badge--viewer {
+  background: rgb(34 197 94 / 12%);
+  color: #16a34a;
+}
+
+.hub-link-full__badge--ctrl {
+  background: rgb(245 158 11 / 12%);
+  color: #d97706;
+}
+
+.hub-link-full__input {
+  flex: 1;
+  min-width: 0;
+  background: var(--mp-surface-2);
+  border: 1.5px solid var(--mp-border-strong);
+  color: var(--mp-text);
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  outline: none;
+  cursor: text;
+  transition: border-color 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.hub-link-full__input:focus {
+  border-color: var(--mp-cyan);
+}
+
 .hub-link-row {
   display: flex;
   flex-direction: column;
@@ -2503,6 +2596,22 @@ body::before {
   border-color: rgb(34 197 94 / 10%);
 }
 
+.light-theme .hub-links-full {
+  background: #fff;
+  border-color: rgb(34 197 94 / 15%);
+}
+
+.light-theme .hub-links-full__header {
+  background: rgb(34 197 94 / 5%);
+  border-bottom-color: rgb(34 197 94 / 8%);
+}
+
+.light-theme .hub-link-full__input {
+  background: #f8fafc;
+  border-color: rgb(0 0 0 / 10%);
+  color: #0f172a;
+}
+
 .light-theme .hub-link-input {
   background: #fff;
   border-color: rgb(0 0 0 / 10%);
@@ -2559,6 +2668,7 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   .premium-hub,
   .hub-links,
+  .hub-links-full,
   .hub-card,
   .hub-card::after {
     animation: none;
@@ -2567,5 +2677,32 @@ body::before {
 
   .hub-card:hover {
     transform: none;
+  }
+}
+
+/* ── Responsive: full-width link rows stack on mobile ── */
+@media (width <= 600px) {
+  .hub-link-full {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .hub-link-full__badge {
+    align-self: flex-start;
+  }
+
+  .hub-link-full__input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hub-links-full__rows {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .hub-links-full__header {
+    padding: 10px 14px;
   }
 }
