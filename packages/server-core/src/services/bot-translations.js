@@ -125,6 +125,62 @@ const TRANSLATIONS = {
         '返回网站 — 链接已就绪！'
   },
 
+  // ── Already subscribed with renewal prompt (plain /start, has subscription) ──
+  already_subscribed_renewal: {
+    en: '✅ <b>Subscription already active!</b>\n\n' +
+        'Expires: {expDate}\n' +
+        'Clients: {clients}\n\n' +
+        'Want to extend for another 30 days?\n' +
+        'Support the project by renewing your subscription 👇',
+    ru: '✅ <b>Подписка уже активна!</b>\n\n' +
+        'Истекает: {expDate}\n' +
+        'Клиентов: {clients}\n\n' +
+        'Хотите продлить ещё на 30 дней?\n' +
+        'Поддержите проект — продлите подписку 👇',
+    es: '✅ <b>¡La suscripción ya está activa!</b>\n\n' +
+        'Vence: {expDate}\n' +
+        'Clientes: {clients}\n\n' +
+        '¿Quieres extender por otros 30 días?\n' +
+        'Apoya el proyecto renovando tu suscripción 👇',
+    fr: '✅ <b>L\'abonnement est déjà actif !</b>\n\n' +
+        'Expire le : {expDate}\n' +
+        'Clients : {clients}\n\n' +
+        'Vous voulez prolonger pour 30 jours ?\n' +
+        'Soutenez le projet en renouvelant votre abonnement 👇',
+    de: '✅ <b>Abonnement bereits aktiv!</b>\n\n' +
+        'Läuft ab: {expDate}\n' +
+        'Kunden: {clients}\n\n' +
+        'Möchten Sie um weitere 30 Tage verlängern?\n' +
+        'Unterstützen Sie das Projekt — Abo verlängern 👇',
+    pt: '✅ <b>Assinatura já está ativa!</b>\n\n' +
+        'Expira em: {expDate}\n' +
+        'Clientes: {clients}\n\n' +
+        'Quer estender por mais 30 dias?\n' +
+        'Apoie o projeto renovando sua assinatura 👇',
+    ja: '✅ <b>サブスクリプションは既に有効です！</b>\n\n' +
+        '期限: {expDate}\n' +
+        'クライアント数: {clients}\n\n' +
+        'さらに30日間延長しませんか？\n' +
+        'プロジェクトをサポートして更新する 👇',
+    zh: '✅ <b>订阅已激活！</b>\n\n' +
+        '到期: {expDate}\n' +
+        '客户数: {clients}\n\n' +
+        '想再延长30天吗？\n' +
+        '支持项目，续订订阅 👇'
+  },
+
+  // ── Support / Renew button label ──
+  support_button: {
+    en: 'Support with 75 ⭐',
+    ru: 'Поддержать за 75 ⭐',
+    es: 'Apoyar con 75 ⭐',
+    fr: 'Soutenir avec 75 ⭐',
+    de: 'Unterstützen mit 75 ⭐',
+    pt: 'Apoiar com 75 ⭐',
+    ja: '75 ⭐でサポート',
+    zh: '用75 ⭐支持'
+  },
+
   // ── Client ID linked (when already subscribed, /start customId) ──
   client_linked: {
     en: '✅ Client <code>{customId}</code> linked to your account!\n\n' +

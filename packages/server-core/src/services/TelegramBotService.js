@@ -51,6 +51,7 @@ class TelegramBotService {
         max_connections: 10,
         allowed_updates: [
           'message',
+          'callback_query',
           'pre_checkout_query',
           'successful_payment'
         ]
@@ -109,6 +110,29 @@ class TelegramBotService {
       return res.ok
     } catch (err) {
       this.logger.error({ err, queryId }, 'answerPreCheckoutQuery failed')
+      return false
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Callback queries
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Answer a callback query (required when using inline keyboards).
+   * @param {string} queryId — callback_query.id
+   * @param {Object} [opts] — optional { text: string, show_alert: boolean, url: string }
+   */
+  async answerCallbackQuery(queryId, opts = {}) {
+    if (!this.isConfigured) return false
+    try {
+      const res = await this._call('answerCallbackQuery', {
+        callback_query_id: queryId,
+        ...opts
+      })
+      return res.ok
+    } catch (err) {
+      this.logger.error({ err, queryId }, 'answerCallbackQuery failed')
       return false
     }
   }

@@ -237,14 +237,20 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         const isSubscribed = subscriptionService.isActive(telegramUserId)
 
         if (isSubscribed) {
-          // Already subscribed — show status
+          // Already subscribed — show renewal prompt with inline button
           const status = subscriptionService.getStatus(telegramUserId)
           const expDate = new Date(status.expiresAt).toLocaleDateString(dateLocale(lang))
-          const statusMsg = t('already_subscribed', lang, {
+          const statusMsg = t('already_subscribed_renewal', lang, {
             expDate,
             clients: String(status.customIds?.length || 0)
           })
-          telegramBot?.sendMessage(chatId, statusMsg)
+          telegramBot?.sendMessage(chatId, statusMsg, {
+            reply_markup: {
+              inline_keyboard: [[
+                { text: t('support_button', lang), callback_data: 'support_renew' }
+              ]]
+            }
+          })
           return
         }
 
@@ -399,6 +405,36 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         telegramBot?.sendMessage(chatId, arMsg)
         return
       }
+    }
+
+    // ---- callback_query — handle inline keyboard button clicks ----
+    if (update.callback_query) {
+      const { id: callbackId, data: callbackData, message: cbMessage, from: cbFrom } = update.callback_query
+      const chatId = cbMessage.chat.id
+      const telegramUserId = cbFrom.id
+      const cbLang = subscriptionService.getUserLanguage(telegramUserId) || 'en'
+
+      // Answer callback query immediately (Telegram requires this)
+      telegramBot?.answerCallbackQuery(callbackId)
+        .catch(function (err) {
+          logger.error({ err, callbackId }, 'answerCallbackQuery error')
+        })
+
+      if (callbackData === 'support_renew') {
+        // User clicked "Support with 75 ⭐" — send renewal invoice
+        logger.info({ telegramUserId, chatId }, 'Support button clicked — sending renewal invoice')
+
+        telegramBot?.sendInvoice(chatId, 'renew_' + String(telegramUserId), STARS_PRICE, {
+          title: t('renew_invoice_title', cbLang),
+          description: t('renew_invoice_description', cbLang),
+          label: t('renew_invoice_label', cbLang)
+        }).then(function (resp) {
+          if (!resp?.ok) {
+            telegramBot?.sendMessage(chatId, t('invoice_failed', cbLang))
+          }
+        })
+      }
+      return
     }
 
     // ---- pre_checkout_query — validate ----
