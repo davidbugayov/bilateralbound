@@ -521,6 +521,10 @@
     if (subscribeBtn) {
       subscribeBtn.addEventListener('click', handleSubscribeClick)
     }
+    const subscribeBtnTop = document.getElementById('subscribeBtnTop')
+    if (subscribeBtnTop) {
+      subscribeBtnTop.addEventListener('click', handleSubscribeClick)
+    }
   }
 
   /* ── Subscription Management ── */
