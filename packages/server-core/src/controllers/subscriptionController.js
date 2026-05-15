@@ -480,66 +480,59 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
       return
     }
   })
-}
 
-// ------------------------------------------------------------------
-// Auto-renew checker — runs every hour, sends invoices to users
-// with autoRenew=true whose subscription expires within 24 hours
-// ------------------------------------------------------------------
-function startAutoRenewChecker() {
-  if (!telegramBot) {
-    logger.info('No Telegram bot configured — auto-renew checker disabled')
-    return null
-  }
-  const CHECK_INTERVAL = 60 * 60 * 1000 // 1 hour
-  const EXPIRY_THRESHOLD = 24 * 60 * 60 * 1000 // 24 hours
-  const COOLDOWN = 24 * 60 * 60 * 1000 // 24 hours
+  // ------------------------------------------------------------------
+  // Auto-renew checker — runs every hour, sends invoices to users
+  // with autoRenew=true whose subscription expires within 24 hours
+  // ------------------------------------------------------------------
+  if (telegramBot) {
+    const CHECK_INTERVAL = 60 * 60 * 1000 // 1 hour
+    const EXPIRY_THRESHOLD = 24 * 60 * 60 * 1000 // 24 hours
+    const COOLDOWN = 24 * 60 * 60 * 1000 // 24 hours
 
-  async function checkAutoRenew() {
-    try {
-      const expiring = subscriptionService.getExpiringAutoRenewSubscriptions(EXPIRY_THRESHOLD, COOLDOWN)
-      if (expiring.length === 0) return
+    async function checkAutoRenew() {
+      try {
+        const expiring = subscriptionService.getExpiringAutoRenewSubscriptions(EXPIRY_THRESHOLD, COOLDOWN)
+        if (expiring.length === 0) return
 
-      logger.info({ count: expiring.length }, 'Auto-renew checker: sending renewal invoices')
+        logger.info({ count: expiring.length }, 'Auto-renew checker: sending renewal invoices')
 
-      for (const user of expiring) {
-        try {
-          const lang = subscriptionService.getUserLanguage(user.telegramUserId) || 'en'
-          const result = await telegramBot.sendInvoice(
-            user.chatId,
-            'renew_' + String(user.telegramUserId),
-            STARS_PRICE,
-            {
-              title: t('renew_invoice_title', lang),
-              description: t('renew_invoice_description', lang),
-              label: t('renew_invoice_label', lang)
-            }
-          )
-          if (result?.ok) {
-            subscriptionService.markAutoRenewInvoiceSent(user.telegramUserId)
-            logger.info(
-              { telegramUserId: user.telegramUserId, expiresAt: new Date(user.expiresAt).toISOString() },
-              'Auto-renew invoice sent'
+        for (const user of expiring) {
+          try {
+            const lang = subscriptionService.getUserLanguage(user.telegramUserId) || 'en'
+            const result = await telegramBot.sendInvoice(
+              user.chatId,
+              'renew_' + String(user.telegramUserId),
+              STARS_PRICE,
+              {
+                title: t('renew_invoice_title', lang),
+                description: t('renew_invoice_description', lang),
+                label: t('renew_invoice_label', lang)
+              }
             )
+            if (result?.ok) {
+              subscriptionService.markAutoRenewInvoiceSent(user.telegramUserId)
+              logger.info(
+                { telegramUserId: user.telegramUserId, expiresAt: new Date(user.expiresAt).toISOString() },
+                'Auto-renew invoice sent'
+              )
+            }
+          } catch (err) {
+            logger.error({ err, telegramUserId: user.telegramUserId }, 'Auto-renew invoice failed')
           }
-        } catch (err) {
-          logger.error({ err, telegramUserId: user.telegramUserId }, 'Auto-renew invoice failed')
         }
+      } catch (err) {
+        logger.error({ err }, 'Auto-renew checker error')
       }
-    } catch (err) {
-      logger.error({ err }, 'Auto-renew checker error')
     }
+
+    // Run immediately on startup, then every hour
+    checkAutoRenew()
+    setInterval(checkAutoRenew, CHECK_INTERVAL)
+    logger.info({ intervalMs: CHECK_INTERVAL }, 'Auto-renew checker started')
+  } else {
+    logger.info('No Telegram bot configured — auto-renew checker disabled')
   }
-
-  // Run immediately on startup, then every hour
-  checkAutoRenew()
-  const intervalId = setInterval(checkAutoRenew, CHECK_INTERVAL)
-  logger.info({ intervalMs: CHECK_INTERVAL }, 'Auto-renew checker started')
-
-  return intervalId
 }
 
-// Start the auto-renew checker
-const autoRenewInterval = startAutoRenewChecker()
-
-module.exports = { registerSubscriptionRoutes, autoRenewInterval }
+module.exports = { registerSubscriptionRoutes }
