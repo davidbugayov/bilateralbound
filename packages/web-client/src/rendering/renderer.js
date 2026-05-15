@@ -19,12 +19,13 @@ class BallRenderer {
       throw new Error('Unable to get 2D context from canvas')
     }
     this.animationFrameId = null
+    this._pendingResize = false
+    this._resizeObserver = null
     this.lastTime = 0
     this.frameCount = 0
     this.frameTimeHistory = [] // История времен кадров для расчета реального FPS
     this.adaptiveFrameRate = true // Адаптивная частота кадров
     this.maxFrameTime = 50 // Максимальное время кадра в ms
-    this.fixedStepMs = 1000 / 60
     this.fixedStepMs = 1000 / 60
     this.onFrameCallback = null
     this.options = {
@@ -56,6 +57,10 @@ class BallRenderer {
     if (this.animationFrameId) {
       this.stop()
     }
+    this._resizeObserver = new ResizeObserver(() => {
+      this._pendingResize = true
+    })
+    this._resizeObserver.observe(this.canvas)
     this.lastTime = performance.now()
     this.renderLoop = this.renderLoop.bind(this)
     this.renderLoop(performance.now())
@@ -67,6 +72,10 @@ class BallRenderer {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId)
       this.animationFrameId = null
+    }
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect()
+      this._resizeObserver = null
     }
   }
   _calculateDeltaTime(currentTime) {
@@ -91,19 +100,22 @@ class BallRenderer {
   }
   renderLoop(currentTime) {
     if (this.validateCanvas()) {
-      const clientW = this.canvas.clientWidth
-      const clientH = this.canvas.clientHeight
-      if (
-        (clientW && clientW !== this.canvas.width) ||
-        (clientH && clientH !== this.canvas.height)
-      ) {
-        this.resize(
-          clientW || this.canvas.width,
-          clientH || this.canvas.height
-        )
-        this.lastTime = currentTime
-        this.animationFrameId = requestAnimationFrame(this.renderLoop)
-        return
+      if (this._pendingResize) {
+        this._pendingResize = false
+        const clientW = this.canvas.clientWidth
+        const clientH = this.canvas.clientHeight
+        if (
+          (clientW && clientW !== this.canvas.width) ||
+          (clientH && clientH !== this.canvas.height)
+        ) {
+          this.resize(
+            clientW || this.canvas.width,
+            clientH || this.canvas.height
+          )
+          this.lastTime = currentTime
+          this.animationFrameId = requestAnimationFrame(this.renderLoop)
+          return
+        }
       }
       const clampedDeltaTime = this._calculateDeltaTime(currentTime)
       this.frameCount++
