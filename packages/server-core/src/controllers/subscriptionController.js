@@ -284,18 +284,38 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           rest = rest.replace(/__lang_[a-z]{2}(-[A-Z]{2})?$/, '')
         }
 
-        // If after stripping lang suffix rest is empty, treat as from site — send invoice directly
+        // If after stripping lang suffix rest is empty, treat as from site
         if (!rest) {
-          // User came from site without customId — send invoice immediately
-          telegramBot?.sendInvoice(chatId, String(telegramUserId), STARS_PRICE, {
-            title: t('invoice_title', lang),
-            description: t('invoice_description_plain', lang),
-            label: t('invoice_label_plain', lang)
-          }).then(function (resp) {
-            if (!resp?.ok) {
-              telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
-            }
-          })
+          // Check if already subscribed before sending invoice
+          const isSubscribed = subscriptionService.isActive(telegramUserId)
+
+          if (isSubscribed) {
+            // Already subscribed — show renewal prompt with inline button
+            const status = subscriptionService.getStatus(telegramUserId)
+            const expDate = new Date(status.expiresAt).toLocaleDateString(dateLocale(lang))
+            const statusMsg = t('already_subscribed_renewal', lang, {
+              expDate,
+              clients: String(status.customIds?.length || 0)
+            })
+            telegramBot?.sendMessage(chatId, statusMsg, {
+              reply_markup: {
+                inline_keyboard: [[
+                  { text: t('support_button', lang), callback_data: 'support_renew' }
+                ]]
+              }
+            })
+          } else {
+            // Not subscribed — send invoice immediately
+            telegramBot?.sendInvoice(chatId, String(telegramUserId), STARS_PRICE, {
+              title: t('invoice_title', lang),
+              description: t('invoice_description_plain', lang),
+              label: t('invoice_label_plain', lang)
+            }).then(function (resp) {
+              if (!resp?.ok) {
+                telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
+              }
+            })
+          }
           return
         }
 
@@ -303,12 +323,27 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         const isSubscribed = subscriptionService.isActive(telegramUserId)
 
         if (isSubscribed) {
-          // Already subscribed — link this customId automatically
+          // Already subscribed — link this customId automatically, then show renewal prompt
           const linkResult = subscriptionService.linkCustomId(rest, telegramUserId)
-          const msg = linkResult.success
+          const linkMsg = linkResult.success
             ? t('client_linked', lang, { customId: rest })
             : t('client_already_linked', lang)
-          telegramBot?.sendMessage(chatId, msg)
+          telegramBot?.sendMessage(chatId, linkMsg)
+
+          // Also show renewal prompt with inline button
+          const status = subscriptionService.getStatus(telegramUserId)
+          const expDate = new Date(status.expiresAt).toLocaleDateString(dateLocale(lang))
+          const statusMsg = t('already_subscribed_renewal', lang, {
+            expDate,
+            clients: String(status.customIds?.length || 0)
+          })
+          telegramBot?.sendMessage(chatId, statusMsg, {
+            reply_markup: {
+              inline_keyboard: [[
+                { text: t('support_button', lang), callback_data: 'support_renew' }
+              ]]
+            }
+          })
           return
         }
 
