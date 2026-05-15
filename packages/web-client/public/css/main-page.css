@@ -4,9 +4,9 @@
 
 /* ── Design tokens ── */
 :root {
-  --mp-surface: #080e1c;
-  --mp-surface-2: #050a14;
-  --mp-surface-3: #0d1426;
+  --mp-surface: #0f172a;
+  --mp-surface-2: #0b1322;
+  --mp-surface-3: #172033;
   --mp-border: rgb(255 255 255 / 6%);
   --mp-border-strong: rgb(255 255 255 / 12%);
   --mp-blue: #2563eb;
