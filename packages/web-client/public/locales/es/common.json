@@ -388,22 +388,10 @@
     "activateTgPlaceholder": "Tu ID de Telegram (obténlo de @userinfobot)",
     "activateTgRequired": "❌ Por favor, ingresa tu ID de Telegram",
     "activateTgInvalid": "❌ ID de Telegram inválido — debe ser un número",
-    "sessionIdLabel": "Tu ID de sesión",
     "managementTitle": "Gestión de Suscripción",
-    "managementDesc": "Administra tu suscripción de patrocinador: verifica estado, renueva (75 ⭐) o cancela.",
     "customIdLabel": "Tu Custom ID",
     "customIdPlaceholder": "Ingresa tu custom client ID",
-    "renewBtn": "Renovar (75 ⭐)",
-    "cancelBtn": "Cancelar Suscripción",
-    "autorenewBtn": "Auto-Renovación",
-    "customIdRequired": "❌ Por favor, ingresa tu custom client ID",
-    "renewed": "✅ ¡Suscripción renovada!",
-    "cancelled": "✅ Suscripción cancelada",
-    "cancelConfirm": "¿Está seguro de que desea cancelar su suscripción?",
-    "autorenewOn": "Auto-Renovación: Activado",
-    "autorenewOff": "Auto-Renovación: Desactivado",
-    "autorenewEnabled": "✅ Auto-renovación activada",
-    "autorenewDisabled": "Auto-renovación desactivada"
+    "customIdRequired": "❌ Por favor, ingresa tu custom client ID"
   },
   "privacy": {
     "title": "Política de Privacidad",

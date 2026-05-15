@@ -395,20 +395,9 @@
     "activateTgRequired": "❌ Veuillez entrer votre ID utilisateur Telegram",
     "activateTgInvalid": "❌ ID utilisateur Telegram invalide — doit être un nombre",
     "managementTitle": "Gestion de l'abonnement",
-    "managementDesc": "Gérez votre abonnement Supporter : vérifiez le statut, renouvelez (75 ⭐) ou annulez.",
     "customIdLabel": "Votre Custom ID",
     "customIdPlaceholder": "Entrez votre identifiant client personnalisé",
-    "renewBtn": "Renouveler (75 ⭐)",
-    "cancelBtn": "Annuler l'abonnement",
-    "autorenewBtn": "Renouvellement auto.",
-    "customIdRequired": "❌ Veuillez entrer votre identifiant client personnalisé",
-    "renewed": "✅ Abonnement renouvelé !",
-    "cancelled": "✅ Abonnement annulé",
-    "cancelConfirm": "Êtes-vous sûr de vouloir annuler votre abonnement ?",
-    "autorenewOn": "Renouvellement auto. : Activé",
-    "autorenewOff": "Renouvellement auto. : Désactivé",
-    "autorenewEnabled": "✅ Renouvellement automatique activé",
-    "autorenewDisabled": "Renouvellement automatique désactivé"
+    "customIdRequired": "❌ Veuillez entrer votre identifiant client personnalisé"
   },
   "privacy": {
     "title": "Politique de Confidentialité",
@@ -582,7 +571,6 @@
     "footerCopyright": "© 2024-2026 BilateralBound. Tous droits réservés.",
     "footerHome": "Retour à l'accueil"
   },
-
   "cookie": {
     "text": "Nous utilisons Yandex.Metrica pour analyser le trafic du site. En cliquant sur « Accepter », vous consentez au traitement de vos données.",
     "accept": "Accepter",

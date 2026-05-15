@@ -533,7 +533,6 @@
     const statusEl = document.getElementById('subStatus')
     const statusIcon = document.getElementById('subStatusIcon')
     const statusText = document.getElementById('subStatusText')
-    const actionsEl = document.getElementById('subActions')
     const messageEl = document.getElementById('subStatusMessage')
     const checkBtn = document.getElementById('subCheckBtn')
 
@@ -585,7 +584,6 @@
         var managePanel = document.getElementById('subscriptionManagement')
         if (managePanel) managePanel.style.display = 'none'
         if (statusEl) statusEl.style.display = 'none'
-        if (actionsEl) actionsEl.style.display = 'none'
         if (messageEl) messageEl.textContent = ''
         return
       } else {
@@ -600,7 +598,6 @@
             (globalThis.i18n?.t('subscription.required') || 'Subscription required') +
             '</span>'
         }
-        if (actionsEl) actionsEl.style.display = 'none'
         const activationInline = document.getElementById('subActivationInline')
         if (activationInline) activationInline.style.display = 'block'
         if (messageEl) {
@@ -611,7 +608,6 @@
     } catch (error) {
       console.error('❌ Subscription check error:', error)
       if (statusEl) statusEl.style.display = 'none'
-      if (actionsEl) actionsEl.style.display = 'none'
       const activationInlineErr = document.getElementById('subActivationInline')
       if (activationInlineErr) activationInlineErr.style.display = 'none'
       if (messageEl) {

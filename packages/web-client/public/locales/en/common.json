@@ -474,20 +474,9 @@
     "activateTgRequired": "❌ Please enter your Telegram User ID",
     "activateTgInvalid": "❌ Invalid Telegram User ID — must be a number",
     "managementTitle": "Subscription Management",
-    "managementDesc": "Manage your supporter subscription: check status, renew (75 ⭐), or cancel.",
     "customIdLabel": "Your Custom ID",
     "customIdPlaceholder": "Enter your custom client ID",
-    "renewBtn": "Renew (75 ⭐)",
-    "cancelBtn": "Cancel Subscription",
-    "autorenewBtn": "Auto-Renew",
-    "customIdRequired": "❌ Please enter your custom client ID",
-    "renewed": "✅ Subscription renewed!",
-    "cancelled": "✅ Subscription cancelled",
-    "cancelConfirm": "Are you sure you want to cancel your subscription?",
-    "autorenewOn": "Auto-Renew: On",
-    "autorenewOff": "Auto-Renew: Off",
-    "autorenewEnabled": "✅ Auto-renew enabled",
-    "autorenewDisabled": "Auto-renew disabled"
+    "customIdRequired": "❌ Please enter your custom client ID"
   },
   "cookie": {
     "text": "We use Yandex.Metrica to analyze site traffic. By clicking \"Accept\", you consent to the processing of your data.",
