@@ -19,7 +19,6 @@ const STATIC_ASSETS = [
   '/css/viewer.css?v=' + CACHE_VERSION,
   '/css/shared-components.css?v=' + CACHE_VERSION,
   '/css/light-theme.css?v=' + CACHE_VERSION,
-  '/css/design-improvements.css?v=' + CACHE_VERSION,
   '/dist/viewer.bundle.js?v=' + CACHE_VERSION,
   '/dist/controller.bundle.js?v=' + CACHE_VERSION,
   '/js/common.js?v=' + CACHE_VERSION,
