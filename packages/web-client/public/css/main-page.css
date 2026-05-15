@@ -60,7 +60,6 @@ body.light-theme {
   gap: 10px;
 }
 
-
 /* ── Header controls ── */
 .header-controls {
   display: flex;
@@ -138,13 +137,18 @@ body.light-theme {
   gap: 12px;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .hub-card:hover {
   transform: translateY(-3px);
   border-color: rgb(59 130 246 / 25%);
-  box-shadow: 0 10px 32px rgb(37 99 235 / 12%), 0 0 0 1px rgb(59 130 246 / 6%);
+  box-shadow:
+    0 10px 32px rgb(37 99 235 / 12%),
+    0 0 0 1px rgb(59 130 246 / 6%);
 }
 
 /* Gradient top border accent */
@@ -155,7 +159,12 @@ body.light-theme {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--mp-cyan) 50%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--mp-cyan) 50%,
+    transparent
+  );
   opacity: 0.5;
   pointer-events: none;
 }
@@ -174,8 +183,10 @@ body.light-theme {
     rgb(37 99 235 / 20%) 60%,
     transparent 80%
   );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -188,7 +199,11 @@ body.light-theme {
 
 /* Plan card accent */
 .hub-card--plan {
-  background: linear-gradient(135deg, var(--mp-surface) 0%, rgb(37 99 235 / 4%) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--mp-surface) 0%,
+    rgb(37 99 235 / 4%) 100%
+  );
   border-color: rgb(59 130 246 / 15%);
 }
 
@@ -249,7 +264,9 @@ body.light-theme {
   font-size: 0.84rem;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .hub-input::placeholder {
@@ -629,7 +646,11 @@ body.light-theme {
   gap: 12px;
   padding: 16px;
   margin-top: 4px;
-  background: linear-gradient(135deg, rgb(139 92 246 / 8%), rgb(124 58 237 / 4%));
+  background: linear-gradient(
+    135deg,
+    rgb(139 92 246 / 8%),
+    rgb(124 58 237 / 4%)
+  );
   border: 1px solid rgb(139 92 246 / 20%);
   border-radius: 12px;
 }
@@ -675,7 +696,12 @@ body.light-theme {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--mp-cyan) 50%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--mp-cyan) 50%,
+    transparent
+  );
   opacity: 0.3;
   pointer-events: none;
 }
@@ -751,7 +777,7 @@ body.light-theme {
 .hub-activation-inline__desc {
   font-size: 0.73rem;
   color: var(--mp-muted);
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   line-height: 1.5;
 }
 
@@ -868,7 +894,11 @@ body.light-theme {
 }
 
 .light-theme .hub-card--plan {
-  background: linear-gradient(135deg, rgb(255 255 255 / 90%) 0%, rgb(37 99 235 / 3%) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 90%) 0%,
+    rgb(37 99 235 / 3%) 100%
+  );
   border-color: rgb(37 99 235 / 15%);
 }
 
@@ -924,7 +954,11 @@ body.light-theme {
 }
 
 .light-theme .hub-subscribe-prompt {
-  background: linear-gradient(135deg, rgb(139 92 246 / 5%), rgb(124 58 237 / 2%));
+  background: linear-gradient(
+    135deg,
+    rgb(139 92 246 / 5%),
+    rgb(124 58 237 / 2%)
+  );
   border-color: rgb(139 92 246 / 15%);
 }
 
@@ -1347,7 +1381,9 @@ body.light-theme {
   min-height: 48px;
   line-height: 1.35;
   text-align: left;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
   flex: 1;
 }
 
@@ -1810,9 +1846,10 @@ body.light-theme {
     rgb(37 99 235 / 25%) 60%,
     transparent 80%
   );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box,
+  mask:
+    linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
+  mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -1882,10 +1919,12 @@ body.light-theme {
     transform 0.2s ease,
     box-shadow 0.25s ease;
   cursor: default;
+
   /* Subtle separator dot after each item except last */
 }
+
 .footer-contact__item:not(:last-child)::after {
-  content: '';
+  content: "";
   display: inline-block;
   width: 3px;
   height: 3px;
@@ -1907,7 +1946,9 @@ body.light-theme {
   flex-shrink: 0;
   color: var(--mp-blue-light);
   opacity: 0.8;
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
 }
 
 .footer-contact__item:hover .footer-icon {
@@ -1968,7 +2009,6 @@ body.light-theme {
   /* Glassmorphism */
   background: rgb(8 14 28 / 88%);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgb(255 255 255 / 8%);
   box-shadow:
     0 8px 32px rgb(0 0 0 / 40%),
@@ -2026,7 +2066,11 @@ body.light-theme {
 }
 
 .cookie-consent__btn--accept {
-  background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-blue-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--mp-blue) 0%,
+    var(--mp-blue-light) 100%
+  );
   color: #fff;
   box-shadow: 0 2px 12px rgb(37 99 235 / 30%);
 }
@@ -2334,7 +2378,7 @@ body.light-theme {
   }
 
   .feature-item {
-    padding: 12px 12px;
+    padding: 12px;
     flex-direction: row;
     align-items: center;
     gap: 10px;
@@ -2405,7 +2449,6 @@ body.light-theme {
   animation: fadeUp 0.5s 0.15s ease both;
 }
 
-
 .pricing-section__title,
 .subscription-unified__title {
   font-family: var(--mp-font-display);
@@ -2443,7 +2486,10 @@ body.light-theme {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .pricing-card:hover {
@@ -2457,7 +2503,11 @@ body.light-theme {
 
 .pricing-card--premium {
   border-color: rgb(59 130 246 / 20%);
-  background: linear-gradient(135deg, rgb(37 99 235 / 6%) 0%, rgb(59 130 246 / 6%) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(37 99 235 / 6%) 0%,
+    rgb(59 130 246 / 6%) 100%
+  );
 }
 
 .pricing-card--premium:hover {
@@ -2685,7 +2735,9 @@ body.light-theme {
   border-radius: 10px;
   font-size: 0.84rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   font-family: inherit;
 }
 
@@ -2738,7 +2790,11 @@ body.light-theme {
 }
 
 .light-theme .pricing-card--premium {
-  background: linear-gradient(135deg, rgb(37 99 235 / 4%) 0%, rgb(59 130 246 / 4%) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(37 99 235 / 4%) 0%,
+    rgb(59 130 246 / 4%) 100%
+  );
   border-color: rgb(37 99 235 / 18%);
 }
 
@@ -2795,7 +2851,9 @@ body.light-theme {
   gap: 10px;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .subscription-hub__panel:hover {
@@ -2969,7 +3027,9 @@ body.light-theme {
   gap: 16px;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
@@ -3010,9 +3070,10 @@ body.light-theme {
     rgb(37 99 235 / 25%) 60%,
     transparent 80%
   );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box,
+  mask:
+    linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
+  mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.4s ease;

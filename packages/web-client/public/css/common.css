@@ -1,20 +1,23 @@
 /* Common CSS styles for BilateralBound */
 
 @font-face {
-  font-family: 'Inter';
+  font-family: Inter;
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/inter-var.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("/fonts/inter-var.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
+    U+FFFD;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: Inter;
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/inter-var-cyrillic.woff2') format('woff2');
+  src: url("/fonts/inter-var-cyrillic.woff2") format("woff2");
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 
@@ -239,14 +242,17 @@ body:not(.light-theme) .session-info {
   gap: 12px;
   transform: translateY(100%);
   transition: transform 0.3s ease;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 -4px 12px rgb(0 0 0 / 20%);
 }
+
 .cookie-consent--visible {
   transform: translateY(0);
 }
+
 .cookie-consent--hidden {
   transform: translateY(100%);
 }
+
 .cookie-consent__text {
   color: var(--text-muted, #94a3b8);
   font-size: 0.9rem;
@@ -254,71 +260,89 @@ body:not(.light-theme) .session-info {
   flex: 1;
   min-width: 200px;
 }
+
 .cookie-consent__actions {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
 }
+
 .cookie-consent__btn {
   padding: 8px 20px;
   border: 1px solid var(--border, #334155);
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   font-family: inherit;
 }
+
 .cookie-consent__btn--accept {
   background: var(--accent, #60a5fa);
   color: #fff;
   border-color: var(--accent, #60a5fa);
 }
+
 .cookie-consent__btn--accept:hover {
   background: var(--accent-hover, #3b82f6);
 }
+
 .cookie-consent__btn--decline {
   background: transparent;
   color: var(--text-muted, #94a3b8);
 }
+
 .cookie-consent__btn--decline:hover {
-  background: rgba(255,255,255,0.05);
+  background: rgb(255 255 255 / 5%);
   color: var(--text, #e2e8f0);
 }
+
 body.light-theme .cookie-consent {
   background: #f8fafc;
   border-top-color: #e2e8f0;
 }
+
 body.light-theme .cookie-consent__text {
   color: #475569;
 }
+
 body.light-theme .cookie-consent__btn--decline {
   color: #64748b;
 }
+
 body.light-theme .cookie-consent__btn--decline:hover {
-  background: rgba(0,0,0,0.05);
+  background: rgb(0 0 0 / 5%);
   color: #1e293b;
 }
+
 .footer-contact {
   margin-top: 8px;
   font-size: 0.85rem;
   color: var(--text-muted, #94a3b8);
 }
+
 .footer-contact a {
   color: var(--accent, #60a5fa);
   text-decoration: none;
 }
+
 .footer-contact a:hover {
   text-decoration: underline;
 }
+
 .footer-contact__separator {
   margin: 0 8px;
   opacity: 0.4;
 }
-@media (max-width: 480px) {
+
+@media (width <= 480px) {
   .cookie-consent {
     flex-direction: column;
     text-align: center;
   }
+
   .cookie-consent__actions {
     width: 100%;
     justify-content: center;
