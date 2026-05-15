@@ -383,6 +383,7 @@
     "activating": "Vinculando...",
     "activated": "✅ ¡Suscripción vinculada!",
     "activateDesc": "Si ya pagaste por Telegram (/start sin custom ID), ingresa tu Custom ID y Telegram User ID para vincularlos.",
+    "activateDescInline": "Si ya pagaste por Telegram, ingresa tu ID de Telegram para vincular tu suscripción.",
     "activateTgLabel": "ID de Telegram",
     "activateTgPlaceholder": "Tu ID de Telegram (obténlo de @userinfobot)",
     "activateTgRequired": "❌ Por favor, ingresa tu ID de Telegram",

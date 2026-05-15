@@ -381,6 +381,7 @@
     "autorenewEnabled": "✅ 自动续订已启用",
     "autorenewDisabled": "自动续订已禁用",
     "activateDesc": "如果您已通过Telegram付款（无自定义ID的/start），请输入您的自定义ID和Telegram用户ID。",
+    "activateDescInline": "如果您已通过Telegram付款，请输入您的Telegram用户ID以链接您的订阅。",
     "activateTgLabel": "Telegram用户ID",
     "activateTgPlaceholder": "您的Telegram用户ID（从@userinfobot获取）",
     "activateTgRequired": "❌ 请输入您的Telegram用户ID",

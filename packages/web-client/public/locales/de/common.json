@@ -389,6 +389,7 @@
     "autorenewEnabled": "✅ Auto-Verlängerung aktiviert",
     "autorenewDisabled": "Auto-Verlängerung deaktiviert",
     "activateDesc": "Wenn du bereits via Telegram bezahlt hast (/start ohne Custom-ID), gib deine Custom-ID und Telegram-User-ID ein.",
+    "activateDescInline": "Wenn du bereits via Telegram bezahlt hast, gib deine Telegram-User-ID ein, um dein Abonnement zu verknüpfen.",
     "activateTgLabel": "Telegram User ID",
     "activateTgPlaceholder": "Ihre Telegram User ID (erhalten Sie von @userinfobot)",
     "activateTgRequired": "❌ Bitte geben Sie Ihre Telegram User ID ein",

@@ -395,6 +395,7 @@
     "autorenewEnabled": "✅ 自動更新が有効になりました",
     "autorenewDisabled": "自動更新が無効になりました",
     "activateDesc": "Telegramで支払い済みの場合（カスタムIDなしの/start）、カスタムIDとTelegramユーザーIDを入力してください。",
+    "activateDescInline": "Telegramで支払い済みの場合、TelegramユーザーIDを入力してサブスクリプションをリンクしてください。",
     "activateTgLabel": "TelegramユーザーID",
     "activateTgPlaceholder": "TelegramユーザーID（@userinfobotで確認）",
     "activateTgRequired": "❌ TelegramユーザーIDを入力してください",

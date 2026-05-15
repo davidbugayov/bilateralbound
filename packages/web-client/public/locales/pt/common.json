@@ -388,6 +388,7 @@
     "autorenewEnabled": "✅ Renovação automática ativada",
     "autorenewDisabled": "Renovação automática desativada",
     "activateDesc": "Se você já pagou via Telegram (/start sem custom ID), insira seu Custom ID e Telegram User ID.",
+    "activateDescInline": "Se você já pagou via Telegram, insira seu ID do Telegram para vincular sua assinatura.",
     "activateTgLabel": "ID do Telegram",
     "activateTgPlaceholder": "Seu ID do Telegram (obtenha no @userinfobot)",
     "activateTgRequired": "❌ Por favor, insira seu ID do Telegram",
