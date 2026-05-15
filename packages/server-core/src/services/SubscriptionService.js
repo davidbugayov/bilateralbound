@@ -42,6 +42,9 @@ class SubscriptionService {
     /** Map<telegramUserId, string> — user's language preference (from /start payload) */
     this._userLanguages = new Map()
 
+    /** Map<telegramUserId, number> — timestamp when auto-renew invoice was last sent */
+    this._autoRenewInvoiceSent = new Map()
+
     // Total Stars received (for analytics)
     this.totalStars = 0
 
@@ -321,30 +324,6 @@ class SubscriptionService {
   }
 
   /**
-   * Cancel a subscription — deactivate immediately and remove all custom IDs.
-   * @param {number} telegramUserId
-   * @returns {{ success: boolean, error?: string }}
-   */
-  cancel(telegramUserId) {
-    if (!telegramUserId) {
-      return { success: false, error: 'Missing telegramUserId' }
-    }
-
-    const sub = this._subscriptions.get(telegramUserId)
-    if (!sub) {
-      return { success: false, error: 'No subscription found for this user' }
-    }
-
-    this._subscriptions.delete(telegramUserId)
-    this._tokenIndex.delete(sub.token)
-    this._removeCustomIdsForUser(telegramUserId)
-    this._saveToDisk()
-
-    this.logger.info({ telegramUserId }, 'Subscription cancelled')
-    return { success: true }
-  }
-
-  /**
    * Enable or disable auto-renew for a subscription.
    * @param {number} telegramUserId
    * @param {boolean} enabled
@@ -369,6 +348,42 @@ class SubscriptionService {
     )
 
     return { success: true, autoRenew: sub.autoRenew }
+  }
+
+  /**
+   * Get all subscriptions with autoRenew=true that expire within the given threshold.
+   * Only returns subscriptions that haven't received an auto-renew invoice recently.
+   * @param {number} thresholdMs - Time in ms until expiry (e.g. 24 hours)
+   * @param {number} cooldownMs - Minimum time between auto-renew invoice sends (e.g. 24 hours)
+   * @returns {Array<{telegramUserId: number, expiresAt: number, chatId: number}>}
+   */
+  getExpiringAutoRenewSubscriptions(thresholdMs = 24 * 60 * 60 * 1000, cooldownMs = 24 * 60 * 60 * 1000) {
+    this._purgeExpired()
+    const now = Date.now()
+    const results = []
+    for (const [userId, sub] of this._subscriptions) {
+      if (!sub.autoRenew) continue
+      const timeUntilExpiry = sub.expiresAt - now
+      if (timeUntilExpiry > 0 && timeUntilExpiry <= thresholdMs) {
+        const lastSent = this._autoRenewInvoiceSent.get(userId) || 0
+        if (now - lastSent >= cooldownMs) {
+          results.push({
+            telegramUserId: userId,
+            expiresAt: sub.expiresAt,
+            chatId: userId // In private chats, chatId === telegramUserId
+          })
+        }
+      }
+    }
+    return results
+  }
+
+  /**
+   * Mark that an auto-renew invoice was sent to a user.
+   * @param {number} telegramUserId
+   */
+  markAutoRenewInvoiceSent(telegramUserId) {
+    this._autoRenewInvoiceSent.set(telegramUserId, Date.now())
   }
 
   // ---------------------------------------------------------------------------

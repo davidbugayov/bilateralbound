@@ -24,7 +24,7 @@ const { registerSeoRoutes } = require('./controllers/seoController')
 const {
   registerStaticRoutes
 } = require('./controllers/static_routes_controller')
-const { registerSubscriptionRoutes } = require('./controllers/subscriptionController')
+const { registerSubscriptionRoutes, autoRenewInterval } = require('./controllers/subscriptionController')
 
 // 1. App + Plugins
 const app = express()
@@ -179,7 +179,9 @@ const cleanupIntervals = [
     if (removedCount > 0) {
       logger.debug({ removedCount }, 'API cache cleanup')
     }
-  }, 30 * 1000)
+  }, 30 * 1000),
+  // Auto-renew checker interval (may be null if no Telegram bot configured)
+  ...(autoRenewInterval ? [autoRenewInterval] : [])
 ]
 
 // 9. Graceful shutdown

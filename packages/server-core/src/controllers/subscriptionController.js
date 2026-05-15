@@ -115,28 +115,6 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   })
 
   // ------------------------------------------------------------------
-  // POST /api/subscription/:customId/cancel
-  // Cancel subscription for a custom ID owner
-  // ------------------------------------------------------------------
-  app.post('/api/subscription/:customId/cancel', (req, res) => {
-    const { customId } = req.params
-    if (!customId || !/^[A-Za-z0-9_-]{3,32}$/.test(customId)) {
-      return res.status(400).json({ error: 'Invalid customId format' })
-    }
-    const status = subscriptionService.getStatusForCustomId
-      ? subscriptionService.getStatusForCustomId(customId)
-      : null
-    if (!status || !status.telegramUserId) {
-      return res.status(402).json({ error: 'No subscription linked to this custom ID' })
-    }
-    const cancelResult = subscriptionService.cancel(status.telegramUserId)
-    if (!cancelResult.success) {
-      return res.status(400).json({ error: cancelResult.error })
-    }
-    res.json(cancelResult)
-  })
-
-  // ------------------------------------------------------------------
   // POST /api/subscription/:customId/autorenew
   // Toggle auto-renew for a custom ID owner
   // Body: { enabled: boolean }
@@ -399,25 +377,6 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         return
       }
 
-      // ---- /cancel — cancel subscription ----
-      if (msgText === '/cancel') {
-        const telegramUserId = from.id
-        const cancelResult = subscriptionService.cancel(telegramUserId)
-        let cancelMsg
-        if (cancelResult.success) {
-          cancelMsg = t('cancel_success', lang)
-        } else {
-          // Translate known errors from SubscriptionService (always English)
-          if (cancelResult.error?.includes('No subscription')) {
-            cancelMsg = t('cancel_no_subscription', lang)
-          } else {
-            cancelMsg = t('cancel_failed', lang)
-          }
-        }
-        telegramBot?.sendMessage(chatId, cancelMsg)
-        return
-      }
-
       // ---- /autorenew — toggle auto-renew ----
       if (msgText === '/autorenew') {
         const telegramUserId = from.id
@@ -523,4 +482,64 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   })
 }
 
-module.exports = { registerSubscriptionRoutes }
+// ------------------------------------------------------------------
+// Auto-renew checker — runs every hour, sends invoices to users
+// with autoRenew=true whose subscription expires within 24 hours
+// ------------------------------------------------------------------
+function startAutoRenewChecker() {
+  if (!telegramBot) {
+    logger.info('No Telegram bot configured — auto-renew checker disabled')
+    return null
+  }
+  const CHECK_INTERVAL = 60 * 60 * 1000 // 1 hour
+  const EXPIRY_THRESHOLD = 24 * 60 * 60 * 1000 // 24 hours
+  const COOLDOWN = 24 * 60 * 60 * 1000 // 24 hours
+
+  async function checkAutoRenew() {
+    try {
+      const expiring = subscriptionService.getExpiringAutoRenewSubscriptions(EXPIRY_THRESHOLD, COOLDOWN)
+      if (expiring.length === 0) return
+
+      logger.info({ count: expiring.length }, 'Auto-renew checker: sending renewal invoices')
+
+      for (const user of expiring) {
+        try {
+          const lang = subscriptionService.getUserLanguage(user.telegramUserId) || 'en'
+          const result = await telegramBot.sendInvoice(
+            user.chatId,
+            'renew_' + String(user.telegramUserId),
+            STARS_PRICE,
+            {
+              title: t('renew_invoice_title', lang),
+              description: t('renew_invoice_description', lang),
+              label: t('renew_invoice_label', lang)
+            }
+          )
+          if (result?.ok) {
+            subscriptionService.markAutoRenewInvoiceSent(user.telegramUserId)
+            logger.info(
+              { telegramUserId: user.telegramUserId, expiresAt: new Date(user.expiresAt).toISOString() },
+              'Auto-renew invoice sent'
+            )
+          }
+        } catch (err) {
+          logger.error({ err, telegramUserId: user.telegramUserId }, 'Auto-renew invoice failed')
+        }
+      }
+    } catch (err) {
+      logger.error({ err }, 'Auto-renew checker error')
+    }
+  }
+
+  // Run immediately on startup, then every hour
+  checkAutoRenew()
+  const intervalId = setInterval(checkAutoRenew, CHECK_INTERVAL)
+  logger.info({ intervalMs: CHECK_INTERVAL }, 'Auto-renew checker started')
+
+  return intervalId
+}
+
+// Start the auto-renew checker
+const autoRenewInterval = startAutoRenewChecker()
+
+module.exports = { registerSubscriptionRoutes, autoRenewInterval }

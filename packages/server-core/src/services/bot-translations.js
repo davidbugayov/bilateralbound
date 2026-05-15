@@ -415,38 +415,6 @@ const TRANSLATIONS = {
     zh: '❌ 续期失败。请稍后重试。'
   },
 
-  // ── /cancel ──
-  cancel_success: {
-    en: '❌ <b>Subscription cancelled.</b>\n\nAll clients unlinked. Change your mind? Use /start.',
-    ru: '❌ <b>Подписка отменена.</b>\n\nВсе ваши клиенты отвязаны. Если передумаете — используйте /start.',
-    es: '❌ <b>Suscripción cancelada.</b>\n\nTodos los clientes desvinculados. ¿Cambiaste de opinión? Usa /start.',
-    fr: '❌ <b>Abonnement annulé.</b>\n\nTous les clients ont été dissociés. Vous avez changé d\'avis ? Utilisez /start.',
-    de: '❌ <b>Abonnement gekündigt.</b>\n\nAlle Kunden wurden entfernt. Wenn Sie es sich anders überlegen, nutzen Sie /start.',
-    pt: '❌ <b>Assinatura cancelada.</b>\n\nTodos os clientes desvinculados. Mudou de ideia? Use /start.',
-    ja: '❌ <b>サブスクリプションがキャンセルされました。</b>\n\nすべてのクライアントのリンクが解除されました。考えが変わったら /start を使用してください。',
-    zh: '❌ <b>订阅已取消。</b>\n\n所有客户已解除链接。改变主意了？使用 /start。'
-  },
-  cancel_no_subscription: {
-    en: '❌ <b>No Active Subscription</b>\n\nUse /start to subscribe.',
-    ru: '❌ <b>Нет активной подписки</b>\n\nИспользуйте /start для оформления.',
-    es: '❌ <b>Sin Suscripción Activa</b>\n\nUsa /start para suscribirte.',
-    fr: '❌ <b>Pas d\'abonnement actif</b>\n\nUtilisez /start pour vous abonner.',
-    de: '❌ <b>Kein aktives Abonnement</b>\n\nVerwenden Sie /start zum Abonnieren.',
-    pt: '❌ <b>Nenhuma Assinatura Ativa</b>\n\nUse /start para assinar.',
-    ja: '❌ <b>有効なサブスクリプションがありません</b>\n\n購読するには /start を使用してください。',
-    zh: '❌ <b>没有有效的订阅</b>\n\n使用 /start 订阅。'
-  },
-  cancel_failed: {
-    en: '❌ Failed to cancel subscription. Try again later.',
-    ru: '❌ Не удалось отменить подписку. Попробуйте позже.',
-    es: '❌ No se pudo cancelar la suscripción. Inténtalo más tarde.',
-    fr: '❌ Échec de l\'annulation de l\'abonnement. Réessayez plus tard.',
-    de: '❌ Kündigung fehlgeschlagen. Versuchen Sie es später erneut.',
-    pt: '❌ Falha ao cancelar assinatura. Tente novamente mais tarde.',
-    ja: '❌ サブスクリプションのキャンセルに失敗しました。後でもう一度お試しください。',
-    zh: '❌ 取消订阅失败。请稍后重试。'
-  },
-
   // ── /autorenew ──
   autorenew_enabled: {
     en: '✅ <b>Auto-renew enabled.</b>\n\nYour subscription will renew automatically every 30 days.',
@@ -604,16 +572,6 @@ const TRANSLATIONS = {
     ja: '自動更新のオン/オフ切り替え',
     zh: '开启/关闭自动续费'
   },
-  cmd_cancel: {
-    en: 'Cancel your subscription',
-    ru: 'Отменить подписку',
-    es: 'Cancelar tu suscripción',
-    fr: 'Annuler votre abonnement',
-    de: 'Abonnement kündigen',
-    pt: 'Cancelar sua assinatura',
-    ja: 'サブスクリプションをキャンセル',
-    zh: '取消您的订阅'
-  }
 }
 
 // ── Supported languages list ──
@@ -692,8 +650,7 @@ function getCommandsForLang(lang) {
     { command: 'start', description: t('cmd_start', lang) },
     { command: 'status', description: t('cmd_status', lang) },
     { command: 'renew', description: t('cmd_renew', lang) },
-    { command: 'autorenew', description: t('cmd_autorenew', lang) },
-    { command: 'cancel', description: t('cmd_cancel', lang) }
+    { command: 'autorenew', description: t('cmd_autorenew', lang) }
   ]
 }
 
