@@ -360,74 +360,46 @@
 
   /**
    * Handle subscribe button click.
-   * 1. If customId is entered, check if already linked to active subscription.
-   * 2. If already active → show message, don't redirect (no repeat payment).
-   * 3. If not active → open Telegram bot with /start customId.
+   * Opens Telegram bot synchronously (to avoid popup blocker), then checks
+   * subscription status in background.
    */
-  async function handleSubscribeClick() {
-    const customId = document.getElementById('customClientId')?.value.trim()
-    const subscribeBtn = document.getElementById('subscribeBtn')
-    let botLink =
+  function handleSubscribeClick() {
+    var customId = document.getElementById('customClientId')?.value.trim() || ''
+    var botLink =
       globalThis.__config?.telegramBotLink ||
       'https://t.me/emdrbilateral_bot'
+    var siteLang = globalThis.i18n?.currentLanguage || 'en'
 
     if (!customId || !validateClientId(customId)) {
       // No customId — open bot with site language
-      const siteLang = globalThis.i18n?.currentLanguage || 'en'
       botLink += '?start=__lang_' + siteLang
-      window.open(botLink, '_blank')
+      openTelegramBot(botLink)
       return
     }
 
-    // Check if this customId is already linked to an active subscription
-    const originalText = subscribeBtn ? subscribeBtn.innerHTML : ''
-    try {
-      if (subscribeBtn) {
-        subscribeBtn.innerHTML = globalThis.i18n?.t('subscription.checking') || '⏳ Checking...'
-        subscribeBtn.disabled = true
-      }
-
-      const response = await fetch('/api/subscription/' + encodeURIComponent(customId) + '/check', {
-        method: 'POST'
-      })
-      const data = await response.json()
-
-      if (data.active) {
-        // Already subscribed — no need to open Telegram
-        localStorage.setItem('subscriptionProofId', customId)
-        var promptHide2 = document.getElementById('subscribePrompt')
-        if (promptHide2) promptHide2.style.display = 'none'
-        var messageEl = document.getElementById('subStatusMessage')
-        if (messageEl) {
-          messageEl.textContent =
-            globalThis.i18n?.t('subscription.alreadyActive') || '✅ Premium Active — create permanent links above!'
-          messageEl.style.color = '#22c55e'
-        }
-        var promptStatusEl = document.getElementById('subscribePromptStatus')
-        if (promptStatusEl) {
-          promptStatusEl.textContent =
-            globalThis.i18n?.t('subscription.alreadyActive') || '✅ Premium Active — create permanent links above!'
-          promptStatusEl.style.color = '#22c55e'
-        }
-        return
-      }
-    } catch (_err) {
-      // If check fails, proceed to Telegram anyway
-      console.warn('⚠️ Subscription check failed, proceeding to Telegram:', _err)
-    } finally {
-      if (subscribeBtn) {
-        subscribeBtn.innerHTML = originalText
-        subscribeBtn.disabled = false
-      }
-    }
-
-    // Not subscribed — open Telegram bot with customId + site language
-    const siteLang = globalThis.i18n?.currentLanguage || 'en'
+    // Build the bot link with customId
     botLink += '?start=' + encodeURIComponent(customId + '__lang_' + siteLang)
-    window.open(botLink, '_blank')
 
-    // Start polling subscription status — user pays in bot and returns here
-    startSubscriptionPolling(customId, subscribeBtn)
+    // Open Telegram bot synchronously (bypass popup blocker)
+    openTelegramBot(botLink)
+
+    // Start polling subscription status in the background
+    startSubscriptionPolling(customId, null)
+  }
+
+  /**
+   * Open Telegram link in a new tab, bypassing popup blockers.
+   * Uses a temporary anchor element with target=_blank and programmatic click.
+   */
+  function openTelegramBot(url) {
+    var a = document.createElement('a')
+    a.href = url
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
   }
 
   /**
