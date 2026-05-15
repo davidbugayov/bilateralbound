@@ -179,7 +179,7 @@ const cleanupIntervals = [
     if (removedCount > 0) {
       logger.debug({ removedCount }, 'API cache cleanup')
     }
-  }, 30 * 1000),
+  }, 30 * 1000)
 ]
 
 // 9. Graceful shutdown

@@ -627,7 +627,7 @@ const TRANSLATIONS = {
     pt: 'Ativar/desativar renovação automática',
     ja: '自動更新のオン/オフ切り替え',
     zh: '开启/关闭自动续费'
-  },
+  }
 }
 
 // ── Supported languages list ──

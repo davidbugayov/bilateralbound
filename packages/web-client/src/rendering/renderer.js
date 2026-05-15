@@ -57,6 +57,7 @@ class BallRenderer {
     if (this.animationFrameId) {
       this.stop()
     }
+    // eslint-disable-next-line no-undef
     this._resizeObserver = new ResizeObserver(() => {
       this._pendingResize = true
     })

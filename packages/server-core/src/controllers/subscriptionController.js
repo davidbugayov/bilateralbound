@@ -349,7 +349,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
         // Check if this is a renewal request (renew_ prefix)
         if (rest.startsWith('renew_')) {
-          const renewCustomId = rest.slice(6) // remove 'renew_' prefix
+          // remove 'renew_' prefix
           // Send renewal invoice
           telegramBot?.sendInvoice(chatId, 'renew_' + String(telegramUserId), STARS_PRICE, {
             title: t('renew_invoice_title', lang),
@@ -571,6 +571,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         for (const user of expiring) {
           try {
             const lang = subscriptionService.getUserLanguage(user.telegramUserId) || 'en'
+            // eslint-disable-next-line no-await-in-loop
             const result = await telegramBot.sendInvoice(
               user.chatId,
               'renew_' + String(user.telegramUserId),

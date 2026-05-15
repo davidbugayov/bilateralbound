@@ -26,7 +26,9 @@ function cleanTestData() {
   try {
     if (fs.existsSync(TEST_FILE)) fs.unlinkSync(TEST_FILE)
     if (fs.existsSync(TEST_DATA_DIR)) fs.rmdirSync(TEST_DATA_DIR)
-  } catch (e) { /* ignore */ }
+  } catch {
+    // ignore
+  }
 }
 
 let passed = 0

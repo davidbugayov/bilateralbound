@@ -365,11 +365,11 @@
    */
   function handleSubscribeClick(e) {
     if (e) e.preventDefault()
-    var customId = document.getElementById('customClientId')?.value.trim() || ''
-    var botLink =
+    const customId = document.getElementById('customClientId')?.value.trim() || ''
+    let botLink =
       globalThis.__config?.telegramBotLink ||
       'https://t.me/emdrbilateral_bot'
-    var siteLang = globalThis.i18n?.currentLanguage || 'en'
+    const siteLang = globalThis.i18n?.currentLanguage || 'en'
 
     if (!customId || !validateClientId(customId)) {
       // No customId — open bot with site language
@@ -421,14 +421,14 @@
           btn.innerHTML = originalText
           btn.disabled = false
         }
-        var msgEl = document.getElementById('subStatusMessage')
+        const msgEl = document.getElementById('subStatusMessage')
         if (msgEl) {
           msgEl.textContent =
             globalThis.i18n?.t('subscription.pollingTimeout') ||
             '⏰ Payment not detected. Complete payment in Telegram and try again.'
           msgEl.style.color = '#f59e0b'
         }
-        var promptMsgEl = document.getElementById('subscribePromptStatus')
+        const promptMsgEl = document.getElementById('subscribePromptStatus')
         if (promptMsgEl) {
           promptMsgEl.textContent =
             globalThis.i18n?.t('subscription.pollingTimeout') ||
@@ -448,23 +448,23 @@
           clearInterval(poll)
           // Store proof and hide subscribe prompt
           localStorage.setItem('subscriptionProofId', customId)
-          var promptHide = document.getElementById('subscribePrompt')
+          const promptHide = document.getElementById('subscribePrompt')
           if (promptHide) promptHide.style.display = 'none'
-          var planCard2 = document.getElementById('supporterPlanCard')
+          const planCard2 = document.getElementById('supporterPlanCard')
           if (planCard2) planCard2.style.display = 'none'
           if (btn) {
             btn.innerHTML = globalThis.i18n?.t('subscription.activated') || '✅ Activated!'
             btn.className = (btn.className || '') + ' pricing-card__cta--success'
             btn.disabled = true
           }
-          var msgEl2 = document.getElementById('subStatusMessage')
+          const msgEl2 = document.getElementById('subStatusMessage')
           if (msgEl2) {
             msgEl2.textContent =
               globalThis.i18n?.t('subscription.pollingSuccess') ||
               '✅ Payment confirmed! Your Premium is active — create permanent links above!'
             msgEl2.style.color = '#22c55e'
           }
-          var promptMsgEl2 = document.getElementById('subscribePromptStatus')
+          const promptMsgEl2 = document.getElementById('subscribePromptStatus')
           if (promptMsgEl2) {
             promptMsgEl2.textContent =
               globalThis.i18n?.t('subscription.pollingSuccess') ||
@@ -547,18 +547,18 @@
       if (data.active) {
         // Subscription is active — show active status with expiry
         localStorage.setItem('subscriptionProofId', customId)
-        var promptEl = document.getElementById('subscribePrompt')
+        const promptEl = document.getElementById('subscribePrompt')
         if (promptEl) promptEl.style.display = 'none'
-        var planCard = document.getElementById('supporterPlanCard')
+        const planCard = document.getElementById('supporterPlanCard')
         if (planCard) planCard.style.display = 'none'
         if (statusEl) statusEl.style.display = 'none'
         if (messageEl) messageEl.textContent = ''
-        var activationInline = document.getElementById('subActivationInline')
+        const activationInline = document.getElementById('subActivationInline')
         if (activationInline) activationInline.style.display = 'none'
         // Show active info
-        var activeInfo = document.getElementById('subActiveInfo')
+        const activeInfo = document.getElementById('subActiveInfo')
         if (activeInfo) activeInfo.style.display = 'block'
-        var expiryEl = document.getElementById('subActiveExpiry')
+        const expiryEl = document.getElementById('subActiveExpiry')
         if (expiryEl && data.subscription?.expiresAt) {
           expiryEl.textContent = new Date(data.subscription.expiresAt).toLocaleDateString(
             globalThis.i18n?.currentLanguage || 'en',
@@ -578,9 +578,9 @@
             (globalThis.i18n?.t('subscription.required') || 'Subscription required') +
             '</span>'
         }
-        var activeInfo = document.getElementById('subActiveInfo')
+        const activeInfo = document.getElementById('subActiveInfo')
         if (activeInfo) activeInfo.style.display = 'none'
-        var activationInline2 = document.getElementById('subActivationInline')
+        const activationInline2 = document.getElementById('subActivationInline')
         if (activationInline2) activationInline2.style.display = 'block'
         if (messageEl) {
           messageEl.textContent = globalThis.i18n?.t('subscription.requiredMessage') || ''
@@ -668,9 +668,9 @@
 
       // Store proof and hide subscribe prompt in permanent links card
       localStorage.setItem('subscriptionProofId', customId)
-      var promptEl2 = document.getElementById('subscribePrompt')
+      const promptEl2 = document.getElementById('subscribePrompt')
       if (promptEl2) promptEl2.style.display = 'none'
-      var planCard3 = document.getElementById('supporterPlanCard')
+      const planCard3 = document.getElementById('supporterPlanCard')
       if (planCard3) planCard3.style.display = 'none'
 
       // Refresh status to show management UI
@@ -741,7 +741,7 @@
         else if (action === 'generate-links') generatePermanentLinks()
         else if (action === 'load-session') loadSession()
         else if (action === 'copy') {
-          var input = this.closest('.hub-link-full, .link-group__input-wrapper, .input-group')?.querySelector('input')
+          const input = this.closest('.hub-link-full, .link-group__input-wrapper, .input-group')?.querySelector('input')
           if (input) {
             input.select()
             document.execCommand('copy')
@@ -793,14 +793,14 @@
 
     // If we have a stored subscription proof, hide the subscribe prompt on page load
     // and pre-fill the customId input in subscription management
-    var savedProof = localStorage.getItem('subscriptionProofId')
+    const savedProof = localStorage.getItem('subscriptionProofId')
     if (savedProof) {
-      var promptEl3 = document.getElementById('subscribePrompt')
+      const promptEl3 = document.getElementById('subscribePrompt')
       if (promptEl3) promptEl3.style.display = 'none'
-      var planCard4 = document.getElementById('supporterPlanCard')
+      const planCard4 = document.getElementById('supporterPlanCard')
       if (planCard4) planCard4.style.display = 'none'
       // Also pre-fill the subscription management customId for convenience
-      var subCustomIdInput = document.getElementById('subCustomId')
+      const subCustomIdInput = document.getElementById('subCustomId')
       if (subCustomIdInput && !subCustomIdInput.value) {
         subCustomIdInput.value = savedProof
       }

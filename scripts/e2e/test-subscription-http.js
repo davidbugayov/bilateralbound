@@ -48,7 +48,9 @@ function cleanTestData() {
   try {
     if (fs.existsSync(TEST_FILE)) fs.unlinkSync(TEST_FILE)
     if (fs.existsSync(TEST_DATA_DIR)) fs.rmdirSync(TEST_DATA_DIR)
-  } catch (e) { /* ignore */ }
+  } catch {
+    // ignore
+  }
 }
 
 // ── Minimal session service for reserve endpoint ────────────────────────────
@@ -163,7 +165,6 @@ async function main() {
   const CID_1 = 'anna_2025'
   const CID_2 = 'client_ivan'
   const TOKEN_1 = 'http_test_token_1'
-  const TOKEN_2 = 'http_test_token_2'
 
   try {
     // ═══════════════════════════════════════════════════════════════════════
@@ -244,11 +245,11 @@ async function main() {
     assert('GET /status(user2) returns active: false',
       res4a.data.active === false, JSON.stringify(res4a.data))
 
-    const res4b = await httpPost(`/api/subscription/nobody99/check`)
+    const res4b = await httpPost('/api/subscription/nobody99/check')
     assert('POST /check(unlinked) returns active: false',
       res4b.data.active === false, JSON.stringify(res4b.data))
 
-    const res4c = await httpPost(`/api/session/nobody99/reserve`)
+    const res4c = await httpPost('/api/session/nobody99/reserve')
     assert('POST /reserve(unlinked) returns 402',
       res4c.status === 402, JSON.stringify(res4c.data))
 

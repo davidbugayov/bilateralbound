@@ -45,7 +45,7 @@
     (function (m, e, t, r, i, k, a) {
       m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) }
       m[i].l = 1 * new Date()
-      for (var j = 0; j < document.scripts.length; j++) {
+      for (let j = 0; j < document.scripts.length; j++) {
         if (document.scripts[j].src === r) { return }
       }
       k = e.createElement(t)
@@ -65,8 +65,8 @@
     })
 
     // noscript fallback
-    var noscript = document.createElement('noscript')
-    var img = document.createElement('img')
+    const noscript = document.createElement('noscript')
+    const img = document.createElement('img')
     img.src = 'https://mc.yandex.ru/watch/' + YM_ID
     img.style.position = 'absolute'
     img.style.left = '-9999px'
@@ -100,7 +100,7 @@
    * Remove the banner from the DOM
    */
   function hideBanner() {
-    var banner = document.getElementById('cookieConsentBanner')
+    const banner = document.getElementById('cookieConsentBanner')
     if (banner) {
       banner.classList.add('cookie-consent--hidden')
       setTimeout(function () {
@@ -114,7 +114,7 @@
    */
   function getText(key, fallback) {
     if (typeof globalThis.i18n !== 'undefined' && globalThis.i18n.t) {
-      var t = globalThis.i18n.t(key)
+      const t = globalThis.i18n.t(key)
       if (t !== key) return t
     }
     return fallback
@@ -127,23 +127,23 @@
     // Avoid duplicate
     if (document.getElementById('cookieConsentBanner')) return
 
-    var banner = document.createElement('div')
+    const banner = document.createElement('div')
     banner.id = 'cookieConsentBanner'
     banner.className = 'cookie-consent'
 
-    var text = document.createElement('p')
+    const text = document.createElement('p')
     text.className = 'cookie-consent__text'
     text.textContent = getText('cookie.text', 'We use Yandex.Metrica for analytics. By clicking "Accept", you consent to the processing of your data.')
 
-    var actions = document.createElement('div')
+    const actions = document.createElement('div')
     actions.className = 'cookie-consent__actions'
 
-    var declineBtn = document.createElement('button')
+    const declineBtn = document.createElement('button')
     declineBtn.className = 'cookie-consent__btn cookie-consent__btn--decline'
     declineBtn.textContent = getText('cookie.decline', 'Decline')
     declineBtn.addEventListener('click', onDecline)
 
-    var acceptBtn = document.createElement('button')
+    const acceptBtn = document.createElement('button')
     acceptBtn.className = 'cookie-consent__btn cookie-consent__btn--accept'
     acceptBtn.textContent = getText('cookie.accept', 'Accept')
     acceptBtn.addEventListener('click', onAccept)
@@ -165,7 +165,7 @@
    * Check consent on page load and either load Metrica or show banner
    */
   function init() {
-    var consent = getConsent()
+    const consent = getConsent()
 
     if (consent === 'accepted') {
       // Previously accepted — load Metrica immediately
