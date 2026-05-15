@@ -55,7 +55,7 @@ log "🔨 Building web-client..."
 ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build failed"
 set -e
 cd /var/www/dev.emdrbilateral.online
-npm run build
+npm run build:prod
 ENDSSH
 log_success "Build completed"
 

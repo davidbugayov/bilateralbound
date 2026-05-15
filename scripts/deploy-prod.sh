@@ -65,7 +65,7 @@ log "  🔨 Building..."
 ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build for .online failed"
 set -e
 cd /var/www/emdrbilateral.online
-npm run build
+npm run build:prod
 ENDSSH
 log_success "emdrbilateral.online built and ready"
 
@@ -90,7 +90,7 @@ log "  🔨 Building..."
 ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build for .ru failed"
 set -e
 cd /var/www/emdrbilateral.ru
-npm run build
+npm run build:prod
 ENDSSH
 log_success "emdrbilateral.ru built and ready"
 
