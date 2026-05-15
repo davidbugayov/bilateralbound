@@ -1,6 +1,6 @@
 {
   "name": "@emdr/web-client",
-  "version": "2.39.594",
+  "version": "2.39.595",
   "description": "EMDR therapy web client",
   "main": "public/index.html",
   "type": "commonjs",
@@ -10,7 +10,8 @@
     "build:dev": "webpack --mode development",
     "watch": "webpack --watch --mode development",
     "serve": "npx serve -s public",
-    "lint:sonarqube": "node sonar-scanner.js"
+    "lint:sonarqube": "node sonar-scanner.js",
+    "minify:css": "for f in public/css/*.css; do npx cleancss -O1 -o \"$f\" \"$f\"; done"
   },
   "keywords": [
     "emdr",
@@ -28,6 +29,7 @@
     "@babel/core": "^7.28.6",
     "@babel/preset-env": "^7.28.6",
     "babel-loader": "^9.2.1",
+    "clean-css-cli": "^5.6.3",
     "copy-webpack-plugin": "^14.0.0",
     "css-loader": "^6.11.0",
     "eslint": "^9.39.2",
