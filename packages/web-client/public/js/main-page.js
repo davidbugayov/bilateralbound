@@ -484,6 +484,8 @@
           localStorage.setItem('subscriptionProofId', customId)
           var promptHide = document.getElementById('subscribePrompt')
           if (promptHide) promptHide.style.display = 'none'
+          var planCard2 = document.getElementById('supporterPlanCard')
+          if (planCard2) planCard2.style.display = 'none'
           if (btn) {
             btn.innerHTML = globalThis.i18n?.t('subscription.activated') || '✅ Activated!'
             btn.className = (btn.className || '') + ' pricing-card__cta--success'
@@ -587,6 +589,8 @@
           // Hide the subscribe prompt in the permanent links card
           var promptEl = document.getElementById('subscribePrompt')
           if (promptEl) promptEl.style.display = 'none'
+          var planCard = document.getElementById('supporterPlanCard')
+          if (planCard) planCard.style.display = 'none'
           const expires = data.subscription?.expiresAt
             ? new Date(data.subscription?.expiresAt).toLocaleDateString()
             : '—'
@@ -884,6 +888,8 @@
       localStorage.setItem('subscriptionProofId', customId)
       var promptEl2 = document.getElementById('subscribePrompt')
       if (promptEl2) promptEl2.style.display = 'none'
+      var planCard3 = document.getElementById('supporterPlanCard')
+      if (planCard3) planCard3.style.display = 'none'
 
       // Refresh status to show management UI
       await checkSubscriptionStatus()
@@ -1022,6 +1028,8 @@
     if (savedProof) {
       var promptEl3 = document.getElementById('subscribePrompt')
       if (promptEl3) promptEl3.style.display = 'none'
+      var planCard4 = document.getElementById('supporterPlanCard')
+      if (planCard4) planCard4.style.display = 'none'
       // Also pre-fill the subscription management customId for convenience
       var subCustomIdInput = document.getElementById('subCustomId')
       if (subCustomIdInput && !subCustomIdInput.value) {
