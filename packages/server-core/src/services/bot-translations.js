@@ -519,49 +519,49 @@ const TRANSLATIONS = {
         '🎉 Your subscription is now active!\n' +
         'Expires: {expDate}\n\n' +
         'You can now create permanent links for <b>any clients</b>.\n\n' +
-        'Go to <a href="{siteUrl}">{siteUrl}</a>, ' +
+        'Go to <a href="https://emdrbilateral.online">emdrbilateral.online</a> or <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>, ' +
         'enter a client name and click "Create" — links are ready! 🎉',
     ru: '✅ <b>Оплата прошла успешно!</b>\n\n' +
         '🎉 Ваша подписка активна!\n' +
         'Истекает: {expDate}\n\n' +
         'Теперь вы можете создавать постоянные ссылки для <b>любых клиентов</b>.\n\n' +
-        'Перейдите на <a href="{siteUrl}">{siteUrl}</a>, ' +
+        'Перейдите на <a href="https://emdrbilateral.online">emdrbilateral.online</a> или <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>, ' +
         'введите название клиента и нажмите "Create" — ссылки готовы! 🎉',
     es: '✅ <b>¡Pago exitoso!</b>\n\n' +
         '🎉 ¡Tu suscripción ya está activa!\n' +
         'Vence: {expDate}\n\n' +
         'Ahora puedes crear enlaces permanentes para <b>cualquier cliente</b>.\n\n' +
-        'Ve a <a href="{siteUrl}">{siteUrl}</a>, ' +
+        'Ve a <a href="https://emdrbilateral.online">emdrbilateral.online</a> o <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>, ' +
         'ingresa un nombre de cliente y haz clic en "Create" — ¡los enlaces están listos! 🎉',
     fr: '✅ <b>Paiement réussi !</b>\n\n' +
         '🎉 Votre abonnement est maintenant actif !\n' +
         'Expire le : {expDate}\n\n' +
         'Vous pouvez désormais créer des liens permanents pour <b>tous vos clients</b>.\n\n' +
-        'Allez sur <a href="{siteUrl}">{siteUrl}</a>, ' +
+        'Allez sur <a href="https://emdrbilateral.online">emdrbilateral.online</a> ou <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>, ' +
         'entrez un nom de client et cliquez sur "Create" — les liens sont prêts ! 🎉',
     de: '✅ <b>Zahlung erfolgreich!</b>\n\n' +
         '🎉 Ihr Abonnement ist jetzt aktiv!\n' +
         'Läuft ab: {expDate}\n\n' +
         'Sie können jetzt dauerhafte Links für <b>beliebige Kunden</b> erstellen.\n\n' +
-        'Gehen Sie zu <a href="{siteUrl}">{siteUrl}</a>, ' +
+        'Gehen Sie zu <a href="https://emdrbilateral.online">emdrbilateral.online</a> oder <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>, ' +
         'geben Sie einen Kundennamen ein und klicken Sie auf "Create" — Links sind bereit! 🎉',
     pt: '✅ <b>Pagamento bem-sucedido!</b>\n\n' +
         '🎉 Sua assinatura agora está ativa!\n' +
         'Expira em: {expDate}\n\n' +
         'Agora você pode criar links permanentes para <b>quaisquer clientes</b>.\n\n' +
-        'Acesse <a href="{siteUrl}">{siteUrl}</a>, ' +
+        'Acesse <a href="https://emdrbilateral.online">emdrbilateral.online</a> ou <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>, ' +
         'insira um nome de cliente e clique em "Create" — os links estão prontos! 🎉',
     ja: '✅ <b>お支払い成功！</b>\n\n' +
         '🎉 サブスクリプションが有効になりました！\n' +
         '期限: {expDate}\n\n' +
         '<b>任意のクライアント</b>に永続的なリンクを作成できます。\n\n' +
-        '<a href="{siteUrl}">{siteUrl}</a>にアクセスし、' +
+        '<a href="https://emdrbilateral.online">emdrbilateral.online</a>または<a href="https://emdrbilateral.ru">emdrbilateral.ru</a>にアクセスし、' +
         'クライアント名を入力して「Create」をクリック — リンクの準備完了！🎉',
     zh: '✅ <b>支付成功！</b>\n\n' +
         '🎉 您的订阅已激活！\n' +
         '到期: {expDate}\n\n' +
         '您现在可以为<b>任何客户</b>创建永久链接。\n\n' +
-        '前往<a href="{siteUrl}">{siteUrl}</a>，' +
+        '前往<a href="https://emdrbilateral.online">emdrbilateral.online</a>或<a href="https://emdrbilateral.ru">emdrbilateral.ru</a>，' +
         '输入客户名称并点击"Create" — 链接已就绪！🎉'
   },
   payment_failed: {
