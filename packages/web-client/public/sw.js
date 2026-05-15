@@ -74,11 +74,6 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (url.pathname.startsWith('/api/')) return;
 
-  // BYPASS Third-Party Fonts: let the browser handle them directly to avoid CSP issues in SW context
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    return;
-  }
-
   // For static assets: cache first
   if (
     STATIC_ASSETS.some(
