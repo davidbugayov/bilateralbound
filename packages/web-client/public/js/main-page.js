@@ -363,7 +363,8 @@
    * Opens Telegram bot synchronously (to avoid popup blocker), then checks
    * subscription status in background.
    */
-  function handleSubscribeClick() {
+  function handleSubscribeClick(e) {
+    if (e) e.preventDefault()
     var customId = document.getElementById('customClientId')?.value.trim() || ''
     var botLink =
       globalThis.__config?.telegramBotLink ||
@@ -388,18 +389,11 @@
   }
 
   /**
-   * Open Telegram link in a new tab, bypassing popup blockers.
-   * Uses a temporary anchor element with target=_blank and programmatic click.
+   * Open Telegram link in a new tab.
+   * Must be called synchronously from a user click handler (no async/await before it).
    */
   function openTelegramBot(url) {
-    var a = document.createElement('a')
-    a.href = url
-    a.target = '_blank'
-    a.rel = 'noopener noreferrer'
-    a.style.display = 'none'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   /**
