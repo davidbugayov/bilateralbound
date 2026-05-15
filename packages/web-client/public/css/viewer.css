@@ -30,6 +30,8 @@ body {
   height: 100%;
   display: block;
   image-rendering: auto;
+  will-change: transform;
+  contain: layout style;
 }
 
 /* Overlays */

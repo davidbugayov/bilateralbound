@@ -379,6 +379,8 @@ body.fullscreen-active .back-btn {
   display: block;
   width: 100vw;
   height: 100vh;
+  will-change: transform;
+  contain: layout style;
 }
 
 .fullscreen-panel {
@@ -2403,6 +2405,7 @@ body {
   width: 100%;
   padding-inline: 16px;
   box-sizing: border-box;
+  contain: layout style;
 }
 
 .preview-info-stack {
