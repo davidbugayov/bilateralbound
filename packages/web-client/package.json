@@ -1,6 +1,6 @@
 {
   "name": "@emdr/web-client",
-  "version": "2.39.596",
+  "version": "2.39.597",
   "description": "EMDR therapy web client",
   "main": "public/index.html",
   "type": "commonjs",
@@ -28,6 +28,7 @@
   "devDependencies": {
     "@babel/core": "^7.28.6",
     "@babel/preset-env": "^7.28.6",
+    "@fontsource-variable/inter": "^5.2.8",
     "babel-loader": "^9.2.1",
     "clean-css-cli": "^5.6.3",
     "copy-webpack-plugin": "^14.0.0",

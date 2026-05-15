@@ -147,18 +147,10 @@ function setupMiddleware(app, config, logger) {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ['\'self\''],
-          styleSrc: [
-            '\'self\'',
-            '\'unsafe-inline\'',
-            'https://*.googleapis.com'
-          ],
+          styleSrc: ['\'self\'', '\'unsafe-inline\''],
           styleSrcAttr: ['\'self\'', '\'unsafe-inline\''],
-          styleSrcElem: [
-            '\'self\'',
-            '\'unsafe-inline\'',
-            'https://*.googleapis.com'
-          ],
-          fontSrc: ['\'self\'', 'https://*.gstatic.com'],
+          styleSrcElem: ['\'self\'', '\'unsafe-inline\''],
+          fontSrc: ['\'self\''],
           scriptSrc: ['\'self\'', '\'unsafe-inline\''],
           scriptSrcAttr: ['\'self\'', '\'unsafe-inline\''],
           scriptSrcElem: [
@@ -172,8 +164,6 @@ function setupMiddleware(app, config, logger) {
           connectSrc: [
             '\'self\'',
             'wss:',
-            'https://*.googleapis.com',
-            'https://*.gstatic.com',
             'https://mc.yandex.ru',
             'https://mc.yandex.com',
             'wss://mc.yandex.com'
