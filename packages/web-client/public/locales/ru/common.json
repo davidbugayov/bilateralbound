@@ -502,7 +502,8 @@
     "managementTitle": "Управление подпиской",
     "customIdLabel": "Ваш Custom ID",
     "customIdPlaceholder": "Введите ваш custom client ID",
-    "customIdRequired": "❌ Пожалуйста, введите ваш custom client ID"
+    "customIdRequired": "❌ Пожалуйста, введите ваш custom client ID",
+    "manageInBot": "Управлять в Telegram Bot"
   },
   "cookie": {
     "text": "Мы используем Yandex.Metrica для анализа трафика. Нажимая «Принять», вы соглашаетесь на обработку ваших данных.",

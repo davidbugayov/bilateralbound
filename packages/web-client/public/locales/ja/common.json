@@ -397,7 +397,8 @@
     "ctaNote": "Telegram経由の1回限り — 自動課金なし",
     "polling": "⏳ 支払い待機中...",
     "pollingSuccess": "✅ 支払い確認！サポーターステータスが有効です — 上で永久リンクを作成してください！",
-    "pollingTimeout": "⏰ 支払いが検出されませんでした。Telegramで支払いを完了して再試行してください。"
+    "pollingTimeout": "⏰ 支払いが検出されませんでした。Telegramで支払いを完了して再試行してください。",
+    "manageInBot": "Telegram Botで管理"
   },
   "privacy": {
     "title": "プライバシーポリシー",

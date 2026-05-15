@@ -390,7 +390,8 @@
     "ctaNote": "Pagamento único via Telegram — sem cobrança automática",
     "polling": "⏳ Aguardando pagamento...",
     "pollingSuccess": "✅ Pagamento confirmado! Seu status de Apoiador está ativo — crie links permanentes acima!",
-    "pollingTimeout": "⏰ Pagamento não detectado. Complete o pagamento no Telegram e tente novamente."
+    "pollingTimeout": "⏰ Pagamento não detectado. Complete o pagamento no Telegram e tente novamente.",
+    "manageInBot": "Gerenciar no Telegram Bot"
   },
   "privacy": {
     "title": "Política de Privacidade",

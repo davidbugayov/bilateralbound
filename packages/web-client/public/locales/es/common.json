@@ -391,7 +391,8 @@
     "managementTitle": "Gestión de Suscripción",
     "customIdLabel": "Tu Custom ID",
     "customIdPlaceholder": "Ingresa tu custom client ID",
-    "customIdRequired": "❌ Por favor, ingresa tu custom client ID"
+    "customIdRequired": "❌ Por favor, ingresa tu custom client ID",
+    "manageInBot": "Gestionar en Telegram Bot"
   },
   "privacy": {
     "title": "Política de Privacidad",

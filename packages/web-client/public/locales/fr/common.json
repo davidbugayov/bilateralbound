@@ -397,7 +397,8 @@
     "managementTitle": "Gestion de l'abonnement",
     "customIdLabel": "Votre Custom ID",
     "customIdPlaceholder": "Entrez votre identifiant client personnalisé",
-    "customIdRequired": "❌ Veuillez entrer votre identifiant client personnalisé"
+    "customIdRequired": "❌ Veuillez entrer votre identifiant client personnalisé",
+    "manageInBot": "Gérer dans le bot Telegram"
   },
   "privacy": {
     "title": "Politique de Confidentialité",

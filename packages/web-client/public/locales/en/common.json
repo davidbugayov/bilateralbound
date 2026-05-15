@@ -476,7 +476,8 @@
     "managementTitle": "Subscription Management",
     "customIdLabel": "Your Custom ID",
     "customIdPlaceholder": "Enter your custom client ID",
-    "customIdRequired": "❌ Please enter your custom client ID"
+    "customIdRequired": "❌ Please enter your custom client ID",
+    "manageInBot": "Manage in Telegram Bot"
   },
   "cookie": {
     "text": "We use Yandex.Metrica to analyze site traffic. By clicking \"Accept\", you consent to the processing of your data.",

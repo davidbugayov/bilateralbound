@@ -383,7 +383,8 @@
     "ctaNote": "通过Telegram一次性付款 — 无自动扣费",
     "polling": "⏳ 等待付款...",
     "pollingSuccess": "✅ 付款已确认！您的支持者状态已激活 — 在上方创建永久链接！",
-    "pollingTimeout": "⏰ 未检测到付款。请在Telegram中完成付款后重试。"
+    "pollingTimeout": "⏰ 未检测到付款。请在Telegram中完成付款后重试。",
+    "manageInBot": "在Telegram Bot中管理"
   },
   "privacy": {
     "title": "隐私政策",

@@ -545,16 +545,26 @@
       }
 
       if (data.active) {
-        // Subscription is active — hide all subscription/support info
+        // Subscription is active — show active status with expiry
         localStorage.setItem('subscriptionProofId', customId)
         var promptEl = document.getElementById('subscribePrompt')
         if (promptEl) promptEl.style.display = 'none'
         var planCard = document.getElementById('supporterPlanCard')
         if (planCard) planCard.style.display = 'none'
-        var managePanel = document.getElementById('subscriptionManagement')
-        if (managePanel) managePanel.style.display = 'none'
         if (statusEl) statusEl.style.display = 'none'
         if (messageEl) messageEl.textContent = ''
+        var activationInline = document.getElementById('subActivationInline')
+        if (activationInline) activationInline.style.display = 'none'
+        // Show active info
+        var activeInfo = document.getElementById('subActiveInfo')
+        if (activeInfo) activeInfo.style.display = 'block'
+        var expiryEl = document.getElementById('subActiveExpiry')
+        if (expiryEl && data.subscription?.expiresAt) {
+          expiryEl.textContent = new Date(data.subscription.expiresAt).toLocaleDateString(
+            globalThis.i18n?.currentLanguage || 'en',
+            { year: 'numeric', month: 'long', day: 'numeric' }
+          )
+        }
         return
       } else {
         localStorage.removeItem('subscriptionProofId')
@@ -568,8 +578,10 @@
             (globalThis.i18n?.t('subscription.required') || 'Subscription required') +
             '</span>'
         }
-        const activationInline = document.getElementById('subActivationInline')
-        if (activationInline) activationInline.style.display = 'block'
+        var activeInfo = document.getElementById('subActiveInfo')
+        if (activeInfo) activeInfo.style.display = 'none'
+        var activationInline2 = document.getElementById('subActivationInline')
+        if (activationInline2) activationInline2.style.display = 'block'
         if (messageEl) {
           messageEl.textContent = globalThis.i18n?.t('subscription.requiredMessage') || ''
           messageEl.style.color = '#ef4444'
