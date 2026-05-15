@@ -1,7 +1,9 @@
 const path = require('path');
 
+const isProd = process.env.NODE_ENV === 'production';
+
 module.exports = {
-  mode: 'development',
+  mode: isProd ? 'production' : 'development',
   entry: {
     viewer: './src/viewer.js',
     controller: './src/controller.js',
@@ -20,5 +22,5 @@ module.exports = {
       '@emdr/shared': path.resolve(__dirname, '..', 'shared'),
     },
   },
-  devtool: 'source-map',
+  devtool: isProd ? false : 'source-map',
 };
