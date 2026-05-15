@@ -113,7 +113,7 @@
    * Get localized text with fallback
    */
   function getText(key, fallback) {
-    if (typeof globalThis.i18n !== 'undefined' && globalThis.i18n.t) {
+    if (globalThis.i18n?.t) {
       const t = globalThis.i18n.t(key)
       if (t !== key) return t
     }
