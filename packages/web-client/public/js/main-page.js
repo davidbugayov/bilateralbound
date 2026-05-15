@@ -575,71 +575,38 @@
         throw new Error(data.error || 'HTTP ' + response.status)
       }
 
-      // Show status
-      if (statusEl) statusEl.style.display = 'flex'
-      if (statusIcon) {
-        statusIcon.innerHTML = data.active
-          ? '<span style="color:#22c55e;font-size:1.5rem;">✓</span>'
-          : '<span style="color:#ef4444;font-size:1.5rem;">✗</span>'
-      }
-      if (statusText) {
-        if (data.active) {
-          // Store this customId as subscription proof for auto-linking new permanent links
-          localStorage.setItem('subscriptionProofId', customId)
-          // Hide the subscribe prompt in the permanent links card
-          var promptEl = document.getElementById('subscribePrompt')
-          if (promptEl) promptEl.style.display = 'none'
-          var planCard = document.getElementById('supporterPlanCard')
-          if (planCard) planCard.style.display = 'none'
-          const expires = data.subscription?.expiresAt
-            ? new Date(data.subscription?.expiresAt).toLocaleDateString()
-            : '—'
-          statusText.innerHTML =
-            '<strong>' +
-            (globalThis.i18n?.t('subscription.alreadyActive') || '✅ Premium Active') +
-            '</strong>' +
-            (data.subscription?.expiresAt
-              ? '<br><small>' +
-                (globalThis.i18n?.t('subscription.expiresAt') || 'Expires:') +
-                ' ' +
-                expires +
-                '</small>'
-              : '')
-        } else {
-          localStorage.removeItem('subscriptionProofId')
+      if (data.active) {
+        // Subscription is active — hide all subscription/support info
+        localStorage.setItem('subscriptionProofId', customId)
+        var promptEl = document.getElementById('subscribePrompt')
+        if (promptEl) promptEl.style.display = 'none'
+        var planCard = document.getElementById('supporterPlanCard')
+        if (planCard) planCard.style.display = 'none'
+        var managePanel = document.getElementById('subscriptionManagement')
+        if (managePanel) managePanel.style.display = 'none'
+        if (statusEl) statusEl.style.display = 'none'
+        if (actionsEl) actionsEl.style.display = 'none'
+        if (messageEl) messageEl.textContent = ''
+        return
+      } else {
+        localStorage.removeItem('subscriptionProofId')
+        if (statusEl) statusEl.style.display = 'flex'
+        if (statusIcon) {
+          statusIcon.innerHTML = '<span style="color:#ef4444;font-size:1.5rem;">✗</span>'
+        }
+        if (statusText) {
           statusText.innerHTML =
             '<span style="color:#ef4444">' +
             (globalThis.i18n?.t('subscription.required') || 'Subscription required') +
             '</span>'
         }
-      }
-
-      // Show action buttons only if active
-      if (actionsEl) {
-        actionsEl.style.display = data.active ? 'flex' : 'none'
-        // Update auto-renew button
-        const autoRenewBtn = document.getElementById('subAutoRenewBtn')
-        if (autoRenewBtn) {
-          const isAutoRenew = data.subscription?.autoRenew === true
-          autoRenewBtn.dataset.autoRenew = String(isAutoRenew)
-          const label = isAutoRenew
-            ? (globalThis.i18n?.t('subscription.autorenewOn') || 'Auto-Renew: On')
-            : (globalThis.i18n?.t('subscription.autorenewOff') || 'Auto-Renew: Off')
-          autoRenewBtn.textContent = label
-          autoRenewBtn.className = 'main-button' + (isAutoRenew ? ' main-button--success' : '')
+        if (actionsEl) actionsEl.style.display = 'none'
+        const activationInline = document.getElementById('subActivationInline')
+        if (activationInline) activationInline.style.display = 'block'
+        if (messageEl) {
+          messageEl.textContent = globalThis.i18n?.t('subscription.requiredMessage') || ''
+          messageEl.style.color = '#ef4444'
         }
-      }
-
-      // Show/hide inline activation section
-      const activationInline = document.getElementById('subActivationInline')
-      if (activationInline) {
-        activationInline.style.display = data.active ? 'none' : 'block'
-      }
-      if (messageEl) {
-        messageEl.textContent = data.active
-          ? ''
-          : (globalThis.i18n?.t('subscription.requiredMessage') || '')
-        messageEl.style.color = data.active ? '#22c55e' : '#ef4444'
       }
     } catch (error) {
       console.error('❌ Subscription check error:', error)
@@ -655,169 +622,6 @@
       if (checkBtn) {
         checkBtn.innerHTML = originalText
         checkBtn.disabled = false
-      }
-    }
-  }
-
-  /**
-   * Renew subscription — opens Telegram bot for payment (75 ⭐).
-   */
-  async function renewSubscription() {
-    const customId = document.getElementById('subCustomId')?.value.trim()
-    const messageEl = document.getElementById('subStatusMessage')
-
-    if (!customId) {
-      if (messageEl) {
-        messageEl.textContent =
-          globalThis.i18n?.t('subscription.customIdRequired') || '❌ Please enter your custom client ID'
-        messageEl.style.color = '#ef4444'
-      }
-      return
-    }
-
-    if (!validateClientId(customId)) {
-      if (messageEl) {
-        messageEl.textContent =
-          globalThis.i18n?.t('links.validationFormat') || '❌ Invalid format'
-        messageEl.style.color = '#ef4444'
-      }
-      return
-    }
-
-    // Open Telegram bot for renewal payment
-    const siteLang = globalThis.i18n?.currentLanguage || 'en'
-    const botLink =
-      (globalThis.__config?.telegramBotLink || 'https://t.me/emdrbilateral_bot') +
-      '?start=' + encodeURIComponent('renew_' + customId + '__lang_' + siteLang)
-    window.open(botLink, '_blank')
-
-    if (messageEl) {
-      messageEl.textContent =
-        globalThis.i18n?.t('subscription.polling') || '⏳ Complete payment in Telegram...'
-      messageEl.style.color = '#f59e0b'
-    }
-
-    // Start polling for renewal confirmation
-    startSubscriptionPolling(customId, null)
-  }
-
-  /**
-   * Cancel subscription for a custom ID
-   */
-  async function cancelSubscription() {
-    const customId = document.getElementById('subCustomId')?.value.trim()
-    const messageEl = document.getElementById('subStatusMessage')
-    const cancelBtn = document.getElementById('subCancelBtn')
-
-    if (!customId) return
-
-    const confirmed = confirm(
-      globalThis.i18n?.t('subscription.cancelConfirm') || 'Are you sure you want to cancel your subscription?'
-    )
-    if (!confirmed) return
-
-    const originalText = cancelBtn ? cancelBtn.innerHTML : ''
-    try {
-      if (cancelBtn) {
-        cancelBtn.innerHTML = globalThis.i18n?.t('subscription.checking') || '⏳ Processing...'
-        cancelBtn.disabled = true
-      }
-
-      const response = await globalThis.csrfFetch(
-        '/api/subscription/' + encodeURIComponent(customId) + '/cancel',
-        { method: 'POST' }
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'HTTP ' + response.status)
-      }
-
-      if (messageEl) {
-        messageEl.textContent =
-          globalThis.i18n?.t('subscription.cancelled') || '✅ Subscription cancelled'
-        messageEl.style.color = '#ef4444'
-      }
-
-      // Refresh status
-      await checkSubscriptionStatus()
-    } catch (error) {
-      console.error('❌ Subscription cancel error:', error)
-      if (messageEl) {
-        messageEl.textContent = '❌ ' + error.message
-        messageEl.style.color = '#ef4444'
-      }
-    } finally {
-      if (cancelBtn) {
-        cancelBtn.innerHTML = originalText
-        cancelBtn.disabled = false
-      }
-    }
-  }
-
-  /**
-   * Toggle auto-renew for a custom ID
-   */
-  async function toggleAutoRenew() {
-    const customId = document.getElementById('subCustomId')?.value.trim()
-    const messageEl = document.getElementById('subStatusMessage')
-    const autoRenewBtn = document.getElementById('subAutoRenewBtn')
-
-    if (!customId) return
-
-    // Toggle from current state
-    const currentState = autoRenewBtn ? autoRenewBtn.dataset.autoRenew === 'true' : false
-    const newState = !currentState
-
-    const originalText = autoRenewBtn ? autoRenewBtn.textContent : ''
-    try {
-      if (autoRenewBtn) {
-        autoRenewBtn.textContent = globalThis.i18n?.t('subscription.checking') || '⏳ Processing...'
-        autoRenewBtn.disabled = true
-      }
-
-      const response = await globalThis.csrfFetch(
-        '/api/subscription/' + encodeURIComponent(customId) + '/autorenew',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enabled: newState })
-        }
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'HTTP ' + response.status)
-      }
-
-      // Update button state
-      if (autoRenewBtn) {
-        autoRenewBtn.dataset.autoRenew = String(data.autoRenew)
-        const label = data.autoRenew
-          ? (globalThis.i18n?.t('subscription.autorenewOn') || 'Auto-Renew: On')
-          : (globalThis.i18n?.t('subscription.autorenewOff') || 'Auto-Renew: Off')
-        autoRenewBtn.textContent = label
-        autoRenewBtn.className = 'main-button' + (data.autoRenew ? ' main-button--success' : '')
-      }
-
-      if (messageEl) {
-        messageEl.textContent = data.autoRenew
-          ? (globalThis.i18n?.t('subscription.autorenewEnabled') || '✅ Auto-renew enabled')
-          : (globalThis.i18n?.t('subscription.autorenewDisabled') || 'Auto-renew disabled')
-        messageEl.style.color = data.autoRenew ? '#22c55e' : '#94a3b8'
-      }
-    } catch (error) {
-      console.error('❌ Auto-renew toggle error:', error)
-      if (messageEl) {
-        messageEl.textContent = '❌ ' + error.message
-        messageEl.style.color = '#ef4444'
-      }
-    } finally {
-      if (autoRenewBtn) {
-        autoRenewBtn.textContent = originalText
-        autoRenewBtn.disabled = false
       }
     }
   }
@@ -942,20 +746,7 @@
       })
     }
 
-    const renewBtn = document.getElementById('subRenewBtn')
-    if (renewBtn) {
-      renewBtn.addEventListener('click', renewSubscription)
-    }
 
-    const cancelBtn = document.getElementById('subCancelBtn')
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', cancelSubscription)
-    }
-
-    const autoRenewBtn = document.getElementById('subAutoRenewBtn')
-    if (autoRenewBtn) {
-      autoRenewBtn.addEventListener('click', toggleAutoRenew)
-    }
   }
 
   /**
@@ -1039,10 +830,7 @@
 
     // Export for global access
     window.subscriptionManagement = {
-      checkStatus: checkSubscriptionStatus,
-      renew: renewSubscription,
-      cancel: cancelSubscription,
-      toggleAutoRenew: toggleAutoRenew
+      checkStatus: checkSubscriptionStatus
     }
 
     // Theme toggle initialization with retry
