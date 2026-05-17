@@ -236,6 +236,8 @@
     "passesPerSecondLabel": "Pases/seg",
     "playOnController": "Reproducir en el controlador",
     "presetApplied": "Preajuste aplicado",
+    "presetNamePrompt": "Nombre del nuevo preajuste:",
+    "renameSessionPrompt": "Nuevo nombre de sesión:",
     "presets": {
       "relaxation": "Relajación",
       "activation": "Activación",
@@ -268,7 +270,10 @@
       "sessionExported": "Sesión exportada",
       "sessionImported": "Sesión importada",
       "sessionSaved": "Sesión guardada",
-      "sessionDeleted": "Sesión eliminada"
+      "sessionDeleted": "Sesión eliminada",
+      "sessionLoaded": "Sesión cargada",
+      "presetSaved": "Preajuste guardado",
+      "changeUndone": "Cambio deshecho"
     },
     "sessionReset": "Sesión reiniciada",
     "sessionResetError": "Error al reiniciar sesión",

@@ -241,6 +241,8 @@
     "passesPerSecondLabel": "Passes/sec",
     "playOnController": "Play on Controller",
     "presetApplied": "Preset applied",
+    "presetNamePrompt": "New preset name:",
+    "renameSessionPrompt": "New session name:",
     "presets": {
       "relaxation": "Relaxation",
       "activation": "Activation",
@@ -274,7 +276,10 @@
       "sessionExported": "Session exported",
       "sessionImported": "Session imported",
       "sessionSaved": "Session saved",
-      "sessionDeleted": "Session deleted"
+      "sessionDeleted": "Session deleted",
+      "sessionLoaded": "Session loaded",
+      "presetSaved": "Preset saved",
+      "changeUndone": "Change undone"
     },
     "sessionReset": "Session reset",
     "sessionResetError": "Error resetting session",

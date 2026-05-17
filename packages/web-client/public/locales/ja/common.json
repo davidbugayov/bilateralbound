@@ -242,6 +242,8 @@
     "passesPerSecondLabel": "パス/秒",
     "playOnController": "コントローラーで再生",
     "presetApplied": "プリセット適用済み",
+    "presetNamePrompt": "新しいプリセット名：",
+    "renameSessionPrompt": "新しいセッション名：",
     "presets": {
       "relaxation": "リラクゼーション",
       "activation": "活性化",
@@ -274,7 +276,10 @@
       "sessionExported": "セッションがエクスポートされました",
       "sessionImported": "セッションがインポートされました",
       "sessionSaved": "セッションが保存されました",
-      "sessionDeleted": "セッションが削除されました"
+      "sessionDeleted": "セッションが削除されました",
+      "sessionLoaded": "セッションが読み込まれました",
+      "presetSaved": "プリセットが保存されました",
+      "changeUndone": "変更が取り消されました"
     },
     "sessionReset": "セッションがリセットされました",
     "sessionResetError": "セッションのリセットエラー",

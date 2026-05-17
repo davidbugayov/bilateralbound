@@ -235,6 +235,8 @@
     "passesPerSecondLabel": "Passes/seg",
     "playOnController": "Reproduzir no controlador",
     "presetApplied": "Predefinição aplicada",
+    "presetNamePrompt": "Nome da nova predefinição:",
+    "renameSessionPrompt": "Novo nome de sessão:",
     "presets": {
       "relaxation": "Relaxamento",
       "activation": "Ativação",
@@ -267,7 +269,10 @@
       "sessionExported": "Sessão exportada",
       "sessionImported": "Sessão importada",
       "sessionSaved": "Sessão salva",
-      "sessionDeleted": "Sessão excluída"
+      "sessionDeleted": "Sessão excluída",
+      "sessionLoaded": "Sessão carregada",
+      "presetSaved": "Predefinição salva",
+      "changeUndone": "Alteração desfeita"
     },
     "sessionReset": "Sessão reiniciada",
     "sessionResetError": "Erro ao reiniciar sessão",

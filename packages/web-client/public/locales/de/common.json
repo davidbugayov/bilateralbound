@@ -236,6 +236,8 @@
     "passesPerSecondLabel": "Durchgänge/Sek",
     "playOnController": "Auf Controller abspielen",
     "presetApplied": "Voreinstellung angewendet",
+    "presetNamePrompt": "Name des neuen Presets:",
+    "renameSessionPrompt": "Neuer Sitzungsname:",
     "presets": {
       "relaxation": "Entspannung",
       "activation": "Aktivierung",
@@ -268,7 +270,10 @@
       "sessionExported": "Sitzung exportiert",
       "sessionImported": "Sitzung importiert",
       "sessionSaved": "Sitzung gespeichert",
-      "sessionDeleted": "Sitzung gelöscht"
+      "sessionDeleted": "Sitzung gelöscht",
+      "sessionLoaded": "Sitzung geladen",
+      "presetSaved": "Voreinstellung gespeichert",
+      "changeUndone": "Änderung rückgängig gemacht"
     },
     "sessionReset": "Sitzung zurückgesetzt",
     "sessionResetError": "Fehler beim Zurücksetzen der Sitzung",

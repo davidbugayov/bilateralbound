@@ -242,6 +242,8 @@
     "passesPerSecondLabel": "Passes/sec",
     "playOnController": "Jouer sur le contrôleur",
     "presetApplied": "Préréglage appliqué",
+    "presetNamePrompt": "Nom du nouveau préréglage :",
+    "renameSessionPrompt": "Nouveau nom de séance :",
     "presets": {
       "relaxation": "Relaxation",
       "activation": "Activation",
@@ -274,7 +276,10 @@
       "sessionExported": "Séance exportée",
       "sessionImported": "Séance importée",
       "sessionSaved": "Séance enregistrée",
-      "sessionDeleted": "Séance supprimée"
+      "sessionDeleted": "Séance supprimée",
+      "sessionLoaded": "Séance chargée",
+      "presetSaved": "Préréglage enregistré",
+      "changeUndone": "Modification annulée"
     },
     "sessionReset": "Séance réinitialisée",
     "sessionResetError": "Erreur lors de la réinitialisation de la séance",

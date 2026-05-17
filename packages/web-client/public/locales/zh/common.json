@@ -228,6 +228,8 @@
     "passesPerSecondLabel": "通过次数/秒",
     "playOnController": "在控制器上播放",
     "presetApplied": "预设已应用",
+    "presetNamePrompt": "新预设名称：",
+    "renameSessionPrompt": "新会话名称：",
     "presets": {
       "relaxation": "放松",
       "activation": "激活",
@@ -260,7 +262,10 @@
       "sessionExported": "会话已导出",
       "sessionImported": "会话已导入",
       "sessionSaved": "会话已保存",
-      "sessionDeleted": "会话已删除"
+      "sessionDeleted": "会话已删除",
+      "sessionLoaded": "会话已加载",
+      "presetSaved": "预设已保存",
+      "changeUndone": "更改已撤销"
     },
     "sessionReset": "会话已重置",
     "sessionResetError": "重置会话错误",
