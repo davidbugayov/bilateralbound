@@ -348,3 +348,17 @@ body.light-theme .cookie-consent__btn--decline:hover {
     justify-content: center;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  #viewerStatus.disconnected {
+    animation: none;
+  }
+
+  #viewerStatus.disconnected::before {
+    animation: none;
+  }
+
+  .skip-link {
+    transition: none;
+  }
+}

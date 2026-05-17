@@ -355,6 +355,10 @@ body.light-theme {
   line-height: 1.4;
 }
 
+.hub-validation--error {
+  color: #ef4444;
+}
+
 /* ── Generated Links ── */
 .hub-links {
   display: flex;
@@ -802,6 +806,20 @@ body.light-theme {
   font-size: 0.78rem;
   color: var(--mp-subtle);
   line-height: 1.4;
+}
+
+.hub-status--error {
+  background: rgb(239 68 68 / 6%);
+  border-color: rgb(239 68 68 / 20%);
+}
+
+.hub-status--error .hub-status__icon {
+  font-size: 1.5rem;
+  color: #ef4444;
+}
+
+.hub-status--error .hub-status__text {
+  color: #ef4444;
 }
 
 /* ── Actions Row ── */
