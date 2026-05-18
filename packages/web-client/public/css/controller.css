@@ -1024,13 +1024,14 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 
 /* Presets section in right col: compact heading, no extra gap */
 .controller-right-col .control-section {
-  margin-top: -6px;
+  margin-top: 0;
 }
 
 .controller-right-col .control-section h3 {
   font-size: 0.82rem;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-top: 0;
+  margin-bottom: 6px;
   color: #94a3b8;
   letter-spacing: 0.01em;
 }
