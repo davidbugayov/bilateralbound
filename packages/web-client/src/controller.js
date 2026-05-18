@@ -245,14 +245,6 @@ function handleFullscreenKeydown(e) {
     e.preventDefault()
     e.stopPropagation()
     togglePlayPause()
-  } else if (key === 'f') {
-    e.preventDefault()
-    e.stopPropagation()
-    if (isPreviewFullscreen) {
-      closePreviewFullscreen()
-    } else {
-      openPreviewFullscreen()
-    }
   } else if (key === 'escape' && isPreviewFullscreen) {
     e.preventDefault()
     e.stopPropagation()
@@ -1638,7 +1630,22 @@ function setTrackBand(band) {
   if (lastServerState) lastServerState.trackBand = band
   if (previewPhysicsEngine) previewPhysicsEngine.options.trackBand = band
   if (globalThis.__current?.isInitializing) return
-  safeSend(WS_MSG.controllerUpdate, { trackBand: band })
+  if (isPlaying) {
+    // Pause-center-resume cycle so ball snaps to new band center on unpause
+    globalThis.__suppressPauseNotification = true
+    safeSend(WS_MSG.controllerUpdate, { paused: true, returnToCenter: true })
+    if (previewPhysicsEngine) {
+      centerBallInViewer()
+      previewPhysicsEngine.setPaused(true)
+    }
+    setTimeout(() => {
+      safeSend(WS_MSG.controllerUpdate, { paused: false, trackBand: band })
+      if (previewPhysicsEngine) previewPhysicsEngine.setPaused(false)
+      setTimeout(() => { globalThis.__suppressPauseNotification = false }, 600)
+    }, 400)
+  } else {
+    safeSend(WS_MSG.controllerUpdate, { trackBand: band })
+  }
 }
 
 function setBallColor(color) {
