@@ -365,7 +365,19 @@
     "waitingForViewer": "Ожидание подключения вьювера",
     "waitingForViewerConnection": "⏳ Ожидание подключения вьювера",
     "waitingViewer": "Ожидание вьювера",
-    "warning": "Внимание"
+    "warning": "Внимание",
+    "illustrationTitle": "Иллюстрация",
+    "illustrationAnimals": "Животные",
+    "illustrationSport": "Спорт",
+    "illustrationEmoji": "Эмодзи",
+    "illustrationCustom": "Свой эмодзи…",
+    "illustrationApply": "Применить",
+    "infinityShort": "∞",
+    "infinityFull": "Лемниската (знак бесконечности)",
+    "positionTitle": "Позиция",
+    "positionTop": "Сверху",
+    "positionCenter": "По центру",
+    "positionBottom": "Снизу"
   },
   "features": {
     "bilateral": "Билатеральная стимуляция",

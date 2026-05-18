@@ -576,5 +576,19 @@
     "s14GitHub": "<strong>GitHub：</strong> <a href=\"https://github.com/davidbugayov\" target=\"_blank\" rel=\"noopener\">github.com/davidbugayov</a>",
     "footerCopyright": "© 2024-2026 BilateralBound. 全著作権所有。",
     "footerHome": "ホームに戻る"
+  },
+  "controller": {
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   }
 }
