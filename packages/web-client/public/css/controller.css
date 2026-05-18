@@ -1881,8 +1881,8 @@ body {
 }
 
 /* ── Viewer audio status ── */
-/* viewer-audio-indicator inside modal settings card */
-.smodal__panel .viewer-audio-indicator {
+/* viewer-audio-indicator inside left-col settings card */
+.controller-left-col .viewer-audio-indicator {
   padding: 10px 14px;
   margin: 0;
   font-size: 0.8rem;
@@ -1894,7 +1894,7 @@ body {
   background: rgb(234 179 8 / 8%);
 }
 
-.smodal__panel .viewer-audio-indicator.hidden {
+.controller-left-col .viewer-audio-indicator.hidden {
   display: flex !important;
   visibility: hidden;
   pointer-events: none;
@@ -2034,7 +2034,7 @@ body {
   color: #3b82f6;
 }
 
-.light-theme .smodal__panel .viewer-audio-indicator {
+.light-theme .controller-left-col .viewer-audio-indicator {
   background: rgb(234 179 8 / 10%);
   border-top-color: rgb(0 0 0 / 6%);
 }
