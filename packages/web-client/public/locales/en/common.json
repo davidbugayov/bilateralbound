@@ -344,7 +344,19 @@
     "waitingForViewer": "Waiting for viewer connection",
     "waitingForViewerConnection": "⏳ Waiting for viewer connection",
     "waitingViewer": "Waiting for viewer",
-    "warning": "Warning"
+    "warning": "Warning",
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate (figure-8) movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   },
   "features": {
     "bilateral": "Bilateral stimulation",

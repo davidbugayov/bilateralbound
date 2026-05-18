@@ -54,6 +54,7 @@ const DEFAULT_OPTIONS = {
   centerSnapThreshold: 2,
   centerCheckThreshold: 10,
   driftStaleMs: 1500,
+  trackBand: 'center',
   smoothing: {
     // CLIENT-SIDE AUTHORITY: high threshold — server coords used only for coarse sync.
     // Viewer is authoritative; only correct if drift > 100px.
@@ -190,6 +191,11 @@ function validateCommonCommand(command) {
   if (isValidHexColor(command.colorBall))
     validated.colorBall = command.colorBall
   if (isValidHexColor(command.colorBg)) validated.colorBg = command.colorBg
+  if (command.ballEmoji !== undefined && (command.ballEmoji === null || (typeof command.ballEmoji === 'string' && command.ballEmoji.length <= 2))) {
+    validated.ballEmoji = command.ballEmoji
+  }
+  if (command.infinity !== undefined && typeof command.infinity === 'boolean') validated.infinity = command.infinity
+  if (command.trackBand !== undefined && ['top', 'center', 'bottom'].includes(command.trackBand)) validated.trackBand = command.trackBand
 
   return validated
 }
@@ -268,7 +274,8 @@ class PhysicsEngine {
       x: this.ball.x,
       y: this.ball.y,
       radius: this.ball.radius,
-      colorBall: null
+      colorBall: null,
+      ballEmoji: null
     }
 
     // Colors
@@ -300,6 +307,7 @@ class PhysicsEngine {
     // Fixed-timestep accumulator for deterministic simulation.
     // Ensures identical physics output regardless of caller FPS.
     this._accumulator = 0
+    this._infinityT = 0
 
     // Callbacks
     this.bounceCallback = this.options.bounceCallback
@@ -331,7 +339,9 @@ class PhysicsEngine {
       vx: 0,
       vy: 0,
       speed: DEFAULT_OPTIONS.defaultSpeed,
-      radius: this.options.ballRadius
+      radius: this.options.ballRadius,
+      infinity: false,
+      ballEmoji: null
     }
   }
 
@@ -585,12 +595,31 @@ class PhysicsEngine {
   _handleUnpause() {
     this.state.allowInterpWhenPaused = false
 
+    // Infinity mode: reset phase so server and viewer restart from t=0 simultaneously.
+    // Early return prevents trackBand snap (infinity uses full-screen center).
+    if (this.ball.infinity) {
+      this._infinityT = 0
+      this._snapToCenter()
+      if (this.options.clientSimulation) {
+        this._restoreLocalVelocity()
+      }
+      return
+    }
+
     if (this.state.seekingCenter) {
       this._snapToCenter()
     }
 
     this.state.seekingCenter = false
     this._seekCenterStart = null
+
+    if (this.options.trackBand && this.options.trackBand !== 'center') {
+      const bandY = this._getTrackBandCenterY()
+      this.ball.y = bandY
+      this._prevPos.y = bandY
+      this._currPos.y = bandY
+      if (typeof this.state.targetY === 'number') this.state.targetY = bandY
+    }
 
     if (this.options.clientSimulation) {
       this._restoreLocalVelocity()
@@ -794,16 +823,18 @@ class PhysicsEngine {
 
     // Vertical bounds — check unless locked to pure horizontal movement
     if (!isPureHorizontal) {
-      if (ball.y < radius) {
-        const overflow = radius - ball.y
-        ball.y = radius + overflow + 0.1 // Add epsilon to skip wall
+      const yMin = this._getTrackBandYMin()
+      const yMax = this._getTrackBandYMax()
+      if (ball.y < yMin + radius) {
+        const overflow = (yMin + radius) - ball.y
+        ball.y = yMin + radius + overflow + 0.1 // Add epsilon to skip wall
         if (dirY < 0) {
           state.lastDirection.y = Math.abs(dirY)
           bounceSide = bounceSide || 'top'
         }
-      } else if (ball.y > worldHeight - radius) {
-        const overflow = ball.y - (worldHeight - radius)
-        ball.y = worldHeight - radius - overflow - 0.1 // Add epsilon to skip wall
+      } else if (ball.y > yMax - radius) {
+        const overflow = ball.y - (yMax - radius)
+        ball.y = yMax - radius - overflow - 0.1 // Add epsilon to skip wall
         if (dirY > 0) {
           state.lastDirection.y = -Math.abs(dirY)
           bounceSide = bounceSide || 'bottom'
@@ -974,6 +1005,7 @@ class PhysicsEngine {
       this._prevPos.y + (this._currPos.y - this._prevPos.y) * a + this._visualOffsetY
     this._interpBall.radius = this.ball.radius
     this._interpBall.colorBall = this.ball.colorBall || null
+    this._interpBall.ballEmoji = this.ball.ballEmoji ?? null
 
     return this._interpBall
   }
@@ -1018,7 +1050,10 @@ class PhysicsEngine {
       paused: this.state.paused,
       stopping: this.state.stopping,
       colorBall: this.colors.ball,
-      colorBg: this.colors.bg
+      colorBg: this.colors.bg,
+      ballEmoji: this.ball.ballEmoji ?? null,
+      infinity: this.ball.infinity ?? false,
+      trackBand: this.options.trackBand ?? 'center'
     }
   }
 
@@ -1041,6 +1076,54 @@ class PhysicsEngine {
     this.state.targetY = this.centerY
 
     this._speedTransition = null
+
+    this.ball.ballEmoji = null
+    this.ball.infinity = false
+    this._infinityT = 0
+  }
+
+  // ============================================
+  // PRIVATE - TRACK BAND HELPERS
+  // ============================================
+
+  _getTrackBandYMin() {
+    const h = this.options.worldHeight
+    return this.options.trackBand === 'bottom' ? h * 0.5 : 0
+  }
+
+  _getTrackBandYMax() {
+    const h = this.options.worldHeight
+    return this.options.trackBand === 'top' ? h * 0.5 : h
+  }
+
+  _getTrackBandCenterY() {
+    return (this._getTrackBandYMin() + this._getTrackBandYMax()) / 2
+  }
+
+  // Lemniscate (Bernoulli figure-8) path. Parametric formula:
+  //   x(t) = cx + (W/2 * scale) * cos(t) / (1 + sin²(t))
+  //   y(t) = cy + (H/2 * scale) * sin(t)*cos(t) / (1 + sin²(t))
+  // Both server and viewer advance _infinityT at the same rate → identical trajectory.
+  _stepInfinityPath(dt) {
+    const w = this.options.worldWidth
+    const h = this.options.worldHeight
+    const cx = w / 2
+    const cy = h / 2
+    const scale = 0.75
+
+    // Advance phase: speed=30 → ~1.2 rad/s → ~5s per cycle
+    this._infinityT = ((this._infinityT || 0) + this.ball.speed * FIXED_DT * 0.04) % (2 * Math.PI)
+    const t = this._infinityT
+    const denom = 1 + Math.sin(t) * Math.sin(t)
+
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+    this.ball.x = cx + (w / 2 * scale) * Math.cos(t) / denom
+    this.ball.y = cy + (h / 2 * scale) * Math.sin(t) * Math.cos(t) / denom
+    this.ball.vx = 0
+    this.ball.vy = 0
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
   }
 
   // ============================================
@@ -1135,6 +1218,13 @@ class PhysicsEngine {
       return
     }
 
+    // NEW: lemniscate path bypasses bounce physics
+    if (this.ball.infinity) {
+      this._stepInfinityPath(deltaTime)
+      this._decayVisualOffset(deltaTime)
+      return
+    }
+
     if (this.options.clientSimulation) {
       this.updateClientPhysics(deltaTime)
       this._applyDriftCorrection()
@@ -1154,6 +1244,12 @@ class PhysicsEngine {
   _updateServerPhysics(deltaTime) {
     if (this.state.paused) return
     if (!this._worldSizeSet) return
+
+    // NEW: lemniscate path bypasses bounce physics
+    if (this.ball.infinity) {
+      this._stepInfinityPath(deltaTime)
+      return
+    }
 
     const speedFactor = this._calculateSpeedFactor()
     if (speedFactor <= 0) {
@@ -1610,6 +1706,13 @@ class PhysicsEngine {
     if (command.radius !== undefined) this.setBallSize(command.radius)
     if (command.colorBall !== undefined) this.setBallColor(command.colorBall)
     if (command.colorBg !== undefined) this.setBgColor(command.colorBg)
+    if (command.ballEmoji !== undefined) this.ball.ballEmoji = command.ballEmoji
+    if (typeof command.infinity === 'boolean') {
+      const wasInfinity = this.ball.infinity
+      this.ball.infinity = command.infinity
+      if (!command.infinity && wasInfinity) this._infinityT = 0
+    }
+    if (command.trackBand !== undefined) this.options.trackBand = command.trackBand
   }
 
   /**

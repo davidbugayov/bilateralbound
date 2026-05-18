@@ -392,11 +392,36 @@ class BallRenderer {
         this.ctx.shadowBlur = 0
         this.ctx.shadowOffsetX = 0
         this.ctx.shadowOffsetY = 0
+        const emoji = ball.ballEmoji ?? this.ball?.ballEmoji
+        if (emoji) this._renderBallEmoji(ball, emoji)
       } catch (err) {
         if (typeof globalThis?.logger?.warn === 'function') {
           globalThis.logger.warn('Error rendering ball:', err)
         }
       }
+    }
+  }
+  /**
+   * Renders emoji illustration on top of the ball
+   * @param {object} ball - Ball state with x, y, radius
+   * @param {string} emoji - Emoji character(s) to render
+   * @private
+   */
+  _renderBallEmoji(ball, emoji) {
+    try {
+      const fontSize = Math.floor(ball.radius * 1.24)
+      this.ctx.save()
+      this.ctx.font = `${fontSize}px sans-serif`
+      this.ctx.textAlign = 'center'
+      this.ctx.textBaseline = 'middle'
+      this.ctx.shadowColor = 'transparent'
+      this.ctx.shadowBlur = 0
+      this.ctx.shadowOffsetX = 0
+      this.ctx.shadowOffsetY = 0
+      this.ctx.fillText(emoji, ball.x, ball.y)
+      this.ctx.restore()
+    } catch (_err) {
+      // emoji rendering is best-effort; canvas may reject some sequences
     }
   }
   /**

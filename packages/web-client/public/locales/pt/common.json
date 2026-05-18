@@ -575,5 +575,19 @@
     "text": "Usamos Yandex.Metrica para analisar o tráfego do site. Ao clicar em «Aceitar», você concorda com o processamento dos seus dados.",
     "accept": "Aceitar",
     "decline": "Recusar"
+  },
+  "controller": {
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   }
 }
