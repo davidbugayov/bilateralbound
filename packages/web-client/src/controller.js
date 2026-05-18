@@ -780,11 +780,14 @@ function applyServerStateToPreview(state) {
       isPlaying = newIsPlaying
       updatePlayPauseButton()
       // Show notification when viewer toggles play/pause (no title, just message)
-      const _t = (k, fallback) => globalThis.i18n?.t(k) || fallback
-      if (state.paused) {
-        globalThis.notificationSystem?.info('', _t('controller.viewerStopped', 'Viewer stopped'))
-      } else {
-        globalThis.notificationSystem?.info('', _t('controller.viewerStarted', 'Viewer started'))
+      // Suppress during direction change pause/resume cycle
+      if (!globalThis.__suppressPauseNotification) {
+        const _t = (k, fallback) => globalThis.i18n?.t(k) || fallback
+        if (state.paused) {
+          globalThis.notificationSystem?.info('', _t('controller.viewerStopped', 'Viewer stopped'))
+        } else {
+          globalThis.notificationSystem?.info('', _t('controller.viewerStarted', 'Viewer started'))
+        }
       }
     }
     if (state.paused) {
@@ -1485,6 +1488,8 @@ function updateViewerInfo(viewerScreenSize) {
  * @param {number} dirY - The new Y direction component.
  */
 function _applyDirectionChangeWhenPlaying(dirX, dirY) {
+  // Suppress "Viewer stopped/started" notifications during direction change pause cycle
+  globalThis.__suppressPauseNotification = true
   safeSend(WS_MSG.controllerUpdate, {
     paused: true,
     returnToCenter: true
@@ -1507,6 +1512,8 @@ function _applyDirectionChangeWhenPlaying(dirX, dirY) {
       previewPhysicsEngine.setDirection(dirX, dirY)
       previewPhysicsEngine.setPaused(false)
     }
+    // Allow pause notifications again after the resume broadcast is received
+    setTimeout(() => { globalThis.__suppressPauseNotification = false }, 600)
   }, 400)
 }
 /**

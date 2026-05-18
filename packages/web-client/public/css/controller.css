@@ -1016,8 +1016,9 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   margin-bottom: 4px;
 }
 
-/* Remove excess top margin on card titles in left col */
-.controller-left-col .controls-title {
+/* Remove excess top margin on card titles in both columns */
+.controller-left-col .controls-title,
+.controller-right-col .controls-title {
   margin-top: 0;
   margin-bottom: 4px;
   font-size: 0.82rem;
@@ -2635,26 +2636,66 @@ body {
 }
 
 /* ── Illustration accordion ── */
+@keyframes illus-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
 .illus-accordion {
   width: 100%;
-  border: none;
-  background: none;
-  padding: 0;
+  border: 1px solid rgb(255 255 255 / 8%);
+  background: var(--card-bg, #1f2937);
+  padding: 0 10px;
   margin: 0;
+  border-radius: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.illus-accordion:hover {
+  border-color: rgb(255 255 255 / 16%);
+}
+
+.illus-accordion[open] {
+  border-color: rgb(96 165 250 / 25%);
 }
 
 .illus-accordion__summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 2px;
+  padding: 8px 0;
   font-size: 0.82rem;
   font-weight: 500;
   color: var(--text-muted, #9ca3af);
   cursor: pointer;
   user-select: none;
   list-style: none;
-  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* shimmer sweep on hover — magic-ui inspired */
+.illus-accordion__summary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgb(255 255 255 / 6%) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.illus-accordion:hover .illus-accordion__summary::before {
+  opacity: 1;
+  animation: illus-shimmer 1.4s ease infinite;
 }
 
 .illus-accordion__summary::-webkit-details-marker {
@@ -2673,10 +2714,6 @@ body {
   transform: rotate(90deg);
 }
 
-.illus-accordion[open] .illus-accordion__summary {
-  border-bottom-color: transparent;
-}
-
 .illus-selected-preview {
   font-size: 16px;
   line-height: 1;
@@ -2686,7 +2723,15 @@ body {
 
 .illus-accordion .illus-section {
   background: none;
-  padding: 8px 0 4px;
+  padding: 4px 0 8px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.illus-accordion .illus-grid {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ── Infinity direction button ── */

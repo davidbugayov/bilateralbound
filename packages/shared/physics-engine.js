@@ -1106,20 +1106,20 @@ class PhysicsEngine {
   // Both server and viewer advance _infinityT at the same rate → identical trajectory.
   _stepInfinityPath(dt) {
     const w = this.options.worldWidth
-    const h = this.options.worldHeight
     const cx = w / 2
-    const cy = h / 2
+    const cy = this._getTrackBandCenterY()
+    const bandHalfH = (this._getTrackBandYMax() - this._getTrackBandYMin()) / 2
     const scale = 0.75
 
-    // Advance phase: speed=30 → ~1.2 rad/s → ~5s per cycle
-    this._infinityT = ((this._infinityT || 0) + this.ball.speed * FIXED_DT * 0.04) % (2 * Math.PI)
+    // Advance phase: 0.06 factor → ~1.8 rad/s at speed=30 → ~3.5s per cycle
+    this._infinityT = ((this._infinityT || 0) + this.ball.speed * FIXED_DT * 0.06) % (2 * Math.PI)
     const t = this._infinityT
     const denom = 1 + Math.sin(t) * Math.sin(t)
 
     this._prevPos.x = this.ball.x
     this._prevPos.y = this.ball.y
     this.ball.x = cx + (w / 2 * scale) * Math.cos(t) / denom
-    this.ball.y = cy + (h / 2 * scale) * Math.sin(t) * Math.cos(t) / denom
+    this.ball.y = cy + (bandHalfH * scale) * Math.sin(t) * Math.cos(t) / denom
     this.ball.vx = 0
     this.ball.vy = 0
     this._currPos.x = this.ball.x
