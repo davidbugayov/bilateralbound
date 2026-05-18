@@ -40,11 +40,11 @@
     "createFailed": "Erro ao criar sessão: "
   },
   "links": {
-    "heading": "🔗 Links permanentes para clientes",
+    "heading": "Links permanentes para clientes",
     "description": "Crie links personalizados para seus clientes. Você poderá usá-los repetidamente - os links permanecem permanentes e não requerem geração a cada vez.",
     "formLabelClientId": "ID do cliente (3-32 caracteres: letras latinas, números, _ ou -)",
     "placeholderClientId": "anna_2025 ou client-ivan",
-    "generateBtn": "🔗 Criar",
+    "generateBtn": "Criar",
     "examples": "Exemplos: anna_2025, client-ivan, session42",
     "generatedTitle": "✅ Links permanentes criados!",
     "viewerLabel": "👁️ Link para o cliente (Viewer):",

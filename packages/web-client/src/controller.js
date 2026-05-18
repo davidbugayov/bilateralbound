@@ -939,6 +939,7 @@ function _syncUIDirection(ballState) {
     if (now < __ignoreServerDirectionUntilTs) {
       return
     }
+    if (getCurrentDirectionMode() === 'infinity') return
     const mode = getDirectionMode(ballState.dirX, ballState.dirY)
     const currentMode = getCurrentDirectionMode()
     if (mode && mode !== currentMode) {
@@ -965,6 +966,8 @@ function _syncUIIllustration(ballState) {
   if (ballState.ballEmoji === undefined) return
   if (previewPhysicsEngine) previewPhysicsEngine.ball.ballEmoji = ballState.ballEmoji
   if (lastServerState) lastServerState.ballEmoji = ballState.ballEmoji
+  const preview = document.getElementById('illusSelectedPreview')
+  if (preview) preview.textContent = ballState.ballEmoji || ''
   document.querySelectorAll('.illus-emoji-btn').forEach(b => {
     b.classList.toggle('active',
       b.textContent === ballState.ballEmoji || (!ballState.ballEmoji && b.classList.contains('illus-clear'))
@@ -1582,6 +1585,8 @@ function setIllustration(emoji, btnEl) {
   const val = (typeof emoji === 'string' && emoji.length > 0) ? emoji : null
   document.querySelectorAll('.illus-emoji-btn').forEach(b => b.classList.remove('active'))
   if (btnEl) btnEl.classList.add('active')
+  const preview = document.getElementById('illusSelectedPreview')
+  if (preview) preview.textContent = val || ''
   if (previewPhysicsEngine) previewPhysicsEngine.ball.ballEmoji = val
   if (lastServerState) lastServerState.ballEmoji = val
   if (globalThis.__current?.isInitializing) return
@@ -1760,6 +1765,11 @@ function getDirectionInfo(mode) {
       return {
         text: globalThis.i18n?.t('controller.randomFull') || '🎲 Random',
         icon: '🎲'
+      }
+    case 'infinity':
+      return {
+        text: globalThis.i18n?.t('controller.infinityFull') || '∞ Infinity',
+        icon: '∞'
       }
     default:
       return {

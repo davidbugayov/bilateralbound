@@ -40,11 +40,11 @@
     "createFailed": "Fehler beim Erstellen der Sitzung: "
   },
   "links": {
-    "heading": "🔗 Permanente Links für Klienten",
+    "heading": "Permanente Links für Klienten",
     "description": "Erstellen Sie personalisierte Links für Ihre Klienten. Sie können sie wiederholt verwenden - die Links bleiben permanent und müssen nicht jedes Mal neu generiert werden.",
     "formLabelClientId": "Klienten-ID (3-32 Zeichen: lateinische Buchstaben, Zahlen, _ oder -)",
     "placeholderClientId": "anna_2025 oder client-ivan",
-    "generateBtn": "🔗 Erstellen",
+    "generateBtn": "Erstellen",
     "examples": "Beispiele: anna_2025, client-ivan, session42",
     "generatedTitle": "✅ Permanente Links erstellt!",
     "viewerLabel": "👁️ Link für Klienten (Viewer):",

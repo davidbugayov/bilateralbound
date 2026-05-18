@@ -40,11 +40,11 @@
     "createFailed": "セッション作成エラー: "
   },
   "links": {
-    "heading": "🔗 クライアント用の永続リンク",
+    "heading": "クライアント用の永続リンク",
     "description": "クライアント用の個別リンクを作成します。繰り返し使用できます - リンクは永続的で、毎回生成する必要はありません。",
     "formLabelClientId": "クライアントID（3-32文字：ラテン文字、数字、_または-）",
     "placeholderClientId": "anna_2025またはclient-ivan",
-    "generateBtn": "🔗 作成",
+    "generateBtn": "作成",
     "examples": "例：anna_2025、client-ivan、session42",
     "generatedTitle": "✅ 永続リンクが作成されました！",
     "viewerLabel": "👁️ クライアント用リンク（Viewer）：",

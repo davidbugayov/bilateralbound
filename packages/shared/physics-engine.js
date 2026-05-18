@@ -2016,6 +2016,7 @@ class PhysicsEngine {
    * @private
    */
   _handleServerUnpause(command) {
+    if (this.ball.infinity) return
     const willBeUnpaused =
       command.paused === false || this.state.paused === false
     if (willBeUnpaused) {
