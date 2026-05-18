@@ -54,6 +54,7 @@ const DEFAULT_OPTIONS = {
   centerSnapThreshold: 2,
   centerCheckThreshold: 10,
   driftStaleMs: 1500,
+  trackBand: 'center',
   smoothing: {
     // CLIENT-SIDE AUTHORITY: high threshold — server coords used only for coarse sync.
     // Viewer is authoritative; only correct if drift > 100px.
@@ -1054,6 +1055,10 @@ class PhysicsEngine {
     this.state.targetY = this.centerY
 
     this._speedTransition = null
+
+    this.ball.ballEmoji = null
+    this.ball.infinity = false
+    this._infinityT = 0
   }
 
   // ============================================
