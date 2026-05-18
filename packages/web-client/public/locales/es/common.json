@@ -349,7 +349,11 @@
     "positionTitle": "Position",
     "positionTop": "Top",
     "positionCenter": "Center",
-    "positionBottom": "Bottom"
+    "positionBottom": "Bottom",
+    "settingsLabel": "Ajustes",
+    "settingsTabSound": "Sonido",
+    "settingsTabShortcuts": "Atajos",
+    "settingsTabLanguage": "Idioma"
   },
   "meta": {
     "controllerTitle": "BilateralBound - Controlador de terapia EMDR",

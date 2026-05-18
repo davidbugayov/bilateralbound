@@ -382,7 +382,11 @@
     "positionTitle": "Позиция",
     "positionTop": "Сверху",
     "positionCenter": "По центру",
-    "positionBottom": "Снизу"
+    "positionBottom": "Снизу",
+    "settingsLabel": "Настройки",
+    "settingsTabSound": "Звук",
+    "settingsTabShortcuts": "Горячие клавиши",
+    "settingsTabLanguage": "Язык"
   },
   "features": {
     "bilateral": "Билатеральная стимуляция",

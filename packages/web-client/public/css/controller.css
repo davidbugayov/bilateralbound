@@ -1881,7 +1881,8 @@ body {
 }
 
 /* ── Viewer audio status ── */
-.controller-left-col .viewer-audio-indicator {
+/* viewer-audio-indicator inside modal settings card */
+.smodal__panel .viewer-audio-indicator {
   padding: 10px 14px;
   margin: 0;
   font-size: 0.8rem;
@@ -1893,7 +1894,7 @@ body {
   background: rgb(234 179 8 / 8%);
 }
 
-.controller-left-col .viewer-audio-indicator.hidden {
+.smodal__panel .viewer-audio-indicator.hidden {
   display: flex !important;
   visibility: hidden;
   pointer-events: none;
@@ -2033,7 +2034,7 @@ body {
   color: #3b82f6;
 }
 
-.light-theme .viewer-audio-indicator {
+.light-theme .smodal__panel .viewer-audio-indicator {
   background: rgb(234 179 8 / 10%);
   border-top-color: rgb(0 0 0 / 6%);
 }
@@ -2732,6 +2733,408 @@ body {
 .illus-accordion .illus-grid {
   width: 100%;
   box-sizing: border-box;
+}
+
+/* ===== SETTINGS GEAR BUTTON ===== */
+
+.settings-gear-btn {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 1000;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(30 41 59 / 80%);
+  border: 1px solid rgb(71 85 105 / 40%);
+  border-radius: 8px;
+  color: #94a3b8;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.settings-gear-btn:hover {
+  background: rgb(51 65 85 / 90%);
+  border-color: rgb(96 165 250 / 50%);
+  color: #e2e8f0;
+  transform: rotate(30deg);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+}
+
+.settings-gear-btn:active {
+  transform: rotate(60deg) scale(0.95);
+}
+
+.light-theme .settings-gear-btn {
+  background: rgb(248 250 252 / 85%);
+  border-color: rgb(203 213 225 / 60%);
+  color: #64748b;
+}
+
+.light-theme .settings-gear-btn:hover {
+  background: rgb(226 232 240 / 95%);
+  border-color: rgb(59 130 246 / 40%);
+  color: #1e293b;
+}
+
+/* ===== SETTINGS MODAL ===== */
+
+.smodal {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.smodal[hidden] {
+  display: none;
+}
+
+.smodal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 60%);
+  backdrop-filter: blur(4px);
+  animation: smodal-fade-in 0.2s ease;
+}
+
+@keyframes smodal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes smodal-slide-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.smodal__dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  max-width: 720px;
+  max-height: calc(100vh - 40px);
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgb(51 65 85 / 70%);
+  border-radius: 20px;
+  box-shadow:
+    0 24px 64px rgb(0 0 0 / 60%),
+    inset 0 1px 0 rgb(255 255 255 / 6%);
+  overflow: hidden;
+  animation: smodal-slide-up 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Sidebar */
+.smodal__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 200px;
+  flex-shrink: 0;
+  padding: 20px 12px;
+  border-right: 1px solid rgb(51 65 85 / 50%);
+  background: rgb(15 23 42 / 60%);
+}
+
+.smodal__sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 16px 4px;
+}
+
+.smodal__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.smodal__tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: #94a3b8;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.smodal__tab:hover {
+  background: rgb(255 255 255 / 5%);
+  color: #cbd5e1;
+}
+
+.smodal__tab.active {
+  background: rgb(37 99 235 / 15%);
+  border-color: rgb(37 99 235 / 30%);
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+/* Content */
+.smodal__content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.smodal__content::-webkit-scrollbar {
+  display: none;
+}
+
+.smodal__panel {
+  padding: 24px 24px 20px;
+}
+
+.smodal__panel--hidden {
+  display: none;
+}
+
+.smodal__panel-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgb(51 65 85 / 50%);
+}
+
+/* Close button */
+.smodal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.smodal__close:hover {
+  background: rgb(255 255 255 / 10%);
+  color: #e2e8f0;
+}
+
+/* Shortcuts panel */
+.smodal__shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.smodal__shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: #94a3b8;
+}
+
+.smodal__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 4px 10px;
+  background: rgb(30 41 59 / 80%);
+  border: 1px solid #475569;
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Language panel */
+.smodal__lang-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.smodal__lang-btn {
+  padding: 10px 14px;
+  background: rgb(30 41 59 / 60%);
+  border: 1px solid rgb(51 65 85 / 60%);
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.smodal__lang-btn:hover {
+  background: rgb(51 65 85 / 70%);
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+.smodal__lang-btn.active {
+  background: rgb(37 99 235 / 15%);
+  border-color: rgb(37 99 235 / 40%);
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+/* Remove bottom margin from settings-card inside modal */
+.smodal__panel .controls-card.settings-card {
+  border-radius: 12px;
+}
+
+/* Modal responsive */
+@media (width <= 600px) {
+  .smodal__dialog {
+    flex-direction: column;
+    max-height: calc(100vh - 24px);
+    border-radius: 16px;
+  }
+
+  .smodal__sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgb(51 65 85 / 50%);
+    padding: 16px 12px 8px;
+  }
+
+  .smodal__nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 4px;
+  }
+
+  .smodal__sidebar-title {
+    margin-bottom: 10px;
+  }
+
+  .smodal__tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .smodal__lang-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Light theme modal */
+.light-theme .smodal__dialog {
+  background: linear-gradient(145deg, #fff 0%, #f8fafc 100%);
+  border-color: rgb(203 213 225 / 70%);
+  box-shadow:
+    0 24px 64px rgb(0 0 0 / 20%),
+    inset 0 1px 0 rgb(255 255 255);
+}
+
+.light-theme .smodal__sidebar {
+  background: rgb(248 250 252 / 80%);
+  border-right-color: rgb(203 213 225 / 60%);
+}
+
+.light-theme .smodal__sidebar-title {
+  color: #1e293b;
+}
+
+.light-theme .smodal__tab {
+  color: #64748b;
+}
+
+.light-theme .smodal__tab:hover {
+  background: rgb(0 0 0 / 4%);
+  color: #334155;
+}
+
+.light-theme .smodal__tab.active {
+  background: rgb(37 99 235 / 10%);
+  border-color: rgb(37 99 235 / 25%);
+  color: #2563eb;
+}
+
+.light-theme .smodal__panel-title {
+  color: #1e293b;
+  border-bottom-color: rgb(203 213 225 / 60%);
+}
+
+.light-theme .smodal__close {
+  background: rgb(0 0 0 / 3%);
+  border-color: rgb(0 0 0 / 8%);
+  color: #94a3b8;
+}
+
+.light-theme .smodal__close:hover {
+  background: rgb(0 0 0 / 8%);
+  color: #1e293b;
+}
+
+.light-theme .smodal__shortcut-row {
+  color: #64748b;
+}
+
+.light-theme .smodal__kbd {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #374151;
+}
+
+.light-theme .smodal__lang-btn {
+  background: #fff;
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+.light-theme .smodal__lang-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+.light-theme .smodal__lang-btn.active {
+  background: rgb(37 99 235 / 8%);
+  border-color: rgb(37 99 235 / 30%);
+  color: #2563eb;
 }
 
 /* ── Infinity direction button ── */

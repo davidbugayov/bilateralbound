@@ -356,7 +356,11 @@
     "positionTitle": "Position",
     "positionTop": "Top",
     "positionCenter": "Center",
-    "positionBottom": "Bottom"
+    "positionBottom": "Bottom",
+    "settingsLabel": "Settings",
+    "settingsTabSound": "Sound",
+    "settingsTabShortcuts": "Shortcuts",
+    "settingsTabLanguage": "Language"
   },
   "features": {
     "bilateral": "Bilateral stimulation",

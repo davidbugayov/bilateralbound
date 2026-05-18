@@ -4,13 +4,13 @@
     <!-- Language pre-loader (MUST be first to prevent flashing) -->
     <link rel="preload" href="/js/i18n/lang-preload.js" as="script" />
     <script src="/js/i18n/lang-preload.js"></script>
-    <script src="/js/i18n/i18n.js?v=2.39.623-3b737ed7" defer></script>
+    <script src="/js/i18n/i18n.js?v=2.39.624-21636434" defer></script>
     <script
-      src="/js/i18n/language-selector.js?v=2.39.623-3b737ed7"
+      src="/js/i18n/language-selector.js?v=2.39.624-21636434"
       defer
     ></script>
     <script
-      src="/js/constants/i18n-constants.js?v=2.39.623-3b737ed7"
+      src="/js/constants/i18n-constants.js?v=2.39.624-21636434"
       defer
     ></script>
 
@@ -34,7 +34,7 @@
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="language" content="multilingual" />
-    <meta name="version" content="2.39.623-3b737ed7" />
+    <meta name="version" content="2.39.624-21636434" />
     <meta name="theme-color" content="#2563eb" />
     <meta name="therapy-type" content="EMDR Controller" />
     <meta
@@ -46,17 +46,17 @@
     <!-- Preload Critical Resources -->
     <link
       rel="preload"
-      href="/css/shared-components.css?v=2.39.623-3b737ed7"
+      href="/css/shared-components.css?v=2.39.624-21636434"
       as="style"
     />
     <link
       rel="preload"
-      href="/css/light-theme.css?v=2.39.623-3b737ed7"
+      href="/css/light-theme.css?v=2.39.624-21636434"
       as="style"
     />
     <link
       rel="preload"
-      href="/css/controller.css?v=2.39.623-3b737ed7"
+      href="/css/controller.css?v=2.39.624-21636434"
       as="style"
     />
     <link
@@ -67,19 +67,19 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-controller.svg?v=2.39.623-3b737ed7"
+      href="/favicon-controller.svg?v=2.39.624-21636434"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-controller.ico?v=2.39.623-3b737ed7"
+      href="/favicon-controller.ico?v=2.39.624-21636434"
     />
     <link
       rel="apple-touch-icon"
-      href="/favicon-controller.svg?v=2.39.623-3b737ed7"
+      href="/favicon-controller.svg?v=2.39.624-21636434"
     />
     <link
-      href="/favicon-controller.ico?v=2.39.623-3b737ed7"
+      href="/favicon-controller.ico?v=2.39.624-21636434"
       rel="shortcut icon"
     />
     <meta property="og:type" content="website" />
@@ -95,7 +95,7 @@
     />
     <meta
       property="og:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.623-3b737ed7"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.624-21636434"
     />
     <meta property="og:url" content="https://emdrbilateral.ru/" />
     <meta property="og:site_name" content="BilateralBound" />
@@ -113,7 +113,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.623-3b737ed7"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.624-21636434"
     />
     <meta name="twitter:site" content="@bilateralbound" />
     <script type="application/ld+json">
@@ -132,13 +132,13 @@
       }
     </script>
     <link
-      href="/css/shared-components.css?v=2.39.623-3b737ed7"
+      href="/css/shared-components.css?v=2.39.624-21636434"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/css/common.css?v=2.39.623-3b737ed7" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.623-3b737ed7" />
-    <link rel="stylesheet" href="/css/controller.css?v=2.39.623-3b737ed7" />
-    <script src="/js/ui/cookie-consent.js?v=2.39.623-3b737ed7" defer></script>
+    <link rel="stylesheet" href="/css/common.css?v=2.39.624-21636434" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.624-21636434" />
+    <link rel="stylesheet" href="/css/controller.css?v=2.39.624-21636434" />
+    <script src="/js/ui/cookie-consent.js?v=2.39.624-21636434" defer></script>
   </head>
   <body>
     <header>
@@ -155,6 +155,18 @@
           data-i18n="controller.themeButton"
         ></button>
       </div>
+      <button
+        id="settingsBtn"
+        class="settings-gear-btn"
+        aria-label="Settings"
+        data-i18n-attr="aria-label:controller.settingsLabel"
+        title="Settings"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
     </header>
     <main class="wrap controller-layout">
       <div id="previewOverlay" class="fullscreen-overlay hidden">
@@ -467,130 +479,6 @@
           </div>
         </section>
 
-        <section class="control-section" aria-labelledby="settings-heading">
-          <h3 data-i18n="controller.settingsHeading" id="settings-heading">
-            🛠️ Settings
-          </h3>
-          <div class="appearance-grid">
-            <div class="controls-card settings-card">
-              <div class="settings-sound-header">
-                <span class="settings-sound-header__icon" aria-hidden="true"
-                  >🔊</span
-                >
-                <span
-                  data-i18n="controller.enableSound"
-                  class="settings-sound-header__title"
-                ></span>
-              </div>
-              <div class="settings-row settings-row--toggle">
-                <div class="settings-row__content">
-                  <div class="settings-row__text">
-                    <span
-                      class="settings-row__desc"
-                      data-i18n="controller.soundDesc"
-                    ></span>
-                  </div>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="soundEnabledCheckbox" />
-                  <span class="slider round"></span>
-                </label>
-              </div>
-              <div
-                id="soundTypeControl"
-                class="settings-row settings-row--select"
-              >
-                <label
-                  data-i18n="controller.soundTypeLabel"
-                  for="soundTypeSelect"
-                  class="settings-row__label"
-                ></label>
-                <div class="select-wrapper">
-                  <select id="soundTypeSelect" class="settings-select">
-                    <option data-i18n="controller.soundTypeSoft" value="soft">
-                      🎵 Soft (EMDR)
-                    </option>
-                    <option data-i18n="controller.soundTypeTick" value="tick">
-                      ⏱️ Tick
-                    </option>
-                    <option data-i18n="controller.soundTypeTone" value="tone">
-                      🎹 Tone
-                    </option>
-                    <option data-i18n="controller.soundTypeClick" value="click">
-                      🖱️ Click
-                    </option>
-                    <option
-                      data-i18n="controller.soundTypeBounce"
-                      value="bounce"
-                    >
-                      🎾 Bounce
-                    </option>
-                    <option data-i18n="controller.soundTypeBeep" value="beep">
-                      📢 Beep
-                    </option>
-                  </select>
-                  <span class="select-arrow" aria-hidden="true">▾</span>
-                </div>
-              </div>
-              <div
-                id="controllerMonitorControl"
-                class="settings-row settings-row--divider"
-              >
-                <div class="settings-row__content">
-                  <span class="settings-row__icon" aria-hidden="true">🖥️</span>
-                  <div class="settings-row__text">
-                    <span
-                      data-i18n="controller.monitorSound"
-                      class="settings-row__title"
-                    ></span>
-                    <span
-                      class="settings-row__desc"
-                      data-i18n="controller.monitorDesc"
-                    ></span>
-                  </div>
-                </div>
-                <label class="toggle-switch">
-                  <input id="controllerMonitorCheckbox" type="checkbox" />
-                  <span class="slider round"></span>
-                </label>
-              </div>
-              <div
-                id="controllerVolumeControl"
-                class="settings-row settings-row--volume"
-              >
-                <span class="settings-row__icon volume-icon" aria-hidden="true"
-                  >🔈</span
-                >
-                <span
-                  data-i18n="controller.volumeLabel"
-                  class="settings-row__label--compact"
-                ></span>
-                <input
-                  id="controllerVolumeSlider"
-                  max="100"
-                  min="0"
-                  class="settings-volume-slider"
-                  type="range"
-                  value="50"
-                />
-                <span id="controllerVolumeValue" class="settings-volume-value"
-                  >50%</span
-                >
-              </div>
-              <div
-                class="viewer-audio-indicator hidden"
-                id="viewerAudioIndicator"
-              >
-                <span class="icon">🔊</span>
-                <span
-                  data-i18n="controller.viewerSoundOff"
-                  id="viewerAudioText"
-                ></span>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <details class="presets-details" open>
           <summary>
             <span data-i18n="controller.presetsTitle">🎯 Presets</span>
@@ -878,29 +766,219 @@
           <div id="speedControl"></div>
         </div>
 
-        <!-- Hotkeys -->
-        <div class="controls-card">
-          <p class="controls-title" data-i18n="controller.hotkeysTitle">
-            ⌨️ Hotkeys
-          </p>
-          <div class="hotkey-info">
-            <div>
-              <kbd data-i18n="controller.hotkeySpaceKey">Space</kbd>
-              <span data-i18n="controller.hotkeySpaceAction">— Start/Stop</span>
-            </div>
-            <div>
-              <kbd>↑↓←→</kbd>
-              <span data-i18n="controller.hotkeyArrowsAction"
-                >— Direction control</span
-              >
-            </div>
-          </div>
-        </div>
       </div>
     </main>
+    <!-- ===== SETTINGS MODAL ===== -->
+    <div id="settingsModal" class="smodal" role="dialog" aria-modal="true" aria-labelledby="smodal-title" hidden>
+      <div class="smodal__overlay" id="smodalOverlay"></div>
+      <div class="smodal__dialog">
+        <aside class="smodal__sidebar">
+          <h2 id="smodal-title" class="smodal__sidebar-title">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span data-i18n="controller.settingsHeading">Settings</span>
+          </h2>
+          <nav class="smodal__nav" role="tablist">
+            <button class="smodal__tab active" role="tab" aria-selected="true" data-tab="sound" aria-controls="smodal-panel-sound">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              <span data-i18n="controller.settingsTabSound">Sound</span>
+            </button>
+            <button class="smodal__tab" role="tab" aria-selected="false" data-tab="shortcuts" aria-controls="smodal-panel-shortcuts">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+              <span data-i18n="controller.settingsTabShortcuts">Shortcuts</span>
+            </button>
+            <button class="smodal__tab" role="tab" aria-selected="false" data-tab="language" aria-controls="smodal-panel-language">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span data-i18n="controller.settingsTabLanguage">Language</span>
+            </button>
+          </nav>
+        </aside>
+
+        <div class="smodal__content">
+          <!-- SOUND PANEL -->
+          <section class="smodal__panel" id="smodal-panel-sound" role="tabpanel">
+            <h3 class="smodal__panel-title" data-i18n="controller.settingsTabSound">Sound</h3>
+            <div class="controls-card settings-card">
+              <div class="settings-sound-header">
+                <span class="settings-sound-header__icon" aria-hidden="true">🔊</span>
+                <span data-i18n="controller.enableSound" class="settings-sound-header__title"></span>
+              </div>
+              <div class="settings-row settings-row--toggle">
+                <div class="settings-row__content">
+                  <div class="settings-row__text">
+                    <span class="settings-row__desc" data-i18n="controller.soundDesc"></span>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="soundEnabledCheckbox" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+              <div id="soundTypeControl" class="settings-row settings-row--select">
+                <label data-i18n="controller.soundTypeLabel" for="soundTypeSelect" class="settings-row__label"></label>
+                <div class="select-wrapper">
+                  <select id="soundTypeSelect" class="settings-select">
+                    <option data-i18n="controller.soundTypeSoft" value="soft">🎵 Soft (EMDR)</option>
+                    <option data-i18n="controller.soundTypeTick" value="tick">⏱️ Tick</option>
+                    <option data-i18n="controller.soundTypeTone" value="tone">🎹 Tone</option>
+                    <option data-i18n="controller.soundTypeClick" value="click">🖱️ Click</option>
+                    <option data-i18n="controller.soundTypeBounce" value="bounce">🎾 Bounce</option>
+                    <option data-i18n="controller.soundTypeBeep" value="beep">📢 Beep</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true">▾</span>
+                </div>
+              </div>
+              <div id="controllerMonitorControl" class="settings-row settings-row--divider">
+                <div class="settings-row__content">
+                  <span class="settings-row__icon" aria-hidden="true">🖥️</span>
+                  <div class="settings-row__text">
+                    <span data-i18n="controller.monitorSound" class="settings-row__title"></span>
+                    <span class="settings-row__desc" data-i18n="controller.monitorDesc"></span>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input id="controllerMonitorCheckbox" type="checkbox" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+              <div id="controllerVolumeControl" class="settings-row settings-row--volume">
+                <span class="settings-row__icon volume-icon" aria-hidden="true">🔈</span>
+                <span data-i18n="controller.volumeLabel" class="settings-row__label--compact"></span>
+                <input id="controllerVolumeSlider" max="100" min="0" class="settings-volume-slider" type="range" value="50" />
+                <span id="controllerVolumeValue" class="settings-volume-value">50%</span>
+              </div>
+              <div class="viewer-audio-indicator hidden" id="viewerAudioIndicator">
+                <span class="icon">🔊</span>
+                <span data-i18n="controller.viewerSoundOff" id="viewerAudioText"></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- SHORTCUTS PANEL -->
+          <section class="smodal__panel smodal__panel--hidden" id="smodal-panel-shortcuts" role="tabpanel">
+            <h3 class="smodal__panel-title" data-i18n="controller.settingsTabShortcuts">Keyboard Shortcuts</h3>
+            <div class="smodal__shortcuts-list">
+              <div class="smodal__shortcut-row">
+                <kbd class="smodal__kbd" data-i18n="controller.hotkeySpaceKey">Space</kbd>
+                <span data-i18n="controller.hotkeySpaceAction">— Start / Stop</span>
+              </div>
+              <div class="smodal__shortcut-row">
+                <kbd class="smodal__kbd">↑↓←→</kbd>
+                <span data-i18n="controller.hotkeyArrowsAction">— Direction control</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- LANGUAGE PANEL -->
+          <section class="smodal__panel smodal__panel--hidden" id="smodal-panel-language" role="tabpanel">
+            <h3 class="smodal__panel-title" data-i18n="controller.settingsTabLanguage">Language</h3>
+            <div class="smodal__lang-grid" id="smodalLangGrid">
+              <button class="smodal__lang-btn" data-lang="ru">🇷🇺 Русский</button>
+              <button class="smodal__lang-btn" data-lang="en">🇬🇧 English</button>
+              <button class="smodal__lang-btn" data-lang="de">🇩🇪 Deutsch</button>
+              <button class="smodal__lang-btn" data-lang="fr">🇫🇷 Français</button>
+              <button class="smodal__lang-btn" data-lang="es">🇪🇸 Español</button>
+              <button class="smodal__lang-btn" data-lang="pt">🇵🇹 Português</button>
+              <button class="smodal__lang-btn" data-lang="ja">🇯🇵 日本語</button>
+              <button class="smodal__lang-btn" data-lang="zh">🇨🇳 中文</button>
+            </div>
+          </section>
+        </div>
+
+        <button class="smodal__close" id="smodalClose" aria-label="Close settings">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const modal = document.getElementById('settingsModal')
+        const openBtn = document.getElementById('settingsBtn')
+        const closeBtn = document.getElementById('smodalClose')
+        const overlay = document.getElementById('smodalOverlay')
+        const tabs = modal.querySelectorAll('.smodal__tab')
+        const panels = modal.querySelectorAll('.smodal__panel')
+        const langBtns = modal.querySelectorAll('.smodal__lang-btn')
+
+        function openModal(tabId) {
+          modal.removeAttribute('hidden')
+          document.body.style.overflow = 'hidden'
+          if (tabId) switchTab(tabId)
+          closeBtn.focus()
+        }
+
+        function closeModal() {
+          modal.setAttribute('hidden', '')
+          document.body.style.overflow = ''
+          openBtn.focus()
+        }
+
+        function switchTab(id) {
+          tabs.forEach((t) => {
+            const active = t.dataset.tab === id
+            t.classList.toggle('active', active)
+            t.setAttribute('aria-selected', String(active))
+          })
+          panels.forEach((p) => {
+            p.classList.toggle('smodal__panel--hidden', p.id !== 'smodal-panel-' + id)
+          })
+        }
+
+        openBtn.addEventListener('click', () => openModal())
+        closeBtn.addEventListener('click', closeModal)
+        overlay.addEventListener('click', closeModal)
+
+        tabs.forEach((t) => {
+          t.addEventListener('click', () => switchTab(t.dataset.tab))
+        })
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && !modal.hasAttribute('hidden')) closeModal()
+        })
+
+        // Language buttons
+        function detectCurrentLang() {
+          try {
+            const p = new URLSearchParams(location.search).get('lang')
+            if (p) return p
+            return localStorage.getItem('emdr-language') || navigator.language.split('-')[0] || 'en'
+          } catch { return 'en' }
+        }
+
+        function updateLangActive() {
+          const cur = detectCurrentLang()
+          langBtns.forEach((b) => b.classList.toggle('active', b.dataset.lang === cur))
+        }
+
+        langBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang
+            try { localStorage.setItem('emdr-language', lang) } catch {}
+            try {
+              const url = new URL(location.href)
+              url.searchParams.set('lang', lang)
+              history.replaceState({}, '', url)
+            } catch {}
+            if (globalThis.i18n?.changeLanguage) {
+              globalThis.i18n.changeLanguage(lang)
+            }
+            updateLangActive()
+          })
+        })
+
+        updateLangActive()
+
+        // Expose openModal for external callers
+        globalThis.openSettingsModal = openModal
+      })()
+    </script>
+
     <script src="/js/ui/error-states.js" defer></script>
     <script src="/js/ui/success-toast.js" defer></script>
     <script src="/js/ui/notifications/notification-system.js" defer></script>
-    <script src="/dist/controller.bundle.js?v=2.39.623-3b737ed7" defer></script>
+    <script src="/dist/controller.bundle.js?v=2.39.624-21636434" defer></script>
   </body>
 </html>
