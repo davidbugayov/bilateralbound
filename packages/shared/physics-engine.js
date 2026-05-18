@@ -190,6 +190,11 @@ function validateCommonCommand(command) {
   if (isValidHexColor(command.colorBall))
     validated.colorBall = command.colorBall
   if (isValidHexColor(command.colorBg)) validated.colorBg = command.colorBg
+  if (command.ballEmoji !== undefined && (command.ballEmoji === null || (typeof command.ballEmoji === 'string' && command.ballEmoji.length <= 2))) {
+    validated.ballEmoji = command.ballEmoji
+  }
+  if (command.infinity !== undefined && typeof command.infinity === 'boolean') validated.infinity = command.infinity
+  if (command.trackBand !== undefined && ['top', 'center', 'bottom'].includes(command.trackBand)) validated.trackBand = command.trackBand
 
   return validated
 }
@@ -268,7 +273,8 @@ class PhysicsEngine {
       x: this.ball.x,
       y: this.ball.y,
       radius: this.ball.radius,
-      colorBall: null
+      colorBall: null,
+      ballEmoji: null
     }
 
     // Colors
@@ -300,6 +306,7 @@ class PhysicsEngine {
     // Fixed-timestep accumulator for deterministic simulation.
     // Ensures identical physics output regardless of caller FPS.
     this._accumulator = 0
+    this._infinityT = 0
 
     // Callbacks
     this.bounceCallback = this.options.bounceCallback
@@ -331,7 +338,9 @@ class PhysicsEngine {
       vx: 0,
       vy: 0,
       speed: DEFAULT_OPTIONS.defaultSpeed,
-      radius: this.options.ballRadius
+      radius: this.options.ballRadius,
+      infinity: false,
+      ballEmoji: null
     }
   }
 
@@ -974,6 +983,7 @@ class PhysicsEngine {
       this._prevPos.y + (this._currPos.y - this._prevPos.y) * a + this._visualOffsetY
     this._interpBall.radius = this.ball.radius
     this._interpBall.colorBall = this.ball.colorBall || null
+    this._interpBall.ballEmoji = this.ball.ballEmoji ?? null
 
     return this._interpBall
   }
@@ -1018,7 +1028,10 @@ class PhysicsEngine {
       paused: this.state.paused,
       stopping: this.state.stopping,
       colorBall: this.colors.ball,
-      colorBg: this.colors.bg
+      colorBg: this.colors.bg,
+      ballEmoji: this.ball.ballEmoji ?? null,
+      infinity: this.ball.infinity ?? false,
+      trackBand: this.options.trackBand ?? 'center'
     }
   }
 
@@ -1610,6 +1623,13 @@ class PhysicsEngine {
     if (command.radius !== undefined) this.setBallSize(command.radius)
     if (command.colorBall !== undefined) this.setBallColor(command.colorBall)
     if (command.colorBg !== undefined) this.setBgColor(command.colorBg)
+    if (command.ballEmoji !== undefined) this.ball.ballEmoji = command.ballEmoji
+    if (typeof command.infinity === 'boolean') {
+      const wasInfinity = this.ball.infinity
+      this.ball.infinity = command.infinity
+      if (!command.infinity && wasInfinity) this._infinityT = 0
+    }
+    if (command.trackBand !== undefined) this.options.trackBand = command.trackBand
   }
 
   /**
