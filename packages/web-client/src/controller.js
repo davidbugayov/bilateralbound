@@ -970,10 +970,6 @@ function _syncUIIllustration(ballState) {
       b.textContent === ballState.ballEmoji || (!ballState.ballEmoji && b.classList.contains('illus-clear'))
     )
   })
-  if (ballState.infinity) {
-    setCurrentDirectionMode('infinity')
-    updateDirectionButtons()
-  }
 }
 function _syncUITrackBand(ballState) {
   if (!ballState.trackBand) return
