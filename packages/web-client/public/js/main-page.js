@@ -79,6 +79,7 @@
         return
       }
 
+      globalThis.ym?.(104698530, 'reachGoal', 'session_started')
       window.location.href = '/c/' + sessionId
     } finally {
       isCreatingSession = false
@@ -208,6 +209,7 @@
       if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl
       if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl
       if (container) container.style.display = 'block'
+      globalThis.ym?.(104698530, 'reachGoal', 'permanent_link_created')
 
       // Hide subscription prompt if previously shown
       const prompt = document.getElementById('subscribePrompt')
@@ -365,6 +367,7 @@
    */
   function handleSubscribeClick(e) {
     if (e) e.preventDefault()
+    globalThis.ym?.(104698530, 'reachGoal', 'subscribe_clicked')
     const customId = document.getElementById('customClientId')?.value.trim() || ''
     let botLink =
       globalThis.__config?.telegramBotLink ||
