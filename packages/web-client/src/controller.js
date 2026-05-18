@@ -949,6 +949,40 @@ function _syncUIDirection(ballState) {
     }
   }
 }
+function _syncUIInfinity(ballState) {
+  if (ballState.infinity === undefined) return
+  const now = performance.now()
+  if (now < __ignoreServerDirectionUntilTs) return
+  if (previewPhysicsEngine) previewPhysicsEngine.ball.infinity = ballState.infinity
+  if (lastServerState) lastServerState.infinity = ballState.infinity
+  if (ballState.infinity) {
+    setCurrentDirectionMode('infinity')
+    updateDirectionButtons()
+    updateDirectionDisplay(0, 0)
+  }
+}
+function _syncUIIllustration(ballState) {
+  if (ballState.ballEmoji === undefined) return
+  if (previewPhysicsEngine) previewPhysicsEngine.ball.ballEmoji = ballState.ballEmoji
+  if (lastServerState) lastServerState.ballEmoji = ballState.ballEmoji
+  document.querySelectorAll('.illus-emoji-btn').forEach(b => {
+    b.classList.toggle('active',
+      b.textContent === ballState.ballEmoji || (!ballState.ballEmoji && b.classList.contains('illus-clear'))
+    )
+  })
+  if (ballState.infinity) {
+    setCurrentDirectionMode('infinity')
+    updateDirectionButtons()
+  }
+}
+function _syncUITrackBand(ballState) {
+  if (!ballState.trackBand) return
+  if (previewPhysicsEngine) previewPhysicsEngine.options.trackBand = ballState.trackBand
+  if (lastServerState) lastServerState.trackBand = ballState.trackBand
+  document.querySelectorAll('.pos-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.band === ballState.trackBand)
+  })
+}
 function syncUIWithState(ballState) {
   try {
     if (!ballState) return
@@ -961,6 +995,9 @@ function syncUIWithState(ballState) {
     _syncUIColors(ballState)
     _syncUIPause(ballState)
     _syncUIDirection(ballState)
+    _syncUIInfinity(ballState)
+    _syncUIIllustration(ballState)
+    _syncUITrackBand(ballState)
     if (ballState.soundEnabled !== undefined) {
       const soundEnabledCheckbox = document.getElementById(
         'soundEnabledCheckbox'
@@ -1464,7 +1501,8 @@ function _applyDirectionChangeWhenPlaying(dirX, dirY) {
     safeSend(WS_MSG.controllerUpdate, {
       paused: false,
       dirX,
-      dirY
+      dirY,
+      infinity: false
     })
     if (previewPhysicsEngine) {
       previewPhysicsEngine.setDirection(dirX, dirY)
@@ -1482,7 +1520,8 @@ function _applyDirectionChangeWhenPlaying(dirX, dirY) {
 function _applyDirectionChangeWhenPaused(dirX, dirY) {
   safeSend(WS_MSG.controllerUpdate, {
     dirX,
-    dirY
+    dirY,
+    infinity: false
   })
 }
 /**
@@ -1496,6 +1535,33 @@ function setDirection(directionMode) {
     return
   }
   try {
+    // Exit infinity mode when switching to any non-infinity direction
+    if (lastServerState?.infinity && directionMode !== 'infinity') {
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.ball.infinity = false
+        previewPhysicsEngine._infinityT = 0
+      }
+      if (lastServerState) lastServerState.infinity = false
+    }
+
+    if (directionMode === 'infinity') {
+      setCurrentDirectionMode('infinity')
+      __ignoreServerDirectionUntilTs = performance.now() + 1500
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.ball.infinity = true
+        previewPhysicsEngine._infinityT = 0
+      }
+      if (lastServerState) {
+        lastServerState.infinity = true
+        lastServerState.dirX = 0
+        lastServerState.dirY = 0
+      }
+      updateDirectionButtons()
+      updateDirectionDisplay(0, 0)
+      safeSend(WS_MSG.controllerUpdate, { infinity: true, dirX: 0, dirY: 0 })
+      return
+    }
+
     const directionVector = getDirectionVector(directionMode)
     if (!directionVector) return
     const { dirX, dirY } = directionVector
@@ -1516,6 +1582,57 @@ function setDirection(directionMode) {
     console.error('Ошибка установки направления:', error)
   }
 }
+function setIllustration(emoji, btnEl) {
+  const val = (typeof emoji === 'string' && emoji.length > 0) ? emoji : null
+  document.querySelectorAll('.illus-emoji-btn').forEach(b => b.classList.remove('active'))
+  if (btnEl) btnEl.classList.add('active')
+  if (previewPhysicsEngine) previewPhysicsEngine.ball.ballEmoji = val
+  if (lastServerState) lastServerState.ballEmoji = val
+  if (globalThis.__current?.isInitializing) return
+  safeSend(WS_MSG.controllerUpdate, { ballEmoji: val })
+}
+
+function applyCustomIllustration() {
+  const input = document.getElementById('illusCustomInput')
+  if (!input) return
+  const val = input.value.trim()
+  if (!val) return
+  document.querySelectorAll('.illus-emoji-btn').forEach(b => b.classList.remove('active'))
+  setIllustration(val, null)
+}
+
+const ILLUS_TABS = {
+  animals: ['🦁','🐻','🦊','🐱','🐧','🐼','🦄','🐢','🐝','🐯','🐘','🐮','🐰','🐵','🦅'],
+  sport:   ['⚽','🏀','🎾','🏈','⚾','🎱','🏐','🥎','🏓','🎯','🏒','⛳'],
+  emoji:   ['😀','😎','🤩','😍','🥳','😴','🤔','😱','🔥','⭐','💎','❤️','✨','🌈','🎵']
+}
+
+function switchIllusTab(tab, tabEl) {
+  document.querySelectorAll('.illus-tab').forEach(t => t.classList.remove('active'))
+  if (tabEl) tabEl.classList.add('active')
+  const grid = document.getElementById('illusGrid')
+  if (!grid) return
+  const currentEmoji = lastServerState?.ballEmoji || null
+  grid.innerHTML = `<button class="illus-emoji-btn illus-clear${!currentEmoji ? ' active' : ''}" title="None" onclick="setIllustration(null,this)">✕</button>`
+  for (const e of (ILLUS_TABS[tab] || [])) {
+    const btn = document.createElement('button')
+    btn.className = 'illus-emoji-btn' + (currentEmoji === e ? ' active' : '')
+    btn.textContent = e
+    btn.onclick = function() { setIllustration(e, this) }
+    grid.appendChild(btn)
+  }
+}
+
+function setTrackBand(band) {
+  document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'))
+  const btn = document.querySelector(`.pos-btn[data-band="${band}"]`)
+  if (btn) btn.classList.add('active')
+  if (lastServerState) lastServerState.trackBand = band
+  if (previewPhysicsEngine) previewPhysicsEngine.options.trackBand = band
+  if (globalThis.__current?.isInitializing) return
+  safeSend(WS_MSG.controllerUpdate, { trackBand: band })
+}
+
 function setBallColor(color) {
   if (globalThis.__previewRenderer) {
     // Preview renderer color update would go here
@@ -2446,6 +2563,10 @@ globalThis.showViewerNotConnectedWarning = showViewerNotConnectedWarning
 globalThis.requireViewerConnection = requireViewerConnection
 globalThis.reinitializeViewerConnectionWarnings = initViewerConnectionWarnings
 globalThis.toggleDebugOverlay = toggleDebugOverlay
+globalThis.setIllustration = setIllustration
+globalThis.applyCustomIllustration = applyCustomIllustration
+globalThis.switchIllusTab = switchIllusTab
+globalThis.setTrackBand = setTrackBand
 
 // Инициализация обработчиков предупреждений после загрузки DOM
 if (document.readyState === 'loading') {
