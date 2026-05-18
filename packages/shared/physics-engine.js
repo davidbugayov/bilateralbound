@@ -602,6 +602,14 @@ class PhysicsEngine {
     this.state.seekingCenter = false
     this._seekCenterStart = null
 
+    if (this.options.trackBand && this.options.trackBand !== 'center') {
+      const bandY = this._getTrackBandCenterY()
+      this.ball.y = bandY
+      this._prevPos.y = bandY
+      this._currPos.y = bandY
+      if (typeof this.state.targetY === 'number') this.state.targetY = bandY
+    }
+
     if (this.options.clientSimulation) {
       this._restoreLocalVelocity()
     }
@@ -804,16 +812,18 @@ class PhysicsEngine {
 
     // Vertical bounds — check unless locked to pure horizontal movement
     if (!isPureHorizontal) {
-      if (ball.y < radius) {
-        const overflow = radius - ball.y
-        ball.y = radius + overflow + 0.1 // Add epsilon to skip wall
+      const yMin = this._getTrackBandYMin()
+      const yMax = this._getTrackBandYMax()
+      if (ball.y < yMin + radius) {
+        const overflow = (yMin + radius) - ball.y
+        ball.y = yMin + radius + overflow + 0.1 // Add epsilon to skip wall
         if (dirY < 0) {
           state.lastDirection.y = Math.abs(dirY)
           bounceSide = bounceSide || 'top'
         }
-      } else if (ball.y > worldHeight - radius) {
-        const overflow = ball.y - (worldHeight - radius)
-        ball.y = worldHeight - radius - overflow - 0.1 // Add epsilon to skip wall
+      } else if (ball.y > yMax - radius) {
+        const overflow = ball.y - (yMax - radius)
+        ball.y = yMax - radius - overflow - 0.1 // Add epsilon to skip wall
         if (dirY > 0) {
           state.lastDirection.y = -Math.abs(dirY)
           bounceSide = bounceSide || 'bottom'
@@ -1059,6 +1069,24 @@ class PhysicsEngine {
     this.ball.ballEmoji = null
     this.ball.infinity = false
     this._infinityT = 0
+  }
+
+  // ============================================
+  // PRIVATE - TRACK BAND HELPERS
+  // ============================================
+
+  _getTrackBandYMin() {
+    const h = this.options.worldHeight
+    return this.options.trackBand === 'bottom' ? h * 0.5 : 0
+  }
+
+  _getTrackBandYMax() {
+    const h = this.options.worldHeight
+    return this.options.trackBand === 'top' ? h * 0.5 : h
+  }
+
+  _getTrackBandCenterY() {
+    return (this._getTrackBandYMin() + this._getTrackBandYMax()) / 2
   }
 
   // ============================================
