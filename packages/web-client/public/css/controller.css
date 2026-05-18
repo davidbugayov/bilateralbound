@@ -2527,3 +2527,178 @@ body {
   border-radius: 8px;
   backdrop-filter: blur(2px);
 }
+
+/* ── Illustration section ── */
+.illus-section {
+  background: var(--card-inner-bg, #111827);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.illus-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.illus-tab {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-muted, #9ca3af);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: background 0.15s, color 0.15s;
+}
+
+.illus-tab.active,
+.illus-tab:hover {
+  background: var(--card-bg, #1f2937);
+  color: var(--accent, #60a5fa);
+  border-color: var(--accent, #60a5fa);
+}
+
+.illus-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-height: 36px;
+}
+
+.illus-emoji-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--card-bg, #1f2937);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+  line-height: 1;
+}
+
+.illus-emoji-btn:hover {
+  background: var(--card-hover-bg, #374151);
+  border-color: var(--border, #4b5563);
+}
+
+.illus-emoji-btn.active {
+  border-color: var(--accent, #60a5fa);
+  background: rgb(96 165 250 / 12%);
+  box-shadow: 0 0 0 2px rgb(96 165 250 / 20%);
+}
+
+.illus-clear {
+  font-size: 13px;
+  color: var(--text-muted, #9ca3af);
+}
+
+.illus-custom-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.illus-custom-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--card-bg, #1f2937);
+  border: 1px solid var(--border, #374151);
+  border-radius: 6px;
+  color: var(--text-primary, #e5e7eb);
+  font-size: 18px;
+  padding: 4px 8px;
+  text-align: center;
+  outline: none;
+}
+
+.illus-custom-input:focus {
+  border-color: var(--accent, #60a5fa);
+}
+
+.illus-apply-btn {
+  background: rgb(96 165 250 / 15%);
+  border: 1px solid var(--accent, #3b82f6);
+  color: var(--accent, #60a5fa);
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+
+.illus-apply-btn:hover {
+  background: rgb(96 165 250 / 25%);
+}
+
+/* ── Infinity direction button ── */
+.dir-infinity-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.dir-infinity-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(96 165 250 / 20%), transparent);
+  transform: translateX(-100%);
+  animation: infinity-shimmer 2.4s ease-in-out infinite;
+}
+
+@keyframes infinity-shimmer {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── Position section ── */
+.pos-btns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pos-btn {
+  background: var(--card-bg, #1f2937);
+  border: 1.5px solid transparent;
+  border-radius: 7px;
+  padding: 8px 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted, #9ca3af);
+  font-size: 9px;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.pos-btn:hover {
+  background: var(--card-hover-bg, #374151);
+}
+
+.pos-btn.active {
+  border-color: var(--accent, #60a5fa);
+  background: rgb(96 165 250 / 12%);
+  color: var(--accent, #60a5fa);
+}
+
+.pos-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.pos-lbl {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
