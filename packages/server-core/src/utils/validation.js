@@ -22,6 +22,7 @@ class ValidationUtils {
     this._validateColors(updates, validated)
     this._validateSound(updates, validated)
     this._validateCommands(updates, validated)
+    this._validateNewFields(updates, validated)
 
     return validated
   }
@@ -127,6 +128,22 @@ class ValidationUtils {
     }
     if (typeof updates.stopping === 'boolean') {
       validated.stopping = updates.stopping
+    }
+  }
+
+  /**
+   * Валидирует новые поля (ballEmoji, infinity, trackBand)
+   * @private
+   */
+  static _validateNewFields(updates, validated) {
+    if (updates.ballEmoji === null || (typeof updates.ballEmoji === 'string' && updates.ballEmoji.length <= 2)) {
+      validated.ballEmoji = updates.ballEmoji
+    }
+    if (typeof updates.infinity === 'boolean') {
+      validated.infinity = updates.infinity
+    }
+    if (['top', 'center', 'bottom'].includes(updates.trackBand)) {
+      validated.trackBand = updates.trackBand
     }
   }
 
