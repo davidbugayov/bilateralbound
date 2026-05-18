@@ -136,13 +136,13 @@ class ValidationUtils {
    * @private
    */
   static _validateNewFields(updates, validated) {
-    if (updates.ballEmoji === null || (typeof updates.ballEmoji === 'string' && updates.ballEmoji.length <= 2)) {
+    if (updates.ballEmoji !== undefined && (updates.ballEmoji === null || (typeof updates.ballEmoji === 'string' && updates.ballEmoji.length <= 2))) {
       validated.ballEmoji = updates.ballEmoji
     }
-    if (typeof updates.infinity === 'boolean') {
+    if (updates.infinity !== undefined && typeof updates.infinity === 'boolean') {
       validated.infinity = updates.infinity
     }
-    if (['top', 'center', 'bottom'].includes(updates.trackBand)) {
+    if (updates.trackBand !== undefined && ['top', 'center', 'bottom'].includes(updates.trackBand)) {
       validated.trackBand = updates.trackBand
     }
   }
