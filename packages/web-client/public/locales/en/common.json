@@ -359,7 +359,8 @@
     "linksDesc": "Save session links and reuse with the same client every time",
     "free": "Free Plan",
     "freeDesc": "Generate random sessions instantly — no registration needed",
-    "premiumDesc": "Permanent custom links (your own ID), extended session management"
+    "premiumDesc": "Permanent custom links (your own ID), extended session management",
+    "sectionHeading": "Key Features"
   },
   "privacy": {
     "title": "Privacy Policy",

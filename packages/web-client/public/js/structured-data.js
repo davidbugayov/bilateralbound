@@ -10,14 +10,13 @@
       alternateName: 'EMDR Bilateral Stimulation Platform',
       description:
         'Professional EMDR therapy platform with bilateral stimulation for treating PTSD, anxiety, and trauma',
-      url: 'https://emdrbilateral.ru/',
+      url: 'https://emdrbilateral.online/',
       applicationCategory: 'HealthApplication',
       operatingSystem: 'Web Browser',
       browserRequirements:
         'Requires JavaScript, Modern browser (Chrome, Firefox, Safari, Edge)',
-      softwareVersion: '2.39.226',
       datePublished: '2024-01-01',
-      dateModified: '2026-03-24',
+      dateModified: '2026-05-18',
       inLanguage: ['ru', 'en', 'de', 'es', 'fr', 'pt', 'ja', 'zh'],
       isAccessibleForFree: true,
       featureList: [
@@ -40,7 +39,7 @@
         name: 'BilateralBound',
         logo: {
           '@type': 'ImageObject',
-          url: 'https://emdrbilateral.ru/emdr-eye.png',
+          url: 'https://emdrbilateral.online/emdr-eye.png',
           width: 512,
           height: 512
         }
@@ -56,12 +55,17 @@
       '@context': 'https://schema.org',
       '@type': 'MedicalWebPage',
       name: 'EMDR Therapy Online — BilateralBound',
-      url: 'https://emdrbilateral.ru/',
+      url: 'https://emdrbilateral.online/',
       description:
         'Free online EMDR therapy platform using bilateral stimulation for therapists and patients treating PTSD, anxiety, and trauma.',
-      lastReviewed: '2026-03-24',
+      lastReviewed: '2026-05-18',
       inLanguage: ['ru', 'en', 'de', 'es', 'fr', 'pt', 'ja', 'zh'],
       specialty: 'https://schema.org/Psychiatry',
+      reviewedBy: {
+        '@type': 'Person',
+        name: 'David Bugaev',
+        url: 'https://github.com/davidbugayov'
+      },
       about: {
         '@type': 'MedicalTherapy',
         name: 'EMDR',
@@ -149,7 +153,7 @@
           '@type': 'ListItem',
           position: 1,
           name: 'Home',
-          item: 'https://emdrbilateral.ru/'
+          item: 'https://emdrbilateral.online/'
         }
       ]
     },
@@ -157,10 +161,10 @@
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'BilateralBound',
-      url: 'https://emdrbilateral.ru/',
+      url: 'https://emdrbilateral.online/',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://emdrbilateral.ru/emdr-eye.png',
+        url: 'https://emdrbilateral.online/emdr-eye.png',
         width: 512,
         height: 512
       },

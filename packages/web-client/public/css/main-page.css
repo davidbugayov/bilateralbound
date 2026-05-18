@@ -1653,6 +1653,18 @@ body.light-theme {
   line-height: 1.5;
 }
 
+/* ── FEATURES HEADING ── */
+.features-heading {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--mp-muted);
+  margin: 0 0 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
 /* ── FEATURES GRID ── */
 .features-grid {
   display: grid;
@@ -1752,6 +1764,15 @@ body.light-theme {
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+}
+
+.info-details > summary h2.info-details__heading {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  display: inline;
 }
 
 .info-details > summary {

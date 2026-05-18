@@ -355,7 +355,8 @@
     "links": "Permanente Links",
     "linksDesc": "Sitzungslinks speichern und immer wieder mit demselben Klienten verwenden",
     "free": "Kostenlos",
-    "freeDesc": "Keine Registrierung, kein Abonnement — offen für Therapeuten weltweit"
+    "freeDesc": "Keine Registrierung, kein Abonnement — offen für Therapeuten weltweit",
+    "sectionHeading": "Hauptfunktionen"
   },
   "subscription": {
     "heading": "Unterstütze das Projekt",

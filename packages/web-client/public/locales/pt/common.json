@@ -354,7 +354,8 @@
     "links": "Links permanentes",
     "linksDesc": "Salve os links e reutilize com o mesmo cliente sempre",
     "free": "Gratuito",
-    "freeDesc": "Sem registro, sem assinatura — aberto para terapeutas em todo o mundo"
+    "freeDesc": "Sem registro, sem assinatura — aberto para terapeutas em todo o mundo",
+    "sectionHeading": "Funcionalidades principais"
   },
   "subscription": {
     "heading": "Apoie o projeto",

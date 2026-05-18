@@ -361,7 +361,8 @@
     "links": "Liens permanents",
     "linksDesc": "Enregistrez les liens de session et réutilisez-les avec le même client",
     "free": "Gratuit",
-    "freeDesc": "Pas d'inscription, pas d'abonnement — ouvert aux thérapeutes du monde entier"
+    "freeDesc": "Pas d'inscription, pas d'abonnement — ouvert aux thérapeutes du monde entier",
+    "sectionHeading": "Fonctionnalités principales"
   },
   "subscription": {
     "heading": "Soutenez le projet",

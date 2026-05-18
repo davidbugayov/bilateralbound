@@ -347,7 +347,8 @@
     "links": "永久链接",
     "linksDesc": "保存会话链接，每次都可以与同一客户重复使用",
     "free": "免费使用",
-    "freeDesc": "无需注册，无需订阅 — 向全球治疗师开放"
+    "freeDesc": "无需注册，无需订阅 — 向全球治疗师开放",
+    "sectionHeading": "主要功能"
   },
   "subscription": {
     "heading": "支持项目",

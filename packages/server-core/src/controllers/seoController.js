@@ -75,6 +75,12 @@ function registerSeoRoutes(app) {
       'User-agent: Claude-Web',
       'Allow: /',
       '',
+      'User-agent: ClaudeBot',
+      'Allow: /',
+      '',
+      'User-agent: PerplexityBot',
+      'Allow: /',
+      '',
       'User-agent: Google-Extended',
       'Allow: /',
       '',
@@ -119,6 +125,18 @@ function registerSeoRoutes(app) {
       <image:title>${imageTitle}</image:title>
       <image:caption>${imageCaption}</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>${base}/privacy</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>${base}/offer</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>
 ${verificationUrls}
 </urlset>`
