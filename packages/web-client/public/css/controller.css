@@ -1404,13 +1404,14 @@ body {
   }
 
   .controller-left-col {
-    padding-top: 36px;
+    padding-top: 44px;
     padding-right: 4px;
   }
 
   /* Compact right col: reduce gap and padding to avoid scroll */
   .controller-right-col {
     gap: 8px;
+    padding-top: 44px; /* room for fixed gear button (top:12px + h:36px + margin) */
   }
 
   .controller-right-col .controls-card {
@@ -1444,6 +1445,14 @@ body {
   .controller-center-col {
     grid-column: 1 / -1;
     order: -1;
+  }
+
+  .controller-right-col {
+    padding-top: 44px;
+  }
+
+  .controller-left-col {
+    padding-top: 44px;
   }
 }
 
