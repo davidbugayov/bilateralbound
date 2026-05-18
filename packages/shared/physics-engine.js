@@ -595,6 +595,17 @@ class PhysicsEngine {
   _handleUnpause() {
     this.state.allowInterpWhenPaused = false
 
+    // Infinity mode: reset phase so server and viewer restart from t=0 simultaneously.
+    // Early return prevents trackBand snap (infinity uses full-screen center).
+    if (this.ball.infinity) {
+      this._infinityT = 0
+      this._snapToCenter()
+      if (this.options.clientSimulation) {
+        this._restoreLocalVelocity()
+      }
+      return
+    }
+
     if (this.state.seekingCenter) {
       this._snapToCenter()
     }
@@ -1089,6 +1100,32 @@ class PhysicsEngine {
     return (this._getTrackBandYMin() + this._getTrackBandYMax()) / 2
   }
 
+  // Lemniscate (Bernoulli figure-8) path. Parametric formula:
+  //   x(t) = cx + (W/2 * scale) * cos(t) / (1 + sin²(t))
+  //   y(t) = cy + (H/2 * scale) * sin(t)*cos(t) / (1 + sin²(t))
+  // Both server and viewer advance _infinityT at the same rate → identical trajectory.
+  _stepInfinityPath(dt) {
+    const w = this.options.worldWidth
+    const h = this.options.worldHeight
+    const cx = w / 2
+    const cy = h / 2
+    const scale = 0.75
+
+    // Advance phase: speed=30 → ~1.2 rad/s → ~5s per cycle
+    this._infinityT = ((this._infinityT || 0) + this.ball.speed * FIXED_DT * 0.04) % (2 * Math.PI)
+    const t = this._infinityT
+    const denom = 1 + Math.sin(t) * Math.sin(t)
+
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+    this.ball.x = cx + (w / 2 * scale) * Math.cos(t) / denom
+    this.ball.y = cy + (h / 2 * scale) * Math.sin(t) * Math.cos(t) / denom
+    this.ball.vx = 0
+    this.ball.vy = 0
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
+  }
+
   // ============================================
   // PRIVATE - VELOCITY HELPERS
   // ============================================
@@ -1181,6 +1218,13 @@ class PhysicsEngine {
       return
     }
 
+    // NEW: lemniscate path bypasses bounce physics
+    if (this.ball.infinity) {
+      this._stepInfinityPath(deltaTime)
+      this._decayVisualOffset(deltaTime)
+      return
+    }
+
     if (this.options.clientSimulation) {
       this.updateClientPhysics(deltaTime)
       this._applyDriftCorrection()
@@ -1200,6 +1244,12 @@ class PhysicsEngine {
   _updateServerPhysics(deltaTime) {
     if (this.state.paused) return
     if (!this._worldSizeSet) return
+
+    // NEW: lemniscate path bypasses bounce physics
+    if (this.ball.infinity) {
+      this._stepInfinityPath(deltaTime)
+      return
+    }
 
     const speedFactor = this._calculateSpeedFactor()
     if (speedFactor <= 0) {
