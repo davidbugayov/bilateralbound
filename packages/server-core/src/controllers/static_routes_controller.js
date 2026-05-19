@@ -81,7 +81,13 @@ function registerStaticRoutes(
     res.sendFile(path.join(publicPath, 'offer.html'))
   })
 
-  // Breathing session page (CalmFlow coherent breathing)\n  app.get('/breathing', (req, res) => {\n    const breathingPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public', 'breathing.html')\n    res.sendFile(breathingPath)\n  })\n\n  // Viewer HTML (from expressApp L941-949)
+  // Breathing session page (CalmFlow coherent breathing)
+  app.get('/breathing', (req, res) => {
+    const breathingPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public', 'breathing.html')
+    res.sendFile(breathingPath)
+  })
+
+  // Viewer HTML (from expressApp L941-949)
   app.get('/s/:sessionId', (req, res) => {
     const session = sessionService.getSession(req.params.sessionId)
     const html = localizationService.getLocalizedHtml('viewer', req, session)
