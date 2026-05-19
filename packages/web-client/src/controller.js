@@ -1266,12 +1266,12 @@ async function initializePreview() {
   if (!canvas) {
     return
   }
-  // Default drawing buffer: 400x200 (2:1) — explicit style to prevent CSS stretching.
+  // Default drawing buffer: 500x250 (2:1) — explicit style to prevent CSS stretching.
   // When viewer connects, buffer is resized to match viewer's actual dimensions.
-  canvas.width = 400
-  canvas.height = 200
-  canvas.style.width = '400px'
-  canvas.style.height = '200px'
+  canvas.width = 500
+  canvas.height = 250
+  canvas.style.width = '500px'
+  canvas.style.height = '250px'
   try {
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
@@ -1331,16 +1331,16 @@ function showWaitingForViewer() {
       '⏳ Waiting for viewer connection'
     viewerInfo.classList.remove('hidden')
   }
-  // Compact preview while waiting for viewer — 400x200 with smaller ball
+  // Compact preview while waiting for viewer — 500x250 with smaller ball
   const canvas = document.getElementById('preview')
   if (canvas) {
-    canvas.width = 400
-    canvas.height = 200
-    canvas.style.width = '400px'
-    canvas.style.height = '200px'
+    canvas.width = 500
+    canvas.height = 250
+    canvas.style.width = '500px'
+    canvas.style.height = '250px'
     if (previewPhysicsEngine) {
-      previewPhysicsEngine.setWorldSize(400, 200)
-      previewPhysicsEngine.setPosition(200, 100)
+      previewPhysicsEngine.setWorldSize(500, 250)
+      previewPhysicsEngine.setPosition(250, 125)
       previewPhysicsEngine.setVelocity(0, 0)
       previewPhysicsEngine.setPaused(true)
       if (previewPhysicsEngine.ball) {
@@ -2116,12 +2116,12 @@ function closePreviewFullscreen() {
         previewPhysicsEngine.setWorldSize(vs.width, vs.height)
       }
     } else {
-      canvas.width = 400
-      canvas.height = 200
-      canvas.style.width = '400px'
-      canvas.style.height = '200px'
+      canvas.width = 500
+      canvas.height = 250
+      canvas.style.width = '500px'
+      canvas.style.height = '250px'
       if (previewPhysicsEngine) {
-        previewPhysicsEngine.setWorldSize(400, 200)
+        previewPhysicsEngine.setWorldSize(500, 250)
       }
     }
     if (previewPhysicsEngine) {
