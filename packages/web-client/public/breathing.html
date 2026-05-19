@@ -157,28 +157,6 @@
     .guide-overlay.hidden {
       opacity: 0;
     }
-
-    /* Кнопка «На сайт» — всегда видна внизу */
-    .site-btn-top {
-      position: absolute;
-      bottom: max(6rem, env(safe-area-inset-bottom, 5rem));
-      right: 1rem;
-      padding: 0.5rem 1.2rem;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 50px;
-      background: rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.7);
-      font-size: 0.85rem;
-      cursor: pointer;
-      pointer-events: auto;
-      z-index: 10;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      transition: all 0.2s;
-    }
-    .site-btn-top:active {
-      transform: scale(0.95);
-    }
   </style>
 </head>
 <body>
@@ -203,9 +181,8 @@
 
   <div class="controls">
     <button class="btn btn-primary" id="startBtn">🌬️ Начать</button>
+    <button class="btn btn-secondary" id="siteBtnTop">🌐 emdrbilateral.online</button>
   </div>
-
-  <button class="btn btn-secondary site-btn-top" id="siteBtnTop">🌐 На сайт</button>
 
   <script src="/js/breathing/breathing-engine.js"></script>
   <script>
@@ -406,10 +383,10 @@
       siteBtnTop.addEventListener('click', function() {
         if (engine.running) engine.stop()
         if (tg) {
-          tg.openLink('https://emdrbilateral.ru')
+          tg.openLink('https://emdrbilateral.online')
           tg.close()
         } else {
-          window.location.href = 'https://emdrbilateral.ru'
+          window.location.href = 'https://emdrbilateral.online'
         }
       })
 
