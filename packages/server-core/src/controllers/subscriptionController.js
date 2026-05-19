@@ -256,7 +256,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
         // Not subscribed — send welcome + invoice
         const msg = t('welcome_new', lang, { siteUrl: sUrl })
-        const msgResult = telegramBot?.sendMessage(chatId, msg)
+        const msgResult = telegramBot?.sendMessage(chatId, msg, { parse_mode: 'HTML' })
         logger.info({ chatId, msgSent: !!msgResult }, '/start welcome sent')
 
         // Send invoice directly for plain /start (payload = telegramUserId)

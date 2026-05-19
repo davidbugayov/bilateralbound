@@ -23,70 +23,94 @@ const TRANSLATIONS = {
 
   // ── Welcome (plain /start, not subscribed) ──
   welcome_new: {
-    en: '<b>👋 Welcome to BilateralBound Premium!</b>\n\n' +
-        'This bot handles your EMDR tool subscription.\n\n' +
-        '👉 <b>How to subscribe:</b>\n' +
+    en: '<b>👋 Welcome to BilateralBound!</b>\n\n' +
+        'This bot handles subscriptions & free EMDR tools.\n\n' +
+        '🌬 <b>Free breathing — /breathe</b>\n' +
+        'Coherent breathing 5s/5s + Butterfly Hug\n\n' +
+        '👉 <b>Premium subscription:</b>\n' +
         '1. Go to <a href="{siteUrl}">{siteUrl}</a>\n' +
         '2. Enter a Client Name (e.g. anna_2025)\n' +
         '3. Click "Subscribe via Telegram"\n\n' +
         '<b>Or pay right now 👇</b>\n' +
-        'After payment you can create permanent links for any clients.',
-    ru: '<b>👋 Добро пожаловать в BilateralBound Premium!</b>\n\n' +
-        'Этот бот управляет подпиской на EMDR-инструмент.\n\n' +
-        '👉 <b>Как подписаться:</b>\n' +
+        'After payment you can create permanent links for any clients.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
+    ru: '<b>👋 Добро пожаловать в BilateralBound!</b>\n\n' +
+        'Бот для подписки и бесплатных EMDR-инструментов.\n\n' +
+        '🌬 <b>Бесплатное дыхание — /breathe</b>\n' +
+        'Когерентное дыхание 5с/5с + Butterfly Hug\n\n' +
+        '👉 <b>Premium подписка:</b>\n' +
         '1. Перейдите на <a href="{siteUrl}">{siteUrl}</a>\n' +
         '2. Введите название клиента (например, anna_2025)\n' +
         '3. Нажмите «Subscribe via Telegram»\n\n' +
         '<b>Или оплатите прямо сейчас 👇</b>\n' +
-        'После оплаты вы сможете создавать постоянные ссылки для любых клиентов.',
-    es: '<b>👋 ¡Bienvenido a BilateralBound Premium!</b>\n\n' +
-        'Este bot gestiona tu suscripción a la herramienta EMDR.\n\n' +
-        '👉 <b>Cómo suscribirse:</b>\n' +
+        'После оплаты вы сможете создавать постоянные ссылки для любых клиентов.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
+    es: '<b>👋 ¡Bienvenido a BilateralBound!</b>\n\n' +
+        'Bot para suscripción y herramientas EMDR gratuitas.\n\n' +
+        '🌬 <b>Respiración gratis — /breathe</b>\n' +
+        'Respiración coherente 5s/5s + Butterfly Hug\n\n' +
+        '👉 <b>Suscripción Premium:</b>\n' +
         '1. Ve a <a href="{siteUrl}">{siteUrl}</a>\n' +
         '2. Ingresa un nombre de cliente (ej. anna_2025)\n' +
         '3. Haz clic en "Subscribe via Telegram"\n\n' +
         '<b>O paga ahora 👇</b>\n' +
-        'Después del pago, podrás crear enlaces permanentes para cualquier cliente.',
-    fr: '<b>👋 Bienvenue chez BilateralBound Premium!</b>\n\n' +
-        'Ce bot gère votre abonnement à l\'outil EMDR.\n\n' +
-        '👉 <b>Comment s\'abonner :</b>\n' +
+        'Después del pago, podrás crear enlaces permanentes para cualquier cliente.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
+    fr: '<b>👋 Bienvenue chez BilateralBound!</b>\n\n' +
+        'Bot pour abonnement et outils EMDR gratuits.\n\n' +
+        '🌬 <b>Respiration gratuite — /breathe</b>\n' +
+        'Respiration cohérente 5s/5s + Butterfly Hug\n\n' +
+        '👉 <b>Abonnement Premium :</b>\n' +
         '1. Allez sur <a href="{siteUrl}">{siteUrl}</a>\n' +
         '2. Entrez un nom de client (ex. anna_2025)\n' +
         '3. Cliquez sur "Subscribe via Telegram"\n\n' +
         '<b>Ou payez maintenant 👇</b>\n' +
-        'Après le paiement, vous pouvez créer des liens permanents pour tous vos clients.',
-    de: '<b>👋 Willkommen bei BilateralBound Premium!</b>\n\n' +
-        'Dieser Bot verwaltet Ihr EMDR-Tool-Abonnement.\n\n' +
-        '👉 <b>So abonnieren Sie:</b>\n' +
+        'Après le paiement, vous pouvez créer des liens permanents pour tous vos clients.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
+    de: '<b>👋 Willkommen bei BilateralBound!</b>\n\n' +
+        'Bot für Abos & kostenlose EMDR-Tools.\n\n' +
+        '🌬 <b>Kostenloses Atmen — /breathe</b>\n' +
+        'Kohärentes Atmen 5s/5s + Butterfly Hug\n\n' +
+        '👉 <b>Premium-Abo:</b>\n' +
         '1. Gehen Sie zu <a href="{siteUrl}">{siteUrl}</a>\n' +
         '2. Geben Sie einen Kundennamen ein (z.B. anna_2025)\n' +
         '3. Klicken Sie auf "Subscribe via Telegram"\n\n' +
         '<b>Oder zahlen Sie jetzt 👇</b>\n' +
-        'Nach der Zahlung können Sie dauerhafte Links für beliebige Kunden erstellen.',
-    pt: '<b>👋 Bem-vindo ao BilateralBound Premium!</b>\n\n' +
-        'Este bot gerencia sua assinatura da ferramenta EMDR.\n\n' +
-        '👉 <b>Como assinar:</b>\n' +
+        'Nach der Zahlung können Sie dauerhafte Links für beliebige Kunden erstellen.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
+    pt: '<b>👋 Bem-vindo ao BilateralBound!</b>\n\n' +
+        'Bot para assinatura e ferramentas EMDR gratuitas.\n\n' +
+        '🌬 <b>Respiração grátis — /breathe</b>\n' +
+        'Respiração coerente 5s/5s + Butterfly Hug\n\n' +
+        '👉 <b>Assinatura Premium:</b>\n' +
         '1. Acesse <a href="{siteUrl}">{siteUrl}</a>\n' +
         '2. Insira um nome de cliente (ex. anna_2025)\n' +
         '3. Clique em "Subscribe via Telegram"\n\n' +
         '<b>Ou pague agora 👇</b>\n' +
-        'Após o pagamento, você pode criar links permanentes para qualquer cliente.',
-    ja: '<b>👋 BilateralBound Premiumへようこそ！</b>\n\n' +
-        'このボットはEMDRツールのサブスクリプションを管理します。\n\n' +
-        '👉 <b>購読方法：</b>\n' +
+        'Após o pagamento, você pode criar links permanentes para qualquer cliente.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
+    ja: '<b>👋 BilateralBoundへようこそ！</b>\n\n' +
+        'サブスクリプションと無料EMDRツールのボットです。\n\n' +
+        '🌬 <b>無料呼吸 — /breathe</b>\n' +
+        'コヒーレント呼吸 5秒/5秒 + Butterfly Hug\n\n' +
+        '👉 <b>プレミアム購読：</b>\n' +
         '1. <a href="{siteUrl}">{siteUrl}</a>にアクセス\n' +
         '2. クライアント名を入力（例：anna_2025）\n' +
         '3. 「Subscribe via Telegram」をクリック\n\n' +
         '<b>今すぐ支払う👇</b>\n' +
-        '支払い後、任意のクライアント用に永続的なリンクを作成できます。',
-    zh: '<b>👋 欢迎使用BilateralBound Premium！</b>\n\n' +
-        '此机器人管理您的EMDR工具订阅。\n\n' +
-        '👉 <b>如何订阅：</b>\n' +
+        '支払い後、任意のクライアント用に永続的なリンクを作成できます。\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
+    zh: '<b>👋 欢迎使用BilateralBound！</b>\n\n' +
+        '此机器人管理订阅和免费EMDR工具。\n\n' +
+        '🌬 <b>免费呼吸 — /breathe</b>\n' +
+        '连贯呼吸 5秒/5秒 + Butterfly Hug\n\n' +
+        '👉 <b>高级订阅：</b>\n' +
         '1. 前往<a href="{siteUrl}">{siteUrl}</a>\n' +
         '2. 输入客户名称（例如：anna_2025）\n' +
         '3. 点击"Subscribe via Telegram"\n\n' +
         '<b>立即支付👇</b>\n' +
-        '支付后，您可以为任何客户创建永久链接。'
+        '支付后，您可以为任何客户创建永久链接。\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>'
   },
 
   // ── Already subscribed (plain /start) ──
