@@ -449,7 +449,8 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         telegramBot?.sendMessage(chatId,
           '🌬 <b>Когерентное дыхание</b>\n\n' +
           'Вдох 5с / Выдох 5с — оптимальный ритм для успокоения нервной системы.\n\n' +
-          '🦋 Скрести руки на груди (Butterfly Hug) и дыши в ритм анимации.',
+          '🦋 Скрести руки на груди (Butterfly Hug) и дыши в ритм анимации.\n\n' +
+          '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
           {
             reply_markup: {
               inline_keyboard: [[
@@ -458,7 +459,9 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
                   web_app: { url: webAppUrl }
                 }
               ]]
-            }
+            },
+            parse_mode: 'HTML',
+            link_preview_options: { is_disabled: true }
           }
         )
         return
