@@ -111,11 +111,11 @@
     .duration-selector {
       position: absolute;
       top: max(1.5rem, env(safe-area-inset-top, 1rem));
-      left: 4.5rem; right: 0;
+      left: 0; right: 0;
       display: flex;
       justify-content: center;
       gap: 0.5rem;
-      padding: 0 1rem 0 0;
+      padding: 0 1rem;
       pointer-events: auto;
     }
 
@@ -142,37 +142,24 @@
       pointer-events: none;
     }
 
-    /* Кнопки сайтов — пилюли слева на уровне кнопок минут */
-    .site-pills {
+    /* Незаметная ссылка на сайт — правый верхний угол */
+    .site-link {
       position: absolute;
-      top: max(1.4rem, env(safe-area-inset-top, 0.9rem));
-      left: 0.7rem;
-      display: flex;
-      flex-direction: row;
-      gap: 0.25rem;
-      z-index: 10;
-      pointer-events: auto;
-    }
-    .site-pill {
-      padding: 0.25rem 0.6rem;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 50px;
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      color: rgba(255,255,255,0.35);
+      top: max(0.4rem, env(safe-area-inset-top, 0.3rem));
+      right: 0.55rem;
+      color: rgba(255,255,255,0.15);
       font-size: 0.6rem;
-      font-weight: 400;
-      letter-spacing: 0.02em;
       cursor: pointer;
-      transition: all 0.25s ease;
-      white-space: nowrap;
+      z-index: 20;
+      text-decoration: none;
+      pointer-events: auto;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: color 0.25s;
     }
-    .site-pill:hover,
-    .site-pill:active {
-      background: rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.7);
-      border-color: rgba(255,255,255,0.2);
+    .site-link:hover,
+    .site-link:active {
+      color: rgba(255,255,255,0.5);
     }
 
     /* Кнопка звука */
@@ -288,10 +275,7 @@
     <div class="cycle-counter" id="cycleCounter">0 циклов</div>
   </div>
 
-  <div class="site-pills">
-    <button class="site-pill" id="siteBtnOnline">🌐 .online</button>
-    <button class="site-pill" id="siteBtnRu">🌐 .ru</button>
-  </div>
+  <a class="site-link" id="siteLink">↗ сайт</a>
 
   <div class="controls">
     <button class="btn btn-primary" id="startBtn">🌬️ Начать</button>
@@ -329,8 +313,7 @@
       const cycleCounter = document.getElementById('cycleCounter')
       const startBtn = document.getElementById('startBtn')
       const muteBtn = document.getElementById('muteBtn')
-      const siteBtnOnline = document.getElementById('siteBtnOnline')
-      const siteBtnRu = document.getElementById('siteBtnRu')
+      const siteLink = document.getElementById('siteLink')
       const infoCard = document.getElementById('infoCard')
       const completeMessage = document.getElementById('completeMessage')
       const durationBtns = document.querySelectorAll('.duration-btn')
@@ -539,13 +522,18 @@
         }
       }
 
-      siteBtnOnline.addEventListener('click', function() {
-        goToSite('https://emdrbilateral.online')
-      })
-
-      siteBtnRu.addEventListener('click', function() {
-        goToSite('https://emdrbilateral.ru')
-      })
+      // Single subtle site link — auto-detect opposite domain
+      (function() {
+        const host = window.location.hostname
+        const targetUrl = host.endsWith('.ru')
+          ? 'https://emdrbilateral.online'
+          : 'https://emdrbilateral.ru'
+        siteLink.setAttribute('data-url', targetUrl)
+        siteLink.addEventListener('click', function(e) {
+          e.preventDefault()
+          goToSite(targetUrl)
+        })
+      })()
 
       // Engine callbacks
       engine.onPhaseChange = function(phase) {
