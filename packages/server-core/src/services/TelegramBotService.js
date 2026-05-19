@@ -189,17 +189,27 @@ class TelegramBotService {
 
   /**
    * Set the bot's command list (shown in Telegram menu).
-   * @param {string} [lang='en'] - Language for command descriptions
+   * When lang is omitted or 'en', commands apply to ALL users (default, no language_code sent).
+   * When a non-English lang is provided, commands apply ONLY to users with that Telegram language.
+   *
+   * @param {string} [lang='en'] - Language for command descriptions.
+   *   'en' or omitted → default commands for all users.
+   *   'ru', 'es', etc. → language-specific overrides.
    */
   async setMyCommands(lang = 'en') {
     if (!this.isConfigured) return false
     try {
-      const res = await this._call('setMyCommands', {
+      const payload = {
         commands: getCommandsForLang(lang),
         scope: { type: 'all_private_chats' }
-      })
+      }
+      // Only send language_code for non-English; English is the default (no code = all users)
+      if (lang && lang !== 'en') {
+        payload.language_code = lang
+      }
+      const res = await this._call('setMyCommands', payload)
       if (res.ok) {
-        this.logger.info({ lang }, 'Bot commands menu set')
+        this.logger.info({ lang, language_code: payload.language_code || 'default' }, 'Bot commands menu set')
       } else {
         this.logger.error({ res }, 'Failed to set bot commands')
       }
