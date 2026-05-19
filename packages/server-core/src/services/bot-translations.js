@@ -129,42 +129,50 @@ const TRANSLATIONS = {
   already_subscribed_renewal: {
     en: '✅ <b>Subscription already active!</b>\n\n' +
         'Expires: {expDate}\n' +
-        'Clients: {clients}\n\n' +
+        'Clients: {clients}\n' +
+        '🔗 Add more clients on the website — enter any Custom ID and click Link\n\n' +
         'Want to extend for another 30 days?\n' +
         'Support the project by renewing your subscription 👇',
     ru: '✅ <b>Подписка уже активна!</b>\n\n' +
         'Истекает: {expDate}\n' +
-        'Клиентов: {clients}\n\n' +
+        'Клиентов: {clients}\n' +
+        '🔗 Добавляйте новых клиентов на сайте — введите Custom ID и нажмите Link\n\n' +
         'Хотите продлить ещё на 30 дней?\n' +
         'Поддержите проект — продлите подписку 👇',
     es: '✅ <b>¡La suscripción ya está activa!</b>\n\n' +
         'Vence: {expDate}\n' +
-        'Clientes: {clients}\n\n' +
+        'Clientes: {clients}\n' +
+        '🔗 Añade más clientes en el sitio web — ingresa un Custom ID y haz clic en Link\n\n' +
         '¿Quieres extender por otros 30 días?\n' +
         'Apoya el proyecto renovando tu suscripción 👇',
     fr: '✅ <b>L\'abonnement est déjà actif !</b>\n\n' +
         'Expire le : {expDate}\n' +
-        'Clients : {clients}\n\n' +
+        'Clients : {clients}\n' +
+        '🔗 Ajoutez d\'autres clients sur le site — entrez un Custom ID et cliquez sur Link\n\n' +
         'Vous voulez prolonger pour 30 jours ?\n' +
         'Soutenez le projet en renouvelant votre abonnement 👇',
     de: '✅ <b>Abonnement bereits aktiv!</b>\n\n' +
         'Läuft ab: {expDate}\n' +
-        'Kunden: {clients}\n\n' +
+        'Kunden: {clients}\n' +
+        '🔗 Fügen Sie weitere Kunden auf der Website hinzu — Custom ID eingeben und Link klicken\n\n' +
         'Möchten Sie um weitere 30 Tage verlängern?\n' +
         'Unterstützen Sie das Projekt — Abo verlängern 👇',
     pt: '✅ <b>Assinatura já está ativa!</b>\n\n' +
         'Expira em: {expDate}\n' +
-        'Clientes: {clients}\n\n' +
+        'Clientes: {clients}\n' +
+        '🔗 Adicione mais clientes no site — insira um Custom ID e clique em Link\n\n' +
         'Quer estender por mais 30 dias?\n' +
         'Apoie o projeto renovando sua assinatura 👇',
     ja: '✅ <b>サブスクリプションは既に有効です！</b>\n\n' +
         '期限: {expDate}\n' +
-        'クライアント数: {clients}\n\n' +
+        'クライアント数: {clients}\n' +
+        '🔗 ウェブサイトで新しいクライアントを追加 — Custom IDを入力してLinkをクリック\n\n' +
         'さらに30日間延長しませんか？\n' +
         'プロジェクトをサポートして更新する 👇',
     zh: '✅ <b>订阅已激活！</b>\n\n' +
         '到期: {expDate}\n' +
-        '客户数: {clients}\n\n' +
+        '客户数: {clients}\n' +
+        '🔗 在网站上添加更多客户 — 输入Custom ID并点击Link\n\n' +
         '想再延长30天吗？\n' +
         '支持项目，续订订阅 👇'
   },
