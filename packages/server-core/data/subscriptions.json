@@ -1,0 +1,23 @@
+{
+  "totalStars": 2,
+  "subscriptions": [
+    {
+      "telegramUserId": 108472191,
+      "token": "stx1lvZ8YGaUpLWQjAWvblNOAZy9pIYcw8agZmPIjBZDgdGUxLxVLhhvQ7WIgEXLXQZ15swJ32mZBD5J-JWxUmr6ylMHzzBd0hSzS1u7hUNVjA",
+      "activatedAt": 1778836755873,
+      "expiresAt": 1784020755873,
+      "starsAmount": 1,
+      "autoRenew": true
+    }
+  ],
+  "customIds": [
+    {
+      "customId": "108472191",
+      "telegramUserId": 108472191
+    }
+  ],
+  "userLanguages": {
+    "108472191": "en",
+    "5180282271": "en"
+  }
+}
