@@ -444,7 +444,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
                   // ---- /breathe — launch coherent breathing Mini App ----
       if (msgText === '/breathe') {
         const bUrl = baseUrl || 'https://emdrbilateral.online'
-        const webAppUrl = bUrl + '/breathing?v=' + Date.now()
+        const webAppUrl = bUrl + '/breathing'
 
         telegramBot?.sendMessage(chatId,
           '🌬 <b>Когерентное дыхание</b>\n\n' +
