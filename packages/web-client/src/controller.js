@@ -1275,12 +1275,12 @@ async function initializePreview() {
   if (!canvas) {
     return
   }
-  // Default drawing buffer: 360x180 (2:1 aspect ratio).
+  // Default drawing buffer: 260x130 (2:1) — explicit style to prevent CSS stretching.
   // When viewer connects, buffer is resized to match viewer's actual dimensions.
-  canvas.width = 360
-  canvas.height = 180
-  canvas.style.width = ''
-  canvas.style.height = ''
+  canvas.width = 260
+  canvas.height = 130
+  canvas.style.width = '260px'
+  canvas.style.height = '130px'
   try {
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
@@ -1340,16 +1340,16 @@ function showWaitingForViewer() {
       '⏳ Waiting for viewer connection'
     viewerInfo.classList.remove('hidden')
   }
-  // Smaller preview while waiting for viewer — 360x180
+  // Compact preview while waiting for viewer — explicit 260x130 to avoid CSS stretching
   const canvas = document.getElementById('preview')
   if (canvas) {
-    canvas.width = 360
-    canvas.height = 180
-    canvas.style.width = ''
-    canvas.style.height = ''
+    canvas.width = 260
+    canvas.height = 130
+    canvas.style.width = '260px'
+    canvas.style.height = '130px'
     if (previewPhysicsEngine) {
-      previewPhysicsEngine.setWorldSize(360, 180)
-      previewPhysicsEngine.setPosition(180, 90)
+      previewPhysicsEngine.setWorldSize(260, 130)
+      previewPhysicsEngine.setPosition(130, 65)
       previewPhysicsEngine.setVelocity(0, 0)
       previewPhysicsEngine.setPaused(true)
     }
@@ -2122,12 +2122,12 @@ function closePreviewFullscreen() {
         previewPhysicsEngine.setWorldSize(vs.width, vs.height)
       }
     } else {
-      canvas.width = 800
-      canvas.height = 400
-      canvas.style.width = ''
-      canvas.style.height = ''
+      canvas.width = 260
+      canvas.height = 130
+      canvas.style.width = '260px'
+      canvas.style.height = '130px'
       if (previewPhysicsEngine) {
-        previewPhysicsEngine.setWorldSize(800, 400)
+        previewPhysicsEngine.setWorldSize(260, 130)
       }
     }
     if (previewPhysicsEngine) {
