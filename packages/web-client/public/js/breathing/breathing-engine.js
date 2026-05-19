@@ -45,6 +45,7 @@ class BreathingEngine {
     this.bpm = options.bpm || 30
     this._tickInterval = null
     this._side = false
+    this.muted = false
   }
 
   start(minutes = 5) {
@@ -199,7 +200,7 @@ class BreathingEngine {
   }
 
   _playBilateralTick(isLeft) {
-    if (!this.audioContext || !this.audioEnabled) return
+    if (this.muted || !this.audioContext || !this.audioEnabled) return
     try {
       const gain = isLeft ? this._leftGain : this._rightGain
       const now = this.audioContext.currentTime
@@ -221,6 +222,15 @@ class BreathingEngine {
     this._rightGain = null
     this.audioContext = null
     this.audioEnabled = false
+  }
+
+  setMuted(muted) {
+    this.muted = !!muted
+  }
+
+  toggleMute() {
+    this.muted = !this.muted
+    return this.muted
   }
 
   getStats() {

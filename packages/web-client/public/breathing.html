@@ -142,41 +142,26 @@
       pointer-events: none;
     }
 
-    /* Гайд для Butterfly Hug */
-    .guide-overlay {
-      position: absolute;
-      bottom: max(6rem, env(safe-area-inset-bottom, 5rem));
-      left: 1rem; right: 1rem;
-      text-align: center;
-      color: rgba(255,255,255,0.3);
-      font-size: 0.85rem;
-      pointer-events: none;
-      transition: opacity 0.5s;
-    }
-
-    .guide-overlay.hidden {
-      opacity: 0;
-    }
-
-    /* Кнопки сайтов — пилюли справа снизу */
+    /* Кнопки сайтов — пилюли сверху справа */
     .site-pills {
       position: absolute;
-      bottom: max(6.5rem, calc(env(safe-area-inset-bottom, 1rem) + 5.5rem));
-      right: 0.9rem;
+      top: max(0.6rem, env(safe-area-inset-top, 0.5rem));
+      right: 0.7rem;
       display: flex;
-      gap: 0.4rem;
+      flex-direction: column;
+      gap: 0.3rem;
       z-index: 10;
       pointer-events: auto;
     }
     .site-pill {
-      padding: 0.35rem 0.75rem;
-      border: 1px solid rgba(255,255,255,0.10);
+      padding: 0.25rem 0.6rem;
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 50px;
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      color: rgba(255,255,255,0.45);
-      font-size: 0.65rem;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: rgba(255,255,255,0.35);
+      font-size: 0.6rem;
       font-weight: 400;
       letter-spacing: 0.02em;
       cursor: pointer;
@@ -185,9 +170,105 @@
     }
     .site-pill:hover,
     .site-pill:active {
-      background: rgba(255,255,255,0.10);
-      color: rgba(255,255,255,0.8);
-      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.7);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    /* Кнопка звука */
+    .btn-icon {
+      width: 3rem;
+      height: 3rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+    .btn-icon:active {
+      transform: scale(0.9);
+    }
+    .btn-icon.muted {
+      opacity: 0.4;
+      border-color: rgba(255,255,255,0.06);
+    }
+
+    /* Инфо-карточка под кнопкой Старт */
+    .info-card {
+      position: absolute;
+      bottom: max(6.5rem, calc(env(safe-area-inset-bottom, 1rem) + 5rem));
+      left: 1.5rem;
+      right: 1.5rem;
+      text-align: center;
+      pointer-events: none;
+      transition: opacity 0.5s, transform 0.5s;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .info-card.hidden {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .info-card .butterfly-icon {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .info-card .info-title {
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.02em;
+    }
+    .info-card .info-subtitle {
+      font-size: clamp(0.75rem, 2.5vw, 0.85rem);
+      color: rgba(255,255,255,0.35);
+      line-height: 1.5;
+    }
+    .info-card .info-subtitle span {
+      display: inline-block;
+      padding: 0.15rem 0.6rem;
+      margin: 0 0.15rem;
+      border-radius: 12px;
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.2);
+      color: rgba(255,255,255,0.5);
+      font-size: clamp(0.65rem, 2vw, 0.75rem);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Сообщение о завершении */
+    .complete-message {
+      position: absolute;
+      bottom: max(6.5rem, calc(env(safe-area-inset-bottom, 1rem) + 5rem));
+      left: 1.5rem;
+      right: 1.5rem;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .complete-message.show {
+      opacity: 1;
+    }
+    .complete-message .check-icon {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+    .complete-message .complete-text {
+      font-size: clamp(0.85rem, 3vw, 1rem);
+      color: #10b981;
+      font-weight: 400;
     }
   </style>
 </head>
@@ -207,10 +288,6 @@
     <div class="cycle-counter" id="cycleCounter">0 циклов</div>
   </div>
 
-  <div class="guide-overlay" id="guideOverlay">
-    🦋 Скрести руки на груди, тапай плечи в ритм круга
-  </div>
-
   <div class="site-pills">
     <button class="site-pill" id="siteBtnOnline">🌐 .online</button>
     <button class="site-pill" id="siteBtnRu">🌐 .ru</button>
@@ -218,6 +295,25 @@
 
   <div class="controls">
     <button class="btn btn-primary" id="startBtn">🌬️ Начать</button>
+    <button class="btn-icon" id="muteBtn" title="Звук тиков">🔊</button>
+  </div>
+
+  <!-- Инфо-карточка с инструкцией Butterfly Hug -->
+  <div class="info-card" id="infoCard">
+    <span class="butterfly-icon">🦋</span>
+    <div class="info-title">Butterfly Hug</div>
+    <div class="info-subtitle">
+      Скрести руки на груди и дыши<br>в ритм анимации
+    </div>
+    <div class="info-subtitle" style="margin-top:0.6rem">
+      <span>Вдох 5с</span> <span style="opacity:0.3">⟷</span> <span>Выдох 5с</span>
+    </div>
+  </div>
+
+  <!-- Сообщение о завершении -->
+  <div class="complete-message" id="completeMessage">
+    <span class="check-icon">✅</span>
+    <div class="complete-text">Сессия завершена</div>
   </div>
 
   <script src="/js/breathing/breathing-engine.js"></script>
@@ -232,9 +328,11 @@
       const timerDisplay = document.getElementById('timerDisplay')
       const cycleCounter = document.getElementById('cycleCounter')
       const startBtn = document.getElementById('startBtn')
+      const muteBtn = document.getElementById('muteBtn')
       const siteBtnOnline = document.getElementById('siteBtnOnline')
       const siteBtnRu = document.getElementById('siteBtnRu')
-      const guideOverlay = document.getElementById('guideOverlay')
+      const infoCard = document.getElementById('infoCard')
+      const completeMessage = document.getElementById('completeMessage')
       const durationBtns = document.querySelectorAll('.duration-btn')
 
       // ── State ──
@@ -380,7 +478,8 @@
           startBtn.textContent = '🌬️ Начать'
           startBtn.classList.remove('active')
           enableDurationButtons()
-          guideOverlay.classList.remove('hidden')
+          infoCard.classList.remove('hidden')
+          completeMessage.classList.remove('show')
           drawIdle()
           return
         }
@@ -394,7 +493,8 @@
         startBtn.textContent = '⏹ Стоп'
         startBtn.classList.add('active')
         disableDurationButtons()
-        guideOverlay.classList.add('hidden')
+        infoCard.classList.add('hidden')
+        completeMessage.classList.remove('show')
         startAnimation()
       }
 
@@ -405,6 +505,14 @@
       function enableDurationButtons() {
         durationBtns.forEach(function(b) { b.disabled = false })
       }
+
+      // ── Mute toggle ──
+      muteBtn.addEventListener('click', function() {
+        const nowMuted = engine.toggleMute()
+        muteBtn.textContent = nowMuted ? '🔇' : '🔊'
+        muteBtn.classList.toggle('muted', nowMuted)
+        muteBtn.title = nowMuted ? 'Включить звук' : 'Отключить звук'
+      })
 
       // ── Events ──
       startBtn.addEventListener('click', startBreathing)
@@ -447,15 +555,15 @@
         startBtn.style.borderColor = '#10b981'
         startBtn.style.display = 'none'
         enableDurationButtons()
-        guideOverlay.classList.remove('hidden')
-        guideOverlay.textContent = '✅ Сессия завершена'
+        completeMessage.classList.add('show')
         setTimeout(function() {
           startBtn.textContent = '🌬️ Начать'
           startBtn.style.background = ''
           startBtn.style.borderColor = ''
           startBtn.style.display = ''
-          guideOverlay.textContent = '🦋 Скрести руки на груди, тапай плечи в ритм круга'
-        }, 5000)
+          completeMessage.classList.remove('show')
+          infoCard.classList.remove('hidden')
+        }, 4000)
       }
 
       // ── Init ──
