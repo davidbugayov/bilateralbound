@@ -13,7 +13,7 @@
 
 const { t, siteUrl, dateLocale, autoRenewText } = require('../services/bot-translations')
 
-function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, priceStars, testMode }) {
+function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, priceStars, testMode, baseUrl }) {
   const STARS_PRICE = priceStars || 75
   if (!subscriptionService) {
     logger.warn('SubscriptionService not provided — subscription routes disabled')
@@ -438,6 +438,29 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           }
         }
         telegramBot?.sendMessage(chatId, arMsg)
+        return
+      }
+
+                  // ---- /breathe — launch coherent breathing Mini App ----
+      if (msgText === '/breathe') {
+        const bUrl = baseUrl || 'https://emdrbilateral.online'
+        const webAppUrl = bUrl + '/breathing'
+
+        telegramBot?.sendMessage(chatId,
+          '🌬 <b>Когерентное дыхание</b>\n\n' +
+          'Вдох 5с / Выдох 5с — оптимальный ритм для успокоения нервной системы.\n\n' +
+          '🦋 Скрести руки на груди (Butterfly Hug) и дыши в ритм анимации.',
+          {
+            reply_markup: {
+              inline_keyboard: [[
+                {
+                  text: '🌬 Открыть сессию дыхания',
+                  web_app: { url: webAppUrl }
+                }
+              ]]
+            }
+          }
+        )
         return
       }
 

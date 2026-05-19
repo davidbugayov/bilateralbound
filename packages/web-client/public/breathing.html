@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Когерентное дыхание | CalmFlow</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #020617;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #breathCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .phase-label {
+      font-size: clamp(2rem, 8vw, 4rem);
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      transition: opacity 0.3s;
+      margin-bottom: 0.5rem;
+    }
+
+    .timer-display {
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      color: rgba(255,255,255,0.4);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 2rem;
+    }
+
+    .cycle-counter {
+      font-size: clamp(0.8rem, 2vw, 1rem);
+      color: rgba(255,255,255,0.3);
+      margin-top: 1rem;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: max(2rem, env(safe-area-inset-bottom, 1rem));
+      left: 0; right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+      pointer-events: auto;
+    }
+
+    .btn {
+      padding: 0.8rem 2.5rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50px;
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      min-width: 120px;
+      text-align: center;
+      pointer-events: auto;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      color: white;
+    }
+
+    .btn-primary.active {
+      background: #ef4444;
+      border-color: #ef4444;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .duration-selector {
+      position: absolute;
+      top: max(1.5rem, env(safe-area-inset-top, 1rem));
+      left: 0; right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0 1rem;
+      pointer-events: auto;
+    }
+
+    .duration-btn {
+      padding: 0.4rem 1rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.5);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      pointer-events: auto;
+    }
+
+    .duration-btn.active {
+      background: rgba(59,130,246,0.3);
+      border-color: #3b82f6;
+      color: white;
+    }
+
+    .duration-btn:disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    /* Гайд для Butterfly Hug */
+    .guide-overlay {
+      position: absolute;
+      bottom: max(6rem, env(safe-area-inset-bottom, 5rem));
+      left: 1rem; right: 1rem;
+      text-align: center;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.85rem;
+      pointer-events: none;
+      transition: opacity 0.5s;
+    }
+
+    .guide-overlay.hidden {
+      opacity: 0;
+    }
+
+    /* Кнопка закрытия (Telegram Back) */
+    .close-btn {
+      position: absolute;
+      top: max(1rem, env(safe-area-inset-top, 1rem));
+      right: 1rem;
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.5);
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="breathCanvas"></canvas>
+
+  <div class="duration-selector" id="durationSelector">
+    <button class="duration-btn" data-minutes="1">1 мин</button>
+    <button class="duration-btn active" data-minutes="3">3 мин</button>
+    <button class="duration-btn" data-minutes="5">5 мин</button>
+    <button class="duration-btn" data-minutes="10">10 мин</button>
+  </div>
+
+  <div class="overlay">
+    <div class="phase-label" id="phaseLabel">Готов</div>
+    <div class="timer-display" id="timerDisplay">0:00</div>
+    <div class="cycle-counter" id="cycleCounter">0 циклов</div>
+  </div>
+
+  <div class="guide-overlay" id="guideOverlay">
+    🦋 Скрести руки на груди, тапай плечи в ритм круга
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-primary" id="startBtn">🌬️ Начать</button>
+  </div>
+
+  <button class="close-btn" id="closeBtn">✕</button>
+
+  <script src="/js/breathing/breathing-engine.js"></script>
+  <script>
+    (function() {
+      'use strict'
+
+      // ── DOM refs ──
+      const canvas = document.getElementById('breathCanvas')
+      const ctx = canvas.getContext('2d')
+      const phaseLabel = document.getElementById('phaseLabel')
+      const timerDisplay = document.getElementById('timerDisplay')
+      const cycleCounter = document.getElementById('cycleCounter')
+      const startBtn = document.getElementById('startBtn')
+      const closeBtn = document.getElementById('closeBtn')
+      const guideOverlay = document.getElementById('guideOverlay')
+      const durationBtns = document.querySelectorAll('.duration-btn')
+
+      // ── State ──
+      let selectedMinutes = 3
+      let animFrameId = null
+      let lastTs = 0
+      let windowWidth = window.innerWidth
+      let windowHeight = window.innerHeight
+
+      // ── Engine ──
+      const engine = new BreathingEngine({
+        inhaleSec: 5,
+        exhaleSec: 5,
+        bpm: 30
+      })
+
+      // ── Telegram WebApp ──
+      let tg = null
+      try {
+        if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+          tg = window.Telegram.WebApp
+          tg.ready()
+          tg.expand()
+        }
+      } catch (e) { /* ignore */ }
+
+      // ── Canvas resize ──
+      function resizeCanvas() {
+        windowWidth = window.innerWidth
+        windowHeight = window.innerHeight
+        canvas.width = windowWidth
+        canvas.height = windowHeight
+        drawIdle()
+      }
+
+      window.addEventListener('resize', resizeCanvas)
+      resizeCanvas()
+
+      // ── Drawing ──
+      function drawCircle(progress, phase) {
+        const cx = canvas.width / 2
+        const cy = canvas.height / 2
+        const maxR = Math.min(cx, cy) * 0.75
+        const minR = maxR * 0.15
+        // progress 0..1 от smoothstep в engine
+        const radius = minR + (maxR - minR) * progress
+
+        // Цвет в зависимости от фазы
+        let color1, color2
+        if (phase === 'inhale') {
+          color1 = '#3b82f6'
+          color2 = '#1d4ed8'
+        } else if (phase === 'exhale') {
+          color1 = '#8b5cf6'
+          color2 = '#6d28d9'
+        } else if (phase === 'hold_in' || phase === 'hold_out') {
+          color1 = '#60a5fa'
+          color2 = '#2563eb'
+        } else {
+          color1 = '#1e293b'
+          color2 = '#0f172a'
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+        // Glow
+        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 1.2)
+        gradient.addColorStop(0, color1 + '33')
+        gradient.addColorStop(0.5, color2 + '11')
+        gradient.addColorStop(1, 'transparent')
+        ctx.fillStyle = gradient
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        // Circle
+        const g = ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.3, 0, cx, cy, radius)
+        g.addColorStop(0, color1)
+        g.addColorStop(1, color2)
+        ctx.shadowColor = color1 + '66'
+        ctx.shadowBlur = radius * 0.5
+        ctx.beginPath()
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+        ctx.fillStyle = g
+        ctx.fill()
+        ctx.shadowBlur = 0
+
+        // Pulse ring
+        if (engine.running) {
+          const pulseSize = radius + 8 + Math.sin(performance.now() / 200) * 4
+          ctx.beginPath()
+          ctx.arc(cx, cy, pulseSize, 0, Math.PI * 2)
+          ctx.strokeStyle = color1 + '44'
+          ctx.lineWidth = 2
+          ctx.stroke()
+        }
+      }
+
+      function drawIdle() {
+        drawCircle(0.15, 'idle')
+      }
+
+      // ── UI update ──
+      function updateUI() {
+        const stats = engine.getStats()
+        phaseLabel.textContent = engine.getPhaseLabel('ru')
+
+        if (stats.running) {
+          const mins = Math.floor(stats.elapsedSec / 60)
+          const secs = stats.elapsedSec % 60
+          timerDisplay.textContent = mins + ':' + String(secs).padStart(2, '0')
+          cycleCounter.textContent = stats.cycleCount + ' циклов'
+        } else {
+          timerDisplay.textContent = '0:00'
+          cycleCounter.textContent = '0 циклов'
+        }
+      }
+
+      // ── Animation loop ──
+      function loop(timestamp) {
+        if (!lastTs) lastTs = timestamp
+        const delta = timestamp - lastTs
+        lastTs = timestamp
+
+        if (engine.running) {
+          engine.update(delta)
+          const progress = engine.getCircleRadius()
+          drawCircle(progress, engine.phase)
+          updateUI()
+        }
+
+        animFrameId = requestAnimationFrame(loop)
+      }
+
+      function startAnimation() {
+        if (animFrameId) cancelAnimationFrame(animFrameId)
+        lastTs = 0
+        animFrameId = requestAnimationFrame(loop)
+      }
+
+      // ── Controls ──
+      function startBreathing() {
+        if (engine.running) {
+          engine.stop()
+          startBtn.textContent = '🌬️ Начать'
+          startBtn.classList.remove('active')
+          enableDurationButtons()
+          guideOverlay.classList.remove('hidden')
+          drawIdle()
+          return
+        }
+
+        // User gesture → init AudioContext
+        if (engine.audioContext && engine.audioContext.state === 'suspended') {
+          engine.audioContext.resume()
+        }
+
+        engine.start(selectedMinutes)
+        startBtn.textContent = '⏹ Стоп'
+        startBtn.classList.add('active')
+        disableDurationButtons()
+        guideOverlay.classList.add('hidden')
+        startAnimation()
+      }
+
+      function disableDurationButtons() {
+        durationBtns.forEach(function(b) { b.disabled = true })
+      }
+
+      function enableDurationButtons() {
+        durationBtns.forEach(function(b) { b.disabled = false })
+      }
+
+      // ── Events ──
+      startBtn.addEventListener('click', startBreathing)
+
+      durationBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          durationBtns.forEach(function(b) { b.classList.remove('active') })
+          btn.classList.add('active')
+          selectedMinutes = parseInt(btn.dataset.minutes, 10)
+        })
+      })
+
+      closeBtn.addEventListener('click', function() {
+        if (engine.running) engine.stop()
+        if (tg) {
+          tg.close()
+        } else {
+          window.location.href = '/'
+        }
+      })
+
+      // Engine callbacks
+      engine.onPhaseChange = function(phase) {
+        phaseLabel.textContent = engine.getPhaseLabel('ru')
+      }
+
+      engine.onComplete = function() {
+        startBtn.textContent = '✅ Завершено'
+        startBtn.classList.remove('active')
+        startBtn.style.background = '#10b981'
+        startBtn.style.borderColor = '#10b981'
+        enableDurationButtons()
+        guideOverlay.classList.remove('hidden')
+        guideOverlay.textContent = '✅ Сессия завершена'
+        setTimeout(function() {
+          startBtn.textContent = '🌬️ Начать'
+          startBtn.style.background = ''
+          startBtn.style.borderColor = ''
+          guideOverlay.textContent = '🦋 Скрести руки на груди, тапай плечи в ритм круга'
+        }, 3000)
+      }
+
+      // ── Init ──
+      drawIdle()
+      startAnimation()
+    })()
+  </script>
+</body>
+</html>

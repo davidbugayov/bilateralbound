@@ -636,6 +636,16 @@ const TRANSLATIONS = {
     ja: '自動更新のオン/オフ切り替え',
     zh: '开启/关闭自动续费'
   },
+  cmd_breathe: {
+    en: 'Coherent breathing session (5s/5s)',
+    ru: 'Когерентное дыхание (5с/5с)',
+    es: 'Respiración coherente (5s/5s)',
+    fr: 'Respiration cohérente (5s/5s)',
+    de: 'Kohärentes Atmen (5s/5s)',
+    pt: 'Respiração coerente (5s/5s)',
+    ja: 'コヒーレント呼吸 (5秒/5秒)',
+    zh: '连贯呼吸 (5秒/5秒)'
+  },
   cmd_myid: {
     en: 'Get your Telegram User ID',
     ru: 'Узнать свой Telegram User ID',
@@ -737,7 +747,8 @@ function getCommandsForLang(lang) {
     { command: 'status', description: t('cmd_status', lang) },
     { command: 'renew', description: t('cmd_renew', lang) },
     { command: 'autorenew', description: t('cmd_autorenew', lang) },
-    { command: 'myid', description: t('cmd_myid', lang) }
+    { command: 'myid', description: t('cmd_myid', lang) },
+    { command: 'breathe', description: t('cmd_breathe', lang) }
   ]
 }
 
