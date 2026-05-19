@@ -1,6 +1,6 @@
 {
   "name": "@emdr/web-client",
-  "version": "2.39.640",
+  "version": "2.39.641",
   "description": "EMDR therapy web client",
   "main": "public/index.html",
   "type": "commonjs",
