@@ -750,6 +750,70 @@ body.light-theme {
   font-weight: 700;
   color: var(--mp-text);
   margin: 0 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hub-manage__panel-badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: rgb(251 191 36 / 15%);
+  color: #f59e0b;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* ── Step list ── */
+.hub-manage__steps {
+  list-style: none;
+  counter-reset: step;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hub-manage__step {
+  counter-increment: step;
+  font-size: 0.73rem;
+  color: var(--mp-muted);
+  line-height: 1.5;
+  padding-left: 24px;
+  position: relative;
+}
+
+.hub-manage__step::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--mp-cyan);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.hub-manage__step strong {
+  color: var(--mp-text);
+  font-weight: 600;
+}
+
+.hub-manage__step a {
+  color: var(--mp-cyan);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .hub-manage__panel-desc {
