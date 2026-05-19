@@ -1275,11 +1275,10 @@ async function initializePreview() {
   if (!canvas) {
     return
   }
-  // Default drawing buffer: 800x400 (2:1 aspect ratio matches CSS).
-  // Both canvas and world size must be identical to avoid scaling distortion.
+  // Default drawing buffer: 360x180 (2:1 aspect ratio).
   // When viewer connects, buffer is resized to match viewer's actual dimensions.
-  canvas.width = 800
-  canvas.height = 400
+  canvas.width = 360
+  canvas.height = 180
   canvas.style.width = ''
   canvas.style.height = ''
   try {
@@ -1341,18 +1340,16 @@ function showWaitingForViewer() {
       '⏳ Waiting for viewer connection'
     viewerInfo.classList.remove('hidden')
   }
-  // Set canvas to wider default size (800x400 = 2:1 aspect ratio to match CSS).
-  // This makes preview look like a real screen while waiting for viewer.
-  // Both canvas dimensions and world size must be identical to avoid scaling.
+  // Smaller preview while waiting for viewer — 360x180
   const canvas = document.getElementById('preview')
   if (canvas) {
-    canvas.width = 800
-    canvas.height = 400
+    canvas.width = 360
+    canvas.height = 180
     canvas.style.width = ''
     canvas.style.height = ''
     if (previewPhysicsEngine) {
-      previewPhysicsEngine.setWorldSize(800, 400)
-      previewPhysicsEngine.setPosition(400, 200)
+      previewPhysicsEngine.setWorldSize(360, 180)
+      previewPhysicsEngine.setPosition(180, 90)
       previewPhysicsEngine.setVelocity(0, 0)
       previewPhysicsEngine.setPaused(true)
     }
@@ -2114,6 +2111,33 @@ function closePreviewFullscreen() {
   overlay.style.display = 'none'
   isPreviewFullscreen = false
   document.body.classList.remove('fullscreen-active')
+  // Restore preview to correct size after fullscreen
+  const canvas = document.getElementById('preview')
+  const vs = globalThis.__current?.viewerScreenSize
+  if (canvas) {
+    if (vs && vs.width > 0 && vs.height > 0) {
+      const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, vs)
+      setCanvasDimensions(canvas, previewWidth, previewHeight)
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setWorldSize(vs.width, vs.height)
+      }
+    } else {
+      canvas.width = 800
+      canvas.height = 400
+      canvas.style.width = ''
+      canvas.style.height = ''
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setWorldSize(800, 400)
+      }
+    }
+    if (previewPhysicsEngine) {
+      const cx = previewPhysicsEngine.options.worldWidth / 2
+      const cy = previewPhysicsEngine.options.worldHeight / 2
+      previewPhysicsEngine.setPosition(cx, cy)
+      previewPhysicsEngine.setVelocity(0, 0)
+      previewPhysicsEngine.setPaused(true)
+    }
+  }
 }
 function resizePreviewFullscreen() {
   if (!previewFsCanvas) return
