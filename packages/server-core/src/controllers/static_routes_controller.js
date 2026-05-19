@@ -82,7 +82,9 @@ function registerStaticRoutes(
   })
 
   // Breathing session page (CalmFlow coherent breathing)
+  // No-cache: Telegram Mini App aggressively caches HTML
   app.get('/breathing', (req, res) => {
+    setNoCacheHeaders(res)
     const breathingPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public', 'breathing.html')
     res.sendFile(breathingPath)
   })
