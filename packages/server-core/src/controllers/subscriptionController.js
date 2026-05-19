@@ -584,6 +584,34 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   })
 
   // ------------------------------------------------------------------
+  // ------------------------------------------------------------------
+  // POST /api/admin/set-commands
+  // Force-update the bot command list without restart
+  // ------------------------------------------------------------------
+  app.post("/api/admin/set-commands", (req, res) => {
+    const remoteAddr = req.socket?.remoteAddress
+    const isLocal = remoteAddr === "127.0.0.1" || remoteAddr === "::1" || remoteAddr === "::ffff:127.0.0.1"
+    if (!isLocal && !testMode) {
+      return res.status(403).json({ error: "Localhost only" })
+    }
+    if (!telegramBot) {
+      return res.status(400).json({ error: "Telegram bot not configured" })
+    }
+    const { SUPPORTED_LANGUAGES } = require("../services/bot-translations")
+    let results = []
+    Promise.all(SUPPORTED_LANGUAGES.map(lang =>
+      telegramBot.setMyCommands(lang)
+        .then(ok => { results.push({ lang, ok }); return ok })
+        .catch(() => { results.push({ lang, ok: false }) })
+    )).then(() => {
+      logger.info({ results }, "Admin: bot commands updated")
+      res.json({ success: true, results })
+    }).catch(err => {
+      logger.error({ err }, "Admin: set commands error")
+      res.status(500).json({ error: err.message })
+    })
+  })
+
   // Auto-renew checker — runs every hour, sends invoices to users
   // with autoRenew=true whose subscription expires within 24 hours
   // ------------------------------------------------------------------
