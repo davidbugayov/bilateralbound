@@ -17,6 +17,7 @@ require('./ui/shared-components')
 require('./network/websocket-client')
 require('./network/realtime-client')
 require('./network/csrf')
+require('./ui/controller-settings')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const _PreviewManager = require('./application/controller/preview-manager')
@@ -375,16 +376,6 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       }, 5000)
     }
     updateConnectionStatus(true)
-    // Lazy-load non-critical modules after connection established
-    if (!event?.isReconnection && !globalThis.__nonCriticalLoaded) {
-      globalThis.__nonCriticalLoaded = true
-      const s = document.createElement('script')
-      s.src =
-        '/js/controller-settings.js?v=' +
-        (document.querySelector('meta[name="version"]')?.content || '')
-      s.defer = true
-      document.body.appendChild(s)
-    }
     // Sync current language to session so viewer gets the same locale
     const currentLang = localStorage.getItem('emdr-language')
     if (currentLang && sessionId) {
