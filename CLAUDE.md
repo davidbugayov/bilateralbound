@@ -130,7 +130,7 @@ Shared: `packages/shared/physics-engine.js` — deterministic 60Hz fixed-step ph
 
 ## Key Conventions
 
-- **i18n pattern**: `globalThis.i18n?.t('key') || 'English fallback'` — never hardcode user-facing strings
+- **i18n pattern**: `(() => { const v = globalThis.i18n?.t('key'); return v && v !== 'key' ? v : 'English fallback'; })()` — never hardcode user-facing strings. ⚠️ `t()` returns the key itself when missing, so `||` fallback fails (key is truthy). Always check `v !== key`.
 - **Module pattern**: IIFE with `globalThis.ModuleName = { ... }` export, guarded by `if (typeof globalThis.ModuleName !== 'undefined')` to prevent double-load
 - **Global state**: `globalThis.__current` holds session state (sessionId, isPlaying, viewerConnected, etc.)
 - **WebSocket endpoint**: `ws://host/?sessionId=:id&role=viewer|controller` — auto-reconnect, heartbeat every 25s
