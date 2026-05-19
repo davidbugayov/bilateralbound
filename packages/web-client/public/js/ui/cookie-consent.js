@@ -59,7 +59,6 @@
       ssr: true,
       webvisor: true,
       clickmap: true,
-      ecommerce: 'dataLayer',
       accurateTrackBounce: true,
       trackLinks: true
     })

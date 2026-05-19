@@ -79,6 +79,7 @@
         return
       }
 
+      globalThis.ym?.(104698530, 'reachGoal', 'session_started')
       window.location.href = '/c/' + sessionId
     } finally {
       isCreatingSession = false
@@ -113,7 +114,7 @@
     const msgElement = document.getElementById('linkValidationMessage')
     if (msgElement) {
       msgElement.textContent = message
-      msgElement.style.color = isError ? '#ef4444' : '#94a3b8'
+      msgElement.classList.toggle('hub-validation--error', isError)
     }
   }
 
@@ -208,6 +209,7 @@
       if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl
       if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl
       if (container) container.style.display = 'block'
+      globalThis.ym?.(104698530, 'reachGoal', 'permanent_link_created')
 
       // Hide subscription prompt if previously shown
       const prompt = document.getElementById('subscribePrompt')
@@ -229,7 +231,7 @@
         )
       }
 
-      setTimeout(function () {
+      setTimeout(() => {
         container.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }, 100)
     } catch (error) {
@@ -329,7 +331,7 @@
         )
       }
 
-      setTimeout(function () {
+      setTimeout(() => {
         container.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }, 100)
     } catch (error) {
@@ -365,6 +367,7 @@
    */
   function handleSubscribeClick(e) {
     if (e) e.preventDefault()
+    globalThis.ym?.(104698530, 'reachGoal', 'subscribe_clicked')
     const customId = document.getElementById('customClientId')?.value.trim() || ''
     let botLink =
       globalThis.__config?.telegramBotLink ||
@@ -510,7 +513,7 @@
       if (messageEl) {
         messageEl.textContent =
           globalThis.i18n?.t('subscription.customIdRequired') || '❌ Please enter your custom client ID'
-        messageEl.style.color = '#ef4444'
+        messageEl.classList.add('hub-validation--error')
       }
       return
     }
@@ -519,12 +522,15 @@
       if (messageEl) {
         messageEl.textContent =
           globalThis.i18n?.t('links.validationFormat') || '❌ Invalid format'
-        messageEl.style.color = '#ef4444'
+        messageEl.classList.add('hub-validation--error')
       }
       return
     }
 
-    if (messageEl) messageEl.textContent = ''
+    if (messageEl) {
+      messageEl.textContent = ''
+      messageEl.classList.remove('hub-validation--error')
+    }
 
     const originalText = checkBtn ? checkBtn.innerHTML : ''
     try {
@@ -551,8 +557,14 @@
         if (promptEl) promptEl.style.display = 'none'
         const planCard = document.getElementById('supporterPlanCard')
         if (planCard) planCard.style.display = 'none'
-        if (statusEl) statusEl.style.display = 'none'
-        if (messageEl) messageEl.textContent = ''
+        if (statusEl) {
+          statusEl.style.display = 'none'
+          statusEl.classList.remove('hub-status--error')
+        }
+        if (messageEl) {
+          messageEl.textContent = ''
+          messageEl.classList.remove('hub-validation--error')
+        }
         const activationInline = document.getElementById('subActivationInline')
         if (activationInline) activationInline.style.display = 'none'
         // Show active info
@@ -568,15 +580,15 @@
         return
       } else {
         localStorage.removeItem('subscriptionProofId')
-        if (statusEl) statusEl.style.display = 'flex'
+        if (statusEl) {
+          statusEl.style.display = 'flex'
+          statusEl.classList.add('hub-status--error')
+        }
         if (statusIcon) {
-          statusIcon.innerHTML = '<span style="color:#ef4444;font-size:1.5rem;">✗</span>'
+          statusIcon.textContent = '✗'
         }
         if (statusText) {
-          statusText.innerHTML =
-            '<span style="color:#ef4444">' +
-            (globalThis.i18n?.t('subscription.required') || 'Subscription required') +
-            '</span>'
+          statusText.textContent = globalThis.i18n?.t('subscription.required') || 'Subscription required'
         }
         const activeInfo = document.getElementById('subActiveInfo')
         if (activeInfo) activeInfo.style.display = 'none'
@@ -584,7 +596,7 @@
         if (activationInline2) activationInline2.style.display = 'block'
         if (messageEl) {
           messageEl.textContent = globalThis.i18n?.t('subscription.requiredMessage') || ''
-          messageEl.style.color = '#ef4444'
+          messageEl.classList.add('hub-validation--error')
         }
       }
     } catch (error) {
@@ -594,7 +606,7 @@
       if (activationInlineErr) activationInlineErr.style.display = 'none'
       if (messageEl) {
         messageEl.textContent = '❌ ' + error.message
-        messageEl.style.color = '#ef4444'
+        messageEl.classList.add('hub-validation--error')
       }
     } finally {
       if (checkBtn) {

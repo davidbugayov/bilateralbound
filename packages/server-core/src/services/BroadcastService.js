@@ -87,7 +87,10 @@ class BroadcastService {
       'soundType',
       'viewerConnected',
       'controllerConnected',
-      'clientSimulationOnly'
+      'clientSimulationOnly',
+      'ballEmoji',
+      'infinity',
+      'trackBand'
     ]
 
     for (const field of fieldsToCheck) {

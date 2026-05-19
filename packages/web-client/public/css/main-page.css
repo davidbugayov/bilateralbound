@@ -355,6 +355,10 @@ body.light-theme {
   line-height: 1.4;
 }
 
+.hub-validation--error {
+  color: #ef4444;
+}
+
 /* ── Generated Links ── */
 .hub-links {
   display: flex;
@@ -802,6 +806,20 @@ body.light-theme {
   font-size: 0.78rem;
   color: var(--mp-subtle);
   line-height: 1.4;
+}
+
+.hub-status--error {
+  background: rgb(239 68 68 / 6%);
+  border-color: rgb(239 68 68 / 20%);
+}
+
+.hub-status--error .hub-status__icon {
+  font-size: 1.5rem;
+  color: #ef4444;
+}
+
+.hub-status--error .hub-status__text {
+  color: #ef4444;
 }
 
 /* ── Actions Row ── */
@@ -1635,6 +1653,18 @@ body.light-theme {
   line-height: 1.5;
 }
 
+/* ── FEATURES HEADING ── */
+.features-heading {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--mp-muted);
+  margin: 0 0 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
 /* ── FEATURES GRID ── */
 .features-grid {
   display: grid;
@@ -1734,6 +1764,15 @@ body.light-theme {
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+}
+
+.info-details > summary h2.info-details__heading {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  display: inline;
 }
 
 .info-details > summary {

@@ -40,11 +40,11 @@
     "createFailed": "创建会话时出错："
   },
   "links": {
-    "heading": "🔗 客户的永久链接",
+    "heading": "客户的永久链接",
     "description": "为您的客户创建个性化链接。您可以重复使用它们 - 链接是永久的，不需要每次都生成。",
     "formLabelClientId": "客户ID（3-32个字符：拉丁字母、数字、_或-）",
     "placeholderClientId": "anna_2025或client-ivan",
-    "generateBtn": "🔗 创建",
+    "generateBtn": "创建",
     "examples": "示例：anna_2025、client-ivan、session42",
     "generatedTitle": "✅ 永久链接已创建！",
     "viewerLabel": "👁️ 客户链接（Viewer）：",
@@ -228,6 +228,8 @@
     "passesPerSecondLabel": "通过次数/秒",
     "playOnController": "在控制器上播放",
     "presetApplied": "预设已应用",
+    "presetNamePrompt": "新预设名称：",
+    "renameSessionPrompt": "新会话名称：",
     "presets": {
       "relaxation": "放松",
       "activation": "激活",
@@ -260,7 +262,10 @@
       "sessionExported": "会话已导出",
       "sessionImported": "会话已导入",
       "sessionSaved": "会话已保存",
-      "sessionDeleted": "会话已删除"
+      "sessionDeleted": "会话已删除",
+      "sessionLoaded": "会话已加载",
+      "presetSaved": "预设已保存",
+      "changeUndone": "更改已撤销"
     },
     "sessionReset": "会话已重置",
     "sessionResetError": "重置会话错误",
@@ -342,7 +347,8 @@
     "links": "永久链接",
     "linksDesc": "保存会话链接，每次都可以与同一客户重复使用",
     "free": "免费使用",
-    "freeDesc": "无需注册，无需订阅 — 向全球治疗师开放"
+    "freeDesc": "无需注册，无需订阅 — 向全球治疗师开放",
+    "sectionHeading": "主要功能"
   },
   "subscription": {
     "heading": "支持项目",
@@ -562,5 +568,19 @@
     "s14GitHub": "<strong>GitHub：</strong> <a href=\"https://github.com/davidbugayov\" target=\"_blank\" rel=\"noopener\">github.com/davidbugayov</a>",
     "footerCopyright": "© 2024-2026 BilateralBound. 保留所有权利。",
     "footerHome": "返回主页"
+  },
+  "controller": {
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   }
 }

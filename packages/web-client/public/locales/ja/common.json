@@ -40,11 +40,11 @@
     "createFailed": "セッション作成エラー: "
   },
   "links": {
-    "heading": "🔗 クライアント用の永続リンク",
+    "heading": "クライアント用の永続リンク",
     "description": "クライアント用の個別リンクを作成します。繰り返し使用できます - リンクは永続的で、毎回生成する必要はありません。",
     "formLabelClientId": "クライアントID（3-32文字：ラテン文字、数字、_または-）",
     "placeholderClientId": "anna_2025またはclient-ivan",
-    "generateBtn": "🔗 作成",
+    "generateBtn": "作成",
     "examples": "例：anna_2025、client-ivan、session42",
     "generatedTitle": "✅ 永続リンクが作成されました！",
     "viewerLabel": "👁️ クライアント用リンク（Viewer）：",
@@ -242,6 +242,8 @@
     "passesPerSecondLabel": "パス/秒",
     "playOnController": "コントローラーで再生",
     "presetApplied": "プリセット適用済み",
+    "presetNamePrompt": "新しいプリセット名：",
+    "renameSessionPrompt": "新しいセッション名：",
     "presets": {
       "relaxation": "リラクゼーション",
       "activation": "活性化",
@@ -274,7 +276,10 @@
       "sessionExported": "セッションがエクスポートされました",
       "sessionImported": "セッションがインポートされました",
       "sessionSaved": "セッションが保存されました",
-      "sessionDeleted": "セッションが削除されました"
+      "sessionDeleted": "セッションが削除されました",
+      "sessionLoaded": "セッションが読み込まれました",
+      "presetSaved": "プリセットが保存されました",
+      "changeUndone": "変更が取り消されました"
     },
     "sessionReset": "セッションがリセットされました",
     "sessionResetError": "セッションのリセットエラー",
@@ -356,7 +361,8 @@
     "links": "永続リンク",
     "linksDesc": "セッションリンクを保存し、同じクライアントと何度でも再利用できます",
     "free": "無料",
-    "freeDesc": "登録不要、サブスクリプション不要 — 世界中のセラピストが利用できます"
+    "freeDesc": "登録不要、サブスクリプション不要 — 世界中のセラピストが利用できます",
+    "sectionHeading": "主な機能"
   },
   "subscription": {
     "heading": "プロジェクトを支援",
@@ -576,5 +582,19 @@
     "s14GitHub": "<strong>GitHub：</strong> <a href=\"https://github.com/davidbugayov\" target=\"_blank\" rel=\"noopener\">github.com/davidbugayov</a>",
     "footerCopyright": "© 2024-2026 BilateralBound. 全著作権所有。",
     "footerHome": "ホームに戻る"
+  },
+  "controller": {
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   }
 }

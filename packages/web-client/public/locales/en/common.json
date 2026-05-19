@@ -39,11 +39,11 @@
     "createFailed": "Error creating session: "
   },
   "links": {
-    "heading": "🔗 Permanent Links for Clients",
+    "heading": "Permanent Links for Clients",
     "description": "Create personal links for your clients. You will be able to use them repeatedly — links remain permanent and do not require generation each time.",
     "formLabelClientId": "Client ID (3-32 characters: latin letters, numbers, _ or -)",
     "placeholderClientId": "anna_2025 or client-ivan",
-    "generateBtn": "🔗 Create",
+    "generateBtn": "Create",
     "examples": "Examples: anna_2025, client-ivan, session42",
     "generatedTitle": "✅ Permanent links created!",
     "viewerLabel": "👁️ Viewer link for client:",
@@ -241,6 +241,8 @@
     "passesPerSecondLabel": "Passes/sec",
     "playOnController": "Play on Controller",
     "presetApplied": "Preset applied",
+    "presetNamePrompt": "New preset name:",
+    "renameSessionPrompt": "New session name:",
     "presets": {
       "relaxation": "Relaxation",
       "activation": "Activation",
@@ -274,7 +276,10 @@
       "sessionExported": "Session exported",
       "sessionImported": "Session imported",
       "sessionSaved": "Session saved",
-      "sessionDeleted": "Session deleted"
+      "sessionDeleted": "Session deleted",
+      "sessionLoaded": "Session loaded",
+      "presetSaved": "Preset saved",
+      "changeUndone": "Change undone"
     },
     "sessionReset": "Session reset",
     "sessionResetError": "Error resetting session",
@@ -339,7 +344,19 @@
     "waitingForViewer": "Waiting for viewer connection",
     "waitingForViewerConnection": "⏳ Waiting for viewer connection",
     "waitingViewer": "Waiting for viewer",
-    "warning": "Warning"
+    "warning": "Warning",
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate (figure-8) movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   },
   "features": {
     "bilateral": "Bilateral stimulation",
@@ -354,7 +371,8 @@
     "linksDesc": "Save session links and reuse with the same client every time",
     "free": "Free Plan",
     "freeDesc": "Generate random sessions instantly — no registration needed",
-    "premiumDesc": "Permanent custom links (your own ID), extended session management"
+    "premiumDesc": "Permanent custom links (your own ID), extended session management",
+    "sectionHeading": "Key Features"
   },
   "privacy": {
     "title": "Privacy Policy",

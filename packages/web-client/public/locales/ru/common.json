@@ -41,11 +41,11 @@
     "createFailed": "Ошибка при создании сессии: "
   },
   "links": {
-    "heading": "🔗 Постоянные ссылки для клиентов",
+    "heading": "Постоянные ссылки для клиентов",
     "description": "Создайте персональные ссылки для ваших клиентов. Вы сможете использовать их многократно — ссылки остаются постоянными и не требуют генерации каждый раз заново.",
     "formLabelClientId": "ID клиента (3-32 символа: латиница, цифры, _ или -)",
     "placeholderClientId": "anna_2025 или client-ivan",
-    "generateBtn": "🔗 Создать",
+    "generateBtn": "Создать",
     "examples": "Примеры: anna_2025, client-ivan, session42",
     "generatedTitle": "✅ Постоянные ссылки созданы!",
     "viewerLabel": "👁️ Ссылка для клиента (Viewer):",
@@ -268,6 +268,8 @@
     "passesPerSecondLabel": "Пасов/сек",
     "playOnController": "Играть на контроллере",
     "presetApplied": "Пресет применён",
+    "presetNamePrompt": "Название нового пресета:",
+    "renameSessionPrompt": "Новое название сессии:",
     "presets": {
       "relaxation": "Релаксация",
       "activation": "Активация",
@@ -300,7 +302,10 @@
       "sessionExported": "Сессия экспортирована",
       "sessionImported": "Сессия импортирована",
       "sessionSaved": "Сессия сохранена",
-      "sessionDeleted": "Сессия удалена"
+      "sessionDeleted": "Сессия удалена",
+      "sessionLoaded": "Сессия загружена",
+      "presetSaved": "Пресет сохранён",
+      "changeUndone": "Изменение отменено"
     },
     "sessionReset": "Сессия сброшена",
     "sessionResetError": "Ошибка при сбросе сессии",
@@ -365,7 +370,19 @@
     "waitingForViewer": "Ожидание подключения вьювера",
     "waitingForViewerConnection": "⏳ Ожидание подключения вьювера",
     "waitingViewer": "Ожидание вьювера",
-    "warning": "Внимание"
+    "warning": "Внимание",
+    "illustrationTitle": "Иллюстрация",
+    "illustrationAnimals": "Животные",
+    "illustrationSport": "Спорт",
+    "illustrationEmoji": "Эмодзи",
+    "illustrationCustom": "Свой эмодзи…",
+    "illustrationApply": "Применить",
+    "infinityShort": "∞",
+    "infinityFull": "Лемниската (знак бесконечности)",
+    "positionTitle": "Позиция",
+    "positionTop": "Сверху",
+    "positionCenter": "По центру",
+    "positionBottom": "Снизу"
   },
   "features": {
     "bilateral": "Билатеральная стимуляция",
@@ -380,7 +397,8 @@
     "linksDesc": "Сохраните ссылки и используйте с одним клиентом снова и снова",
     "free": "Бесплатный план",
     "freeDesc": "Создавайте случайные сессии мгновенно — без регистрации",
-    "premiumDesc": "Постоянные персональные ссылки (свой ID), расширенное управление сессиями"
+    "premiumDesc": "Постоянные персональные ссылки (свой ID), расширенное управление сессиями",
+    "sectionHeading": "Ключевые возможности"
   },
   "privacy": {
     "title": "Политика конфиденциальности",

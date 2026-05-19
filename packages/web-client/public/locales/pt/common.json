@@ -40,11 +40,11 @@
     "createFailed": "Erro ao criar sessão: "
   },
   "links": {
-    "heading": "🔗 Links permanentes para clientes",
+    "heading": "Links permanentes para clientes",
     "description": "Crie links personalizados para seus clientes. Você poderá usá-los repetidamente - os links permanecem permanentes e não requerem geração a cada vez.",
     "formLabelClientId": "ID do cliente (3-32 caracteres: letras latinas, números, _ ou -)",
     "placeholderClientId": "anna_2025 ou client-ivan",
-    "generateBtn": "🔗 Criar",
+    "generateBtn": "Criar",
     "examples": "Exemplos: anna_2025, client-ivan, session42",
     "generatedTitle": "✅ Links permanentes criados!",
     "viewerLabel": "👁️ Link para o cliente (Viewer):",
@@ -235,6 +235,8 @@
     "passesPerSecondLabel": "Passes/seg",
     "playOnController": "Reproduzir no controlador",
     "presetApplied": "Predefinição aplicada",
+    "presetNamePrompt": "Nome da nova predefinição:",
+    "renameSessionPrompt": "Novo nome de sessão:",
     "presets": {
       "relaxation": "Relaxamento",
       "activation": "Ativação",
@@ -267,7 +269,10 @@
       "sessionExported": "Sessão exportada",
       "sessionImported": "Sessão importada",
       "sessionSaved": "Sessão salva",
-      "sessionDeleted": "Sessão excluída"
+      "sessionDeleted": "Sessão excluída",
+      "sessionLoaded": "Sessão carregada",
+      "presetSaved": "Predefinição salva",
+      "changeUndone": "Alteração desfeita"
     },
     "sessionReset": "Sessão reiniciada",
     "sessionResetError": "Erro ao reiniciar sessão",
@@ -349,7 +354,8 @@
     "links": "Links permanentes",
     "linksDesc": "Salve os links e reutilize com o mesmo cliente sempre",
     "free": "Gratuito",
-    "freeDesc": "Sem registro, sem assinatura — aberto para terapeutas em todo o mundo"
+    "freeDesc": "Sem registro, sem assinatura — aberto para terapeutas em todo o mundo",
+    "sectionHeading": "Funcionalidades principais"
   },
   "subscription": {
     "heading": "Apoie o projeto",
@@ -569,5 +575,19 @@
     "text": "Usamos Yandex.Metrica para analisar o tráfego do site. Ao clicar em «Aceitar», você concorda com o processamento dos seus dados.",
     "accept": "Aceitar",
     "decline": "Recusar"
+  },
+  "controller": {
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   }
 }

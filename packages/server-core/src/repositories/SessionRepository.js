@@ -87,7 +87,10 @@ class SessionRepository {
       colorBg: '#020617',
       paused: true,
       soundEnabled: false,
-      soundType: 'soft'
+      soundType: 'soft',
+      ballEmoji: null,
+      infinity: false,
+      trackBand: 'center'
     }
 
     // Применяем пользовательские значения только если они есть

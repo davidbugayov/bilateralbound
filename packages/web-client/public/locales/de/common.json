@@ -40,11 +40,11 @@
     "createFailed": "Fehler beim Erstellen der Sitzung: "
   },
   "links": {
-    "heading": "🔗 Permanente Links für Klienten",
+    "heading": "Permanente Links für Klienten",
     "description": "Erstellen Sie personalisierte Links für Ihre Klienten. Sie können sie wiederholt verwenden - die Links bleiben permanent und müssen nicht jedes Mal neu generiert werden.",
     "formLabelClientId": "Klienten-ID (3-32 Zeichen: lateinische Buchstaben, Zahlen, _ oder -)",
     "placeholderClientId": "anna_2025 oder client-ivan",
-    "generateBtn": "🔗 Erstellen",
+    "generateBtn": "Erstellen",
     "examples": "Beispiele: anna_2025, client-ivan, session42",
     "generatedTitle": "✅ Permanente Links erstellt!",
     "viewerLabel": "👁️ Link für Klienten (Viewer):",
@@ -236,6 +236,8 @@
     "passesPerSecondLabel": "Durchgänge/Sek",
     "playOnController": "Auf Controller abspielen",
     "presetApplied": "Voreinstellung angewendet",
+    "presetNamePrompt": "Name des neuen Presets:",
+    "renameSessionPrompt": "Neuer Sitzungsname:",
     "presets": {
       "relaxation": "Entspannung",
       "activation": "Aktivierung",
@@ -268,7 +270,10 @@
       "sessionExported": "Sitzung exportiert",
       "sessionImported": "Sitzung importiert",
       "sessionSaved": "Sitzung gespeichert",
-      "sessionDeleted": "Sitzung gelöscht"
+      "sessionDeleted": "Sitzung gelöscht",
+      "sessionLoaded": "Sitzung geladen",
+      "presetSaved": "Voreinstellung gespeichert",
+      "changeUndone": "Änderung rückgängig gemacht"
     },
     "sessionReset": "Sitzung zurückgesetzt",
     "sessionResetError": "Fehler beim Zurücksetzen der Sitzung",
@@ -350,7 +355,8 @@
     "links": "Permanente Links",
     "linksDesc": "Sitzungslinks speichern und immer wieder mit demselben Klienten verwenden",
     "free": "Kostenlos",
-    "freeDesc": "Keine Registrierung, kein Abonnement — offen für Therapeuten weltweit"
+    "freeDesc": "Keine Registrierung, kein Abonnement — offen für Therapeuten weltweit",
+    "sectionHeading": "Hauptfunktionen"
   },
   "subscription": {
     "heading": "Unterstütze das Projekt",
@@ -570,5 +576,19 @@
     "s14GitHub": "<strong>GitHub:</strong> <a href=\"https://github.com/davidbugayov\" target=\"_blank\" rel=\"noopener\">github.com/davidbugayov</a>",
     "footerCopyright": "© 2024-2026 BilateralBound. Alle Rechte vorbehalten.",
     "footerHome": "Zurück zur Startseite"
+  },
+  "controller": {
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   }
 }

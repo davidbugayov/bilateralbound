@@ -40,11 +40,11 @@
     "createFailed": "Erreur lors de la création de la séance: "
   },
   "links": {
-    "heading": "🔗 Liens permanents pour les clients",
+    "heading": "Liens permanents pour les clients",
     "description": "Créez des liens personnalisés pour vos clients. Vous pourrez les utiliser de façon répétée - les liens restent permanents et ne nécessitent pas de génération à chaque fois.",
     "formLabelClientId": "ID du client (3-32 caractères: lettres latines, chiffres, _ ou -)",
     "placeholderClientId": "anna_2025 ou client-ivan",
-    "generateBtn": "🔗 Créer",
+    "generateBtn": "Créer",
     "examples": "Exemples: anna_2025, client-ivan, session42",
     "generatedTitle": "✅ Liens permanents créés!",
     "viewerLabel": "👁️ Lien pour le client (Viewer):",
@@ -242,6 +242,8 @@
     "passesPerSecondLabel": "Passes/sec",
     "playOnController": "Jouer sur le contrôleur",
     "presetApplied": "Préréglage appliqué",
+    "presetNamePrompt": "Nom du nouveau préréglage :",
+    "renameSessionPrompt": "Nouveau nom de séance :",
     "presets": {
       "relaxation": "Relaxation",
       "activation": "Activation",
@@ -274,7 +276,10 @@
       "sessionExported": "Séance exportée",
       "sessionImported": "Séance importée",
       "sessionSaved": "Séance enregistrée",
-      "sessionDeleted": "Séance supprimée"
+      "sessionDeleted": "Séance supprimée",
+      "sessionLoaded": "Séance chargée",
+      "presetSaved": "Préréglage enregistré",
+      "changeUndone": "Modification annulée"
     },
     "sessionReset": "Séance réinitialisée",
     "sessionResetError": "Erreur lors de la réinitialisation de la séance",
@@ -356,7 +361,8 @@
     "links": "Liens permanents",
     "linksDesc": "Enregistrez les liens de session et réutilisez-les avec le même client",
     "free": "Gratuit",
-    "freeDesc": "Pas d'inscription, pas d'abonnement — ouvert aux thérapeutes du monde entier"
+    "freeDesc": "Pas d'inscription, pas d'abonnement — ouvert aux thérapeutes du monde entier",
+    "sectionHeading": "Fonctionnalités principales"
   },
   "subscription": {
     "heading": "Soutenez le projet",
@@ -576,5 +582,19 @@
     "text": "Nous utilisons Yandex.Metrica pour analyser le trafic du site. En cliquant sur « Accepter », vous consentez au traitement de vos données.",
     "accept": "Accepter",
     "decline": "Refuser"
+  },
+  "controller": {
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   }
 }

@@ -40,11 +40,11 @@
     "createFailed": "Error al crear la sesión: "
   },
   "links": {
-    "heading": "🔗 Enlaces permanentes para clientes",
+    "heading": "Enlaces permanentes para clientes",
     "description": "Cree enlaces personalizados para sus clientes. Podrá usarlos repetidamente - los enlaces permanecen permanentes y no requieren generación cada vez.",
     "formLabelClientId": "ID del cliente (3-32 caracteres: letras latinas, números, _ o -)",
     "placeholderClientId": "anna_2025 o client-ivan",
-    "generateBtn": "🔗 Crear",
+    "generateBtn": "Crear",
     "examples": "Ejemplos: anna_2025, client-ivan, session42",
     "generatedTitle": "✅ ¡Enlaces permanentes creados!",
     "viewerLabel": "👁️ Enlace para el cliente (Viewer):",
@@ -236,6 +236,8 @@
     "passesPerSecondLabel": "Pases/seg",
     "playOnController": "Reproducir en el controlador",
     "presetApplied": "Preajuste aplicado",
+    "presetNamePrompt": "Nombre del nuevo preajuste:",
+    "renameSessionPrompt": "Nuevo nombre de sesión:",
     "presets": {
       "relaxation": "Relajación",
       "activation": "Activación",
@@ -268,7 +270,10 @@
       "sessionExported": "Sesión exportada",
       "sessionImported": "Sesión importada",
       "sessionSaved": "Sesión guardada",
-      "sessionDeleted": "Sesión eliminada"
+      "sessionDeleted": "Sesión eliminada",
+      "sessionLoaded": "Sesión cargada",
+      "presetSaved": "Preajuste guardado",
+      "changeUndone": "Cambio deshecho"
     },
     "sessionReset": "Sesión reiniciada",
     "sessionResetError": "Error al reiniciar sesión",
@@ -332,7 +337,19 @@
     "waitingForViewer": "Visor y tamaño de pantalla",
     "waitingForViewerConnection": "⏳ Esperando conexión del visor",
     "waitingViewer": "Esperando al visor",
-    "warning": "Advertencia"
+    "warning": "Advertencia",
+    "illustrationTitle": "Illustration",
+    "illustrationAnimals": "Animals",
+    "illustrationSport": "Sport",
+    "illustrationEmoji": "Emoji",
+    "illustrationCustom": "Custom emoji…",
+    "illustrationApply": "Apply",
+    "infinityShort": "∞",
+    "infinityFull": "Lemniscate movement",
+    "positionTitle": "Position",
+    "positionTop": "Top",
+    "positionCenter": "Center",
+    "positionBottom": "Bottom"
   },
   "meta": {
     "controllerTitle": "BilateralBound - Controlador de terapia EMDR",
@@ -350,7 +367,8 @@
     "links": "Enlaces permanentes",
     "linksDesc": "Guarde enlaces de sesiones y reutilícelos con el mismo cliente",
     "free": "Gratis",
-    "freeDesc": "Sin registro, sin suscripción — abierto para terapeutas de todo el mundo"
+    "freeDesc": "Sin registro, sin suscripción — abierto para terapeutas de todo el mundo",
+    "sectionHeading": "Características principales"
   },
   "subscription": {
     "heading": "Apoya el proyecto",

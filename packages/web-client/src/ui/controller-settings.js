@@ -196,7 +196,7 @@ class ControllerSettingsManager {
     }
     this.savePresets()
     this.addPresetControls()
-    globalThis.successToast?.success(`Preset "${name}" saved`)
+    globalThis.successToast?.success(`"${name}" — ${globalThis.i18n?.t('controller.sessionManagement.presetSaved') || 'Preset saved'}`)
   }
   savePresets() {
     try {
@@ -218,7 +218,7 @@ class ControllerSettingsManager {
     buttonContainer.style.marginTop = '12px'
     const exportBtn = document.createElement('button')
     exportBtn.className = 'btn outline'
-    exportBtn.innerHTML = '📤 Экспорт сессии'
+    exportBtn.textContent = globalThis.i18n?.t('controller.sessionManagement.exportButton') || '📤 Export session'
     exportBtn.style.width = '100%'
     exportBtn.onclick = () => this.exportSession()
     const importInput = document.createElement('input')
@@ -228,7 +228,7 @@ class ControllerSettingsManager {
     importInput.onchange = (e) => this.importSession(e.target.files[0])
     const importBtn = document.createElement('button')
     importBtn.className = 'btn outline'
-    importBtn.innerHTML = '📥 Импорт сессии'
+    importBtn.textContent = globalThis.i18n?.t('controller.sessionManagement.importButton') || '📥 Import session'
     importBtn.style.width = '100%'
     importBtn.onclick = () => importInput.click()
     buttonContainer.appendChild(exportBtn)
@@ -249,7 +249,7 @@ class ControllerSettingsManager {
     link.download = `bilateralbound-session-${new Date().toISOString().split('T')[0]}.json`
     link.click()
     URL.revokeObjectURL(url)
-    globalThis.successToast?.success('Session exported')
+    globalThis.successToast?.success(globalThis.i18n?.t('controller.sessionManagement.sessionExported') || 'Session exported')
   }
   /**
    * Импорт сессии из JSON файла
@@ -265,7 +265,7 @@ class ControllerSettingsManager {
       if (sessionData.counters) {
         this.applyCounters(sessionData.counters)
       }
-      globalThis.successToast?.success('Session imported')
+      globalThis.successToast?.success(globalThis.i18n?.t('controller.sessionManagement.sessionImported') || 'Session imported')
     } catch (error) {
       debugError('Import error:', error)
       globalThis.notificationSystem?.error('Error', 'Failed to import session')
@@ -404,7 +404,7 @@ class ControllerSettingsManager {
     this.sessionHistory.pop()
     const previousState = this.sessionHistory.at(-1)
     await this.applyState(previousState)
-    globalThis.successToast?.success('Change undone')
+    globalThis.successToast?.success(globalThis.i18n?.t('controller.sessionManagement.changeUndone') || 'Change undone')
   }
   /**
    * Применяет сохраненное состояние
@@ -471,11 +471,11 @@ class ControllerSettingsManager {
     nameRow.style.marginBottom = '8px'
     const saveBtn = document.createElement('button')
     saveBtn.className = 'btn'
-    saveBtn.textContent = '💾 Save'
+    saveBtn.textContent = globalThis.i18n?.t('controller.sessionManagement.saveButton') || '💾 Save'
     saveBtn.onclick = () => this.saveNamedSession('Session')
     const deleteBtn = document.createElement('button')
     deleteBtn.className = 'btn outline'
-    deleteBtn.textContent = '🗑 Delete'
+    deleteBtn.textContent = globalThis.i18n?.t('controller.sessionManagement.deleteButton') || '🗑 Delete'
     deleteBtn.disabled = !this.currentSessionId
     deleteBtn.onclick = () => this.deleteSessionById(this.currentSessionId)
     nameRow.appendChild(saveBtn)
@@ -496,7 +496,7 @@ class ControllerSettingsManager {
       empty.style.color = '#9ca3af'
       empty.style.fontSize = '12px'
       empty.textContent =
-        globalThis.i18n?.t('controller.noSavedSessions') || 'No saved sessions'
+        globalThis.i18n?.t('controller.sessionManagement.noSessions') || 'No saved sessions'
       listWrap.appendChild(empty)
       return
     }
@@ -525,7 +525,7 @@ class ControllerSettingsManager {
       const meta = document.createElement('div')
       meta.style.color = '#9ca3af'
       meta.style.fontSize = '11px'
-      meta.textContent = `Updated: ${new Date(s.updatedAt).toLocaleString()}`
+      meta.textContent = `${globalThis.i18n?.t('controller.sessionManagement.updated') || 'Updated'}: ${new Date(s.updatedAt).toLocaleString()}`
       info.appendChild(title)
       info.appendChild(meta)
       const actions = document.createElement('div')
@@ -533,11 +533,11 @@ class ControllerSettingsManager {
       actions.style.gap = '6px'
       const loadBtn = document.createElement('button')
       loadBtn.className = 'btn'
-      loadBtn.textContent = globalThis.i18n?.t('controller.loadBtn') || 'Load'
+      loadBtn.textContent = globalThis.i18n?.t('controller.sessionManagement.loadButton') || 'Load'
       loadBtn.onclick = () => this.loadSessionById(s.id)
       const renameBtn = document.createElement('button')
       renameBtn.className = 'btn outline'
-      renameBtn.textContent = '✎ Rename'
+      renameBtn.textContent = globalThis.i18n?.t('controller.sessionManagement.renameButton') || '✎ Rename'
       renameBtn.onclick = () => this.renameSessionById(s.id)
       const delBtn = document.createElement('button')
       delBtn.className = 'btn outline'
@@ -624,7 +624,7 @@ class ControllerSettingsManager {
     this.saveSessions()
     this.renderSessionsList()
     this.updateHeaderSessionName()
-    globalThis.successToast?.success(`Session "${name}" saved`)
+    globalThis.successToast?.success(`"${name}" — ${globalThis.i18n?.t('controller.sessionManagement.sessionSaved') || 'Session saved'}`)
   }
   async loadSessionById(id) {
     const session = this.sessions.find((s) => s.id === id)
@@ -635,7 +635,7 @@ class ControllerSettingsManager {
     if (input) input.value = session.name
     this.updateHeaderSessionName()
     this.renderSessionsList()
-    globalThis.successToast?.success(`Session "${session.name}" loaded`)
+    globalThis.successToast?.success(`"${session.name}" — ${globalThis.i18n?.t('controller.sessionManagement.sessionLoaded') || 'Session loaded'}`)
   }
   renameSessionById(id) {
     const session = this.sessions.find((s) => s.id === id)
@@ -666,7 +666,7 @@ class ControllerSettingsManager {
     this.saveSessions()
     this.renderSessionsList()
     this.updateHeaderSessionName()
-    globalThis.successToast?.success(`Сессия "${removed?.name || ''}" удалена`)
+    globalThis.successToast?.success(`"${removed?.name || ''}" — ${globalThis.i18n?.t('controller.sessionManagement.sessionDeleted') || 'Session deleted'}`)
   }
   _updateExistingSession(session) {
     session.data = this._getCurrentSessionData()
