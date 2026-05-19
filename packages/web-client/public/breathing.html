@@ -201,6 +201,7 @@
 
   <div class="controls">
     <button class="btn btn-primary" id="startBtn">🌬️ Начать</button>
+    <button class="btn btn-secondary" id="siteBtn" style="display:none">🌐 На сайт</button>
   </div>
 
   <button class="close-btn" id="closeBtn">✕</button>
@@ -406,7 +407,7 @@
         if (tg) {
           tg.close()
         } else {
-          window.location.href = '/'
+          window.location.href = 'https://emdrbilateral.ru'
         }
       })
 
@@ -420,16 +421,27 @@
         startBtn.classList.remove('active')
         startBtn.style.background = '#10b981'
         startBtn.style.borderColor = '#10b981'
+        startBtn.style.display = 'none'
         enableDurationButtons()
         guideOverlay.classList.remove('hidden')
         guideOverlay.textContent = '✅ Сессия завершена'
+        siteBtn.style.display = 'inline-block'
         setTimeout(function() {
           startBtn.textContent = '🌬️ Начать'
           startBtn.style.background = ''
           startBtn.style.borderColor = ''
+          startBtn.style.display = ''
+          siteBtn.style.display = 'none'
           guideOverlay.textContent = '🦋 Скрести руки на груди, тапай плечи в ритм круга'
-        }, 3000)
+        }, 5000)
       }
+
+      siteBtn.addEventListener('click', function() {
+        if (tg) {
+          tg.close()
+        }
+        window.open('https://emdrbilateral.ru', '_blank')
+      })
 
       // ── Init ──
       drawIdle()
