@@ -507,10 +507,15 @@
       }
 
       // ── Mute toggle ──
-      muteBtn.addEventListener('click', function() {
+      muteBtn.addEventListener('pointerdown', function(e) {
+        e.preventDefault()
         const nowMuted = engine.toggleMute()
         muteBtn.textContent = nowMuted ? '🔇' : '🔊'
-        muteBtn.classList.toggle('muted', nowMuted)
+        if (nowMuted) {
+          muteBtn.classList.add('muted')
+        } else {
+          muteBtn.classList.remove('muted')
+        }
         muteBtn.title = nowMuted ? 'Включить звук' : 'Отключить звук'
       })
 

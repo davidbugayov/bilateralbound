@@ -144,6 +144,7 @@ class BreathingEngine {
   }
 
   _doVibration(durationMs) {
+    if (this.muted) return
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(durationMs)
     }
@@ -230,6 +231,9 @@ class BreathingEngine {
 
   toggleMute() {
     this.muted = !this.muted
+    if (this.muted && typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(0)
+    }
     return this.muted
   }
 
