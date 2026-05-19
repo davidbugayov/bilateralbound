@@ -416,15 +416,34 @@ function setupEventListeners() {
   })
 
   globalThis.toggleFullscreen = function () {
-    const isFullscreen = !!document.fullscreenElement
-    if (!isFullscreen) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        debugWarn('Error attempting to enable fullscreen:', err)
-      })
-    } else if (document.exitFullscreen) {
-      document.exitFullscreen().catch((err) => {
-        debugWarn('Error attempting to exit fullscreen:', err)
-      })
+    const fsEl =
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.msFullscreenElement ||
+      document.mozFullScreenElement
+    if (!fsEl) {
+      const el = document.documentElement
+      const request =
+        el.requestFullscreen ||
+        el.webkitRequestFullscreen ||
+        el.msRequestFullscreen ||
+        el.mozRequestFullScreen
+      if (request) {
+        request.call(el).catch((err) => {
+          debugWarn('Error attempting to enable fullscreen:', err)
+        })
+      }
+    } else {
+      const exit =
+        document.exitFullscreen ||
+        document.webkitExitFullscreen ||
+        document.msExitFullscreen ||
+        document.mozCancelFullScreen
+      if (exit) {
+        exit.call(document).catch((err) => {
+          debugWarn('Error attempting to exit fullscreen:', err)
+        })
+      }
     }
   }
 
@@ -440,7 +459,7 @@ function setupEventListeners() {
     }
   }
 
-  document.addEventListener('fullscreenchange', () => {
+  function onFullscreenChange() {
     updateFullscreenButton()
     resizeCanvas()
     if (wsClient) {
@@ -451,7 +470,10 @@ function setupEventListeners() {
         })
         .catch(() => {})
     }
-  })
+  }
+  document.addEventListener('fullscreenchange', onFullscreenChange)
+  document.addEventListener('webkitfullscreenchange', onFullscreenChange)
+  document.addEventListener('mozfullscreenchange', onFullscreenChange)
 
   globalThis.addEventListener('i18nReady', () => {
     if (globalThis.i18n?.applyTranslations) {
@@ -480,6 +502,12 @@ function setupEventListeners() {
           `[VIEWER] Space pressed: toggling pause from ${currentPaused} to ${newPaused}`
         )
         wsClient.send('viewer_update', { paused: newPaused })
+      }
+    }
+    if (e.key === 'f' && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault()
+      if (typeof globalThis.toggleFullscreen === 'function') {
+        globalThis.toggleFullscreen()
       }
     }
     if (e.key === 'Escape') {

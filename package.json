@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.623",
+  "version": "2.39.656",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -51,6 +51,8 @@
     "deploy:prod": "bash scripts/deploy-prod.sh",
     "deploy:prod:logs": "bash scripts/deploy-prod-logs.sh",
     "deploy:prod:status": "bash scripts/deploy-prod-status.sh",
+    "ship:dev": "git push origin main && bash scripts/deploy-dev.sh",
+    "ship:prod": "git push origin stable && bash scripts/deploy-prod.sh",
     "git:stable": "git checkout stable && git pull origin stable",
     "git:main": "git checkout main && git pull origin main",
     "git:status": "git status && git log --oneline -5",

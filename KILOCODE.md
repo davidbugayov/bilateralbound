@@ -52,7 +52,7 @@ Conflict priority:
 
 ## Conventions
 
-- i18n usage pattern: `globalThis.i18n?.t('key') || 'English fallback'`.
+- i18n usage pattern: `(() => { const v = globalThis.i18n?.t('key'); return v && v !== 'key' ? v : 'English fallback'; })()`. ⚠️ `||` fallback doesn't work because `t()` returns the key itself when missing (key is truthy).
 - Module export pattern in browser scripts: IIFE guarded by `if (typeof globalThis.ModuleName !== 'undefined')` to prevent double-load.
 - Global state via `globalThis.__current` (sessionId, isPlaying, viewerConnected, etc.).
 - WebSocket endpoint: `ws://host/?sessionId=:id&role=viewer|controller` — auto-reconnect, heartbeat every 25s.

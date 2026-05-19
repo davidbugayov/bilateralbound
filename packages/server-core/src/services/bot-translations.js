@@ -129,42 +129,50 @@ const TRANSLATIONS = {
   already_subscribed_renewal: {
     en: '✅ <b>Subscription already active!</b>\n\n' +
         'Expires: {expDate}\n' +
-        'Clients: {clients}\n\n' +
+        'Clients: {clients}\n' +
+        '🔗 Add more clients on the website — enter any Custom ID and click Link\n\n' +
         'Want to extend for another 30 days?\n' +
         'Support the project by renewing your subscription 👇',
     ru: '✅ <b>Подписка уже активна!</b>\n\n' +
         'Истекает: {expDate}\n' +
-        'Клиентов: {clients}\n\n' +
+        'Клиентов: {clients}\n' +
+        '🔗 Добавляйте новых клиентов на сайте — введите Custom ID и нажмите Link\n\n' +
         'Хотите продлить ещё на 30 дней?\n' +
         'Поддержите проект — продлите подписку 👇',
     es: '✅ <b>¡La suscripción ya está activa!</b>\n\n' +
         'Vence: {expDate}\n' +
-        'Clientes: {clients}\n\n' +
+        'Clientes: {clients}\n' +
+        '🔗 Añade más clientes en el sitio web — ingresa un Custom ID y haz clic en Link\n\n' +
         '¿Quieres extender por otros 30 días?\n' +
         'Apoya el proyecto renovando tu suscripción 👇',
     fr: '✅ <b>L\'abonnement est déjà actif !</b>\n\n' +
         'Expire le : {expDate}\n' +
-        'Clients : {clients}\n\n' +
+        'Clients : {clients}\n' +
+        '🔗 Ajoutez d\'autres clients sur le site — entrez un Custom ID et cliquez sur Link\n\n' +
         'Vous voulez prolonger pour 30 jours ?\n' +
         'Soutenez le projet en renouvelant votre abonnement 👇',
     de: '✅ <b>Abonnement bereits aktiv!</b>\n\n' +
         'Läuft ab: {expDate}\n' +
-        'Kunden: {clients}\n\n' +
+        'Kunden: {clients}\n' +
+        '🔗 Fügen Sie weitere Kunden auf der Website hinzu — Custom ID eingeben und Link klicken\n\n' +
         'Möchten Sie um weitere 30 Tage verlängern?\n' +
         'Unterstützen Sie das Projekt — Abo verlängern 👇',
     pt: '✅ <b>Assinatura já está ativa!</b>\n\n' +
         'Expira em: {expDate}\n' +
-        'Clientes: {clients}\n\n' +
+        'Clientes: {clients}\n' +
+        '🔗 Adicione mais clientes no site — insira um Custom ID e clique em Link\n\n' +
         'Quer estender por mais 30 dias?\n' +
         'Apoie o projeto renovando sua assinatura 👇',
     ja: '✅ <b>サブスクリプションは既に有効です！</b>\n\n' +
         '期限: {expDate}\n' +
-        'クライアント数: {clients}\n\n' +
+        'クライアント数: {clients}\n' +
+        '🔗 ウェブサイトで新しいクライアントを追加 — Custom IDを入力してLinkをクリック\n\n' +
         'さらに30日間延長しませんか？\n' +
         'プロジェクトをサポートして更新する 👇',
     zh: '✅ <b>订阅已激活！</b>\n\n' +
         '到期: {expDate}\n' +
-        '客户数: {clients}\n\n' +
+        '客户数: {clients}\n' +
+        '🔗 在网站上添加更多客户 — 输入Custom ID并点击Link\n\n' +
         '想再延长30天吗？\n' +
         '支持项目，续订订阅 👇'
   },
@@ -627,6 +635,28 @@ const TRANSLATIONS = {
     pt: 'Ativar/desativar renovação automática',
     ja: '自動更新のオン/オフ切り替え',
     zh: '开启/关闭自动续费'
+  },
+  cmd_myid: {
+    en: 'Get your Telegram User ID',
+    ru: 'Узнать свой Telegram User ID',
+    es: 'Obtener tu Telegram User ID',
+    fr: 'Obtenir votre Telegram User ID',
+    de: 'Deine Telegram-Nutzer-ID abrufen',
+    pt: 'Obter seu Telegram User ID',
+    ja: 'TelegramユーザーIDを取得',
+    zh: '获取您的Telegram用户ID'
+  },
+
+  // ── /myid ──
+  myid_response: {
+    en: '📋 <b>Your Telegram User ID</b>\n\n<code>{userId}</code>\n\nUse this ID in the Subscription Management section on the website to link your subscription.',
+    ru: '📋 <b>Ваш Telegram User ID</b>\n\n<code>{userId}</code>\n\nИспользуйте этот ID в разделе «Manage Subscription» на сайте, чтобы привязать подписку.',
+    es: '📋 <b>Tu Telegram User ID</b>\n\n<code>{userId}</code>\n\nUsa este ID en la sección «Manage Subscription» del sitio para vincular tu suscripción.',
+    fr: '📋 <b>Votre Telegram User ID</b>\n\n<code>{userId}</code>\n\nUtilisez cet ID dans la section « Manage Subscription » du site pour lier votre abonnement.',
+    de: '📋 <b>Deine Telegram-Nutzer-ID</b>\n\n<code>{userId}</code>\n\nVerwende diese ID im Bereich «Manage Subscription» auf der Website, um dein Abonnement zu verknüpfen.',
+    pt: '📋 <b>Seu Telegram User ID</b>\n\n<code>{userId}</code>\n\nUse este ID na seção «Manage Subscription» do site para vincular sua assinatura.',
+    ja: '📋 <b>あなたのTelegramユーザーID</b>\n\n<code>{userId}</code>\n\nサイトの「Manage Subscription」セクションでこのIDを使用してサブスクリプションをリンクしてください。',
+    zh: '📋 <b>您的Telegram用户ID</b>\n\n<code>{userId}</code>\n\n在网站的「Manage Subscription」部分使用此ID来链接您的订阅。'
   }
 }
 
@@ -706,7 +736,8 @@ function getCommandsForLang(lang) {
     { command: 'start', description: t('cmd_start', lang) },
     { command: 'status', description: t('cmd_status', lang) },
     { command: 'renew', description: t('cmd_renew', lang) },
-    { command: 'autorenew', description: t('cmd_autorenew', lang) }
+    { command: 'autorenew', description: t('cmd_autorenew', lang) },
+    { command: 'myid', description: t('cmd_myid', lang) }
   ]
 }
 

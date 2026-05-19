@@ -349,7 +349,11 @@
     "positionTitle": "Position",
     "positionTop": "Top",
     "positionCenter": "Center",
-    "positionBottom": "Bottom"
+    "positionBottom": "Bottom",
+    "settingsLabel": "Ajustes",
+    "settingsTabSound": "Sonido",
+    "settingsTabShortcuts": "Atajos",
+    "settingsTabLanguage": "Idioma"
   },
   "meta": {
     "controllerTitle": "BilateralBound - Controlador de terapia EMDR",
@@ -406,7 +410,11 @@
     "activateTgPlaceholder": "Tu ID de Telegram (obténlo de @userinfobot)",
     "activateTgRequired": "❌ Por favor, ingresa tu ID de Telegram",
     "activateTgInvalid": "❌ ID de Telegram inválido — debe ser un número",
-    "managementTitle": "Gestión de Suscripción",
+    "managementTitle": "Suscripción",
+    "howToTitle": "Cómo Suscribirse",
+    "howToStep1": "Crea un Custom ID arriba y haz clic en <strong>Check Status</strong>",
+    "howToStep2": "Paga 75 ⭐ a través de <a href=\"https://t.me/emdrbilateral_bot\" target=\"_blank\">@emdrbilateral_bot</a>",
+    "howToStep3": "Ingresa tu Telegram User ID y haz clic en <strong>Link</strong>",
     "customIdLabel": "Tu Custom ID",
     "customIdPlaceholder": "Ingresa tu custom client ID",
     "customIdRequired": "❌ Por favor, ingresa tu custom client ID",

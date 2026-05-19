@@ -1,18 +1,13 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Language pre-loader (MUST be first to prevent flashing) -->
-    <link rel="preload" href="/js/i18n/lang-preload.js" as="script" />
-    <script src="/js/i18n/lang-preload.js"></script>
-    <script src="/js/i18n/i18n.js?v=2.39.623-3b737ed7" defer></script>
-    <script
-      src="/js/i18n/language-selector.js?v=2.39.623-3b737ed7"
-      defer
-    ></script>
-    <script
-      src="/js/constants/i18n-constants.js?v=2.39.623-3b737ed7"
-      defer
-    ></script>
+    <!-- Language pre-loader (inlined to avoid blocking network request) -->
+    <script>
+      (function(){var L='en',S=['en','ru','es','fr','de','pt','ja','zh'],K='emdr-language';try{L=localStorage.getItem(K)}catch(e){}if(!L||S.indexOf(L)===-1){L=location.hostname.includes('emdrbilateral.ru')?'ru':'en';try{localStorage.setItem(K,L)}catch(e){}}document.documentElement.lang=L;document.documentElement.dataset.lang=L;var s=document.createElement('style');s.id='i18n-cloak';s.innerHTML='[data-i18n]{visibility:hidden!important}';document.head.appendChild(s)})();
+    </script>
+    <script src="/js/i18n/i18n.js?v=2.39.656-af3d54b7" defer></script>
+    <script src="/js/i18n/language-selector.js?v=2.39.656-af3d54b7" defer></script>
+    <script src="/js/constants/i18n-constants.js?v=2.39.656-af3d54b7" defer></script>
 
     <meta charset="utf-8" />
     <meta
@@ -34,7 +29,7 @@
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="language" content="multilingual" />
-    <meta name="version" content="2.39.623-3b737ed7" />
+    <meta name="version" content="2.39.656-af3d54b7" />
     <meta name="theme-color" content="#2563eb" />
     <meta name="therapy-type" content="EMDR Controller" />
     <meta
@@ -46,17 +41,17 @@
     <!-- Preload Critical Resources -->
     <link
       rel="preload"
-      href="/css/shared-components.css?v=2.39.623-3b737ed7"
+      href="/css/shared-components.css?v=2.39.656-af3d54b7"
       as="style"
     />
     <link
       rel="preload"
-      href="/css/light-theme.css?v=2.39.623-3b737ed7"
+      href="/css/light-theme.css?v=2.39.656-af3d54b7"
       as="style"
     />
     <link
       rel="preload"
-      href="/css/controller.css?v=2.39.623-3b737ed7"
+      href="/css/controller.css?v=2.39.656-af3d54b7"
       as="style"
     />
     <link
@@ -67,20 +62,16 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon-controller.svg?v=2.39.623-3b737ed7"
+      href="/favicon-controller.svg?v=2.39.656-af3d54b7"
     />
     <link
       rel="icon"
       type="image/x-icon"
-      href="/favicon-controller.ico?v=2.39.623-3b737ed7"
+      href="/favicon-controller.ico?v=2.39.656-af3d54b7"
     />
     <link
       rel="apple-touch-icon"
-      href="/favicon-controller.svg?v=2.39.623-3b737ed7"
-    />
-    <link
-      href="/favicon-controller.ico?v=2.39.623-3b737ed7"
-      rel="shortcut icon"
+      href="/favicon-controller.svg?v=2.39.656-af3d54b7"
     />
     <meta property="og:type" content="website" />
     <meta
@@ -95,7 +86,7 @@
     />
     <meta
       property="og:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.623-3b737ed7"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.656-af3d54b7"
     />
     <meta property="og:url" content="https://emdrbilateral.ru/" />
     <meta property="og:site_name" content="BilateralBound" />
@@ -113,32 +104,17 @@
     />
     <meta
       name="twitter:image"
-      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.623-3b737ed7"
+      content="https://emdrbilateral.ru/emdr-eye.png?v=2.39.656-af3d54b7"
     />
     <meta name="twitter:site" content="@bilateralbound" />
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": ["WebApplication", "MedicalTherapy", "VideoGame"],
-        "name": "BilateralBound - EMDR терапия контроллер",
-        "description": "EMDR терапия контроллер для управления биодинамической стимуляцией",
-        "url": "https://emdrbilateral.ru/",
-        "applicationCategory": ["HealthcareApplication", "GameApplication"],
-        "operatingSystem": "Web Browser",
-        "medicalSpecialty": "Psychiatry",
-        "therapyType": "EMDR Controller",
-        "targetPopulation": "Therapists",
-        "genre": "Therapeutic Game"
-      }
-    </script>
     <link
-      href="/css/shared-components.css?v=2.39.623-3b737ed7"
+      href="/css/shared-components.css?v=2.39.656-af3d54b7"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/css/common.css?v=2.39.623-3b737ed7" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.623-3b737ed7" />
-    <link rel="stylesheet" href="/css/controller.css?v=2.39.623-3b737ed7" />
-    <script src="/js/ui/cookie-consent.js?v=2.39.623-3b737ed7" defer></script>
+    <link rel="stylesheet" href="/css/common.css?v=2.39.656-af3d54b7" />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.656-af3d54b7" />
+    <link rel="stylesheet" href="/css/controller.css?v=2.39.656-af3d54b7" />
+    <script src="/js/ui/cookie-consent.js?v=2.39.656-af3d54b7" defer></script>
   </head>
   <body>
     <header>
@@ -155,6 +131,18 @@
           data-i18n="controller.themeButton"
         ></button>
       </div>
+      <button
+        id="settingsBtn"
+        class="settings-gear-btn"
+        aria-label="Settings"
+        data-i18n-attr="aria-label:controller.settingsLabel"
+        title="Settings"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
     </header>
     <main class="wrap controller-layout">
       <div id="previewOverlay" class="fullscreen-overlay hidden">
@@ -467,136 +455,63 @@
           </div>
         </section>
 
-        <section class="control-section" aria-labelledby="settings-heading">
-          <h3 data-i18n="controller.settingsHeading" id="settings-heading">
-            🛠️ Settings
-          </h3>
-          <div class="appearance-grid">
-            <div class="controls-card settings-card">
-              <div class="settings-sound-header">
-                <span class="settings-sound-header__icon" aria-hidden="true"
-                  >🔊</span
-                >
-                <span
-                  data-i18n="controller.enableSound"
-                  class="settings-sound-header__title"
-                ></span>
+        <!-- Sound -->
+        <section class="control-section" aria-labelledby="sound-heading">
+          <h3 id="sound-heading" data-i18n="controller.settingsTabSound">Sound</h3>
+          <div class="sound-card">
+            <!-- Enable toggle -->
+            <div class="sound-card__enable">
+              <div class="sound-card__enable-info">
+                <span class="sound-card__title" data-i18n="controller.enableSound">Enable sound</span>
+                <span class="sound-card__desc" data-i18n="controller.soundDesc">Play audio cues during the session</span>
               </div>
-              <div class="settings-row settings-row--toggle">
-                <div class="settings-row__content">
-                  <div class="settings-row__text">
-                    <span
-                      class="settings-row__desc"
-                      data-i18n="controller.soundDesc"
-                    ></span>
-                  </div>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="soundEnabledCheckbox" />
-                  <span class="slider round"></span>
-                </label>
+              <label class="sound-toggle">
+                <input type="checkbox" id="soundEnabledCheckbox">
+                <span class="sound-toggle__track"><span class="sound-toggle__thumb"></span></span>
+              </label>
+            </div>
+            <!-- Sound type -->
+            <div id="soundTypeControl" class="sound-card__row sound-card__row--type">
+              <span class="sound-card__label" data-i18n="controller.soundTypeLabel">Sound type</span>
+              <div class="sound-card__select-wrap">
+                <select id="soundTypeSelect" class="sound-card__select">
+                  <option value="soft" data-i18n="controller.soundTypeSoft">🎵 Soft (EMDR)</option>
+                  <option value="tick" data-i18n="controller.soundTypeTick">⏱️ Tick</option>
+                  <option value="tone" data-i18n="controller.soundTypeTone">🎹 Tone</option>
+                  <option value="click" data-i18n="controller.soundTypeClick">🖱️ Click</option>
+                  <option value="bounce" data-i18n="controller.soundTypeBounce">🎾 Bounce</option>
+                  <option value="beep" data-i18n="controller.soundTypeBeep">📢 Beep</option>
+                </select>
+                <span class="sound-card__select-arrow" aria-hidden="true">▾</span>
               </div>
-              <div
-                id="soundTypeControl"
-                class="settings-row settings-row--select"
-              >
-                <label
-                  data-i18n="controller.soundTypeLabel"
-                  for="soundTypeSelect"
-                  class="settings-row__label"
-                ></label>
-                <div class="select-wrapper">
-                  <select id="soundTypeSelect" class="settings-select">
-                    <option data-i18n="controller.soundTypeSoft" value="soft">
-                      🎵 Soft (EMDR)
-                    </option>
-                    <option data-i18n="controller.soundTypeTick" value="tick">
-                      ⏱️ Tick
-                    </option>
-                    <option data-i18n="controller.soundTypeTone" value="tone">
-                      🎹 Tone
-                    </option>
-                    <option data-i18n="controller.soundTypeClick" value="click">
-                      🖱️ Click
-                    </option>
-                    <option
-                      data-i18n="controller.soundTypeBounce"
-                      value="bounce"
-                    >
-                      🎾 Bounce
-                    </option>
-                    <option data-i18n="controller.soundTypeBeep" value="beep">
-                      📢 Beep
-                    </option>
-                  </select>
-                  <span class="select-arrow" aria-hidden="true">▾</span>
-                </div>
+            </div>
+            <!-- Controller monitor -->
+            <div id="controllerMonitorControl" class="sound-card__row">
+              <span class="sound-card__row-icon" aria-hidden="true">🖥️</span>
+              <div class="sound-card__row-text">
+                <span class="sound-card__row-title" data-i18n="controller.monitorSound">Controller audio</span>
+                <span class="sound-card__row-desc" data-i18n="controller.monitorDesc">Play sound on therapist's device</span>
               </div>
-              <div
-                id="controllerMonitorControl"
-                class="settings-row settings-row--divider"
-              >
-                <div class="settings-row__content">
-                  <span class="settings-row__icon" aria-hidden="true">🖥️</span>
-                  <div class="settings-row__text">
-                    <span
-                      data-i18n="controller.monitorSound"
-                      class="settings-row__title"
-                    ></span>
-                    <span
-                      class="settings-row__desc"
-                      data-i18n="controller.monitorDesc"
-                    ></span>
-                  </div>
-                </div>
-                <label class="toggle-switch">
-                  <input id="controllerMonitorCheckbox" type="checkbox" />
-                  <span class="slider round"></span>
-                </label>
-              </div>
-              <div
-                id="controllerVolumeControl"
-                class="settings-row settings-row--volume"
-              >
-                <span class="settings-row__icon volume-icon" aria-hidden="true"
-                  >🔈</span
-                >
-                <span
-                  data-i18n="controller.volumeLabel"
-                  class="settings-row__label--compact"
-                ></span>
-                <input
-                  id="controllerVolumeSlider"
-                  max="100"
-                  min="0"
-                  class="settings-volume-slider"
-                  type="range"
-                  value="50"
-                />
-                <span id="controllerVolumeValue" class="settings-volume-value"
-                  >50%</span
-                >
-              </div>
-              <div
-                class="viewer-audio-indicator hidden"
-                id="viewerAudioIndicator"
-              >
-                <span class="icon">🔊</span>
-                <span
-                  data-i18n="controller.viewerSoundOff"
-                  id="viewerAudioText"
-                ></span>
-              </div>
+              <label class="sound-toggle sound-toggle--sm">
+                <input id="controllerMonitorCheckbox" type="checkbox">
+                <span class="sound-toggle__track"><span class="sound-toggle__thumb"></span></span>
+              </label>
+            </div>
+            <!-- Volume -->
+            <div id="controllerVolumeControl" class="sound-card__row sound-card__row--vol">
+              <span class="sound-card__row-icon" aria-hidden="true">🔈</span>
+              <span class="sound-card__vol-label" data-i18n="controller.volumeLabel">Volume</span>
+              <input id="controllerVolumeSlider" type="range" min="0" max="100" value="50" class="sound-card__slider">
+              <span id="controllerVolumeValue" class="sound-card__vol-val">50%</span>
+            </div>
+            <!-- Viewer audio indicator -->
+            <div class="viewer-audio-indicator hidden" id="viewerAudioIndicator">
+              <span class="icon">🔊</span>
+              <span data-i18n="controller.viewerSoundOff" id="viewerAudioText"></span>
             </div>
           </div>
         </section>
 
-        <details class="presets-details" open>
-          <summary>
-            <span data-i18n="controller.presetsTitle">🎯 Presets</span>
-          </summary>
-          <div id="presetControls"></div>
-        </details>
       </div>
 
       <!-- CENTER COLUMN: session + preview -->
@@ -878,29 +793,141 @@
           <div id="speedControl"></div>
         </div>
 
-        <!-- Hotkeys -->
-        <div class="controls-card">
-          <p class="controls-title" data-i18n="controller.hotkeysTitle">
-            ⌨️ Hotkeys
-          </p>
-          <div class="hotkey-info">
-            <div>
-              <kbd data-i18n="controller.hotkeySpaceKey">Space</kbd>
-              <span data-i18n="controller.hotkeySpaceAction">— Start/Stop</span>
-            </div>
-            <div>
-              <kbd>↑↓←→</kbd>
-              <span data-i18n="controller.hotkeyArrowsAction"
-                >— Direction control</span
-              >
-            </div>
-          </div>
-        </div>
+        <!-- Presets -->
+        <section class="control-section" aria-labelledby="presets-heading">
+          <h3 id="presets-heading" data-i18n="controller.presetsTitle">🎯 Presets</h3>
+          <div id="presetControls"></div>
+        </section>
+
       </div>
     </main>
+    <!-- ===== SETTINGS MODAL ===== -->
+    <div id="settingsModal" class="smodal" role="dialog" aria-modal="true" aria-labelledby="smodal-title" hidden>
+      <div class="smodal__overlay" id="smodalOverlay"></div>
+      <div class="smodal__dialog">
+        <aside class="smodal__sidebar">
+          <h2 id="smodal-title" class="smodal__sidebar-title">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span data-i18n="controller.settingsHeading">Settings</span>
+          </h2>
+          <nav class="smodal__nav" role="tablist">
+            <button class="smodal__tab active" role="tab" aria-selected="true" data-tab="sound" aria-controls="smodal-panel-sound">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <span data-i18n="controller.settingsTabSound">Sound</span>
+            </button>
+            <button class="smodal__tab" role="tab" aria-selected="false" data-tab="shortcuts" aria-controls="smodal-panel-shortcuts">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+              <span data-i18n="controller.settingsTabShortcuts">Shortcuts</span>
+            </button>
+            <button class="smodal__tab" role="tab" aria-selected="false" data-tab="language" aria-controls="smodal-panel-language">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span data-i18n="controller.settingsTabLanguage">Language</span>
+            </button>
+          </nav>
+        </aside>
+
+        <div class="smodal__content">
+          <!-- SOUND PANEL (mirrors left-col controls) -->
+          <section class="smodal__panel" id="smodal-panel-sound" role="tabpanel">
+            <h3 class="smodal__panel-title" data-i18n="controller.settingsTabSound">Sound</h3>
+            <div class="controls-card settings-card">
+              <div class="settings-row settings-row--toggle">
+                <div class="settings-row__content">
+                  <span class="settings-row__icon" aria-hidden="true">🔊</span>
+                  <div class="settings-row__text">
+                    <span data-i18n="controller.enableSound" class="settings-row__title"></span>
+                    <span class="settings-row__desc" data-i18n="controller.soundDesc"></span>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" data-mirror="soundEnabledCheckbox">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+              <div class="settings-row settings-row--select">
+                <label data-i18n="controller.soundTypeLabel" class="settings-row__label"></label>
+                <div class="select-wrapper">
+                  <select data-mirror="soundTypeSelect" class="settings-select">
+                    <option value="soft" data-i18n="controller.soundTypeSoft">🎵 Soft (EMDR)</option>
+                    <option value="tick" data-i18n="controller.soundTypeTick">⏱️ Tick</option>
+                    <option value="tone" data-i18n="controller.soundTypeTone">🎹 Tone</option>
+                    <option value="click" data-i18n="controller.soundTypeClick">🖱️ Click</option>
+                    <option value="bounce" data-i18n="controller.soundTypeBounce">🎾 Bounce</option>
+                    <option value="beep" data-i18n="controller.soundTypeBeep">📢 Beep</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true">▾</span>
+                </div>
+              </div>
+              <div class="settings-row settings-row--divider">
+                <div class="settings-row__content">
+                  <span class="settings-row__icon" aria-hidden="true">🖥️</span>
+                  <div class="settings-row__text">
+                    <span data-i18n="controller.monitorSound" class="settings-row__title"></span>
+                    <span class="settings-row__desc" data-i18n="controller.monitorDesc"></span>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" data-mirror="controllerMonitorCheckbox">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+              <div class="settings-row settings-row--volume">
+                <span class="settings-row__icon volume-icon" aria-hidden="true">🔈</span>
+                <span data-i18n="controller.volumeLabel" class="settings-row__label--compact"></span>
+                <input type="range" min="0" max="100" value="50" class="settings-volume-slider" data-mirror="controllerVolumeSlider">
+                <span class="settings-volume-value" data-mirror-display="controllerVolumeValue">50%</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- SHORTCUTS PANEL -->
+          <section class="smodal__panel smodal__panel--hidden" id="smodal-panel-shortcuts" role="tabpanel">
+            <h3 class="smodal__panel-title" data-i18n="controller.settingsTabShortcuts">Keyboard Shortcuts</h3>
+            <div class="smodal__shortcuts-list">
+              <div class="smodal__shortcut-row">
+                <kbd class="smodal__kbd" data-i18n="controller.hotkeySpaceKey">Space</kbd>
+                <span data-i18n="controller.hotkeySpaceAction">— Start / Stop</span>
+              </div>
+              <div class="smodal__shortcut-row">
+                <kbd class="smodal__kbd">↑↓←→</kbd>
+                <span data-i18n="controller.hotkeyArrowsAction">— Direction control</span>
+              </div>
+              <div class="smodal__shortcut-row">
+                <kbd class="smodal__kbd" data-i18n="controller.hotkeyFKey">F</kbd>
+                <span data-i18n="controller.hotkeyFAction">— Fullscreen</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- LANGUAGE PANEL -->
+          <section class="smodal__panel smodal__panel--hidden" id="smodal-panel-language" role="tabpanel">
+            <h3 class="smodal__panel-title" data-i18n="controller.settingsTabLanguage">Language</h3>
+            <div class="smodal__lang-grid" id="smodalLangGrid">
+              <button class="smodal__lang-btn" data-lang="ru">🇷🇺 Русский</button>
+              <button class="smodal__lang-btn" data-lang="en">🇬🇧 English</button>
+              <button class="smodal__lang-btn" data-lang="de">🇩🇪 Deutsch</button>
+              <button class="smodal__lang-btn" data-lang="fr">🇫🇷 Français</button>
+              <button class="smodal__lang-btn" data-lang="es">🇪🇸 Español</button>
+              <button class="smodal__lang-btn" data-lang="pt">🇵🇹 Português</button>
+              <button class="smodal__lang-btn" data-lang="ja">🇯🇵 日本語</button>
+              <button class="smodal__lang-btn" data-lang="zh">🇨🇳 中文</button>
+            </div>
+          </section>
+        </div>
+
+        <button class="smodal__close" id="smodalClose" aria-label="Close settings">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <script src="/js/ui/settings-modal.js" defer></script>
     <script src="/js/ui/error-states.js" defer></script>
     <script src="/js/ui/success-toast.js" defer></script>
     <script src="/js/ui/notifications/notification-system.js" defer></script>
-    <script src="/dist/controller.bundle.js?v=2.39.623-3b737ed7" defer></script>
+    <script src="/dist/controller.bundle.js?v=2.39.656-af3d54b7" defer></script>
   </body>
 </html>

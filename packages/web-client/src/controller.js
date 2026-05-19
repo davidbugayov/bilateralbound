@@ -17,6 +17,7 @@ require('./ui/shared-components')
 require('./network/websocket-client')
 require('./network/realtime-client')
 require('./network/csrf')
+require('./ui/controller-settings')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const _PreviewManager = require('./application/controller/preview-manager')
@@ -249,6 +250,14 @@ function handleFullscreenKeydown(e) {
     e.preventDefault()
     e.stopPropagation()
     closePreviewFullscreen()
+  } else if (key === 'f' && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (isPreviewFullscreen) {
+      closePreviewFullscreen()
+    } else {
+      openPreviewFullscreen()
+    }
   }
 }
 function handlePopState() {
@@ -367,16 +376,6 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       }, 5000)
     }
     updateConnectionStatus(true)
-    // Lazy-load non-critical modules after connection established
-    if (!event?.isReconnection && !globalThis.__nonCriticalLoaded) {
-      globalThis.__nonCriticalLoaded = true
-      const s = document.createElement('script')
-      s.src =
-        '/js/controller-settings.js?v=' +
-        (document.querySelector('meta[name="version"]')?.content || '')
-      s.defer = true
-      document.body.appendChild(s)
-    }
     // Sync current language to session so viewer gets the same locale
     const currentLang = localStorage.getItem('emdr-language')
     if (currentLang && sessionId) {
@@ -1267,13 +1266,12 @@ async function initializePreview() {
   if (!canvas) {
     return
   }
-  // Default drawing buffer: 800x400 (2:1 aspect ratio matches CSS).
-  // Both canvas and world size must be identical to avoid scaling distortion.
+  // Default drawing buffer: 500x250 (2:1) — explicit style to prevent CSS stretching.
   // When viewer connects, buffer is resized to match viewer's actual dimensions.
-  canvas.width = 800
-  canvas.height = 400
-  canvas.style.width = ''
-  canvas.style.height = ''
+  canvas.width = 500
+  canvas.height = 250
+  canvas.style.width = '500px'
+  canvas.style.height = '250px'
   try {
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
@@ -1333,20 +1331,21 @@ function showWaitingForViewer() {
       '⏳ Waiting for viewer connection'
     viewerInfo.classList.remove('hidden')
   }
-  // Set canvas to wider default size (800x400 = 2:1 aspect ratio to match CSS).
-  // This makes preview look like a real screen while waiting for viewer.
-  // Both canvas dimensions and world size must be identical to avoid scaling.
+  // Compact preview while waiting for viewer — 500x250 with smaller ball
   const canvas = document.getElementById('preview')
   if (canvas) {
-    canvas.width = 800
-    canvas.height = 400
-    canvas.style.width = ''
-    canvas.style.height = ''
+    canvas.width = 500
+    canvas.height = 250
+    canvas.style.width = '500px'
+    canvas.style.height = '250px'
     if (previewPhysicsEngine) {
-      previewPhysicsEngine.setWorldSize(800, 400)
-      previewPhysicsEngine.setPosition(400, 200)
+      previewPhysicsEngine.setWorldSize(500, 250)
+      previewPhysicsEngine.setPosition(250, 125)
       previewPhysicsEngine.setVelocity(0, 0)
       previewPhysicsEngine.setPaused(true)
+      if (previewPhysicsEngine.ball) {
+        previewPhysicsEngine.ball.radius = 12
+      }
     }
   }
 }
@@ -2106,6 +2105,33 @@ function closePreviewFullscreen() {
   overlay.style.display = 'none'
   isPreviewFullscreen = false
   document.body.classList.remove('fullscreen-active')
+  // Restore preview to correct size after fullscreen
+  const canvas = document.getElementById('preview')
+  const vs = globalThis.__current?.viewerScreenSize
+  if (canvas) {
+    if (vs && vs.width > 0 && vs.height > 0) {
+      const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, vs)
+      setCanvasDimensions(canvas, previewWidth, previewHeight)
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setWorldSize(vs.width, vs.height)
+      }
+    } else {
+      canvas.width = 500
+      canvas.height = 250
+      canvas.style.width = '500px'
+      canvas.style.height = '250px'
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setWorldSize(500, 250)
+      }
+    }
+    if (previewPhysicsEngine) {
+      const cx = previewPhysicsEngine.options.worldWidth / 2
+      const cy = previewPhysicsEngine.options.worldHeight / 2
+      previewPhysicsEngine.setPosition(cx, cy)
+      previewPhysicsEngine.setVelocity(0, 0)
+      previewPhysicsEngine.setPaused(true)
+    }
+  }
 }
 function resizePreviewFullscreen() {
   if (!previewFsCanvas) return

@@ -35,7 +35,7 @@ class SharedComponents {
         if (defaultOptions.simple) {
           speedControl.innerHTML = `
   <div class="speed-info">
-  ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></div>` : ''}
+  ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${(() => { const v = globalThis.i18n?.t('controller.speedMedium'); return v && v !== 'controller.speedMedium' ? v : 'Medium' })()}</span></div>` : ''}
   </div>
   <div class="speed-slider-container">
   <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
@@ -53,7 +53,7 @@ class SharedComponents {
   <div class="speed-header">
   <div class="speed-icon">⚡</div>
   <div class="speed-info">
-  ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></div>` : ''}
+  ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${(() => { const v = globalThis.i18n?.t('controller.speedMedium'); return v && v !== 'controller.speedMedium' ? v : 'Medium' })()}</span></div>` : ''}
   </div>
   <div class="speed-indicator">
   <div class="speed-bar">
@@ -63,9 +63,9 @@ class SharedComponents {
   </div>
   <div class="speed-controls">
   <div class="speed-presets">
-  <button class="speed-preset slow" data-speed="20">🐌<span>${globalThis.i18n?.t('controller.speedSlow') || 'Slow'}</span></button>
-  <button class="speed-preset normal active" data-speed="40">⚡<span>${globalThis.i18n?.t('controller.speedMedium') || 'Medium'}</span></button>
-  <button class="speed-preset fast" data-speed="80">🚀<span>${globalThis.i18n?.t('controller.speedFast') || 'Fast'}</span></button>
+  <button class="speed-preset slow" data-speed="20">🐌<span>${(() => { const v = globalThis.i18n?.t('controller.speedSlow'); return v && v !== 'controller.speedSlow' ? v : 'Slow' })()}</span></button>
+  <button class="speed-preset normal active" data-speed="40">⚡<span>${(() => { const v = globalThis.i18n?.t('controller.speedMedium'); return v && v !== 'controller.speedMedium' ? v : 'Medium' })()}</span></button>
+  <button class="speed-preset fast" data-speed="80">🚀<span>${(() => { const v = globalThis.i18n?.t('controller.speedFast'); return v && v !== 'controller.speedFast' ? v : 'Fast' })()}</span></button>
   </div>
   <div class="speed-slider-container">
   <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
@@ -165,7 +165,7 @@ class SharedComponents {
         }
       },
       _getSpeedCategoryAndColor(speed) {
-        const t = (key) => globalThis.i18n?.t(key) || key
+        const t = (key) => { const v = globalThis.i18n?.t(key); return v && v !== key ? v : key }
         if (speed <= 15) {
           return { category: t('controller.speedVerySlow'), color: '#22c55e' }
         }
