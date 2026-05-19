@@ -627,6 +627,28 @@ const TRANSLATIONS = {
     pt: 'Ativar/desativar renovação automática',
     ja: '自動更新のオン/オフ切り替え',
     zh: '开启/关闭自动续费'
+  },
+  cmd_myid: {
+    en: 'Get your Telegram User ID',
+    ru: 'Узнать свой Telegram User ID',
+    es: 'Obtener tu Telegram User ID',
+    fr: 'Obtenir votre Telegram User ID',
+    de: 'Deine Telegram-Nutzer-ID abrufen',
+    pt: 'Obter seu Telegram User ID',
+    ja: 'TelegramユーザーIDを取得',
+    zh: '获取您的Telegram用户ID'
+  },
+
+  // ── /myid ──
+  myid_response: {
+    en: '📋 <b>Your Telegram User ID</b>\n\n<code>{userId}</code>\n\nUse this ID in the Subscription Management section on the website to link your subscription.',
+    ru: '📋 <b>Ваш Telegram User ID</b>\n\n<code>{userId}</code>\n\nИспользуйте этот ID в разделе «Manage Subscription» на сайте, чтобы привязать подписку.',
+    es: '📋 <b>Tu Telegram User ID</b>\n\n<code>{userId}</code>\n\nUsa este ID en la sección «Manage Subscription» del sitio para vincular tu suscripción.',
+    fr: '📋 <b>Votre Telegram User ID</b>\n\n<code>{userId}</code>\n\nUtilisez cet ID dans la section « Manage Subscription » du site pour lier votre abonnement.',
+    de: '📋 <b>Deine Telegram-Nutzer-ID</b>\n\n<code>{userId}</code>\n\nVerwende diese ID im Bereich «Manage Subscription» auf der Website, um dein Abonnement zu verknüpfen.',
+    pt: '📋 <b>Seu Telegram User ID</b>\n\n<code>{userId}</code>\n\nUse este ID na seção «Manage Subscription» do site para vincular sua assinatura.',
+    ja: '📋 <b>あなたのTelegramユーザーID</b>\n\n<code>{userId}</code>\n\nサイトの「Manage Subscription」セクションでこのIDを使用してサブスクリプションをリンクしてください。',
+    zh: '📋 <b>您的Telegram用户ID</b>\n\n<code>{userId}</code>\n\n在网站的「Manage Subscription」部分使用此ID来链接您的订阅。'
   }
 }
 
@@ -706,7 +728,8 @@ function getCommandsForLang(lang) {
     { command: 'start', description: t('cmd_start', lang) },
     { command: 'status', description: t('cmd_status', lang) },
     { command: 'renew', description: t('cmd_renew', lang) },
-    { command: 'autorenew', description: t('cmd_autorenew', lang) }
+    { command: 'autorenew', description: t('cmd_autorenew', lang) },
+    { command: 'myid', description: t('cmd_myid', lang) }
   ]
 }
 

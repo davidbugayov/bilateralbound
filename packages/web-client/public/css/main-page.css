@@ -725,7 +725,7 @@ body.light-theme {
 
 .hub-manage__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 14px;
 }
 
@@ -781,6 +781,27 @@ body.light-theme {
   color: var(--mp-muted);
   margin: 0 0 8px;
   line-height: 1.5;
+}
+
+.hub-activation-inline__hint {
+  font-size: 0.7rem;
+  color: var(--mp-cyan);
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
+.hub-activation-inline__hint code {
+  font-size: 0.75rem;
+  background: rgb(59 130 246 / 10%);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--mp-text);
+}
+
+.hub-activation-inline__hint a {
+  color: var(--mp-cyan);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ── Status Display ── */

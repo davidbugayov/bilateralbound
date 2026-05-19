@@ -440,6 +440,14 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         telegramBot?.sendMessage(chatId, arMsg)
         return
       }
+
+      // ---- /myid — show user's Telegram User ID ----
+      if (msgText === '/myid') {
+        const telegramUserId = from.id
+        const myIdMsg = t('myid_response', lang, { userId: String(telegramUserId) })
+        telegramBot?.sendMessage(chatId, myIdMsg)
+        return
+      }
     }
 
     // ---- callback_query — handle inline keyboard button clicks ----
