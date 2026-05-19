@@ -158,25 +158,30 @@
       opacity: 0;
     }
 
-    /* Кнопка сайта — аккуратная пилюля справа снизу */
-    .site-pill {
+    /* Кнопки сайтов — пилюли справа снизу */
+    .site-pills {
       position: absolute;
       bottom: max(6.5rem, calc(env(safe-area-inset-bottom, 1rem) + 5.5rem));
       right: 0.9rem;
-      padding: 0.35rem 0.9rem;
+      display: flex;
+      gap: 0.4rem;
+      z-index: 10;
+      pointer-events: auto;
+    }
+    .site-pill {
+      padding: 0.35rem 0.75rem;
       border: 1px solid rgba(255,255,255,0.10);
       border-radius: 50px;
       background: rgba(255,255,255,0.04);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       color: rgba(255,255,255,0.45);
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       font-weight: 400;
       letter-spacing: 0.02em;
       cursor: pointer;
-      pointer-events: auto;
-      z-index: 10;
       transition: all 0.25s ease;
+      white-space: nowrap;
     }
     .site-pill:hover,
     .site-pill:active {
@@ -206,7 +211,10 @@
     🦋 Скрести руки на груди, тапай плечи в ритм круга
   </div>
 
-  <button class="site-pill" id="siteBtnTop">🌐 emdrbilateral.online</button>
+  <div class="site-pills">
+    <button class="site-pill" id="siteBtnOnline">🌐 .online</button>
+    <button class="site-pill" id="siteBtnRu">🌐 .ru</button>
+  </div>
 
   <div class="controls">
     <button class="btn btn-primary" id="startBtn">🌬️ Начать</button>
@@ -224,7 +232,8 @@
       const timerDisplay = document.getElementById('timerDisplay')
       const cycleCounter = document.getElementById('cycleCounter')
       const startBtn = document.getElementById('startBtn')
-      const siteBtnTop = document.getElementById('siteBtnTop')
+      const siteBtnOnline = document.getElementById('siteBtnOnline')
+      const siteBtnRu = document.getElementById('siteBtnRu')
       const guideOverlay = document.getElementById('guideOverlay')
       const durationBtns = document.querySelectorAll('.duration-btn')
 
@@ -408,14 +417,22 @@
         })
       })
 
-      siteBtnTop.addEventListener('click', function() {
+      function goToSite(url) {
         if (engine.running) engine.stop()
         if (tg) {
-          tg.openLink('https://emdrbilateral.online')
+          tg.openLink(url)
           tg.close()
         } else {
-          window.location.href = 'https://emdrbilateral.online'
+          window.location.href = url
         }
+      }
+
+      siteBtnOnline.addEventListener('click', function() {
+        goToSite('https://emdrbilateral.online')
+      })
+
+      siteBtnRu.addEventListener('click', function() {
+        goToSite('https://emdrbilateral.ru')
       })
 
       // Engine callbacks
