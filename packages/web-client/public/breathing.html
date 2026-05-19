@@ -158,24 +158,26 @@
       opacity: 0;
     }
 
-    /* Кнопка закрытия (Telegram Back) */
-    .close-btn {
+    /* Кнопка «На сайт» — всегда видна */
+    .site-btn-top {
       position: absolute;
       top: max(1rem, env(safe-area-inset-top, 1rem));
       right: 1rem;
-      width: 36px;
-      height: 36px;
-      border: none;
-      border-radius: 50%;
+      padding: 0.5rem 1.2rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50px;
       background: rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.5);
-      font-size: 1.2rem;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       pointer-events: auto;
       z-index: 10;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: all 0.2s;
+    }
+    .site-btn-top:active {
+      transform: scale(0.95);
     }
   </style>
 </head>
@@ -201,10 +203,9 @@
 
   <div class="controls">
     <button class="btn btn-primary" id="startBtn">🌬️ Начать</button>
-    <button class="btn btn-secondary" id="siteBtn" style="display:none">🌐 На сайт</button>
   </div>
 
-  <button class="close-btn" id="closeBtn">✕</button>
+  <button class="btn btn-secondary site-btn-top" id="siteBtnTop">🌐 На сайт</button>
 
   <script src="/js/breathing/breathing-engine.js"></script>
   <script>
@@ -218,7 +219,7 @@
       const timerDisplay = document.getElementById('timerDisplay')
       const cycleCounter = document.getElementById('cycleCounter')
       const startBtn = document.getElementById('startBtn')
-      const closeBtn = document.getElementById('closeBtn')
+      const siteBtnTop = document.getElementById('siteBtnTop')
       const guideOverlay = document.getElementById('guideOverlay')
       const durationBtns = document.querySelectorAll('.duration-btn')
 
@@ -402,9 +403,10 @@
         })
       })
 
-      closeBtn.addEventListener('click', function() {
+      siteBtnTop.addEventListener('click', function() {
         if (engine.running) engine.stop()
         if (tg) {
+          tg.openLink('https://emdrbilateral.ru')
           tg.close()
         } else {
           window.location.href = 'https://emdrbilateral.ru'
@@ -425,23 +427,14 @@
         enableDurationButtons()
         guideOverlay.classList.remove('hidden')
         guideOverlay.textContent = '✅ Сессия завершена'
-        siteBtn.style.display = 'inline-block'
         setTimeout(function() {
           startBtn.textContent = '🌬️ Начать'
           startBtn.style.background = ''
           startBtn.style.borderColor = ''
           startBtn.style.display = ''
-          siteBtn.style.display = 'none'
           guideOverlay.textContent = '🦋 Скрести руки на груди, тапай плечи в ритм круга'
         }, 5000)
       }
-
-      siteBtn.addEventListener('click', function() {
-        if (tg) {
-          tg.close()
-        }
-        window.open('https://emdrbilateral.ru', '_blank')
-      })
 
       // ── Init ──
       drawIdle()
