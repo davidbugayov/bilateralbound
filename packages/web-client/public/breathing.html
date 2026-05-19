@@ -142,13 +142,13 @@
       pointer-events: none;
     }
 
-    /* Кнопки сайтов — пилюли сверху справа */
+    /* Кнопки сайтов — пилюли сверху слева */
     .site-pills {
       position: absolute;
       top: max(0.6rem, env(safe-area-inset-top, 0.5rem));
-      right: 0.7rem;
+      left: 0.7rem;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 0.3rem;
       z-index: 10;
       pointer-events: auto;
@@ -528,8 +528,7 @@
       function goToSite(url) {
         if (engine.running) engine.stop()
         if (tg) {
-          tg.openLink(url)
-          tg.close()
+          tg.openLink(url, { try_instant_view: false })
         } else {
           window.location.href = url
         }
