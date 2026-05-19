@@ -849,32 +849,9 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
   background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%) !important;
   border: none !important;
   border-radius: 14px !important;
-  animation: sessionBtnGlow 2.4s ease-in-out infinite;
   transition:
     transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
     box-shadow 0.2s ease !important;
-  position: relative;
-  overflow: hidden;
-}
-
-.session-start-btn::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(255 255 255 / 20%),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.session-start-btn:hover::before {
-  left: 100%;
 }
 
 .session-start-btn:hover {
@@ -1135,6 +1112,7 @@ main.controls-locked #previewFsPanel #fsPlayPauseBtn {
 }
 
 /* Presets as collapsible <details> */
+
 /* Presets section is now a plain <section>, no collapsible */
 
 /* === Preset Cards === */
@@ -1898,8 +1876,8 @@ body {
     rgb(139 92 246 / 25%) 45%,
     transparent 70%
   );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
   transition: opacity 0.3s;
@@ -1953,6 +1931,7 @@ body {
   --tw: 44px;
   --th: 24px;
   --tb: 18px;
+
   position: relative;
   display: inline-block;
   width: var(--tw);
@@ -2228,6 +2207,7 @@ body {
 .light-theme .sound-card__row-desc { color: #94a3b8; }
 .light-theme .sound-card__label { color: #94a3b8; }
 .light-theme .sound-card__vol-label { color: #64748b; }
+
 .light-theme .sound-card__select {
   background: #fff;
   border-color: #e2e8f0;
@@ -2238,6 +2218,7 @@ body {
 .light-theme .sound-card .viewer-audio-indicator { background: rgb(234 179 8 / 10%); border-top-color: rgb(0 0 0 / 6%); }
 
 /* ── Viewer audio status ── */
+
 /* viewer-audio-indicator inside left-col settings card */
 .controller-left-col .viewer-audio-indicator {
   padding: 10px 14px;
@@ -2994,11 +2975,6 @@ body {
 }
 
 /* ── Illustration accordion ── */
-@keyframes illus-shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
 .illus-accordion {
   width: 100%;
   border: 1px solid rgb(255 255 255 / 8%);
@@ -3030,30 +3006,6 @@ body {
   cursor: pointer;
   user-select: none;
   list-style: none;
-  position: relative;
-  overflow: hidden;
-}
-
-/* shimmer sweep on hover — magic-ui inspired */
-.illus-accordion__summary::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgb(255 255 255 / 6%) 50%,
-    transparent 60%
-  );
-  background-size: 200% 100%;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-
-.illus-accordion:hover .illus-accordion__summary::before {
-  opacity: 1;
-  animation: illus-shimmer 1.4s ease infinite;
 }
 
 .illus-accordion__summary::-webkit-details-marker {
@@ -3495,25 +3447,6 @@ body {
 }
 
 /* ── Infinity direction button ── */
-.dir-infinity-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-.dir-infinity-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgb(96 165 250 / 20%), transparent);
-  transform: translateX(-100%);
-  animation: infinity-shimmer 2.4s ease-in-out infinite;
-}
-
-@keyframes infinity-shimmer {
-  0%   { transform: translateX(-100%); }
-  50%  { transform: translateX(100%); }
-  100% { transform: translateX(100%); }
-}
 
 /* ── Position section ── */
 .pos-btns {

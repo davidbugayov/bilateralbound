@@ -21,9 +21,25 @@ server {
     resolver_timeout 5s;
 
     add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
-    add_header X-Frame-Options DENY;
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header Content-Security-Policy "frame-ancestors 'self' https://webvisor.com https://yandex.ru https://metrika.yandex.ru";
     add_header X-Content-Type-Options nosniff;
     add_header X-XSS-Protection "1; mode=block";
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_types text/css application/javascript text/javascript application/json image/svg+xml;
+    gzip_min_length 512;
+    gzip_comp_level 5;
+
+    # Long cache for versioned assets (cache-busting via ?v=)
+    location ~* \.(css|js|svg|png|ico|woff2)$ {
+        root /var/www/bilateralbound-prod/packages/web-client/public;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
 
     # Serve static files from web-client package
     root /var/www/bilateralbound-prod/packages/web-client/public;
@@ -47,6 +63,23 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # SSE endpoint — real-time session events, MUST disable buffering
+    location ~ ^/api/session/[^/]+/events$ {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Connection '';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Cache-Control 'no-cache';
+        proxy_set_header X-Accel-Buffering 'no';
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
     }
 
     # API routes to server-core
@@ -82,6 +115,27 @@ server {
     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384;
     ssl_prefer_server_ciphers off;
 
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header Content-Security-Policy "frame-ancestors 'self' https://webvisor.com https://yandex.ru https://metrika.yandex.ru";
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_types text/css application/javascript text/javascript application/json image/svg+xml;
+    gzip_min_length 512;
+    gzip_comp_level 5;
+
+    # Long cache for versioned assets
+    location ~* \.(css|js|svg|png|ico|woff2)$ {
+        root /var/www/bilateralbound-prod/packages/web-client/public;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
     # Serve static files from web-client package
     root /var/www/bilateralbound-prod/packages/web-client/public;
     try_files $uri $uri/ @proxy;
@@ -104,6 +158,23 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # SSE endpoint — real-time session events
+    location ~ ^/api/session/[^/]+/events$ {
+        proxy_pass http://localhost:3004;
+        proxy_http_version 1.1;
+        proxy_set_header Connection '';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Cache-Control 'no-cache';
+        proxy_set_header X-Accel-Buffering 'no';
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
     }
 
     # API routes to server-core
