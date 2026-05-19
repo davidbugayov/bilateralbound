@@ -157,6 +157,33 @@
     .guide-overlay.hidden {
       opacity: 0;
     }
+
+    /* Кнопка сайта — аккуратная пилюля слева сверху */
+    .site-pill {
+      position: absolute;
+      top: max(0.8rem, env(safe-area-inset-top, 0.8rem));
+      left: 0.9rem;
+      padding: 0.35rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 50px;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: rgba(255,255,255,0.45);
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      pointer-events: auto;
+      z-index: 10;
+      transition: all 0.25s ease;
+    }
+    .site-pill:hover,
+    .site-pill:active {
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.8);
+      border-color: rgba(255,255,255,0.25);
+    }
   </style>
 </head>
 <body>
@@ -179,9 +206,10 @@
     🦋 Скрести руки на груди, тапай плечи в ритм круга
   </div>
 
+  <button class="site-pill" id="siteBtnTop">🌐 emdrbilateral.online</button>
+
   <div class="controls">
     <button class="btn btn-primary" id="startBtn">🌬️ Начать</button>
-    <button class="btn btn-secondary" id="siteBtnTop">🌐 emdrbilateral.online</button>
   </div>
 
   <script src="/js/breathing/breathing-engine.js"></script>
