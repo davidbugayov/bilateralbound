@@ -46,7 +46,8 @@ function csrfProtection(req, res, next) {
     req.path === '/health' ||
     req.path === '/api/analytics' ||
     url.includes('/reserve') ||
-    url.includes('/api/subscription/webhook')
+    url.includes('/api/subscription/webhook') ||
+    url.includes('/api/admin/')
   ) {
     return next()
   }

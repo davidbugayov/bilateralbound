@@ -108,7 +108,8 @@ registerSubscriptionRoutes(app, subscriptionService, {
   logger,
   telegramBot,
   priceStars: config.subscription.PRICE_STARS,
-  testMode: config.subscription.TEST_MODE
+  testMode: config.subscription.TEST_MODE,
+  baseUrl: config.server.PUBLIC_URL || ''
 })
 
 registerViewerRoutes(

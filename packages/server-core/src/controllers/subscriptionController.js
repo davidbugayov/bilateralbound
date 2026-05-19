@@ -13,7 +13,7 @@
 
 const { t, siteUrl, dateLocale, autoRenewText } = require('../services/bot-translations')
 
-function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, priceStars, testMode }) {
+function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, priceStars, testMode, baseUrl }) {
   const STARS_PRICE = priceStars || 75
   if (!subscriptionService) {
     logger.warn('SubscriptionService not provided — subscription routes disabled')
@@ -441,6 +441,29 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         return
       }
 
+                  // ---- /breathe — launch coherent breathing Mini App ----
+      if (msgText === '/breathe') {
+        const bUrl = baseUrl || 'https://emdrbilateral.online'
+        const webAppUrl = bUrl + '/breathing'
+
+        telegramBot?.sendMessage(chatId,
+          '🌬 <b>Когерентное дыхание</b>\n\n' +
+          'Вдох 5с / Выдох 5с — оптимальный ритм для успокоения нервной системы.\n\n' +
+          '🦋 Скрести руки на груди (Butterfly Hug) и дыши в ритм анимации.',
+          {
+            reply_markup: {
+              inline_keyboard: [[
+                {
+                  text: '🌬 Открыть сессию дыхания',
+                  web_app: { url: webAppUrl }
+                }
+              ]]
+            }
+          }
+        )
+        return
+      }
+
       // ---- /myid — show user's Telegram User ID ----
       if (msgText === '/myid') {
         const telegramUserId = from.id
@@ -561,6 +584,43 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   })
 
   // ------------------------------------------------------------------
+  // ------------------------------------------------------------------
+  // POST /api/admin/set-commands
+  // Force-update the bot command list without restart
+  // ------------------------------------------------------------------
+  app.post("/api/admin/set-commands", (req, res) => {
+    const remoteAddr = req.socket?.remoteAddress
+    const isLocal = remoteAddr === "127.0.0.1" || remoteAddr === "::1" || remoteAddr === "::ffff:127.0.0.1"
+    if (!isLocal && !testMode) {
+      return res.status(403).json({ error: "Localhost only" })
+    }
+    if (!telegramBot) {
+      return res.status(400).json({ error: "Telegram bot not configured" })
+    }
+    const { SUPPORTED_LANGUAGES } = require("../services/bot-translations")
+    let results = []
+    // Step 1: set English as the default (no language_code) — applies to all users
+    telegramBot.setMyCommands('en')
+      .then(ok => results.push({ lang: 'en_default', ok }))
+      .catch(() => results.push({ lang: 'en_default', ok: false }))
+      .then(() => {
+        // Step 2: set language-specific overrides (with language_code)
+        return Promise.all(SUPPORTED_LANGUAGES.filter(l => l !== 'en').map(lang =>
+          telegramBot.setMyCommands(lang)
+            .then(ok => { results.push({ lang, ok }); return ok })
+            .catch(() => { results.push({ lang, ok: false }) })
+        ))
+      })
+      .then(() => {
+        logger.info({ results }, "Admin: bot commands updated")
+        res.json({ success: true, results })
+      })
+      .catch(err => {
+        logger.error({ err }, "Admin: set commands error")
+        res.status(500).json({ error: err.message })
+      })
+  })
+
   // Auto-renew checker — runs every hour, sends invoices to users
   // with autoRenew=true whose subscription expires within 24 hours
   // ------------------------------------------------------------------
