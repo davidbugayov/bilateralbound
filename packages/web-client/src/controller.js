@@ -249,6 +249,14 @@ function handleFullscreenKeydown(e) {
     e.preventDefault()
     e.stopPropagation()
     closePreviewFullscreen()
+  } else if (key === 'f' && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (isPreviewFullscreen) {
+      closePreviewFullscreen()
+    } else {
+      openPreviewFullscreen()
+    }
   }
 }
 function handlePopState() {
