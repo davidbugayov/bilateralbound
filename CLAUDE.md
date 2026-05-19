@@ -51,12 +51,16 @@ npm run lint:fix         # ESLint with auto-fix
 npm run lint:css         # Stylelint for CSS
 npm run format           # Prettier
 
-# Deployment (requires DEPLOY_PASSWORD env var)
-npm run deploy:dev       # Pull main, build, restart dev server
-npm run deploy:prod      # Pull stable, build, restart prod (.online + .ru)
-npm run deploy:dev:logs  # Show dev service logs
-npm run deploy:prod:logs # Show prod service logs
-npm run deploy:dev:status  # Dev service status
+# Ship (push + deploy in one command)
+npm run ship:dev          # git push origin main + deploy to dev
+npm run ship:prod         # git push origin main + deploy to prod
+
+# Deploy only (without push)
+npm run deploy:dev        # Pull main, build, restart dev server
+npm run deploy:prod       # Pull stable, build, restart prod (.online + .ru)
+npm run deploy:dev:logs   # Show dev service logs
+npm run deploy:prod:logs  # Show prod service logs
+npm run deploy:dev:status # Dev service status
 npm run deploy:prod:status # Prod service status
 ```
 
@@ -161,10 +165,29 @@ Shared: `packages/shared/physics-engine.js` — deterministic 60Hz fixed-step ph
 
 **Setup**: Set `DEPLOY_PASSWORD` env var before deploying.
 
+**One-command ship** (push + deploy):
+- `npm run ship:dev` — `git push origin main` + deploy to dev
+- `npm run ship:prod` — `git push origin main` + deploy to prod
+
+**Deploy only** (without push):
 - Dev: `npm run deploy:dev` — pulls `main` branch, builds, restarts
 - Prod: `npm run deploy:prod` — pulls `stable` branch from both .online and .ru, builds, restarts
 - Logs: `npm run deploy:dev:logs` or `npm run deploy:prod:logs`
 - Status: `npm run deploy:dev:status` or `npm run deploy:prod:status`
+
+**Typical workflow — dev:**
+```bash
+git add <files>
+git commit -m "fix: ..."     # pre-commit hook auto-increments version
+npm run ship:dev             # push + deploy to dev
+```
+
+**Typical workflow — prod:**
+```bash
+git checkout stable && git merge main   # merge main into stable
+git push origin stable                  # push stable branch
+npm run ship:prod                       # push + deploy both .online and .ru
+```
 
 **All development on `main`**; prod branch `stable` updated manually when ready.
 
