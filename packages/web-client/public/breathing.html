@@ -142,6 +142,26 @@
       pointer-events: none;
     }
 
+    /* Кнопка Назад — левый верхний угол */
+    .back-link {
+      position: absolute;
+      top: max(0.4rem, env(safe-area-inset-top, 0.3rem));
+      left: 0.55rem;
+      color: rgba(255,255,255,0.25);
+      font-size: 0.6rem;
+      cursor: pointer;
+      z-index: 20;
+      text-decoration: none;
+      pointer-events: auto;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: color 0.25s;
+    }
+    .back-link:hover,
+    .back-link:active {
+      color: rgba(255,255,255,0.65);
+    }
+
     /* Незаметная ссылка на сайт — правый верхний угол */
     .site-link {
       position: absolute;
@@ -275,6 +295,7 @@
     <div class="cycle-counter" id="cycleCounter">0 циклов</div>
   </div>
 
+  <a class="back-link" href="/">← Назад</a>
   <a class="site-link" id="siteLink">↗ сайт</a>
 
   <div class="controls">
