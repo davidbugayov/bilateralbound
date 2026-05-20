@@ -152,53 +152,77 @@ const TRANSLATIONS = {
   // ── Already subscribed with renewal prompt (plain /start, has subscription) ──
   already_subscribed_renewal: {
     en: '✅ <b>Subscription already active!</b>\n\n' +
-        'Expires: {expDate}\n' +
-        'Clients: {clients}\n' +
-        '🔗 Add more clients on the website — enter any Custom ID and click Link\n\n' +
-        'Want to extend for another 30 days?\n' +
-        'Support the project by renewing your subscription 👇',
-    ru: '✅ <b>Подписка уже активна!</b>\n\n' +
-        'Истекает: {expDate}\n' +
-        'Клиентов: {clients}\n' +
-        '🔗 Добавляйте новых клиентов на сайте — введите Custom ID и нажмите Link\n\n' +
-        'Хотите продлить ещё на 30 дней?\n' +
-        'Поддержите проект — продлите подписку 👇',
-    es: '✅ <b>¡La suscripción ya está activa!</b>\n\n' +
-        'Vence: {expDate}\n' +
-        'Clientes: {clients}\n' +
-        '🔗 Añade más clientes en el sitio web — ingresa un Custom ID y haz clic en Link\n\n' +
-        '¿Quieres extender por otros 30 días?\n' +
-        'Apoya el proyecto renovando tu suscripción 👇',
-    fr: '✅ <b>L\'abonnement est déjà actif !</b>\n\n' +
-        'Expire le : {expDate}\n' +
-        'Clients : {clients}\n' +
-        '🔗 Ajoutez d\'autres clients sur le site — entrez un Custom ID et cliquez sur Link\n\n' +
-        'Vous voulez prolonger pour 30 jours ?\n' +
-        'Soutenez le projet en renouvelant votre abonnement 👇',
-    de: '✅ <b>Abonnement bereits aktiv!</b>\n\n' +
-        'Läuft ab: {expDate}\n' +
-        'Kunden: {clients}\n' +
-        '🔗 Fügen Sie weitere Kunden auf der Website hinzu — Custom ID eingeben und Link klicken\n\n' +
-        'Möchten Sie um weitere 30 Tage verlängern?\n' +
-        'Unterstützen Sie das Projekt — Abo verlängern 👇',
-    pt: '✅ <b>Assinatura já está ativa!</b>\n\n' +
-        'Expira em: {expDate}\n' +
-        'Clientes: {clients}\n' +
-        '🔗 Adicione mais clientes no site — insira um Custom ID e clique em Link\n\n' +
-        'Quer estender por mais 30 dias?\n' +
-        'Apoie o projeto renovando sua assinatura 👇',
-    ja: '✅ <b>サブスクリプションは既に有効です！</b>\n\n' +
-        '期限: {expDate}\n' +
-        'クライアント数: {clients}\n' +
-        '🔗 ウェブサイトで新しいクライアントを追加 — Custom IDを入力してLinkをクリック\n\n' +
-        'さらに30日間延長しませんか？\n' +
-        'プロジェクトをサポートして更新する 👇',
+        'Expires: {expDate}  ·  Clients: {clients}\n\n' +
+        '🌬 <b>/breathe</b> — free coherent breathing session\n' +
+        '📋 <b>/status</b> — check subscription\n' +
+        '🔄 <b>/renew</b> — extend subscription\n\n' +
+        '🔗 <b>Link clients:</b>\n' +
+        'Go to the site → enter any Custom ID → click "Subscribe via Telegram" → the ID auto-links to your account.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
+        'Support the project 👇',
+    ru: '✅ <b>Подписка активна!</b>\n\n' +
+        'Истекает: {expDate}  ·  Клиентов: {clients}\n\n' +
+        '🌬 <b>/breathe</b> — бесплатная сессия когерентного дыхания\n' +
+        '📋 <b>/status</b> — статус подписки\n' +
+        '🔄 <b>/renew</b> — продлить подписку\n\n' +
+        '🔗 <b>Как привязать клиентов:</b>\n' +
+        'Зайдите на сайт → введите любой Custom ID → нажмите «Subscribe via Telegram» → ID автоматически привяжется к вашему аккаунту.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
+        'Поддержите проект 👇',
+    es: '✅ <b>¡Suscripción activa!</b>\n\n' +
+        'Vence: {expDate}  ·  Clientes: {clients}\n\n' +
+        '🌬 <b>/breathe</b> — sesión gratuita de respiración\n' +
+        '📋 <b>/status</b> — estado de suscripción\n' +
+        '🔄 <b>/renew</b> — extender suscripción\n\n' +
+        '🔗 <b>Vincular clientes:</b>\n' +
+        'Ve al sitio → ingresa un Custom ID → haz clic en «Subscribe via Telegram» → el ID se vincula automáticamente.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
+        'Apoya el proyecto 👇',
+    fr: '✅ <b>Abonnement actif !</b>\n\n' +
+        'Expire : {expDate}  ·  Clients : {clients}\n\n' +
+        '🌬 <b>/breathe</b> — séance gratuite de respiration\n' +
+        '📋 <b>/status</b> — état de l\'abonnement\n' +
+        '🔄 <b>/renew</b> — prolonger l\'abonnement\n\n' +
+        '🔗 <b>Lier des clients :</b>\n' +
+        'Allez sur le site → entrez un Custom ID → cliquez sur « Subscribe via Telegram » → l\'ID se lie automatiquement.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
+        'Soutenez le projet 👇',
+    de: '✅ <b>Abo aktiv!</b>\n\n' +
+        'Läuft ab: {expDate}  ·  Kunden: {clients}\n\n' +
+        '🌬 <b>/breathe</b> — kostenlose Atemsitzung\n' +
+        '📋 <b>/status</b> — Abo-Status\n' +
+        '🔄 <b>/renew</b> — Abo verlängern\n\n' +
+        '🔗 <b>Kunden verknüpfen:</b>\n' +
+        'Website aufrufen → Custom ID eingeben → «Subscribe via Telegram» klicken → ID wird automatisch verknüpft.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
+        'Unterstützen Sie das Projekt 👇',
+    pt: '✅ <b>Assinatura ativa!</b>\n\n' +
+        'Expira: {expDate}  ·  Clientes: {clients}\n\n' +
+        '🌬 <b>/breathe</b> — sessão gratuita de respiração\n' +
+        '📋 <b>/status</b> — status da assinatura\n' +
+        '🔄 <b>/renew</b> — estender assinatura\n\n' +
+        '🔗 <b>Vincular clientes:</b>\n' +
+        'Acesse o site → insira um Custom ID → clique em «Subscribe via Telegram» → o ID vincula automaticamente.\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
+        'Apoie o projeto 👇',
+    ja: '✅ <b>サブスクリプション有効！</b>\n\n' +
+        '期限: {expDate}  ·  クライアント: {clients}\n\n' +
+        '🌬 <b>/breathe</b> — 無料呼吸セッション\n' +
+        '📋 <b>/status</b> — サブスクリプション状態\n' +
+        '🔄 <b>/renew</b> — サブスクリプション延長\n\n' +
+        '🔗 <b>クライアントのリンク方法:</b>\n' +
+        'サイトにアクセス → Custom IDを入力 → «Subscribe via Telegram»をクリック → IDが自動リンクされます。\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
+        'プロジェクトをサポート 👇',
     zh: '✅ <b>订阅已激活！</b>\n\n' +
-        '到期: {expDate}\n' +
-        '客户数: {clients}\n' +
-        '🔗 在网站上添加更多客户 — 输入Custom ID并点击Link\n\n' +
-        '想再延长30天吗？\n' +
-        '支持项目，续订订阅 👇'
+        '到期: {expDate}  ·  客户: {clients}\n\n' +
+        '🌬 <b>/breathe</b> — 免费呼吸课程\n' +
+        '📋 <b>/status</b> — 订阅状态\n' +
+        '🔄 <b>/renew</b> — 续订\n\n' +
+        '🔗 <b>链接客户：</b>\n' +
+        '访问网站 → 输入Custom ID → 点击«Subscribe via Telegram» → ID自动链接。\n\n' +
+        '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
+        '支持项目 👇'
   },
 
   // ── Support / Renew button label ──
