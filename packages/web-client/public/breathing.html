@@ -401,6 +401,35 @@
         ctx.fill()
         ctx.shadowBlur = 0
 
+        // Bilateral side glow — синхронизация ладоней Butterfly Hug
+        if (engine.running) {
+          const halfW = canvas.width / 2
+          const tickMs = 60000 / engine.bpm / 2
+          const elapsed = performance.now() % (tickMs * 2)
+          const fadeProgress = 1 - Math.abs(elapsed - tickMs) / tickMs
+          const glowStrength = 0.12 * Math.max(0, Math.min(1, fadeProgress))
+
+          const sideGradient = ctx.createLinearGradient(
+            engine._side ? 0 : canvas.width - 1,
+            0,
+            engine._side ? halfW * 0.8 : halfW * 1.2,
+            0
+          )
+          sideGradient.addColorStop(0, '#60a5fa')
+          sideGradient.addColorStop(1, 'transparent')
+
+          ctx.save()
+          ctx.globalAlpha = glowStrength
+          ctx.fillStyle = sideGradient
+          ctx.fillRect(
+            engine._side ? 0 : halfW,
+            0,
+            halfW * 1.5,
+            canvas.height
+          )
+          ctx.restore()
+        }
+
         // Pulse ring
         if (engine.running) {
           const pulseSize = radius + 8 + Math.sin(performance.now() / 200) * 4
