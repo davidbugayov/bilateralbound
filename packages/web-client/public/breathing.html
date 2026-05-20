@@ -27,6 +27,7 @@
       position: absolute;
       top: 0;
       left: 0;
+      z-index: 1;
     }
 
     .overlay {
@@ -37,6 +38,7 @@
       align-items: center;
       justify-content: center;
       pointer-events: none;
+      z-index: 2;
     }
 
     .phase-label {
@@ -71,6 +73,7 @@
       gap: 1rem;
       padding: 1rem;
       pointer-events: auto;
+      z-index: 10;
     }
 
     .btn {
@@ -87,6 +90,10 @@
       min-width: 120px;
       text-align: center;
       pointer-events: auto;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .btn:active {
@@ -129,6 +136,8 @@
       cursor: pointer;
       transition: all 0.2s;
       pointer-events: auto;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .duration-btn.active {
@@ -199,6 +208,8 @@
       align-items: center;
       justify-content: center;
       pointer-events: auto;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .btn-icon:active {
       transform: scale(0.9);
