@@ -402,10 +402,6 @@
       } catch (e) { /* ignore */ }
 
       // ── Conditional UI ──
-      // Inside Telegram Mini App → hide «← Назад» (no browser history)
-      const backLink = document.querySelector('.back-link')
-      if (tg && backLink) backLink.style.display = 'none'
-
       // On website → hide «↗ сайт» (already on the site)
       const host = window.location.hostname
       const isOnSite = host === 'emdrbilateral.online' || host === 'emdrbilateral.ru'
