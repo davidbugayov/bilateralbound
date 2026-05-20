@@ -245,6 +245,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
             clients: String(status.customIds?.length || 0)
           })
           telegramBot?.sendMessage(chatId, statusMsg, {
+            parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [[
                 { text: t('support_button', lang), callback_data: 'support_renew' }
@@ -298,6 +299,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
               clients: String(status.customIds?.length || 0)
             })
             telegramBot?.sendMessage(chatId, statusMsg, {
+              parse_mode: 'HTML',
               reply_markup: {
                 inline_keyboard: [[
                   { text: t('support_button', lang), callback_data: 'support_renew' }
@@ -338,6 +340,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
             clients: String(status.customIds?.length || 0)
           })
           telegramBot?.sendMessage(chatId, statusMsg, {
+            parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [[
                 { text: t('support_button', lang), callback_data: 'support_renew' }
