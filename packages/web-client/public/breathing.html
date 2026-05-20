@@ -428,24 +428,45 @@
           const tickMs = 60000 / engine.bpm / 2
           const elapsed = performance.now() % (tickMs * 2)
           const fadeProgress = 1 - Math.abs(elapsed - tickMs) / tickMs
-          const glowStrength = 0.12 * Math.max(0, Math.min(1, fadeProgress))
+          const glowStrength = 0.40 * Math.max(0, Math.min(1, fadeProgress))
 
-          const sideGradient = ctx.createLinearGradient(
-            engine._side ? 0 : canvas.width - 1,
+          // Фоновая подсветка всей половины
+          ctx.save()
+          ctx.globalAlpha = glowStrength * 0.6
+          const bgGlow = ctx.createLinearGradient(
+            engine._side ? 0 : canvas.width,
             0,
-            engine._side ? halfW * 0.8 : halfW * 1.2,
+            engine._side ? halfW : halfW,
             0
           )
-          sideGradient.addColorStop(0, '#60a5fa')
-          sideGradient.addColorStop(1, 'transparent')
-
-          ctx.save()
-          ctx.globalAlpha = glowStrength
-          ctx.fillStyle = sideGradient
+          bgGlow.addColorStop(0, '#3b82f6')
+          bgGlow.addColorStop(1, 'transparent')
+          ctx.fillStyle = bgGlow
           ctx.fillRect(
             engine._side ? 0 : halfW,
             0,
-            halfW * 1.5,
+            halfW,
+            canvas.height
+          )
+          ctx.restore()
+
+          // Яркая полоса у края — «вспышка» тика
+          ctx.save()
+          ctx.globalAlpha = glowStrength
+          const flashGradient = ctx.createLinearGradient(
+            engine._side ? 0 : canvas.width,
+            0,
+            engine._side ? halfW * 0.4 : canvas.width - halfW * 0.4,
+            0
+          )
+          flashGradient.addColorStop(0, '#93c5fd')
+          flashGradient.addColorStop(0.3, '#60a5fa')
+          flashGradient.addColorStop(1, 'transparent')
+          ctx.fillStyle = flashGradient
+          ctx.fillRect(
+            engine._side ? 0 : halfW,
+            0,
+            halfW,
             canvas.height
           )
           ctx.restore()
