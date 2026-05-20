@@ -293,6 +293,11 @@
   </style>
 </head>
 <body>
+  <!-- Telegram Mini App: signal ready IMMEDIATELY — before any heavy rendering -->
+  <script>
+    (function(){try{if(window.Telegram&&window.Telegram.WebApp){window.Telegram.WebApp.ready();window.Telegram.WebApp.expand()}}catch(e){}})()
+  </script>
+
   <canvas id="breathCanvas"></canvas>
 
   <div class="duration-selector" id="durationSelector">
@@ -334,7 +339,27 @@
     <div class="complete-text">Сессия завершена</div>
   </div>
 
-  <script src="/js/breathing/breathing-engine.js"></script>
+  <script>
+    // ── BreathingEngine (inlined) ──
+    'use strict'
+    class BreathingEngine {constructor(o){this.inhaleSec=o.inhaleSec||5;this.exhaleSec=o.exhaleSec||5;this.holdAfterInhale=o.holdAfterInhale||0;this.holdAfterExhale=o.holdAfterExhale||0;this.totalCycleSec=this.inhaleSec+this.holdAfterInhale+this.exhaleSec+this.holdAfterExhale;this.phase='idle';this.running=false;this.elapsed=0;this.cycleCount=0;this.targetCycles=0;this.startTimestamp=0;this.breathProgress=0;this.onPhaseChange=null;this.onCycleComplete=null;this.onComplete=null;this.audioEnabled=false;this.audioContext=null;this._leftGain=null;this._rightGain=null;this._leftOsc=null;this._rightOsc=null;this.toneFreqL=180;this.toneFreqR=220;this.toneVolume=.3;this.bpm=o.bpm||30;this._tickInterval=null;this._side=false;this.muted=false}
+    start(m){if(this.running)return;this.running=true;this.phase='inhale';this.elapsed=0;this.cycleCount=0;this.breathProgress=0;this.startTimestamp=performance.now();this.targetCycles=m>0?Math.round(m*60/this.totalCycleSec):0;this._initAudio();this._startTickTones();if(this.onPhaseChange)this.onPhaseChange('inhale')}
+    stop(){if(!this.running)return;this.running=false;this.phase='idle';this.breathProgress=0;this.elapsed=0;this._stopTickTones();this._stopAudio();if(this.onPhaseChange)this.onPhaseChange('idle');if(typeof navigator!=='undefined'&&navigator.vibrate)navigator.vibrate(0)}
+    update(d){if(!this.running)return;this.elapsed+=d;const T=this.totalCycleSec*1e3;if(this.elapsed>=T){this.elapsed=this.elapsed%T;this.cycleCount++;if(this.onCycleComplete)this.onCycleComplete(this.cycleCount);if(this.targetCycles>0&&this.cycleCount>=this.targetCycles){this.stop();if(this.onComplete)this.onComplete();return}}this._updatePhase()}
+    _updatePhase(){const e=this.elapsed/1e3,i=this.inhaleSec,h=this.holdAfterInhale,x=this.exhaleSec;let p,n;if(e<i){p='inhale';n=e/i;this._doVibration(2e3)}else if(e<i+h){p='hold_in';n=1}else if(e<i+h+x){p='exhale';n=1-(e-i-h)/x;this._doVibration(500)}else{p='hold_out';n=0}if(p!==this.phase){this.phase=p;if(this.onPhaseChange)this.onPhaseChange(p)}this.breathProgress+=(n-this.breathProgress)*.3}
+    getCircleRadius(){const t=Math.max(0,Math.min(1,this.breathProgress));return t*t*(3-2*t)}
+    getPhaseLabel(l){const L=l==='ru'?'ru':'en',lb={idle:{ru:'Готов',en:'Ready'},inhale:{ru:'Вдох',en:'Inhale'},hold_in:{ru:'Задержка',en:'Hold'},exhale:{ru:'Выдох',en:'Exhale'},hold_out:{ru:'Задержка',en:'Hold'}};return lb[this.phase]?.[L]||lb.idle[L]}
+    _doVibration(d){if(this.muted)return;if(typeof navigator!=='undefined'&&navigator.vibrate)navigator.vibrate(d)}
+    _initAudio(){if(this.audioContext)return;const A=globalThis.AudioContext||globalThis.webkitAudioContext;if(!A)return;try{this.audioContext=new A();this._leftGain=this.audioContext.createGain();this._leftGain.gain.value=0;this._leftOsc=this.audioContext.createOscillator();this._leftOsc.type='sine';this._leftOsc.frequency.value=this.toneFreqL;this._leftOsc.connect(this._leftGain);this._rightGain=this.audioContext.createGain();this._rightGain.gain.value=0;this._rightOsc=this.audioContext.createOscillator();this._rightOsc.type='sine';this._rightOsc.frequency.value=this.toneFreqR;this._rightOsc.connect(this._rightGain);const m=this.audioContext.createChannelMerger(2);this._leftGain.connect(m,0,0);this._rightGain.connect(m,0,1);m.connect(this.audioContext.destination);this._leftOsc.start();this._rightOsc.start();this.audioEnabled=true}catch(e){console.warn('BreathingEngine: Audio init failed',e)}}
+    _startTickTones(){if(this._tickInterval)return;const h=6e4/this.bpm/2;this._side=false;this._tickInterval=setInterval(()=>{this._side=!this._side;this._playBilateralTick(this._side)},h)}
+    _stopTickTones(){if(this._tickInterval){clearInterval(this._tickInterval);this._tickInterval=null}}
+    _playBilateralTick(L){if(this.muted||!this.audioContext||!this.audioEnabled)return;try{const g=L?this._leftGain:this._rightGain,n=this.audioContext.currentTime;g.gain.setValueAtTime(this.toneVolume,n);g.gain.exponentialRampToValueAtTime(.001,n+.08)}catch(e){}}
+    _stopAudio(){if(this._leftOsc){try{this._leftOsc.stop()}catch(e){}this._leftOsc=null}if(this._rightOsc){try{this._rightOsc.stop()}catch(e){}this._rightOsc=null}this._leftGain=null;this._rightGain=null;this.audioContext=null;this.audioEnabled=false}
+    setMuted(m){this.muted=!!m}
+    toggleMute(){this.muted=!this.muted;if(this.muted&&typeof navigator!=='undefined'&&navigator.vibrate)navigator.vibrate(0);return this.muted}
+    getStats(){const e=this.running?(performance.now()-this.startTimestamp)/1e3:0;return{running:this.running,phase:this.phase,cycleCount:this.cycleCount,elapsedSec:Math.round(e),targetCycles:this.targetCycles}}
+    }
+  </script>
   <script>
     (function() {
       'use strict'
@@ -375,6 +400,16 @@
           tg.expand()
         }
       } catch (e) { /* ignore */ }
+
+      // ── Conditional UI ──
+      // Inside Telegram Mini App → hide «← Назад» (no browser history)
+      const backLink = document.querySelector('.back-link')
+      if (tg && backLink) backLink.style.display = 'none'
+
+      // On website → hide «↗ сайт» (already on the site)
+      const host = window.location.hostname
+      const isOnSite = host === 'emdrbilateral.online' || host === 'emdrbilateral.ru'
+      if (isOnSite && siteLink) siteLink.style.display = 'none'
 
       // ── Canvas resize ──
       function resizeCanvas() {
