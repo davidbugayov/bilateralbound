@@ -169,7 +169,8 @@ function setupMiddleware(app, config, logger) {
             'https://mc.yandex.com',
             'wss://mc.yandex.com'
           ],
-          frameSrc: ['\'self\'', 'https://mc.yandex.md'],
+          frameSrc: ['\'self\'', 'https://mc.yandex.md', 'https://web.telegram.org', 'https://telegram.org'],
+          frameAncestors: ['\'self\'', 'https://web.telegram.org', 'https://telegram.org'],
           upgradeInsecureRequests: isDev ? null : []
         }
       },
