@@ -1104,22 +1104,9 @@ function _initializeSoundControls() {
     return
   }
   try {
-    const soundLabel =
-      soundEnabledCheckbox.parentElement?.querySelector('span')
-    const _i18nSafe = (key, fallback) => {
-      const val = globalThis.i18n?.t(key)
-      return val && val !== key ? val : fallback
-    }
-    const _updateSoundLabel = (enabled) => {
-      if (!soundLabel) return
-      soundLabel.textContent = enabled
-        ? _i18nSafe('controller.soundEnabled', 'Sound enabled')
-        : _i18nSafe('controller.enableSound', 'Enable sound')
-    }
     soundEnabledCheckbox.addEventListener('change', (e) => {
       const enabled = e.target.checked
       setSoundEnabled(enabled)
-      _updateSoundLabel(enabled)
       if (enabled) {
         soundTypeControl.classList.add('enabled')
       } else {
@@ -1140,7 +1127,6 @@ function _initializeSoundControls() {
     if (lastServerState) {
       if (typeof lastServerState.soundEnabled === 'boolean') {
         soundEnabledCheckbox.checked = lastServerState.soundEnabled
-        _updateSoundLabel(lastServerState.soundEnabled)
         if (lastServerState.soundEnabled) {
           soundTypeControl.classList.add('enabled')
         } else {
