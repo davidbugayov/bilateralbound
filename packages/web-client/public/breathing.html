@@ -82,17 +82,14 @@
     }
 
     .btn {
-      padding: 0.8rem 2.5rem;
-      border: 1px solid rgba(255,255,255,0.15);
+      padding: 1rem 3rem;
+      border: none;
       border-radius: 50px;
-      background: rgba(255,255,255,0.05);
-      color: #e2e8f0;
-      font-size: 1rem;
+      font-size: 1.05rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
       cursor: pointer;
-      transition: all 0.2s;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      min-width: 120px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       text-align: center;
       pointer-events: auto;
       touch-action: manipulation;
@@ -102,22 +99,27 @@
     }
 
     .btn:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
     }
 
     .btn-primary {
-      background: #3b82f6;
-      border-color: #3b82f6;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       color: white;
+      box-shadow: 0 2px 12px rgba(59,130,246,0.35);
+      min-width: 160px;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 4px 20px rgba(59,130,246,0.5);
+      transform: translateY(-1px);
     }
 
     .btn-primary.active {
-      background: #ef4444;
-      border-color: #ef4444;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      box-shadow: 0 2px 12px rgba(239,68,68,0.35);
     }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.08);
+    .btn-primary.active:hover {
+      box-shadow: 0 4px 20px rgba(239,68,68,0.5);
+      transform: translateY(-1px);
     }
 
     .duration-selector {
@@ -177,6 +179,43 @@
       color: rgba(255,255,255,0.85);
     }
 
+    /* Кнопка звука — левый верхний угол, рядом с Назад */
+    .sound-btn {
+      position: absolute;
+      top: max(0.45rem, env(safe-area-inset-top, 0.35rem));
+      left: 5.2rem;
+      width: 1.75rem;
+      height: 1.75rem;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.45);
+      font-size: 0.75rem;
+      cursor: pointer;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: all 0.25s;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .sound-btn:hover,
+    .sound-btn:active {
+      color: rgba(255,255,255,0.85);
+      border-color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.1);
+    }
+    .sound-btn.muted {
+      opacity: 0.35;
+      border-color: rgba(255,255,255,0.06);
+    }
+
     /* Ссылка на сайт — правый верхний угол */
     .site-link {
       position: absolute;
@@ -196,34 +235,6 @@
     .site-link:hover,
     .site-link:active {
       color: rgba(255,255,255,0.85);
-    }
-
-    /* Кнопка звука */
-    .btn-icon {
-      width: 3rem;
-      height: 3rem;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 50%;
-      background: rgba(255,255,255,0.05);
-      color: #e2e8f0;
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: auto;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn-icon:active {
-      transform: scale(0.9);
-    }
-    .btn-icon.muted {
-      opacity: 0.4;
-      border-color: rgba(255,255,255,0.06);
     }
 
     /* Инфо-карточка под кнопкой Старт */
@@ -319,11 +330,11 @@
   </div>
 
   <a class="back-link" href="/">← Назад</a>
+  <button class="sound-btn" id="muteBtn" title="Звук">🔊</button>
   <a class="site-link" id="siteLink">↗ сайт</a>
 
   <div class="controls">
-    <button class="btn btn-primary" id="startBtn">🌬️ Начать</button>
-    <button class="btn-icon" id="muteBtn" title="Звук тиков">🔊</button>
+    <button class="btn btn-primary" id="startBtn">Начать</button>
   </div>
 
   <!-- Инфо-карточка с инструкцией Butterfly Hug -->
@@ -578,7 +589,7 @@
       function startBreathing() {
         if (engine.running) {
           engine.stop()
-          startBtn.textContent = '🌬️ Начать'
+          startBtn.textContent = 'Начать'
           startBtn.classList.remove('active')
           enableDurationButtons()
           infoCard.classList.remove('hidden')
@@ -593,7 +604,7 @@
         }
 
         engine.start(selectedMinutes)
-        startBtn.textContent = '⏹ Стоп'
+        startBtn.textContent = 'Стоп'
         startBtn.classList.add('active')
         disableDurationButtons()
         infoCard.classList.add('hidden')
@@ -619,7 +630,7 @@
         } else {
           muteBtn.classList.remove('muted')
         }
-        muteBtn.title = nowMuted ? 'Включить звук' : 'Отключить звук'
+        muteBtn.title = nowMuted ? 'Включить звук' : 'Выключить звук'
       })
 
       // ── Events ──
@@ -661,7 +672,7 @@
       }
 
       engine.onComplete = function() {
-        startBtn.textContent = '✅ Завершено'
+        startBtn.textContent = 'Завершено'
         startBtn.classList.remove('active')
         startBtn.style.background = '#10b981'
         startBtn.style.borderColor = '#10b981'
@@ -669,7 +680,7 @@
         enableDurationButtons()
         completeMessage.classList.add('show')
         setTimeout(function() {
-          startBtn.textContent = '🌬️ Начать'
+          startBtn.textContent = 'Начать'
           startBtn.style.background = ''
           startBtn.style.borderColor = ''
           startBtn.style.display = ''
