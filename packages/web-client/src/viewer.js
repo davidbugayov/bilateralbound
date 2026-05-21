@@ -529,6 +529,10 @@ let pendingSoundEnabled = false
 const components = {}
 let resizeTimeout = null
 
+// Debounce for controller_disconnected — don't show banner for transient disconnects
+let _controllerDisconnectTimer = null
+const CONTROLLER_DISCONNECT_DEBOUNCE_MS = 45000 // 45s grace for mobile/bg reconnects
+
 if (typeof globalThis !== 'undefined') {
   globalThis.audioManager = audioManager
   globalThis.audioActivated = audioActivated
@@ -934,6 +938,11 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       JSON.stringify(data)
     )
     debugLog('📊 Controller connected event:', data)
+    // Clear any pending disconnect banner timer
+    if (_controllerDisconnectTimer) {
+      clearTimeout(_controllerDisconnectTimer)
+      _controllerDisconnectTimer = null
+    }
     hideConnectionBanner()
     const hasControllerConnected =
       typeof data.controllerConnected === 'boolean'
@@ -959,10 +968,20 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     const msg =
       globalThis.i18n?.t('viewer.controllerDisconnected') ||
       'Controller disconnected'
+    // Only update status indicator immediately (non-intrusive)
     if (components.status) {
       components.status.setStatus('warning', msg)
     }
-    showConnectionBanner(msg, '🔌')
+    // Debounce the banner: only show after 45s of continuous disconnection.
+    // This prevents alarming the user during transient mobile/bg-tab reconnects
+    // which happen naturally during long (1.5h) sessions.
+    if (_controllerDisconnectTimer) clearTimeout(_controllerDisconnectTimer)
+    _controllerDisconnectTimer = setTimeout(() => {
+      // Double-check: only show if still disconnected after debounce period
+      if (!globalThis.__current?.controllerConnected) {
+        showConnectionBanner(msg, '🔌')
+      }
+    }, CONTROLLER_DISCONNECT_DEBOUNCE_MS)
   })
 
   wsClient.on('state_update', (state) => {

@@ -50,6 +50,20 @@ class WebSocketClient {
       jitterMs: 0,
       _lastRttSamples: []
     }
+    // Фоновая живучесть: отслеживаем visibility для немедленного переподключения
+    this._visibilityHandler = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        !this.isConnected &&
+        !this.isConnecting
+      ) {
+        this.log('Tab visible — triggering immediate reconnect', 'info')
+        this.connect().catch(() => {})
+      }
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', this._visibilityHandler)
+    }
   }
   _generateWebSocketUrl() {
     const protocol = this.config.isSecure ? 'wss:' : 'ws:'
@@ -301,13 +315,24 @@ class WebSocketClient {
     }, delay)
   }
   _startHeartbeat() {
-    this.heartbeatTimer = setInterval(() => {
-      if (this.isConnected) {
-        this.send('heartbeat', { timestamp: Date.now() }).catch((err) => {
-          this.log(`Heartbeat failed: ${err.message}`, 'warning')
-        })
+    // Use setTimeout chain instead of setInterval — more reliable in background tabs
+    // where setInterval gets throttled to 1+ minute.
+    const sendHeartbeat = () => {
+      if (!this.isConnected) {
+        this.heartbeatTimer = null
+        return
       }
-    }, this.config.heartbeatInterval)
+      this.send('heartbeat', { timestamp: Date.now() }).catch((err) => {
+        this.log(`Heartbeat failed: ${err.message}`, 'warning')
+        // If send failed, connection is likely broken — force reconnect check
+        if (this.isConnected && this.ws?.readyState !== WebSocket.OPEN) {
+          this.isConnected = false
+          this._handleClose({ code: 1006, reason: 'Heartbeat detected dead connection' })
+        }
+      })
+      this.heartbeatTimer = setTimeout(sendHeartbeat, this.config.heartbeatInterval)
+    }
+    this.heartbeatTimer = setTimeout(sendHeartbeat, this.config.heartbeatInterval)
   }
   _sendMessage(message) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
@@ -338,7 +363,7 @@ class WebSocketClient {
       this.reconnectTimer = null
     }
     if (this.heartbeatTimer) {
-      clearInterval(this.heartbeatTimer)
+      clearTimeout(this.heartbeatTimer)
       this.heartbeatTimer = null
     }
     for (const timeout of this.messageTimeouts.values()) {

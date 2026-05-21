@@ -30,8 +30,10 @@ function setupWebSocketServer(
     }
 
     ws.isAlive = true
+    ws._missedPings = 0
     ws.on('pong', () => {
       ws.isAlive = true
+      ws._missedPings = 0
     })
 
     sessionService.handleWebSocketConnection(ws, sessionId, role)
@@ -246,13 +248,23 @@ function setupWebSocketServer(
     })
   })
 
+  // Allow up to 3 missed pings (90s grace period) before terminating.
+  // This prevents false disconnects for mobile/bg tabs where timers are throttled.
+  const MAX_MISSED_PINGS = 3
   const heartbeatInterval = setInterval(function ping() {
     for (const ws of wss.clients) {
       if (ws.isAlive === false) {
-        return ws.terminate()
+        ws._missedPings = (ws._missedPings || 0) + 1
+        if (ws._missedPings > MAX_MISSED_PINGS) {
+          logger.debug({ missedPings: ws._missedPings }, 'WS terminated after max missed pings')
+          return ws.terminate()
+        }
+        // Still send a ping to give it one more chance
+        try { ws.ping() } catch (e) { /* ignore */ }
+      } else {
+        ws.isAlive = false
+        try { ws.ping() } catch (e) { /* ignore */ }
       }
-      ws.isAlive = false
-      ws.ping()
     }
   }, 30000)
 
