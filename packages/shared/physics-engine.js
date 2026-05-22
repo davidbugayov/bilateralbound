@@ -1708,9 +1708,10 @@ class PhysicsEngine {
     if (command.colorBg !== undefined) this.setBgColor(command.colorBg)
     if (command.ballEmoji !== undefined) this.ball.ballEmoji = command.ballEmoji
     if (typeof command.infinity === 'boolean') {
-      const wasInfinity = this.ball.infinity
       this.ball.infinity = command.infinity
-      if (!command.infinity && wasInfinity) this._infinityT = 0
+      // Reset phase on any infinity state change so viewer and controller preview
+      // always start lemniscate from the same origin (t=0)
+      this._infinityT = 0
     }
     if (command.trackBand !== undefined) this.options.trackBand = command.trackBand
   }
