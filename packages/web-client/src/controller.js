@@ -1843,6 +1843,12 @@ function _setPlayPauseState(shouldPlay) {
     if (shouldPlay) showViewerNotConnectedWarning()
     return
   }
+  // Guard: don't start if viewer screen size is unknown — physics needs world dimensions
+  const vs = globalThis.__current?.viewerScreenSize
+  if (shouldPlay && (!vs || vs.width <= 0 || vs.height <= 0)) {
+    showViewerSizeNotReadyWarning()
+    return
+  }
   const currentMode = getCurrentDirectionMode()
   const payload = shouldPlay
     ? {
@@ -2527,6 +2533,36 @@ function showViewerNotConnectedWarning() {
     })
   } else {
     // Fallback: показываем через alert если errorStateManager недоступен
+    showNotification(`${title}: ${message}`, 'warning')
+  }
+}
+/**
+ * Показывает предупреждение когда размеры экрана viewer ещё не получены
+ */
+function showViewerSizeNotReadyWarning() {
+  if (globalThis.__current?.isInitializing) {
+    return
+  }
+  const _t = (key, fallback) => {
+    const v = globalThis.i18n?.t(key)
+    return v && v !== key ? v : fallback
+  }
+  const title = _t(
+    'controller.viewerSizeNotReadyTitle',
+    'Screen size unknown'
+  )
+  const message = _t(
+    'controller.viewerSizeNotReadyMessage',
+    'Waiting for viewer screen size. Please wait a moment and try again.'
+  )
+
+  if (globalThis.errorStateManager?.show) {
+    globalThis.errorStateManager.show('viewer-size-not-ready', {
+      title: title,
+      message: message,
+      duration: 6000
+    })
+  } else {
     showNotification(`${title}: ${message}`, 'warning')
   }
 }

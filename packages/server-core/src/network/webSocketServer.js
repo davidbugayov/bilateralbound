@@ -108,6 +108,12 @@ function setupWebSocketServer(
             }
           }
 
+          // Save screen size from viewer reconnect — critical for preview sync
+          const screenSize = data.payload?.screenSize
+          if (screenSize && typeof screenSize.width === 'number' && typeof screenSize.height === 'number') {
+            sessionService.setViewerScreenSize(sessionId, screenSize)
+          }
+
           const clients = webSocketManager.getClients(sessionId)
           for (const { client } of clients) {
             if (client !== ws && client.readyState === 1) {
@@ -119,7 +125,8 @@ function setupWebSocketServer(
                       viewerConnected: true,
                       timestamp: Date.now(),
                       sessionId,
-                      theme
+                      theme,
+                      screenSize
                     },
                     timestamp: Date.now()
                   })
