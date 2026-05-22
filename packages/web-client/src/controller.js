@@ -1283,7 +1283,8 @@ async function initializePreview() {
       canvas,
       previewPhysicsEngine,
       {
-        localPhysics: true // Use accumulator-based alpha for smoother interpolation
+        localPhysics: true, // Use accumulator-based alpha for smoother interpolation
+        preserveWorldSize: true // Preview canvas ≠ viewer world; prevent canvas resize from overwriting world size
       }
     )
     globalThis.__previewCanvas = canvas
@@ -2049,7 +2050,8 @@ function _initializeFullscreenRenderer() {
         previewFsCanvas,
         previewPhysicsEngine,
         {
-          localPhysics: false
+          localPhysics: false,
+          preserveWorldSize: true // Fullscreen canvas ≠ viewer world; prevent canvas resize from overwriting world size
         }
       )
       previewFsRenderer.start()
