@@ -30,6 +30,7 @@ class BallRenderer {
     this.onFrameCallback = null
     this.options = {
       localPhysics: false, // Флаг для локальной физики (для вьювера)
+      preserveWorldSize: false, // When true, canvas resize won't change physics world size (preview mode)
       ...options
     }
     this.adaptiveFrameRate =
@@ -465,7 +466,8 @@ class BallRenderer {
       this.canvas.height = height
       this.canvas.style.width = width + 'px'
       this.canvas.style.height = height + 'px'
-      if (this.physics) {
+      // In preview mode the world size comes from viewerScreenSize, not canvas dimensions
+      if (this.physics && !this.options.preserveWorldSize) {
         this.physics.setWorldSize(width, height)
       }
       this._cached.radius = null

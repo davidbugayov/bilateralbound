@@ -145,7 +145,6 @@ function createEventHandlers(deps) {
         if (!prev || prev.width !== next.width || prev.height !== next.height) {
           globalThis.__current.viewerConnected = true
           globalThis.__current.viewerScreenSize = next
-          updatePhysicsEngineWorldSize(next)
           const canvas = document.getElementById('preview')
           if (canvas) {
             const { width, height } = calculatePreviewDimensions(
@@ -154,6 +153,8 @@ function createEventHandlers(deps) {
             )
             setCanvasDimensions(canvas, width, height)
           }
+          // Set world size AFTER canvas resize, so viewer dimensions take precedence
+          updatePhysicsEngineWorldSize(next)
           updateViewerInfo(next)
           updateViewerStatusUI()
           if (isPreviewFullscreen) updateFullscreenViewerStatus()
