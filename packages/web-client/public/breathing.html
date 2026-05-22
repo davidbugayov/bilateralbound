@@ -307,6 +307,8 @@
       font-weight: 400;
     }
   </style>
+  <script src="/js/ui/cookie-consent.js?v=2.39.698-bdbcbb41" defer></script>
+  <script src="/js/analytics/metrika-events.js?v=2.39.698-bdbcbb41" defer></script>
 </head>
 <body>
   <!-- Telegram Mini App: signal ready IMMEDIATELY — before any heavy rendering -->
@@ -604,6 +606,8 @@
         }
 
         engine.start(selectedMinutes)
+        // Track breathing start in Metrika
+        try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_breathing_started', { detail: { minutes: selectedMinutes } })) } catch (_) { /* noop */ }
         startBtn.textContent = 'Стоп'
         startBtn.classList.add('active')
         disableDurationButtons()
