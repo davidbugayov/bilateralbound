@@ -52,7 +52,10 @@
     'bb_metrika_viewer_disconnected': 'viewer_disconnected',
     'bb_metrika_ws_reconnect': 'ws_reconnect',
     'bb_metrika_breathing_started': 'breathing_started',
-    'bb_metrika_session_duration': null // special handler
+    'bb_metrika_session_duration': null, // special handler
+    'bb_metrika_settings_changed': 'settings_changed',
+    'bb_metrika_permanent_link_created': 'permanent_link_created',
+    'bb_metrika_subscribe_clicked': 'subscribe_clicked'
   }
 
   function handleEvent(e) {

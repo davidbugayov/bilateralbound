@@ -1238,6 +1238,7 @@ function updateSpeed(speed) {
   }
   try {
     safeSend(WS_MSG.controllerUpdate, { speed })
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'speed', value: speed } })) } catch (_) { /* noop */ }
   } catch (err) {
     debugWarn('Error updating speed:', err)
   }
@@ -1561,6 +1562,7 @@ function setDirection(directionMode) {
     }
     updateDirectionButtons()
     updateDirectionDisplay(dirX, dirY)
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'direction', value: directionMode } })) } catch (_) { /* noop */ }
   } catch (error) {
     console.error('Ошибка установки направления:', error)
   }
@@ -1650,6 +1652,7 @@ function setBallColor(color) {
     return
   }
   safeSend(WS_MSG.controllerUpdate, { colorBall: color })
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'ballColor', value: color } })) } catch (_) { /* noop */ }
 }
 function setBallSize(size) {
   // Всегда обновляем локальное состояние и превью
@@ -1663,6 +1666,7 @@ function setBallSize(size) {
     return
   }
   safeSend(WS_MSG.controllerUpdate, { radius: size })
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'ballSize', value: size } })) } catch (_) { /* noop */ }
 }
 function setSoundEnabled(enabled) {
   if (globalThis.__current?.isInitializing) {
@@ -1677,6 +1681,7 @@ function setSoundEnabled(enabled) {
     lastServerState.soundEnabled = Boolean(enabled)
   }
   updateViewerAudioIndicators()
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'soundEnabled', value: Boolean(enabled) } })) } catch (_) { /* noop */ }
 }
 function setSoundType(soundType) {
   if (globalThis.__current?.isInitializing) {
@@ -1687,6 +1692,7 @@ function setSoundType(soundType) {
     return
   }
   safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'soundType', value: soundType } })) } catch (_) { /* noop */ }
 }
 function setBallSizeMultiplier(multiplier) {
   const baseSize = 20
@@ -1713,6 +1719,7 @@ function setBackgroundColor(color) {
     return
   }
   safeSend(WS_MSG.controllerUpdate, { colorBg: color })
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'bgColor', value: color } })) } catch (_) { /* noop */ }
 }
 function updateDirectionButtons() {
   const currentMode = getCurrentDirectionMode()

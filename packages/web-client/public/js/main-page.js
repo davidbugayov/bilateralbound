@@ -210,7 +210,7 @@
       if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl
       if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl
       if (container) container.style.display = 'block'
-      globalThis.ym?.(104698530, 'reachGoal', 'permanent_link_created')
+      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_permanent_link_created', { detail: { clientId: clientId } })) } catch (_) { /* noop */ }
 
       // Hide subscription prompt if previously shown
       const prompt = document.getElementById('subscribePrompt')
@@ -368,7 +368,7 @@
    */
   function handleSubscribeClick(e) {
     if (e) e.preventDefault()
-    globalThis.ym?.(104698530, 'reachGoal', 'subscribe_clicked')
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_subscribe_clicked')) } catch (_) { /* noop */ }
     const customId = document.getElementById('customClientId')?.value.trim() || ''
     let botLink =
       globalThis.__config?.telegramBotLink ||
