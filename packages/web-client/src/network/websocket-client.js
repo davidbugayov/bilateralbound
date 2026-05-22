@@ -233,6 +233,10 @@ class WebSocketClient {
     this.log(
       'Connected successfully' + (isReconnection ? ' (reconnected)' : '')
     )
+    // Track WebSocket reconnects in Metrika
+    if (isReconnection && typeof globalThis !== 'undefined') {
+      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_ws_reconnect')) } catch (_) { /* noop */ }
+    }
   }
   _handleConnectionError(error) {
     this._emit('error', { error, type: 'connection' })

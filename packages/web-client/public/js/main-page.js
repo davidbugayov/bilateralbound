@@ -79,7 +79,8 @@
         return
       }
 
-      globalThis.ym?.(104698530, 'reachGoal', 'session_started')
+      // Track session creation in Metrika (via event system)
+      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_created')) } catch (_) { /* noop */ }
       window.location.href = '/c/' + sessionId
     } finally {
       isCreatingSession = false
