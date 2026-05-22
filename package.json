@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.697",
+  "version": "2.39.698",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -57,7 +57,8 @@
     "git:main": "git checkout main && git pull origin main",
     "git:status": "git status && git log --oneline -5",
     "git:sync": "git fetch --all && git status",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "find node_modules -name '.claude' -type d ! -path '*/node_modules/.claude' -exec rm -rf {} + 2>/dev/null; true"
   },
   "keywords": [
     "emdr",
