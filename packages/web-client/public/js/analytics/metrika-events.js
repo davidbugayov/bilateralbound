@@ -8,14 +8,22 @@
  *   globalThis.dispatchEvent(new CustomEvent('bb_metrika_viewer_connected'))
  *
  * Events:
- *   bb_metrika_session_created   — new session created
- *   bb_metrika_session_started   — play pressed
- *   bb_metrika_session_stopped   — pause pressed
- *   bb_metrika_viewer_connected  — viewer joined session
+ *   bb_metrika_session_created    — new session created
+ *   bb_metrika_session_started    — play pressed
+ *   bb_metrika_session_stopped    — pause pressed
+ *   bb_metrika_viewer_connected   — viewer joined session
  *   bb_metrika_viewer_disconnected — viewer left
- *   bb_metrika_ws_reconnect      — WebSocket reconnected
- *   bb_metrika_breathing_started — breathing exercise started
- *   bb_metrika_session_duration  — detail: { seconds: number }
+ *   bb_metrika_ws_reconnect       — WebSocket reconnected
+ *   bb_metrika_ws_error           — WebSocket error
+ *   bb_metrika_breathing_started  — breathing exercise started
+ *   bb_metrika_session_duration   — detail: { seconds: number }
+ *   bb_metrika_settings_changed   — detail: { setting, value }
+ *   bb_metrika_permanent_link_created — detail: { clientId }
+ *   bb_metrika_subscribe_clicked  — subscribe button clicked
+ *   bb_metrika_feature_used       — detail: { feature } (fullscreen, infinity, theme)
+ *   bb_metrika_viewer_error       — detail: { message }
+ *   bb_metrika_sync_drift         — detail: { driftPx, jitterMs, role }
+ *   bb_metrika_session_ready      — viewer+controller both connected
  *
  * Queue behaviour:
  *   Events dispatched before cookie consent (ym not loaded) are queued
@@ -97,11 +105,16 @@
     'bb_metrika_viewer_connected': 'viewer_connected',
     'bb_metrika_viewer_disconnected': 'viewer_disconnected',
     'bb_metrika_ws_reconnect': 'ws_reconnect',
+    'bb_metrika_ws_error': 'ws_error',
     'bb_metrika_breathing_started': 'breathing_started',
     'bb_metrika_session_duration': null, // special handler
     'bb_metrika_settings_changed': 'settings_changed',
     'bb_metrika_permanent_link_created': 'permanent_link_created',
-    'bb_metrika_subscribe_clicked': 'subscribe_clicked'
+    'bb_metrika_subscribe_clicked': 'subscribe_clicked',
+    'bb_metrika_feature_used': 'feature_used',
+    'bb_metrika_viewer_error': 'viewer_error',
+    'bb_metrika_sync_drift': 'sync_drift',
+    'bb_metrika_session_ready': 'session_ready'
   }
 
   function handleEvent(e) {
@@ -120,9 +133,30 @@
     }
   })
 
-  // When consent is granted after page load — flush queue + fire cookie_accepted
+  // Track whether we've sent the initial page_view hit
+  var pageViewSent = false
+
+  // When consent is granted after page load — flush queue + fire page_view + cookie_accepted
   globalThis.addEventListener('bb_cookie_consent_accepted', function () {
     flushQueue()
+    // Send page_view hit so Metrika knows this page was visited
+    // (automatic tracking only works after ym loads, so first visit is lost otherwise)
+    if (!pageViewSent) {
+      pageViewSent = true
+      try {
+        if (typeof globalThis.ym === 'function') {
+          globalThis.ym(YM_ID, 'hit', globalThis.location.href, {
+            referer: document.referrer || undefined,
+            params: {
+              screen_width: globalThis.screen?.width || 0,
+              screen_height: globalThis.screen?.height || 0,
+              viewport_width: globalThis.innerWidth || 0,
+              viewport_height: globalThis.innerHeight || 0
+            }
+          })
+        }
+      } catch (_) { /* ignore */ }
+    }
     reachGoal('cookie_accepted')
   })
 

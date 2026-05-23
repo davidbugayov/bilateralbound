@@ -200,7 +200,21 @@ globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_duration', { detail
 | `bb_metrika_permanent_link_created` | `permanent_link_created` | `main-page.js:213` — detail.clientId | ✅ |
 | `bb_metrika_subscribe_clicked` | `subscribe_clicked` | `main-page.js:371` — subscribe button | ✅ |
 
-**NOT dispatched anywhere (dead entries in eventMap):** none — all 11 events have dispatch sites.
+**NOT dispatched anywhere (dead entries in eventMap):** none — all 15 events have dispatch sites.
+
+**New events** (v2.39.711+):
+
+| CustomEvent | Goal name | Source | Notes |
+|-------------|-----------|--------|-------|
+| `bb_metrika_ws_error` | `ws_error` | `viewer.js:929` — WS error handler | detail.message |
+| `bb_metrika_feature_used` | `feature_used` | `fullscreen.js:78` (fullscreen), `controller.js:1543` (infinity), `common.js:217` (theme) | detail.feature, detail.action |
+| `bb_metrika_viewer_error` | `viewer_error` | `viewer.js:37` — `showError()` | detail.message |
+| `bb_metrika_sync_drift` | `sync_drift` | `viewer.js:94`, `controller.js:102` — sync monitor | detail.driftPx, detail.jitterMs, detail.role |
+| `bb_metrika_session_ready` | `session_ready` | `controller.js:461` — viewer+controller both connected | Funnel: session_created → session_ready → session_started |
+
+**`page_view` hit:** Sent automatically on `bb_cookie_consent_accepted` with screen/viewport dimensions — covers first visit before ym loads.
+
+**`cookie_declined` pixel:** Sent via `<img>` beacon in `cookie-consent.js:97-99` — works even without ym loaded.
 
 **Server-side analytics** (`services/AnalyticsCollector.js` → persisted to `/tmp/emdr-analytics-{port}.json`):
 

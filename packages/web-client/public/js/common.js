@@ -213,6 +213,8 @@
         this.updateThemeButton(true)
       }
       globalThis.dispatchEvent(new CustomEvent('bb_theme_changed'))
+      // Track theme toggle in Metrika
+      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_feature_used', { detail: { feature: 'theme', action: isLight ? 'dark' : 'light' } })) } catch (_) { /* noop */ }
     }
     /**
      * Toggles SVG icons in the theme button: show sun for light, moon for dark

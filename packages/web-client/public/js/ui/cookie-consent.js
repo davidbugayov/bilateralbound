@@ -92,6 +92,11 @@
   function onDecline() {
     setConsent('declined')
     hideBanner()
+    // Track decline via pixel — ym is never loaded, but we can still count declines
+    try {
+      var img = new Image()
+      img.src = 'https://mc.yandex.ru/watch/' + YM_ID + '?rn=' + Date.now()
+    } catch (_) { /* ignore */ }
     globalThis.dispatchEvent(new CustomEvent('bb_cookie_consent_declined'))
   }
 
