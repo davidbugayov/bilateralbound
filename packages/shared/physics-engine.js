@@ -788,7 +788,7 @@ class PhysicsEngine {
   handleBoundaryCollisions() {
     const { ball, options, state } = this
     const { radius } = ball
-    const { worldWidth, worldHeight } = options
+    const { worldWidth } = options
 
     let bounceSide = null
     const dirX = state.lastDirection.x || 0
@@ -883,15 +883,17 @@ class PhysicsEngine {
   /**
    * Triggers bounce callback
    * @param {string} side - Bounce side
+   * @param {object} [direction] - Optional direction override for special paths (infinity).
+   *   Defaults to this.state.lastDirection when omitted.
    * @private
    */
-  _triggerBounceCallback(side) {
+  _triggerBounceCallback(side, direction) {
     if (!this.bounceCallback) return
 
     const data = createBouncePhysicsData(
       side,
       this.ball,
-      this.state.lastDirection
+      direction || this.state.lastDirection
     )
     this.bounceCallback(data)
   }
@@ -1104,15 +1106,20 @@ class PhysicsEngine {
   //   x(t) = cx + (W/2 * scale) * cos(t) / (1 + sin²(t))
   //   y(t) = cy + (H/2 * scale) * sin(t)*cos(t) / (1 + sin²(t))
   // Both server and viewer advance _infinityT at the same rate → identical trajectory.
-  _stepInfinityPath(dt) {
+  _stepInfinityPath() {
     const w = this.options.worldWidth
     const cx = w / 2
     const cy = this._getTrackBandCenterY()
     const bandHalfH = (this._getTrackBandYMax() - this._getTrackBandYMin()) / 2
-    const scale = 0.75
+    // scale: ball reaches ~95% of screen edges (vs 75% before) — keeps ball radius
+    // off the literal edge while visually reaching the sides
+    const scale = 0.95
 
-    // Advance phase: 0.06 factor → ~1.8 rad/s at speed=30 → ~3.5s per cycle
-    this._infinityT = ((this._infinityT || 0) + this.ball.speed * FIXED_DT * 0.06) % (2 * Math.PI)
+    // Store prev t to detect center-crossings (cos(t) sign change)
+    const prevT = this._infinityT || 0
+    // Advance phase: 0.10 factor → ~3.0 rad/s at speed=30 → ~2.1s per cycle
+    // (comparable to regular horizontal mode at same speed)
+    this._infinityT = ((this._infinityT || 0) + this.ball.speed * FIXED_DT * 0.10) % (2 * Math.PI)
     const t = this._infinityT
     const denom = 1 + Math.sin(t) * Math.sin(t)
 
@@ -1124,6 +1131,17 @@ class PhysicsEngine {
     this.ball.vy = 0
     this._currPos.x = this.ball.x
     this._currPos.y = this.ball.y
+
+    // Detect center-crossing: cos(t) changes sign → ball crossed the vertical midline.
+    // Crossing at π/2 (right→left) and 3π/2 (left→right) — one pass per half-cycle.
+    // Skip detection on the very first tick (prevT === 0 on first frame).
+    if (prevT > 0 && Math.cos(prevT) * Math.cos(t) < 0) {
+      const crossingRight = Math.cos(prevT) > 0
+      const side = crossingRight ? 'left' : 'right'
+      const dir = { x: crossingRight ? -1 : 1, y: 0 }
+      this._triggerBounceCallback(side, dir)
+      this._dispatchBounceEvent(side)
+    }
   }
 
   // ============================================
@@ -1218,9 +1236,9 @@ class PhysicsEngine {
       return
     }
 
-    // NEW: lemniscate path bypasses bounce physics
+    // Lemniscate (∞) path: deterministic center-crossing detection replaces wall bounces
     if (this.ball.infinity) {
-      this._stepInfinityPath(deltaTime)
+      this._stepInfinityPath()
       this._decayVisualOffset(deltaTime)
       return
     }
@@ -1245,9 +1263,9 @@ class PhysicsEngine {
     if (this.state.paused) return
     if (!this._worldSizeSet) return
 
-    // NEW: lemniscate path bypasses bounce physics
+    // Lemniscate (∞) path: deterministic center-crossing detection replaces wall bounces
     if (this.ball.infinity) {
-      this._stepInfinityPath(deltaTime)
+      this._stepInfinityPath()
       return
     }
 
@@ -1708,9 +1726,10 @@ class PhysicsEngine {
     if (command.colorBg !== undefined) this.setBgColor(command.colorBg)
     if (command.ballEmoji !== undefined) this.ball.ballEmoji = command.ballEmoji
     if (typeof command.infinity === 'boolean') {
-      const wasInfinity = this.ball.infinity
       this.ball.infinity = command.infinity
-      if (!command.infinity && wasInfinity) this._infinityT = 0
+      // Reset phase on any infinity state change so viewer and controller preview
+      // always start lemniscate from the same origin (t=0)
+      this._infinityT = 0
     }
     if (command.trackBand !== undefined) this.options.trackBand = command.trackBand
   }

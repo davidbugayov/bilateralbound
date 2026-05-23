@@ -235,7 +235,7 @@ class WebSocketClient {
     )
     // Track WebSocket reconnects in Metrika
     if (isReconnection && typeof globalThis !== 'undefined') {
-      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_ws_reconnect')) } catch (_) { /* noop */ }
+      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_ws_reconnect')) } catch (e) { void e }
     }
   }
   _handleConnectionError(error) {

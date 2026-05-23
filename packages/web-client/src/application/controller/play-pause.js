@@ -94,14 +94,14 @@ function setPlayPauseState(shouldPlay) {
   if (shouldPlay) {
     bbCounters.start()
     // Track session start in Metrika
-    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_started')) } catch (_) { /* noop */ }
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_started')) } catch (e) { void e }
   } else {
     bbCounters.stop(true)
     // Track session stop + duration in Metrika
     try {
       globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_stopped'))
       globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_duration', { detail: { seconds: bbCounters.getElapsedSeconds?.() || 0 } }))
-    } catch (_) { /* noop */ }
+    } catch (e) { void e }
   }
 
   if (previewPhysicsEngine) {

@@ -904,7 +904,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       })
       .catch(() => {})
     // Track viewer connection in Metrika
-    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_viewer_connected')) } catch (_) { /* noop */ }
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_viewer_connected')) } catch (e) { void e }
   })
 
   wsClient.on('close', () => {
@@ -917,7 +917,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       'Connection lost. Reconnecting…'
     showConnectionBanner(lostMsg, '🔄')
     // Track viewer disconnection in Metrika
-    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_viewer_disconnected')) } catch (_) { /* noop */ }
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_viewer_disconnected')) } catch (e) { void e }
   })
 
   wsClient.on('error', (error) => {

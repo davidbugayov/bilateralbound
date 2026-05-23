@@ -1238,7 +1238,7 @@ function updateSpeed(speed) {
   }
   try {
     safeSend(WS_MSG.controllerUpdate, { speed })
-    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'speed', value: speed } })) } catch (_) { /* noop */ }
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'speed', value: speed } })) } catch (e) { void e }
   } catch (err) {
     debugWarn('Error updating speed:', err)
   }
@@ -1283,7 +1283,8 @@ async function initializePreview() {
       canvas,
       previewPhysicsEngine,
       {
-        localPhysics: true // Use accumulator-based alpha for smoother interpolation
+        localPhysics: true, // Use accumulator-based alpha for smoother interpolation
+        preserveWorldSize: true // Preview canvas ≠ viewer world; prevent canvas resize from overwriting world size
       }
     )
     globalThis.__previewCanvas = canvas
@@ -1562,7 +1563,7 @@ function setDirection(directionMode) {
     }
     updateDirectionButtons()
     updateDirectionDisplay(dirX, dirY)
-    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'direction', value: directionMode } })) } catch (_) { /* noop */ }
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'direction', value: directionMode } })) } catch (e) { void e }
   } catch (error) {
     console.error('Ошибка установки направления:', error)
   }
@@ -1652,7 +1653,7 @@ function setBallColor(color) {
     return
   }
   safeSend(WS_MSG.controllerUpdate, { colorBall: color })
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'ballColor', value: color } })) } catch (_) { /* noop */ }
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'ballColor', value: color } })) } catch (e) { void e }
 }
 function setBallSize(size) {
   // Всегда обновляем локальное состояние и превью
@@ -1666,7 +1667,7 @@ function setBallSize(size) {
     return
   }
   safeSend(WS_MSG.controllerUpdate, { radius: size })
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'ballSize', value: size } })) } catch (_) { /* noop */ }
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'ballSize', value: size } })) } catch (e) { void e }
 }
 function setSoundEnabled(enabled) {
   if (globalThis.__current?.isInitializing) {
@@ -1681,7 +1682,7 @@ function setSoundEnabled(enabled) {
     lastServerState.soundEnabled = Boolean(enabled)
   }
   updateViewerAudioIndicators()
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'soundEnabled', value: Boolean(enabled) } })) } catch (_) { /* noop */ }
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'soundEnabled', value: Boolean(enabled) } })) } catch (e) { void e }
 }
 function setSoundType(soundType) {
   if (globalThis.__current?.isInitializing) {
@@ -1692,7 +1693,7 @@ function setSoundType(soundType) {
     return
   }
   safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'soundType', value: soundType } })) } catch (_) { /* noop */ }
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'soundType', value: soundType } })) } catch (e) { void e }
 }
 function setBallSizeMultiplier(multiplier) {
   const baseSize = 20
@@ -1719,7 +1720,7 @@ function setBackgroundColor(color) {
     return
   }
   safeSend(WS_MSG.controllerUpdate, { colorBg: color })
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'bgColor', value: color } })) } catch (_) { /* noop */ }
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'bgColor', value: color } })) } catch (e) { void e }
 }
 function updateDirectionButtons() {
   const currentMode = getCurrentDirectionMode()
@@ -1840,6 +1841,12 @@ function _setPlayPauseState(shouldPlay) {
   }
   if (!globalThis.__current?.viewerConnected) {
     if (shouldPlay) showViewerNotConnectedWarning()
+    return
+  }
+  // Guard: don't start if viewer screen size is unknown — physics needs world dimensions
+  const vs = globalThis.__current?.viewerScreenSize
+  if (shouldPlay && (!vs || vs.width <= 0 || vs.height <= 0)) {
+    showViewerSizeNotReadyWarning()
     return
   }
   const currentMode = getCurrentDirectionMode()
@@ -2049,7 +2056,8 @@ function _initializeFullscreenRenderer() {
         previewFsCanvas,
         previewPhysicsEngine,
         {
-          localPhysics: false
+          localPhysics: false,
+          preserveWorldSize: true // Fullscreen canvas ≠ viewer world; prevent canvas resize from overwriting world size
         }
       )
       previewFsRenderer.start()
@@ -2525,6 +2533,36 @@ function showViewerNotConnectedWarning() {
     })
   } else {
     // Fallback: показываем через alert если errorStateManager недоступен
+    showNotification(`${title}: ${message}`, 'warning')
+  }
+}
+/**
+ * Показывает предупреждение когда размеры экрана viewer ещё не получены
+ */
+function showViewerSizeNotReadyWarning() {
+  if (globalThis.__current?.isInitializing) {
+    return
+  }
+  const _t = (key, fallback) => {
+    const v = globalThis.i18n?.t(key)
+    return v && v !== key ? v : fallback
+  }
+  const title = _t(
+    'controller.viewerSizeNotReadyTitle',
+    'Screen size unknown'
+  )
+  const message = _t(
+    'controller.viewerSizeNotReadyMessage',
+    'Waiting for viewer screen size. Please wait a moment and try again.'
+  )
+
+  if (globalThis.errorStateManager?.show) {
+    globalThis.errorStateManager.show('viewer-size-not-ready', {
+      title: title,
+      message: message,
+      duration: 6000
+    })
+  } else {
     showNotification(`${title}: ${message}`, 'warning')
   }
 }

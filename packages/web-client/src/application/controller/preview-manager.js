@@ -119,7 +119,8 @@ async function _initStandalone() {
     // Создание renderer
     _canvas = canvas
     _renderer = new BallRenderer(canvas, _physicsEngine, {
-      localPhysics: true
+      localPhysics: true,
+      preserveWorldSize: true // Preview canvas is scaled-down; world size comes from viewerScreenSize
     })
     _renderer.start()
 
@@ -271,7 +272,7 @@ function setCanvasDimensions(canvas, width, height) {
  */
 function updatePhysicsEngineWorldSize(viewerScreenSize) {
   if (
-    _physicsEngine?.worldWidth &&
+    _physicsEngine &&
     viewerScreenSize?.width > 0 &&
     viewerScreenSize?.height > 0
   ) {

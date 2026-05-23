@@ -47,7 +47,8 @@ function _initializeFullscreenRenderer() {
         _previewFsCanvas,
         previewPhysicsEngine,
         {
-          localPhysics: false
+          localPhysics: false,
+          preserveWorldSize: true // Fullscreen canvas ≠ viewer world; world size comes from viewerScreenSize
         }
       )
       _previewFsRenderer.start()
