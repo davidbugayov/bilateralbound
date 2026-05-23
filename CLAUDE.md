@@ -153,6 +153,57 @@ Shared: `packages/shared/physics-engine.js` — deterministic 60Hz fixed-step ph
 - `packages/web-client/src/network/websocket-client.js` — reconnect logic
 - `packages/web-client/src/viewer.js` — patient-facing; therapeutic UX matters
 
+## Analytics — Yandex.Metrica
+
+**Token**: `YM_ID = 104698530` (counter ID)
+
+**Architecture** — two scripts loaded in `<head>` with `defer`:
+
+| Script | Path | Role |
+|--------|------|------|
+| `cookie-consent.js` | `public/js/ui/cookie-consent.js` | Consent banner, loads ym tag on accept |
+| `metrika-events.js` | `public/js/analytics/metrika-events.js` | Listens for `bb_metrika_*` events, calls `ym()` |
+
+**Event bus pattern**: app code dispatches `CustomEvent` — metrika-events.js listens and translates to `ym(YM_ID, 'reachGoal', ...)`:
+
+```js
+globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_started'))
+globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'speed' } }))
+globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_duration', { detail: { seconds: 120 } }))
+```
+
+**Cookie consent flow**:
+- Consent stored in `localStorage` key `bb_cookie_consent` (`'accepted'` / `'declined'` / `null`)
+- `accepted` → ym loads immediately (creates shim, injects async tag)
+- `null` → banner shown after 500ms; ym NOT loaded; events queued in `metrika-events.js`
+- `declined` → ym never loads; queue discarded
+
+**Queue mechanism** (`metrika-events.js`):
+- Events before consent go to `pendingEvents[]` (max 200)
+- On `bb_cookie_consent_accepted` → `flushQueue()` drains to ym
+- On `bb_cookie_consent_declined` → queue cleared, `queueFlushed = true` (stop collecting)
+- `globalThis.MetrikaEvents.getPendingCount()` — inspect queue size for debugging
+
+**Metrika events** dispatched from app:
+
+| CustomEvent | Goal name | Source |
+|-------------|-----------|--------|
+| `bb_metrika_session_created` | `session_created` | controller.js / session create |
+| `bb_metrika_session_started` | `session_started` | play-pause.js |
+| `bb_metrika_session_stopped` | `session_stopped` | play-pause.js |
+| `bb_metrika_session_duration` | `session_duration` | play-pause.js (detail.seconds) |
+| `bb_metrika_viewer_connected` | `viewer_connected` | viewer.js |
+| `bb_metrika_viewer_disconnected` | `viewer_disconnected` | viewer.js |
+| `bb_metrika_ws_reconnect` | `ws_reconnect` | websocket-client.js |
+| `bb_metrika_breathing_started` | `breathing_started` | breathing.html |
+| `bb_metrika_settings_changed` | `settings_changed` | controller.js (detail.setting) |
+| `bb_metrika_permanent_link_created` | `permanent_link_created` | — |
+| `bb_metrika_subscribe_clicked` | `subscribe_clicked` | — |
+
+**Server-side analytics**: `services/AnalyticsCollector.js` — collects usage stats independently of Metrika.
+
+**CSP** (`middleware.js`): Allows `https://mc.yandex.ru`, `https://mc.yandex.com`, `wss://mc.yandex.com`.
+
 ## Environment Variables
 
 | Variable | Required | Description |

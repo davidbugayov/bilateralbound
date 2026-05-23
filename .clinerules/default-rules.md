@@ -226,6 +226,28 @@ iptables -A FORWARD -d 10.10.10.0/24 -j ACCEPT
 # /etc/networkd-dispatcher/routable.d/50-iptables-restore
 ```
 
+## Analytics — Yandex.Metrica
+
+**Token**: `YM_ID = 104698530` (counter ID)
+
+**Architecture**: two scripts in `<head>` with `defer`:
+- `public/js/ui/cookie-consent.js` — consent banner, loads ym on accept
+- `public/js/analytics/metrika-events.js` — event bus → ym(`reachGoal`)
+
+**Event bus**:
+```js
+globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_started'))
+globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'speed' } }))
+```
+
+**Cookie consent flow** (`localStorage` key `bb_cookie_consent`): `accepted` → ym loads; `null` → banner, queue; `declined` → discard.
+
+**Queue** (metrika-events.js): `pendingEvents[]` (max 200), flushed on `bb_cookie_consent_accepted`, cleared on `declined`.
+
+**Metrika goals** — see CLAUDE.md for full event table. All dispatched as `CustomEvent` from app modules.
+
+**CSP** (`middleware.js`): allows `https://mc.yandex.ru`, `https://mc.yandex.com`, `wss://mc.yandex.com`.
+
 ## Environment Variables
 
 | Variable | Required | Description |
