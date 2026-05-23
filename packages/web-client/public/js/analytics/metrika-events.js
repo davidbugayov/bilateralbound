@@ -16,19 +16,65 @@
  *   bb_metrika_ws_reconnect      — WebSocket reconnected
  *   bb_metrika_breathing_started — breathing exercise started
  *   bb_metrika_session_duration  — detail: { seconds: number }
+ *
+ * Queue behaviour:
+ *   Events dispatched before cookie consent (ym not loaded) are queued
+ *   and flushed when consent is granted. This prevents silent data loss.
  */
 (function () {
   'use strict'
 
   var YM_ID = 104698530
+  var MAX_QUEUE_SIZE = 200
+
+  // Queue of {name, params} for events that arrived before Metrika was loaded
+  var pendingEvents = []
+  var queueFlushed = false
 
   /**
-   * Safe ym() call — silently no-op if Metrika not loaded (consent not given)
+   * Push to pending queue — bounded to prevent memory leaks
+   */
+  function enqueue(name, params) {
+    if (pendingEvents.length >= MAX_QUEUE_SIZE) {
+      // Drop oldest to make room (shouldn't happen in practice)
+      pendingEvents.shift()
+    }
+    pendingEvents.push({ name: name, params: params || {} })
+  }
+
+  /**
+   * Drain the pending queue into Metrika
+   */
+  function flushQueue() {
+    if (queueFlushed || typeof globalThis.ym !== 'function') return
+    queueFlushed = true
+
+    var events = pendingEvents
+    pendingEvents = []
+
+    for (var i = 0; i < events.length; i++) {
+      try {
+        globalThis.ym(YM_ID, 'reachGoal', events[i].name, events[i].params)
+      } catch (_) { /* ignore individual failures */ }
+    }
+
+    if (events.length > 0) {
+      console.log('[MetrikaEvents] Flushed ' + events.length + ' queued events after consent')
+    }
+  }
+
+  /**
+   * Safe ym() call — queues if Metrika not yet loaded
    */
   function reachGoal(name, params) {
     try {
       if (typeof globalThis.ym === 'function') {
+        // Flush any pending events first (belt-and-suspenders)
+        flushQueue()
         globalThis.ym(YM_ID, 'reachGoal', name, params || {})
+      } else if (!queueFlushed) {
+        // ym not loaded yet and consent not yet granted — queue it
+        enqueue(name, params)
       }
     } catch (_) { /* ignore */ }
   }
@@ -74,14 +120,23 @@
     }
   })
 
-  // Also handle when consent is granted after page load (re-fire page view context)
+  // When consent is granted after page load — flush queue + fire cookie_accepted
   globalThis.addEventListener('bb_cookie_consent_accepted', function () {
+    flushQueue()
     reachGoal('cookie_accepted')
   })
 
-  // Expose for direct calls if needed
+  // When user declines — discard queue, stop collecting (no Metrika, no tracking)
+  globalThis.addEventListener('bb_cookie_consent_declined', function () {
+    pendingEvents = []
+    queueFlushed = true
+  })
+
+  // Expose for direct calls and testing
   globalThis.MetrikaEvents = {
     reachGoal: reachGoal,
+    flushQueue: flushQueue,
+    getPendingCount: function () { return pendingEvents.length },
     ymId: YM_ID
   }
 })()
