@@ -186,21 +186,39 @@ globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_duration', { detail
 
 **Metrika events** dispatched from app:
 
-| CustomEvent | Goal name | Source |
-|-------------|-----------|--------|
-| `bb_metrika_session_created` | `session_created` | controller.js / session create |
-| `bb_metrika_session_started` | `session_started` | play-pause.js |
-| `bb_metrika_session_stopped` | `session_stopped` | play-pause.js |
-| `bb_metrika_session_duration` | `session_duration` | play-pause.js (detail.seconds) |
-| `bb_metrika_viewer_connected` | `viewer_connected` | viewer.js |
-| `bb_metrika_viewer_disconnected` | `viewer_disconnected` | viewer.js |
-| `bb_metrika_ws_reconnect` | `ws_reconnect` | websocket-client.js |
-| `bb_metrika_breathing_started` | `breathing_started` | breathing.html |
-| `bb_metrika_settings_changed` | `settings_changed` | controller.js (detail.setting) |
-| `bb_metrika_permanent_link_created` | `permanent_link_created` | — |
-| `bb_metrika_subscribe_clicked` | `subscribe_clicked` | — |
+| CustomEvent | Goal name | Source | Dispatched? |
+|-------------|-----------|--------|-------------|
+| `bb_metrika_session_created` | `session_created` | `main-page.js:83` — при нажатии «Start Session» | ✅ |
+| `bb_metrika_session_started` | `session_started` | `play-pause.js:97` — play pressed | ✅ |
+| `bb_metrika_session_stopped` | `session_stopped` | `play-pause.js:102` — pause pressed | ✅ |
+| `bb_metrika_session_duration` | `session_duration` | `play-pause.js:103` — detail.seconds | ✅ |
+| `bb_metrika_viewer_connected` | `viewer_connected` | `viewer.js:907` — WS open | ✅ |
+| `bb_metrika_viewer_disconnected` | `viewer_disconnected` | `viewer.js:920` — WS close | ✅ |
+| `bb_metrika_ws_reconnect` | `ws_reconnect` | `websocket-client.js:238` — reconnection | ✅ |
+| `bb_metrika_breathing_started` | `breathing_started` | `breathing.html:610` — detail.minutes | ✅ |
+| `bb_metrika_settings_changed` | `settings_changed` | `controller.js` (7 triggers): speed, direction, ballColor, ballSize, soundEnabled, soundType, bgColor — each with detail.setting and detail.value | ✅ |
+| `bb_metrika_permanent_link_created` | `permanent_link_created` | `main-page.js:213` — detail.clientId | ✅ |
+| `bb_metrika_subscribe_clicked` | `subscribe_clicked` | `main-page.js:371` — subscribe button | ✅ |
 
-**Server-side analytics**: `services/AnalyticsCollector.js` — collects usage stats independently of Metrika.
+**NOT dispatched anywhere (dead entries in eventMap):** none — all 11 events have dispatch sites.
+
+**Server-side analytics** (`services/AnalyticsCollector.js` → persisted to `/tmp/emdr-analytics-{port}.json`):
+
+| Method | Where called | What it tracks |
+|--------|-------------|----------------|
+| `recordSessionCreated` | `SessionService:74` | Total sessions, timestamps for today/week/month |
+| `recordSessionEnded` | `SessionService:220`, `PhysicsService:294` | Session duration (cleanup/grace period) |
+| `recordViewerConnected` | `webSocketServer:42` | Viewer connection count + pair detection |
+| `recordControllerConnected` | `webSocketServer:44` | Controller connection count + pair detection |
+| `recordViewerDisconnected` | WebSocket close handler | Decrements current viewer count |
+| `recordControllerDisconnected` | WebSocket close handler | Decrements current controller count |
+| `recordHttpRequest` | `analytics.js` plugin middleware | Total HTTP requests |
+| `recordHttpError` | `analytics.js` plugin middleware | 4xx/5xx errors + top paths |
+| `recordSessionError` | `webSocketServer:254`, `PhysicsService:72` | WS errors, physics errors |
+| `recordPhysicsTick` | `PhysicsService:286` | Tick jitter (last 120 intervals) |
+| `recordLanguage` | `SessionService:197` | Language distribution |
+| `updatePeak` | `SessionService:75`, `sessionController:34` | Peak concurrent sessions |
+| `getStats` | `sessionController:35` | Aggregated report (localhost-only endpoint) |
 
 **CSP** (`middleware.js`): Allows `https://mc.yandex.ru`, `https://mc.yandex.com`, `wss://mc.yandex.com`.
 
