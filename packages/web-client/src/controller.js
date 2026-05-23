@@ -556,6 +556,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     applyServerStateToPreview(state)
     updateViewerAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
     _syncUIPause(state)
+    _syncUIInfinity(state)
     _syncUIDirection(state)
   })
   wsClient.on(WS_MSG.netMetrics, ({ jitterMs }) => {
