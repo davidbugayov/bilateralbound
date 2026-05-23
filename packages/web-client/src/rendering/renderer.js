@@ -421,8 +421,9 @@ class BallRenderer {
       this.ctx.shadowOffsetY = 0
       this.ctx.fillText(emoji, ball.x, ball.y)
       this.ctx.restore()
-    } catch (_err) {
+    } catch (err) {
       // emoji rendering is best-effort; canvas may reject some sequences
+      void err
     }
   }
   /**
