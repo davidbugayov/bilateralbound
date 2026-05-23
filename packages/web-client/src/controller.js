@@ -98,6 +98,8 @@ function startSyncMonitor() {
       debugWarn(
         `[SYNC_MONITOR][controller] drift=${diag.driftPx}px jitter=${diag.jitterMs}ms spring=${diag.springActive}`
       )
+      // Track sync drift in Metrika
+      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_sync_drift', { detail: { driftPx: diag.driftPx, jitterMs: diag.jitterMs, role: 'controller' } })) } catch (_) { /* noop */ }
     }
   }, 2000)
 }
@@ -454,6 +456,10 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       globalThis.__current.viewerScreenSize = data.screenSize
     }
     if (isConnected) {
+      // Track session ready (both viewer+controller connected)
+      if (!wasConnected) {
+        try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_ready')) } catch (_) { /* noop */ }
+      }
       completeInitialization().catch(debugError)
       updateViewerStatusUI()
     }
@@ -556,6 +562,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     applyServerStateToPreview(state)
     updateViewerAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
     _syncUIPause(state)
+    _syncUIInfinity(state)
     _syncUIDirection(state)
   })
   wsClient.on(WS_MSG.netMetrics, ({ jitterMs }) => {
@@ -1536,6 +1543,8 @@ function setDirection(directionMode) {
         previewPhysicsEngine.ball.infinity = true
         previewPhysicsEngine._infinityT = 0
       }
+      // Track infinity mode usage
+      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_feature_used', { detail: { feature: 'infinity', action: 'enable' } })) } catch (_) { /* noop */ }
       if (lastServerState) {
         lastServerState.infinity = true
         lastServerState.dirX = 0

@@ -33,6 +33,8 @@ globalThis.PhysicsEngine = PhysicsEngine
 
 function showError(message) {
   console.error('❌ Viewer Error:', message)
+  // Track viewer errors in Metrika
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_viewer_error', { detail: { message: String(message).substring(0, 200) } })) } catch (_) { /* noop */ }
   const loading = document.getElementById('loading')
   if (loading) {
     loading.textContent = '❌ ' + message
@@ -88,6 +90,8 @@ function startSyncMonitor() {
       debugWarn(
         `[SYNC_MONITOR][viewer] drift=${diag.driftPx}px jitter=${diag.jitterMs}ms spring=${diag.springActive}`
       )
+      // Track sync drift in Metrika for monitoring
+      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_sync_drift', { detail: { driftPx: diag.driftPx, jitterMs: diag.jitterMs, role: 'viewer' } })) } catch (_) { /* noop */ }
     }
   }, 2000)
 }
@@ -903,8 +907,8 @@ function setupWebSocketHandlers(wsClient, sessionId) {
         }
       })
       .catch(() => {})
-    // Track viewer connection in Metrika
-    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_viewer_connected')) } catch (e) { void e }
+    // Track viewer connection in Metrika with screen info
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_viewer_connected', { detail: { screenWidth: globalThis.innerWidth, screenHeight: globalThis.innerHeight } })) } catch (e) { void e }
   })
 
   wsClient.on('close', () => {
@@ -921,6 +925,8 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   })
 
   wsClient.on('error', (error) => {
+    // Track WS errors in Metrika
+    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_ws_error', { detail: { message: String(error?.message || error?.error || error).substring(0, 200) } })) } catch (_) { /* noop */ }
     handleWebSocketError(error)
   })
 

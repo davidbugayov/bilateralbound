@@ -74,6 +74,8 @@ function openPreviewFullscreen() {
   overlay.style.display = 'block'
   _isPreviewFullscreen = true
   document.body.classList.add('fullscreen-active')
+  // Track fullscreen usage
+  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_feature_used', { detail: { feature: 'fullscreen', action: 'open' } })) } catch (_) { /* noop */ }
   _initializeFullscreenRenderer()
   resizePreviewFullscreen()
   setupFsPanelAutoHide()
