@@ -32,6 +32,11 @@
 (function () {
   'use strict'
 
+  // Skip analytics on dev/local — prevents polluting production Metrika data
+  if (/dev\.emdrbilateral|localhost|127\.0\.0\.1/.test(globalThis.location?.hostname || '')) {
+    return
+  }
+
   var YM_ID = 104698530
   var MAX_QUEUE_SIZE = 200
 
