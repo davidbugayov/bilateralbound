@@ -31,6 +31,8 @@ class AnalyticsCollector {
     // Session error tracking
     this.sessionErrors = 0
     this.recentSessionErrors = [] // last 50: { ts, sessionId, type }
+    // Stale sessions: controller created but viewer never connected
+    this.totalStaleSessions = 0
     // Physics tick jitter tracking (last 120 intervals, ~2 seconds at 60Hz)
     this._physicsTickIntervals = []
     // Persist every N requests to reduce I/O
@@ -62,6 +64,7 @@ class AnalyticsCollector {
         this.totalPairTimeMs = data.totalPairTimeMs || 0
         this.pairedWithTimeCount = data.pairedWithTimeCount || 0
         this.sessionErrors = data.sessionErrors || 0
+        this.totalStaleSessions = data.totalStaleSessions || 0
         this.recentSessionErrors = data.recentSessionErrors || []
         this.sessionTimestamps = data.sessionTimestamps || []
       }
@@ -87,6 +90,7 @@ class AnalyticsCollector {
         totalPairTimeMs: this.totalPairTimeMs,
         pairedWithTimeCount: this.pairedWithTimeCount,
         sessionErrors: this.sessionErrors,
+        totalStaleSessions: this.totalStaleSessions,
         recentSessionErrors: this.recentSessionErrors.slice(-50),
         sessionTimestamps: this._trimTimestamps(
           Date.now() - 90 * 24 * 3600 * 1000
@@ -135,6 +139,10 @@ class AnalyticsCollector {
       this.completedSessionDurations.push(duration)
       if (this.completedSessionDurations.length > 200) {
         this.completedSessionDurations.shift()
+      }
+      // Track sessions where viewer never connected (stale/funnel drop)
+      if (meta.controllerConnected && !meta.viewerConnected) {
+        this.totalStaleSessions++
       }
       this._sessionMeta.delete(sessionId)
       this._persist()
@@ -243,12 +251,22 @@ class AnalyticsCollector {
     }
   }
 
+  /**
+   * Compute percentile from sorted array
+   */
+  _percentile(sorted, p) {
+    if (sorted.length === 0) return 0
+    const idx = Math.ceil((p / 100) * sorted.length) - 1
+    return sorted[Math.max(0, idx)]
+  }
+
   getStats(currentSessionCount = 0) {
     const now = Date.now()
     const startOfToday = new Date()
     startOfToday.setHours(0, 0, 0, 0)
     const uptimeSec = Math.floor((now - this.startedAt) / 1000)
     const durations = this.completedSessionDurations
+    const sortedDurations = durations.length > 0 ? [...durations].sort((a, b) => a - b) : []
     const avgDurationMs =
       durations.length > 0
         ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
@@ -311,8 +329,18 @@ class AnalyticsCollector {
         avgTimeToViewerHuman: this._formatDuration(avgPairTimeMs),
         avgDurationMs,
         maxDurationMs,
+        p50DurationMs: this._percentile(sortedDurations, 50),
+        p90DurationMs: this._percentile(sortedDurations, 90),
+        p99DurationMs: this._percentile(sortedDurations, 99),
         avgDurationHuman: this._formatDuration(avgDurationMs),
-        maxDurationHuman: this._formatDuration(maxDurationMs)
+        maxDurationHuman: this._formatDuration(maxDurationMs),
+        p50DurationHuman: this._formatDuration(this._percentile(sortedDurations, 50)),
+        p90DurationHuman: this._formatDuration(this._percentile(sortedDurations, 90)),
+        staleSessions: this.totalStaleSessions,
+        staleRate:
+          this.totalSessionsCreated > 0
+            ? `${Math.round((this.totalStaleSessions / this.totalSessionsCreated) * 100)}%`
+            : '0%'
       },
       connections: {
         totalViewers: this.totalViewerConnections,

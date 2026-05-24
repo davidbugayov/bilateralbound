@@ -32,6 +32,11 @@
 (function () {
   'use strict'
 
+  // Skip analytics on dev/local — prevents polluting production Metrika data
+  if (/dev\.emdrbilateral|localhost|127\.0\.0\.1/.test(globalThis.location?.hostname || '')) {
+    return
+  }
+
   var YM_ID = 104698530
   var MAX_QUEUE_SIZE = 200
 
@@ -145,14 +150,16 @@
       pageViewSent = true
       try {
         if (typeof globalThis.ym === 'function') {
+          // Set user params BEFORE hit so they attach to the pageview
+          globalThis.ym(YM_ID, 'userParams', {
+            screenWidth: globalThis.screen?.width || 0,
+            screenHeight: globalThis.screen?.height || 0,
+            viewportWidth: globalThis.innerWidth || 0,
+            viewportHeight: globalThis.innerHeight || 0
+          })
+          // Manual hit required because init uses ssr:true (no auto-pageview)
           globalThis.ym(YM_ID, 'hit', globalThis.location.href, {
-            referer: document.referrer || undefined,
-            params: {
-              screen_width: globalThis.screen?.width || 0,
-              screen_height: globalThis.screen?.height || 0,
-              viewport_width: globalThis.innerWidth || 0,
-              viewport_height: globalThis.innerHeight || 0
-            }
+            referer: document.referrer || undefined
           })
         }
       } catch (_) { /* ignore */ }

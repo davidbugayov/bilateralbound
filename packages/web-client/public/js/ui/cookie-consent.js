@@ -12,8 +12,14 @@
 (function () {
   'use strict'
 
-  const STORAGE_KEY = 'bb_cookie_consent'
-  const YM_ID = 104698530
+  var STORAGE_KEY = 'bb_cookie_consent'
+  var YM_ID = 104698530
+
+  // Skip analytics entirely on dev/local
+  var hostname = globalThis.location?.hostname || ''
+  if (/dev\.emdrbilateral|localhost|127\.0\.0\.1/.test(hostname)) {
+    return
+  }
 
   /**
    * Read consent from localStorage
@@ -59,8 +65,10 @@
       ssr: true,
       webvisor: true,
       clickmap: true,
-      accurateTrackBounce: true,
-      trackLinks: true
+      accurateTrackBounce: false,
+      trackLinks: true,
+      childIframe: true,
+      triggerEvent: true
     })
 
     // noscript fallback
