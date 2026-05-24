@@ -65,8 +65,10 @@
       ssr: true,
       webvisor: true,
       clickmap: true,
-      accurateTrackBounce: true,
-      trackLinks: true
+      accurateTrackBounce: false,
+      trackLinks: true,
+      childIframe: true,
+      triggerEvent: true
     })
 
     // noscript fallback
