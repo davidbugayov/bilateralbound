@@ -189,8 +189,7 @@
     "realtimeDesc": "Conexão WebSocket com precisão de milissegundos, sem atraso",
     "audio": "Áudio bilateral",
     "audioDesc": "O som alterna entre o ouvido esquerdo e direito para efeito bilateral completo",
-    "links": "Links permanentes",
-    "linksDesc": "Salve os links e reutilize com o mesmo cliente sempre",
+    "breathingDesc": "Respiração coerente 5s/5s + Abraço borboleta para autorregulação",
     "free": "Gratuito",
     "freeDesc": "Sem registro, sem assinatura — aberto para terapeutas em todo o mundo",
     "sectionHeading": "Funcionalidades principais"
