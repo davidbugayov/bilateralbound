@@ -89,6 +89,12 @@ function registerStaticRoutes(
     res.sendFile(breathingPath)
   })
 
+  // About page — EMDR therapy information (8 languages, client-side i18n)
+  app.get('/about', (req, res) => {
+    const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
+    res.sendFile(path.join(publicPath, 'about.html'))
+  })
+
   // Viewer HTML (from expressApp L941-949)
   app.get('/s/:sessionId', (req, res) => {
     const session = sessionService.getSession(req.params.sessionId)
