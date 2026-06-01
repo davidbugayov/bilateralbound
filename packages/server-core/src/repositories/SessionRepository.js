@@ -241,6 +241,16 @@ class SessionRepository {
         expiredIds.push({ id, reason: 'no_state_updates' })
         continue
       }
+
+      // 5. Controller created session but viewer never connected — cleanup after 10 min
+      if (
+        session.controllerConnected &&
+        !session.viewerConnected &&
+        now - session.createdAt > 10 * 60 * 1000
+      ) {
+        expiredIds.push({ id, reason: 'stale_controller_no_viewer' })
+        continue
+      }
     }
 
     for (const { id } of expiredIds) {
