@@ -97,7 +97,8 @@
     "text": "EMDR-Therapie sollte nur von qualifizierten Fachleuten durchgeführt werden. Diese Plattform ist für den Einsatz in der professionellen psychotherapeutischen Praxis bestimmt."
   },
   "footer": {
-    "text": "⚡ BilateralBound {{VERSION}}"
+    "text": "⚡ BilateralBound {{VERSION}}",
+    "about": "Über EMDR"
   },
   "validation": {
     "enterClientId": "❌ Bitte geben Sie die Klienten-ID ein",
@@ -456,6 +457,9 @@
     "disclaimerTitle": "Important Medical Disclaimer",
     "disclaimerP1": "BilateralBound is a technical tool, <strong>not</strong> a certified medical device. EMDR should only be conducted by qualified professionals.",
     "disclaimerP2": "This platform does not provide medical advice. If in crisis, contact emergency services.",
-    "ctaStart": "🚀 Start an EMDR Session"
+    "ctaStart": "🚀 Start an EMDR Session",
+    "heroTitle": "EMDR-Therapie",
+    "heroTitle2": "& BilateralBound",
+    "heroSubtitle": "Ein kostenloses, professionelles Tool für bilaterale Stimulation — von Therapeuten weltweit genutzt"
   }
 }
