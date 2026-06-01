@@ -147,6 +147,12 @@ function registerSeoRoutes(app) {
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
+  <url>
+    <loc>${base}/about</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
 ${verificationUrls}
 </urlset>`
     res.setHeader('Content-Type', 'application/xml; charset=utf-8')
