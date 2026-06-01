@@ -83,6 +83,7 @@ let isPreviewFullscreen = false
 let _syncMonitorTimer = null
 let fsPanelHideTimer = null
 const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
+let _waitingTimerInterval = null // Timer counting time since session creation while waiting for viewer
 
 function startSyncMonitor() {
   stopSyncMonitor()
@@ -1321,11 +1322,10 @@ async function initializePreview() {
 function showWaitingForViewer() {
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
-    viewerInfo.textContent =
-      globalThis.i18n?.t('controller.waitingForViewerConnection') ||
-      '⏳ Waiting for viewer connection'
     viewerInfo.classList.remove('hidden')
   }
+  // Start elapsed timer — counts seconds since session creation
+  startWaitingTimer()
   // Compact preview while waiting for viewer — 500x250 with smaller ball
   const canvas = document.getElementById('preview')
   if (canvas) {
@@ -1345,9 +1345,41 @@ function showWaitingForViewer() {
   }
 }
 function hideWaitingForViewer() {
+  stopWaitingTimer()
   const viewerInfo = document.getElementById('viewerInfo')
   if (viewerInfo) {
     viewerInfo.classList.add('hidden')
+  }
+}
+/**
+ * Start elapsed timer showing how long controller has been waiting for viewer.
+ */
+function startWaitingTimer() {
+  stopWaitingTimer()
+  var startTs = globalThis.__current?.sessionCreatedAt || Date.now()
+  if (!globalThis.__current) globalThis.__current = {}
+  globalThis.__current.sessionCreatedAt = startTs
+
+  function tick() {
+    var elapsed = Math.floor((Date.now() - startTs) / 1000)
+    var min = Math.floor(elapsed / 60)
+    var sec = elapsed % 60
+    var timeStr = min + ':' + (sec < 10 ? '0' : '') + sec
+    var base =
+      globalThis.i18n?.t('controller.waitingForViewerConnection') ||
+      'Waiting for viewer connection'
+    var viewerInfo = document.getElementById('viewerInfo')
+    if (viewerInfo) {
+      viewerInfo.textContent = base + ' — ' + timeStr
+    }
+  }
+  tick()
+  _waitingTimerInterval = setInterval(tick, 1000)
+}
+function stopWaitingTimer() {
+  if (_waitingTimerInterval) {
+    clearInterval(_waitingTimerInterval)
+    _waitingTimerInterval = null
   }
 }
 /**
