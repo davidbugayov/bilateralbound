@@ -110,7 +110,8 @@
     "telegram": "💬 @emdrbilateral_bot",
     "privacy": "🔒 Privacy Policy",
     "offer": "📄 Terms of Service (Offer)",
-    "github": "💻 GitHub"
+    "github": "💻 GitHub",
+    "about": "About EMDR"
   },
   "validation": {
     "enterClientId": "❌ Please enter a client ID",
@@ -640,6 +641,9 @@
     "disclaimerTitle": "Important Medical Disclaimer",
     "disclaimerP1": "BilateralBound is a technical tool for bilateral stimulation. It is <strong>not</strong> a certified medical device. EMDR therapy should only be conducted by qualified, EMDR-trained mental health professionals.",
     "disclaimerP2": "The platform does not provide medical advice, diagnosis, or treatment. If you are in crisis, contact your local emergency services.",
-    "ctaStart": "🚀 Start an EMDR Session"
+    "ctaStart": "🚀 Start an EMDR Session",
+    "heroTitle": "EMDR Therapy",
+    "heroTitle2": "& BilateralBound",
+    "heroSubtitle": "A free, professional tool for bilateral stimulation — trusted by therapists worldwide"
   }
 }

@@ -89,7 +89,8 @@
     "telegram": "💬 @emdrbilateral_bot",
     "privacy": "🔒 隐私政策",
     "offer": "📄 公开要约",
-    "github": "💻 GitHub"
+    "github": "💻 GitHub",
+    "about": "关于EMDR"
   },
   "validation": {
     "enterClientId": "❌ 请输入客户ID",
@@ -448,6 +449,9 @@
     "disclaimerTitle": "Important Medical Disclaimer",
     "disclaimerP1": "BilateralBound is a technical tool, <strong>not</strong> a certified medical device. EMDR should only be conducted by qualified professionals.",
     "disclaimerP2": "This platform does not provide medical advice. If in crisis, contact emergency services.",
-    "ctaStart": "🚀 Start an EMDR Session"
+    "ctaStart": "🚀 Start an EMDR Session",
+    "heroTitle": "EMDR疗法",
+    "heroTitle2": "与 BilateralBound",
+    "heroSubtitle": "免费的专业双侧刺激工具 — 全球治疗师信赖的选择"
   }
 }

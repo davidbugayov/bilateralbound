@@ -103,7 +103,8 @@
     "telegram": "💬 @emdrbilateral_bot",
     "privacy": "🔒 プライバシーポリシー",
     "offer": "📄 利用規約",
-    "github": "💻 GitHub"
+    "github": "💻 GitHub",
+    "about": "EMDRについて"
   },
   "validation": {
     "enterClientId": "❌ クライアントIDを入力してください",
@@ -462,6 +463,9 @@
     "disclaimerTitle": "Important Medical Disclaimer",
     "disclaimerP1": "BilateralBound is a technical tool, <strong>not</strong> a certified medical device. EMDR should only be conducted by qualified professionals.",
     "disclaimerP2": "This platform does not provide medical advice. If in crisis, contact emergency services.",
-    "ctaStart": "🚀 Start an EMDR Session"
+    "ctaStart": "🚀 Start an EMDR Session",
+    "heroTitle": "EMDRセラピー",
+    "heroTitle2": "& BilateralBound",
+    "heroSubtitle": "世界中のセラピストに信頼される、無料のプロフェッショナルな両側性刺激ツール"
   }
 }
