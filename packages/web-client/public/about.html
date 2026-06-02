@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title data-i18n="about.metaTitle">About EMDR Therapy | BilateralBound</title>
-    <meta name="description" data-i18n-attr="content:about.metaDescription" content="Learn about EMDR therapy, how BilateralBound works for bilateral stimulation, and how therapists use it for PTSD, anxiety, and trauma treatment." />
+    <meta name="description" data-i18n-attr="content:about.metaDescription" content="Learn about EMDR therapy, how BilateralBound works, and how therapists use it for PTSD, anxiety, and trauma treatment." />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#0f172a" />
@@ -18,76 +18,43 @@
     <link rel="alternate" hreflang="zh" href="https://emdrbilateral.ru/about" />
     <link rel="alternate" hreflang="x-default" href="https://emdrbilateral.ru/about" />
     <link rel="canonical" href="https://emdrbilateral.ru/about" />
-    <link rel="stylesheet" href="/css/shared-components.css" />
-    <link rel="stylesheet" href="/css/light-theme.css" />
     <style>
-      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-      body{background:#020617;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overflow-x:hidden}
-      
-      /* ── Hero ── */
-      .about-hero{position:relative;padding:80px 20px 60px;text-align:center;overflow:hidden}
-      .about-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(59,130,246,0.15),transparent 60%),radial-gradient(ellipse 40% 50% at 80% 100%,rgba(99,102,241,0.08),transparent 60%);pointer-events:none}
-      .about-hero h1{font-size:clamp(1.8em,5vw,2.8em);font-weight:800;color:#fff;position:relative;letter-spacing:-0.02em}
-      .about-hero h1 span{background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-      .about-hero .subtitle{margin-top:12px;font-size:1.1em;color:#94a3b8;max-width:600px;margin-left:auto;margin-right:auto;position:relative}
-
-      /* ── Back Link ── */
-      .back-link{display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;color:#60a5fa;text-decoration:none;font-size:0.95em;transition:color .2s,transform .2s}
-      .back-link:hover{color:#93c5fd;transform:translateX(-3px)}
-      .back-link svg{width:16px;height:16px}
-
-      /* ── Main Container ── */
-      .container{max-width:860px;margin:0 auto;padding:0 20px 80px}
-
-      /* ── Section Cards ── */
-      .card{background:rgba(15,23,42,0.8);border:1px solid rgba(71,85,105,0.2);border-radius:16px;padding:32px;margin-bottom:24px;backdrop-filter:blur(12px);transition:border-color .3s,box-shadow .3s}
-      .card:hover{border-color:rgba(59,130,246,0.3);box-shadow:0 4px 24px rgba(59,130,246,0.06)}
-      .card h2{font-size:1.35em;color:#93c5fd;margin-bottom:16px;display:flex;align-items:center;gap:10px}
-      .card h2 .icon{font-size:1.3em}
-      .card h3{font-size:1.05em;color:#a5b4fc;margin:20px 0 10px}
-      .card p,.card li{line-height:1.75;color:#cbd5e1;font-size:1em}
-      .card ul,.card ol{padding-left:1.5em;margin-top:8px}
-      .card li{margin-bottom:8px}
-      .card li strong{color:#e2e8f0}
-
-      /* ── Feature Grid ── */
-      .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:20px}
-      .feature-item{background:rgba(30,41,59,0.6);border:1px solid rgba(71,85,105,0.15);border-radius:12px;padding:20px;transition:transform .2s,border-color .2s}
-      .feature-item:hover{transform:translateY(-2px);border-color:rgba(59,130,246,0.3)}
-      .feature-item .feat-icon{font-size:1.5em;margin-bottom:8px}
-      .feature-item strong{display:block;color:#f1f5f9;margin-bottom:4px;font-size:0.95em}
-      .feature-item span{color:#94a3b8;font-size:0.9em;line-height:1.5}
-
-      /* ── Step Timeline ── */
-      .steps{list-style:none;padding:0;counter-reset:step}
-      .steps li{counter-increment:step;display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
-      .steps li::before{content:counter(step);flex-shrink:0;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9em}
-
-      /* ── Highlight & Warning Boxes ── */
-      .highlight-box{background:rgba(37,99,235,0.1);border-left:3px solid #3b82f6;padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0;font-size:0.95em}
-      .highlight-box strong{color:#93c5fd}
-      .warning-box{background:rgba(234,179,8,0.08);border-left:3px solid #eab308;padding:20px 24px;margin-top:24px;border-radius:0 12px 12px 0}
-      .warning-box strong{color:#fbbf24}
-      .warning-box p{margin-top:8px;font-size:0.95em}
-
-      /* ── CTA ── */
-      .cta-section{text-align:center;margin-top:40px}
-      .cta-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:600;font-size:1.1em;transition:transform .2s,box-shadow .2s}
-      .cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(37,99,235,0.3)}
-
-      /* ── Fade-in Animation ── */
-      @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-      .card{animation:fadeUp .5s ease-out both}
-      .card:nth-child(2){animation-delay:.1s}
-      .card:nth-child(3){animation-delay:.2s}
-      .card:nth-child(4){animation-delay:.3s}
-      .card:nth-child(5){animation-delay:.4s}
-
-      @media(max-width:640px){
-        .about-hero{padding:50px 16px 40px}
-        .card{padding:24px 20px}
-        .feature-grid{grid-template-columns:1fr}
-      }
+      :root{--bg:#0f172a;--card-bg:#1e293b;--text:#e2e8f0;--text-muted:#94a3b8;--accent:#60a5fa;--accent-hover:#3b82f6;--border:#334155;--radius:12px}
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:24px}
+      .container{max-width:800px;margin:0 auto;padding:40px 0}
+      h1{font-size:2rem;margin-bottom:8px;color:#fff}
+      h2{font-size:1.3rem;margin-top:32px;margin-bottom:12px;color:var(--accent)}
+      h3{font-size:1.1rem;margin-top:24px;margin-bottom:8px;color:#cbd5e1}
+      p,li{color:var(--text-muted);margin-bottom:8px}
+      ul,ol{padding-left:20px;margin-bottom:16px}
+      a{color:var(--accent)}
+      a:hover{color:var(--accent-hover)}
+      .card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px}
+      .meta{color:var(--text-muted);font-size:.9rem;margin-bottom:24px}
+      .back-link{display:inline-block;margin-bottom:24px;color:var(--accent);text-decoration:none;font-size:.95rem}
+      .back-link:hover{text-decoration:underline}
+      .header-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+      .language-selector{position:relative;display:inline-block}
+      .language-selector__btn{background:var(--card-bg);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;gap:6px}
+      .language-selector__btn:hover{border-color:var(--accent)}
+      .language-selector__dropdown{position:absolute;top:100%;right:0;margin-top:4px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;list-style:none;padding:4px 0;min-width:160px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+      .language-selector__dropdown[hidden]{display:none}
+      .language-option{padding:8px 16px;cursor:pointer;font-size:.9rem;color:var(--text-muted);display:flex;align-items:center;gap:8px}
+      .language-option:hover{background:var(--border);color:var(--text)}
+      .language-option--active{color:var(--accent)}
+      .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px}
+      .feature-item{background:rgba(30,41,59,.5);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s}
+      .feature-item:hover{border-color:var(--accent)}
+      .feature-item .feat-icon{font-size:1.3em;margin-bottom:4px}
+      .feature-item strong{display:block;color:var(--text);margin-bottom:2px;font-size:.95em}
+      .feature-item span{color:var(--text-muted);font-size:.85em}
+      .highlight{background:rgba(37,99,235,.1);border-left:3px solid var(--accent);padding:14px 18px;margin:16px 0;border-radius:0 8px 8px 0;font-size:.9em}
+      .warning{background:rgba(234,179,8,.06);border-left:3px solid #eab308;padding:16px 20px;margin-top:24px;border-radius:0 10px 10px 0}
+      .warning strong{color:#fbbf24}
+      .warning p{margin-top:6px;font-size:.9em}
+      .footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--border);text-align:center;color:var(--text-muted);font-size:.85rem}
+      @media(max-width:640px){.feature-grid{grid-template-columns:1fr}}
     </style>
     <script src="/js/i18n/lang-preload.js"></script>
     <script src="/js/common.js" defer></script>
@@ -97,13 +64,11 @@
     <script src="/js/ui/cookie-consent.js" defer></script>
   </head>
   <body>
-    <header class="header-controls" role="banner">
-      <div class="header-controls__left">
-        <button id="themeToggleBtn" class="theme-toggle-btn" data-i18n-attr="aria-label:common.themeToggleLabel">🌓</button>
-      </div>
-      <div class="header-controls__right">
+    <div class="container">
+      <div class="header-bar">
+        <a href="/" class="back-link" data-i18n="about.backLink">← Back to home</a>
         <div class="language-selector" role="navigation" aria-label="Language selection">
-          <button id="languageSelectorBtn" class="language-selector__btn" aria-haspopup="listbox" aria-expanded="false">🌐 <span id="currentLanguageLabel">English</span></button>
+          <button id="languageSelectorBtn" class="language-selector__btn" aria-haspopup="listbox" aria-expanded="false" data-i18n-attr="aria-label:common.languageSelectorLabel">🌐 <span id="currentLanguageLabel">English</span></button>
           <ul id="languageDropdown" class="language-selector__dropdown" role="listbox" hidden>
             <li data-lang="en" class="language-option language-option--active"><span class="lang-code">🇬🇧</span><span class="lang-name">English</span></li>
             <li data-lang="ru" class="language-option"><span class="lang-code">🇷🇺</span><span class="lang-name">Русский</span></li>
@@ -116,30 +81,19 @@
           </ul>
         </div>
       </div>
-    </header>
 
-    <!-- Hero -->
-    <section class="about-hero">
-      <a href="/" class="back-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-        <span data-i18n="about.backLink">← Back to home</span>
-      </a>
-      <h1><span data-i18n="about.heroTitle">EMDR Therapy</span> <span data-i18n="about.heroTitle2">&amp; BilateralBound</span></h1>
-      <p class="subtitle" data-i18n="about.heroSubtitle">A free, professional tool for bilateral stimulation — trusted by therapists worldwide</p>
-    </section>
+      <h1 data-i18n="about.title">About EMDR Therapy &amp; BilateralBound</h1>
+      <p class="meta" data-i18n="about.heroSubtitle">A free, professional tool for bilateral stimulation — trusted by therapists worldwide</p>
 
-    <div class="container">
-      <!-- What is EMDR -->
       <div class="card">
-        <h2><span class="icon">🧠</span> <span data-i18n="about.s1Title">What is EMDR Therapy?</span></h2>
-        <p data-i18n="about.s1p1">EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy developed by Dr. Francine Shapiro in 1987. It is recognized by the WHO and APA as a first-line treatment for PTSD.</p>
+        <h2 data-i18n="about.s1Title">What is EMDR Therapy?</h2>
+        <p data-i18n="about.s1p1">EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy developed by Dr. Francine Shapiro in 1987. Recognized by the WHO and APA as a first-line treatment for PTSD.</p>
         <p data-i18n="about.s1p2">During EMDR, the patient focuses on a traumatic memory while experiencing bilateral stimulation — typically eye movements. This dual-attention process helps the brain reprocess the traumatic memory.</p>
-        <div class="highlight-box"><strong data-i18n="about.s1Highlight">Bilateral stimulation mimics the natural processing that occurs during REM sleep, allowing the brain to integrate traumatic memories.</strong></div>
+        <div class="highlight"><strong data-i18n="about.s1Highlight">Bilateral stimulation mimics REM sleep processing, helping the brain integrate traumatic memories into neutral life experiences.</strong></div>
       </div>
 
-      <!-- Bilateral Stimulation -->
       <div class="card">
-        <h2><span class="icon">👁️</span> <span data-i18n="about.s2Title">What is Bilateral Stimulation?</span></h2>
+        <h2 data-i18n="about.s2Title">What is Bilateral Stimulation?</h2>
         <p data-i18n="about.s2p1">Bilateral stimulation (BLS) is the rhythmic, alternating activation of the left and right brain hemispheres:</p>
         <ul>
           <li data-i18n="about.s2li1"><strong>Visual:</strong> following a moving object with the eyes (primary method used by BilateralBound)</li>
@@ -148,9 +102,8 @@
         </ul>
       </div>
 
-      <!-- Conditions -->
       <div class="card">
-        <h2><span class="icon">❤️</span> <span data-i18n="about.s3Title">What Conditions Does EMDR Treat?</span></h2>
+        <h2 data-i18n="about.s3Title">What Conditions Does EMDR Treat?</h2>
         <ul>
           <li data-i18n="about.s3li1">Post-Traumatic Stress Disorder (PTSD) and Complex PTSD</li>
           <li data-i18n="about.s3li2">Anxiety disorders and panic attacks</li>
@@ -161,25 +114,23 @@
         </ul>
       </div>
 
-      <!-- How it works -->
       <div class="card">
-        <h2><span class="icon">⚡</span> <span data-i18n="about.s4Title">How BilateralBound Works</span></h2>
-        <ol class="steps">
-          <li data-i18n="about.s4li1"><span><strong>Therapist creates a session</strong> — press "Start EMDR Session" on the main page. A unique ID is generated.</span></li>
-          <li data-i18n="about.s4li2"><span><strong>Patient connects</strong> via a viewer link on any device — no installation needed.</span></li>
-          <li data-i18n="about.s4li3"><span><strong>Real-time stimulation</strong> — therapist controls a moving ball, patient follows with eyes. WebSocket sync.</span></li>
-          <li data-i18n="about.s4li4"><span><strong>Full session control</strong> — speed, direction, ball size, color, and bilateral audio.</span></li>
+        <h2 data-i18n="about.s4Title">How BilateralBound Works</h2>
+        <ol>
+          <li data-i18n="about.s4li1"><strong>Therapist creates a session</strong> — press "Start EMDR Session" on the main page. A unique ID is generated.</li>
+          <li data-i18n="about.s4li2"><strong>Patient connects</strong> via a viewer link on any device — no installation needed.</li>
+          <li data-i18n="about.s4li3"><strong>Real-time stimulation</strong> — therapist controls a moving ball, patient follows with eyes. WebSocket sync.</li>
+          <li data-i18n="about.s4li4"><strong>Full session control</strong> — speed, direction, ball size, color, and bilateral audio.</li>
         </ol>
       </div>
 
-      <!-- Features -->
       <div class="card">
-        <h2><span class="icon">✨</span> <span data-i18n="about.s5Title">Key Features</span></h2>
+        <h2 data-i18n="about.s5Title">Key Features</h2>
         <div class="feature-grid">
           <div class="feature-item"><div class="feat-icon">🆓</div><strong data-i18n="about.s5li1">Completely free</strong><span>No registration, no subscription, no time limits</span></div>
           <div class="feature-item"><div class="feat-icon">🌐</div><strong data-i18n="about.s5li2">8 languages</strong><span>EN, RU, ES, FR, DE, PT, JA, ZH</span></div>
           <div class="feature-item"><div class="feat-icon">⚡</div><strong data-i18n="about.s5li3">Real-time sync</strong><span>WebSocket with millisecond precision</span></div>
-          <div class="feature-item"><div class="feat-icon">🎧</div><strong data-i18n="about.s5li4">Bilateral audio</strong><span>Sound alternates between left and right ear</span></div>
+          <div class="feature-item"><div class="feat-icon">🎧</div><strong data-i18n="about.s5li4">Bilateral audio</strong><span>Sound alternates between left/right ear</span></div>
           <div class="feature-item"><div class="feat-icon">🔗</div><strong data-i18n="about.s5li5">Permanent links</strong><span>With Premium subscription</span></div>
           <div class="feature-item"><div class="feat-icon">📱</div><strong data-i18n="about.s5li6">No installation</strong><span>Works in any modern browser</span></div>
           <div class="feature-item"><div class="feat-icon">🌙</div><strong data-i18n="about.s5li7">Dark mode</strong><span>Reduces eye strain during therapy</span></div>
@@ -187,16 +138,14 @@
         </div>
       </div>
 
-      <!-- Disclaimer -->
-      <div class="warning-box">
+      <div class="warning">
         <strong data-i18n="about.disclaimerTitle">Important Medical Disclaimer</strong>
         <p data-i18n="about.disclaimerP1">BilateralBound is a technical tool for bilateral stimulation. It is <strong>not</strong> a certified medical device. EMDR therapy should only be conducted by qualified, EMDR-trained mental health professionals.</p>
         <p data-i18n="about.disclaimerP2">The platform does not provide medical advice, diagnosis, or treatment. If you are in crisis, contact your local emergency services.</p>
       </div>
 
-      <!-- CTA -->
-      <div class="cta-section">
-        <a href="/" class="cta-btn" data-i18n="about.ctaStart">🚀 Start an EMDR Session</a>
+      <div class="footer">
+        <p><a href="/" data-i18n="about.ctaStart">🚀 Start an EMDR Session</a></p>
       </div>
     </div>
   </body>
