@@ -183,7 +183,7 @@
     "realtimeDesc": "WebSocket连接，毫秒级精度，无延迟",
     "audio": "双侧音频",
     "audioDesc": "声音在左耳和右耳之间交替，实现完整的双侧效果",
-    "breathingDesc": "连贯呼吸 5秒/5秒 + 蝴蝶拥抱自我调节",
+    "breathingDesc": "连贯呼吸 + 蝴蝶拥抱",
     "free": "免费使用",
     "freeDesc": "无需注册，无需订阅 — 向全球治疗师开放",
     "sectionHeading": "主要功能"
