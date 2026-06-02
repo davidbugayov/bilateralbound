@@ -197,7 +197,7 @@
     "realtimeDesc": "Connexion WebSocket avec une précision milliseconde, sans décalage",
     "audio": "Audio bilatéral",
     "audioDesc": "Le son alterne entre l'oreille gauche et droite pour un effet bilatéral complet",
-    "breathingDesc": "Respiration cohérente 5s/5s + Câlin papillon pour l'autorégulation",
+    "breathingDesc": "Respiration cohérente + câlin papillon",
     "free": "Gratuit",
     "freeDesc": "Pas d'inscription, pas d'abonnement — ouvert aux thérapeutes du monde entier",
     "sectionHeading": "Fonctionnalités principales"

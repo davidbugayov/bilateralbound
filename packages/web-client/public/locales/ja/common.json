@@ -197,7 +197,7 @@
     "realtimeDesc": "ミリ秒単位の精度のWebSocket接続、遅延なし",
     "audio": "両側性オーディオ",
     "audioDesc": "音が左耳と右耳を交互に切り替わり、完全な両側性効果を実現",
-    "breathingDesc": "コヒーレント呼吸 5秒/5秒 + バタフライハグで自己調整",
+    "breathingDesc": "コヒーレント呼吸 + バタフライハグ",
     "free": "無料",
     "freeDesc": "登録不要、サブスクリプション不要 — 世界中のセラピストが利用できます",
     "sectionHeading": "主な機能"
