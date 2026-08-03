@@ -1,0 +1,3 @@
+schema: spec-driven
+created: 2026-08-02
+goal: Устранить дублирование i18n между src/i18n/ и public/js/i18n/

@@ -21,6 +21,11 @@ require('./ui/controller-settings')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const _PreviewManager = require('./application/controller/preview-manager')
+const _ViewerStatus = require('./application/controller/viewer-status')
+const _PlayPause = require('./application/controller/play-pause')
+const _UIControls = require('./application/controller/ui-controls')
+const _UISync = require('./application/controller/ui-sync')
+const _Fullscreen = require('./application/controller/fullscreen')
 const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
 const {
   getDirectionVector,
@@ -36,6 +41,31 @@ const {
   detectAndCountBounceFromServer
 } = require('./domain/counters')
 globalThis.PhysicsEngine = PhysicsEngine
+
+// Wire viewer-status module (deps are function declarations → hoisted)
+_ViewerStatus.init({
+  hideWaitingForViewer,
+  updatePreviewSize,
+  setControlsEnabled,
+  showWaitingForViewer,
+  updateViewerInfo,
+  getLastServerState: () => lastServerState
+})
+
+// Wire play-pause module — deps connected at runtime when called
+_PlayPause.init()
+
+// Wire ui-sync module
+_UISync.init({
+      components: globalThis.components,
+      getLastServerState: () => lastServerState,
+      updatePlayPauseButton: _PlayPause.updatePlayPauseButton,
+      updateDirectionButtons,
+      updateDirectionDisplay,
+      updateViewerStatusUI: _ViewerStatus.updateStatusUI,
+      updateViewerLinkVisualState: _ViewerStatus.updateLinkVisualState,
+      updateViewerAudioIndicators: _ViewerStatus.updateAudioIndicators
+    })
 
 /**
  * Controller - Логика управления сессией BilateralBound v2.2
@@ -415,7 +445,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
           globalThis.__current.isPlaying = true
           // eslint-disable-next-line require-atomic-updates
           globalThis.isPlaying = true
-          updatePlayPauseButton()
+          _PlayPause.updatePlayPauseButton()
         }, 500)
       }
     }
@@ -443,9 +473,9 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       }
       isPlaying = false
       globalThis.__current.viewerConnected = false
-      updatePlayPauseButton()
+      _PlayPause.updatePlayPauseButton()
     }
-    updateViewerStatusUI()
+    _ViewerStatus.updateStatusUI()
   })
   wsClient.on('error', () => {})
   wsClient.on(WS_MSG.viewerStatus, (data) => {
@@ -462,7 +492,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
         try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_ready')) } catch (_) { /* noop */ }
       }
       completeInitialization().catch(debugError)
-      updateViewerStatusUI()
+      _ViewerStatus.updateStatusUI()
     }
     if (wasConnected && !isConnected) {
       globalThis.__current.viewerAudioActivated = false
@@ -490,8 +520,8 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       }
       centerBallInViewer()
       showWaitingForViewer()
-      updatePlayPauseButton()
-      updateViewerStatusUI()
+      _PlayPause.updatePlayPauseButton()
+      _ViewerStatus.updateStatusUI()
     }
   })
   wsClient.on(WS_MSG.initialState, (state) => {
@@ -511,8 +541,8 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
     applyServerStateToPreview(state)
     syncUIWithState(state)
-    updateViewerAudioIndicators() // Обновляем индикаторы звука
-    updateViewerStatusUI() // Update status UI with connection info
+    _ViewerStatus.updateAudioIndicators() // Обновляем индикаторы звука
+    _ViewerStatus.updateStatusUI() // Update status UI with connection info
 
     // Update session timestamp display after initial state is received
     updateSessionTimestampDisplay()
@@ -523,7 +553,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       const wasConnected = globalThis.__current.viewerConnected
       globalThis.__current.viewerConnected = state.viewerConnected
       if (wasConnected !== state.viewerConnected) {
-        updateViewerStatusUI()
+        _ViewerStatus.updateStatusUI()
       }
       // FIXED: Always keep preview in clientSimulation mode for consistent physics.
       // The viewer also runs in clientSimulation: true — both sides use the same physics
@@ -554,14 +584,14 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
           setCanvasDimensions(canvas, previewWidth, previewHeight)
         }
         updateViewerInfo(nextSize)
-        updateViewerStatusUI()
+        _ViewerStatus.updateStatusUI()
         if (isPreviewFullscreen) {
-          updateFullscreenViewerStatus()
+          _ViewerStatus.updateFullscreenStatus()
         }
       }
     }
     applyServerStateToPreview(state)
-    updateViewerAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
+    _ViewerStatus.updateAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
     _syncUIPause(state)
     _syncUIInfinity(state)
     _syncUIDirection(state)
@@ -573,7 +603,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     if (globalThis.__current) {
       globalThis.__current.viewerAudioActivated = data.activated
     }
-    updateViewerAudioIndicators()
+    _ViewerStatus.updateAudioIndicators()
   })
   // Bounce sync - sync direction only; no position relay.
   // Both controller preview and viewer run local physics with identical params,
@@ -659,7 +689,7 @@ function applyServerStateToPreview(state) {
     if (state.colorBall) previewPhysicsEngine.setBallColor(state.colorBall)
     if (state.colorBg) previewPhysicsEngine.setBgColor(state.colorBg)
     isPlaying = true
-    updatePlayPauseButton()
+    _PlayPause.updatePlayPauseButton()
     bbCounters.start()
     return
   }
@@ -777,7 +807,7 @@ function applyServerStateToPreview(state) {
     const newIsPlaying = !state.paused
     if (isPlaying !== newIsPlaying) {
       isPlaying = newIsPlaying
-      updatePlayPauseButton()
+      _PlayPause.updatePlayPauseButton()
       // Show notification when viewer toggles play/pause (no title, just message)
       // Suppress during direction change pause/resume cycle
       if (!globalThis.__suppressPauseNotification) {
@@ -930,8 +960,8 @@ function _syncUIPause(ballState) {
     const now = performance.now()
     if (now >= __ignoreServerPausedUntilTs) {
       isPlaying = !ballState.paused
-      updatePlayPauseButton()
-      syncFsPlayPauseButton() // Синхронизируем и полноэкранную кнопку
+      _PlayPause.updatePlayPauseButton()
+      _PlayPause.syncFsPlayPauseButton() // Синхронизируем и полноэкранную кнопку
     }
   }
 }
@@ -990,7 +1020,7 @@ function syncUIWithState(ballState) {
     updatePreviewSize(ballState.viewerScreenSize)
     globalThis.__current.viewerConnected = ballState.viewerConnected
     globalThis.__current.viewerScreenSize = ballState.viewerScreenSize
-    updateViewerStatusUI()
+    _ViewerStatus.updateStatusUI()
     _syncUISpeed(ballState)
     _syncUISize(ballState)
     _syncUIColors(ballState)
@@ -1123,7 +1153,7 @@ function _initializeSoundControls() {
       if (lastServerState) {
         lastServerState.soundEnabled = enabled
       }
-      updateViewerAudioIndicators()
+      _ViewerStatus.updateAudioIndicators()
     })
     soundTypeSelect.addEventListener('change', (e) => {
       const soundType = e.target.value
@@ -1722,7 +1752,7 @@ function setSoundEnabled(enabled) {
   if (lastServerState) {
     lastServerState.soundEnabled = Boolean(enabled)
   }
-  updateViewerAudioIndicators()
+  _ViewerStatus.updateAudioIndicators()
   try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'soundEnabled', value: Boolean(enabled) } })) } catch (e) { void e }
 }
 function setSoundType(soundType) {
@@ -1855,20 +1885,6 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
     console.error('Ошибка обновления отображения направления:', error)
   }
 }
-function updatePlayPauseButton() {
-  const button = document.getElementById('playPauseBtn')
-  if (button) {
-    if (isPlaying) {
-      button.textContent = globalThis.i18n?.t('controller.stop') || '⏸ Stop'
-      button.classList.add('playing')
-      button.disabled = false // Кнопка активна при воспроизведении
-    } else {
-      button.textContent = globalThis.i18n?.t('controller.start') || '▶️ Start'
-      button.classList.remove('playing')
-      button.disabled = false
-    }
-  }
-}
 /**
  * Единая функция для управления состоянием Play/Pause.
  * Объединяет проверки подключения, отправку команд и обновление UI.
@@ -1903,6 +1919,7 @@ function _setPlayPauseState(shouldPlay) {
       }
   safeSend(WS_MSG.controllerUpdate, payload)
   isPlaying = shouldPlay
+  _PlayPause.setIsPlaying(shouldPlay)
   globalThis.__current.isPlaying = shouldPlay
   globalThis.isPlaying = shouldPlay
   globalThis.forcePauseUntilUserAction = false
@@ -1928,7 +1945,7 @@ function _setPlayPauseState(shouldPlay) {
      }
   }
   __ignoreServerPausedUntilTs = performance.now() + 800
-  _schedulePlayPauseAnimations()
+  _PlayPause._scheduleAnimations()
   return true
 }
 /**
@@ -1942,19 +1959,10 @@ function togglePlayPause() {
  * Обновляет все кнопки Play/Pause (основную и полноэкранную).
  * @private
  */
-function _updateAllPlayPauseButtons() {
-  updatePlayPauseButton()
-  syncFsPlayPauseButton()
-}
 /**
  * Планирует обновления кнопок с анимацией.
  * @private
  */
-function _schedulePlayPauseAnimations() {
-  _updateAllPlayPauseButtons()
-  setTimeout(() => _updateAllPlayPauseButtons(), 150)
-  setTimeout(() => _updateAllPlayPauseButtons(), 300)
-}
 /**
  * Нормализует координату, проверяя, является ли она конечным числом.
  * @param {*} coord - Значение координаты для нормализации.
@@ -1999,91 +2007,6 @@ function getScaledState(state) {
     }
   }
   return state
-}
-function updateViewerStatusUI() {
-  const viewerStatusEl = document.getElementById('viewerStatus')
-  const previewWrap = document.getElementById('previewWrap')
-  if (viewerStatusEl) {
-    if (globalThis.__current.viewerConnected) {
-      viewerStatusEl.textContent =
-        globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
-      viewerStatusEl.classList.add('connected')
-      viewerStatusEl.classList.remove('disconnected')
-      viewerStatusEl.style.fontWeight = '600'
-      hideWaitingForViewer()
-      // Show screen size if available, otherwise keep waiting message
-      if (globalThis.__current.viewerScreenSize?.width > 0) {
-        updateViewerInfo(globalThis.__current.viewerScreenSize)
-      }
-      if (globalThis.__current.viewerScreenSize?.width > 0) {
-        updatePreviewSize(globalThis.__current.viewerScreenSize)
-      }
-      setControlsEnabled(true)
-      if (previewWrap) previewWrap.classList.add('viewer-connected')
-    } else {
-      viewerStatusEl.textContent =
-        globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
-      viewerStatusEl.classList.add('disconnected')
-      viewerStatusEl.classList.remove('connected')
-      viewerStatusEl.style.fontWeight = '400'
-      showWaitingForViewer()
-      setControlsEnabled(false)
-      if (previewWrap) previewWrap.classList.remove('viewer-connected')
-    }
-  }
-  updateViewerAudioIndicators()
-  updateViewerLinkVisualState()
-}
-/**
- * Обновляет визуальное состояние ссылки для клиента в зависимости от подключения вьювера
- */
-function updateViewerLinkVisualState() {
-  const viewInput = document.getElementById('view')
-  if (!viewInput) return
-  if (globalThis.__current.viewerConnected) {
-    viewInput.style.borderColor = '#94a3b8'
-    viewInput.style.backgroundColor = '#ffffff'
-    viewInput.style.color = '#1f2937'
-    viewInput.placeholder = ''
-  } else {
-    viewInput.style.borderColor = '#ef4444'
-    viewInput.style.backgroundColor = '#fef2f2'
-    viewInput.style.color = '#ef4444'
-    viewInput.placeholder =
-      (globalThis.i18n?.t('controller.waitingViewer') || 'Waiting for viewer') +
-      '...'
-  }
-}
-/**
- * Обновляет индикаторы звука зрителя на основе состояния
- */
-function updateViewerAudioIndicators() {
-  const audioIndicator = document.getElementById('viewerAudioIndicator')
-  const audioText = document.getElementById('viewerAudioText')
-  if (!audioIndicator || !audioText) return
-  const soundEnabled = lastServerState?.soundEnabled ?? false
-  const viewerAudioActivated =
-    globalThis.__current?.viewerAudioActivated ?? false
-  const currentState = `${soundEnabled}-${viewerAudioActivated}`
-  if (updateViewerAudioIndicators._lastState === currentState) return
-  updateViewerAudioIndicators._lastState = currentState
-  if (soundEnabled) {
-    if (!viewerAudioActivated) {
-      audioIndicator.classList.remove('hidden', 'ready')
-      audioIndicator.classList.add('warning')
-      audioText.textContent =
-        globalThis.i18n?.t('controller.viewerSoundNotActivated') ||
-        'Waiting: viewer must click "Enable sound"'
-    } else {
-      audioIndicator.classList.remove('hidden', 'warning')
-      audioIndicator.classList.add('ready')
-      audioText.textContent =
-        globalThis.i18n?.t('controller.viewerHearingSound') ||
-        'Viewer sound activated'
-    }
-  } else {
-    audioIndicator.classList.add('hidden')
-  }
 }
 function _initializeFullscreenRenderer() {
   try {
@@ -2131,7 +2054,7 @@ function openPreviewFullscreen() {
   setupFsPanelAutoHide()
   setupFsPanelDrag()
   setupFullscreenGestures()
-  syncFsPlayPauseButton()
+  _PlayPause.syncFsPlayPauseButton()
   wireFullscreenControls()
   fillFsSessionInfo()
   if (!globalThis.__current?.viewerConnected && previewPhysicsEngine) {
@@ -2319,15 +2242,6 @@ function setupFullscreenGestures() {
   overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
   overlay.addEventListener('touchend', handleTouchEnd, { passive: true })
 }
-function syncFsPlayPauseButton() {
-  const btn = document.getElementById('fsPlayPauseBtn')
-  if (!btn) return
-  if (isPlaying) {
-    btn.textContent = '⏸ Стоп'
-  } else {
-    btn.textContent = '▶️ Старт'
-  }
-}
 function wireFullscreenControls() {
   setupFullscreenSpeedControl()
   setupFullscreenSizeControls()
@@ -2433,27 +2347,9 @@ function fillFsSessionInfo() {
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')
     if (fsLink) fsLink.value = buildViewerUrl(sid)
-    updateFullscreenViewerStatus()
+    _ViewerStatus.updateFullscreenStatus()
   } catch (err) {
     debugWarn('Error in fillFsSessionInfo:', err)
-  }
-}
-/**
- * Обновляет индикатор статуса вьювера в полноэкранном режиме
- */
-function updateFullscreenViewerStatus() {
-  const fsViewerStatus = document.getElementById('fsViewerStatus')
-  if (!fsViewerStatus) return
-  const statusText = fsViewerStatus.querySelector('.fs-status-text')
-  if (!statusText) return
-  if (globalThis.__current?.viewerConnected) {
-    fsViewerStatus.classList.add('connected')
-    statusText.textContent =
-      globalThis.i18n?.t('controller.viewerConnected') || 'Connected'
-  } else {
-    fsViewerStatus.classList.remove('connected')
-    statusText.textContent =
-      globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
   }
 }
 /**

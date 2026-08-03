@@ -388,3 +388,4 @@ const LanguageSelector = (function () {
 if (typeof globalThis !== 'undefined') {
   globalThis.LanguageSelector = LanguageSelector
 }
+

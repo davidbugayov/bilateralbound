@@ -1,12 +1,12 @@
-/**
- * i18n Configuration
- * Handles multi-language support for Bilateral Bound
- * Uses shared constants from constants/i18n-constants.js when available
- */
-
 (function (root) {
+  /**
+   * i18n Configuration
+   * Handles multi-language support for Bilateral Bound
+   * Uses shared constants from constants/i18n-constants.js when available
+   */
+
   // Use shared constants or fallback to inline values
-  const constants = root.I18nConstants || {
+  const constants = globalThis.I18nConstants || {
     SUPPORTED_LANGUAGES: ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh'],
     DEFAULT_LANGUAGE: 'en',
     STORAGE_KEY: 'emdr-language',
@@ -44,7 +44,6 @@
         document.querySelectorAll('#i18n-cloak').forEach((el) => el.remove())
         document.documentElement.classList.add('i18n-ready')
       }
-
 
       if (this.isReady) return
       this.isReady = true
@@ -142,7 +141,15 @@
         return
       }
 
-      // 3. Check domain (third priority) - только для новых пользователей
+      // 3. Check browser language
+      const browserLang = navigator.language.split('-')[0].toLowerCase()
+      if (this.supportedLanguages.includes(browserLang)) {
+        this.currentLanguage = browserLang
+        localStorage.setItem('emdr-language', browserLang)
+        return
+      }
+
+      // 4. Check domain (lower priority) - только для новых пользователей без сохраненного выбора
       // Russian domain → Russian language
       // English domain → English language
       const hostname =
@@ -158,14 +165,6 @@
       } else if (hostname.includes('emdrbilateral.online')) {
         this.currentLanguage = 'en'
         localStorage.setItem('emdr-language', 'en')
-        return
-      }
-
-      // 4. Check browser language
-      const browserLang = navigator.language.split('-')[0].toLowerCase()
-      if (this.supportedLanguages.includes(browserLang)) {
-        this.currentLanguage = browserLang
-        localStorage.setItem('emdr-language', browserLang)
         return
       }
 
@@ -261,9 +260,7 @@
       // Auto-inject VERSION from meta tag if placeholder exists
       if (typeof value === 'string' && value.includes('{{VERSION}}')) {
         const versionMeta = document.querySelector('meta[name="version"]')
-        const version = versionMeta
-          ? versionMeta.getAttribute('content')
-          : 'dev'
+        const version = versionMeta ? versionMeta.getAttribute('content') : 'dev'
         options.VERSION = `v${version}`
       }
 
@@ -446,15 +443,6 @@
     }
   }
 
-  // Export for CommonJS or attach to root
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = I18n
-  } else {
-    root.i18n = I18n
-  }
-
-  // Auto-initialize i18n IMMEDIATELY to prevent FOUC
-  // We need to start initialization as early as possible
   if (typeof root !== 'undefined' && root.document) {
     // Start initialization immediately, don't wait for DOMContentLoaded
     I18n.init().catch((err) => {
@@ -463,5 +451,7 @@
       }
     })
   }
+
+  root.i18n = I18n
   globalThis.i18n = I18n
 })(typeof globalThis !== 'undefined' ? globalThis : window)
