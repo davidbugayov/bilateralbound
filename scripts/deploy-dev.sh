@@ -2,19 +2,25 @@
 
 # Deploy dev.emdrbilateral.online
 # Usage: npm run deploy:dev
+#
+# Uses rsync to transfer files (git repo on server has no credentials).
+# Run from project root.
 
 set -e
 
-SERVER="90.156.254.190"
+SERVER="144.31.68.9"
 PROJECT_DIR="/var/www/dev.emdrbilateral.online"
 SERVICE="emdrbilateral-dev"
 BRANCH="main"
 PORT="3003"
-HEALTH_CHECK_URL="https://dev.emdrbilateral.online/"
 MAX_RETRIES=30
 RETRY_INTERVAL=2
+SSH_KEY="$HOME/.ssh/id_rsa_emdr"
+LOCAL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # SSH connection uses key auth (no password needed)
+SSH="ssh -o StrictHostKeyChecking=no -i $SSH_KEY root@$SERVER"
+RSYNC="rsync -avz --delete --exclude node_modules --exclude .git --exclude dist --exclude .scannerwork --exclude test-results -e \"ssh -o StrictHostKeyChecking=no -i $SSH_KEY\""
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') ℹ️  $1"
@@ -31,28 +37,25 @@ log_error() {
 
 log "🚀 Starting deployment to dev.emdrbilateral.online ($BRANCH branch)..."
 
-# 1. Pull and build
-log "📥 Pulling code from $BRANCH..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Git pull failed"
-set -e
-cd /var/www/dev.emdrbilateral.online
-git fetch --all
-git reset --hard origin/main
-ENDSSH
-log_success "Code pulled"
+# 1. Rsync code (replaces git pull)
+log "📥 Syncing code via rsync..."
+eval $RSYNC "$LOCAL_ROOT/" root@$SERVER:$PROJECT_DIR/ || log_error "Rsync failed"
+log_success "Code synced"
 
-# 2. Install dependencies
+# 2. Install dependencies (root + web-client)
 log "📦 Installing dependencies..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "npm install failed"
+$SSH bash << 'ENDSSH' || log_error "npm install failed"
 set -e
 cd /var/www/dev.emdrbilateral.online
-npm install
+npm install --ignore-scripts
+cd packages/web-client
+npm install --ignore-scripts
 ENDSSH
 log_success "Dependencies installed"
 
-# 3. Build web-client (CRITICAL STEP)
+# 3. Build web-client
 log "🔨 Building web-client..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build failed"
+$SSH bash << 'ENDSSH' || log_error "Build failed"
 set -e
 cd /var/www/dev.emdrbilateral.online
 npm run build:prod
@@ -61,17 +64,14 @@ log_success "Build completed"
 
 # 4. Restart service
 log "🔄 Restarting $SERVICE..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Service restart failed"
-systemctl restart emdrbilateral-dev
-sleep 2
-ENDSSH
+$SSH "systemctl restart $SERVICE && sleep 2" || log_error "Service restart failed"
 log_success "Service restarted"
 
 # 5. Wait for service to be ready
 log "⏳ Waiting for service to be healthy..."
 RETRY_COUNT=0
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if ssh -o StrictHostKeyChecking=no root@$SERVER "systemctl is-active emdrbilateral-dev >/dev/null 2>&1"; then
+    if $SSH "systemctl is-active $SERVICE >/dev/null 2>&1"; then
         log_success "Service is running"
         break
     fi
@@ -84,12 +84,12 @@ done
 
 # 6. Verify deployment
 log "📊 Deployment Info:"
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH'
-echo "  Latest commit:"
-cd /var/www/dev.emdrbilateral.online && git log --oneline -1 | sed 's/^/    /'
-echo ""
+$SSH bash << 'ENDSSH'
 echo "  Service status:"
 systemctl status emdrbilateral-dev --no-pager | grep -E "Active|Main PID" | sed 's/^/    /'
+echo ""
+echo "  Health check:"
+curl -s -o /dev/null -w "  HTTP %{http_code}" http://localhost:3003/ && echo ""
 ENDSSH
 
 log_success "✨ Deployment completed!"
