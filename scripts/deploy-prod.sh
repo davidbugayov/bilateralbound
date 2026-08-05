@@ -2,15 +2,24 @@
 
 # Deploy production (emdrbilateral.online + emdrbilateral.ru)
 # Usage: npm run deploy:prod
+#
+# Uses rsync to transfer files (git repo on server has no credentials).
+# Run from project root.
 
 set -e
 
-SERVER="90.156.254.190"
+SERVER="144.31.68.9"
+SERVICE_ONLINE="emdrbilateral-online"
+SERVICE_RU="emdrbilateral-ru"
 BRANCH="stable"
 MAX_RETRIES=30
 RETRY_INTERVAL=2
+SSH_KEY="$HOME/.ssh/id_rsa_emdr"
+LOCAL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # SSH connection uses key auth (no password needed)
+SSH="ssh -o StrictHostKeyChecking=no -i $SSH_KEY root@$SERVER"
+RSYNC="rsync -avz --delete --exclude node_modules --exclude .git --exclude dist --exclude .scannerwork --exclude test-results -e \"ssh -o StrictHostKeyChecking=no -i $SSH_KEY\""
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') ℹ️  $1"
@@ -30,7 +39,7 @@ wait_for_service() {
     log "⏳ Waiting for $service to be healthy..."
     RETRY_COUNT=0
     while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-        if ssh -o StrictHostKeyChecking=no root@$SERVER "systemctl is-active $service >/dev/null 2>&1"; then
+        if $SSH "systemctl is-active $service >/dev/null 2>&1"; then
             log_success "$service is running"
             return 0
         fi
@@ -42,79 +51,39 @@ wait_for_service() {
     done
 }
 
+deploy_site() {
+    local dir=$1
+    log "📍 Deploying $dir..."
+    log "  📥 Syncing code via rsync..."
+    eval $RSYNC "$LOCAL_ROOT/" root@$SERVER:$dir/ || log_error "Rsync failed for $dir"
+    log "  📦 Installing dependencies..."
+    $SSH "cd $dir && npm install --ignore-scripts" || log_error "npm install failed for $dir"
+    log "  🔨 Building..."
+    $SSH "cd $dir && npm run build:prod" || log_error "Build failed for $dir"
+    log_success "$dir built and ready"
+}
+
 log "🚀 Starting production deployment ($BRANCH branch)..."
 
-# 1. Deploy emdrbilateral.online
-log "📍 Deploying emdrbilateral.online..."
-log "  📥 Pulling code..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .online failed"
-set -e
-cd /var/www/emdrbilateral.online
-git fetch --all
-git reset --hard origin/stable
-ENDSSH
-
-log "  📦 Installing dependencies..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "npm install for .online failed"
-set -e
-cd /var/www/emdrbilateral.online
-npm install
-ENDSSH
-
-log "  🔨 Building..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build for .online failed"
-set -e
-cd /var/www/emdrbilateral.online
-npm run build:prod
-ENDSSH
-log_success "emdrbilateral.online built and ready"
-
-# 2. Deploy emdrbilateral.ru
-log "📍 Deploying emdrbilateral.ru..."
-log "  📥 Pulling code..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Git pull for .ru failed"
-set -e
-cd /var/www/emdrbilateral.ru
-git fetch --all
-git reset --hard origin/stable
-ENDSSH
-
-log "  📦 Installing dependencies..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "npm install for .ru failed"
-set -e
-cd /var/www/emdrbilateral.ru
-npm install
-ENDSSH
-
-log "  🔨 Building..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Build for .ru failed"
-set -e
-cd /var/www/emdrbilateral.ru
-npm run build:prod
-ENDSSH
-log_success "emdrbilateral.ru built and ready"
+deploy_site "/var/www/emdrbilateral.online"
+deploy_site "/var/www/emdrbilateral.ru"
 
 # 3. Restart both services
 log "🔄 Restarting services..."
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH' || log_error "Service restart failed"
-systemctl restart emdrbilateral-online emdrbilateral-ru
-sleep 2
-ENDSSH
+$SSH "systemctl restart $SERVICE_ONLINE $SERVICE_RU && sleep 2" || log_error "Service restart failed"
 log_success "Services restarted"
 
 # 4. Wait for services to be healthy
-wait_for_service "emdrbilateral-online"
-wait_for_service "emdrbilateral-ru"
+wait_for_service "$SERVICE_ONLINE"
+wait_for_service "$SERVICE_RU"
 
 # 5. Verify deployment
 log "📊 Deployment Info:"
-ssh -o StrictHostKeyChecking=no root@$SERVER bash << 'ENDSSH'
+$SSH bash << 'ENDSSH'
 echo "  emdrbilateral.online:"
-cd /var/www/emdrbilateral.online && git log --oneline -1 | sed 's/^/    /'
 systemctl status emdrbilateral-online --no-pager | grep -E "Active|Main PID" | sed 's/^/    /'
 echo ""
 echo "  emdrbilateral.ru:"
-cd /var/www/emdrbilateral.ru && git log --oneline -1 | sed 's/^/    /'
 systemctl status emdrbilateral-ru --no-pager | grep -E "Active|Main PID" | sed 's/^/    /'
 ENDSSH
 
