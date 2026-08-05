@@ -4,6 +4,8 @@
  * @module application/controller/ui-sync
  */
 
+const { getDirectionMode: domainGetDirectionMode } = require('../../domain/direction')
+
 let _components = {}
 let _deps = {}
 let __ignoreServerPausedUntilTs = 0
@@ -11,6 +13,18 @@ let __ignoreServerDirectionUntilTs = 0
 function init(components, deps) {
   _components = components
   _deps = deps
+}
+function _ignorePaused() {
+  if (typeof _deps.getIgnorePausedUntilTs === 'function') {
+    return _deps.getIgnorePausedUntilTs()
+  }
+  return __ignoreServerPausedUntilTs
+}
+function _ignoreDirection() {
+  if (typeof _deps.getIgnoreDirectionUntilTs === 'function') {
+    return _deps.getIgnoreDirectionUntilTs()
+  }
+  return __ignoreServerDirectionUntilTs
 }
 function syncSpeed(ballState) {
   if (ballState.speed !== undefined) {
@@ -38,7 +52,7 @@ function syncColors(ballState) {
 }
 function syncPause(ballState) {
   if (ballState.paused === undefined) return
-  if (performance.now() >= __ignoreServerPausedUntilTs) {
+  if (performance.now() >= _ignorePaused()) {
     _deps.setIsPlaying(!ballState.paused)
     _deps.updatePlayPauseButton()
     _deps.syncFsPlayPauseButton()
@@ -57,14 +71,54 @@ function getDirectionMode(dirX, dirY) {
 }
 function syncDirection(ballState) {
   if (ballState.dirX === undefined || ballState.dirY === undefined) return
-  if (performance.now() < __ignoreServerDirectionUntilTs) return
-  const mode = getDirectionMode(ballState.dirX, ballState.dirY)
+  if (performance.now() < _ignoreDirection()) return
+  if (_deps.getCurrentDirectionMode() === 'infinity') return
+  const mode = domainGetDirectionMode(ballState.dirX, ballState.dirY)
   if (mode && mode !== _deps.getCurrentDirectionMode()) {
-    _deps.setDirectionState({ dx: ballState.dirX, dy: ballState.dirY })
+    _deps.setDirectionState(ballState.dirX, ballState.dirY)
     _deps.setCurrentDirectionMode(mode)
     _deps.updateDirectionButtons()
     _deps.updateDirectionDisplay(ballState.dirX, ballState.dirY)
   }
+}
+function syncInfinity(ballState) {
+  if (ballState.infinity === undefined) return
+  if (performance.now() < _ignoreDirection()) return
+  const engine = _deps.getPreviewPhysicsEngine?.()
+  if (engine) engine.ball.infinity = ballState.infinity
+  const lastState = _deps.getLastServerState?.()
+  if (lastState) lastState.infinity = ballState.infinity
+  if (ballState.infinity) {
+    _deps.setCurrentDirectionMode('infinity')
+    _deps.updateDirectionButtons()
+    _deps.updateDirectionDisplay(0, 0)
+  }
+}
+function syncIllustration(ballState) {
+  if (ballState.ballEmoji === undefined) return
+  const engine = _deps.getPreviewPhysicsEngine?.()
+  if (engine) engine.ball.ballEmoji = ballState.ballEmoji
+  const lastState = _deps.getLastServerState?.()
+  if (lastState) lastState.ballEmoji = ballState.ballEmoji
+  const preview = document.getElementById('illusSelectedPreview')
+  if (preview) preview.textContent = ballState.ballEmoji || ''
+  document.querySelectorAll('.illus-emoji-btn').forEach((b) => {
+    b.classList.toggle(
+      'active',
+      b.textContent === ballState.ballEmoji ||
+        (!ballState.ballEmoji && b.classList.contains('illus-clear'))
+    )
+  })
+}
+function syncTrackBand(ballState) {
+  if (!ballState.trackBand) return
+  const engine = _deps.getPreviewPhysicsEngine?.()
+  if (engine) engine.options.trackBand = ballState.trackBand
+  const lastState = _deps.getLastServerState?.()
+  if (lastState) lastState.trackBand = ballState.trackBand
+  document.querySelectorAll('.pos-btn').forEach((b) => {
+    b.classList.toggle('active', b.dataset.band === ballState.trackBand)
+  })
 }
 function syncSound(ballState) {
   if (ballState.soundEnabled !== undefined) {
@@ -97,6 +151,9 @@ function syncAll(ballState) {
   syncColors(ballState)
   syncPause(ballState)
   syncDirection(ballState)
+  syncInfinity(ballState)
+  syncIllustration(ballState)
+  syncTrackBand(ballState)
   syncSound(ballState)
 }
 function setIgnorePausedUntil(ts) {
@@ -113,6 +170,9 @@ globalThis.UISync = {
   syncColors,
   syncPause,
   syncDirection,
+  syncInfinity,
+  syncIllustration,
+  syncTrackBand,
   syncSound,
   getDirectionMode,
   setIgnorePausedUntil,
@@ -127,6 +187,9 @@ module.exports = {
   syncColors,
   syncPause,
   syncDirection,
+  syncInfinity,
+  syncIllustration,
+  syncTrackBand,
   syncSound,
   getDirectionMode,
   setIgnorePausedUntil,
