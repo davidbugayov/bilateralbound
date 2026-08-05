@@ -11,6 +11,7 @@ function init(deps) {
 }
 function updateStatusUI() {
   const el = document.getElementById('viewerStatus')
+  const previewWrap = document.getElementById('previewWrap')
   if (el) {
     if (globalThis.__current.viewerConnected) {
       el.textContent =
@@ -20,9 +21,11 @@ function updateStatusUI() {
       el.style.fontWeight = '600'
       _deps.hideWaitingForViewer()
       if (globalThis.__current.viewerScreenSize?.width > 0) {
+        _deps.updateViewerInfo(globalThis.__current.viewerScreenSize)
         _deps.updatePreviewSize(globalThis.__current.viewerScreenSize)
       }
       _deps.setControlsEnabled(true)
+      if (previewWrap) previewWrap.classList.add('viewer-connected')
     } else {
       el.textContent =
         globalThis.i18n?.t('controller.waitingViewer') || 'Waiting...'
@@ -31,6 +34,7 @@ function updateStatusUI() {
       el.style.fontWeight = '400'
       _deps.showWaitingForViewer()
       _deps.setControlsEnabled(false)
+      if (previewWrap) previewWrap.classList.remove('viewer-connected')
     }
   }
   updateAudioIndicators()

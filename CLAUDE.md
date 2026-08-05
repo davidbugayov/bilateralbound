@@ -106,6 +106,7 @@ npm run deploy:prod:status # Prod service status
 - `audio/audio-manager.js` — sound effects (bounce, beep, click)
 - `ui/` — controller-settings, error-overlay, shared-components, success-toast, notifications
 - `i18n/` — internationalization (constants, i18n, language-selector)
+  - **i18n codegen**: `src/i18n/` is the single source of truth. `npm run build` runs `scripts/generate-i18n-iife.js` to generate IIFE-wrapped copies into `public/js/i18n/` for static HTML pages. Never edit `public/js/i18n/i18n.js` or `language-selector.js` directly — edit in `src/i18n/` and rebuild.
 - `core/debug-logger.js` — debug logging
 
 Shared: `packages/shared/physics-engine.js` — deterministic 60Hz fixed-step physics, `isViewer` flag switches between server mode and client-simulation mode.
@@ -240,13 +241,13 @@ globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_duration', { detail
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DEPLOY_PASSWORD` | For deploy | Password for SSH deploy |
+| `DEPLOY_PASSWORD` | No | Not required (SSH key auth used) |
 | `STARS_BOT_TOKEN` | For subs | Telegram bot token for @emdrbilateral_bot |
 | `STARS_PROVIDER_TOKEN` | Optional | Telegram Stars provider token (usually empty for XTR) |
 
 ## Deployment
 
-**Setup**: Set `DEPLOY_PASSWORD` env var before deploying.
+**Setup**: SSH key `~/.ssh/id_rsa_emdr` must be added to server.
 
 **One-command ship** (push + deploy):
 - `npm run ship:dev` — `git push origin main` + deploy to dev
@@ -274,9 +275,12 @@ npm run ship:prod                       # push + deploy both .online and .ru
 
 **All development on `main`**; prod branch `stable` updated manually when ready.
 
-## VPS Server — 90.156.254.190
+## VPS Server — 144.31.68.9 (u1host)
 
-**OS**: Ubuntu, Linux 6.18, Node.js v22.22.0, RAM 4GB
+**Хостинг**: u1host (vm1156528, DE-Promo), **OS**: Ubuntu 24.04, **RAM**: ~1GB
+**Домен**: emdrbilateral.online → 144.31.68.9 (также emdrbilateral.ru)
+**SSH**: `ssh -i ~/.ssh/id_rsa_emdr root@144.31.68.9` (ключ `~/.ssh/id_rsa_emdr`)
+**Резервный сервер (старый)**: 90.156.254.190 (Beget) — может быть выключен
 
 ### Systemd Services
 
@@ -286,17 +290,15 @@ npm run ship:prod                       # push + deploy both .online and .ru
 | `emdrbilateral-ru.service`     | 8081 | `/var/www/emdrbilateral.ru`         | stable | prod (.ru)     |
 | `emdrbilateral-dev.service`    | 3003 | `/var/www/dev.emdrbilateral.online` | main   | dev            |
 
-**⚠ Important**: `emdrbilateral.service` (legacy) has been **permanently deleted**. If it reappears — delete it again. It caused 42000+ restart loops by conflicting with `emdrbilateral-online.service` on port 8080.
-
 ### Nginx
 
-- `/etc/nginx/sites-enabled/emdrbilateral` — .online (→ 8080) and .ru (→ 8081)
+- `/etc/nginx/sites-enabled/emdrbilateral` — .online (→ 8080), .ru (→ 8081), VLESS WebSocket (/ws-vless → Xray)
 - `/etc/nginx/sites-enabled/dev.emdrbilateral.online` — dev (→ 3003)
 
 ### Manage Services
 
 ```bash
-ssh root@90.156.254.190
+ssh -i ~/.ssh/id_rsa_emdr root@144.31.68.9
 
 systemctl status emdrbilateral-online.service
 systemctl restart emdrbilateral-online.service
@@ -306,17 +308,27 @@ systemctl list-units --type=service | grep emdr
 ss -tlnp | grep node
 ```
 
-### VPN — StrongSwan IKEv2
+### VPN — StrongSwan IKEv2 + VLESS/Xray
 
-**Protocol**: IKEv2/IPsec (StrongSwan 6.0.1), macOS and iOS clients.
-VPN users (9): Swetlana, Sergey, Yulia, David, DavidMac1, DavidMac2, Elena, DavidDeck, Bogdan.
+**StrongSwan IKEv2** (Wi-Fi клиенты): порты 500/4500, конфиг скопирован с бегета.
+**VLESS/Xray** (мобильная сеть): WebSocket через nginx на порту 443, маскировка под кинопоиск.
 
-**⚠ After VPS reboot**: iptables NAT rules are lost. Restore:
+VPN пользователи (14): David, DavidMac1, DavidMac2, DavidDeck, Elena_mir, Elena, Nika, Svetlana, Sergey, Yulia, Bogdan, Natalia, Olga, Swetlana.
+
+**VLESS client config** (v2rayNG Android):
+```
+vless://379224bf-e0da-4083-b073-e9b5eca87707@emdrbilateral.online:443?encryption=none&security=tls&sni=emdrbilateral.online&type=ws&host=emdrbilateral.online&path=%2Fws-vless&fp=chrome#EMDR%20(VLESS)
+```
+
+**⚠ After VPS reboot**: iptables NAT rules may be lost. Restore:
 ```bash
 iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o eth0 -j MASQUERADE
 iptables -A FORWARD -s 10.10.10.0/24 -j ACCEPT
 iptables -A FORWARD -d 10.10.10.0/24 -j ACCEPT
 ```
+
+**VPN configs**: `/etc/ipsec.conf`, `/etc/ipsec.secrets`, `/usr/local/etc/xray/config.json`
+**VPN check**: `ipsec status`, `systemctl status xray`, `grep charon /var/log/syslog | tail -20`
 
 ## Playwright Testing
 

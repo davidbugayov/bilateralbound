@@ -1,16 +1,22 @@
-/* jshint node: true, esversion: 11, strict: true */
 'use strict'
 /**
- * PlayPause Controller - управление воспроизведением
+ * PlayPause Controller — управление воспроизведением
  * @module application/controller/play-pause
+ *
+ * Self-contained: accesses previewPhysicsEngine via globalThis.__previewPhysics,
+ * uses direction/counter domain modules directly. No DI needed — runs in same
+ * webpack bundle as controller.js.
  */
+
+const { getDirectionVector, getCurrentDirectionMode } = require('../../domain/direction')
+const { bbCounters } = require('../../domain/counters')
+
 let _isPlaying = false
 let _ignoreServerPausedUntilTs = 0
-let _deps = {}
 
-function init(deps) {
-  _deps = deps
+function init() {
   _isPlaying = false
+  _ignoreServerPausedUntilTs = 0
 }
 
 function getIsPlaying() {
@@ -25,7 +31,10 @@ function setIsPlaying(v) {
 function updatePlayPauseButton() {
   const btn = document.getElementById('playPauseBtn')
   if (!btn) return
-  btn.textContent = _isPlaying ? '⏸ Стоп' : '▶️ Старт'
+  // Use i18n for button text
+  const startLabel = globalThis.i18n?.t('controller.start') || 'Start'
+  const stopLabel = globalThis.i18n?.t('controller.stop') || 'Stop'
+  btn.textContent = _isPlaying ? stopLabel : startLabel
   btn.classList.toggle('playing', _isPlaying)
   btn.disabled = false
 }
@@ -37,67 +46,58 @@ function syncFsPlayPauseButton() {
   fsBtn.classList.toggle('playing', _isPlaying)
 }
 
-function updateAllButtons() {
+function _updateAllButtons() {
   updatePlayPauseButton()
   syncFsPlayPauseButton()
 }
 
-function scheduleAnimations() {
-  updateAllButtons()
-  setTimeout(updateAllButtons, 150)
-  setTimeout(updateAllButtons, 300)
+function _scheduleAnimations() {
+  _updateAllButtons()
+  setTimeout(_updateAllButtons, 150)
+  setTimeout(_updateAllButtons, 300)
 }
 
 function setPlayPauseState(shouldPlay) {
-  const {
-    previewPhysicsEngine,
-    safeSend,
-    centerBall,
-    getDirectionVector,
-    currentDirectionMode,
-    components,
-    bbCounters,
-    showNotification,
-    WS_MSG
-  } = _deps
+  const previewPhysicsEngine = globalThis.__previewPhysics
 
-  // Не показываем предупреждение во время инициализации
   if (
     !globalThis.__current?.isInitializing &&
     !globalThis.__current?.viewerConnected &&
     shouldPlay
   ) {
-    if (globalThis.showViewerNotConnectedWarning) {
-      globalThis.showViewerNotConnectedWarning()
-    } else {
+    if (typeof showViewerNotConnectedWarning === 'function') {
+      showViewerNotConnectedWarning()
+    } else if (typeof showNotification === 'function') {
       showNotification(
-        globalThis.i18n?.t('controller.clientNotConnected') ||
-          'Viewer not connected',
+        globalThis.i18n?.t('controller.clientNotConnected') || 'Viewer not connected',
         'warning'
       )
     }
   }
 
+  const directionVector = getDirectionVector(getCurrentDirectionMode()) || { dirX: 1, dirY: 0 }
   const payload = shouldPlay
     ? {
         paused: false,
-        ...(getDirectionVector(currentDirectionMode()) || { dirX: 1, dirY: 0 }),
-        speed: Number(components.speed?.getSpeed?.() ?? 40)
+        ...directionVector,
+        speed: Number(globalThis.components?.speed?.getSpeed?.() ?? 40)
       }
     : { paused: true, returnToCenter: true }
 
-  safeSend(WS_MSG.controllerUpdate, payload)
+  // safeSend via globalThis (set up by controller.js)
+  if (typeof safeSend === 'function') {
+    safeSend(WS_MSG.controllerUpdate, payload)
+  }
+
   _isPlaying = shouldPlay
   globalThis.__current.isPlaying = shouldPlay
   globalThis.forcePauseUntilUserAction = false
 
   if (shouldPlay) {
     bbCounters.start()
-    // Track session start in Metrika
     try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_started')) } catch (e) { void e }
   } else {
     bbCounters.stop(true)
-    // Track session stop + duration in Metrika
     try {
       globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_stopped'))
       globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_duration', { detail: { seconds: bbCounters.getElapsedSeconds?.() || 0 } }))
@@ -106,19 +106,17 @@ function setPlayPauseState(shouldPlay) {
 
   if (previewPhysicsEngine) {
     if (shouldPlay) {
-      // Reset first-update flag so first state_update hard-snaps position
       previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
-      // Start from center (same as viewer) for clean sync
-      centerBall()
+      centerBallInViewer()
     }
     previewPhysicsEngine.applyCommand(payload)
     if (!shouldPlay) {
-      centerBall()
+      centerBallInViewer()
     }
   }
 
   _ignoreServerPausedUntilTs = performance.now() + 800
-  scheduleAnimations()
+  _scheduleAnimations()
   return true
 }
 
@@ -146,7 +144,9 @@ module.exports = {
   getIsPlaying,
   setIsPlaying,
   updatePlayPauseButton,
+  syncFsPlayPauseButton,
   togglePlayPause,
   setPlayPauseState,
-  shouldIgnoreServerPaused
+  shouldIgnoreServerPaused,
+  _scheduleAnimations
 }

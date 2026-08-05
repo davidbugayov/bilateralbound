@@ -1,6 +1,6 @@
 {
   "name": "emdr-therapy-platform",
-  "version": "2.39.743",
+  "version": "2.39.746",
   "description": "Distributed EMDR therapy platform with modular architecture",
   "private": true,
   "workspaces": [
@@ -14,9 +14,9 @@
     "start:server": "cd packages/server-core && npm start",
     "start:client": "cd packages/web-client && npm start",
     "dev": "concurrently \"npm run dev --workspace=packages/server-core\" \"npm run watch --workspace=packages/web-client\"",
-    "build": "npm run build --workspace=packages/web-client",
-    "build:prod": "npm run build --workspace=packages/web-client && npm run minify:css --workspace=packages/web-client",
-    "build:dev": "npm run build:dev --workspace=packages/web-client",
+    "build": "node scripts/generate-i18n-iife.js && npm run build --workspace=packages/web-client",
+    "build:prod": "node scripts/generate-i18n-iife.js && npm run build --workspace=packages/web-client && npm run minify:css --workspace=packages/web-client",
+    "build:dev": "node scripts/generate-i18n-iife.js && npm run build:dev --workspace=packages/web-client",
     "dev:server": "cd packages/server-core && npm run dev",
     "dev:client": "cd packages/web-client && npm run dev",
     "install:all": "npm install && cd packages/server-core && npm install && cd packages/web-client && npm install",
