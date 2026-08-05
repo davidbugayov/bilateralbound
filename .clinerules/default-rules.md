@@ -51,7 +51,7 @@ npm run lint:fix         # ESLint with auto-fix
 npm run lint:css         # Stylelint for CSS
 npm run format           # Prettier
 
-# Deployment (requires DEPLOY_PASSWORD env var)
+# Deployment (SSH key auth)
 npm run deploy:dev       # Pull main, build, restart dev server
 npm run deploy:prod      # Pull stable, build, restart prod (.online + .ru)
 npm run deploy:dev:logs  # Show dev service logs
@@ -149,14 +149,7 @@ Shared: `packages/shared/physics-engine.js` — deterministic 60Hz fixed-step ph
 
 ## Deployment
 
-**Setup**: Set `DEPLOY_PASSWORD` env var before deploying:
-
-```bash
-export DEPLOY_PASSWORD='password_here'
-# Or create .env file (it's in .gitignore):
-cp .env.example .env
-# Edit .env and add DEPLOY_PASSWORD
-```
+**Setup**: SSH key `~/.ssh/id_rsa_emdr` must be added to server (key-based auth, no password needed).
 
 **Deploy**:
 
@@ -167,9 +160,11 @@ cp .env.example .env
 
 **All development on `main`**; prod branch `stable` updated manually when ready. UFW: ports 22, 80, 443 (TCP), 500/udp, 4500/udp (VPN)
 
-## VPS Server — 90.156.254.190
+## VPS Server — 144.31.68.9 (u1host)
 
-**OS**: Ubuntu, Linux 6.18, Node.js v22.22.0, RAM 4GB
+**Хостинг**: u1host (vm1156528), **OS**: Ubuntu 24.04
+**SSH**: `ssh root@144.31.68.9` (ключ `~/.ssh/id_rsa_emdr`)
+**Резервный (старый)**: 90.156.254.190 (Beget)
 
 ### Systemd Services
 
@@ -189,7 +184,7 @@ cp .env.example .env
 ### Manage services
 
 ```bash
-ssh -o StrictHostKeyChecking=no root@90.156.254.190
+ssh -o StrictHostKeyChecking=no root@144.31.68.9
 
 systemctl status emdrbilateral-online.service
 systemctl restart emdrbilateral-online.service
@@ -252,7 +247,6 @@ globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DEPLOY_PASSWORD` | For deploy | Password for SSH deploy |
 | `STARS_BOT_TOKEN` | For subs | Telegram bot token for @emdrbilateral_bot |
 | `STARS_PROVIDER_TOKEN` | Optional | Telegram Stars provider token (usually empty for XTR) |
 

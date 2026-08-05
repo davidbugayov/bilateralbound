@@ -1,13 +1,16 @@
 'use strict'
 
 const path = require('node:path')
+const crypto = require('node:crypto')
 const express = require('express')
 
 function registerStaticRoutes(
   app,
   sessionService,
   localizationService,
-  { setNoCacheHeaders, logger }
+  { setNoCacheHeaders, logger },
+  linkAccessService,
+  subscriptionService
 ) {
   const publicPath = path.join(
     __dirname,
@@ -17,6 +20,73 @@ function registerStaticRoutes(
     'web-client',
     'public'
   )
+
+  const BROWSER_COOKIE = 'bb_lk'
+  const COOKIE_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000 // 1 year
+
+  /**
+   * Generates a random browser ID for the cookie.
+   * @returns {string}
+   */
+  function generateBrowserId() {
+    return crypto.randomUUID()
+  }
+
+  /**
+   * Issues the bb_lk cookie if not already present.
+   * Mutates res — sets cookie and returns the browserId.
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @returns {string} browserId (existing or newly generated)
+   */
+  function ensureBrowserCookie(req, res) {
+    let browserId = req.cookies && req.cookies[BROWSER_COOKIE]
+    if (!browserId) {
+      browserId = generateBrowserId()
+      res.cookie(BROWSER_COOKIE, browserId, {
+        httpOnly: true,
+        secure: !req.app.get('isDev'),
+        sameSite: 'lax',
+        maxAge: COOKIE_MAX_AGE_MS
+      })
+    }
+    return browserId
+  }
+
+  /**
+   * Decides whether the current browser is allowed access to the session page.
+   * Side-effects: may issue cookie and record first visit.
+   * @returns {boolean} true = allow (serve content), false = deny (show paywall)
+   */
+  function decideAccess(req, res, sessionId) {
+    const session = sessionService.getSession(sessionId)
+    // Non-existent session — don't gate, let existing behaviour handle it
+    if (!session) {
+      return true
+    }
+
+    // Owner of this link has an active subscription — bypass gating
+    if (subscriptionService && subscriptionService.isCustomIdAllowed(sessionId)) {
+      return true
+    }
+
+    const browserId = ensureBrowserCookie(req, res)
+    const state = linkAccessService.get(browserId, sessionId)
+
+    // Already unlocked — allow
+    if (linkAccessService.isUnlocked(browserId, sessionId)) {
+      return true
+    }
+
+    // First visit — record and allow
+    if (!state.firstSeenAt) {
+      linkAccessService.markSeen(browserId, sessionId)
+      return true
+    }
+
+    // Repeat visit without unlock — deny
+    return false
+  }
 
   // Root route - serve cached index.html with localized meta tags (from expressApp L456-463)
   app.get('/', (req, res) => {
@@ -103,8 +173,16 @@ function registerStaticRoutes(
   })
 
   // Viewer HTML (from expressApp L941-949)
+  // Gated: first visit free, repeat visits require subscription
   app.get('/s/:sessionId', (req, res) => {
-    const session = sessionService.getSession(req.params.sessionId)
+    const { sessionId } = req.params
+    if (!decideAccess(req, res, sessionId)) {
+      setNoCacheHeaders(res)
+      const html = localizationService.getStaticLocalizedHtml('paywall.html', req)
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
+      return res.send(html)
+    }
+    const session = sessionService.getSession(sessionId)
     const html = localizationService.getLocalizedHtml('viewer', req, session)
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
@@ -112,8 +190,16 @@ function registerStaticRoutes(
   })
 
   // Controller HTML (from expressApp L950-959)
+  // Gated: first visit free, repeat visits require subscription
   app.get('/c/:sessionId', (req, res) => {
-    const session = sessionService.getSession(req.params.sessionId)
+    const { sessionId } = req.params
+    if (!decideAccess(req, res, sessionId)) {
+      setNoCacheHeaders(res)
+      const html = localizationService.getStaticLocalizedHtml('paywall.html', req)
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
+      return res.send(html)
+    }
+    const session = sessionService.getSession(sessionId)
     const html = localizationService.getLocalizedHtml(
       'controller',
       req,

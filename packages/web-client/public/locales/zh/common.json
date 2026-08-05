@@ -461,5 +461,23 @@
     "s5li6desc": "适用于任何浏览器",
     "s5li7desc": "减轻眼部疲劳",
     "s5li8desc": "自我调节"
+  },
+  "paywall": {
+    "title": "需要订阅 — BilateralBound",
+    "heading": "此链接已被使用",
+    "description": "永久会话链接需有效订阅。支持项目 — 75⭐ / 30天。",
+    "botButton": "💬 在Telegram订阅 — 75⭐",
+    "orVerify": "或验证现有订阅",
+    "telegramIdLabel": "您的Telegram用户ID",
+    "telegramIdPlaceholder": "123456789",
+    "unlockButton": "验证",
+    "hintMyId": "💡 发送<code>/myid</code>给<a href=\"https://t.me/emdrbilateral_bot\" target=\"_blank\" rel=\"noopener noreferrer\">@emdrbilateral_bot</a>获取您的ID",
+    "successUnlocked": "访问已解锁！重定向中…",
+    "errorEmpty": "请输入您的Telegram用户ID",
+    "errorInvalid": "无效的Telegram用户ID格式",
+    "noSubscription": "此Telegram ID没有有效订阅。请通过@emdrbilateral_bot订阅（75⭐ / 30天）。",
+    "errorNetwork": "网络错误。请重试。",
+    "backToHome": "← 返回主页"
   }
+
 }

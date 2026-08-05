@@ -10,6 +10,7 @@ const PhysicsService = require('./services/PhysicsService')
 const SessionService = require('./services/SessionService')
 const LocalizationService = require('./services/LocalizationService')
 const SubscriptionService = require('./services/SubscriptionService')
+const LinkAccessService = require('./services/LinkAccessService')
 const TelegramBotService = require('./services/TelegramBotService')
 const {
   setupMiddleware,
@@ -62,6 +63,8 @@ const subscriptionService = new SubscriptionService({
   testMode: config.subscription.TEST_MODE
 })
 
+const linkAccessService = new LinkAccessService({ logger })
+
 // Telegram bot — only initialised if a token is provided via env
 const telegramBot = config.subscription.STARS_BOT_TOKEN
   ? new TelegramBotService({
@@ -110,7 +113,7 @@ registerSubscriptionRoutes(app, subscriptionService, {
   priceStars: config.subscription.PRICE_STARS,
   testMode: config.subscription.TEST_MODE,
   baseUrl: config.server.PUBLIC_URL || ''
-})
+}, linkAccessService)
 
 registerViewerRoutes(
   app,
@@ -123,7 +126,7 @@ registerSeoRoutes(app)
 registerStaticRoutes(app, sessionService, localizationService, {
   setNoCacheHeaders,
   logger
-})
+}, linkAccessService, subscriptionService)
 
 // 6. Server + WebSocket
 const server = http.createServer(app)

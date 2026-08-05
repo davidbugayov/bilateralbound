@@ -648,5 +648,23 @@
     "s5li6desc": "Funciona en cualquier navegador",
     "s5li7desc": "Reduce la fatiga visual",
     "s5li8desc": "Para autorregulación"
+  },
+  "paywall": {
+    "title": "Suscripción requerida — BilateralBound",
+    "heading": "Este enlace ya ha sido utilizado",
+    "description": "Los enlaces permanentes de sesión están disponibles con una suscripción activa. Apoya el proyecto — 75⭐ por 30 días.",
+    "botButton": "💬 Suscribirse en Telegram — 75⭐",
+    "orVerify": "o verificar suscripción existente",
+    "telegramIdLabel": "Tu ID de usuario de Telegram",
+    "telegramIdPlaceholder": "123456789",
+    "unlockButton": "Verificar",
+    "hintMyId": "💡 Envía <code>/myid</code> a <a href=\"https://t.me/emdrbilateral_bot\" target=\"_blank\" rel=\"noopener noreferrer\">@emdrbilateral_bot</a> para obtener tu ID",
+    "successUnlocked": "¡Acceso desbloqueado! Redirigiendo…",
+    "errorEmpty": "Por favor, introduce tu ID de usuario de Telegram",
+    "errorInvalid": "Formato de ID de Telegram no válido",
+    "noSubscription": "No hay suscripción activa para este ID de Telegram. Suscríbete a través de @emdrbilateral_bot (75⭐ / 30 días).",
+    "errorNetwork": "Error de red. Por favor, inténtalo de nuevo.",
+    "backToHome": "← Volver a la página principal"
   }
+
 }

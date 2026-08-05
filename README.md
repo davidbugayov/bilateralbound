@@ -65,7 +65,7 @@ npm test                 # E2E тесты
 npm run lint             # ESLint
 npm run format           # Prettier
 
-# Деплой (требуется DEPLOY_PASSWORD)
+# Деплой (SSH key auth)
 npm run deploy:dev       # На dev.emdrbilateral.online
 npm run deploy:prod      # На emdrbilateral.online + emdrbilateral.ru
 ```
@@ -77,6 +77,10 @@ npm run deploy:prod      # На emdrbilateral.online + emdrbilateral.ru
 | Development | https://dev.emdrbilateral.online | `main`   | `emdrbilateral-dev`         | 3003 |
 | Production  | https://emdrbilateral.online     | `stable` | `emdrbilateral-online`      | 8080 |
 | Production  | https://emdrbilateral.ru         | `stable` | `emdrbilateral-ru`          | 8081 |
+
+**Сервер**: 144.31.68.9 (u1host, Ubuntu 24.04), домены emdrbilateral.online / emdrbilateral.ru
+**SSH**: `ssh -i ~/.ssh/id_rsa_emdr root@144.31.68.9`
+**VPN**: StrongSwan IKEv2 (Wi-Fi) + VLESS/Xray (мобильная сеть, порт 443, маскировка кинопоиск)
 
 ## Telegram Bot / Подписки
 

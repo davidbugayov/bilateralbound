@@ -74,6 +74,9 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (url.pathname.startsWith('/api/')) return;
 
+  // Skip dynamic session routes — content/paywall must always come from server
+  if (url.pathname.startsWith('/c/') || url.pathname.startsWith('/s/')) return;
+
   // For static assets: cache first
   if (
     STATIC_ASSETS.some(

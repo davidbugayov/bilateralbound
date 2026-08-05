@@ -656,5 +656,23 @@
     "s5li6desc": "Works in any modern browser",
     "s5li7desc": "Reduces eye strain during therapy",
     "s5li8desc": "For self-regulation"
+  },
+  "paywall": {
+    "title": "Subscription Required — BilateralBound",
+    "heading": "This Link Has Already Been Used",
+    "description": "Permanent session links are available with an active subscription. Support the project — 75⭐ for 30 days. Your support keeps the platform running.",
+    "botButton": "💬 Subscribe in Telegram — 75⭐",
+    "orVerify": "or verify existing subscription",
+    "telegramIdLabel": "Your Telegram User ID",
+    "telegramIdPlaceholder": "123456789",
+    "unlockButton": "Verify",
+    "hintMyId": "💡 Send <code>/myid</code> to <a href=\"https://t.me/emdrbilateral_bot\" target=\"_blank\" rel=\"noopener noreferrer\">@emdrbilateral_bot</a> to get your ID",
+    "successUnlocked": "Access unlocked! Redirecting…",
+    "errorEmpty": "Please enter your Telegram User ID",
+    "errorInvalid": "Invalid Telegram User ID format",
+    "noSubscription": "No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (75⭐ / 30 days).",
+    "errorNetwork": "Network error. Please try again.",
+    "backToHome": "← Back to main page"
   }
+
 }

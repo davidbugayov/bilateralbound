@@ -475,5 +475,23 @@
     "s5li6desc": "どのブラウザでも動作",
     "s5li7desc": "目の疲れを軽減",
     "s5li8desc": "自己調整のために"
+  },
+  "paywall": {
+    "title": "サブスクリプションが必要です — BilateralBound",
+    "heading": "このリンクは既に使用されています",
+    "description": "永久セッションリンクは有効なサブスクリプションで利用できます。プロジェクトをサポート — 75⭐ / 30日。",
+    "botButton": "💬 Telegramで購読 — 75⭐",
+    "orVerify": "または既存のサブスクリプションを確認",
+    "telegramIdLabel": "あなたのTelegramユーザーID",
+    "telegramIdPlaceholder": "123456789",
+    "unlockButton": "確認",
+    "hintMyId": "💡 <a href=\"https://t.me/emdrbilateral_bot\" target=\"_blank\" rel=\"noopener noreferrer\">@emdrbilateral_bot</a>に<code>/myid</code>を送信してIDを取得",
+    "successUnlocked": "アクセスが解除されました！リダイレクト中…",
+    "errorEmpty": "TelegramユーザーIDを入力してください",
+    "errorInvalid": "無効なTelegramユーザーID形式",
+    "noSubscription": "このTelegram IDには有効なサブスクリプションがありません。@emdrbilateral_botから購読してください（75⭐ / 30日）。",
+    "errorNetwork": "ネットワークエラー。もう一度お試しください。",
+    "backToHome": "← メインページに戻る"
   }
+
 }

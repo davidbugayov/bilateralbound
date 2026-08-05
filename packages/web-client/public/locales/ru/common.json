@@ -682,5 +682,23 @@
     "s5li6desc": "Работает в любом браузере",
     "s5li7desc": "Снижает нагрузку на глаза",
     "s5li8desc": "Для саморегуляции"
+  },
+  "paywall": {
+    "title": "Требуется подписка — BilateralBound",
+    "heading": "Эта ссылка уже была использована",
+    "description": "Постоянные ссылки на сессии доступны с активной подпиской. Поддержите проект — подписка 75⭐ на 30 дней. Ваша поддержка помогает платформе работать.",
+    "botButton": "💬 Подписаться в Telegram — 75⭐",
+    "orVerify": "или подтвердите существующую подписку",
+    "telegramIdLabel": "Ваш Telegram User ID",
+    "telegramIdPlaceholder": "123456789",
+    "unlockButton": "Проверить",
+    "hintMyId": "💡 Отправьте <code>/myid</code> боту <a href=\"https://t.me/emdrbilateral_bot\" target=\"_blank\" rel=\"noopener noreferrer\">@emdrbilateral_bot</a> чтобы узнать свой ID",
+    "successUnlocked": "Доступ открыт! Перенаправление…",
+    "errorEmpty": "Пожалуйста, введите ваш Telegram User ID",
+    "errorInvalid": "Неверный формат Telegram User ID",
+    "noSubscription": "Нет активной подписки для этого Telegram ID. Подпишитесь через @emdrbilateral_bot (75⭐ / 30 дней).",
+    "errorNetwork": "Ошибка сети. Пожалуйста, попробуйте снова.",
+    "backToHome": "← На главную"
   }
+
 }
