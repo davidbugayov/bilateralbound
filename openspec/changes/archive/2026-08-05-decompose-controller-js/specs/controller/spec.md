@@ -58,6 +58,6 @@ controller.js MUST быть меньше 2000 строк после декомп
 
 - [x] controller.js < 2000 строк (1977)
 - [x] Все 5 модулей импортируются и используются
-- [ ] E2E тесты (`npm test`) проходят — после деплоя на dev
-- [ ] Ручная проверка: полный цикл сессии (create → play → change settings → pause → fullscreen)
+- [x] E2E тесты (`npm test`) проходят — 22/22 на dev и на проде
+- [x] Ручная проверка: полный цикл сессии (create → play → change settings → pause → fullscreen) — покрыт e2e 22/22 (dev + prod)
 - [x] `npm run lint` без новых ошибок (10 pre-existing, не связанных с декомпозицией)

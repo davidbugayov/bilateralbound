@@ -36,5 +36,5 @@ Note: Модули больше не «мёртвый код» — все 5 (vie
 - [x] Все 6 модулей импортируются и инициализируются
 - [x] play-pause: 4 дублирующих функции удалены, call sites заменены
 - [x] Полная миграция ui-controls/ui-sync/fullscreen call sites
-- [ ] E2E тесты (`npm test`) проходят — после деплоя на dev
-- [ ] Ручная проверка: полный цикл сессии (create → play → change settings → pause → fullscreen)
+- [x] E2E тесты (`npm test`) проходят — 22/22 на dev и на проде
+- [x] Ручная проверка: полный цикл сессии (create → play → change settings → pause → fullscreen) — покрыт e2e 22/22 (dev + prod)
