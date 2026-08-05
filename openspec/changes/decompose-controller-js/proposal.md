@@ -1,5 +1,13 @@
 # Proposal: Декомпозиция controller.js
 
+## Why
+
+`controller.js` — 2696 строк (70+ функций), при этом 5 модулей в `application/controller/` уже написаны, но не используются: их функции продублированы инлайн (≈991 строка мёртвого кода и дублирования).
+
+## What Changes
+
+Неиспользуемые модули (`viewer-status`, `ui-controls`, `play-pause`, `ui-sync`, `fullscreen`) подключаются в controller.js через их `init(deps)` интерфейс, дублирующие определения удаляются, размер controller.js сокращается.
+
 ## Проблема
 
 `packages/web-client/src/controller.js` — 2696 строк, 70+ функций. Это самый большой файл в проекте.
