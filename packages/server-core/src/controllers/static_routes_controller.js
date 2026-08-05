@@ -69,30 +69,37 @@ function registerStaticRoutes(
   // Test file serving (from expressApp L654)
   app.use('/test', express.static(path.join(__dirname, '..', '..')))
 
-  // Privacy page (client-side i18n, no server-side localization needed)
+  // Privacy page — localized meta + canonical/hreflang via LocalizationService
   app.get('/privacy', (req, res) => {
-    const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
-    res.sendFile(path.join(publicPath, 'privacy.html'))
+    const html = localizationService.getStaticLocalizedHtml('privacy.html', req)
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    setNoCacheHeaders(res)
+    res.send(html)
   })
 
-  // Public offer page (client-side i18n, no server-side localization needed)
+  // Public offer page — localized meta + canonical/hreflang via LocalizationService
   app.get('/offer', (req, res) => {
-    const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
-    res.sendFile(path.join(publicPath, 'offer.html'))
+    const html = localizationService.getStaticLocalizedHtml('offer.html', req)
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    setNoCacheHeaders(res)
+    res.send(html)
   })
 
   // Breathing session page (CalmFlow coherent breathing)
   // No-cache: Telegram Mini App aggressively caches HTML
   app.get('/breathing', (req, res) => {
     setNoCacheHeaders(res)
-    const breathingPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public', 'breathing.html')
-    res.sendFile(breathingPath)
+    const html = localizationService.getStaticLocalizedHtml('breathing.html', req)
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.send(html)
   })
 
-  // About page — EMDR therapy information (8 languages, client-side i18n)
+  // About page — EMDR therapy information (8 languages, localized meta)
   app.get('/about', (req, res) => {
-    const publicPath = path.join(__dirname, '..', '..', '..', 'web-client', 'public')
-    res.sendFile(path.join(publicPath, 'about.html'))
+    const html = localizationService.getStaticLocalizedHtml('about.html', req)
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    setNoCacheHeaders(res)
+    res.send(html)
   })
 
   // Viewer HTML (from expressApp L941-949)

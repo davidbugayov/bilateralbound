@@ -63,6 +63,26 @@ const indexMetaMap = [
   }
 ]
 
+// Static pages served through LocalizationService: file → meta map
+const staticMetaMaps = {
+  'about.html': [
+    { isTitle: true, key: 'about.metaTitle' },
+    { attr: 'name', attrValue: 'description', key: 'about.metaDescription' }
+  ],
+  'privacy.html': [
+    { isTitle: true, key: 'privacy.metaTitle' },
+    { attr: 'name', attrValue: 'description', key: 'privacy.metaDescription' }
+  ],
+  'offer.html': [
+    { isTitle: true, key: 'offer.metaTitle' },
+    { attr: 'name', attrValue: 'description', key: 'offer.metaDescription' }
+  ],
+  'breathing.html': [
+    // Breathing is a standalone CalmFlow page — title stays hardcoded
+    { attr: 'name', attrValue: 'description', key: 'breathing.metaDescription' }
+  ]
+}
+
 class LocalizationService {
   /**
    * @param {Object} config - Application config (unused for now, kept for interface consistency)
@@ -96,7 +116,40 @@ class LocalizationService {
     let html =
       this._htmlCache.get(`${type}_${lang}`) ||
       this._htmlCache.get(`${type}_en`)
-    html = this._injectCanonicalHreflang(html, req.get('host') || '')
+    html = this._injectCanonicalHreflang(
+      html,
+      req.get('host') || '',
+      req.path || '/'
+    )
+    return html
+  }
+
+  /**
+   * Returns localized HTML for a static page (about, privacy, offer, breathing).
+   * Reads the file fresh (no cache), localizes meta tags and injects
+   * canonical/hreflang based on the request host and path.
+   * @param {string} fileName - HTML file name inside web-client/public
+   * @param {Object} req - Express request object
+   * @returns {string} Localized HTML
+   */
+  getStaticLocalizedHtml(fileName, req) {
+    const metaMap = staticMetaMaps[fileName]
+    if (!metaMap) {
+      this._logger.warn(`No meta map for static page: ${fileName}`)
+      return null
+    }
+    const lang = this.detectLanguage(req, null)
+    const locale = this._locales.get(lang) || this._locales.get('en')
+    let html = fs.readFileSync(
+      path.join(this._publicPath, fileName),
+      'utf8'
+    )
+    html = this._localizeHtml(html, lang, locale, metaMap)
+    html = this._injectCanonicalHreflang(
+      html,
+      req.get('host') || '',
+      req.path || '/'
+    )
     return html
   }
 
@@ -201,34 +254,42 @@ class LocalizationService {
    * @param {string} host - Request host header
    * @returns {string} HTML with canonical/hreflang injected
    */
-  _injectCanonicalHreflang(html, host) {
+  _injectCanonicalHreflang(html, host, path = '/') {
     const isRu = (host || '').endsWith('.ru')
     const ruBase = 'https://emdrbilateral.ru'
     const onlineBase = 'https://emdrbilateral.online'
     const base = isRu ? ruBase : onlineBase
-    const canonicalUrl = `${base}/`
-
-    html = html.replace(
-      /<link rel="canonical" href="[^"]*" \/>/,
-      `<link rel="canonical" href="${canonicalUrl}" />`
-    )
+    const canonicalUrl = `${base}${path}`
 
     const hreflang = [
-      `<link rel="alternate" hreflang="ru" href="${ruBase}/" />`,
-      `<link rel="alternate" hreflang="en" href="${onlineBase}/" />`,
-      `<link rel="alternate" hreflang="de" href="${onlineBase}/?lang=de" />`,
-      `<link rel="alternate" hreflang="es" href="${onlineBase}/?lang=es" />`,
-      `<link rel="alternate" hreflang="fr" href="${onlineBase}/?lang=fr" />`,
-      `<link rel="alternate" hreflang="pt" href="${onlineBase}/?lang=pt" />`,
-      `<link rel="alternate" hreflang="ja" href="${onlineBase}/?lang=ja" />`,
-      `<link rel="alternate" hreflang="zh" href="${onlineBase}/?lang=zh" />`,
-      `<link rel="alternate" hreflang="x-default" href="${onlineBase}/" />`
+      `<link rel="alternate" hreflang="ru" href="${ruBase}${path}" />`,
+      `<link rel="alternate" hreflang="en" href="${onlineBase}${path}" />`,
+      `<link rel="alternate" hreflang="de" href="${onlineBase}${path}?lang=de" />`,
+      `<link rel="alternate" hreflang="es" href="${onlineBase}${path}?lang=es" />`,
+      `<link rel="alternate" hreflang="fr" href="${onlineBase}${path}?lang=fr" />`,
+      `<link rel="alternate" hreflang="pt" href="${onlineBase}${path}?lang=pt" />`,
+      `<link rel="alternate" hreflang="ja" href="${onlineBase}${path}?lang=ja" />`,
+      `<link rel="alternate" hreflang="zh" href="${onlineBase}${path}?lang=zh" />`,
+      `<link rel="alternate" hreflang="x-default" href="${onlineBase}${path}" />`
     ].join('\n    ')
 
-    html = html.replace(
-      /(<link rel="canonical"[^>]*\/>)/,
-      `$1\n    ${hreflang}`
-    )
+    const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" />`
+    if (/<link rel="canonical"[^>]*\/>/.test(html)) {
+      html = html.replace(
+        /<link rel="canonical"[^>]*\/>/,
+        canonicalTag
+      )
+      html = html.replace(
+        /(<link rel="canonical"[^>]*\/>)/,
+        `$1\n    ${hreflang}`
+      )
+    } else {
+      // No canonical yet — insert canonical + hreflang right after <head>
+      html = html.replace(
+        /<head[^>]*>/,
+        `$&\n    ${canonicalTag}\n    ${hreflang}`
+      )
+    }
 
     // Fix og:url
     html = html.replace(
