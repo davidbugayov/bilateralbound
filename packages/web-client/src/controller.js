@@ -1,5 +1,5 @@
 /* jshint esversion: 11, browser: true, node: true, -W119 */
-/* global globalThis, WS_MSG, sharedComponents, throttle, AudioManager, BallRenderer, getSessionIdFromUrl, RealtimeClient, debugWarn, debugError */
+/* global globalThis, WS_MSG, AudioManager, BallRenderer, getSessionIdFromUrl, RealtimeClient, debugWarn, debugError */
 'use strict'
 // Require dependencies (side effects populate globalThis)
 require('./core/debug-logger')
@@ -33,8 +33,7 @@ const {
   getCurrentDirectionMode,
   setCurrentDirectionMode,
   setDirectionState,
-  recalculateDiagonalDirection,
-  getDirectionMode
+  recalculateDiagonalDirection
 } = require('./domain/direction')
 const {
   bbCounters,
@@ -56,16 +55,26 @@ _ViewerStatus.init({
 _PlayPause.init()
 
 // Wire ui-sync module
-_UISync.init({
-      components: globalThis.components,
-      getLastServerState: () => lastServerState,
-      updatePlayPauseButton: _PlayPause.updatePlayPauseButton,
-      updateDirectionButtons,
-      updateDirectionDisplay,
-      updateViewerStatusUI: _ViewerStatus.updateStatusUI,
-      updateViewerLinkVisualState: _ViewerStatus.updateLinkVisualState,
-      updateViewerAudioIndicators: _ViewerStatus.updateAudioIndicators
-    })
+_UISync.init(globalThis.components, {
+  getLastServerState: () => lastServerState,
+  getPreviewPhysicsEngine: () => previewPhysicsEngine,
+  getIgnorePausedUntilTs: () => globalThis.__ignoreServerPausedUntilTs ?? 0,
+  getIgnoreDirectionUntilTs: () => __ignoreServerDirectionUntilTs,
+  getCurrentDirectionMode,
+  setDirectionState,
+  setCurrentDirectionMode,
+  setIsPlaying: (v) => {
+    isPlaying = v
+    _PlayPause.setIsPlaying(v)
+  },
+  syncFsPlayPauseButton: _PlayPause.syncFsPlayPauseButton,
+  updatePlayPauseButton: _PlayPause.updatePlayPauseButton,
+  updateDirectionButtons,
+  updateDirectionDisplay,
+  updateViewerStatusUI: _ViewerStatus.updateStatusUI,
+  updateViewerLinkVisualState: _ViewerStatus.updateLinkVisualState,
+  updateViewerAudioIndicators: _ViewerStatus.updateAudioIndicators
+})
 
 /**
  * Controller - Логика управления сессией BilateralBound v2.2
@@ -73,7 +82,7 @@ _UISync.init({
  * @version 2.2
  * @module Controller
  */
-/* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession, setSoundEnabled, setSoundType */
+/* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession, setSoundEnabled, setSoundType, showViewerSizeNotReadyWarning */
 /* global debugWarn, debugError, RealtimeClient */
 // Защита от повторной загрузки
 
@@ -98,7 +107,6 @@ let lastServerState = null // Кэшируем последнее состоян
 let isPlaying = false
 let wsClient
 let isInitialized = false // Флаг для предотвращения повторной инициализации
-let __ignoreServerPausedUntilTs = 0 // Кратковременная блокировка переопределения isPlaying сервером
 let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
@@ -108,11 +116,8 @@ if (globalThis.BBConfig?.rendering?.hiddenThrottleMs != null) {
 let physicsInterval = null // Глобальный интервал физики для возможности остановки извне
 let _previewRafLast = 0 // Timestamp последнего rAF кадра для dt физики
 let previewFsCanvas = null
-let previewFsRenderer = null
 let isPreviewFullscreen = false
 let _syncMonitorTimer = null
-let fsPanelHideTimer = null
-const fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
 let _waitingTimerInterval = null // Timer counting time since session creation while waiting for viewer
 
 function startSyncMonitor() {
@@ -256,6 +261,23 @@ function setupFullscreenListeners() {
   const openFsBtn = document.getElementById('openPreviewFullscreenBtn')
   const exitFsBtn = document.getElementById('exitPreviewFullscreenBtn')
   previewFsCanvas = document.getElementById('previewFullscreenCanvas')
+  _Fullscreen.initFullscreen(previewFsCanvas, {
+    getPreviewPhysicsEngine: () => previewPhysicsEngine,
+    centerBallInViewer,
+    setDirection,
+    togglePlayPause,
+    updateSpeed,
+    setBallSize,
+    setBallSizeMultiplier,
+    setBallColor,
+    setBackgroundColor,
+    getIsPlaying: () => _PlayPause.getIsPlaying(),
+    getComponents: () => components,
+    calculatePreviewDimensions,
+    setCanvasDimensions,
+    syncFsPlayPauseButton: _PlayPause.syncFsPlayPauseButton,
+    buildViewerUrl
+  })
   document.addEventListener('keydown', handleFullscreenKeydown, true)
   globalThis.addEventListener('popstate', handlePopState)
   if (openFsBtn) {
@@ -427,7 +449,8 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       if (lastPlayingState && globalThis.__current?.viewerConnected) {
         setTimeout(async () => {
           // Don't restore if user explicitly changed play state recently
-          if (performance.now() < __ignoreServerPausedUntilTs) return
+          if (performance.now() < (globalThis.__ignoreServerPausedUntilTs ?? 0))
+            return
           // Verify server is actually playing before restoring local state
           try {
             const resp = await globalThis.csrfFetch(`/api/session/${sessionId}/state`)
@@ -592,9 +615,9 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
     applyServerStateToPreview(state)
     _ViewerStatus.updateAudioIndicators() // Обновляем индикаторы звука при каждом обновлении состояния
-    _syncUIPause(state)
-    _syncUIInfinity(state)
-    _syncUIDirection(state)
+    _UISync.syncPause(state)
+    _UISync.syncInfinity(state)
+    _UISync.syncDirection(state)
   })
   wsClient.on(WS_MSG.netMetrics, ({ jitterMs }) => {
     applyAdaptiveSmoothing(previewPhysicsEngine, jitterMs)
@@ -791,7 +814,7 @@ function applyServerStateToPreview(state) {
   if (
     typeof state.paused === 'boolean' &&
     previewPhysicsEngine.state.paused !== state.paused &&
-    performance.now() >= __ignoreServerPausedUntilTs
+    performance.now() >= (globalThis.__ignoreServerPausedUntilTs ?? 0)
   ) {
     previewPhysicsEngine.setPaused(state.paused)
     // Reset first-update flag on pause so next play starts with hard-snap
@@ -801,7 +824,7 @@ function applyServerStateToPreview(state) {
   }
   if (
     typeof pausedState === 'boolean' &&
-    performance.now() >= __ignoreServerPausedUntilTs
+    performance.now() >= (globalThis.__ignoreServerPausedUntilTs ?? 0)
   ) {
     // Sync isPlaying with server state (only when user hasn't recently toggled)
     const newIsPlaying = !state.paused
@@ -917,266 +940,11 @@ async function handleInitializationError(error, logger) {
     // AppError already logged with context
   }
 }
-function _syncUISpeed(ballState) {
-  if (ballState.speed !== undefined) {
-    components.speed?.setSpeed(ballState.speed, true)
-  }
-}
-function _syncUISize(ballState) {
-  if (
-    ballState.radius !== undefined &&
-    components.size &&
-    typeof components.size.setSize === 'function'
-  ) {
-    const sizes = [20, 40, 80, 100]
-    const closestSize = sizes.reduce(
-      (prev, curr) =>
-        Math.abs(curr - ballState.radius) < Math.abs(prev - ballState.radius)
-          ? curr
-          : prev,
-      sizes[0] // initial value
-    )
-    components.size.setSize(closestSize)
-  }
-}
-function _syncUIColors(ballState) {
-  if (
-    ballState.colorBall &&
-    components.ballColor &&
-    typeof components.ballColor.setColor === 'function'
-  ) {
-    components.ballColor.setColor(ballState.colorBall)
-  }
-  if (
-    ballState.colorBg &&
-    components.bgColor &&
-    typeof components.bgColor.setColor === 'function'
-  ) {
-    components.bgColor.setColor(ballState.colorBg)
-  }
-}
-function _syncUIPause(ballState) {
-  if (ballState.paused !== undefined) {
-    const now = performance.now()
-    if (now >= __ignoreServerPausedUntilTs) {
-      isPlaying = !ballState.paused
-      _PlayPause.updatePlayPauseButton()
-      _PlayPause.syncFsPlayPauseButton() // Синхронизируем и полноэкранную кнопку
-    }
-  }
-}
-function _syncUIDirection(ballState) {
-  if (ballState.dirX !== undefined && ballState.dirY !== undefined) {
-    const now = performance.now()
-    if (now < __ignoreServerDirectionUntilTs) {
-      return
-    }
-    if (getCurrentDirectionMode() === 'infinity') return
-    const mode = getDirectionMode(ballState.dirX, ballState.dirY)
-    const currentMode = getCurrentDirectionMode()
-    if (mode && mode !== currentMode) {
-      setDirectionState(ballState.dirX, ballState.dirY)
-      setCurrentDirectionMode(mode)
-      updateDirectionButtons()
-      updateDirectionDisplay(ballState.dirX, ballState.dirY)
-    }
-  }
-}
-function _syncUIInfinity(ballState) {
-  if (ballState.infinity === undefined) return
-  const now = performance.now()
-  if (now < __ignoreServerDirectionUntilTs) return
-  if (previewPhysicsEngine) previewPhysicsEngine.ball.infinity = ballState.infinity
-  if (lastServerState) lastServerState.infinity = ballState.infinity
-  if (ballState.infinity) {
-    setCurrentDirectionMode('infinity')
-    updateDirectionButtons()
-    updateDirectionDisplay(0, 0)
-  }
-}
-function _syncUIIllustration(ballState) {
-  if (ballState.ballEmoji === undefined) return
-  if (previewPhysicsEngine) previewPhysicsEngine.ball.ballEmoji = ballState.ballEmoji
-  if (lastServerState) lastServerState.ballEmoji = ballState.ballEmoji
-  const preview = document.getElementById('illusSelectedPreview')
-  if (preview) preview.textContent = ballState.ballEmoji || ''
-  document.querySelectorAll('.illus-emoji-btn').forEach(b => {
-    b.classList.toggle('active',
-      b.textContent === ballState.ballEmoji || (!ballState.ballEmoji && b.classList.contains('illus-clear'))
-    )
-  })
-}
-function _syncUITrackBand(ballState) {
-  if (!ballState.trackBand) return
-  if (previewPhysicsEngine) previewPhysicsEngine.options.trackBand = ballState.trackBand
-  if (lastServerState) lastServerState.trackBand = ballState.trackBand
-  document.querySelectorAll('.pos-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.band === ballState.trackBand)
-  })
-}
 function syncUIWithState(ballState) {
   try {
-    if (!ballState) return
-    updatePreviewSize(ballState.viewerScreenSize)
-    globalThis.__current.viewerConnected = ballState.viewerConnected
-    globalThis.__current.viewerScreenSize = ballState.viewerScreenSize
-    _ViewerStatus.updateStatusUI()
-    _syncUISpeed(ballState)
-    _syncUISize(ballState)
-    _syncUIColors(ballState)
-    _syncUIPause(ballState)
-    _syncUIDirection(ballState)
-    _syncUIInfinity(ballState)
-    _syncUIIllustration(ballState)
-    _syncUITrackBand(ballState)
-    if (ballState.soundEnabled !== undefined) {
-      const soundEnabledCheckbox = document.getElementById(
-        'soundEnabledCheckbox'
-      )
-      if (soundEnabledCheckbox) {
-        soundEnabledCheckbox.checked = Boolean(ballState.soundEnabled)
-        const soundTypeControl = document.getElementById('soundTypeControl')
-        if (soundTypeControl) {
-          if (ballState.soundEnabled) {
-            soundTypeControl.classList.add('enabled')
-          } else {
-            soundTypeControl.classList.remove('enabled')
-          }
-        }
-      }
-    }
-    if (ballState.soundType) {
-      const soundTypeSelect = document.getElementById('soundTypeSelect')
-      if (soundTypeSelect) {
-        soundTypeSelect.value = ballState.soundType
-      }
-    }
+    _UISync.syncAll(ballState)
   } catch (err) {
     debugWarn('Error in syncUIWithState:', err)
-  }
-}
-function _initializeSpeedControl() {
-  const container = document.getElementById('speedControl')
-  if (!container) {
-    return
-  }
-  components.speed = sharedComponents.createSpeedControl(container, {
-    onSpeedChange: throttle((speed) => {
-      updateSpeed(speed)
-    }, 100)
-  })
-}
-function _initializeBallColorControl() {
-  const container = document.getElementById('ballColorControl')
-  if (!container) {
-    return
-  }
-  components.ballColor = sharedComponents.createColorControl(container, {
-    colors: [
-      '#60a5fa',
-      '#ef4444',
-      '#10b981',
-      '#f59e0b',
-      '#8b5cf6',
-      '#f97316',
-      '#06b6d4',
-      '#84cc16',
-      '#fb7185',
-      '#ffffff',
-      '#a855f7',
-      '#14b8a6'
-    ],
-    defaultValue: '#60a5fa',
-    title: '',
-    onColorChange: (color) => {
-      setBallColor(color)
-    }
-  })
-}
-function _initializeBgColorControl() {
-  const container = document.getElementById('bgColorControl')
-  if (!container) {
-    return
-  }
-  components.bgColor = sharedComponents.createColorControl(container, {
-    colors: [
-      '#020617',
-      '#000000',
-      '#111827',
-      '#0a2540',
-      '#052e16',
-      '#1a102a',
-      '#fef3c7',
-      '#dbeafe',
-      '#fce7f3',
-      '#f3f4f6',
-      '#e5e7eb',
-      '#d1d5db'
-    ],
-    defaultValue: '#020617',
-    title: '',
-    onColorChange: (color) => {
-      setBackgroundColor(color)
-    }
-  })
-}
-function _initializeSizeControl() {
-  const container = document.getElementById('sizeControl')
-  if (!container) {
-    return
-  }
-  components.size = sharedComponents.createSizeControl(container, {
-    sizes: [20, 40, 80, 100],
-    defaultValue: 40,
-    title: '',
-    onSizeChange: (size) => {
-      setBallSize(size)
-    }
-  })
-}
-function _initializeSoundControls() {
-  const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox')
-  const soundTypeSelect = document.getElementById('soundTypeSelect')
-  const soundTypeControl = document.getElementById('soundTypeControl')
-  if (!soundEnabledCheckbox || !soundTypeSelect || !soundTypeControl) {
-    return
-  }
-  try {
-    soundEnabledCheckbox.addEventListener('change', (e) => {
-      const enabled = e.target.checked
-      setSoundEnabled(enabled)
-      if (enabled) {
-        soundTypeControl.classList.add('enabled')
-      } else {
-        soundTypeControl.classList.remove('enabled')
-      }
-      if (lastServerState) {
-        lastServerState.soundEnabled = enabled
-      }
-      _ViewerStatus.updateAudioIndicators()
-    })
-    soundTypeSelect.addEventListener('change', (e) => {
-      const soundType = e.target.value
-      setSoundType(soundType)
-      if (lastServerState) {
-        lastServerState.soundType = soundType
-      }
-    })
-    if (lastServerState) {
-      if (typeof lastServerState.soundEnabled === 'boolean') {
-        soundEnabledCheckbox.checked = lastServerState.soundEnabled
-        if (lastServerState.soundEnabled) {
-          soundTypeControl.classList.add('enabled')
-        } else {
-          soundTypeControl.classList.remove('enabled')
-        }
-      }
-      if (lastServerState.soundType) {
-        soundTypeSelect.value = lastServerState.soundType
-      }
-    }
-  } catch (error) {
-    console.error('Error initializing sound controls:', error)
   }
 }
 let _controllerAudioManager = null
@@ -1233,11 +1001,17 @@ function _initializeControllerAudio() {
   })
 }
 function initializeComponents() {
-  _initializeSpeedControl()
-  _initializeBallColorControl()
-  _initializeBgColorControl()
-  _initializeSizeControl()
-  _initializeSoundControls()
+  _UIControls.initializeComponents({
+    onSpeedChange: updateSpeed,
+    onBallColorChange: setBallColor,
+    onBgColorChange: setBackgroundColor,
+    onSizeChange: setBallSize,
+    onSoundEnabledChange: setSoundEnabled,
+    onSoundTypeChange: setSoundType,
+    getLastServerState: () => lastServerState,
+    updateAudioIndicators: _ViewerStatus.updateAudioIndicators,
+    updateDirectionDisplay
+  })
   _initializeControllerAudio()
   // Lock controls until viewer connects (updateViewerStatusUI will unlock when ready)
   setControlsEnabled(false)
@@ -1775,9 +1549,7 @@ function setBackgroundColor(color) {
   if (globalThis.__previewRenderer) {
     globalThis.__previewRenderer.setBackgroundColor(color)
   }
-  if (previewFsRenderer) {
-    previewFsRenderer.setBackgroundColor(color)
-  }
+  _Fullscreen.setPreviewBackgroundColor(color)
   if (globalThis.__current?.isInitializing) {
     if (lastServerState) {
       lastServerState.colorBg = color
@@ -1892,68 +1664,17 @@ function updateDirectionDisplay(dirX, dirY, customText = null) {
  * @private
  */
 function _setPlayPauseState(shouldPlay) {
-  // Не отправляем команды во время инициализации
-  if (globalThis.__current?.isInitializing) {
-    return
-  }
-  if (!globalThis.__current?.viewerConnected) {
-    if (shouldPlay) showViewerNotConnectedWarning()
-    return
-  }
-  // Guard: don't start if viewer screen size is unknown — physics needs world dimensions
-  const vs = globalThis.__current?.viewerScreenSize
-  if (shouldPlay && (!vs || vs.width <= 0 || vs.height <= 0)) {
-    showViewerSizeNotReadyWarning()
-    return
-  }
-  const currentMode = getCurrentDirectionMode()
-  const payload = shouldPlay
-    ? {
-        paused: false,
-        ...(getDirectionVector(currentMode) || { dirX: 1, dirY: 0 }),
-        speed: Number(components.speed?.getSpeed() ?? 40)
-      }
-    : {
-        paused: true,
-        returnToCenter: true
-      }
-  safeSend(WS_MSG.controllerUpdate, payload)
-  isPlaying = shouldPlay
-  _PlayPause.setIsPlaying(shouldPlay)
-  globalThis.__current.isPlaying = shouldPlay
-  globalThis.isPlaying = shouldPlay
-  globalThis.forcePauseUntilUserAction = false
-  if (shouldPlay) {
-    bbCounters.start()
-  } else {
-    bbCounters.stop(true)
-  }
-  if (previewPhysicsEngine) {
-    if (shouldPlay) {
-      // Don't unpause preview yet — wait for first server state_update to sync position.
-      // This prevents jitter caused by preview moving ahead of server during network latency.
-      const dirOnly = { ...payload }
-      delete dirOnly.paused
-      previewPhysicsEngine.applyCommand(dirOnly)
-      previewPhysicsEngine._pendingPlaySync = true
-      previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
-     } else {
-       previewPhysicsEngine._pendingPlaySync = false
-       // applyCommand with returnToCenter: true will trigger smooth seek-center animation.
-       // Don't call centerBallInViewer() — it uses setPosition() which kills the animation.
-       previewPhysicsEngine.applyCommand(payload)
-     }
-  }
-  __ignoreServerPausedUntilTs = performance.now() + 800
-  _PlayPause._scheduleAnimations()
-  return true
+  const result = _PlayPause.setPlayPauseState(shouldPlay)
+  isPlaying = _PlayPause.getIsPlaying()
+  globalThis.isPlaying = isPlaying
+  return result
 }
 /**
  * Переключает состояние воспроизведения/паузы сессии.
  * Отправляет соответствующие команды на сервер и обновляет UI.
  */
 function togglePlayPause() {
-  _setPlayPauseState(!isPlaying)
+  _setPlayPauseState(!_PlayPause.getIsPlaying())
 }
 /**
  * Обновляет все кнопки Play/Pause (основную и полноэкранную).
@@ -2008,353 +1729,17 @@ function getScaledState(state) {
   }
   return state
 }
-function _initializeFullscreenRenderer() {
-  try {
-    if (!previewPhysicsEngine) {
-      return
-    }
-    if (previewFsRenderer) {
-      previewFsRenderer.setPhysicsEngine(previewPhysicsEngine)
-    } else {
-      previewFsRenderer = new BallRenderer(
-        previewFsCanvas,
-        previewPhysicsEngine,
-        {
-          localPhysics: false,
-          preserveWorldSize: true // Fullscreen canvas ≠ viewer world; prevent canvas resize from overwriting world size
-        }
-      )
-      previewFsRenderer.start()
-    }
-  } catch (err) {
-    debugError('Error initializing fullscreen preview:', err)
-  }
-}
-/**
- * Открывает оверлей полноэкранного предпросмотра.
- * Рефакторинг для снижения когнитивной сложности.
- */
 function openPreviewFullscreen() {
-  const overlay = document.getElementById('previewOverlay')
-  if (!overlay || !previewFsCanvas) {
-    return
-  }
-  const currentUrl = globalThis.location.href
-  const fullscreenUrl = currentUrl.split('#')[0] + '#fullscreen-preview'
-  history.pushState(
-    { fullscreen: true, returnUrl: currentUrl },
-    '',
-    fullscreenUrl
-  )
-  overlay.style.display = 'block'
-  isPreviewFullscreen = true
-  document.body.classList.add('fullscreen-active')
-  _initializeFullscreenRenderer()
-  resizePreviewFullscreen()
-  setupFsPanelAutoHide()
-  setupFsPanelDrag()
-  setupFullscreenGestures()
-  _PlayPause.syncFsPlayPauseButton()
-  wireFullscreenControls()
-  fillFsSessionInfo()
-  if (!globalThis.__current?.viewerConnected && previewPhysicsEngine) {
-    centerBallInViewer()
-  }
+  _Fullscreen.openPreviewFullscreen()
+  isPreviewFullscreen = _Fullscreen.isFullscreenActive()
 }
 function closePreviewFullscreen() {
-  const overlay = document.getElementById('previewOverlay')
-  if (!overlay) return
-  const currentUrl = globalThis.location.href
-  const baseUrl = currentUrl.split('#')[0]
-  history.replaceState(null, '', baseUrl)
-  overlay.style.display = 'none'
-  isPreviewFullscreen = false
-  document.body.classList.remove('fullscreen-active')
-  // Restore preview to correct size after fullscreen
-  const canvas = document.getElementById('preview')
-  const vs = globalThis.__current?.viewerScreenSize
-  if (canvas) {
-    if (vs && vs.width > 0 && vs.height > 0) {
-      const { previewWidth, previewHeight } = calculatePreviewDimensions(canvas, vs)
-      setCanvasDimensions(canvas, previewWidth, previewHeight)
-      if (previewPhysicsEngine) {
-        previewPhysicsEngine.setWorldSize(vs.width, vs.height)
-      }
-    } else {
-      canvas.width = 500
-      canvas.height = 250
-      canvas.style.width = '500px'
-      canvas.style.height = '250px'
-      if (previewPhysicsEngine) {
-        previewPhysicsEngine.setWorldSize(500, 250)
-      }
-    }
-    if (previewPhysicsEngine) {
-      const cx = previewPhysicsEngine.options.worldWidth / 2
-      const cy = previewPhysicsEngine.options.worldHeight / 2
-      previewPhysicsEngine.setPosition(cx, cy)
-      previewPhysicsEngine.setVelocity(0, 0)
-      previewPhysicsEngine.setPaused(true)
-    }
-  }
+  _Fullscreen.closePreviewFullscreen()
+  isPreviewFullscreen = _Fullscreen.isFullscreenActive()
 }
 function resizePreviewFullscreen() {
-  if (!previewFsCanvas) return
-  previewFsCanvas.width = globalThis.innerWidth
-  previewFsCanvas.height = globalThis.innerHeight
-  // Override CSS 100vw/100vh with explicit px values so BallRenderer.renderLoop()
-  // sees clientWidth === canvas.width and doesn't call resize() which would
-  // overwrite the viewer world size with canvas dimensions, shifting the ball
-  previewFsCanvas.style.width = globalThis.innerWidth + 'px'
-  previewFsCanvas.style.height = globalThis.innerHeight + 'px'
-  if (previewPhysicsEngine) {
-    const vs = globalThis.__current?.viewerScreenSize
-    if (vs && vs.width > 0 && vs.height > 0) {
-      previewPhysicsEngine.setWorldSize(vs.width, vs.height)
-    } else {
-      previewPhysicsEngine.setWorldSize(
-        globalThis.innerWidth,
-        globalThis.innerHeight
-      )
-      if (!globalThis.__current?.viewerConnected) {
-        centerBallInViewer()
-      }
-    }
-  }
+  _Fullscreen.resizePreviewFullscreen()
 }
-function setupFsPanelAutoHide() {
-  const panel = document.getElementById('previewFsPanel')
-  const overlay = document.getElementById('previewOverlay')
-  if (!panel || !overlay) return
-  const show = () => {
-    panel.style.opacity = '1'
-  }
-  const hide = () => {
-    panel.style.opacity = '0'
-  }
-  const scheduleHide = () => {
-    clearTimeout(fsPanelHideTimer)
-    fsPanelHideTimer = setTimeout(hide, 2000)
-  }
-  overlay.addEventListener('mousemove', () => {
-    show()
-    scheduleHide()
-  })
-  overlay.addEventListener('click', () => {
-    show()
-    scheduleHide()
-  })
-  show()
-  scheduleHide()
-}
-function setupFsPanelDrag() {
-  const panel = document.getElementById('previewFsPanel')
-  const overlay = document.getElementById('previewOverlay')
-  if (!panel || !overlay) return
-  const onDown = (x, y) => {
-    const rect = panel.getBoundingClientRect()
-    fsPanelDrag.active = true
-    fsPanelDrag.offsetX = x - rect.left
-    fsPanelDrag.offsetY = y - rect.top
-  }
-  const onMove = (x, y) => {
-    if (fsPanelDrag.active) {
-      panel.style.left = `${x - fsPanelDrag.offsetX}px`
-      panel.style.top = `${y - fsPanelDrag.offsetY}px`
-      panel.style.transform = 'translateX(0)'
-    }
-  }
-  const onUp = () => {
-    fsPanelDrag.active = false
-  }
-  panel.addEventListener('mousedown', (e) => {
-    onDown(e.clientX, e.clientY)
-  })
-  overlay.addEventListener('mousemove', (e) => {
-    onMove(e.clientX, e.clientY)
-  })
-  globalThis.addEventListener('mouseup', onUp)
-  panel.addEventListener(
-    'touchstart',
-    (e) => {
-      const t = e.touches[0]
-      onDown(t.clientX, t.clientY)
-    },
-    { passive: true }
-  )
-  overlay.addEventListener(
-    'touchmove',
-    (e) => {
-      const t = e.touches[0]
-      onMove(t.clientX, t.clientY)
-    },
-    { passive: true }
-  )
-  globalThis.addEventListener('touchend', onUp, { passive: true })
-}
-/**
- * Обрабатывает свайп-жесты в полноэкранном режиме для управления направлением и воспроизведением.
- * @param {number} dx - Смещение по оси X.
- * @param {number} dy - Смещение по оси Y.
- * @param {number} threshold - Порог для срабатывания жеста.
- * @private
- */
-function _handleFullscreenSwipe(dx, dy, threshold) {
-  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
-    if (dx > 0) {
-      setDirection('horizontal')
-    } else {
-      setDirection('vertical')
-    }
-  } else if (Math.abs(dy) > threshold) {
-    const isSwipedUp = dy < 0
-    const isSwipedDown = dy > 0
-    if ((isSwipedUp && !isPlaying) || (isSwipedDown && isPlaying)) {
-      togglePlayPause()
-    }
-  }
-}
-/**
- * Настраивает обработку жестов в полноэкранном режиме.
- */
-function setupFullscreenGestures() {
-  const overlay = document.getElementById('previewOverlay')
-  if (!overlay) return
-  let startX = 0
-  let startY = 0
-  let swiping = false
-  const threshold = 40
-  const handleTouchStart = (e) => {
-    const t = e.touches[0]
-    startX = t.clientX
-    startY = t.clientY
-    swiping = true
-  }
-  const handleTouchEnd = (e) => {
-    if (swiping) {
-      swiping = false
-      const t = e.changedTouches[0]
-      const dx = t.clientX - startX
-      const dy = t.clientY - startY
-      _handleFullscreenSwipe(dx, dy, threshold)
-    }
-  }
-  overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
-  overlay.addEventListener('touchend', handleTouchEnd, { passive: true })
-}
-function wireFullscreenControls() {
-  setupFullscreenSpeedControl()
-  setupFullscreenSizeControls()
-  setupFullscreenDirectionControls()
-  setupFullscreenColorControls()
-}
-function setupFullscreenSpeedControl() {
-  const speed = document.getElementById('fsSpeed')
-  if (speed) {
-    if (components.speed?.getSpeed) {
-      speed.value = components.speed.getSpeed()
-    } else {
-      speed.value = 40
-    }
-    speed.oninput = (e) => {
-      const target = e?.target
-      if (target?.value !== undefined) {
-        updateSpeed(Number(target.value))
-      }
-    }
-  }
-}
-function setupFullscreenSizeControls() {
-  const size1 = document.getElementById('fsSize1')
-  const size2 = document.getElementById('fsSize2')
-  const size3 = document.getElementById('fsSize3')
-  const size4 = document.getElementById('fsSize4')
-  if (size1) size1.onclick = () => setBallSizeMultiplier(1)
-  if (size2) size2.onclick = () => setBallSizeMultiplier(2)
-  if (size3) size3.onclick = () => setBallSizeMultiplier(3)
-  if (size4) size4.onclick = () => setBallSizeMultiplier(4)
-}
-function setupFullscreenDirectionControls() {
-  const dH = document.getElementById('fsDirH')
-  const dV = document.getElementById('fsDirV')
-  const dDL = document.getElementById('fsDirDL')
-  const dDR = document.getElementById('fsDirDR')
-  const dRandom = document.getElementById('fsDirRandom')
-  if (dH) dH.onclick = () => setDirection('horizontal')
-  if (dV) dV.onclick = () => setDirection('vertical')
-  if (dDL) dDL.onclick = () => setDirection('diagRLL')
-  if (dDR) dDR.onclick = () => setDirection('diagRL')
-  if (dRandom) dRandom.onclick = () => setDirection('random')
-}
-function setupFullscreenColorControls() {
-  setupFullscreenBallColorControls()
-  setupFullscreenBackgroundColorControls()
-}
-function setupFullscreenBallColorControls() {
-  const ballColors = [
-    '#60a5fa',
-    '#ef4444',
-    '#10b981',
-    '#f59e0b',
-    '#8b5cf6',
-    '#f97316',
-    '#06b6d4',
-    '#84cc16',
-    '#fb7185',
-    '#ffffff',
-    '#a855f7',
-    '#14b8a6'
-  ]
-  for (let i = 1; i <= 12; i++) {
-    const btn = document.getElementById(`fsBallCol${i}`)
-    if (btn) {
-      // Устанавливаем background-color из data-color атрибута
-      const color = btn.dataset.color || ballColors[i - 1]
-      btn.style.backgroundColor = color
-      btn.onclick = () => setBallColor(color)
-    }
-  }
-}
-function setupFullscreenBackgroundColorControls() {
-  const bgColors = [
-    '#020617',
-    '#000000',
-    '#111827',
-    '#0a2540',
-    '#052e16',
-    '#1a102a',
-    '#fef3c7',
-    '#dbeafe',
-    '#fce7f3',
-    '#f3f4f6',
-    '#e5e7eb',
-    '#d1d5db'
-  ]
-  for (let i = 1; i <= 12; i++) {
-    const btn = document.getElementById(`fsBg${i}`)
-    if (btn) {
-      // Устанавливаем background-color из data-color атрибута
-      const color = btn.dataset.color || bgColors[i - 1]
-      btn.style.backgroundColor = color
-      btn.onclick = () => setBackgroundColor(color)
-    }
-  }
-}
-function fillFsSessionInfo() {
-  try {
-    const sid = globalThis.__current?.sessionId ?? '...'
-    const fsSid = document.getElementById('fsCurSid')
-    if (fsSid) fsSid.textContent = `SID: ${sid}`
-    const fsLink = document.getElementById('fsViewLink')
-    if (fsLink) fsLink.value = buildViewerUrl(sid)
-    _ViewerStatus.updateFullscreenStatus()
-  } catch (err) {
-    debugWarn('Error in fillFsSessionInfo:', err)
-  }
-}
-/**
- * Сбрасывает состояние сессии (счётчики, позицию мяча)
- */
 function resetSession() {
   try {
     bbCounters.resetAll()

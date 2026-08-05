@@ -7,6 +7,7 @@
  * uses direction/counter domain modules directly. No DI needed — runs in same
  * webpack bundle as controller.js.
  */
+/* global showViewerNotConnectedWarning, showNotification, showViewerSizeNotReadyWarning, safeSend, WS_MSG */
 
 const { getDirectionVector, getCurrentDirectionMode } = require('../../domain/direction')
 const { bbCounters } = require('../../domain/counters')
@@ -60,22 +61,35 @@ function _scheduleAnimations() {
 function setPlayPauseState(shouldPlay) {
   const previewPhysicsEngine = globalThis.__previewPhysics
 
-  if (
-    !globalThis.__current?.isInitializing &&
-    !globalThis.__current?.viewerConnected &&
-    shouldPlay
-  ) {
-    if (typeof showViewerNotConnectedWarning === 'function') {
-      showViewerNotConnectedWarning()
-    } else if (typeof showNotification === 'function') {
-      showNotification(
-        globalThis.i18n?.t('controller.clientNotConnected') || 'Viewer not connected',
-        'warning'
-      )
+  // Не отправляем команды во время инициализации
+  if (globalThis.__current?.isInitializing) {
+    return
+  }
+  if (!globalThis.__current?.viewerConnected) {
+    if (shouldPlay) {
+      if (typeof showViewerNotConnectedWarning === 'function') {
+        showViewerNotConnectedWarning()
+      } else if (typeof showNotification === 'function') {
+        showNotification(
+          globalThis.i18n?.t('controller.clientNotConnected') ||
+            'Viewer not connected',
+          'warning'
+        )
+      }
     }
+    return
+  }
+  // Guard: don't start if viewer screen size is unknown — physics needs world dimensions
+  const vs = globalThis.__current?.viewerScreenSize
+  if (shouldPlay && (!vs || vs.width <= 0 || vs.height <= 0)) {
+    if (typeof showViewerSizeNotReadyWarning === 'function') {
+      showViewerSizeNotReadyWarning()
+    }
+    return
   }
 
-  const directionVector = getDirectionVector(getCurrentDirectionMode()) || { dirX: 1, dirY: 0 }
+  const directionVector =
+    getDirectionVector(getCurrentDirectionMode()) || { dirX: 1, dirY: 0 }
   const payload = shouldPlay
     ? {
         paused: false,
@@ -95,27 +109,44 @@ function setPlayPauseState(shouldPlay) {
 
   if (shouldPlay) {
     bbCounters.start()
-    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_started')) } catch (e) { void e }
+    try {
+      globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_started'))
+    } catch (e) {
+      void e
+    }
   } else {
     bbCounters.stop(true)
     try {
       globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_stopped'))
-      globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_duration', { detail: { seconds: bbCounters.getElapsedSeconds?.() || 0 } }))
-    } catch (e) { void e }
+      globalThis.dispatchEvent(
+        new CustomEvent('bb_metrika_session_duration', {
+          detail: { seconds: bbCounters.getElapsedSeconds?.() || 0 }
+        })
+      )
+    } catch (e) {
+      void e
+    }
   }
 
   if (previewPhysicsEngine) {
     if (shouldPlay) {
+      // Don't unpause preview yet — wait for first server state_update to sync position.
+      // This prevents jitter caused by preview moving ahead of server during network latency.
+      const dirOnly = { ...payload }
+      delete dirOnly.paused
+      previewPhysicsEngine.applyCommand(dirOnly)
+      previewPhysicsEngine._pendingPlaySync = true
       previewPhysicsEngine._hasReceivedFirstMovingUpdate = false
-      centerBallInViewer()
-    }
-    previewPhysicsEngine.applyCommand(payload)
-    if (!shouldPlay) {
-      centerBallInViewer()
+    } else {
+      previewPhysicsEngine._pendingPlaySync = false
+      // applyCommand with returnToCenter: true will trigger smooth seek-center animation.
+      // Don't call centerBallInViewer() — it uses setPosition() which kills the animation.
+      previewPhysicsEngine.applyCommand(payload)
     }
   }
 
   _ignoreServerPausedUntilTs = performance.now() + 800
+  globalThis.__ignoreServerPausedUntilTs = _ignoreServerPausedUntilTs
   _scheduleAnimations()
   return true
 }

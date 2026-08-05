@@ -13,7 +13,7 @@
 - [x] Удалить инлайн-определения этих 4 функций из controller.js
 - [x] Build passes
 
-## 2-5. Остальные модули: require + init + частичная замена
+## 2-5. Остальные модули: require + init + полная замена
 
 - [x] `require` всех 6 модулей добавлены
 - [x] `_PlayPause.init()` — самодостаточный модуль (без DI)
@@ -22,17 +22,19 @@
 - [x] `_Fullscreen` — require, lazy init (нужен canvas)
 - [x] play-pause: заменены `updatePlayPauseButton()`, `syncFsPlayPauseButton()`, `_schedulePlayPauseAnimations()` → модуль; удалены дубликаты определений
 - [x] play-pause: `_setPlayPauseState` синхронизирует `_PlayPause.setIsPlaying()` с `isPlaying`
-- [ ] Полная замена `_setPlayPauseState`/`togglePlayPause` (модуль не имеет viewer screen size guard)
-- [ ] Полная замена call sites для ui-controls.js
-- [ ] Полная замена call sites для ui-sync.js
-- [ ] Полная замена call sites для fullscreen.js
+- [x] Полная замена `_setPlayPauseState`/`togglePlayPause` — viewer screen size guard перенесён в модуль, controller.js — тонкая обёртка
+- [x] Полная замена call sites для ui-controls.js — `initializeComponents()` через `_UIControls.initializeComponents(callbacks)`
+- [x] Полная замена call sites для ui-sync.js — `syncUIWithState()` и state_update-обработчик через `_UISync.syncAll/syncPause/syncInfinity/syncDirection`; infinity/illustration/trackBand sync перенесены в модуль
+- [x] Полная замена call sites для fullscreen.js — open/close/resize через `_Fullscreen`, инициализация через `initFullscreen(canvas, callbacks)`; restore-логика, CSS-фикс и data-color перенесены в модуль
 
-Note: Модули больше не «мёртвый код» — импортируются и инициализируются. play-pause частично заменён.
+Note: Модули больше не «мёртвый код» — все 5 (viewer-status, play-pause, ui-controls, ui-sync, fullscreen) реально используются.
 
 ## 6. Финализация
 
-- [ ] Проверить: controller.js < 2000 строк (сейчас 2592, -104 строки)
+- [x] controller.js < 2000 строк (1977 строк, было 2560)
 - [x] `npm run build` проходит
 - [x] Все 6 модулей импортируются и инициализируются
 - [x] play-pause: 4 дублирующих функции удалены, call sites заменены
-- [ ] Полная миграция ui-controls/ui-sync/fullscreen call sites — требует отдельных сессий
+- [x] Полная миграция ui-controls/ui-sync/fullscreen call sites
+- [ ] E2E тесты (`npm test`) проходят — после деплоя на dev
+- [ ] Ручная проверка: полный цикл сессии (create → play → change settings → pause → fullscreen)

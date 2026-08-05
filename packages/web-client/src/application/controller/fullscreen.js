@@ -4,7 +4,6 @@
  * @module application/controller/fullscreen
  */
 /* global BallRenderer, debugError, debugWarn */
-// Защита от повторной загрузки - ранний выход
 
 let _isPreviewFullscreen = false
 let _previewFsCanvas = null
@@ -22,7 +21,14 @@ let _callbacks = {
   setBallColor: () => {},
   setBackgroundColor: () => {},
   getIsPlaying: () => false,
-  getComponents: () => ({})
+  getComponents: () => ({}),
+  calculatePreviewDimensions: () => ({
+    previewWidth: 500,
+    previewHeight: 250
+  }),
+  setCanvasDimensions: () => {},
+  syncFsPlayPauseButton: () => {},
+  buildViewerUrl: (sid) => `${globalThis.location.origin}/s/${sid}`
 }
 /**
  * Инициализация модуля
@@ -48,7 +54,7 @@ function _initializeFullscreenRenderer() {
         previewPhysicsEngine,
         {
           localPhysics: false,
-          preserveWorldSize: true // Fullscreen canvas ≠ viewer world; world size comes from viewerScreenSize
+          preserveWorldSize: true // Fullscreen canvas ≠ viewer world; prevent canvas resize from overwriting world size
         }
       )
       _previewFsRenderer.start()
@@ -75,13 +81,25 @@ function openPreviewFullscreen() {
   _isPreviewFullscreen = true
   document.body.classList.add('fullscreen-active')
   // Track fullscreen usage
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_feature_used', { detail: { feature: 'fullscreen', action: 'open' } })) } catch (_) { /* noop */ }
+  try {
+    globalThis.dispatchEvent(
+      new CustomEvent('bb_metrika_feature_used', {
+        detail: { feature: 'fullscreen', action: 'open' }
+      })
+    )
+  } catch (e) {
+    void e
+  }
   _initializeFullscreenRenderer()
   resizePreviewFullscreen()
   setupFsPanelAutoHide()
   setupFsPanelDrag()
   setupFullscreenGestures()
-  syncFsPlayPauseButton()
+  if (typeof _callbacks.syncFsPlayPauseButton === 'function') {
+    _callbacks.syncFsPlayPauseButton()
+  } else {
+    syncFsPlayPauseButton()
+  }
   wireFullscreenControls()
   fillFsSessionInfo()
   if (!globalThis.__current?.viewerConnected) {
@@ -100,6 +118,35 @@ function closePreviewFullscreen() {
   overlay.style.display = 'none'
   _isPreviewFullscreen = false
   document.body.classList.remove('fullscreen-active')
+  // Restore preview to correct size after fullscreen
+  const canvas = document.getElementById('preview')
+  const vs = globalThis.__current?.viewerScreenSize
+  const previewPhysicsEngine = _callbacks.getPreviewPhysicsEngine()
+  if (canvas) {
+    if (vs && vs.width > 0 && vs.height > 0) {
+      const { previewWidth, previewHeight } =
+        _callbacks.calculatePreviewDimensions(canvas, vs)
+      _callbacks.setCanvasDimensions(canvas, previewWidth, previewHeight)
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setWorldSize(vs.width, vs.height)
+      }
+    } else {
+      canvas.width = 500
+      canvas.height = 250
+      canvas.style.width = '500px'
+      canvas.style.height = '250px'
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setWorldSize(500, 250)
+      }
+    }
+    if (previewPhysicsEngine) {
+      const cx = previewPhysicsEngine.options.worldWidth / 2
+      const cy = previewPhysicsEngine.options.worldHeight / 2
+      previewPhysicsEngine.setPosition(cx, cy)
+      previewPhysicsEngine.setVelocity(0, 0)
+      previewPhysicsEngine.setPaused(true)
+    }
+  }
 }
 /**
  * Изменить размер fullscreen canvas
@@ -108,6 +155,11 @@ function resizePreviewFullscreen() {
   if (!_previewFsCanvas) return
   _previewFsCanvas.width = globalThis.innerWidth
   _previewFsCanvas.height = globalThis.innerHeight
+  // Override CSS 100vw/100vh with explicit px values so BallRenderer.renderLoop()
+  // sees clientWidth === canvas.width and doesn't call resize() which would
+  // overwrite the viewer world size with canvas dimensions, shifting the ball
+  _previewFsCanvas.style.width = globalThis.innerWidth + 'px'
+  _previewFsCanvas.style.height = globalThis.innerHeight + 'px'
   const previewPhysicsEngine = _callbacks.getPreviewPhysicsEngine()
   if (previewPhysicsEngine) {
     const vs = globalThis.__current?.viewerScreenSize
@@ -217,38 +269,30 @@ function _handleFullscreenSwipe(dx, dy, threshold) {
 function setupFullscreenGestures() {
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
-  let startX = 0,
-    startY = 0,
-    swiping = false
+  let startX = 0
+  let startY = 0
+  let swiping = false
   const threshold = 40
-  overlay.addEventListener(
-    'touchstart',
-    (e) => {
-      const t = e.touches[0]
-      startX = t.clientX
-      startY = t.clientY
-      swiping = true
-    },
-    { passive: true }
-  )
-  overlay.addEventListener(
-    'touchend',
-    (e) => {
-      if (swiping) {
-        swiping = false
-        const t = e.changedTouches[0]
-        _handleFullscreenSwipe(
-          t.clientX - startX,
-          t.clientY - startY,
-          threshold
-        )
-      }
-    },
-    { passive: true }
-  )
+  const handleTouchStart = (e) => {
+    const t = e.touches[0]
+    startX = t.clientX
+    startY = t.clientY
+    swiping = true
+  }
+  const handleTouchEnd = (e) => {
+    if (swiping) {
+      swiping = false
+      const t = e.changedTouches[0]
+      const dx = t.clientX - startX
+      const dy = t.clientY - startY
+      _handleFullscreenSwipe(dx, dy, threshold)
+    }
+  }
+  overlay.addEventListener('touchstart', handleTouchStart, { passive: true })
+  overlay.addEventListener('touchend', handleTouchEnd, { passive: true })
 }
 /**
- * Синхронизация кнопки Play/Pause
+ * Синхронизация кнопки Play/Pause (fallback без DI)
  */
 function syncFsPlayPauseButton() {
   const btn = document.getElementById('fsPlayPauseBtn')
@@ -262,8 +306,17 @@ function wireFullscreenControls() {
   const speed = document.getElementById('fsSpeed')
   if (speed) {
     const components = _callbacks.getComponents()
-    speed.value = components.speed?.getSpeed?.() ?? 40
-    speed.oninput = (e) => _callbacks.updateSpeed(Number(e.target.value))
+    if (components.speed?.getSpeed) {
+      speed.value = components.speed.getSpeed()
+    } else {
+      speed.value = 40
+    }
+    speed.oninput = (e) => {
+      const target = e?.target
+      if (target?.value !== undefined) {
+        _callbacks.updateSpeed(Number(target.value))
+      }
+    }
   }
   const sizes = ['fsSize1', 'fsSize2', 'fsSize3', 'fsSize4']
   sizes.forEach((id, i) => {
@@ -297,7 +350,11 @@ function wireFullscreenControls() {
   ]
   for (let i = 1; i <= 12; i++) {
     const btn = document.getElementById(`fsBallCol${i}`)
-    if (btn) btn.onclick = () => _callbacks.setBallColor(ballColors[i - 1])
+    if (btn) {
+      const color = btn.dataset.color || ballColors[i - 1]
+      btn.style.backgroundColor = color
+      btn.onclick = () => _callbacks.setBallColor(color)
+    }
   }
   const bgColors = [
     '#020617',
@@ -315,7 +372,11 @@ function wireFullscreenControls() {
   ]
   for (let i = 1; i <= 12; i++) {
     const btn = document.getElementById(`fsBg${i}`)
-    if (btn) btn.onclick = () => _callbacks.setBackgroundColor(bgColors[i - 1])
+    if (btn) {
+      const color = btn.dataset.color || bgColors[i - 1]
+      btn.style.backgroundColor = color
+      btn.onclick = () => _callbacks.setBackgroundColor(color)
+    }
   }
 }
 /**
@@ -328,7 +389,7 @@ function fillFsSessionInfo() {
     if (fsSid) fsSid.textContent = `SID: ${sid}`
     const fsLink = document.getElementById('fsViewLink')
     if (fsLink) {
-      fsLink.value = `${globalThis.location.origin}/s/${sid}`
+      fsLink.value = _callbacks.buildViewerUrl(sid)
     }
     updateFullscreenViewerStatus()
   } catch (err) {
@@ -366,11 +427,20 @@ function isFullscreenActive() {
 function getFullscreenCanvas() {
   return _previewFsCanvas
 }
+/**
+ * Обновить цвет фона fullscreen рендерера на лету
+ */
+function setPreviewBackgroundColor(color) {
+  if (_previewFsRenderer) {
+    _previewFsRenderer.setBackgroundColor(color)
+  }
+}
 globalThis.Fullscreen = {
   init: initFullscreen,
   open: openPreviewFullscreen,
   close: closePreviewFullscreen,
   resize: resizePreviewFullscreen,
+  setPreviewBackgroundColor,
   syncPlayPauseButton: syncFsPlayPauseButton,
   updateViewerStatus: updateFullscreenViewerStatus,
   isActive: isFullscreenActive,
@@ -382,6 +452,7 @@ module.exports = {
   openPreviewFullscreen,
   closePreviewFullscreen,
   resizePreviewFullscreen,
+  setPreviewBackgroundColor,
   syncFsPlayPauseButton,
   updateFullscreenViewerStatus,
   isFullscreenActive,
