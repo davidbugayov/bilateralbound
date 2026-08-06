@@ -1,0 +1,185 @@
+- generic [ref=e1]:
+  - banner:
+    - link "Return to main page" [ref=e2] [cursor=pointer]:
+      - /url: /
+      - text: ← Back to main
+    - button "Settings" [ref=e3] [cursor=pointer]:
+      - img [ref=e4]
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - region "🎨 Appearance" [ref=e9]:
+        - heading "🎨 Appearance" [level=3] [ref=e10]
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - paragraph [ref=e13]: Ball color
+            - generic [ref=e139]:
+              - 'button "Color: #60a5fa" [ref=e140] [cursor=pointer]'
+              - 'button "Color: #ef4444" [ref=e141] [cursor=pointer]'
+              - 'button "Color: #10b981" [ref=e142] [cursor=pointer]'
+              - 'button "Color: #f59e0b" [ref=e143] [cursor=pointer]'
+              - 'button "Color: #8b5cf6" [ref=e144] [cursor=pointer]'
+              - 'button "Color: #f97316" [ref=e145] [cursor=pointer]'
+              - 'button "Color: #06b6d4" [ref=e146] [cursor=pointer]'
+              - 'button "Color: #84cc16" [ref=e147] [cursor=pointer]'
+              - 'button "Color: #fb7185" [ref=e148] [cursor=pointer]'
+              - 'button "Color: #ffffff" [ref=e149] [cursor=pointer]'
+              - 'button "Color: #a855f7" [ref=e150] [cursor=pointer]'
+              - 'button "Color: #14b8a6" [ref=e151] [cursor=pointer]'
+          - generic [ref=e14]:
+            - paragraph [ref=e15]: Background color
+            - generic [ref=e154]:
+              - 'button "Color: #020617" [ref=e155] [cursor=pointer]'
+              - 'button "Color: #000000" [ref=e156] [cursor=pointer]'
+              - 'button "Color: #111827" [ref=e157] [cursor=pointer]'
+              - 'button "Color: #0a2540" [ref=e158] [cursor=pointer]'
+              - 'button "Color: #052e16" [ref=e159] [cursor=pointer]'
+              - 'button "Color: #1a102a" [ref=e160] [cursor=pointer]'
+              - 'button "Color: #fef3c7" [ref=e161] [cursor=pointer]'
+              - 'button "Color: #dbeafe" [ref=e162] [cursor=pointer]'
+              - 'button "Color: #fce7f3" [ref=e163] [cursor=pointer]'
+              - 'button "Color: #f3f4f6" [ref=e164] [cursor=pointer]'
+              - 'button "Color: #e5e7eb" [ref=e165] [cursor=pointer]'
+              - 'button "Color: #d1d5db" [ref=e166] [cursor=pointer]'
+          - generic [ref=e16]:
+            - paragraph [ref=e17]: Ball size
+            - generic [ref=e169]:
+              - 'button "Size: x1 (20px)" [ref=e170] [cursor=pointer]': x1
+              - 'button "Size: x2 (40px)" [ref=e171] [cursor=pointer]': x2
+              - 'button "Size: x3 (80px)" [ref=e172] [cursor=pointer]': x3
+              - 'button "Size: x4 (100px)" [ref=e173] [cursor=pointer]': x4
+          - group [ref=e18]:
+            - generic "Illustration ▶" [ref=e19] [cursor=pointer]:
+              - generic [ref=e20]: Illustration
+              - text: ▶
+      - region "Sound" [ref=e21]:
+        - heading "Sound" [level=3] [ref=e22]
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - generic [ref=e25]:
+              - generic [ref=e26]: Enable sound
+              - generic [ref=e27]: Play audio cues during the session
+            - generic [ref=e28] [cursor=pointer]:
+              - checkbox
+          - generic:
+            - generic: "Sound type:"
+            - generic:
+              - combobox:
+                - option "🎵 Soft (EMDR)" [selected]
+                - option "⏱️ Tick"
+                - option "🎹 Tone"
+                - option "🖱️ Click"
+                - option "🎾 Bounce"
+                - option "📢 Beep"
+              - generic: ▾
+          - generic [ref=e31]:
+            - generic [ref=e32]: 🖥️
+            - generic [ref=e33]:
+              - generic [ref=e34]: Controller audio
+              - generic [ref=e35]: Play sound on therapist's device
+            - generic [ref=e36] [cursor=pointer]:
+              - checkbox
+          - generic:
+            - generic: 🔈
+            - generic: Volume
+            - slider: "50"
+            - generic: 50%
+    - generic [ref=e39]:
+      - 'region "🎮 Session: 0f421a" [ref=e174]':
+        - 'heading "🎮 Session: 0f421a" [level=3] [ref=e175]'
+        - paragraph [ref=e42]:
+          - generic [ref=e44]: "Created: loading...06/08/2026, 11:00:25"
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - generic [ref=e47]: "👁️ Client link (Viewer):"
+            - generic [ref=e48]: 0f421a
+            - generic [ref=e49]: Viewer connected
+          - generic [ref=e50]:
+            - 'textbox "👁️ Client link (Viewer): 0f421a Viewer connected" [ref=e176]':
+              - /placeholder: ""
+              - text: https://dev.emdrbilateral.online/s/0f421a
+            - button "📋 Copy" [ref=e52] [cursor=pointer]
+      - complementary "👁️ Movement preview" [ref=e53]:
+        - generic [ref=e54]:
+          - generic [ref=e57]: 👁️ Movement preview
+          - button "⛶ Fullscreen" [ref=e58] [cursor=pointer]:
+            - img [ref=e59]
+        - generic [ref=e177]: "Viewer: 1280×720"
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - button "⏸ Stop" [active] [ref=e186] [cursor=pointer]
+          - button "Reset session" [ref=e67] [cursor=pointer]: Reset
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - generic [ref=e70]: Timer
+            - generic [ref=e71]: 0:00
+          - generic [ref=e72]:
+            - generic [ref=e73]: Passes
+            - generic [ref=e74]: "0"
+          - generic [ref=e75]:
+            - generic [ref=e76]: Sets
+            - generic [ref=e77]: "0"
+        - generic [ref=e78]:
+          - generic [ref=e79]: Auto-stop
+          - generic [ref=e80]:
+            - generic [ref=e81]: Passes
+            - spinbutton "Passes" [ref=e82]: "0"
+            - generic [ref=e83]: passes
+          - generic [ref=e84]:
+            - generic [ref=e85]: Seconds
+            - spinbutton "Seconds" [ref=e86]: "0"
+            - generic [ref=e87]: sec
+      - generic [ref=e88]:
+        - paragraph [ref=e89]: Direction ↔️
+        - group "Direction" [ref=e90]:
+          - generic [ref=e91]: Direction
+          - button "↔️" [ref=e92] [cursor=pointer]:
+            - generic [ref=e93]: ↔️
+          - button "↕️" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]: ↕️
+          - button "↖↘ ↖️→↘️" [ref=e96] [cursor=pointer]:
+            - generic [ref=e97]: ↖↘
+            - generic [ref=e98]: ↖️→↘️
+          - button "↙↗ ↙️→↗️" [ref=e99] [cursor=pointer]:
+            - generic [ref=e100]: ↙↗
+            - generic [ref=e101]: ↙️→↗️
+          - button "🎲" [ref=e102] [cursor=pointer]:
+            - generic [ref=e103]: 🎲
+          - button "∞ ∞" [ref=e104] [cursor=pointer]:
+            - generic [ref=e105]: ∞
+            - generic [ref=e106]: ∞
+      - generic [ref=e107]:
+        - paragraph [ref=e108]: Position
+        - group "Position" [ref=e109]:
+          - generic [ref=e110]: Position
+          - button "↑ Top" [ref=e111] [cursor=pointer]:
+            - generic [ref=e112]: ↑
+            - generic [ref=e113]: Top
+          - button "⬤ Center" [ref=e114] [cursor=pointer]:
+            - generic [ref=e115]: ⬤
+            - generic [ref=e116]: Center
+          - button "↓ Bottom" [ref=e117] [cursor=pointer]:
+            - generic [ref=e118]: ↓
+            - generic [ref=e119]: Bottom
+      - generic [ref=e120]:
+        - paragraph [ref=e121]: Speed
+        - generic [ref=e179]:
+          - generic [ref=e182]: Medium
+          - generic [ref=e183]:
+            - generic [ref=e184]: Speed
+            - slider "Speed" [ref=e185]: "53"
+      - region "🎯 Presets" [ref=e122]:
+        - heading "🎯 Presets" [level=3] [ref=e123]
+        - generic [ref=e124]:
+          - button "Relaxation" [ref=e125] [cursor=pointer]:
+            - generic [ref=e126]: 🌊
+            - generic [ref=e127]: Relaxation
+          - button "Activation" [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]: ⚡
+            - generic [ref=e130]: Activation
+          - button "Couples Therapy" [ref=e131] [cursor=pointer]:
+            - generic [ref=e132]: 🤝
+            - generic [ref=e133]: Couples Therapy
+          - button "Dynamic" [ref=e134] [cursor=pointer]:
+            - generic [ref=e135]: 🌀
+            - generic [ref=e136]: Dynamic

@@ -1,0 +1,190 @@
+- generic [active] [ref=e1]:
+  - banner:
+    - link "Return to main page" [ref=e2] [cursor=pointer]:
+      - /url: /
+      - text: ← Back to main
+    - button "Settings" [ref=e3] [cursor=pointer]:
+      - img [ref=e4]
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - region "🎨 Appearance" [ref=e9]:
+        - heading "🎨 Appearance" [level=3] [ref=e10]
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - paragraph [ref=e13]: Ball color
+            - generic [ref=e139]:
+              - 'button "Color: #60a5fa"'
+              - 'button "Color: #ef4444"'
+              - 'button "Color: #10b981"'
+              - 'button "Color: #f59e0b"'
+              - 'button "Color: #8b5cf6"'
+              - 'button "Color: #f97316"'
+              - 'button "Color: #06b6d4"'
+              - 'button "Color: #84cc16"'
+              - 'button "Color: #fb7185"'
+              - 'button "Color: #ffffff"'
+              - 'button "Color: #a855f7"'
+              - 'button "Color: #14b8a6"'
+          - generic [ref=e14]:
+            - paragraph [ref=e15]: Background color
+            - generic [ref=e142]:
+              - 'button "Color: #020617"'
+              - 'button "Color: #000000"'
+              - 'button "Color: #111827"'
+              - 'button "Color: #0a2540"'
+              - 'button "Color: #052e16"'
+              - 'button "Color: #1a102a"'
+              - 'button "Color: #fef3c7"'
+              - 'button "Color: #dbeafe"'
+              - 'button "Color: #fce7f3"'
+              - 'button "Color: #f3f4f6"'
+              - 'button "Color: #e5e7eb"'
+              - 'button "Color: #d1d5db"'
+          - generic [ref=e16]:
+            - paragraph [ref=e17]: Ball size
+            - generic [ref=e145]:
+              - 'button "Size: x1 (20px)"': x1
+              - 'button "Size: x2 (40px)"': x2
+              - 'button "Size: x3 (80px)"': x3
+              - 'button "Size: x4 (100px)"': x4
+          - group [ref=e18]:
+            - generic "Illustration ▶" [ref=e19] [cursor=pointer]:
+              - generic [ref=e20]: Illustration
+              - text: ▶
+      - region "Sound" [ref=e21]:
+        - heading "Sound" [level=3] [ref=e22]
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - generic [ref=e25]:
+              - generic [ref=e26]: Enable sound
+              - generic [ref=e27]: Play audio cues during the session
+            - generic [ref=e28] [cursor=pointer]:
+              - checkbox
+          - generic:
+            - generic: "Sound type:"
+            - generic:
+              - combobox:
+                - option "🎵 Soft (EMDR)" [selected]
+                - option "⏱️ Tick"
+                - option "🎹 Tone"
+                - option "🖱️ Click"
+                - option "🎾 Bounce"
+                - option "📢 Beep"
+              - generic: ▾
+          - generic [ref=e31]:
+            - generic [ref=e32]: 🖥️
+            - generic [ref=e33]:
+              - generic [ref=e34]: Controller audio
+              - generic [ref=e35]: Play sound on therapist's device
+            - generic [ref=e36] [cursor=pointer]:
+              - checkbox
+          - generic:
+            - generic: 🔈
+            - generic: Volume
+            - slider: "50"
+            - generic: 50%
+    - generic [ref=e39]:
+      - 'region "🎮 Session: 7103cc" [ref=e146]':
+        - 'heading "🎮 Session: 7103cc" [level=3] [ref=e147]'
+        - paragraph [ref=e42]:
+          - generic [ref=e44]: "Created: loading...06/08/2026, 10:54:28"
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - generic [ref=e47]: "👁️ Client link (Viewer):"
+            - generic [ref=e48]: 7103cc
+            - generic [ref=e49]: Waiting for viewer
+          - generic [ref=e50]:
+            - 'textbox "👁️ Client link (Viewer): 7103cc Waiting for viewer" [ref=e148]':
+              - /placeholder: Waiting for viewer...
+              - text: https://dev.emdrbilateral.online/s/7103cc
+            - button "📋 Copy" [ref=e52] [cursor=pointer]
+      - complementary "👁️ Movement preview" [ref=e53]:
+        - generic [ref=e54]:
+          - generic [ref=e57]: 👁️ Movement preview
+          - button "⛶ Fullscreen" [ref=e58] [cursor=pointer]:
+            - img [ref=e59]
+        - generic [ref=e149]: ⏳ Waiting for viewer connection — 0:11
+    - alert [ref=e158]:
+      - generic [ref=e159]:
+        - generic [ref=e160]: ⚠️
+        - generic [ref=e161]: Viewer not connected
+      - generic [ref=e162]: Share the viewer link with your client so they can join the session.
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - button "▶️ Start"
+          - button "Reset session": Reset
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - generic [ref=e70]: Timer
+            - generic [ref=e71]: 0:00
+          - generic [ref=e72]:
+            - generic [ref=e73]: Passes
+            - generic [ref=e74]: "0"
+          - generic [ref=e75]:
+            - generic [ref=e76]: Sets
+            - generic [ref=e77]: "0"
+        - generic [ref=e78]:
+          - generic [ref=e79]: Auto-stop
+          - generic [ref=e80]:
+            - generic [ref=e81]: Passes
+            - spinbutton "Passes" [ref=e82]: "0"
+            - generic [ref=e83]: passes
+          - generic [ref=e84]:
+            - generic [ref=e85]: Seconds
+            - spinbutton "Seconds" [ref=e86]: "0"
+            - generic [ref=e87]: sec
+      - generic [ref=e88]:
+        - paragraph [ref=e89]: Direction ↔️
+        - group "Direction" [ref=e90]:
+          - generic [ref=e91]: Direction
+          - button "↔️":
+            - generic: ↔️
+          - button "↕️":
+            - generic: ↕️
+          - button "↖↘ ↖️→↘️":
+            - generic: ↖↘
+            - generic: ↖️→↘️
+          - button "↙↗ ↙️→↗️":
+            - generic: ↙↗
+            - generic: ↙️→↗️
+          - button "🎲":
+            - generic: 🎲
+          - button "∞ ∞":
+            - generic: ∞
+            - generic: ∞
+      - generic [ref=e107]:
+        - paragraph [ref=e108]: Position
+        - group "Position" [ref=e109]:
+          - generic [ref=e110]: Position
+          - button "↑ Top":
+            - generic: ↑
+            - generic: Top
+          - button "⬤ Center":
+            - generic: ⬤
+            - generic: Center
+          - button "↓ Bottom":
+            - generic: ↓
+            - generic: Bottom
+      - generic [ref=e120]:
+        - paragraph [ref=e121]: Speed
+        - generic [ref=e151]:
+          - generic [ref=e154]: Medium
+          - generic [ref=e155]:
+            - generic [ref=e156]: Speed
+            - slider "Speed": "53"
+      - region "🎯 Presets" [ref=e122]:
+        - heading "🎯 Presets" [level=3] [ref=e123]
+        - generic [ref=e124]:
+          - button "Relaxation":
+            - generic: 🌊
+            - generic: Relaxation
+          - button "Activation":
+            - generic: ⚡
+            - generic: Activation
+          - button "Couples Therapy":
+            - generic: 🤝
+            - generic: Couples Therapy
+          - button "Dynamic":
+            - generic: 🌀
+            - generic: Dynamic
