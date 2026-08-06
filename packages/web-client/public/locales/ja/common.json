@@ -478,8 +478,8 @@
   },
   "paywall": {
     "title": "サブスクリプションが必要です — BilateralBound",
-    "heading": "このリンクは既に使用されています",
-    "description": "永久セッションリンクは有効なサブスクリプションで利用できます。プロジェクトをサポート — 75⭐ / 30日。",
+    "heading": "無料アクセス期間が終了しました",
+    "description": "無料アクセスが終了しました。1⭐ / 30日で無制限アクセスを購読してください。",
     "botButton": "💬 Telegramで購読 — 1⭐",
     "orVerify": "または既存のサブスクリプションを確認",
     "telegramIdLabel": "あなたのTelegramユーザーID",
@@ -489,9 +489,8 @@
     "successUnlocked": "アクセスが解除されました！リダイレクト中…",
     "errorEmpty": "TelegramユーザーIDを入力してください",
     "errorInvalid": "無効なTelegramユーザーID形式",
-    "noSubscription": "このTelegram IDには有効なサブスクリプションがありません。@emdrbilateral_botから購読してください（75⭐ / 30日）。",
+    "noSubscription": "このTelegram IDには有効なサブスクリプションがありません。@emdrbilateral_botから購読してください（1⭐ / 30日）。",
     "errorNetwork": "ネットワークエラー。もう一度お試しください。",
     "backToHome": "← メインページに戻る"
   }
-
 }

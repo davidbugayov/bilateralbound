@@ -472,8 +472,8 @@
   },
   "paywall": {
     "title": "Abonnement erforderlich — BilateralBound",
-    "heading": "Dieser Link wurde bereits verwendet",
-    "description": "Permanente Sitzungslinks sind mit einem aktiven Abonnement verfügbar. Unterstützen Sie das Projekt — 75⭐ für 30 Tage.",
+    "heading": "Kostenloser Zugang abgelaufen",
+    "description": "Der kostenlose Zugang ist abgelaufen. Abonnieren Sie für 1⭐ / 30 Tage für unbegrenzten Zugang.",
     "botButton": "💬 In Telegram abonnieren — 1⭐",
     "orVerify": "oder bestehendes Abonnement bestätigen",
     "telegramIdLabel": "Ihre Telegram User ID",
@@ -483,9 +483,8 @@
     "successUnlocked": "Zugriff freigeschaltet! Weiterleitung…",
     "errorEmpty": "Bitte geben Sie Ihre Telegram User ID ein",
     "errorInvalid": "Ungültiges Telegram User ID Format",
-    "noSubscription": "Kein aktives Abonnement für diese Telegram ID. Abonnieren Sie über @emdrbilateral_bot (75⭐ / 30 Tage).",
+    "noSubscription": "Kein aktives Abonnement für diese Telegram ID. Abonnieren Sie über @emdrbilateral_bot (1⭐ / 30 Tage).",
     "errorNetwork": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
     "backToHome": "← Zurück zur Startseite"
   }
-
 }
