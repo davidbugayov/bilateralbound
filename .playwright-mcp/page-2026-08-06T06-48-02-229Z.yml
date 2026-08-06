@@ -1,0 +1,11 @@
+- main [ref=e2]:
+  - generic:
+    - generic [ref=e4]: ⏳ Connecting...
+    - button "⛶ Полноэкранный" [ref=e5] [cursor=pointer]
+  - generic:
+    - generic:
+      - generic: Space
+      - generic: — Пауза/Старт
+    - generic:
+      - generic: Esc
+      - generic: — Fullscreen

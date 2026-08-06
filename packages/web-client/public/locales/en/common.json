@@ -27,7 +27,7 @@
     "metaDescription": "Free online EMDR therapy for PTSD, anxiety & trauma. No registration. Run bilateral stimulation sessions remotely."
   },
   "emdr": {
-    "heading": "🎯 What is EMDR Therapy?",
+    "heading": "Free Access Window Has Expired",
     "p1": "EMDR (Eye Movement Desensitization and Reprocessing) is a scientifically based method of psychotherapy for treating post-traumatic stress disorder (PTSD), anxiety disorders and psychological trauma.",
     "p2": "Our platform uses bilateral stimulation — the movement of a ball creates bilateral brain stimulation, helping to process traumatic memories."
   },
@@ -44,7 +44,7 @@
   },
   "links": {
     "heading": "Permanent Links for Clients",
-    "description": "Create personal links for your clients. You will be able to use them repeatedly — links remain permanent and do not require generation each time.",
+    "description": "The 2-hour free access for this session has ended. Subscribe for 1⭐ / 30 days for unlimited access. Your support keeps the platform running.",
     "formLabelClientId": "Client ID (3-32 characters: latin letters, numbers, _ or -)",
     "placeholderClientId": "anna_2025 or client-ivan",
     "generateBtn": "Create",
@@ -661,7 +661,7 @@
     "title": "Subscription Required — BilateralBound",
     "heading": "This Link Has Already Been Used",
     "description": "Permanent session links are available with an active subscription. Support the project — 75⭐ for 30 days. Your support keeps the platform running.",
-    "botButton": "💬 Subscribe in Telegram — 75⭐",
+    "botButton": "💬 Subscribe in Telegram — 1⭐",
     "orVerify": "or verify existing subscription",
     "telegramIdLabel": "Your Telegram User ID",
     "telegramIdPlaceholder": "123456789",

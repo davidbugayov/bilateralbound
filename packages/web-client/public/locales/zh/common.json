@@ -23,7 +23,7 @@
     "metaDescription": "用于治疗PTSD、焦虑症和夫妻治疗的在线EMDR平台。认证心理咨询师，安全会话，永久链接。"
   },
   "emdr": {
-    "heading": "🎯 什么是EMDR疗法？",
+    "heading": "免费访问已过期",
     "p1": "EMDR（眼球运动脱敏和再处理）是一种经过科学验证的心理治疗方法，用于治疗创伤后应激障碍（PTSD）、焦虑障碍和心理创伤。",
     "p2": "我们的平台使用双侧刺激 - 球的运动产生大脑的双侧刺激，帮助处理创伤记忆。"
   },
@@ -42,7 +42,7 @@
   },
   "links": {
     "heading": "客户的永久链接",
-    "description": "为您的客户创建个性化链接。您可以重复使用它们 - 链接是永久的，不需要每次都生成。",
+    "description": "2小时免费访问已结束。订阅1⭐ / 30天获取无限访问。",
     "formLabelClientId": "客户ID（3-32个字符：拉丁字母、数字、_或-）",
     "placeholderClientId": "anna_2025或client-ivan",
     "generateBtn": "创建",
@@ -466,7 +466,7 @@
     "title": "需要订阅 — BilateralBound",
     "heading": "此链接已被使用",
     "description": "永久会话链接需有效订阅。支持项目 — 75⭐ / 30天。",
-    "botButton": "💬 在Telegram订阅 — 75⭐",
+    "botButton": "💬 在Telegram订阅 — 1⭐",
     "orVerify": "或验证现有订阅",
     "telegramIdLabel": "您的Telegram用户ID",
     "telegramIdPlaceholder": "123456789",

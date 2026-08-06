@@ -23,7 +23,7 @@
     "metaDescription": "Online-EMDR-Plattform zur Behandlung von PTBS, Angstzuständen und Paartherapie. Zertifizierte Psychologen, sichere Sitzungen, permanente Links."
   },
   "emdr": {
-    "heading": "🎯 Was ist EMDR-Therapie?",
+    "heading": "Kostenloser Zugang abgelaufen",
     "p1": "EMDR (Desensibilisierung und Wiederaufarbeitung durch Augenbewegungen) ist eine wissenschaftlich validierte Methode der Psychotherapie zur Behandlung von posttraumatischer Belastungsstörung (PTBS), Angststörungen und psychologischen Traumata.",
     "p2": "Unsere Plattform nutzt bilaterale Stimulation - die Bewegung des Balls erzeugt bilaterale Gehirnstimulation und hilft bei der Verarbeitung traumatischer Erinnerungen."
   },
@@ -42,7 +42,7 @@
   },
   "links": {
     "heading": "Permanente Links für Klienten",
-    "description": "Erstellen Sie personalisierte Links für Ihre Klienten. Sie können sie wiederholt verwenden - die Links bleiben permanent und müssen nicht jedes Mal neu generiert werden.",
+    "description": "Der 2-stündige kostenlose Zugang ist abgelaufen. Abonnieren Sie für 1⭐ / 30 Tage für unbegrenzten Zugang.",
     "formLabelClientId": "Klienten-ID (3-32 Zeichen: lateinische Buchstaben, Zahlen, _ oder -)",
     "placeholderClientId": "anna_2025 oder client-ivan",
     "generateBtn": "Erstellen",
@@ -474,7 +474,7 @@
     "title": "Abonnement erforderlich — BilateralBound",
     "heading": "Dieser Link wurde bereits verwendet",
     "description": "Permanente Sitzungslinks sind mit einem aktiven Abonnement verfügbar. Unterstützen Sie das Projekt — 75⭐ für 30 Tage.",
-    "botButton": "💬 In Telegram abonnieren — 75⭐",
+    "botButton": "💬 In Telegram abonnieren — 1⭐",
     "orVerify": "oder bestehendes Abonnement bestätigen",
     "telegramIdLabel": "Ihre Telegram User ID",
     "telegramIdPlaceholder": "123456789",

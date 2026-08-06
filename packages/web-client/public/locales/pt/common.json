@@ -23,7 +23,7 @@
     "metaDescription": "Plataforma EMDR online para tratamento de TEPT, ansiedade e terapia de casal. Psicólogos certificados, sessões seguras, links permanentes."
   },
   "emdr": {
-    "heading": "🎯 O que é terapia EMDR?",
+    "heading": "Acesso gratuito expirado",
     "p1": "EMDR (Dessensibilização e Reprocessamento por Movimentos Oculares) é um método cientificamente validado de psicoterapia para o tratamento de transtorno de estresse pós-traumático (TEPT), transtornos de ansiedade e traumas psicológicos.",
     "p2": "Nossa plataforma utiliza estimulação bilateral - o movimento da bola cria estimulação bilateral do cérebro, ajudando a processar memórias traumáticas."
   },
@@ -42,7 +42,7 @@
   },
   "links": {
     "heading": "Links permanentes para clientes",
-    "description": "Crie links personalizados para seus clientes. Você poderá usá-los repetidamente - os links permanecem permanentes e não requerem geração a cada vez.",
+    "description": "O acesso gratuito de 2 horas terminou. Assine por 1⭐ / 30 dias para acesso ilimitado.",
     "formLabelClientId": "ID do cliente (3-32 caracteres: letras latinas, números, _ ou -)",
     "placeholderClientId": "anna_2025 ou client-ivan",
     "generateBtn": "Criar",
@@ -473,7 +473,7 @@
     "title": "Assinatura necessária — BilateralBound",
     "heading": "Este link já foi usado",
     "description": "Links de sessão permanentes estão disponíveis com assinatura ativa. Apoie o projeto — 75⭐ por 30 dias.",
-    "botButton": "💬 Assinar no Telegram — 75⭐",
+    "botButton": "💬 Assinar no Telegram — 1⭐",
     "orVerify": "ou verificar assinatura existente",
     "telegramIdLabel": "Seu ID de usuário do Telegram",
     "telegramIdPlaceholder": "123456789",

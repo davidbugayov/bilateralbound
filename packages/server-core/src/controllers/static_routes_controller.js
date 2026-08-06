@@ -23,6 +23,7 @@ function registerStaticRoutes(
 
   const BROWSER_COOKIE = 'bb_lk'
   const COOKIE_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000 // 1 year
+  const FREE_WINDOW_MS = 2 * 60 * 60 * 1000 // 2 hours free access from first visit
 
   /**
    * Generates a random browser ID for the cookie.
@@ -71,12 +72,14 @@ function registerStaticRoutes(
     }
 
     const browserId = ensureBrowserCookie(req, res)
-    const state = linkAccessService.get(browserId, sessionId)
+    const now = Date.now()
 
     // Already unlocked — allow
-    if (linkAccessService.isUnlocked(browserId, sessionId)) {
+    if (linkAccessService.isUnlocked(browserId, sessionId, now)) {
       return true
     }
+
+    const state = linkAccessService.get(browserId, sessionId)
 
     // First visit — record and allow
     if (!state.firstSeenAt) {
@@ -84,7 +87,12 @@ function registerStaticRoutes(
       return true
     }
 
-    // Repeat visit without unlock — deny
+    // Within free 2-hour window — allow unlimited access
+    if (now - state.firstSeenAt < FREE_WINDOW_MS) {
+      return true
+    }
+
+    // Window expired without unlock — deny
     return false
   }
 
