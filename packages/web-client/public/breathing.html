@@ -308,6 +308,20 @@
       color: #10b981;
       font-weight: 400;
     }
+
+    /* Cookie consent banner — breathing.html doesn't load common.css,
+       so these rules are inlined here (same styles as common.css) */
+    .cookie-consent{position:fixed;bottom:0;left:0;right:0;z-index:10000;background:var(--card-bg,#1e293b);border-top:1px solid var(--border,#334155);padding:16px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;transform:translateY(100%);transition:transform .3s ease;box-shadow:0 -4px 12px rgb(0 0 0 / 20%)}
+    .cookie-consent--visible{transform:translateY(0)}
+    .cookie-consent--hidden{transform:translateY(100%)}
+    .cookie-consent__text{color:var(--text-muted,#94a3b8);font-size:.9rem;margin:0;flex:1;min-width:200px}
+    .cookie-consent__actions{display:flex;gap:8px;flex-shrink:0}
+    .cookie-consent__btn{padding:8px 20px;border:1px solid var(--border,#334155);border-radius:8px;font-size:.9rem;cursor:pointer;transition:background .2s,color .2s;font-family:inherit}
+    .cookie-consent__btn--accept{background:var(--accent,#60a5fa);color:#fff;border-color:var(--accent,#60a5fa)}
+    .cookie-consent__btn--accept:hover{background:var(--accent-hover,#3b82f6)}
+    .cookie-consent__btn--decline{background:0 0;color:var(--text-muted,#94a3b8)}
+    .cookie-consent__btn--decline:hover{background:rgb(255 255 255 / 5%);color:var(--text,#e2e8f0)}
+    @media (width <= 480px){.cookie-consent{flex-direction:column;text-align:center}.cookie-consent__actions{width:100%;justify-content:center}}
   </style>
   <script src="/js/ui/cookie-consent.js?v=2.39.698-bdbcbb41" defer></script>
   <script src="/js/analytics/metrika-events.js?v=2.39.698-bdbcbb41" defer></script>
