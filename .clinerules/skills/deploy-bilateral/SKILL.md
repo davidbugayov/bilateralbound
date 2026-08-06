@@ -9,10 +9,10 @@ description: Deploy bilateral_bound to dev or prod, check service status, view l
 
 ```bash
 # Dev (dev.emdrbilateral.online)
-DEPLOY_PASSWORD=... npm run deploy:dev
+npm run deploy:dev
 
 # Prod (emdrbilateral.online + emdrbilateral.ru)
-DEPLOY_PASSWORD=... npm run deploy:prod
+npm run deploy:prod
 
 # Статус
 npm run deploy:dev:status
@@ -38,9 +38,9 @@ npm run build 2>/dev/null || npm start &  # убедиться что билд �
 
 ### 3. Если деплой завис
 ```bash
-ssh root@90.156.254.190 'systemctl status emdrbilateral-online.service'
-ssh root@90.156.254.190 'systemctl restart emdrbilateral-online.service'
-ssh root@90.156.254.190 'systemctl restart emdrbilateral-ru.service'
+ssh root@144.31.68.9 'systemctl status emdrbilateral-online.service'
+ssh root@144.31.68.9 'systemctl restart emdrbilateral-online.service'
+ssh root@144.31.68.9 'systemctl restart emdrbilateral-ru.service'
 ```
 
 ### 4. После деплоя — проверка
@@ -49,5 +49,5 @@ npm test              # E2E против dev.emdrbilateral.online
 curl -s https://emdrbilateral.online/health | head -5
 ```
 
-## Переменные окружения
-`DEPLOY_PASSWORD` — обязательна для деплой-скриптов (хранится в shell, не в .env)
+## SSH доступ
+SSH key: `~/.ssh/id_rsa_emdr`. Пароль не требуется.

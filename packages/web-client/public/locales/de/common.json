@@ -23,7 +23,7 @@
     "metaDescription": "Online-EMDR-Plattform zur Behandlung von PTBS, Angstzuständen und Paartherapie. Zertifizierte Psychologen, sichere Sitzungen, permanente Links."
   },
   "emdr": {
-    "heading": "🎯 Was ist EMDR-Therapie?",
+    "heading": "Kostenloser Zugang abgelaufen",
     "p1": "EMDR (Desensibilisierung und Wiederaufarbeitung durch Augenbewegungen) ist eine wissenschaftlich validierte Methode der Psychotherapie zur Behandlung von posttraumatischer Belastungsstörung (PTBS), Angststörungen und psychologischen Traumata.",
     "p2": "Unsere Plattform nutzt bilaterale Stimulation - die Bewegung des Balls erzeugt bilaterale Gehirnstimulation und hilft bei der Verarbeitung traumatischer Erinnerungen."
   },
@@ -42,7 +42,7 @@
   },
   "links": {
     "heading": "Permanente Links für Klienten",
-    "description": "Erstellen Sie personalisierte Links für Ihre Klienten. Sie können sie wiederholt verwenden - die Links bleiben permanent und müssen nicht jedes Mal neu generiert werden.",
+    "description": "Der 2-stündige kostenlose Zugang ist abgelaufen. Abonnieren Sie für 1⭐ / 30 Tage für unbegrenzten Zugang.",
     "formLabelClientId": "Klienten-ID (3-32 Zeichen: lateinische Buchstaben, Zahlen, _ oder -)",
     "placeholderClientId": "anna_2025 oder client-ivan",
     "generateBtn": "Erstellen",
@@ -469,5 +469,22 @@
     "s5li6desc": "Funktioniert in jedem Browser",
     "s5li7desc": "Reduziert Augenbelastung",
     "s5li8desc": "Zur Selbstregulation"
+  },
+  "paywall": {
+    "title": "Abonnement erforderlich — BilateralBound",
+    "heading": "Kostenloser Zugang abgelaufen",
+    "description": "Der kostenlose Zugang ist abgelaufen. Abonnieren Sie für 75⭐ / 30 Tage für unbegrenzten Zugang.",
+    "botButton": "💬 In Telegram abonnieren — 75⭐",
+    "orVerify": "oder bestehendes Abonnement bestätigen",
+    "telegramIdLabel": "Ihre Telegram User ID",
+    "telegramIdPlaceholder": "123456789",
+    "unlockButton": "Prüfen",
+    "hintMyId": "💡 Senden Sie <code>/myid</code> an <a href=\"https://t.me/emdrbilateral_bot\" target=\"_blank\" rel=\"noopener noreferrer\">@emdrbilateral_bot</a> um Ihre ID zu erhalten",
+    "successUnlocked": "Zugriff freigeschaltet! Weiterleitung…",
+    "errorEmpty": "Bitte geben Sie Ihre Telegram User ID ein",
+    "errorInvalid": "Ungültiges Telegram User ID Format",
+    "noSubscription": "Kein aktives Abonnement für diese Telegram ID. Abonnieren Sie über @emdrbilateral_bot (75⭐ / 30 Tage).",
+    "errorNetwork": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
+    "backToHome": "← Zurück zur Startseite"
   }
 }

@@ -80,6 +80,11 @@ const staticMetaMaps = {
   'breathing.html': [
     // Breathing is a standalone CalmFlow page — title stays hardcoded
     { attr: 'name', attrValue: 'description', key: 'breathing.metaDescription' }
+  ],
+  'paywall.html': [
+    // Subscription gate page — title and description localized via i18n keys
+    { isTitle: true, key: 'paywall.title' },
+    { attr: 'name', attrValue: 'description', key: 'paywall.description' }
   ]
 }
 

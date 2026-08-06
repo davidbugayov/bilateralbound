@@ -13,7 +13,7 @@
 
 const { t, siteUrl, dateLocale, autoRenewText } = require('../services/bot-translations')
 
-function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, priceStars, testMode, baseUrl }) {
+function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, priceStars, testMode, baseUrl }, linkAccessService) {
   const STARS_PRICE = priceStars || 75
   if (!subscriptionService) {
     logger.warn('SubscriptionService not provided — subscription routes disabled')
@@ -77,6 +77,71 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
     }
 
     res.json({ success: true, customId, telegramUserId })
+  })
+
+  // ------------------------------------------------------------------
+  // POST /api/link-access/:sessionId/unlock
+  // Unlock repeated access to a session link for the current browser.
+  // Requires active subscription (Telegram User ID).
+  // Body: { telegramUserId }
+  // On success, the browser's bb_lk cookie is marked as unlocked until subscription expiry.
+  // ------------------------------------------------------------------
+  app.post('/api/link-access/:sessionId/unlock', (req, res) => {
+    if (!linkAccessService) {
+      return res.status(500).json({ error: 'Link access service not available' })
+    }
+    const { sessionId } = req.params
+    const { telegramUserId } = req.body || {}
+
+    // Validate sessionId format (same constraints as customId)
+    if (!sessionId || !/^[A-Za-z0-9_-]{3,64}$/.test(sessionId)) {
+      return res.status(400).json({ error: 'Invalid sessionId format' })
+    }
+
+    // Validate and coerce telegramUserId
+    const userId = Number.parseInt(telegramUserId, 10)
+    if (!telegramUserId || !Number.isFinite(userId) || userId <= 0) {
+      return res.status(400).json({
+        error: 'Invalid Telegram User ID',
+        i18nKey: 'paywall.invalidId'
+      })
+    }
+
+    // Check active subscription
+    if (!subscriptionService.isActive(userId)) {
+      return res.status(402).json({
+        error: 'No active subscription',
+        i18nKey: 'paywall.noSubscription',
+        message: 'No active subscription found for this Telegram User ID. Please subscribe via @emdrbilateral_bot (75⭐ / 30 days).'
+      })
+    }
+
+    // Get subscription expiry
+    const status = subscriptionService.getStatus(userId)
+    const expiresAt = status && status.expiresAt ? status.expiresAt : Date.now() + subscriptionService.durationMs
+
+    // Get or issue browser cookie
+    const BROWSER_COOKIE = 'bb_lk'
+    let browserId = req.cookies && req.cookies[BROWSER_COOKIE]
+    if (!browserId) {
+      browserId = require('node:crypto').randomUUID()
+      res.cookie(BROWSER_COOKIE, browserId, {
+        httpOnly: true,
+        secure: !req.app.get('isDev'),
+        sameSite: 'lax',
+        maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
+      })
+    }
+
+    // Unlock access
+    linkAccessService.setUnlocked(browserId, sessionId, expiresAt)
+
+    logger.info(
+      { browserId, sessionId, telegramUserId: userId, expiresAt: new Date(expiresAt).toISOString() },
+      'Link access unlocked via subscription verification'
+    )
+
+    res.json({ success: true, unlockedUntil: expiresAt })
   })
 
   // ------------------------------------------------------------------
@@ -594,17 +659,17 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // POST /api/admin/set-commands
   // Force-update the bot command list without restart
   // ------------------------------------------------------------------
-  app.post("/api/admin/set-commands", (req, res) => {
+  app.post('/api/admin/set-commands', (req, res) => {
     const remoteAddr = req.socket?.remoteAddress
-    const isLocal = remoteAddr === "127.0.0.1" || remoteAddr === "::1" || remoteAddr === "::ffff:127.0.0.1"
+    const isLocal = remoteAddr === '127.0.0.1' || remoteAddr === '::1' || remoteAddr === '::ffff:127.0.0.1'
     if (!isLocal && !testMode) {
-      return res.status(403).json({ error: "Localhost only" })
+      return res.status(403).json({ error: 'Localhost only' })
     }
     if (!telegramBot) {
-      return res.status(400).json({ error: "Telegram bot not configured" })
+      return res.status(400).json({ error: 'Telegram bot not configured' })
     }
-    const { SUPPORTED_LANGUAGES } = require("../services/bot-translations")
-    let results = []
+    const { SUPPORTED_LANGUAGES } = require('../services/bot-translations')
+    const results = []
     // Step 1: set English as the default (no language_code) — applies to all users
     telegramBot.setMyCommands('en')
       .then(ok => results.push({ lang: 'en_default', ok }))
@@ -618,11 +683,11 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         ))
       })
       .then(() => {
-        logger.info({ results }, "Admin: bot commands updated")
+        logger.info({ results }, 'Admin: bot commands updated')
         res.json({ success: true, results })
       })
       .catch(err => {
-        logger.error({ err }, "Admin: set commands error")
+        logger.error({ err }, 'Admin: set commands error')
         res.status(500).json({ error: err.message })
       })
   })

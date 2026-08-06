@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#020617">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="manifest" href="/manifest.json">
+  <title data-i18n="paywall.title">Subscription Required — BilateralBound</title>
+  <meta name="description" content="This permanent link has already been used. Support the project via Telegram subscription (75⭐ / 30 days).">
+  <link rel="stylesheet" href="/css/shared-components.css">
+  <link rel="stylesheet" href="/css/light-theme.css">
+  <style>
+    /* Anti-flash cloak: hides body until i18n is ready */
+    /* NOTE: i18n.js adds 'i18n-ready' to <html> (documentElement), not <body> */
+    #i18n-cloak { display: none; }
+    html:not(.i18n-ready) #i18n-cloak { display: block; }
+    html:not(.i18n-ready) > body > *:not(#i18n-cloak) { visibility: hidden; }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #020617;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+
+    .paywall-container {
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .paywall-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .paywall-title {
+      font-size: clamp(1.3rem, 5vw, 1.7rem);
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.01em;
+    }
+
+    .paywall-description {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .paywall-description a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    .bot-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff;
+      padding: 0.85rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 2rem;
+    }
+    .bot-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(37,99,235,0.5);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      color: rgba(255,255,255,0.2);
+      font-size: 0.8rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .unlock-form {
+      text-align: left;
+    }
+    .unlock-form label {
+      display: block;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 0.4rem;
+    }
+    .unlock-form .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .unlock-form input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .unlock-form input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+    }
+    .unlock-form input::placeholder {
+      color: rgba(255,255,255,0.25);
+    }
+    .unlock-form .unlock-btn {
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .unlock-form .unlock-btn:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    }
+    .unlock-form .unlock-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .unlock-hint {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.3);
+      margin-top: 0.6rem;
+    }
+    .unlock-hint code {
+      background: rgba(255,255,255,0.08);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+
+    .error-message {
+      display: none;
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+    }
+    .error-message.show {
+      display: block;
+    }
+
+    .success-message {
+      display: none;
+      color: #34d399;
+      font-size: 0.9rem;
+      margin-top: 0.75rem;
+    }
+    .success-message.show {
+      display: block;
+    }
+
+    .back-link {
+      color: rgba(255,255,255,0.35);
+      font-size: 0.8rem;
+      text-decoration: none;
+      margin-top: 2rem;
+      display: inline-block;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: rgba(255,255,255,0.7);
+    }
+  </style>
+  <!-- i18n IIFE + scripts (same loading pattern as breathing.html) -->
+  <script src="/js/i18n/lang-preload.js" defer></script>
+  <script src="/js/i18n/i18n.js" defer></script>
+  <script src="/js/i18n/language-selector.js" defer></script>
+  <script src="/js/network/csrf.js" defer></script>
+</head>
+<body>
+  <div id="i18n-cloak"></div>
+
+  <!-- Telegram Mini App signal -->
+  <script>
+    (function(){try{if(window.Telegram&&window.Telegram.WebApp){window.Telegram.WebApp.ready();window.Telegram.WebApp.expand()}}catch(e){}})()
+  </script>
+
+  <div class="paywall-container">
+    <span class="paywall-icon">💛</span>
+    <h1 class="paywall-title" data-i18n="paywall.heading">Free Access Window Has Expired</h1>
+    <p class="paywall-description" data-i18n="paywall.description">
+      The 2-hour free access for this session has ended. Subscribe for 75⭐ / 30 days for unlimited access. Your support keeps the platform running.
+    </p>
+
+    <a class="bot-button" href="https://t.me/emdrbilateral_bot" target="_blank" rel="noopener noreferrer" data-i18n="paywall.botButton">
+      💬 Subscribe in Telegram — 75⭐
+    </a>
+
+    <div class="divider" data-i18n="paywall.orVerify">or verify existing subscription</div>
+
+    <div class="unlock-form">
+      <label data-i18n="paywall.telegramIdLabel">Your Telegram User ID</label>
+      <div class="input-row">
+        <input type="text" id="telegramIdInput" inputmode="numeric" pattern="[0-9]*" placeholder="123456789" data-i18n-attrib="placeholder,paywall.telegramIdPlaceholder">
+        <button class="unlock-btn" id="unlockBtn" data-i18n="paywall.unlockButton">Verify</button>
+      </div>
+      <div class="unlock-hint" data-i18n="paywall.hintMyId">
+        💡 Send <code>/myid</code> to <a href="https://t.me/emdrbilateral_bot" target="_blank" rel="noopener noreferrer">@emdrbilateral_bot</a> to get your ID
+      </div>
+      <div class="error-message" id="errorMessage"></div>
+      <div class="success-message" id="successMessage" data-i18n="paywall.successUnlocked">Access unlocked! Redirecting…</div>
+    </div>
+
+    <a class="back-link" href="/" data-i18n="paywall.backToHome">← Back to main page</a>
+  </div>
+
+  <script>
+    (function() {
+      'use strict'
+
+      const input = document.getElementById('telegramIdInput')
+      const btn = document.getElementById('unlockBtn')
+      const errorEl = document.getElementById('errorMessage')
+      const successEl = document.getElementById('successMessage')
+
+      // Extract sessionId from pathname: /c/32eb40 → 32eb40, /s/32eb40 → 32eb40
+      const pathParts = window.location.pathname.split('/')
+      const sessionId = pathParts[pathParts.length - 1] || ''
+
+      // Ensure i18n is loaded before setting dynamic texts
+      function getI18nText(key, fallback) {
+        if (globalThis.i18n && typeof globalThis.i18n.t === 'function') {
+          return globalThis.i18n.t(key) || fallback
+        }
+        return fallback
+      }
+
+      // Set error text from i18n when available
+      function showError(key, fallback) {
+        errorEl.textContent = getI18nText(key, fallback)
+        errorEl.classList.add('show')
+        successEl.classList.remove('show')
+      }
+
+      function showSuccess() {
+        successEl.textContent = getI18nText('paywall.successUnlocked', 'Access unlocked! Redirecting…')
+        successEl.classList.add('show')
+        errorEl.classList.remove('show')
+      }
+
+      async function handleUnlock() {
+        const rawId = input.value.trim()
+        if (!rawId) {
+          showError('paywall.errorEmpty', 'Please enter your Telegram User ID')
+          return
+        }
+        const userId = parseInt(rawId, 10)
+        if (!userId || userId <= 0) {
+          showError('paywall.errorInvalid', 'Invalid Telegram User ID format')
+          return
+        }
+
+        btn.disabled = true
+        btn.textContent = '…'
+        errorEl.classList.remove('show')
+        successEl.classList.remove('show')
+
+        try {
+          const fetchFn = globalThis.csrfFetch || fetch
+          const resp = await fetchFn('/api/link-access/' + encodeURIComponent(sessionId) + '/unlock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegramUserId: userId })
+          })
+          const data = await resp.json().catch(function() { return {} })
+
+          if (resp.ok) {
+            showSuccess()
+            // Reload — server will now serve the content page instead of paywall
+            setTimeout(function() { window.location.reload() }, 1200)
+          } else {
+            showError(
+              data.i18nKey || 'paywall.noSubscription',
+              data.error || ('No active subscription — status ' + resp.status)
+            )
+          }
+        } catch (err) {
+          showError('paywall.errorNetwork', 'Network error. Please try again.')
+        } finally {
+          btn.disabled = false
+          btn.textContent = getI18nText('paywall.unlockButton', 'Verify')
+        }
+      }
+
+      btn.addEventListener('click', handleUnlock)
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); handleUnlock() }
+      })
+    })()
+  </script>
+</body>
+</html>

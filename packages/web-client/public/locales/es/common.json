@@ -23,7 +23,7 @@
     "metaDescription": "Plataforma EMDR en línea para el tratamiento del TEPT, ansiedad y terapia de pareja. Psicólogos certificados, sesiones seguras, enlaces permanentes."
   },
   "emdr": {
-    "heading": "🎯 ¿Qué es la terapia EMDR?",
+    "heading": "El acceso gratuito ha expirado",
     "p1": "EMDR (Desensibilización y Reprocesamiento por Movimientos Oculares) es un método científicamente validado de psicoterapia para el tratamiento del trastorno de estrés postraumático (TEPT), trastornos de ansiedad y traumas psicológicos.",
     "p2": "Nuestra plataforma utiliza estimulación bilateral - el movimiento de la pelota crea estimulación bilateral del cerebro, ayudando a procesar recuerdos traumáticos."
   },
@@ -42,7 +42,7 @@
   },
   "links": {
     "heading": "Enlaces permanentes para clientes",
-    "description": "Cree enlaces personalizados para sus clientes. Podrá usarlos repetidamente - los enlaces permanecen permanentes y no requieren generación cada vez.",
+    "description": "El acceso gratuito de 2 horas ha finalizado. Suscríbete por 1⭐ / 30 días para acceso ilimitado.",
     "formLabelClientId": "ID del cliente (3-32 caracteres: letras latinas, números, _ o -)",
     "placeholderClientId": "anna_2025 o client-ivan",
     "generateBtn": "Crear",
@@ -648,5 +648,22 @@
     "s5li6desc": "Funciona en cualquier navegador",
     "s5li7desc": "Reduce la fatiga visual",
     "s5li8desc": "Para autorregulación"
+  },
+  "paywall": {
+    "title": "Suscripción requerida — BilateralBound",
+    "heading": "El acceso gratuito ha expirado",
+    "description": "El acceso gratuito ha finalizado. Suscríbete por 75⭐ / 30 días para acceso ilimitado.",
+    "botButton": "💬 Suscribirse en Telegram — 75⭐",
+    "orVerify": "o verificar suscripción existente",
+    "telegramIdLabel": "Tu ID de usuario de Telegram",
+    "telegramIdPlaceholder": "123456789",
+    "unlockButton": "Verificar",
+    "hintMyId": "💡 Envía <code>/myid</code> a <a href=\"https://t.me/emdrbilateral_bot\" target=\"_blank\" rel=\"noopener noreferrer\">@emdrbilateral_bot</a> para obtener tu ID",
+    "successUnlocked": "¡Acceso desbloqueado! Redirigiendo…",
+    "errorEmpty": "Por favor, introduce tu ID de usuario de Telegram",
+    "errorInvalid": "Formato de ID de Telegram no válido",
+    "noSubscription": "No hay suscripción activa para este ID de Telegram. Suscríbete a través de @emdrbilateral_bot (75⭐ / 30 días).",
+    "errorNetwork": "Error de red. Por favor, inténtalo de nuevo.",
+    "backToHome": "← Volver a la página principal"
   }
 }

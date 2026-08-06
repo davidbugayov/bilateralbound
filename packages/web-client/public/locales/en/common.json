@@ -27,7 +27,7 @@
     "metaDescription": "Free online EMDR therapy for PTSD, anxiety & trauma. No registration. Run bilateral stimulation sessions remotely."
   },
   "emdr": {
-    "heading": "🎯 What is EMDR Therapy?",
+    "heading": "Free Access Window Has Expired",
     "p1": "EMDR (Eye Movement Desensitization and Reprocessing) is a scientifically based method of psychotherapy for treating post-traumatic stress disorder (PTSD), anxiety disorders and psychological trauma.",
     "p2": "Our platform uses bilateral stimulation — the movement of a ball creates bilateral brain stimulation, helping to process traumatic memories."
   },
@@ -44,7 +44,7 @@
   },
   "links": {
     "heading": "Permanent Links for Clients",
-    "description": "Create personal links for your clients. You will be able to use them repeatedly — links remain permanent and do not require generation each time.",
+    "description": "The 2-hour free access for this session has ended. Subscribe for 1⭐ / 30 days for unlimited access. Your support keeps the platform running.",
     "formLabelClientId": "Client ID (3-32 characters: latin letters, numbers, _ or -)",
     "placeholderClientId": "anna_2025 or client-ivan",
     "generateBtn": "Create",
@@ -656,5 +656,22 @@
     "s5li6desc": "Works in any modern browser",
     "s5li7desc": "Reduces eye strain during therapy",
     "s5li8desc": "For self-regulation"
+  },
+  "paywall": {
+    "title": "Subscription Required — BilateralBound",
+    "heading": "Free Access Window Has Expired",
+    "description": "The free access window for this session has ended. Subscribe for 75⭐ / 30 days for unlimited access. Your support keeps the platform running.",
+    "botButton": "💬 Subscribe in Telegram — 75⭐",
+    "orVerify": "or verify existing subscription",
+    "telegramIdLabel": "Your Telegram User ID",
+    "telegramIdPlaceholder": "123456789",
+    "unlockButton": "Verify",
+    "hintMyId": "💡 Send <code>/myid</code> to <a href=\"https://t.me/emdrbilateral_bot\" target=\"_blank\" rel=\"noopener noreferrer\">@emdrbilateral_bot</a> to get your ID",
+    "successUnlocked": "Access unlocked! Redirecting…",
+    "errorEmpty": "Please enter your Telegram User ID",
+    "errorInvalid": "Invalid Telegram User ID format",
+    "noSubscription": "No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (75⭐ / 30 days).",
+    "errorNetwork": "Network error. Please try again.",
+    "backToHome": "← Back to main page"
   }
 }
