@@ -660,8 +660,8 @@
   "paywall": {
     "title": "Subscription Required — BilateralBound",
     "heading": "Free Access Window Has Expired",
-    "description": "The free access window for this session has ended. Subscribe for 1⭐ / 30 days for unlimited access. Your support keeps the platform running.",
-    "botButton": "💬 Subscribe in Telegram — 1⭐",
+    "description": "The free access window for this session has ended. Subscribe for 75⭐ / 30 days for unlimited access. Your support keeps the platform running.",
+    "botButton": "💬 Subscribe in Telegram — 75⭐",
     "orVerify": "or verify existing subscription",
     "telegramIdLabel": "Your Telegram User ID",
     "telegramIdPlaceholder": "123456789",
@@ -670,7 +670,7 @@
     "successUnlocked": "Access unlocked! Redirecting…",
     "errorEmpty": "Please enter your Telegram User ID",
     "errorInvalid": "Invalid Telegram User ID format",
-    "noSubscription": "No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (1⭐ / 30 days).",
+    "noSubscription": "No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (75⭐ / 30 days).",
     "errorNetwork": "Network error. Please try again.",
     "backToHome": "← Back to main page"
   }

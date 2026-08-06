@@ -14,15 +14,15 @@
   // Guard: only inject once
   if (document.getElementById('bb-paywall-overlay')) return
 
-  var SESSION_ID = null
+  let SESSION_ID = null
   try {
-    var parts = window.location.pathname.split('/')
+    const parts = window.location.pathname.split('/')
     SESSION_ID = parts[parts.length - 1] || ''
   } catch (e) { /* keep null */ }
 
   function t(key, fallback) {
     try {
-      var v = globalThis.i18n && globalThis.i18n.t ? globalThis.i18n.t(key) : null
+      const v = globalThis.i18n && globalThis.i18n.t ? globalThis.i18n.t(key) : null
       return v || fallback
     } catch (e) {
       return fallback
@@ -30,10 +30,10 @@
   }
 
   // ── i18n strings (fallback = English) ──
-  var STRINGS = {
+  const STRINGS = {
     heading: function () { return t('paywall.heading', 'Free Access Window Has Expired') },
-    description: function () { return t('paywall.description', 'The 2-hour free access for this session has ended. Subscribe for 1⭐ / 30 days for unlimited access. Your support keeps the platform running.') },
-    botButton: function () { return t('paywall.botButton', '💬 Subscribe in Telegram — 1⭐') },
+    description: function () { return t('paywall.description', 'The 2-hour free access for this session has ended. Subscribe for 75⭐ / 30 days for unlimited access. Your support keeps the platform running.') },
+    botButton: function () { return t('paywall.botButton', '💬 Subscribe in Telegram — 75⭐') },
     orVerify: function () { return t('paywall.orVerify', 'or verify existing subscription') },
     idLabel: function () { return t('paywall.telegramIdLabel', 'Your Telegram User ID') },
     idPlaceholder: function () { return t('paywall.telegramIdPlaceholder', '123456789') },
@@ -43,11 +43,11 @@
     errorEmpty: function () { return t('paywall.errorEmpty', 'Please enter your Telegram User ID') },
     errorInvalid: function () { return t('paywall.errorInvalid', 'Invalid Telegram User ID format') },
     errorNetwork: function () { return t('paywall.errorNetwork', 'Network error. Please try again.') },
-    noSub: function () { return t('paywall.noSubscription', 'No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (1⭐ / 30 days).') }
+    noSub: function () { return t('paywall.noSubscription', 'No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (75⭐ / 30 days).') }
   }
 
   // ── Build overlay DOM ──
-  var overlay = document.createElement('div')
+  const overlay = document.createElement('div')
   overlay.id = 'bb-paywall-overlay'
   overlay.setAttribute('role', 'dialog')
   overlay.setAttribute('aria-modal', 'true')
@@ -59,7 +59,7 @@
     'padding:1rem'
   ].join(';')
 
-  var card = document.createElement('div')
+  const card = document.createElement('div')
   card.style.cssText = [
     'background:#0f172a', 'border:1px solid rgba(255,255,255,0.12)',
     'border-radius:20px', 'max-width:420px', 'width:100%',
@@ -68,17 +68,17 @@
     'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif'
   ].join(';')
 
-  var icon = document.createElement('div')
+  const icon = document.createElement('div')
   icon.textContent = '💛'
   icon.style.cssText = 'font-size:3rem;margin-bottom:0.5rem'
 
-  var heading = document.createElement('h2')
+  const heading = document.createElement('h2')
   heading.style.cssText = 'font-size:1.35rem;font-weight:600;color:#f1f5f9;margin:0 0 0.6rem;letter-spacing:-0.01em'
 
-  var desc = document.createElement('p')
+  const desc = document.createElement('p')
   desc.style.cssText = 'font-size:0.92rem;color:rgba(255,255,255,0.6);line-height:1.55;margin:0 0 1.25rem'
 
-  var botBtn = document.createElement('a')
+  const botBtn = document.createElement('a')
   botBtn.href = 'https://t.me/emdrbilateral_bot'
   botBtn.target = '_blank'
   botBtn.rel = 'noopener noreferrer'
@@ -91,19 +91,19 @@
     'margin-bottom:1.25rem'
   ].join(';')
 
-  var divider = document.createElement('div')
+  const divider = document.createElement('div')
   divider.style.cssText = 'font-size:0.78rem;color:rgba(255,255,255,0.3);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.06em'
 
-  var form = document.createElement('div')
+  const form = document.createElement('div')
   form.style.cssText = 'text-align:left'
 
-  var label = document.createElement('label')
+  const label = document.createElement('label')
   label.style.cssText = 'display:block;font-size:0.82rem;color:rgba(255,255,255,0.55);margin-bottom:0.4rem'
 
-  var row = document.createElement('div')
+  const row = document.createElement('div')
   row.style.cssText = 'display:flex;gap:0.5rem'
 
-  var input = document.createElement('input')
+  const input = document.createElement('input')
   input.type = 'text'
   input.inputMode = 'numeric'
   input.pattern = '[0-9]*'
@@ -113,7 +113,7 @@
     'color:#e2e8f0', 'font-size:1rem', 'outline:none'
   ].join(';')
 
-  var verifyBtn = document.createElement('button')
+  const verifyBtn = document.createElement('button')
   verifyBtn.type = 'button'
   verifyBtn.style.cssText = [
     'padding:0.7rem 1.1rem', 'border-radius:12px', 'border:none',
@@ -121,14 +121,14 @@
     'font-weight:500', 'font-size:0.9rem', 'cursor:pointer', 'white-space:nowrap'
   ].join(';')
 
-  var hint = document.createElement('div')
+  const hint = document.createElement('div')
   hint.style.cssText = 'font-size:0.76rem;color:rgba(255,255,255,0.35);margin-top:0.6rem;line-height:1.5'
   hint.innerHTML = STRINGS.hint() // contains markup
 
-  var errBox = document.createElement('div')
+  const errBox = document.createElement('div')
   errBox.style.cssText = 'display:none;color:#f87171;font-size:0.85rem;margin-top:0.7rem'
 
-  var okBox = document.createElement('div')
+  const okBox = document.createElement('div')
   okBox.style.cssText = 'display:none;color:#34d399;font-size:0.9rem;margin-top:0.7rem'
 
   row.appendChild(input)
@@ -182,12 +182,12 @@
   }
 
   async function handleVerify() {
-    var raw = input.value.trim()
+    const raw = input.value.trim()
     if (!raw) {
       showError(STRINGS.errorEmpty())
       return
     }
-    var userId = parseInt(raw, 10)
+    const userId = parseInt(raw, 10)
     if (!userId || userId <= 0) {
       showError(STRINGS.errorInvalid())
       return
@@ -199,13 +199,13 @@
     okBox.style.display = 'none'
 
     try {
-      var fetchFn = globalThis.csrfFetch || fetch
-      var resp = await fetchFn('/api/link-access/' + encodeURIComponent(SESSION_ID) + '/unlock', {
+      const fetchFn = globalThis.csrfFetch || fetch
+      const resp = await fetchFn('/api/link-access/' + encodeURIComponent(SESSION_ID) + '/unlock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telegramUserId: userId })
       })
-      var data = await resp.json().catch(function () { return {} })
+      const data = await resp.json().catch(function () { return {} })
 
       if (resp.ok) {
         showSuccess()

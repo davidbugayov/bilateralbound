@@ -23,7 +23,7 @@ function registerStaticRoutes(
 
   const BROWSER_COOKIE = 'bb_lk'
   const COOKIE_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000 // 1 year
-  const FREE_WINDOW_MS = 10 * 1000 // TEMP TEST: 10 seconds free access from first visit (was 2h)
+  const FREE_WINDOW_MS = 2 * 60 * 60 * 1000 // 2 hours free access from first visit
 
   /**
    * Generates a random browser ID for the cookie.

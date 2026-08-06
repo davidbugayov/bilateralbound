@@ -652,8 +652,8 @@
   "paywall": {
     "title": "Suscripción requerida — BilateralBound",
     "heading": "El acceso gratuito ha expirado",
-    "description": "El acceso gratuito ha finalizado. Suscríbete por 1⭐ / 30 días para acceso ilimitado.",
-    "botButton": "💬 Suscribirse en Telegram — 1⭐",
+    "description": "El acceso gratuito ha finalizado. Suscríbete por 75⭐ / 30 días para acceso ilimitado.",
+    "botButton": "💬 Suscribirse en Telegram — 75⭐",
     "orVerify": "o verificar suscripción existente",
     "telegramIdLabel": "Tu ID de usuario de Telegram",
     "telegramIdPlaceholder": "123456789",
@@ -662,7 +662,7 @@
     "successUnlocked": "¡Acceso desbloqueado! Redirigiendo…",
     "errorEmpty": "Por favor, introduce tu ID de usuario de Telegram",
     "errorInvalid": "Formato de ID de Telegram no válido",
-    "noSubscription": "No hay suscripción activa para este ID de Telegram. Suscríbete a través de @emdrbilateral_bot (1⭐ / 30 días).",
+    "noSubscription": "No hay suscripción activa para este ID de Telegram. Suscríbete a través de @emdrbilateral_bot (75⭐ / 30 días).",
     "errorNetwork": "Error de red. Por favor, inténtalo de nuevo.",
     "backToHome": "← Volver a la página principal"
   }

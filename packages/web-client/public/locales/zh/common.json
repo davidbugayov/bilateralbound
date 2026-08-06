@@ -465,8 +465,8 @@
   "paywall": {
     "title": "需要订阅 — BilateralBound",
     "heading": "免费访问已过期",
-    "description": "免费访问已结束。订阅1⭐ / 30天获取无限访问。",
-    "botButton": "💬 在Telegram订阅 — 1⭐",
+    "description": "免费访问已结束。订阅75⭐ / 30天获取无限访问。",
+    "botButton": "💬 在Telegram订阅 — 75⭐",
     "orVerify": "或验证现有订阅",
     "telegramIdLabel": "您的Telegram用户ID",
     "telegramIdPlaceholder": "123456789",
@@ -475,7 +475,7 @@
     "successUnlocked": "访问已解锁！重定向中…",
     "errorEmpty": "请输入您的Telegram用户ID",
     "errorInvalid": "无效的Telegram用户ID格式",
-    "noSubscription": "此Telegram ID没有有效订阅。请通过@emdrbilateral_bot订阅（1⭐ / 30天）。",
+    "noSubscription": "此Telegram ID没有有效订阅。请通过@emdrbilateral_bot订阅（75⭐ / 30天）。",
     "errorNetwork": "网络错误。请重试。",
     "backToHome": "← 返回主页"
   }
