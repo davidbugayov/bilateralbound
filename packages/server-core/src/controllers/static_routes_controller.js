@@ -96,6 +96,23 @@ function registerStaticRoutes(
     return false
   }
 
+  /**
+   * Injects the paywall overlay script into the content HTML.
+   * The ball/content stays visible; a modal dialog is shown on top.
+   * @param {string} html - Content page HTML
+   * @returns {string} HTML with overlay script injected before </body>
+   */
+  function injectPaywallOverlay(html) {
+    const overlayScript =
+      '<script src="/js/paywall-overlay.js?v=' +
+      (process.env.npm_package_version || '1') +
+      '" defer></script>'
+    if (html.includes('</body>')) {
+      return html.replace('</body>', overlayScript + '\n</body>')
+    }
+    return html + overlayScript
+  }
+
   // Root route - serve cached index.html with localized meta tags (from expressApp L456-463)
   app.get('/', (req, res) => {
     const html = localizationService.getLocalizedHtml('index', req, null)
@@ -181,38 +198,35 @@ function registerStaticRoutes(
   })
 
   // Viewer HTML (from expressApp L941-949)
-  // Gated: first visit free, repeat visits require subscription
+  // Gated: first visit free, repeat visits require subscription.
+  // On deny: serve the real content page (ball stays visible) with a
+  // paywall overlay script injected before </body>.
   app.get('/s/:sessionId', (req, res) => {
     const { sessionId } = req.params
-    if (!decideAccess(req, res, sessionId)) {
-      setNoCacheHeaders(res)
-      const html = localizationService.getStaticLocalizedHtml('paywall.html', req)
-      res.setHeader('Content-Type', 'text/html; charset=utf-8')
-      return res.send(html)
-    }
     const session = sessionService.getSession(sessionId)
-    const html = localizationService.getLocalizedHtml('viewer', req, session)
+    let html = localizationService.getLocalizedHtml('viewer', req, session)
+    if (!decideAccess(req, res, sessionId)) {
+      html = injectPaywallOverlay(html)
+    }
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
   })
 
   // Controller HTML (from expressApp L950-959)
-  // Gated: first visit free, repeat visits require subscription
+  // Gated: first visit free, repeat visits require subscription.
+  // On deny: serve the real content page with a paywall overlay injected.
   app.get('/c/:sessionId', (req, res) => {
     const { sessionId } = req.params
-    if (!decideAccess(req, res, sessionId)) {
-      setNoCacheHeaders(res)
-      const html = localizationService.getStaticLocalizedHtml('paywall.html', req)
-      res.setHeader('Content-Type', 'text/html; charset=utf-8')
-      return res.send(html)
-    }
     const session = sessionService.getSession(sessionId)
-    const html = localizationService.getLocalizedHtml(
+    let html = localizationService.getLocalizedHtml(
       'controller',
       req,
       session
     )
+    if (!decideAccess(req, res, sessionId)) {
+      html = injectPaywallOverlay(html)
+    }
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)

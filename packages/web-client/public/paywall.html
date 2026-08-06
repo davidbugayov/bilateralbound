@@ -15,9 +15,10 @@
   <link rel="stylesheet" href="/css/light-theme.css">
   <style>
     /* Anti-flash cloak: hides body until i18n is ready */
+    /* NOTE: i18n.js adds 'i18n-ready' to <html> (documentElement), not <body> */
     #i18n-cloak { display: none; }
-    body:not(.i18n-ready) #i18n-cloak { display: block; }
-    body:not(.i18n-ready) > *:not(#i18n-cloak) { visibility: hidden; }
+    html:not(.i18n-ready) #i18n-cloak { display: block; }
+    html:not(.i18n-ready) > body > *:not(#i18n-cloak) { visibility: hidden; }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {

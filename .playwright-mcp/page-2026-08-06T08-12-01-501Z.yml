@@ -1,0 +1,4 @@
+- main [ref=e2]:
+  - generic:
+    - generic [ref=e4]: ⏳ Connection established, waiting for controller...
+    - button "⛶ Fullscreen" [ref=e6] [cursor=pointer]
