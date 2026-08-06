@@ -715,6 +715,76 @@ const TRANSLATIONS = {
     pt: '📋 <b>Seu Telegram User ID</b>\n\n<code>{userId}</code>\n\nUse este ID na seção «Manage Subscription» do site para vincular sua assinatura.',
     ja: '📋 <b>あなたのTelegramユーザーID</b>\n\n<code>{userId}</code>\n\nサイトの「Manage Subscription」セクションでこのIDを使用してサブスクリプションをリンクしてください。',
     zh: '📋 <b>您的Telegram用户ID</b>\n\n<code>{userId}</code>\n\n在网站的「Manage Subscription」部分使用此ID来链接您的订阅。'
+  },
+
+  // ── /breathe ──
+  breathe_msg: {
+    en: '🌬 <b>Coherent Breathing</b>\n\n' +
+        'Inhale 5s / Exhale 5s — the optimal rhythm for calming the nervous system.\n\n' +
+        '🦋 Cross your arms over your chest (Butterfly Hug) and breathe in rhythm with the animation.',
+    ru: '🌬 <b>Когерентное дыхание</b>\n\n' +
+        'Вдох 5с / Выдох 5с — оптимальный ритм для успокоения нервной системы.\n\n' +
+        '🦋 Скрести руки на груди (Butterfly Hug) и дыши в ритм анимации.',
+    es: '🌬 <b>Respiración coherente</b>\n\n' +
+        'Inhala 5s / Exhala 5s — el ritmo óptimo para calmar el sistema nervioso.\n\n' +
+        '🦋 Cruza los brazos sobre el pecho (Butterfly Hug) y respira al ritmo de la animación.',
+    fr: '🌬 <b>Respiration cohérente</b>\n\n' +
+        'Inspirez 5s / Expirez 5s — le rythme optimal pour calmer le système nerveux.\n\n' +
+        '🦋 Croisez les bras sur la poitrine (Butterfly Hug) et respirez au rythme de l\'animation.',
+    de: '🌬 <b>Kohärentes Atmen</b>\n\n' +
+        'Einatmen 5s / Ausatmen 5s — der optimale Rhythmus zur Beruhigung des Nervensystems.\n\n' +
+        '🦋 Arme auf der Brust kreuzen (Butterfly Hug) und im Rhythmus der Animation atmen.',
+    pt: '🌬 <b>Respiração coerente</b>\n\n' +
+        'Inspire 5s / Expire 5s — o ritmo ideal para acalmar o sistema nervoso.\n\n' +
+        '🦋 Cruze os braços sobre o peito (Butterfly Hug) e respire no ritmo da animação.',
+    ja: '🌬 <b>コヒーレント呼吸</b>\n\n' +
+        '吸う5秒 / 吐く5秒 — 神経系を落ち着かせる最適なリズムです。\n\n' +
+        '🦋 胸の前で腕を組んで（バタフライハグ）、アニメーションのリズムに合わせて呼吸します。',
+    zh: '🌬 <b>连贯呼吸</b>\n\n' +
+        '吸气5秒 / 呼气5秒 — 平静神经系统的理想节奏。\n\n' +
+        '🦋 双臂交叉在胸前（蝴蝶拥抱），跟随动画节奏呼吸。'
+  },
+  breathe_button: {
+    en: '🌬 Open breathing session',
+    ru: '🌬 Открыть сессию дыхания',
+    es: '🌬 Abrir sesión de respiración',
+    fr: '🌬 Ouvrir la session de respiration',
+    de: '🌬 Atem-Sitzung öffnen',
+    pt: '🌬 Abrir sessão de respiração',
+    ja: '🌬 呼吸セッションを開く',
+    zh: '🌬 打开呼吸会话'
+  },
+
+  // ── /lang ──
+  cmd_lang: {
+    en: 'Choose bot language',
+    ru: 'Выбрать язык бота',
+    es: 'Elegir idioma del bot',
+    fr: 'Choisir la langue du bot',
+    de: 'Bot-Sprache wählen',
+    pt: 'Escolher o idioma do bot',
+    ja: 'ボットの言語を選択',
+    zh: '选择机器人语言'
+  },
+  lang_prompt: {
+    en: '🌐 <b>Choose your language / Выберите язык:</b>',
+    ru: '🌐 <b>Выберите язык / Choose your language:</b>',
+    es: '🌐 <b>Elige tu idioma / Choose your language:</b>',
+    fr: '🌐 <b>Choisissez votre langue / Choose your language:</b>',
+    de: '🌐 <b>Wähle deine Sprache / Choose your language:</b>',
+    pt: '🌐 <b>Escolha seu idioma / Choose your language:</b>',
+    ja: '🌐 <b>言語を選択 / Choose your language:</b>',
+    zh: '🌐 <b>选择语言 / Choose your language:</b>'
+  },
+  lang_changed: {
+    en: '✅ Language set to <b>{langName}</b>',
+    ru: '✅ Язык установлен: <b>{langName}</b>',
+    es: '✅ Idioma establecido: <b>{langName}</b>',
+    fr: '✅ Langue définie : <b>{langName}</b>',
+    de: '✅ Sprache festgelegt: <b>{langName}</b>',
+    pt: '✅ Idioma definido: <b>{langName}</b>',
+    ja: '✅ 言語を設定しました：<b>{langName}</b>',
+    zh: '✅ 语言已设置：<b>{langName}</b>'
   }
 }
 
@@ -796,7 +866,8 @@ function getCommandsForLang(lang) {
     { command: 'renew', description: t('cmd_renew', lang) },
     { command: 'autorenew', description: t('cmd_autorenew', lang) },
     { command: 'myid', description: t('cmd_myid', lang) },
-    { command: 'breathe', description: t('cmd_breathe', lang) }
+    { command: 'breathe', description: t('cmd_breathe', lang) },
+    { command: 'lang', description: t('cmd_lang', lang) }
   ]
 }
 

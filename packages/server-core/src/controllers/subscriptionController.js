@@ -509,21 +509,47 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
         return
       }
 
+                  // ---- /lang — choose bot language (inline keyboard) ----
+      if (msgText === '/lang' || msgText === '/language') {
+        const langOptions = [
+          ['ru', '🇷🇺 Русский'],
+          ['en', '🇬🇧 English'],
+          ['de', '🇩🇪 Deutsch'],
+          ['es', '🇪🇸 Español'],
+          ['fr', '🇫🇷 Français'],
+          ['pt', '🇵🇹 Português'],
+          ['ja', '🇯🇵 日本語'],
+          ['zh', '🇨🇳 中文']
+        ]
+        // Rows of 2 for a compact keyboard
+        const keyboard = []
+        for (let i = 0; i < langOptions.length; i += 2) {
+          keyboard.push(
+            langOptions.slice(i, i + 2).map(function (opt) {
+              return { text: opt[1], callback_data: 'lang_' + opt[0] }
+            })
+          )
+        }
+        telegramBot?.sendMessage(chatId, t('lang_prompt', lang), {
+          parse_mode: 'HTML',
+          reply_markup: { inline_keyboard: keyboard }
+        })
+        return
+      }
+
                   // ---- /breathe — launch coherent breathing Mini App ----
       if (msgText === '/breathe') {
         const bUrl = baseUrl || 'https://emdrbilateral.online'
         const webAppUrl = bUrl + '/breathing'
 
         telegramBot?.sendMessage(chatId,
-          '🌬 <b>Когерентное дыхание</b>\n\n' +
-          'Вдох 5с / Выдох 5с — оптимальный ритм для успокоения нервной системы.\n\n' +
-          '🦋 Скрести руки на груди (Butterfly Hug) и дыши в ритм анимации.\n\n' +
+          t('breathe_msg', lang) + '\n\n' +
           '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
           {
             reply_markup: {
               inline_keyboard: [[
                 {
-                  text: '🌬 Открыть сессию дыхания',
+                  text: t('breathe_button', lang),
                   web_app: { url: webAppUrl }
                 }
               ]]
@@ -570,6 +596,29 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
             telegramBot?.sendMessage(chatId, t('invoice_failed', cbLang))
           }
         })
+      }
+
+      // ---- lang_XX — user picked a language from the /lang keyboard ----
+      if (callbackData && callbackData.startsWith('lang_')) {
+        const chosenLang = callbackData.slice(5)
+        const supported = require('../services/bot-translations').SUPPORTED_LANGUAGES
+        if (supported.includes(chosenLang)) {
+          subscriptionService.setUserLanguage(telegramUserId, chosenLang)
+          const langName = {
+            ru: 'Русский',
+            en: 'English',
+            de: 'Deutsch',
+            es: 'Español',
+            fr: 'Français',
+            pt: 'Português',
+            ja: '日本語',
+            zh: '中文'
+          }[chosenLang]
+          telegramBot?.sendMessage(chatId, t('lang_changed', chosenLang, { langName }), {
+            parse_mode: 'HTML'
+          })
+          logger.info({ telegramUserId, chosenLang }, 'Bot language changed via /lang')
+        }
       }
       return
     }
