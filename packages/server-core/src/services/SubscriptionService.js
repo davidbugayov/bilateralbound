@@ -107,7 +107,7 @@ class SubscriptionService {
     this._tokenIndex.set(token, telegramUserId)
     this.totalStars += starsAmount || 0
 
-    this._scheduleSave()
+    this._saveImmediately()
     this.logger.info(
       { telegramUserId, token, expiresAt: new Date(expiresAt).toISOString(), stars: starsAmount },
       'Subscription activated'
@@ -186,7 +186,7 @@ class SubscriptionService {
     }
 
     this._customIdIndex.set(customId, telegramUserId)
-    this._scheduleSave()
+    this._saveImmediately()
     this.logger.info({ customId, telegramUserId }, 'Custom ID linked to user')
     return { success: true }
   }
@@ -283,7 +283,7 @@ class SubscriptionService {
   setUserLanguage(telegramUserId, lang) {
     if (!telegramUserId || !lang) return
     this._userLanguages.set(telegramUserId, lang)
-    this._scheduleSave()
+    this._saveImmediately()
     this.logger.info({ telegramUserId, lang }, 'User language stored')
   }
 
@@ -318,7 +318,7 @@ class SubscriptionService {
     const base = sub.expiresAt > now ? sub.expiresAt : now
     sub.expiresAt = base + this.durationMs
 
-    this._scheduleSave()
+    this._saveImmediately()
     this.logger.info(
       { telegramUserId, expiresAt: new Date(sub.expiresAt).toISOString() },
       'Subscription renewed'
@@ -344,7 +344,7 @@ class SubscriptionService {
     }
 
     sub.autoRenew = !!enabled
-    this._scheduleSave()
+    this._saveImmediately()
 
     this.logger.info(
       { telegramUserId, autoRenew: sub.autoRenew },
@@ -495,6 +495,15 @@ class SubscriptionService {
       this._saveTimer = null
       this._saveToDisk()
     }, this._saveDebounceMs)
+  }
+
+  /** Cancel any pending debounced save and persist immediately. */
+  _saveImmediately() {
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer)
+      this._saveTimer = null
+    }
+    this._saveToDisk()
   }
 
   /** Persist subscriptions to JSON file (atomic: tmp + rename) */

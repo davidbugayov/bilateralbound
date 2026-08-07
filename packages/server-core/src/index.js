@@ -92,7 +92,12 @@ const telegramBot = config.subscription.STARS_BOT_TOKEN
   : null
 if (telegramBot) {
   telegramBot.setWebhook()
+  // Set default (English) commands for all users, then language-specific overrides
   telegramBot.setMyCommands()
+  const { SUPPORTED_LANGUAGES } = require('./services/bot-translations')
+  SUPPORTED_LANGUAGES.filter(l => l !== 'en').forEach(lang => {
+    telegramBot.setMyCommands(lang)
+  })
 }
 const sessionService = new SessionService(
   sessionRepository,
