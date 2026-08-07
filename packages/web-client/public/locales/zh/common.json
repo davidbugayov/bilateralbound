@@ -168,7 +168,11 @@
     "settingsLabel": "设置",
     "settingsTabSound": "声音",
     "settingsTabShortcuts": "快捷键",
-    "settingsTabLanguage": "语言"
+    "settingsTabLanguage": "语言",
+    "meta": {
+      "controllerTitle": "会话控制 | BilateralBound",
+      "controllerDescription": "用于管理双侧刺激的EMDR治疗控制器。夫妻治疗会话中EMDR治疗师的工具"
+    }
   },
   "meta": {
     "controllerTitle": "BilateralBound - EMDR疗法控制器",
@@ -322,7 +326,7 @@
   },
   "offer": {
     "metaTitle": "服务条款（公开要约） | BilateralBound",
-    "metaDescription": "BilateralBound — EMDR治疗平台的服务条款和公开要约协议",
+    "metaDescription": "BilateralBound — EMDR治疗平台的服务条款和公开要约协议。了解免费和高级服务、责任和争议解决。",
     "title": "服务条款（公开要约）",
     "lastUpdated": "最后更新：2026年5月8日",
     "backLink": "← 返回主页",
@@ -412,8 +416,8 @@
     "footerHome": "返回主页"
   },
   "about": {
-    "metaTitle": "About EMDR Therapy | BilateralBound",
-    "metaDescription": "Learn about EMDR therapy and how BilateralBound works for bilateral stimulation — in 中文.",
+    "metaTitle": "关于EMDR疗法 | BilateralBound",
+    "metaDescription": "了解EMDR疗法，BilateralBound如何进行双侧刺激，以及治疗师如何将其用于PTSD、焦虑和创伤治疗。",
     "backLink": "← Back to home",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",

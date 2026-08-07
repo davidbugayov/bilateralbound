@@ -355,7 +355,11 @@
     "settingsLabel": "Ajustes",
     "settingsTabSound": "Sonido",
     "settingsTabShortcuts": "Atajos",
-    "settingsTabLanguage": "Idioma"
+    "settingsTabLanguage": "Idioma",
+    "meta": {
+      "controllerTitle": "Control de Sesión | BilateralBound",
+      "controllerDescription": "Controlador de terapia EMDR para gestionar la estimulación bilateral. Herramienta para terapeutas EMDR durante sesiones de terapia de pareja"
+    }
   },
   "meta": {
     "controllerTitle": "BilateralBound - Controlador de terapia EMDR",
@@ -509,7 +513,7 @@
   },
   "offer": {
     "metaTitle": "Términos de Servicio (Oferta Pública) | BilateralBound",
-    "metaDescription": "Términos de Servicio y oferta pública para BilateralBound — plataforma de terapia EMDR",
+    "metaDescription": "Términos de Servicio y oferta pública para BilateralBound — plataforma de terapia EMDR. Lea sobre servicios gratuitos y premium, responsabilidad y resolución de disputas.",
     "title": "Términos de Servicio (Oferta Pública)",
     "lastUpdated": "Última actualización: 8 de mayo de 2026",
     "backLink": "← Volver al inicio",
@@ -599,8 +603,8 @@
     "footerHome": "Volver al inicio"
   },
   "about": {
-    "metaTitle": "About EMDR Therapy | BilateralBound",
-    "metaDescription": "Learn about EMDR therapy and how BilateralBound works for bilateral stimulation — in Español.",
+    "metaTitle": "Acerca de la Terapia EMDR | BilateralBound",
+    "metaDescription": "Aprenda sobre la terapia EMDR, cómo funciona BilateralBound para la estimulación bilateral y cómo los terapeutas la utilizan para el tratamiento del TEPT, la ansiedad y el trauma.",
     "backLink": "← Back to home",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",

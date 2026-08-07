@@ -188,3 +188,4 @@ tasks/
 *.task
 .todo/
 .task/
+.playwright-mcp/

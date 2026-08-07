@@ -182,7 +182,11 @@
     "settingsLabel": "Paramètres",
     "settingsTabSound": "Son",
     "settingsTabShortcuts": "Raccourcis",
-    "settingsTabLanguage": "Langue"
+    "settingsTabLanguage": "Langue",
+    "meta": {
+      "controllerTitle": "Contrôle de Session | BilateralBound",
+      "controllerDescription": "Contrôleur de thérapie EMDR pour gérer la stimulation bilatérale. Outil pour les thérapeutes EMDR lors des séances de thérapie de couple"
+    }
   },
   "meta": {
     "controllerTitle": "BilateralBound - Contrôleur de thérapie EMDR",
@@ -331,7 +335,7 @@
   },
   "offer": {
     "metaTitle": "Conditions d'utilisation (Offre publique) | BilateralBound",
-    "metaDescription": "Conditions d'utilisation et offre publique pour BilateralBound — plateforme de thérapie EMDR",
+    "metaDescription": "Conditions d'utilisation et offre publique pour BilateralBound — plateforme de thérapie EMDR. Découvrez les services gratuits et premium, la responsabilité et la résolution des litiges.",
     "title": "Conditions d'utilisation (Offre publique)",
     "lastUpdated": "Dernière mise à jour : 8 mai 2026",
     "backLink": "← Retour à l'accueil",
@@ -426,8 +430,8 @@
     "decline": "Refuser"
   },
   "about": {
-    "metaTitle": "About EMDR Therapy | BilateralBound",
-    "metaDescription": "Learn about EMDR therapy and how BilateralBound works for bilateral stimulation — in Français.",
+    "metaTitle": "À propos de la Thérapie EMDR | BilateralBound",
+    "metaDescription": "Découvrez la thérapie EMDR, comment BilateralBound fonctionne pour la stimulation bilatérale et comment les thérapeutes l'utilisent pour le traitement du TSPT, de l'anxiété et des traumatismes.",
     "backLink": "← Back to home",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",
