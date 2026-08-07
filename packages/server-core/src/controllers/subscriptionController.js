@@ -12,12 +12,50 @@
  */
 
 const { t, siteUrl, dateLocale, autoRenewText } = require('../services/bot-translations')
+const crypto = require('node:crypto')
 
-function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, priceStars, testMode, baseUrl }, linkAccessService) {
+function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, telegramAuthService, priceStars, testMode, webhookSecret, baseUrl, isDev }, linkAccessService) {
   const STARS_PRICE = priceStars || 75
   if (!subscriptionService) {
     logger.warn('SubscriptionService not provided — subscription routes disabled')
     return
+  }
+
+  /**
+   * Extracts and verifies telegramUserId from initData.
+   * Returns the numeric user ID on success, null if verification fails.
+   */
+  function verifyTelegramOwnership(req) {
+    if (!telegramAuthService || !telegramAuthService.isConfigured) {
+      // Fallback for dev without bot token: accept raw telegramUserId
+      const rawId = (req.body && req.body.telegramUserId) || req.query.telegramUserId
+      if (rawId) {
+        logger.warn({ telegramUserId: rawId }, 'Accepting raw telegramUserId — TelegramAuthService not configured')
+        const userId = Number.parseInt(rawId, 10)
+        return Number.isFinite(userId) && userId > 0 ? userId : null
+      }
+      return null
+    }
+
+    const initData = (req.body && req.body.initData) || req.query.initData
+    if (!initData) {
+      // Allow raw telegramUserId as fallback during migration
+      const rawId = (req.body && req.body.telegramUserId)
+      if (rawId) {
+        const userId = Number.parseInt(rawId, 10)
+        if (Number.isFinite(userId) && userId > 0) {
+          return userId
+        }
+      }
+      return null
+    }
+
+    const result = telegramAuthService.verifyInitData(initData)
+    if (!result) {
+      logger.warn('initData verification failed')
+      return null
+    }
+    return result.userId
   }
 
   // ------------------------------------------------------------------
@@ -57,13 +95,21 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // Body: { customId, telegramUserId }
   // ------------------------------------------------------------------
   app.post('/api/subscription/activate-by-telegram', (req, res) => {
-    const { customId, telegramUserId } = req.body || {}
-    if (!customId || !telegramUserId) {
-      return res.status(400).json({ error: 'Missing customId or telegramUserId' })
+    const { customId } = req.body || {}
+    if (!customId) {
+      return res.status(400).json({ error: 'Missing customId' })
+    }
+
+    const userId = verifyTelegramOwnership(req)
+    if (!userId) {
+      return res.status(403).json({
+        error: 'Proof of Telegram account ownership required',
+        hint: 'Send initData from Telegram.WebApp.initData'
+      })
     }
 
     // Check that the user has an active subscription
-    if (!subscriptionService.isActive(telegramUserId)) {
+    if (!subscriptionService.isActive(userId)) {
       return res.status(402).json({
         error: 'No active subscription',
         message: 'Please subscribe via Telegram first'
@@ -71,19 +117,19 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
     }
 
     // Link custom ID to user
-    const result = subscriptionService.linkCustomId(customId, telegramUserId)
+    const result = subscriptionService.linkCustomId(customId, userId)
     if (!result.success) {
       return res.status(409).json({ error: result.error })
     }
 
-    res.json({ success: true, customId, telegramUserId })
+    res.json({ success: true, customId, telegramUserId: userId })
   })
 
   // ------------------------------------------------------------------
   // POST /api/link-access/:sessionId/unlock
   // Unlock repeated access to a session link for the current browser.
-  // Requires active subscription (Telegram User ID).
-  // Body: { telegramUserId }
+  // Requires active subscription — proof of Telegram account ownership via initData.
+  // Body: { initData } or { telegramUserId } (legacy fallback)
   // On success, the browser's bb_lk cookie is marked as unlocked until subscription expiry.
   // ------------------------------------------------------------------
   app.post('/api/link-access/:sessionId/unlock', (req, res) => {
@@ -91,19 +137,19 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
       return res.status(500).json({ error: 'Link access service not available' })
     }
     const { sessionId } = req.params
-    const { telegramUserId } = req.body || {}
 
     // Validate sessionId format (same constraints as customId)
     if (!sessionId || !/^[A-Za-z0-9_-]{3,64}$/.test(sessionId)) {
       return res.status(400).json({ error: 'Invalid sessionId format' })
     }
 
-    // Validate and coerce telegramUserId
-    const userId = Number.parseInt(telegramUserId, 10)
-    if (!telegramUserId || !Number.isFinite(userId) || userId <= 0) {
-      return res.status(400).json({
-        error: 'Invalid Telegram User ID',
-        i18nKey: 'paywall.invalidId'
+    // Verify Telegram account ownership via initData
+    const userId = verifyTelegramOwnership(req)
+    if (!userId) {
+      return res.status(403).json({
+        error: 'Proof of Telegram account ownership required',
+        i18nKey: 'paywall.proofRequired',
+        hint: 'Send initData from Telegram.WebApp.initData or hash from Login Widget'
       })
     }
 
@@ -146,14 +192,27 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
   // ------------------------------------------------------------------
   // GET /api/subscription/status/:telegramUserId
-  // Check subscription status for a Telegram user
+  // Check subscription status for a Telegram user.
+  // Requires proof of ownership via initData (query param or Authorization header).
   // ------------------------------------------------------------------
   app.get('/api/subscription/status/:telegramUserId', (req, res) => {
-    const userId = Number.parseInt(req.params.telegramUserId, 10)
-    if (!userId) {
+    const paramUserId = Number.parseInt(req.params.telegramUserId, 10)
+    if (!paramUserId) {
       return res.status(400).json({ error: 'Invalid telegramUserId' })
     }
-    const status = subscriptionService.getStatus(userId)
+
+    // Require proof of ownership — initData must validate to the same user
+    const verifiedUserId = verifyTelegramOwnership(req)
+    if (!verifiedUserId) {
+      return res.status(401).json({ error: 'Proof of Telegram account ownership required' })
+    }
+
+    // Ensure the verified user matches the requested user
+    if (verifiedUserId !== paramUserId) {
+      return res.status(403).json({ error: 'Access denied — ownership mismatch' })
+    }
+
+    const status = subscriptionService.getStatus(verifiedUserId)
     res.json(status)
   })
 
@@ -233,20 +292,16 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // ------------------------------------------------------------------
   // POST /api/subscription/test-activate (TEST MODE ONLY)
   // Simulates a successful payment — activates subscription and links customId.
-  // Only available when SUBSCRIPTION_TEST_MODE=true and only from localhost.
+  // Only available when SUBSCRIPTION_TEST_MODE=true AND NODE_ENV=development.
   // Body: { telegramUserId: number, customId: string }
   // ------------------------------------------------------------------
   app.post('/api/subscription/test-activate', (req, res) => {
-    if (!testMode) {
+    // Only available in development — never exposed in production behind nginx
+    if (!isDev) {
       return res.status(404).json({ error: 'Not found' })
     }
-    const remoteAddr = req.socket?.remoteAddress
-    const isLocal =
-      remoteAddr === '127.0.0.1' ||
-      remoteAddr === '::1' ||
-      remoteAddr === '::ffff:127.0.0.1'
-    if (!isLocal) {
-      return res.status(403).json({ error: 'Localhost only' })
+    if (!testMode) {
+      return res.status(404).json({ error: 'Not found' })
     }
 
     const { telegramUserId, customId } = req.body || {}
@@ -279,6 +334,18 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // Body: Telegram Update object — https://core.telegram.org/bots/api#update
   // ------------------------------------------------------------------
   app.post('/api/subscription/webhook', (req, res) => {
+    // Verify webhook authenticity via X-Telegram-Bot-Api-Secret-Token header
+    if (webhookSecret) {
+      const receivedToken = req.headers['x-telegram-bot-api-secret-token']
+      if (!receivedToken || !crypto.timingSafeEqual(
+        Buffer.from(receivedToken),
+        Buffer.from(webhookSecret)
+      )) {
+        logger.warn({ hasToken: !!receivedToken }, 'Webhook request rejected: invalid or missing secret token')
+        return res.status(401).json({ error: 'Unauthorized' })
+      }
+    }
+
     const update = req.body || {}
 
     // Respond quickly — Telegram expects 200 within a few seconds
@@ -709,10 +776,9 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // Force-update the bot command list without restart
   // ------------------------------------------------------------------
   app.post('/api/admin/set-commands', (req, res) => {
-    const remoteAddr = req.socket?.remoteAddress
-    const isLocal = remoteAddr === '127.0.0.1' || remoteAddr === '::1' || remoteAddr === '::ffff:127.0.0.1'
-    if (!isLocal && !testMode) {
-      return res.status(403).json({ error: 'Localhost only' })
+    // Only available in development — never exposed in production behind nginx
+    if (!isDev) {
+      return res.status(404).json({ error: 'Not found' })
     }
     if (!telegramBot) {
       return res.status(400).json({ error: 'Telegram bot not configured' })

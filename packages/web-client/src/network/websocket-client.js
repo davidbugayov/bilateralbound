@@ -69,8 +69,15 @@ class WebSocketClient {
     const protocol = this.config.isSecure ? 'wss:' : 'ws:'
     const host = globalThis.location.host
     const url = new URL(`${protocol}//${host}`)
-    url.searchParams.set('sessionId', this.sessionId)
-    url.searchParams.set('role', this.role)
+    // Use HMAC-signed WS token for authentication (set by server in HTML)
+    const token = globalThis.__WS_TOKEN__
+    if (token) {
+      url.searchParams.set('token', token)
+    } else {
+      // Fallback for legacy / dev: pass sessionId and role directly
+      url.searchParams.set('sessionId', this.sessionId)
+      url.searchParams.set('role', this.role)
+    }
     return url.toString()
   }
   /**

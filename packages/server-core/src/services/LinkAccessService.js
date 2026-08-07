@@ -34,6 +34,10 @@ class LinkAccessService {
     }
     this._filePath = path.join(this._dataDir, 'link-access.json')
 
+    // Debounce: coalesce multiple saves within 5s into one write
+    this._saveTimer = null
+    this._saveDebounceMs = 5000
+
     this._ensureDataDir()
     this._loadFromDisk()
   }
@@ -76,7 +80,7 @@ class LinkAccessService {
       this._entries.set(browserId, perBrowser)
     }
     perBrowser.set(sessionId, { firstSeenAt: Date.now(), unlockedUntil: null })
-    this._saveToDisk()
+    this._scheduleSave()
   }
 
   /**
@@ -96,7 +100,7 @@ class LinkAccessService {
       firstSeenAt: existing ? existing.firstSeenAt : Date.now(),
       unlockedUntil: untilTs
     })
-    this._saveToDisk()
+    this._scheduleSave()
     this.logger.info({ browserId, sessionId, unlockedUntil: new Date(untilTs).toISOString() }, 'Link access unlocked')
   }
 
@@ -173,6 +177,14 @@ class LinkAccessService {
     }
   }
 
+  _scheduleSave() {
+    if (this._saveTimer) clearTimeout(this._saveTimer)
+    this._saveTimer = setTimeout(() => {
+      this._saveTimer = null
+      this._saveToDisk()
+    }, this._saveDebounceMs)
+  }
+
   _saveToDisk() {
     const entries = {}
     for (const [browserId, perBrowser] of this._entries) {
@@ -186,10 +198,15 @@ class LinkAccessService {
       entries[browserId] = obj
     }
     const data = { entries }
+    const tmpPath = this._filePath + '.tmp'
     try {
-      fs.writeFileSync(this._filePath, JSON.stringify(data, null, 2), 'utf-8')
+      // Atomic write: write to temp file, then rename (filesystem-level atomic)
+      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf-8')
+      fs.renameSync(tmpPath, this._filePath)
     } catch (err) {
       this.logger.error({ err }, 'Failed to save link-access data to disk')
+      // Clean up temp file on error
+      try { fs.unlinkSync(tmpPath) } catch { /* ignore */ }
     }
   }
 }

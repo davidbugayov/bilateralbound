@@ -41,13 +41,15 @@ function csrfProtection(req, res, next) {
   }
 
   // Skip CSRF for health check, analytics, session reserve, and Telegram webhook
-  const url = req.originalUrl || req.url || req.path
+  // Use req.baseUrl + req.path — middleware is mounted at /api/, so req.path is relative
+  const fullPath = req.baseUrl + req.path
   if (
-    req.path === '/health' ||
-    req.path === '/api/analytics' ||
-    url.includes('/reserve') ||
-    url.includes('/api/subscription/webhook') ||
-    url.includes('/api/admin/')
+    fullPath === '/api/health' ||
+    fullPath === '/api/analytics' ||
+    fullPath === '/api/subscription/webhook' ||
+    fullPath === '/api/subscription/test-activate' ||
+    fullPath.includes('/reserve') ||
+    fullPath.startsWith('/api/admin/')
   ) {
     return next()
   }
@@ -128,8 +130,15 @@ function setupMiddleware(app, config, logger) {
   // Store isDev flag on app for CSRF cookie
   app.set('isDev', config.isDev)
 
+  // Trust first proxy (nginx) — req.ip will reflect X-Forwarded-For
+  app.set('trust proxy', 1)
+
   // Request ID
   app.use(requestId)
+
+  // Cookie parser MUST come before CSRF cookie middleware
+  // (setCsrfCookie reads req.cookies)
+  app.use(cookieParser())
 
   // CSRF cookie on page loads (GET requests for HTML)
   app.use(setCsrfCookie)
@@ -192,7 +201,8 @@ function setupMiddleware(app, config, logger) {
       : 'Too many requests, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
-    validate: { xForwardedForHeader: false }
+    // keyGenerator uses req.ip which, after trust proxy, reflects X-Forwarded-For
+    keyGenerator: (req) => req.ip
   })
   app.use('/api/', apiLimiter)
 
@@ -217,11 +227,8 @@ function setupMiddleware(app, config, logger) {
   // Compression
   app.use(compression({ level: 6 }))
 
-  // Cookie parser (required for CSRF double-submit)
-  app.use(cookieParser())
-
-  // JSON parser
-  app.use(express.json())
+  // JSON parser — limit body size to prevent memory exhaustion
+  app.use(express.json({ limit: '32kb' }))
 
   // Generic error handler — hides internal details in production
   app.use((err, req, res, next) => {

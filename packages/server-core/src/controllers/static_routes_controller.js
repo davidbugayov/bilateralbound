@@ -10,7 +10,8 @@ function registerStaticRoutes(
   localizationService,
   { setNoCacheHeaders, logger },
   linkAccessService,
-  subscriptionService
+  subscriptionService,
+  wsTokenService
 ) {
   const publicPath = path.join(
     __dirname,
@@ -113,6 +114,24 @@ function registerStaticRoutes(
     return html + overlayScript
   }
 
+  /**
+   * Injects a WS auth token into the HTML before </head>.
+   * The frontend reads window.__WS_TOKEN__ and sends it as ?token= query param on WS connect.
+   * @param {string} html - Content page HTML
+   * @param {string} sessionId
+   * @param {'controller'|'viewer'} role
+   * @returns {string} HTML with token script injected
+   */
+  function injectWsToken(html, sessionId, role) {
+    if (!wsTokenService) return html
+    const token = wsTokenService.generate(sessionId, role)
+    const tokenScript = `<script>window.__WS_TOKEN__ = "${token}";</script>`
+    if (html.includes('</head>')) {
+      return html.replace('</head>', tokenScript + '\n</head>')
+    }
+    return tokenScript + html
+  }
+
   // Root route - serve cached index.html with localized meta tags (from expressApp L456-463)
   app.get('/', (req, res) => {
     const html = localizationService.getLocalizedHtml('index', req, null)
@@ -141,30 +160,9 @@ function registerStaticRoutes(
     )
   }
 
-  // Catch-all for other static files (but not index.html) (from expressApp L634-653)
-  app.use((req, res, next) => {
-    if (
-      req.path === '/' ||
-      req.path === '/index.html' ||
-      req.path.startsWith('/css/') ||
-      req.path.startsWith('/js/') ||
-      req.path.startsWith('/emdr-therapy/')
-    ) {
-      return next()
-    }
-
-    express.static(publicPath, {
-      index: false,
-      etag: false,
-      lastModified: false,
-      setHeaders: setNoCacheHeaders
-    })(req, res, next)
-  })
-
-  // Test file serving (from expressApp L654)
-  app.use('/test', express.static(path.join(__dirname, '..', '..')))
-
   // Privacy page — localized meta + canonical/hreflang via LocalizationService
+  // MUST be registered BEFORE the catch-all static middleware below,
+  // otherwise express.static serves privacy.html raw (adding .html automatically).
   app.get('/privacy', (req, res) => {
     const html = localizationService.getStaticLocalizedHtml('privacy.html', req)
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -208,6 +206,7 @@ function registerStaticRoutes(
     if (!decideAccess(req, res, sessionId)) {
       html = injectPaywallOverlay(html)
     }
+    html = injectWsToken(html, sessionId, 'viewer')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
@@ -227,45 +226,31 @@ function registerStaticRoutes(
     if (!decideAccess(req, res, sessionId)) {
       html = injectPaywallOverlay(html)
     }
+    html = injectWsToken(html, sessionId, 'controller')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
   })
 
-  // Test file with path traversal guard (from expressApp L966-1005)
-  app.get('/test/:file', (req, res) => {
-    const file = req.params.file
-    if (!file || typeof file !== 'string') {
-      return res
-        .status(400)
-        .json({ error: 'Invalid file parameter', requestId: req.id })
-    }
+  // Catch-all for other static files (must be AFTER all named routes above,
+  // otherwise express.static adds .html extension and serves e.g. privacy.html raw).
+  app.use((req, res, next) => {
     if (
-      file.includes('..') ||
-      file.includes('/') ||
-      file.includes('\\') ||
-      file.includes('\0')
+      req.path === '/' ||
+      req.path === '/index.html' ||
+      req.path.startsWith('/css/') ||
+      req.path.startsWith('/js/') ||
+      req.path.startsWith('/emdr-therapy/')
     ) {
-      return res
-        .status(400)
-        .json({ error: 'Invalid file name', requestId: req.id })
-    }
-    const allowedExtensions = ['.html', '.css', '.js', '.json', '.txt', '.md']
-    const fileExt = path.extname(file).toLowerCase()
-    if (!allowedExtensions.includes(fileExt)) {
-      return res
-        .status(400)
-        .json({ error: 'File type not allowed', requestId: req.id })
-    }
-    const safePath = path.resolve(__dirname, '..', '..', 'test', file)
-    const testDir = path.resolve(__dirname, '..', '..', 'test')
-    if (!safePath.startsWith(testDir)) {
-      return res
-        .status(403)
-        .json({ error: 'Access denied', requestId: req.id })
+      return next()
     }
 
-    res.sendFile(safePath)
+    express.static(publicPath, {
+      index: false,
+      etag: false,
+      lastModified: false,
+      setHeaders: setNoCacheHeaders
+    })(req, res, next)
   })
 
   // 404 handler (from expressApp L1007-1011)

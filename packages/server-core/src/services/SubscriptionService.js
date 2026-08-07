@@ -55,6 +55,10 @@ class SubscriptionService {
     }
     this._filePath = path.join(this._dataDir, 'subscriptions.json')
 
+    // Debounce: coalesce multiple saves within 5s into one write
+    this._saveTimer = null
+    this._saveDebounceMs = 5000
+
     this._ensureDataDir()
     this._loadFromDisk()
   }
@@ -103,7 +107,7 @@ class SubscriptionService {
     this._tokenIndex.set(token, telegramUserId)
     this.totalStars += starsAmount || 0
 
-    this._saveToDisk()
+    this._saveImmediately()
     this.logger.info(
       { telegramUserId, token, expiresAt: new Date(expiresAt).toISOString(), stars: starsAmount },
       'Subscription activated'
@@ -125,7 +129,7 @@ class SubscriptionService {
       this._subscriptions.delete(telegramUserId)
       this._tokenIndex.delete(sub.token)
       this._removeCustomIdsForUser(telegramUserId)
-      this._saveToDisk()
+      this._scheduleSave()
       return false
     }
     return true
@@ -182,7 +186,7 @@ class SubscriptionService {
     }
 
     this._customIdIndex.set(customId, telegramUserId)
-    this._saveToDisk()
+    this._saveImmediately()
     this.logger.info({ customId, telegramUserId }, 'Custom ID linked to user')
     return { success: true }
   }
@@ -200,7 +204,7 @@ class SubscriptionService {
         this._subscriptions.delete(telegramUserId)
         this._tokenIndex.delete(sub.token)
         this._removeCustomIdsForUser(telegramUserId)
-        this._saveToDisk()
+        this._scheduleSave()
       }
       return {
         active: false,
@@ -279,7 +283,7 @@ class SubscriptionService {
   setUserLanguage(telegramUserId, lang) {
     if (!telegramUserId || !lang) return
     this._userLanguages.set(telegramUserId, lang)
-    this._saveToDisk()
+    this._saveImmediately()
     this.logger.info({ telegramUserId, lang }, 'User language stored')
   }
 
@@ -314,7 +318,7 @@ class SubscriptionService {
     const base = sub.expiresAt > now ? sub.expiresAt : now
     sub.expiresAt = base + this.durationMs
 
-    this._saveToDisk()
+    this._saveImmediately()
     this.logger.info(
       { telegramUserId, expiresAt: new Date(sub.expiresAt).toISOString() },
       'Subscription renewed'
@@ -340,7 +344,7 @@ class SubscriptionService {
     }
 
     sub.autoRenew = !!enabled
-    this._saveToDisk()
+    this._saveImmediately()
 
     this.logger.info(
       { telegramUserId, autoRenew: sub.autoRenew },
@@ -402,7 +406,7 @@ class SubscriptionService {
         dirty = true
       }
     }
-    if (dirty) this._saveToDisk()
+    if (dirty) this._scheduleSave()
   }
 
   /** Remove subscription by token */
@@ -485,7 +489,24 @@ class SubscriptionService {
     }
   }
 
-  /** Persist subscriptions to JSON file */
+  _scheduleSave() {
+    if (this._saveTimer) clearTimeout(this._saveTimer)
+    this._saveTimer = setTimeout(() => {
+      this._saveTimer = null
+      this._saveToDisk()
+    }, this._saveDebounceMs)
+  }
+
+  /** Cancel any pending debounced save and persist immediately. */
+  _saveImmediately() {
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer)
+      this._saveTimer = null
+    }
+    this._saveToDisk()
+  }
+
+  /** Persist subscriptions to JSON file (atomic: tmp + rename) */
   _saveToDisk() {
     // Serialize userLanguages Map to plain object
     const userLanguages = {}
@@ -509,10 +530,15 @@ class SubscriptionService {
       })),
       userLanguages
     }
+    const tmpPath = this._filePath + '.tmp'
     try {
-      fs.writeFileSync(this._filePath, JSON.stringify(data, null, 2), 'utf-8')
+      // Atomic write: write to temp file, then rename (filesystem-level atomic)
+      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf-8')
+      fs.renameSync(tmpPath, this._filePath)
     } catch (err) {
       this.logger.error({ err }, 'Failed to save subscriptions to disk')
+      // Clean up temp file on error
+      try { fs.unlinkSync(tmpPath) } catch { /* ignore */ }
     }
   }
 }

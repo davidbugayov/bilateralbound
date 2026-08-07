@@ -29,7 +29,9 @@
     }
   }
 
-  // ── i18n strings (fallback = English) ──
+  // ── Detect Telegram Mini App for initData auto‑verification ──
+  const IS_MINI_APP = !!(globalThis.Telegram && globalThis.Telegram.WebApp && globalThis.Telegram.WebApp.initData)
+  const MINI_APP_INIT_DATA = IS_MINI_APP ? globalThis.Telegram.WebApp.initData : null
   const STRINGS = {
     heading: function () { return t('paywall.heading', 'Free Access Window Has Expired') },
     description: function () { return t('paywall.description', 'The 2-hour free access for this session has ended. Subscribe for 75⭐ / 30 days for unlimited access. Your support keeps the platform running.') },
@@ -182,28 +184,39 @@
   }
 
   async function handleVerify() {
-    const raw = input.value.trim()
-    if (!raw) {
-      showError(STRINGS.errorEmpty())
-      return
-    }
-    const userId = parseInt(raw, 10)
-    if (!userId || userId <= 0) {
-      showError(STRINGS.errorInvalid())
-      return
-    }
-
     verifyBtn.disabled = true
     verifyBtn.textContent = '…'
     errBox.style.display = 'none'
     okBox.style.display = 'none'
+
+    // Build request body — prefer initData in Mini App, fall back to manual ID
+    const body = IS_MINI_APP
+      ? { initData: MINI_APP_INIT_DATA }
+      : { telegramUserId: parseInt(input.value.trim(), 10) }
+
+    if (!IS_MINI_APP) {
+      const raw = input.value.trim()
+      if (!raw) {
+        showError(STRINGS.errorEmpty())
+        verifyBtn.disabled = false
+        verifyBtn.textContent = STRINGS.verifyBtn()
+        return
+      }
+      const userId = parseInt(raw, 10)
+      if (!userId || userId <= 0) {
+        showError(STRINGS.errorInvalid())
+        verifyBtn.disabled = false
+        verifyBtn.textContent = STRINGS.verifyBtn()
+        return
+      }
+    }
 
     try {
       const fetchFn = globalThis.csrfFetch || fetch
       const resp = await fetchFn('/api/link-access/' + encodeURIComponent(SESSION_ID) + '/unlock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramUserId: userId })
+        body: JSON.stringify(body)
       })
       const data = await resp.json().catch(function () { return {} })
 
