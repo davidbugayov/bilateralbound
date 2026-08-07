@@ -7,18 +7,41 @@ function setupWebSocketServer(
   webSocketManager,
   broadcastService,
   analytics,
-  logger
+  logger,
+  wsTokenService
 ) {
   // maxPayload: 4KB limit prevents memory exhaustion attacks
   const wss = new WebSocketServer({ server, maxPayload: 4096 })
 
   wss.on('connection', (ws, req) => {
     const url = new URL(req.url, `https://${req.headers.host}`)
-    const sessionId = url.searchParams.get('sessionId')
-    const role = url.searchParams.get('role')
+
+    // Authenticate via HMAC-signed WS token (replaces insecure query-param role)
+    let sessionId, role
+    if (wsTokenService) {
+      const token = url.searchParams.get('token')
+      const decoded = wsTokenService.verify(token)
+      if (!decoded) {
+        logger.warn({ hasToken: !!token }, 'WS connection rejected: invalid or expired token')
+        ws.close(4001, 'Unauthorized — invalid or expired token')
+        return
+      }
+      sessionId = decoded.sessionId
+      role = decoded.role
+    } else {
+      // Fallback for dev environments without WsTokenService
+      sessionId = url.searchParams.get('sessionId')
+      role = url.searchParams.get('role')
+    }
 
     if (!sessionId || !role) {
       ws.close(1008, 'Session ID and role are required')
+      return
+    }
+
+    // Validate role is one of the expected values
+    if (role !== 'controller' && role !== 'viewer') {
+      ws.close(1008, 'Invalid role')
       return
     }
 
@@ -267,10 +290,10 @@ function setupWebSocketServer(
           return ws.terminate()
         }
         // Still send a ping to give it one more chance
-        try { ws.ping() } catch (e) { /* ignore */ }
+        try { ws.ping() } catch { /* ignore */ }
       } else {
         ws.isAlive = false
-        try { ws.ping() } catch (e) { /* ignore */ }
+        try { ws.ping() } catch { /* ignore */ }
       }
     }
   }, 30000)

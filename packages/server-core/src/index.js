@@ -1,4 +1,5 @@
 'use strict'
+const path = require('node:path')
 const http = require('node:http')
 const express = require('express')
 const config = require('./config')
@@ -12,6 +13,8 @@ const LocalizationService = require('./services/LocalizationService')
 const SubscriptionService = require('./services/SubscriptionService')
 const LinkAccessService = require('./services/LinkAccessService')
 const TelegramBotService = require('./services/TelegramBotService')
+const WsTokenService = require('./services/WsTokenService')
+const TelegramAuthService = require('./services/TelegramAuthService')
 const {
   setupMiddleware,
   requireSession,
@@ -57,13 +60,24 @@ const physicsService = new PhysicsService(
     analytics
   }
 )
+const dataDir = path.join(__dirname, '..', 'data')
 const subscriptionService = new SubscriptionService({
   logger,
   durationMs: config.subscription.SUBSCRIPTION_DURATION_MS,
-  testMode: config.subscription.TEST_MODE
+  testMode: config.subscription.TEST_MODE,
+  dataDir
 })
 
-const linkAccessService = new LinkAccessService({ logger })
+const linkAccessService = new LinkAccessService({ logger, dataDir })
+
+// WS token service — issues HMAC-signed tokens for WebSocket authentication
+const wsTokenService = new WsTokenService({ logger })
+
+// Telegram auth service — validates Mini App initData for subscription endpoints
+const telegramAuthService = new TelegramAuthService({
+  botToken: config.subscription.STARS_BOT_TOKEN || '',
+  logger
+})
 
 // Telegram bot — only initialised if a token is provided via env
 const telegramBot = config.subscription.STARS_BOT_TOKEN
@@ -71,6 +85,7 @@ const telegramBot = config.subscription.STARS_BOT_TOKEN
       token: config.subscription.STARS_BOT_TOKEN,
       providerToken: config.subscription.STARS_PROVIDER_TOKEN || '',
       webhookUrl: config.subscription.WEBHOOK_URL || '',
+      webhookSecret: config.subscription.WEBHOOK_SECRET || '',
       botUsername: config.subscription.BOT_USERNAME,
       logger
     })
@@ -110,9 +125,12 @@ registerSessionRoutes(app, sessionService, apiCache, analytics, mw, subscription
 registerSubscriptionRoutes(app, subscriptionService, {
   logger,
   telegramBot,
+  telegramAuthService,
   priceStars: config.subscription.PRICE_STARS,
   testMode: config.subscription.TEST_MODE,
-  baseUrl: config.server.PUBLIC_URL || ''
+  webhookSecret: config.subscription.WEBHOOK_SECRET || '',
+  baseUrl: config.server.PUBLIC_URL || '',
+  isDev: config.isDev
 }, linkAccessService)
 
 registerViewerRoutes(
@@ -126,7 +144,7 @@ registerSeoRoutes(app)
 registerStaticRoutes(app, sessionService, localizationService, {
   setNoCacheHeaders,
   logger
-}, linkAccessService, subscriptionService)
+}, linkAccessService, subscriptionService, wsTokenService)
 
 // 6. Server + WebSocket
 const server = http.createServer(app)
@@ -136,7 +154,8 @@ const { heartbeatInterval } = setupWebSocketServer(
   webSocketManager,
   broadcastService,
   analytics,
-  logger
+  logger,
+  wsTokenService
 )
 
 // 7. Start

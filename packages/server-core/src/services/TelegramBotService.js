@@ -21,10 +21,11 @@ class TelegramBotService {
    * @param {string} opts.botUsername — Bot username (for deep links)
    * @param {Object} opts.logger
    */
-  constructor({ token, providerToken, webhookUrl, botUsername, logger } = {}) {
+  constructor({ token, providerToken, webhookUrl, webhookSecret, botUsername, logger } = {}) {
     this.token = token || ''
     this.providerToken = providerToken || ''
     this.webhookUrl = webhookUrl || ''
+    this.webhookSecret = webhookSecret || ''
     this.botUsername = botUsername || ''
     this.logger = logger || console
     this._apiBase = TELEGRAM_API_BASE + this.token
@@ -46,7 +47,7 @@ class TelegramBotService {
       return false
     }
     try {
-      const res = await this._call('setWebhook', {
+      const params = {
         url: this.webhookUrl + '/api/subscription/webhook',
         max_connections: 10,
         allowed_updates: [
@@ -55,7 +56,14 @@ class TelegramBotService {
           'pre_checkout_query',
           'successful_payment'
         ]
-      })
+      }
+      // Pass secret_token for webhook authentication (X-Telegram-Bot-Api-Secret-Token header)
+      if (this.webhookSecret) {
+        params.secret_token = this.webhookSecret
+      } else {
+        this.logger.warn('WEBHOOK_SECRET not set — webhook will accept unauthenticated requests')
+      }
+      const res = await this._call('setWebhook', params)
       if (res.ok) {
         this.logger.info({ webhookUrl: this.webhookUrl }, 'Telegram webhook set')
       } else {
