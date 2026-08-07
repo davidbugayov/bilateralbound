@@ -161,52 +161,57 @@ ${verificationUrls}
   })
 
   // llms.txt — structured summary for LLM crawlers (Perplexity, Claude, Gemini)
+  // Spec: https://llmstxt.org/ — must be valid Markdown with H1 + links
   app.get('/llms.txt', (req, res) => {
     const host = req.get('host') || ''
     const isRu = host.endsWith('.ru')
     const base = isRu
       ? 'https://emdrbilateral.ru'
       : 'https://emdrbilateral.online'
-    const content = `# BilateralBound
+    const content = `# BilateralBound — Free Online EMDR Therapy Platform
 
-> Free online EMDR therapy platform. Therapists control a bilateral stimulation ball in real-time; patients follow it with their eyes from any device via a permanent link. No registration required. Free to use.
+> Free online EMDR therapy platform for bilateral stimulation. Therapists control a moving ball in real-time; patients follow it with their eyes from any device. No registration required. Used by therapists worldwide in 8 languages.
 
-## What it does
+## Quick Links
+- [Main Page](${base}/) — Start or restore an EMDR session
+- [About EMDR Therapy](${base}/about) — Learn how bilateral stimulation works
+- [Breathing Exercise](${base}/breathing) — Free coherent breathing session (5s/5s + Butterfly Hug)
+- [Privacy Policy](${base}/privacy)
+- [Terms of Service](${base}/offer)
+- [GitHub](https://github.com/davidbugayov) — Open-source project
+
+## What BilateralBound Does
 - Delivers real-time bilateral stimulation (eye movement) for EMDR therapy sessions
-- Therapist and patient connect via WebSocket — ball movement is synchronised with millisecond precision
-- Supports bilateral audio (alternating left/right ear) in addition to visual stimulation
-- Works on any device with a modern browser — no software installation required
-- Permanent session links: create once, reuse indefinitely
+- WebSocket synchronisation with millisecond precision between therapist and patient
+- Supports bilateral audio (alternating left/right ear) for full bilateral effect
+- Works on any device with a modern browser — no installation required
+- Permanent custom session links for subscribed therapists
 
-## Who it is for
-- Licensed EMDR therapists conducting remote sessions
-- Patients receiving EMDR therapy online
-- Therapists who need a free, reliable bilateral stimulation tool
+## Who It Serves
+- Licensed EMDR therapists conducting remote therapy sessions
+- Patients receiving EMDR therapy for trauma processing
+- Mental health professionals needing a free, reliable bilateral stimulation tool
 
-## Conditions treated with EMDR
+## Conditions Treated with EMDR
 - Post-Traumatic Stress Disorder (PTSD)
-- Anxiety and panic disorders
-- Depression
-- Phobias and OCD
+- Anxiety disorders and panic attacks
+- Depression and emotional trauma
+- Phobias and obsessive-compulsive disorders
 - Relationship trauma and couples therapy
 
-## Technical facts
-- WebSocket real-time sync (Node.js / Express)
+## Technical Details
+- Real-time WebSocket sync (Node.js / Express backend)
 - 8 languages: English, Russian, German, Spanish, French, Portuguese, Japanese, Chinese
-- Fully free, no account required
-- Open to therapists worldwide
+- No registration required — instant session creation
+- Premium subscription via Telegram Stars (75⭐ / 30 days) for permanent custom links
+- [Telegram Bot](https://t.me/emdrbilateral_bot) for subscription management
 
-## Key pages
-- ${base}/: Main page — start or restore a session
-- ${base}/c/:id: Therapist controller (bilateral stimulation controls)
-- ${base}/s/:id: Patient viewer (follows the moving ball)
-
-## About
-- Developer: David Bugaev
-- Project URL: ${base}
-- Contact: via GitHub https://github.com/davidbugayov
+## Developer
+- David Bugaev
+- [GitHub](https://github.com/davidbugayov)
+- [Email](mailto:davidbugayov@ya.ru)
 `
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
     res.setHeader('Cache-Control', 'public, max-age=86400')
     res.send(content)
   })
