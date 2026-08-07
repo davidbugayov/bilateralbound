@@ -160,27 +160,9 @@ function registerStaticRoutes(
     )
   }
 
-  // Catch-all for other static files (but not index.html) (from expressApp L634-653)
-  app.use((req, res, next) => {
-    if (
-      req.path === '/' ||
-      req.path === '/index.html' ||
-      req.path.startsWith('/css/') ||
-      req.path.startsWith('/js/') ||
-      req.path.startsWith('/emdr-therapy/')
-    ) {
-      return next()
-    }
-
-    express.static(publicPath, {
-      index: false,
-      etag: false,
-      lastModified: false,
-      setHeaders: setNoCacheHeaders
-    })(req, res, next)
-  })
-
   // Privacy page — localized meta + canonical/hreflang via LocalizationService
+  // MUST be registered BEFORE the catch-all static middleware below,
+  // otherwise express.static serves privacy.html raw (adding .html automatically).
   app.get('/privacy', (req, res) => {
     const html = localizationService.getStaticLocalizedHtml('privacy.html', req)
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -248,6 +230,27 @@ function registerStaticRoutes(
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
+  })
+
+  // Catch-all for other static files (must be AFTER all named routes above,
+  // otherwise express.static adds .html extension and serves e.g. privacy.html raw).
+  app.use((req, res, next) => {
+    if (
+      req.path === '/' ||
+      req.path === '/index.html' ||
+      req.path.startsWith('/css/') ||
+      req.path.startsWith('/js/') ||
+      req.path.startsWith('/emdr-therapy/')
+    ) {
+      return next()
+    }
+
+    express.static(publicPath, {
+      index: false,
+      etag: false,
+      lastModified: false,
+      setHeaders: setNoCacheHeaders
+    })(req, res, next)
   })
 
   // 404 handler (from expressApp L1007-1011)
