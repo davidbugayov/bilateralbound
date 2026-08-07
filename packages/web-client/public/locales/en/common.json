@@ -70,7 +70,8 @@
   "premiumHub": {
     "title": "Premium Hub",
     "subtitle": "Permanent links & subscription — manage everything in one place",
-    "manageTitle": "Manage Subscription"
+    "manageTitle": "Manage Subscription",
+    "heading": "Premium Subscription"
   },
   "restore": {
     "heading": "🔄 Restore session by ID",
@@ -381,7 +382,8 @@
     "free": "Free Plan",
     "freeDesc": "Generate random sessions instantly — no registration needed",
     "premiumDesc": "Permanent custom links (your own ID), extended session management",
-    "sectionHeading": "Key Features"
+    "sectionHeading": "Key Features",
+    "heading": "Platform Features"
   },
   "privacy": {
     "title": "Privacy Policy",

@@ -377,7 +377,8 @@
     "breathingDesc": "Respiración coherente + abrazo de mariposa",
     "free": "Gratis",
     "freeDesc": "Sin registro, sin suscripción — abierto para terapeutas de todo el mundo",
-    "sectionHeading": "Características principales"
+    "sectionHeading": "Características principales",
+    "heading": "Funcionalidades"
   },
   "subscription": {
     "heading": "Apoya el proyecto",
@@ -669,5 +670,8 @@
     "noSubscription": "No hay suscripción activa para este ID de Telegram. Suscríbete a través de @emdrbilateral_bot (75⭐ / 30 días).",
     "errorNetwork": "Error de red. Por favor, inténtalo de nuevo.",
     "backToHome": "← Volver a la página principal"
+  },
+  "premiumHub": {
+    "heading": "Suscripción Premium"
   }
 }

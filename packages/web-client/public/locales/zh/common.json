@@ -190,7 +190,8 @@
     "breathingDesc": "连贯呼吸 + 蝴蝶拥抱",
     "free": "免费使用",
     "freeDesc": "无需注册，无需订阅 — 向全球治疗师开放",
-    "sectionHeading": "主要功能"
+    "sectionHeading": "主要功能",
+    "heading": "平台功能"
   },
   "subscription": {
     "heading": "支持项目",
@@ -482,5 +483,8 @@
     "noSubscription": "此Telegram ID没有有效订阅。请通过@emdrbilateral_bot订阅（75⭐ / 30天）。",
     "errorNetwork": "网络错误。请重试。",
     "backToHome": "← 返回主页"
+  },
+  "premiumHub": {
+    "heading": "高级订阅"
   }
 }
