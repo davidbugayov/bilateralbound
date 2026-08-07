@@ -119,11 +119,20 @@ class WebSocketClient {
     })
   }
   /**
-   * Улучшенная отправка с приоритетами и буферизацией
+   * Улучшенная отправка с приоритетами и буферизацией.
+   * Queues messages when not connected instead of throwing — they are flushed on open.
    */
   async send(type, payload, options = {}) {
     if (!this.isConnected) {
-      throw new Error('WebSocket is not connected')
+      // Queue for later delivery when connection is established
+      if (!this._sendQueue) this._sendQueue = []
+      this._sendQueue.push({ type, payload, options })
+      this.log(`Queued ${type} message (${this._sendQueue.length} pending)`, 'warning')
+      // Trigger connection if not already connecting
+      if (!this.isConnecting) {
+        this.connect().catch(() => {})
+      }
+      return
     }
     const priorityTypes = ['controller_update', 'heartbeat']
     const isPriority = priorityTypes.includes(type)
@@ -240,6 +249,15 @@ class WebSocketClient {
     this.log(
       'Connected successfully' + (isReconnection ? ' (reconnected)' : '')
     )
+    // Flush queued messages
+    if (this._sendQueue && this._sendQueue.length > 0) {
+      const queue = this._sendQueue
+      this._sendQueue = []
+      this.log(`Flushing ${queue.length} queued messages`)
+      for (const msg of queue) {
+        this.send(msg.type, msg.payload, msg.options)
+      }
+    }
     // Track WebSocket reconnects in Metrika
     if (isReconnection && typeof globalThis !== 'undefined') {
       try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_ws_reconnect')) } catch (e) { void e }
