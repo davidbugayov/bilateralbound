@@ -197,7 +197,8 @@
     "breathingDesc": "Respiração coerente + abraço borboleta",
     "free": "Gratuito",
     "freeDesc": "Sem registro, sem assinatura — aberto para terapeutas em todo o mundo",
-    "sectionHeading": "Funcionalidades principais"
+    "sectionHeading": "Funcionalidades principais",
+    "heading": "Funcionalidades"
   },
   "subscription": {
     "heading": "Apoie o projeto",
@@ -489,5 +490,8 @@
     "noSubscription": "Sem assinatura ativa para este ID do Telegram. Assine via @emdrbilateral_bot (75⭐ / 30 dias).",
     "errorNetwork": "Erro de rede. Por favor, tente novamente.",
     "backToHome": "← Voltar à página inicial"
+  },
+  "premiumHub": {
+    "heading": "Assinatura Premium"
   }
 }

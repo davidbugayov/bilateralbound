@@ -161,52 +161,101 @@ ${verificationUrls}
   })
 
   // llms.txt — structured summary for LLM crawlers (Perplexity, Claude, Gemini)
+  // Spec: https://llmstxt.org/ — must be valid Markdown with H1 + links
+  // Returns locale-specific content: Russian for .ru, English for .online
   app.get('/llms.txt', (req, res) => {
     const host = req.get('host') || ''
     const isRu = host.endsWith('.ru')
     const base = isRu
       ? 'https://emdrbilateral.ru'
       : 'https://emdrbilateral.online'
-    const content = `# BilateralBound
 
-> Free online EMDR therapy platform. Therapists control a bilateral stimulation ball in real-time; patients follow it with their eyes from any device via a permanent link. No registration required. Free to use.
+    const content = isRu ? `# BilateralBound — Бесплатная онлайн-платформа для EMDR терапии
 
-## What it does
+> Бесплатная онлайн-платформа для билатеральной стимуляции в EMDR терапии. Терапевт управляет движущимся шаром в реальном времени, пациент следит за ним глазами с любого устройства. Без регистрации. Используется терапевтами по всему миру на 8 языках.
+
+## Быстрые ссылки
+- [Главная](${base}/) — Начать или восстановить EMDR сессию
+- [О EMDR терапии](${base}/about) — Узнайте, как работает билатеральная стимуляция
+- [Дыхательное упражнение](${base}/breathing) — Бесплатная сессия когерентного дыхания (5с/5с + Butterfly Hug)
+- [Политика конфиденциальности](${base}/privacy)
+- [Условия использования](${base}/offer)
+- [GitHub](https://github.com/davidbugayov) — Проект с открытым исходным кодом
+
+## Что делает BilateralBound
+- Обеспечивает билатеральную стимуляцию (движение глаз) для сессий EMDR терапии в реальном времени
+- WebSocket-синхронизация с миллисекундной точностью между терапевтом и пациентом
+- Поддерживает билатеральный звук (чередование левого/правого уха) для полного эффекта
+- Работает на любом устройстве с современным браузером — установка не требуется
+- Постоянные ссылки на сессии для терапевтов с подпиской
+
+## Для кого
+- Лицензированные EMDR терапевты, проводящие удалённые сессии
+- Пациенты, проходящие EMDR терапию для переработки травм
+- Специалисты в области психического здоровья, которым нужен бесплатный и надёжный инструмент
+
+## Состояния, при которых применяется EMDR
+- Посттравматическое стрессовое расстройство (ПТСР)
+- Тревожные расстройства и панические атаки
+- Депрессия и эмоциональные травмы
+- Фобии и обсессивно-компульсивные расстройства
+- Травмы отношений и парная терапия
+
+## Технические детали
+- Синхронизация в реальном времени через WebSocket (Node.js / Express)
+- 8 языков: английский, русский, немецкий, испанский, французский, португальский, японский, китайский
+- Без регистрации — мгновенное создание сессии
+- Premium подписка через Telegram Stars (75⭐ / 30 дней) для постоянных ссылок
+- [Telegram бот](https://t.me/emdrbilateral_bot) для управления подпиской
+
+## Разработчик
+- Давид Бугаев
+- [GitHub](https://github.com/davidbugayov)
+- [Email](mailto:davidbugayov@ya.ru)
+` : `# BilateralBound — Free Online EMDR Therapy Platform
+
+> Free online EMDR therapy platform for bilateral stimulation. Therapists control a moving ball in real-time; patients follow it with their eyes from any device. No registration required. Used by therapists worldwide in 8 languages.
+
+## Quick Links
+- [Main Page](${base}/) — Start or restore an EMDR session
+- [About EMDR Therapy](${base}/about) — Learn how bilateral stimulation works
+- [Breathing Exercise](${base}/breathing) — Free coherent breathing session (5s/5s + Butterfly Hug)
+- [Privacy Policy](${base}/privacy)
+- [Terms of Service](${base}/offer)
+- [GitHub](https://github.com/davidbugayov) — Open-source project
+
+## What BilateralBound Does
 - Delivers real-time bilateral stimulation (eye movement) for EMDR therapy sessions
-- Therapist and patient connect via WebSocket — ball movement is synchronised with millisecond precision
-- Supports bilateral audio (alternating left/right ear) in addition to visual stimulation
-- Works on any device with a modern browser — no software installation required
-- Permanent session links: create once, reuse indefinitely
+- WebSocket synchronisation with millisecond precision between therapist and patient
+- Supports bilateral audio (alternating left/right ear) for full bilateral effect
+- Works on any device with a modern browser — no installation required
+- Permanent custom session links for subscribed therapists
 
-## Who it is for
-- Licensed EMDR therapists conducting remote sessions
-- Patients receiving EMDR therapy online
-- Therapists who need a free, reliable bilateral stimulation tool
+## Who It Serves
+- Licensed EMDR therapists conducting remote therapy sessions
+- Patients receiving EMDR therapy for trauma processing
+- Mental health professionals needing a free, reliable bilateral stimulation tool
 
-## Conditions treated with EMDR
+## Conditions Treated with EMDR
 - Post-Traumatic Stress Disorder (PTSD)
-- Anxiety and panic disorders
-- Depression
-- Phobias and OCD
+- Anxiety disorders and panic attacks
+- Depression and emotional trauma
+- Phobias and obsessive-compulsive disorders
 - Relationship trauma and couples therapy
 
-## Technical facts
-- WebSocket real-time sync (Node.js / Express)
+## Technical Details
+- Real-time WebSocket sync (Node.js / Express backend)
 - 8 languages: English, Russian, German, Spanish, French, Portuguese, Japanese, Chinese
-- Fully free, no account required
-- Open to therapists worldwide
+- No registration required — instant session creation
+- Premium subscription via Telegram Stars (75⭐ / 30 days) for permanent custom links
+- [Telegram Bot](https://t.me/emdrbilateral_bot) for subscription management
 
-## Key pages
-- ${base}/: Main page — start or restore a session
-- ${base}/c/:id: Therapist controller (bilateral stimulation controls)
-- ${base}/s/:id: Patient viewer (follows the moving ball)
-
-## About
-- Developer: David Bugaev
-- Project URL: ${base}
-- Contact: via GitHub https://github.com/davidbugayov
+## Developer
+- David Bugaev
+- [GitHub](https://github.com/davidbugayov)
+- [Email](mailto:davidbugayov@ya.ru)
 `
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
     res.setHeader('Cache-Control', 'public, max-age=86400')
     res.send(content)
   })

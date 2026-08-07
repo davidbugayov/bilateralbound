@@ -204,7 +204,8 @@
     "breathingDesc": "Respiration cohérente + câlin papillon",
     "free": "Gratuit",
     "freeDesc": "Pas d'inscription, pas d'abonnement — ouvert aux thérapeutes du monde entier",
-    "sectionHeading": "Fonctionnalités principales"
+    "sectionHeading": "Fonctionnalités principales",
+    "heading": "Fonctionnalités"
   },
   "subscription": {
     "heading": "Soutenez le projet",
@@ -496,5 +497,8 @@
     "noSubscription": "Pas d'abonnement actif pour cet ID Telegram. Abonnez-vous via @emdrbilateral_bot (75⭐ / 30 jours).",
     "errorNetwork": "Erreur réseau. Veuillez réessayer.",
     "backToHome": "← Retour à l'accueil"
+  },
+  "premiumHub": {
+    "heading": "Abonnement Premium"
   }
 }

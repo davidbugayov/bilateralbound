@@ -204,7 +204,8 @@
     "breathingDesc": "コヒーレント呼吸 + バタフライハグ",
     "free": "無料",
     "freeDesc": "登録不要、サブスクリプション不要 — 世界中のセラピストが利用できます",
-    "sectionHeading": "主な機能"
+    "sectionHeading": "主な機能",
+    "heading": "プラットフォームの機能"
   },
   "subscription": {
     "heading": "プロジェクトを支援",
@@ -496,5 +497,8 @@
     "noSubscription": "このTelegram IDには有効なサブスクリプションがありません。@emdrbilateral_botから購読してください（75⭐ / 30日）。",
     "errorNetwork": "ネットワークエラー。もう一度お試しください。",
     "backToHome": "← メインページに戻る"
+  },
+  "premiumHub": {
+    "heading": "プレミアムサブスクリプション"
   }
 }

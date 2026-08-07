@@ -198,7 +198,8 @@
     "breathingDesc": "Kohärentes Atmen + Schmetterlingsumarmung",
     "free": "Kostenlos",
     "freeDesc": "Keine Registrierung, kein Abonnement — offen für Therapeuten weltweit",
-    "sectionHeading": "Hauptfunktionen"
+    "sectionHeading": "Hauptfunktionen",
+    "heading": "Plattform-Funktionen"
   },
   "subscription": {
     "heading": "Unterstütze das Projekt",
@@ -490,5 +491,8 @@
     "noSubscription": "Kein aktives Abonnement für diese Telegram ID. Abonnieren Sie über @emdrbilateral_bot (75⭐ / 30 Tage).",
     "errorNetwork": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
     "backToHome": "← Zurück zur Startseite"
+  },
+  "premiumHub": {
+    "heading": "Premium-Abonnement"
   }
 }
