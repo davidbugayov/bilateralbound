@@ -162,13 +162,57 @@ ${verificationUrls}
 
   // llms.txt — structured summary for LLM crawlers (Perplexity, Claude, Gemini)
   // Spec: https://llmstxt.org/ — must be valid Markdown with H1 + links
+  // Returns locale-specific content: Russian for .ru, English for .online
   app.get('/llms.txt', (req, res) => {
     const host = req.get('host') || ''
     const isRu = host.endsWith('.ru')
     const base = isRu
       ? 'https://emdrbilateral.ru'
       : 'https://emdrbilateral.online'
-    const content = `# BilateralBound — Free Online EMDR Therapy Platform
+
+    const content = isRu ? `# BilateralBound — Бесплатная онлайн-платформа для EMDR терапии
+
+> Бесплатная онлайн-платформа для билатеральной стимуляции в EMDR терапии. Терапевт управляет движущимся шаром в реальном времени, пациент следит за ним глазами с любого устройства. Без регистрации. Используется терапевтами по всему миру на 8 языках.
+
+## Быстрые ссылки
+- [Главная](${base}/) — Начать или восстановить EMDR сессию
+- [О EMDR терапии](${base}/about) — Узнайте, как работает билатеральная стимуляция
+- [Дыхательное упражнение](${base}/breathing) — Бесплатная сессия когерентного дыхания (5с/5с + Butterfly Hug)
+- [Политика конфиденциальности](${base}/privacy)
+- [Условия использования](${base}/offer)
+- [GitHub](https://github.com/davidbugayov) — Проект с открытым исходным кодом
+
+## Что делает BilateralBound
+- Обеспечивает билатеральную стимуляцию (движение глаз) для сессий EMDR терапии в реальном времени
+- WebSocket-синхронизация с миллисекундной точностью между терапевтом и пациентом
+- Поддерживает билатеральный звук (чередование левого/правого уха) для полного эффекта
+- Работает на любом устройстве с современным браузером — установка не требуется
+- Постоянные ссылки на сессии для терапевтов с подпиской
+
+## Для кого
+- Лицензированные EMDR терапевты, проводящие удалённые сессии
+- Пациенты, проходящие EMDR терапию для переработки травм
+- Специалисты в области психического здоровья, которым нужен бесплатный и надёжный инструмент
+
+## Состояния, при которых применяется EMDR
+- Посттравматическое стрессовое расстройство (ПТСР)
+- Тревожные расстройства и панические атаки
+- Депрессия и эмоциональные травмы
+- Фобии и обсессивно-компульсивные расстройства
+- Травмы отношений и парная терапия
+
+## Технические детали
+- Синхронизация в реальном времени через WebSocket (Node.js / Express)
+- 8 языков: английский, русский, немецкий, испанский, французский, португальский, японский, китайский
+- Без регистрации — мгновенное создание сессии
+- Premium подписка через Telegram Stars (75⭐ / 30 дней) для постоянных ссылок
+- [Telegram бот](https://t.me/emdrbilateral_bot) для управления подпиской
+
+## Разработчик
+- Давид Бугаев
+- [GitHub](https://github.com/davidbugayov)
+- [Email](mailto:davidbugayov@ya.ru)
+` : `# BilateralBound — Free Online EMDR Therapy Platform
 
 > Free online EMDR therapy platform for bilateral stimulation. Therapists control a moving ball in real-time; patients follow it with their eyes from any device. No registration required. Used by therapists worldwide in 8 languages.
 
