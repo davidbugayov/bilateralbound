@@ -38,10 +38,16 @@
 
     _notifyReady() {
       // Remove ALL anti-flash cloak elements (lang-preload.js creates one,
-      // and privacy/offer HTML pages also have one — only removing the first
-      // leaves the second in place, keeping content invisible)
+      // and privacy/offer HTML pages also have an inline style).
+      // Also remove data-i18n-cloak attribute from body — it has a matching
+      // [data-i18n-cloak]{display:none!important} inline rule that isn't
+      // targeted by #i18n-cloak selector above.
       if (typeof document !== 'undefined') {
         document.querySelectorAll('#i18n-cloak').forEach((el) => el.remove())
+        document.querySelectorAll('style').forEach((el) => {
+          if (el.textContent.includes('data-i18n-cloak')) el.remove()
+        })
+        if (document.body) document.body.removeAttribute('data-i18n-cloak')
         document.documentElement.classList.add('i18n-ready')
       }
 
