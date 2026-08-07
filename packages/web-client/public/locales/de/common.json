@@ -176,7 +176,11 @@
     "settingsLabel": "Einstellungen",
     "settingsTabSound": "Ton",
     "settingsTabShortcuts": "Tastenkürzel",
-    "settingsTabLanguage": "Sprache"
+    "settingsTabLanguage": "Sprache",
+    "meta": {
+      "controllerTitle": "Sitzungssteuerung | BilateralBound",
+      "controllerDescription": "EMDR-Therapie-Controller zur Steuerung der bilateralen Stimulation. Werkzeug für EMDR-Therapeuten bei Paartherapiesitzungen"
+    }
   },
   "meta": {
     "controllerTitle": "BilateralBound - EMDR Therapie Controller",
@@ -330,7 +334,7 @@
   },
   "offer": {
     "metaTitle": "Nutzungsbedingungen (Öffentliches Angebot) | BilateralBound",
-    "metaDescription": "Nutzungsbedingungen und öffentliches Angebot für BilateralBound — EMDR-Therapieplattform",
+    "metaDescription": "Nutzungsbedingungen und öffentliches Angebot für BilateralBound — EMDR-Therapieplattform. Lesen Sie über kostenlose und Premium-Dienste, Haftung und Streitbeilegung.",
     "title": "Nutzungsbedingungen (Öffentliches Angebot)",
     "lastUpdated": "Zuletzt aktualisiert: 8. Mai 2026",
     "backLink": "← Zurück zur Startseite",
@@ -420,8 +424,8 @@
     "footerHome": "Zurück zur Startseite"
   },
   "about": {
-    "metaTitle": "About EMDR Therapy | BilateralBound",
-    "metaDescription": "Learn about EMDR therapy and how BilateralBound works for bilateral stimulation — in Deutsch.",
+    "metaTitle": "Über EMDR-Therapie | BilateralBound",
+    "metaDescription": "Erfahren Sie mehr über EMDR-Therapie, wie BilateralBound für bilaterale Stimulation funktioniert und wie Therapeuten es zur Behandlung von PTBS, Angstzuständen und Traumata einsetzen.",
     "backLink": "← Back to home",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",

@@ -182,7 +182,11 @@
     "settingsLabel": "設定",
     "settingsTabSound": "サウンド",
     "settingsTabShortcuts": "ショートカット",
-    "settingsTabLanguage": "言語"
+    "settingsTabLanguage": "言語",
+    "meta": {
+      "controllerTitle": "セッションコントロール | BilateralBound",
+      "controllerDescription": "両側性刺激を管理するEMDRセラピーコントローラー。カップルセラピーセッション中のEMDRセラピスト向けツール"
+    }
   },
   "meta": {
     "controllerTitle": "BilateralBound - EMDR療法コントローラー",
@@ -336,7 +340,7 @@
   },
   "offer": {
     "metaTitle": "利用規約（公開オファー） | BilateralBound",
-    "metaDescription": "BilateralBound — EMDRセラピープラットフォームの利用規約と公開オファー",
+    "metaDescription": "BilateralBound — EMDRセラピープラットフォームの利用規約と公開オファー。無料・プレミアムサービス、免責事項、紛争解決について。",
     "title": "利用規約（公開オファー）",
     "lastUpdated": "最終更新日：2026年5月8日",
     "backLink": "← ホームに戻る",
@@ -426,8 +430,8 @@
     "footerHome": "ホームに戻る"
   },
   "about": {
-    "metaTitle": "About EMDR Therapy | BilateralBound",
-    "metaDescription": "Learn about EMDR therapy and how BilateralBound works for bilateral stimulation — in 日本語.",
+    "metaTitle": "EMDR療法について | BilateralBound",
+    "metaDescription": "EMDR療法、BilateralBoundの両側性刺激の仕組み、セラピストがPTSD、不安、トラウマ治療にどのように使用するかについて学びましょう。",
     "backLink": "← Back to home",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",
