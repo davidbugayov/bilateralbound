@@ -535,7 +535,7 @@ let resizeTimeout = null
 
 // Debounce for controller_disconnected — don't show banner for transient disconnects
 let _controllerDisconnectTimer = null
-const CONTROLLER_DISCONNECT_DEBOUNCE_MS = 120000 // 2min grace for mobile/bg reconnects
+const CONTROLLER_DISCONNECT_DEBOUNCE_MS = 5000 // 5s grace to avoid false alarms on flaky networks
 
 if (typeof globalThis !== 'undefined') {
   globalThis.audioManager = audioManager
