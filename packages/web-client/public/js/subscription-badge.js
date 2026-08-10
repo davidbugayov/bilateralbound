@@ -24,7 +24,9 @@
   // ── i18n helper ──
   function t(key, fallback) {
     try {
-      return (globalThis.i18n && globalThis.i18n.t) ? globalThis.i18n.t(key) : fallback
+      var v = (globalThis.i18n && globalThis.i18n.t) ? globalThis.i18n.t(key) : null
+      // i18n.t may return the key itself when translation is missing
+      return (v && v !== key) ? v : fallback
     } catch (e) { return fallback }
   }
 
