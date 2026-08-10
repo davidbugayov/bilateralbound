@@ -60,7 +60,7 @@
     const header = document.querySelector('body > header')
     if (!header) return setTimeout(mount, 50)
 
-    // Insert before settings button (last element in header)
+    // Insert before settings button — badge sits to the left of it
     const settingsBtn = document.getElementById('settingsBtn')
     if (settingsBtn) {
       header.insertBefore(badge, settingsBtn)

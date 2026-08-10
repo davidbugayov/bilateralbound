@@ -14,15 +14,23 @@
   transition: all 0.25s ease;
   letter-spacing: 0.01em;
   line-height: 1;
-  position: relative;
+  position: absolute;
+  right: 48px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 10;
-  margin-left: auto;
 }
 
-/* Ensure header is flex so margin-left: auto works */
+/* Ensure header is flex + relative for absolute badge */
 body > header:has(.sub-badge) {
   display: flex !important;
   align-items: center;
+  position: relative;
+}
+
+/* Push settings button to the right */
+body > header:has(.sub-badge) #settingsBtn {
+  margin-left: auto;
 }
 
 /* ── Active subscription: PRO badge ── */
