@@ -15,7 +15,8 @@
   transition: all 0.25s ease;
   letter-spacing: 0.01em;
   line-height: 1;
-
+  margin-left: auto;
+  margin-right: 0;
 }
 
 /* ── Active subscription: PRO badge ── */
@@ -135,10 +136,4 @@ body.light .sub-badge--inactive:hover {
 @media (max-width: 520px) {
   .sub-badge__text { display: none; }
   .sub-badge { padding: 0.3rem 0.45rem; gap: 0; }
-}
-
-/* ── Tighter back-btn on controller page ── */
-body .back-btn {
-  top: 8px;
-  left: 8px;
 }
