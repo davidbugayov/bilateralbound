@@ -488,9 +488,9 @@
     "heading": "高级订阅"
   },
   "subscriptionBadge": {
-    "active": "⭐ PRO",
+    "active": "PRO",
     "activeTitle": "订阅已激活",
-    "inactive": "⚡ 订阅",
+    "inactive": "订阅",
     "inactiveTitle": "激活订阅 — 75⭐ / 30天"
   }
 }

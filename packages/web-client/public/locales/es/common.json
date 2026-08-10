@@ -675,9 +675,9 @@
     "heading": "Suscripción Premium"
   },
   "subscriptionBadge": {
-    "active": "⭐ PRO",
+    "active": "PRO",
     "activeTitle": "Suscripción activa",
-    "inactive": "⚡ Suscribir",
+    "inactive": "Suscribir",
     "inactiveTitle": "Activar suscripción — 75⭐ / 30 días"
   }
 }

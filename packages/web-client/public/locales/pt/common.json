@@ -495,9 +495,9 @@
     "heading": "Assinatura Premium"
   },
   "subscriptionBadge": {
-    "active": "⭐ PRO",
+    "active": "PRO",
     "activeTitle": "Assinatura ativa",
-    "inactive": "⚡ Assinar",
+    "inactive": "Assinar",
     "inactiveTitle": "Ativar assinatura — 75⭐ / 30 dias"
   }
 }

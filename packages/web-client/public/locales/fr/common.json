@@ -502,9 +502,9 @@
     "heading": "Abonnement Premium"
   },
   "subscriptionBadge": {
-    "active": "⭐ PRO",
+    "active": "PRO",
     "activeTitle": "Abonnement actif",
-    "inactive": "⚡ S'abonner",
+    "inactive": "S'abonner",
     "inactiveTitle": "Activer l'abonnement — 75⭐ / 30 jours"
   }
 }

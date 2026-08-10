@@ -496,9 +496,9 @@
     "heading": "Premium-Abonnement"
   },
   "subscriptionBadge": {
-    "active": "⭐ PRO",
+    "active": "PRO",
     "activeTitle": "Aktives Abo",
-    "inactive": "⚡ Abonnieren",
+    "inactive": "Abonnieren",
     "inactiveTitle": "Abo aktivieren — 75⭐ / 30 Tage"
   }
 }

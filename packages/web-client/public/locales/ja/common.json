@@ -502,9 +502,9 @@
     "heading": "プレミアムサブスクリプション"
   },
   "subscriptionBadge": {
-    "active": "⭐ PRO",
+    "active": "PRO",
     "activeTitle": "サブスクリプション有効",
-    "inactive": "⚡ 購読する",
+    "inactive": "購読する",
     "inactiveTitle": "サブスクリプションを有効化 — 75⭐ / 30日"
   }
 }

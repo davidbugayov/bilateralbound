@@ -682,9 +682,9 @@
     "p2": "For full EMDR therapy for PTSD and serious trauma, consult a certified EMDR therapist. BilateralBound is a free online tool that complements professional therapy."
   },
   "subscriptionBadge": {
-    "active": "⭐ PRO",
+    "active": "PRO",
     "activeTitle": "Active subscription",
-    "inactive": "⚡ Subscribe",
+    "inactive": "Subscribe",
     "inactiveTitle": "Activate subscription — 75⭐ / 30 days"
   }
 }

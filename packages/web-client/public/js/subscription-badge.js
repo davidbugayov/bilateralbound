@@ -31,9 +31,9 @@
   }
 
   const STRINGS = {
-    activeText: function () { return t('subscriptionBadge.active', '⭐ PRO') },
+    activeText: function () { return t('subscriptionBadge.active', 'PRO') },
     activeTitle: function () { return t('subscriptionBadge.activeTitle', 'Active subscription') },
-    inactiveText: function () { return t('subscriptionBadge.inactive', '⚡ Subscribe') },
+    inactiveText: function () { return t('subscriptionBadge.inactive', 'Subscribe') },
     inactiveTitle: function () { return t('subscriptionBadge.inactiveTitle', 'Activate subscription — 75⭐ / 30 days') }
   }
 
@@ -41,8 +41,10 @@
   const badge = document.createElement('a')
   badge.id = 'bb-sub-badge'
   badge.className = 'sub-badge sub-badge--loading'
-  badge.href = '/#subscription'
+  badge.href = '#'
   badge.setAttribute('aria-label', '')
+  badge.setAttribute('target', '_blank')
+  badge.setAttribute('rel', 'noopener noreferrer')
 
   const icon = document.createElement('span')
   icon.className = 'sub-badge__icon'
@@ -68,13 +70,20 @@
   }
 
   function refresh() {
-    icon.textContent = badge.classList.contains('sub-badge--active') ? '⭐' : '⚡'
-    text.textContent = badge.classList.contains('sub-badge--active')
-      ? STRINGS.activeText()
-      : STRINGS.inactiveText()
-    badge.setAttribute('aria-label', badge.classList.contains('sub-badge--active')
-      ? STRINGS.activeTitle()
-      : STRINGS.inactiveTitle())
+    var isActive = badge.classList.contains('sub-badge--active')
+    icon.textContent = isActive ? '⭐' : '⚡'
+    text.textContent = isActive ? STRINGS.activeText() : STRINGS.inactiveText()
+    badge.setAttribute('aria-label', isActive ? STRINGS.activeTitle() : STRINGS.inactiveTitle())
+    // Active: no link. Inactive: open Telegram bot.
+    if (isActive) {
+      badge.removeAttribute('href')
+      badge.removeAttribute('target')
+      badge.style.cursor = 'default'
+    } else {
+      badge.href = 'https://t.me/emdrbilateral_bot'
+      badge.setAttribute('target', '_blank')
+      badge.style.cursor = 'pointer'
+    }
   }
 
   // ── Fetch subscription status ──
