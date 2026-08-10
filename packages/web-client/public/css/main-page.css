@@ -12,3 +12,10 @@
 @media (width <= 600px){
 .footer-contact__link{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}.hub-manage__panel-badge{font-size:.78rem}
 }
+
+/* How-to block (SEO content: self-practice / anxiety relief) */
+.howto-block{padding:20px 24px;margin:8px 0 4px;background:var(--mp-surface);border:1px solid var(--mp-border);border-radius:var(--mp-radius)}
+.howto-block__title{font-family:var(--mp-font-display);font-size:1.05rem;font-weight:700;color:var(--mp-text);margin:0 0 8px}
+.howto-block__text{font-size:.9rem;color:var(--mp-muted);margin:0 0 8px;line-height:1.55}
+.howto-block__text:last-child{margin-bottom:0}
+@media (width <= 600px){.howto-block{padding:16px 16px}.howto-block__text{font-size:.88rem}}

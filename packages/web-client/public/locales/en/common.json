@@ -20,16 +20,16 @@
     "closed": "Closed"
   },
   "home": {
-    "title": "Free Online EMDR Therapy Tool",
-    "subtitle": "Professional EMDR therapy tool — free, no registration required",
+    "title": "Free Online EMDR Tool — Bilateral Stimulation Light Bar",
+    "subtitle": "Free online EMDR tool with a moving light bar for bilateral stimulation. Reduce anxiety and trauma symptoms in minutes — no registration required",
     "breathingExercise": "🌬️ Breathing Exercise",
-    "pageTitle": "Free Online EMDR Therapy Tool | BilateralBound",
-    "metaDescription": "Free online EMDR therapy for PTSD, anxiety & trauma. No registration. Run bilateral stimulation sessions remotely."
+    "pageTitle": "Free Online EMDR Tool — Bilateral Stimulation | BilateralBound",
+    "metaDescription": "Free online EMDR tool with bilateral stimulation light bar for anxiety, stress and PTSD relief. No registration. Start a session in 2 minutes."
   },
   "emdr": {
-    "heading": "Free Access Window Has Expired",
-    "p1": "EMDR (Eye Movement Desensitization and Reprocessing) is a scientifically based method of psychotherapy for treating post-traumatic stress disorder (PTSD), anxiety disorders and psychological trauma.",
-    "p2": "Our platform uses bilateral stimulation — the movement of a ball creates bilateral brain stimulation, helping to process traumatic memories."
+    "heading": "What is EMDR (DPDG) therapy?",
+    "p1": "EMDR (Eye Movement Desensitization and Reprocessing) is a scientifically validated psychotherapy method for treating post-traumatic stress disorder (PTSD), anxiety disorders and psychological trauma.",
+    "p2": "The method is based on bilateral stimulation: a moving ball (light bar) creates bilateral brain stimulation, helping to reprocess traumatic memories, reduce anxiety and lower stress."
   },
   "session": {
     "start": "🚀 Start EMDR Session",
@@ -369,8 +369,8 @@
     "settingsTabLanguage": "Language"
   },
   "features": {
-    "bilateral": "Bilateral stimulation",
-    "bilateralDesc": "Moving ball activates both brain hemispheres for trauma processing",
+    "bilateral": "Bilateral Stimulation (EMDR)",
+    "bilateralDesc": "Moving light bar activates both brain hemispheres — reduces anxiety and helps process stress",
     "remote": "Remote sessions",
     "remoteDesc": "Therapist controls, client watches from any device anywhere",
     "realtime": "Real-time sync",
@@ -379,11 +379,11 @@
     "audioDesc": "Sound alternates between left and right ear for full bilateral effect",
     "breathing": "🌬️ Breathing Exercise",
     "breathingDesc": "Coherent breathing + butterfly hug for self-regulation",
-    "free": "Free Plan",
-    "freeDesc": "Generate random sessions instantly — no registration needed",
+    "free": "Free EMDR Tool",
+    "freeDesc": "Generate sessions instantly — no registration, free for everyone",
     "premiumDesc": "Permanent custom links (your own ID), extended session management",
     "sectionHeading": "Key Features",
-    "heading": "Platform Features"
+    "heading": "EMDR Tool Features"
   },
   "privacy": {
     "title": "Privacy Policy",
@@ -675,5 +675,10 @@
     "noSubscription": "No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (75⭐ / 30 days).",
     "errorNetwork": "Network error. Please try again.",
     "backToHome": "← Back to main page"
+  },
+  "howto": {
+    "heading": "How to Use the Online EMDR Tool",
+    "p1": "The EMDR tool works for self-practice: just follow the moving light bar with your eyes for 1-2 minutes. It helps reduce anxiety, shift attention and calm the nervous system.",
+    "p2": "For full EMDR therapy for PTSD and serious trauma, consult a certified EMDR therapist. BilateralBound is a free online tool that complements professional therapy."
   }
 }

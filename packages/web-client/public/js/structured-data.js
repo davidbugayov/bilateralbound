@@ -7,9 +7,9 @@
       '@context': 'https://schema.org',
       '@type': 'WebApplication',
       name: 'BilateralBound',
-      alternateName: 'EMDR Bilateral Stimulation Platform',
+      alternateName: 'Free Online EMDR Tool — Bilateral Stimulation Light Bar',
       description:
-        'Professional EMDR therapy platform with bilateral stimulation for treating PTSD, anxiety, and trauma',
+        'Free online EMDR tool with bilateral stimulation light bar for anxiety, stress, and PTSD relief. No registration required.',
       url: 'https://emdrbilateral.online/',
       applicationCategory: 'HealthApplication',
       operatingSystem: 'Web Browser',

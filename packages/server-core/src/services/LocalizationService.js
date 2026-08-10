@@ -434,9 +434,10 @@ class LocalizationService {
 
     // Fix og:title and twitter:title for .ru (static HTML defaults to English)
     if (isRu) {
-      const ruTitle = 'BilateralBound - EMDR терапия онлайн'
+      const ruTitle =
+        'EMDR (ДПДГ) терапия онлайн — бесплатный тренажёр билатеральной стимуляции | BilateralBound'
       const ruDesc =
-        'Бесплатная платформа EMDR терапии — сессии двусторонней стимуляции для лечения ПТСР, тревоги и травм. Без регистрации, доступно для всех.'
+        'Бесплатный EMDR (ДПДГ) тренажёр онлайн: билатеральная стимуляция движущимся шариком для снижения тревоги, стресса и ПТСР. Без регистрации. Начните сессию за 2 минуты.'
       html = html.replace(
         /(<meta property="og:title"[^>]*content=")[^"]*(")/,
         `$1${ruTitle}$2`
