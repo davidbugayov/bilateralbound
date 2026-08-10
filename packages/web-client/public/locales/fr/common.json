@@ -500,5 +500,11 @@
   },
   "premiumHub": {
     "heading": "Abonnement Premium"
+  },
+  "subscriptionBadge": {
+    "active": "⭐ PRO",
+    "activeTitle": "Abonnement actif",
+    "inactive": "⚡ S'abonner",
+    "inactiveTitle": "Activer l'abonnement — 75⭐ / 30 jours"
   }
 }

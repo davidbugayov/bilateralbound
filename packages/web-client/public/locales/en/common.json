@@ -680,5 +680,11 @@
     "heading": "How to Use the Online EMDR Tool",
     "p1": "The EMDR tool works for self-practice: just follow the moving light bar with your eyes for 1-2 minutes. It helps reduce anxiety, shift attention and calm the nervous system.",
     "p2": "For full EMDR therapy for PTSD and serious trauma, consult a certified EMDR therapist. BilateralBound is a free online tool that complements professional therapy."
+  },
+  "subscriptionBadge": {
+    "active": "⭐ PRO",
+    "activeTitle": "Active subscription",
+    "inactive": "⚡ Subscribe",
+    "inactiveTitle": "Activate subscription — 75⭐ / 30 days"
   }
 }
