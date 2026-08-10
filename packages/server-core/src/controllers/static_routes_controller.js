@@ -195,6 +195,27 @@ function registerStaticRoutes(
     res.send(html)
   })
 
+  // 301 redirects from raw .html files to pretty URLs.
+  // The .html files are served by express.static WITHOUT localization,
+  // so on .ru they expose English meta tags + canonical pointing to .online —
+  // Yandex flags these as "pages with missing/incorrect Description".
+  // Redirecting consolidates them into the localized routes below.
+  const htmlRedirects = {
+    '/index.html': '/',
+    '/about.html': '/about',
+    '/privacy.html': '/privacy',
+    '/offer.html': '/offer',
+    '/breathing.html': '/breathing',
+    '/viewer.html': '/',
+    '/session-controller.html': '/',
+    '/paywall.html': '/'
+  }
+  for (const [from, to] of Object.entries(htmlRedirects)) {
+    app.get(from, (req, res) => {
+      res.redirect(301, to)
+    })
+  }
+
   // Viewer HTML (from expressApp L941-949)
   // Gated: first visit free, repeat visits require subscription.
   // On deny: serve the real content page (ball stays visible) with a
