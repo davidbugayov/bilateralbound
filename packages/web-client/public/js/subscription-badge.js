@@ -33,8 +33,8 @@
   const STRINGS = {
     activeText: function () { return t('subscriptionBadge.active', 'PRO') },
     activeTitle: function () { return t('subscriptionBadge.activeTitle', 'Active subscription') },
-    inactiveText: function () { return t('subscriptionBadge.inactive', 'Subscribe') },
-    inactiveTitle: function () { return t('subscriptionBadge.inactiveTitle', 'Activate subscription — 75⭐ / 30 days') }
+    inactiveText: function () { return t('subscriptionBadge.inactive', 'Support us') },
+    inactiveTitle: function () { return t('subscriptionBadge.inactiveTitle', 'Support the project — 75⭐ / 30 days') }
   }
 
   // ── Build DOM ──

@@ -710,7 +710,7 @@
   "subscriptionBadge": {
     "active": "PRO",
     "activeTitle": "Активная подписка",
-    "inactive": "Подписка",
-    "inactiveTitle": "Активировать подписку — 75⭐ / 30 дней"
+    "inactive": "Поддержи",
+    "inactiveTitle": "Поддержи проект — 75⭐ / 30 дней"
   }
 }

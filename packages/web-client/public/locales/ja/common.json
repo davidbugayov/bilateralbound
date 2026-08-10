@@ -504,7 +504,7 @@
   "subscriptionBadge": {
     "active": "PRO",
     "activeTitle": "サブスクリプション有効",
-    "inactive": "購読する",
-    "inactiveTitle": "サブスクリプションを有効化 — 75⭐ / 30日"
+    "inactive": "支援する",
+    "inactiveTitle": "プロジェクトを支援 — 75⭐ / 30日"
   }
 }

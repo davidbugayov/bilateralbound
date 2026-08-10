@@ -504,7 +504,7 @@
   "subscriptionBadge": {
     "active": "PRO",
     "activeTitle": "Abonnement actif",
-    "inactive": "S'abonner",
-    "inactiveTitle": "Activer l'abonnement — 75⭐ / 30 jours"
+    "inactive": "Soutenir",
+    "inactiveTitle": "Soutenir le projet — 75⭐ / 30 jours"
   }
 }

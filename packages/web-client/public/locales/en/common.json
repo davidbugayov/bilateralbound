@@ -684,7 +684,7 @@
   "subscriptionBadge": {
     "active": "PRO",
     "activeTitle": "Active subscription",
-    "inactive": "Subscribe",
-    "inactiveTitle": "Activate subscription — 75⭐ / 30 days"
+    "inactive": "Support us",
+    "inactiveTitle": "Support the project — 75⭐ / 30 days"
   }
 }
