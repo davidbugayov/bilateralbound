@@ -3,9 +3,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.3rem 0.6rem;
+  padding: 0.45rem 0.8rem;
   border-radius: 50px;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   font-weight: 500;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   text-decoration: none;
@@ -24,7 +24,8 @@
 /* Anchor for absolute badge positioning */
 body > header:has(.sub-badge) {
   position: relative;
-  min-height: 40px;
+  min-height: 32px;
+  padding-top: 0;
 }
 
 /* ── Active subscription: PRO badge ── */
