@@ -1,0 +1,138 @@
+/* ── Subscription Badge (Magic UI inspired) ── */
+.sub-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s ease;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  margin-left: auto;
+}
+
+/* ── Active subscription: PRO badge ── */
+.sub-badge--active {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.14), rgba(139, 92, 246, 0.1));
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  overflow: hidden;
+}
+
+.sub-badge--active:hover {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.22), rgba(139, 92, 246, 0.16));
+  border-color: rgba(96, 165, 250, 0.45);
+}
+
+/* Border beam — Magic UI inspired shimmer along border */
+.sub-badge--active::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50px;
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    transparent 30%,
+    rgba(96, 165, 250, 0.5) 40%,
+    rgba(139, 92, 246, 0.4) 50%,
+    rgba(96, 165, 250, 0.5) 60%,
+    transparent 70%,
+    transparent
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  animation: sub-beam-rotate 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes sub-beam-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.sub-badge--active .sub-badge__icon {
+  font-size: 0.8rem;
+  filter: drop-shadow(0 0 3px rgba(250, 204, 21, 0.5));
+}
+
+/* ── Inactive: subtle CTA badge ── */
+.sub-badge--inactive {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sub-badge--inactive:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Gentle pulse for inactive badge */
+.sub-badge--inactive .sub-badge__icon {
+  animation: sub-pulse-soft 5s ease-in-out infinite;
+}
+
+@keyframes sub-pulse-soft {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.65; }
+}
+
+/* ── Loading state ── */
+.sub-badge--loading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Light theme overrides ── */
+body.light .sub-badge--active {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.06));
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+body.light .sub-badge--active:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(124, 58, 237, 0.1));
+}
+
+body.light .sub-badge--active::before {
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    transparent 30%,
+    rgba(37, 99, 235, 0.35) 40%,
+    rgba(124, 58, 237, 0.3) 50%,
+    rgba(37, 99, 235, 0.35) 60%,
+    transparent 70%,
+    transparent
+  );
+}
+
+body.light .sub-badge--inactive {
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(0, 0, 0, 0.4);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light .sub-badge--inactive:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.65);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+/* ── Mobile: hide text, keep icon only ── */
+@media (max-width: 520px) {
+  .sub-badge__text { display: none; }
+  .sub-badge { padding: 0.3rem 0.45rem; gap: 0; }
+}
