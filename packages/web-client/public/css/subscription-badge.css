@@ -28,11 +28,12 @@ body > header:has(.sub-badge) {
   justify-content: flex-end;
   position: relative;
   min-height: 40px;
+  padding-right: 0 !important;
 }
 
 /* Push settings button to the right */
 body > header:has(.sub-badge) #settingsBtn {
-  margin-left: auto;
+  margin-left: auto !important;
 }
 
 /* ── Active subscription: PRO badge ── */
