@@ -19,7 +19,7 @@ LOCAL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # SSH connection uses key auth (no password needed)
 SSH="ssh -o StrictHostKeyChecking=no -i $SSH_KEY root@$SERVER"
-RSYNC="rsync -avz --delete --exclude node_modules --exclude .git --exclude dist --exclude .scannerwork --exclude test-results -e \"ssh -o StrictHostKeyChecking=no -i $SSH_KEY\""
+RSYNC="rsync -avz --delete --exclude node_modules --exclude .git --exclude dist --exclude .scannerwork --exclude test-results --exclude data -e \"ssh -o StrictHostKeyChecking=no -i $SSH_KEY\""
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') ℹ️  $1"
