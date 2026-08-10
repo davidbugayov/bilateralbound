@@ -18,7 +18,16 @@
     <link href="/favicon.ico?v=2.39.543-4d9f8a65" rel="icon" type="image/x-icon" />
     <link rel="apple-touch-icon" href="/favicon.svg?v=2.39.543-4d9f8a65" />
 
-    <style>[data-i18n-cloak]{display:none!important}</style>
+    <script>
+      // Anti-flash cloak: only hide the body when the server has NOT
+      // already rendered localized content (data-i18n-rendered set by
+      // LocalizationService). Hiding pre-rendered content breaks SEO.
+      if (!document.documentElement.hasAttribute('data-i18n-rendered')) {
+        var s = document.createElement('style');
+        s.textContent = '[data-i18n-cloak]{display:none!important}';
+        document.head.appendChild(s);
+      }
+    </script>
     
 
     <script src="/js/i18n/lang-preload.js?v=2.39.543-4d9f8a65"></script>

@@ -1,7 +1,29 @@
 server {
     listen 80;
-    server_name emdrbilateral.online emdrbilateral.ru dev.emdrbilateral.online;
+    server_name emdrbilateral.online emdrbilateral.ru www.emdrbilateral.online www.emdrbilateral.ru dev.emdrbilateral.online;
     return 301 https://$host$request_uri;
+}
+
+# www → non-www (301) — avoids duplicate content for search engines
+server {
+    listen 443 ssl http2;
+    server_name www.emdrbilateral.ru;
+
+    ssl_certificate /etc/letsencrypt/live/emdrbilateral.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/emdrbilateral.ru/privkey.pem;
+
+    return 301 https://emdrbilateral.ru$request_uri;
+}
+
+# www → non-www (301) — avoids duplicate content for search engines
+server {
+    listen 443 ssl http2;
+    server_name www.emdrbilateral.online;
+
+    ssl_certificate /etc/letsencrypt/live/emdrbilateral.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/emdrbilateral.ru/privkey.pem;
+
+    return 301 https://emdrbilateral.online$request_uri;
 }
 
 server {

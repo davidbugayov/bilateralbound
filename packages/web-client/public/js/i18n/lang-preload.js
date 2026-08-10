@@ -54,11 +54,16 @@
     document.documentElement.lang = lang
     document.documentElement.dataset.lang = lang
 
-    // Inject anti-flash style (hides i18n elements until translated)
-    const style = document.createElement('style')
-    style.id = 'i18n-cloak'
-    style.innerHTML = '[data-i18n] { visibility: hidden !important; }'
-    document.head.appendChild(style)
+    // Inject anti-flash style (hides i18n elements until translated).
+    // Skip when the server already rendered localized content
+    // (data-i18n-rendered is set by LocalizationService) — hiding content
+    // that is already correct hurts SEO (crawlers without JS see nothing).
+    if (!document.documentElement.hasAttribute('data-i18n-rendered')) {
+      const style = document.createElement('style')
+      style.id = 'i18n-cloak'
+      style.innerHTML = '[data-i18n] { visibility: hidden !important; }'
+      document.head.appendChild(style)
+    }
   }
 
   // Execute immediately

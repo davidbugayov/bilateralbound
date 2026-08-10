@@ -115,8 +115,25 @@ function registerSeoRoutes(app) {
       : [
           '  <url>\n    <loc>https://emdrbilateral.online/yandex_1e5d10534d3a2826.html</loc>\n    <lastmod>2026-06-01</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>'
         ].join('\n')
+
+    // hreflang alternates: ru lives on .ru, other languages on .online (with ?lang=)
+    const buildHreflang = (path) => {
+      const langs = ['ru', 'en', 'de', 'es', 'fr', 'pt', 'ja', 'zh']
+      return langs
+        .map((l) => {
+          const domain = l === 'ru' ? 'https://emdrbilateral.ru' : 'https://emdrbilateral.online'
+          const suffix = l === 'ru' || l === 'en' ? '' : `?lang=${l}`
+          return `    <xhtml:link rel="alternate" hreflang="${l}" href="${domain}${path}${suffix}" />`
+        })
+        .join('\n')
+    }
+    const hreflangDefault = isRu
+      ? 'https://emdrbilateral.ru/'
+      : 'https://emdrbilateral.online/'
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>${base}/</loc>
@@ -128,30 +145,36 @@ function registerSeoRoutes(app) {
       <image:title>${imageTitle}</image:title>
       <image:caption>${imageCaption}</image:caption>
     </image:image>
+${buildHreflang('/')}
+    <xhtml:link rel="alternate" hreflang="x-default" href="${hreflangDefault}" />
   </url>
   <url>
     <loc>${base}/privacy</loc>
     <lastmod>2026-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
+${buildHreflang('/privacy')}
   </url>
   <url>
     <loc>${base}/offer</loc>
     <lastmod>2026-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
+${buildHreflang('/offer')}
   </url>
   <url>
     <loc>${base}/breathing</loc>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+${buildHreflang('/breathing')}
   </url>
   <url>
     <loc>${base}/about</loc>
     <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+${buildHreflang('/about')}
   </url>
 ${verificationUrls}
 </urlset>`
@@ -280,11 +303,11 @@ ${verificationUrls}
     <guid>${baseUrl}/</guid>
   </item>
   <item>
-    <title>EMDR Терапия для Супружеских Пар | Bilateral Stimulation | Психолог Онлайн</title>
-    <link>${baseUrl}/emdr-therapy/</link>
-    <description>Профессиональная EMDR терапия для супружеских пар с использованием билатеральной стимуляции. Эффективное лечение травм, ПТСР, конфликтов в отношениях. Онлайн-сессии с сертифицированным психологом.</description>
+    <title>О EMDR терапии | BilateralBound</title>
+    <link>${baseUrl}/about</link>
+    <description>Что такое EMDR терапия и билатеральная стимуляция. Бесплатный онлайн-инструмент для сессий EMDR: движение шарика, билатеральный звук, синхронизация в реальном времени.</description>
     <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
-    <guid>${baseUrl}/emdr-therapy/</guid>
+    <guid>${baseUrl}/about</guid>
   </item>
 </channel>
 </rss>

@@ -209,7 +209,92 @@ class LocalizationService {
   }
 
   /**
-   * Replaces meta tags in HTML with localized values.
+   * Replaces the inner content of every element with a data-i18n="key"
+   * attribute using the value from the locale (same semantics as the
+   * client-side i18n.applyTranslations: full innerHTML replacement).
+   * Elements nested inside an already-translated parent are skipped.
+   * @param {string} html - Raw HTML string
+   * @param {Object} locale - Parsed locale object
+   * @returns {string} HTML with localized content
+   */
+  _localizeContent(html, locale) {
+    const VOID_TAGS = new Set([
+      'area', 'base', 'br', 'col', 'embed', 'hr', 'img',
+      'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'
+    ])
+    const tagRe = /<(\/)?([a-zA-Z][a-zA-Z0-9-]*)((?:\s[^<>]*?)?)(\/?)>/g
+    const stack = []
+    const candidates = []
+    let m
+
+    while ((m = tagRe.exec(html)) !== null) {
+      const isClose = !!m[1]
+      const tag = m[2].toLowerCase()
+      const attrs = m[3] || ''
+      const selfClosing = m[4] === '/'
+
+      // Skip script/style bodies entirely — they may contain '<' and '>'
+      if ((tag === 'script' || tag === 'style') && !isClose) {
+        const closeIdx = html.indexOf(`</${tag}`, m.index + m[0].length)
+        if (closeIdx !== -1) {
+          tagRe.lastIndex = closeIdx + `</${tag}>`.length
+        }
+        continue
+      }
+
+      if (isClose) {
+        let idx = -1
+        for (let i = stack.length - 1; i >= 0; i--) {
+          if (stack[i].tag === tag) {
+            idx = i
+            break
+          }
+        }
+        if (idx !== -1) {
+          const open = stack[idx]
+          if (open.dataI18n) {
+            candidates.push({
+              innerStart: open.openEnd,
+              innerEnd: m.index,
+              key: open.dataI18n
+            })
+          }
+          stack.splice(idx)
+        }
+        continue
+      }
+
+      if (VOID_TAGS.has(tag) || selfClosing) continue
+
+      const di18n = attrs.match(/data-i18n="([^"]*)"/)
+      stack.push({
+        tag,
+        openEnd: m.index + m[0].length,
+        dataI18n: di18n ? di18n[1] : null
+      })
+    }
+
+    // Apply from outermost to innermost; nested elements inside an already
+    // replaced parent are skipped via the cursor check.
+    candidates.sort((a, b) => a.innerStart - b.innerStart)
+    let out = ''
+    let cursor = 0
+    for (const c of candidates) {
+      if (c.innerStart < cursor) continue
+      const value = this._getLocaleValue(locale, c.key)
+      if (typeof value === 'string' && value.length > 0) {
+        out += html.slice(cursor, c.innerStart) + value
+        cursor = c.innerEnd
+      }
+    }
+    out += html.slice(cursor)
+    return out
+  }
+
+  /**
+   * Replaces meta tags in HTML with localized values and marks the page as
+   * server-rendered (data-i18n-rendered) so client cloak scripts don't hide
+   * content that is already localized.
    * @param {string} html - Raw HTML string
    * @param {string} lang - Language code
    * @param {Object} locale - Parsed locale object
@@ -217,7 +302,17 @@ class LocalizationService {
    * @returns {string} Localized HTML
    */
   _localizeHtml(html, lang, locale, metaMap) {
-    let result = html.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
+    let result = html
+      .replace(
+        /<html lang="[^"]*"/,
+        `<html lang="${lang}" data-i18n-rendered="true"`
+      )
+      // Some templates carry a static data-lang attribute (e.g. privacy.html
+      // has <html lang="en" data-lang="en">) — keep it in sync with lang
+      .replace(
+        /data-lang="[^"]*"/,
+        `data-lang="${lang}"`
+      )
 
     // Match each <meta ... /> or <meta ... > tag
     result = result.replace(/<meta\b[^>]*?\/?>/g, (tag) => {
@@ -248,6 +343,9 @@ class LocalizationService {
         )
       }
     }
+
+    // Localize body content (elements with data-i18n attributes)
+    result = this._localizeContent(result, locale)
 
     return result
   }
