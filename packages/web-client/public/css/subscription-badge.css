@@ -15,25 +15,16 @@
   letter-spacing: 0.01em;
   line-height: 1;
   position: absolute;
-  right: 48px;
+  right: 64px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
 }
 
-/* Ensure header is flex + relative for absolute badge */
+/* Anchor for absolute badge positioning */
 body > header:has(.sub-badge) {
-  display: flex !important;
-  align-items: center;
-  justify-content: flex-end;
   position: relative;
   min-height: 40px;
-  padding-right: 0 !important;
-}
-
-/* Push settings button to the right */
-body > header:has(.sub-badge) #settingsBtn {
-  margin-left: auto !important;
 }
 
 /* ── Active subscription: PRO badge ── */
