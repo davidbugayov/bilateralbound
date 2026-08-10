@@ -222,7 +222,7 @@ function registerStaticRoutes(
   // paywall overlay script injected before </body>.
   app.get('/s/:sessionId', (req, res) => {
     const { sessionId } = req.params
-    const session = sessionService.getSession(sessionId)
+    const session = sessionService.findOrCreateSession(sessionId)
     let html = localizationService.getLocalizedHtml('viewer', req, session)
     if (!decideAccess(req, res, sessionId)) {
       html = injectPaywallOverlay(html)
@@ -238,7 +238,7 @@ function registerStaticRoutes(
   // On deny: serve the real content page with a paywall overlay injected.
   app.get('/c/:sessionId', (req, res) => {
     const { sessionId } = req.params
-    const session = sessionService.getSession(sessionId)
+    const session = sessionService.findOrCreateSession(sessionId)
     let html = localizationService.getLocalizedHtml(
       'controller',
       req,
