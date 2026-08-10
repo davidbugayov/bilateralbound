@@ -25,7 +25,9 @@
 body > header:has(.sub-badge) {
   display: flex !important;
   align-items: center;
+  justify-content: flex-end;
   position: relative;
+  min-height: 40px;
 }
 
 /* Push settings button to the right */
