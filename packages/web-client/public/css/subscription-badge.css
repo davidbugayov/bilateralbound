@@ -16,7 +16,7 @@
   line-height: 1;
   position: absolute;
   right: 64px;
-  top: 12px; /* matches fixed-positioned settingsBtn (top:12px) */
+  top: 8px; /* matches fixed-positioned settingsBtn (top:8px) */
   z-index: 10;
   box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
 }
