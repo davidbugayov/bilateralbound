@@ -286,7 +286,7 @@ body.light .sub-badge--inactive:hover {
 }
 
 .sub-dialog__benefit:last-child::before {
-  content: '💛';
+  content: none;
 }
 
 .sub-dialog__price {
