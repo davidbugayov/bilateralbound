@@ -217,7 +217,7 @@ class WebSocketClient {
       this.ws.onclose = null // prevent reconnect on intentional close
       const ws = this.ws
       this.ws = null
-      try { ws.close(1000, 'Client closed') } catch (e) { /* already closing */ }
+      try { ws.close(1000, 'Client closed') } catch { /* already closing */ }
     }
     this.isConnected = false
     this.isConnecting = false
