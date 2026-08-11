@@ -222,13 +222,36 @@
     openDialog()
   })
 
+  // ── Read cookie by name ──
+  function getCookie(name) {
+    try {
+      var m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + '=([^;]*)'))
+      return m ? decodeURIComponent(m[1]) : null
+    } catch (_) { return null }
+  }
+
   // ── Fetch subscription status ──
   async function checkSubscription() {
+    // Fast path: sub_active cookie (set by server on link-access unlock, non-httpOnly)
+    var subActive = getCookie('sub_active')
+    if (subActive) {
+      var expiry = parseInt(subActive, 10)
+      if (expiry && expiry > Date.now()) {
+        badge.classList.remove('sub-badge--loading')
+        badge.classList.add('sub-badge--active')
+        badge.classList.remove('sub-badge--inactive')
+        refresh()
+        return
+      }
+    }
+
+    // Check subscription by session ID
     try {
       const fetchFn = globalThis.csrfFetch || fetch
       const resp = await fetchFn('/api/subscription/' + encodeURIComponent(SESSION_ID) + '/check', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin'
       })
       const data = await resp.json().catch(function () { return {} })
 
@@ -237,14 +260,35 @@
       if (data.active) {
         badge.classList.add('sub-badge--active')
         badge.classList.remove('sub-badge--inactive')
+        refresh()
+        return
+      }
+    } catch (_) { /* continue to link-access fallback */ }
+
+    // Fallback: check if browser was unlocked via bb_lk cookie (link-access)
+    try {
+      const resp2 = await fetch('/api/link-access/' + encodeURIComponent(SESSION_ID) + '/check', {
+        method: 'GET',
+        credentials: 'same-origin'
+      })
+      const la = await resp2.json().catch(function () { return {} })
+
+      badge.classList.remove('sub-badge--loading')
+
+      if (la.unlocked) {
+        badge.classList.add('sub-badge--active')
+        badge.classList.remove('sub-badge--inactive')
       } else {
         badge.classList.add('sub-badge--inactive')
         badge.classList.remove('sub-badge--active')
       }
       refresh()
-    } catch (err) {
-      // Network error — hide silently
-      badge.style.display = 'none'
+    } catch (_) {
+      // Both checks failed — show inactive state
+      badge.classList.remove('sub-badge--loading')
+      badge.classList.add('sub-badge--inactive')
+      badge.classList.remove('sub-badge--active')
+      refresh()
     }
   }
 

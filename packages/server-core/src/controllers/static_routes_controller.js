@@ -226,6 +226,16 @@ function registerStaticRoutes(
     let html = localizationService.getLocalizedHtml('viewer', req, session)
     if (!decideAccess(req, res, sessionId)) {
       html = injectPaywallOverlay(html)
+    } else if (subscriptionService && subscriptionService.isCustomIdAllowed(sessionId)) {
+      const status = subscriptionService.getStatusForCustomId(sessionId)
+      if (status && status.expiresAt) {
+        res.cookie('sub_active', String(status.expiresAt), {
+          httpOnly: false,
+          secure: !req.app.get('isDev'),
+          sameSite: 'lax',
+          maxAge: 365 * 24 * 60 * 60 * 1000
+        })
+      }
     }
     html = injectWsToken(html, sessionId, 'viewer')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -246,6 +256,17 @@ function registerStaticRoutes(
     )
     if (!decideAccess(req, res, sessionId)) {
       html = injectPaywallOverlay(html)
+    } else if (subscriptionService && subscriptionService.isCustomIdAllowed(sessionId)) {
+      // Set sub_active cookie so subscription-badge.js detects it client-side
+      const status = subscriptionService.getStatusForCustomId(sessionId)
+      if (status && status.expiresAt) {
+        res.cookie('sub_active', String(status.expiresAt), {
+          httpOnly: false,
+          secure: !req.app.get('isDev'),
+          sameSite: 'lax',
+          maxAge: 365 * 24 * 60 * 60 * 1000
+        })
+      }
     }
     html = injectWsToken(html, sessionId, 'controller')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')

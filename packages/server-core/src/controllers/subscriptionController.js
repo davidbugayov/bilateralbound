@@ -126,6 +126,30 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   })
 
   // ------------------------------------------------------------------
+  // GET /api/link-access/:sessionId/check
+  // Check if the current browser (bb_lk cookie) has unlocked access for this session.
+  // Returns { unlocked: boolean, unlockedUntil: number|null }
+  // ------------------------------------------------------------------
+  app.get('/api/link-access/:sessionId/check', (req, res) => {
+    if (!linkAccessService) {
+      return res.json({ unlocked: false, unlockedUntil: null })
+    }
+    const { sessionId } = req.params
+    const BROWSER_COOKIE = 'bb_lk'
+    const browserId = req.cookies && req.cookies[BROWSER_COOKIE]
+    if (!browserId) {
+      return res.json({ unlocked: false, unlockedUntil: null })
+    }
+    const state = linkAccessService.get(browserId, sessionId)
+    const now = Date.now()
+    const unlocked = !!(state.unlockedUntil && state.unlockedUntil > now)
+    res.json({
+      unlocked,
+      unlockedUntil: unlocked ? state.unlockedUntil : null
+    })
+  })
+
+  // ------------------------------------------------------------------
   // POST /api/link-access/:sessionId/unlock
   // Unlock repeated access to a session link for the current browser.
   // Requires active subscription — proof of Telegram account ownership via initData.
@@ -181,6 +205,15 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
     // Unlock access
     linkAccessService.setUnlocked(browserId, sessionId, expiresAt)
+
+    // Also set a non-httpOnly cookie so the subscription badge can read it client-side
+    // without needing an API call. Cookie name: sub_active, value: expiry timestamp.
+    res.cookie('sub_active', String(expiresAt), {
+      httpOnly: false,
+      secure: !req.app.get('isDev'),
+      sameSite: 'lax',
+      maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
+    })
 
     logger.info(
       { browserId, sessionId, telegramUserId: userId, expiresAt: new Date(expiresAt).toISOString() },
