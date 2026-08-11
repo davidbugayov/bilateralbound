@@ -1816,13 +1816,33 @@ function initHintSystem() {
  * @param {string} type - Тип уведомления ('info', 'success', 'warning', 'error')
  */
 function showCriticalError(title, message) {
+  const t = (key, fallback) => globalThis.i18n?.t(key) || fallback
+  if (typeof globalThis.HintBanner === 'function') {
+    const container = document.getElementById('errorStatesContainer')
+    if (container) container.style.display = 'block'
+    new globalThis.HintBanner({
+      container: container || document.body,
+      type: 'error',
+      title: title,
+      message: message,
+      ctaLabel: t('hint.createNewSession', 'Create new session'),
+      onCta: () => { globalThis.location.href = '/' },
+      closeLabel: t('hint.close', 'Close hint'),
+      ariaLive: 'assertive'
+    }).show()
+    return
+  }
   if (globalThis.errorStateManager?.show) {
     globalThis.errorStateManager.show('critical-error', {
       title: title,
       message: message,
       actions: [
         {
-          label: globalThis.i18n?.t('viewer.reload') || 'Reload page',
+          label: t('hint.createNewSession', 'Create new session'),
+          callback: () => { globalThis.location.href = '/' }
+        },
+        {
+          label: t('viewer.reload', 'Reload page'),
           callback: () => globalThis.location.reload()
         }
       ]
