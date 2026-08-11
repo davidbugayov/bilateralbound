@@ -13,4 +13,5 @@
 #viewerStatus.disconnected::before{animation:bbStatusPulse 1.6s ease-in-out infinite}
 #viewerStatus.connected::before{animation:bbStatusPulse 2s ease-in-out infinite}
 
-main.wrap.controller-layout{padding-top:0}
+main.wrap.controller-layout{padding-top:8px}
+.controller-center-col .control-section h3{margin-top:8px}
