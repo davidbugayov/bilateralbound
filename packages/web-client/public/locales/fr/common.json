@@ -52,7 +52,7 @@
     "controllerLabel": "🎮 Lien pour le thérapeute (Controller):",
     "copyBtnLabelClient": "Copier le lien du client",
     "copyBtnLabelController": "Copier le lien du thérapeute",
-    "tip": "💡 <strong>Enregistrez ces liens!</strong> Ils sont permanents et fonctionneront toujours. Envoyez le lien viewer au client et ouvrez le lien controller vous-même pour gérer la séance.",
+    "tip": "<strong>Enregistrez ces liens!</strong> Ils sont permanents et fonctionneront toujours. Envoyez le lien viewer au client et ouvrez le lien controller vous-même pour gérer la séance.",
     "creating": "⏳ Création...",
     "creatingLinks": "Création des liens permanents...",
     "createdSuccess": "✅ Liens créés avec succès!",

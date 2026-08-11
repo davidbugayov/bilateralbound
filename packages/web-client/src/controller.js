@@ -1797,13 +1797,12 @@ function initHintSystem() {
     const hotkeysHtml =
       '<kbd>Space</kbd> ' + t('controller.hotkeySpaceAction', '— Start/Stop') +
       ' &nbsp;·&nbsp; <kbd>F</kbd> ' + t('controller.hotkeyFAction', '— Fullscreen') +
-      ' &nbsp;·&nbsp; <kbd>↑↓←→</kbd> ' + t('controller.hotkeyArrowsAction', '— Direction') +
-      ' &nbsp;·&nbsp; <kbd>Ctrl+S</kbd> ' + t('controller.hotkeyCtrlSAction', '— Save preset')
+      ' &nbsp;·&nbsp; <kbd>↑↓←→</kbd> ' + t('controller.hotkeyArrowsAction', '— Direction')
     new globalThis.HintBanner({
       container: hkContainer,
       type: 'info',
       icon: '⌨️',
-      title: t('controller.hotkeysTitle', '⌨️ Hotkeys'),
+      title: t('controller.hotkeysTitle', 'Hotkeys'),
       message: hotkeysHtml,
       dismissKey: 'bb_hotkeys_hint_dismissed',
       closeLabel: t('hint.close', 'Close hint')

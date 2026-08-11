@@ -52,7 +52,7 @@
     "controllerLabel": "🎮 セラピスト用リンク（Controller）：",
     "copyBtnLabelClient": "クライアントリンクをコピー",
     "copyBtnLabelController": "セラピストリンクをコピー",
-    "tip": "💡 <strong>これらのリンクを保存してください！</strong>永続的で常に機能します。viewerリンクをクライアントに送信し、controllerリンクを自分で開いてセッションを管理してください。",
+    "tip": "<strong>これらのリンクを保存してください！</strong>永続的で常に機能します。viewerリンクをクライアントに送信し、controllerリンクを自分で開いてセッションを管理してください。",
     "creating": "⏳ 作成中...",
     "creatingLinks": "永続リンクを作成中...",
     "createdSuccess": "✅ リンクが正常に作成されました！",

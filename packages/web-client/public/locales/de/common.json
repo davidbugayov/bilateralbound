@@ -52,7 +52,7 @@
     "controllerLabel": "🎮 Link für Therapeuten (Controller):",
     "copyBtnLabelClient": "Klienten-Link kopieren",
     "copyBtnLabelController": "Therapeuten-Link kopieren",
-    "tip": "💡 <strong>Speichern Sie diese Links!</strong> Sie sind permanent und funktionieren immer. Senden Sie den Viewer-Link an den Klienten und öffnen Sie den Controller-Link selbst, um die Sitzung zu verwalten.",
+    "tip": "<strong>Speichern Sie diese Links!</strong> Sie sind permanent und funktionieren immer. Senden Sie den Viewer-Link an den Klienten und öffnen Sie den Controller-Link selbst, um die Sitzung zu verwalten.",
     "creating": "⏳ Wird erstellt...",
     "creatingLinks": "Permanente Links werden erstellt...",
     "createdSuccess": "✅ Links erfolgreich erstellt!",
