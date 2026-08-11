@@ -232,7 +232,7 @@
 
   // ── Fetch subscription status ──
   async function checkSubscription() {
-    // Fast path: sub_active cookie (set by server on link-access unlock, non-httpOnly)
+    // Fast path 1: sub_active cookie (set by server on link-access unlock or page load)
     var subActive = getCookie('sub_active')
     if (subActive) {
       var expiry = parseInt(subActive, 10)
@@ -243,6 +243,28 @@
         refresh()
         return
       }
+    }
+
+    // Fast path 2: localStorage proof from main page (set after successful check)
+    var proofId = null
+    try { proofId = localStorage.getItem('subscriptionProofId') } catch (_) {}
+    if (proofId) {
+      try {
+        var fetchProof = globalThis.csrfFetch || fetch
+        var respProof = await fetchProof('/api/subscription/' + encodeURIComponent(proofId) + '/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin'
+        })
+        var proofData = await respProof.json().catch(function () { return {} })
+        if (proofData.active) {
+          badge.classList.remove('sub-badge--loading')
+          badge.classList.add('sub-badge--active')
+          badge.classList.remove('sub-badge--inactive')
+          refresh()
+          return
+        }
+      } catch (_) { /* fall through */ }
     }
 
     // Check subscription by session ID
