@@ -24,7 +24,7 @@
 /* Anchor for absolute badge positioning */
 body > header:has(.sub-badge) {
   position: relative;
-  min-height: 24px;
+  min-height: 0;
   padding-top: 0;
 }
 
