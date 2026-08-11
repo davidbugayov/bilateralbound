@@ -30,6 +30,7 @@ class WebSocketClient {
     this.sessionId = sessionId
     this.role = role
     this.ws = null
+    this._intentionallyClosed = false
     this.isConnected = false
     this.isConnecting = false
     this.eventHandlers = new Map()
@@ -210,11 +211,13 @@ class WebSocketClient {
     if (idx !== -1) handlers.splice(idx, 1)
   }
   close() {
+    this._intentionallyClosed = true
     this._clearTimers()
     if (this.ws) {
       this.ws.onclose = null // prevent reconnect on intentional close
-      this.ws.close(1000, 'Client closed')
+      const ws = this.ws
       this.ws = null
+      try { ws.close(1000, 'Client closed') } catch (e) { /* already closing */ }
     }
     this.isConnected = false
     this.isConnecting = false
@@ -317,7 +320,9 @@ class WebSocketClient {
     this.isConnected = false
     this._clearTimers()
     this._emit('close', event)
-    if (event.code !== 1000) {
+    // Если обработчик 'close' намеренно закрыл сокет (close() во время события) —
+    // не планировать переподключение (например, сессия удалена на сервере).
+    if (event.code !== 1000 && !this._intentionallyClosed) {
       this._scheduleReconnect()
     }
   }

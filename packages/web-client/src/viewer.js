@@ -583,8 +583,32 @@ document.addEventListener('DOMContentLoaded', async function () {
       errorMsg?.includes('Session with this ID not found') ||
       errorMsg?.includes('not found')
     ) {
-      errorMsg =
-        'Session with this ID not found. Please check the URL and try again.'
+      // Протухшая ссылка — показываем баннер с CTA «Создать новую сессию»
+      const t = (key, fallback) => globalThis.i18n?.t(key) || fallback
+      if (typeof globalThis.HintBanner === 'function') {
+        const container =
+          document.getElementById('errorStatesContainer') || document.body
+        new globalThis.HintBanner({
+          container: container,
+          type: 'error',
+          title: t('hint.sessionNotFound', 'Session not found'),
+          message: t(
+            'hint.sessionNotFoundMsg',
+            'This link is outdated or was deleted. Create a new session to continue.'
+          ),
+          ctaLabel: t('hint.createNewSession', 'Create new session'),
+          onCta: () => { globalThis.location.href = '/' },
+          closeLabel: t('hint.close', 'Close hint'),
+          ariaLive: 'assertive'
+        }).show()
+        const loading = document.getElementById('loading')
+        if (loading) loading.style.display = 'none'
+        return
+      }
+      errorMsg = t(
+        'hint.sessionNotFoundMsg',
+        'This link is outdated or was deleted. Create a new session to continue.'
+      )
     } else if (errorMsg?.includes('Realtime connection')) {
       errorMsg =
         'Failed to connect to session. Please reload the page and try again.'
@@ -911,9 +935,39 @@ function setupWebSocketHandlers(wsClient, sessionId) {
     try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_viewer_connected', { detail: { screenWidth: globalThis.innerWidth, screenHeight: globalThis.innerHeight } })) } catch (e) { void e }
   })
 
-  wsClient.on('close', () => {
-    debugWarn('🔌 WS connection closed.')
+  wsClient.on('close', (event) => {
+    debugWarn('🔌 WS connection closed.', event)
     stopSyncMonitor()
+    // Протухшая/удалённая сессия — сервер закрывает соединение с кодом 1011 'Session not found'.
+    // Показываем баннер с CTA «Создать новую сессию» и прекращаем попытки переподключения.
+    if (
+      event &&
+      event.code === 1011 &&
+      String(event.reason || '').toLowerCase().includes('not found')
+    ) {
+      const t = (key, fallback) => globalThis.i18n?.t(key) || fallback
+      try { wsClient.close() } catch (e) { void e }
+      const loading = document.getElementById('loading')
+      if (loading) loading.style.display = 'none'
+      if (typeof globalThis.HintBanner === 'function') {
+        const container =
+          document.getElementById('errorStatesContainer') || document.body
+        new globalThis.HintBanner({
+          container: container,
+          type: 'error',
+          title: t('hint.sessionNotFound', 'Session not found'),
+          message: t(
+            'hint.sessionNotFoundMsg',
+            'This link is outdated or was deleted. Create a new session to continue.'
+          ),
+          ctaLabel: t('hint.createNewSession', 'Create new session'),
+          onCta: () => { globalThis.location.href = '/' },
+          closeLabel: t('hint.close', 'Close hint'),
+          ariaLive: 'assertive'
+        }).show()
+        return
+      }
+    }
     // Keep local physics running during transient disconnects.
     // Hard pause+center here causes visible stutter; on reconnect we reconcile smoothly.
     const lostMsg =
