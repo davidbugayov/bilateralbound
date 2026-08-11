@@ -149,6 +149,7 @@ function stopSyncMonitor() {
 document.addEventListener('DOMContentLoaded', () => {
   initializeController().catch(debugError)
   bbCounters.initDom()
+  initHintSystem()
   bbCounters.onAutoStop = () => _setPlayPauseState(false)
   const autoStopPassesInput = document.getElementById('autoStopPassesInput')
   const autoStopSecondsInput = document.getElementById('autoStopSecondsInput')
@@ -1762,6 +1763,51 @@ function resetSession() {
         'Error resetting session',
       'error'
     )
+  }
+}
+/**
+ * Единая система подсказок контроллера: tip про ссылки + hotkeys.
+ * Использует общий компонент HintBanner (public/js/ui/hint-banner.js).
+ */
+function initHintSystem() {
+  if (typeof globalThis.HintBanner !== 'function') return
+  // i18n подгружает переводы асинхронно (fetch /locales/<lang>/common.json).
+  // Пока не готов — t() возвращает ключ вместо текста, ждём события i18nReady.
+  if (!globalThis.i18n?.isReady) {
+    globalThis.addEventListener('i18nReady', initHintSystem, { once: true })
+    return
+  }
+  const t = (key, fallback) => globalThis.i18n?.t(key) || fallback
+
+  // 1. 💡 Сохраните эти ссылки (links.tip)
+  const tipContainer = document.getElementById('linkTipContainer')
+  if (tipContainer) {
+    new globalThis.HintBanner({
+      container: tipContainer,
+      type: 'info',
+      message: t('links.tip', '<strong>Save these links!</strong> They are permanent and will always work.'),
+      dismissKey: 'bb_hint_links_tip_dismissed',
+      closeLabel: t('hint.close', 'Close hint')
+    }).show()
+  }
+
+  // 2. ⌨️ Горячие клавиши
+  const hkContainer = document.getElementById('hotkeysHintContainer')
+  if (hkContainer) {
+    const hotkeysHtml =
+      '<kbd>Space</kbd> ' + t('controller.hotkeySpaceAction', '— Start/Stop') +
+      ' &nbsp;·&nbsp; <kbd>F</kbd> ' + t('controller.hotkeyFAction', '— Fullscreen') +
+      ' &nbsp;·&nbsp; <kbd>↑↓←→</kbd> ' + t('controller.hotkeyArrowsAction', '— Direction') +
+      ' &nbsp;·&nbsp; <kbd>Ctrl+S</kbd> ' + t('controller.hotkeyCtrlSAction', '— Save preset')
+    new globalThis.HintBanner({
+      container: hkContainer,
+      type: 'info',
+      icon: '⌨️',
+      title: t('controller.hotkeysTitle', '⌨️ Hotkeys'),
+      message: hotkeysHtml,
+      dismissKey: 'bb_hotkeys_hint_dismissed',
+      closeLabel: t('hint.close', 'Close hint')
+    }).show()
   }
 }
 /**
