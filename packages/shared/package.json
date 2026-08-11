@@ -1,6 +1,6 @@
 {
   "name": "@emdr/shared",
-  "version": "2.39.804",
+  "version": "2.39.805",
   "description": "Shared modules for EMDR therapy platform",
   "main": "physics-engine.js",
   "type": "commonjs",

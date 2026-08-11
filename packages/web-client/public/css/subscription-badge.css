@@ -16,7 +16,7 @@
   line-height: 1;
   position: absolute;
   right: 64px;
-  top: 8px; /* matches fixed-positioned settingsBtn (top:8px) */
+  top: 6px; /* matches fixed-positioned settingsBtn (top:6px) */
   z-index: 10;
   box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
 }
@@ -24,7 +24,7 @@
 /* Anchor for absolute badge positioning */
 body > header:has(.sub-badge) {
   position: relative;
-  min-height: 32px;
+  min-height: 24px;
   padding-top: 0;
 }
 
