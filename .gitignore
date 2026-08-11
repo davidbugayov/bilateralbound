@@ -46,6 +46,7 @@ yarn-error.log*
 
 # Runtime data
 pids/
+packages/server-core/data/
 *.pid
 *.seed
 *.pid.lock

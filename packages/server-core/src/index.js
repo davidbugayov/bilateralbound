@@ -60,7 +60,9 @@ const physicsService = new PhysicsService(
     analytics
   }
 )
-const dataDir = path.join(__dirname, '..', 'data')
+// Use DATA_DIR env var if set (production: /var/data/bilateral-bound/),
+// otherwise fall back to relative path inside the app directory (local dev).
+const dataDir = config.server.DATA_DIR || path.join(__dirname, '..', 'data')
 const subscriptionService = new SubscriptionService({
   logger,
   durationMs: config.subscription.SUBSCRIPTION_DURATION_MS,
