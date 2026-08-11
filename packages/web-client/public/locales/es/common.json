@@ -678,7 +678,9 @@
     "active": "PRO",
     "activeTitle": "Suscripción activa",
     "inactive": "Apoyar",
-    "inactiveTitle": "Apoya el proyecto — 75⭐ / 30 días"
+    "inactiveTitle": "Apoya el proyecto — 75⭐ / 30 días",
+    "dialogTitle": "Qué incluye Supporter",
+    "dialogClose": "Cerrar"
   },
   "hint": {
     "sessionExpired": "Sesión expirada",

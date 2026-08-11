@@ -491,7 +491,9 @@
     "active": "PRO",
     "activeTitle": "订阅已激活",
     "inactive": "支持",
-    "inactiveTitle": "支持项目 — 75⭐ / 30天"
+    "inactiveTitle": "支持项目 — 75⭐ / 30天",
+    "dialogTitle": "Supporter 包含的内容",
+    "dialogClose": "关闭"
   },
   "hint": {
     "sessionExpired": "会话已过期",

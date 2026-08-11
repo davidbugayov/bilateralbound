@@ -505,7 +505,9 @@
     "active": "PRO",
     "activeTitle": "サブスクリプション有効",
     "inactive": "支援する",
-    "inactiveTitle": "プロジェクトを支援 — 75⭐ / 30日"
+    "inactiveTitle": "プロジェクトを支援 — 75⭐ / 30日",
+    "dialogTitle": "サポーターでできること",
+    "dialogClose": "閉じる"
   },
   "hint": {
     "sessionExpired": "セッションの有効期限切れ",

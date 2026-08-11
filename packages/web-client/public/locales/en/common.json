@@ -685,7 +685,9 @@
     "active": "PRO",
     "activeTitle": "Active subscription",
     "inactive": "Support us",
-    "inactiveTitle": "Support the project — 75⭐ / 30 days"
+    "inactiveTitle": "Support the project — 75⭐ / 30 days",
+    "dialogTitle": "What you get with Supporter",
+    "dialogClose": "Close"
   },
   "hint": {
     "sessionExpired": "Session expired",

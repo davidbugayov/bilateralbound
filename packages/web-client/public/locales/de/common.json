@@ -499,7 +499,9 @@
     "active": "PRO",
     "activeTitle": "Aktives Abo",
     "inactive": "Unterstützen",
-    "inactiveTitle": "Projekt unterstützen — 75⭐ / 30 Tage"
+    "inactiveTitle": "Projekt unterstützen — 75⭐ / 30 Tage",
+    "dialogTitle": "Was Supporter bietet",
+    "dialogClose": "Schließen"
   },
   "hint": {
     "sessionExpired": "Sitzung abgelaufen",
