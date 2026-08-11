@@ -492,5 +492,13 @@
     "activeTitle": "订阅已激活",
     "inactive": "支持",
     "inactiveTitle": "支持项目 — 75⭐ / 30天"
+  },
+  "hint": {
+    "sessionExpired": "会话已过期",
+    "sessionExpiredMsg": "您的会话已过期或已从服务器删除。请创建新会话以继续。",
+    "sessionNotFound": "未找到会话",
+    "sessionNotFoundMsg": "此链接已过期或已被删除。请创建新会话以继续。",
+    "createNewSession": "创建新会话",
+    "close": "关闭提示"
   }
 }

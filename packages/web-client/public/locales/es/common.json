@@ -679,5 +679,13 @@
     "activeTitle": "Suscripción activa",
     "inactive": "Apoyar",
     "inactiveTitle": "Apoya el proyecto — 75⭐ / 30 días"
+  },
+  "hint": {
+    "sessionExpired": "Sesión expirada",
+    "sessionExpiredMsg": "Tu sesión ha expirado o fue eliminada del servidor. Crea una sesión nueva para continuar.",
+    "sessionNotFound": "Sesión no encontrada",
+    "sessionNotFoundMsg": "Este enlace está desactualizado o fue eliminado. Crea una sesión nueva para continuar.",
+    "createNewSession": "Crear sesión nueva",
+    "close": "Cerrar sugerencia"
   }
 }

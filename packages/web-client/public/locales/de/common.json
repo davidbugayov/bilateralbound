@@ -500,5 +500,13 @@
     "activeTitle": "Aktives Abo",
     "inactive": "Unterstützen",
     "inactiveTitle": "Projekt unterstützen — 75⭐ / 30 Tage"
+  },
+  "hint": {
+    "sessionExpired": "Sitzung abgelaufen",
+    "sessionExpiredMsg": "Ihre Sitzung ist abgelaufen oder wurde vom Server entfernt. Erstellen Sie eine neue Sitzung, um fortzufahren.",
+    "sessionNotFound": "Sitzung nicht gefunden",
+    "sessionNotFoundMsg": "Dieser Link ist veraltet oder wurde gelöscht. Erstellen Sie eine neue Sitzung, um fortzufahren.",
+    "createNewSession": "Neue Sitzung erstellen",
+    "close": "Hinweis schließen"
   }
 }

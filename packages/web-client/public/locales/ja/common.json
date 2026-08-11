@@ -506,5 +506,13 @@
     "activeTitle": "サブスクリプション有効",
     "inactive": "支援する",
     "inactiveTitle": "プロジェクトを支援 — 75⭐ / 30日"
+  },
+  "hint": {
+    "sessionExpired": "セッションの有効期限切れ",
+    "sessionExpiredMsg": "セッションの有効期限が切れたか、サーバーから削除されました。続けるには新しいセッションを作成してください。",
+    "sessionNotFound": "セッションが見つかりません",
+    "sessionNotFoundMsg": "このリンクは古いか削除されています。続けるには新しいセッションを作成してください。",
+    "createNewSession": "新しいセッションを作成",
+    "close": "ヒントを閉じる"
   }
 }

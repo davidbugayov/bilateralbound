@@ -506,5 +506,13 @@
     "activeTitle": "Abonnement actif",
     "inactive": "Soutenir",
     "inactiveTitle": "Soutenir le projet — 75⭐ / 30 jours"
+  },
+  "hint": {
+    "sessionExpired": "Session expirée",
+    "sessionExpiredMsg": "Votre session a expiré ou a été supprimée du serveur. Créez une nouvelle session pour continuer.",
+    "sessionNotFound": "Session introuvable",
+    "sessionNotFoundMsg": "Ce lien est obsolète ou a été supprimé. Créez une nouvelle session pour continuer.",
+    "createNewSession": "Créer une session",
+    "close": "Fermer le conseil"
   }
 }

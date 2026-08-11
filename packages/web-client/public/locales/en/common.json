@@ -686,5 +686,13 @@
     "activeTitle": "Active subscription",
     "inactive": "Support us",
     "inactiveTitle": "Support the project — 75⭐ / 30 days"
+  },
+  "hint": {
+    "sessionExpired": "Session expired",
+    "sessionExpiredMsg": "Your session has expired or was removed from the server. Create a new session to continue.",
+    "sessionNotFound": "Session not found",
+    "sessionNotFoundMsg": "This link is outdated or was deleted. Create a new session to continue.",
+    "createNewSession": "Create new session",
+    "close": "Close hint"
   }
 }

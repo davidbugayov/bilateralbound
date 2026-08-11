@@ -499,5 +499,13 @@
     "activeTitle": "Assinatura ativa",
     "inactive": "Apoiar",
     "inactiveTitle": "Apoie o projeto — 75⭐ / 30 dias"
+  },
+  "hint": {
+    "sessionExpired": "Sessão expirada",
+    "sessionExpiredMsg": "Sua sessão expirou ou foi removida do servidor. Crie uma nova sessão para continuar.",
+    "sessionNotFound": "Sessão não encontrada",
+    "sessionNotFoundMsg": "Este link está desatualizado ou foi removido. Crie uma nova sessão para continuar.",
+    "createNewSession": "Criar nova sessão",
+    "close": "Fechar dica"
   }
 }
