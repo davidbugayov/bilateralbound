@@ -358,6 +358,92 @@ body.light-theme .sub-badge--inactive:hover {
   text-align: center;
 }
 
+/* ── Verify subscription in dialog ── */
+.sub-dialog__verify-divider {
+  font-size: 0.74rem;
+  color: #64748b;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.4rem;
+}
+
+.sub-dialog__verify-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.sub-dialog__verify-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid rgb(51 65 85 / 60%);
+  background: rgb(255 255 255 / 5%);
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.sub-dialog__verify-input:focus {
+  border-color: rgb(96 165 250 / 55%);
+}
+
+.sub-dialog__verify-input::placeholder {
+  color: #475569;
+}
+
+.sub-dialog__btn--verify {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  background: transparent;
+  color: #93c5fd;
+  border: 1px solid rgb(96 165 250 / 30%);
+  cursor: pointer;
+}
+
+.sub-dialog__btn--verify:hover {
+  background: rgb(96 165 250 / 10%);
+  border-color: rgb(96 165 250 / 55%);
+}
+
+.sub-dialog__btn--verify:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sub-dialog__verify-msg {
+  font-size: 0.8rem;
+  text-align: center;
+  min-height: 1.2em;
+}
+
+.sub-dialog__verify-msg--success {
+  color: #34d399;
+}
+
+.sub-dialog__verify-msg--error {
+  color: #f87171;
+}
+
+/* Light theme verify */
+body.light-theme .sub-dialog__verify-divider { color: #94a3b8; }
+body.light-theme .sub-dialog__verify-input {
+  border-color: rgb(203 213 225 / 70%);
+  background: rgb(0 0 0 / 3%);
+  color: #1e293b;
+}
+body.light-theme .sub-dialog__verify-input::placeholder { color: #94a3b8; }
+body.light-theme .sub-dialog__btn--verify {
+  color: #2563eb;
+  border-color: rgb(37 99 235 / 25%);
+}
+body.light-theme .sub-dialog__btn--verify:hover {
+  background: rgb(37 99 235 / 6%);
+}
+
 /* Light theme dialog */
 body.light-theme .sub-dialog__card {
   background: linear-gradient(145deg, #fff 0, #f8fafc 100%);

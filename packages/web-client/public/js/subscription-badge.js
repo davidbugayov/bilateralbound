@@ -175,6 +175,81 @@
 
       actions.appendChild(ctaBtn)
       actions.appendChild(note)
+
+      // ── Verify existing subscription (same unlock flow as paywall) ──
+      const verifyDivider = document.createElement('div')
+      verifyDivider.className = 'sub-dialog__verify-divider'
+      verifyDivider.textContent = t('subscriptionBadge.orVerify', 'or verify existing subscription')
+
+      const verifyRow = document.createElement('div')
+      verifyRow.className = 'sub-dialog__verify-row'
+
+      const verifyInput = document.createElement('input')
+      verifyInput.type = 'text'
+      verifyInput.inputMode = 'numeric'
+      verifyInput.pattern = '[0-9]*'
+      verifyInput.className = 'sub-dialog__verify-input'
+      verifyInput.placeholder = t('subscriptionBadge.telegramIdPlaceholder', 'Telegram User ID')
+
+      const verifyBtn = document.createElement('button')
+      verifyBtn.type = 'button'
+      verifyBtn.className = 'sub-dialog__btn sub-dialog__btn--verify'
+      verifyBtn.textContent = t('subscriptionBadge.verifyBtn', 'Verify')
+
+      const verifyMsg = document.createElement('div')
+      verifyMsg.className = 'sub-dialog__verify-msg'
+
+      verifyBtn.addEventListener('click', async function () {
+        var raw = verifyInput.value.trim()
+        if (!raw) {
+          verifyMsg.textContent = t('subscriptionBadge.errorEmpty', 'Please enter your Telegram User ID')
+          verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--error'
+          return
+        }
+        var tgId = parseInt(raw, 10)
+        if (!tgId || tgId <= 0) {
+          verifyMsg.textContent = t('subscriptionBadge.errorInvalid', 'Invalid Telegram User ID')
+          verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--error'
+          return
+        }
+        verifyBtn.disabled = true
+        verifyBtn.textContent = '…'
+        verifyMsg.textContent = ''
+        verifyMsg.className = 'sub-dialog__verify-msg'
+        try {
+          var fetchFn = globalThis.csrfFetch || fetch
+          var resp = await fetchFn('/api/link-access/' + encodeURIComponent(SESSION_ID) + '/unlock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegramUserId: tgId })
+          })
+          var data = await resp.json().catch(function () { return {} })
+          if (resp.ok) {
+            verifyMsg.textContent = t('subscriptionBadge.verifySuccess', 'Subscription verified! Reloading…')
+            verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--success'
+            setTimeout(function () { window.location.reload() }, 800)
+          } else {
+            verifyMsg.textContent = data.message || data.error || t('subscriptionBadge.verifyFailed', 'Verification failed')
+            verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--error'
+          }
+        } catch (_) {
+          verifyMsg.textContent = t('subscriptionBadge.errorNetwork', 'Network error. Please try again.')
+          verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--error'
+        } finally {
+          verifyBtn.disabled = false
+          verifyBtn.textContent = t('subscriptionBadge.verifyBtn', 'Verify')
+        }
+      })
+
+      verifyInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); verifyBtn.click() }
+      })
+
+      verifyRow.appendChild(verifyInput)
+      verifyRow.appendChild(verifyBtn)
+      actions.appendChild(verifyDivider)
+      actions.appendChild(verifyRow)
+      actions.appendChild(verifyMsg)
     }
 
     card.appendChild(closeBtn)

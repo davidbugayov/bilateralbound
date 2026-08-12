@@ -75,8 +75,17 @@ function registerStaticRoutes(
     const browserId = ensureBrowserCookie(req, res)
     const now = Date.now()
 
-    // Already unlocked — allow
+    // Already unlocked — allow and set sub_active cookie for the badge
     if (linkAccessService.isUnlocked(browserId, sessionId, now)) {
+      const laState = linkAccessService.get(browserId, sessionId)
+      if (laState.unlockedUntil && laState.unlockedUntil > now) {
+        res.cookie('sub_active', String(laState.unlockedUntil), {
+          httpOnly: false,
+          secure: !req.app.get('isDev'),
+          sameSite: 'lax',
+          maxAge: COOKIE_MAX_AGE_MS
+        })
+      }
       return true
     }
 
