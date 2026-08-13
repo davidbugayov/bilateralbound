@@ -229,7 +229,8 @@
             verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--success'
             setTimeout(function () { window.location.reload() }, 800)
           } else {
-            verifyMsg.textContent = data.message || data.error || t('subscriptionBadge.verifyFailed', 'Verification failed')
+            // Prefer localized server error via i18nKey; fall back to server text
+            verifyMsg.textContent = (data.i18nKey ? t(data.i18nKey, data.message || data.error) : null) || t('subscriptionBadge.verifyFailed', 'Verification failed')
             verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--error'
           }
         } catch (_) {

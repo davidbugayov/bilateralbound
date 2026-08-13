@@ -17,7 +17,8 @@
       "ja": "日本語",
       "zh": "中文"
     },
-    "closed": "Closed"
+    "closed": "Closed",
+    "close": "Close"
   },
   "home": {
     "title": "Free Online EMDR Tool — Bilateral Stimulation Light Bar",
@@ -162,7 +163,8 @@
     "sessionNotFound": "Session not found. Make sure the controller is running.",
     "title": "EMDR Session | BilateralBound",
     "volumeLabel": "Volume",
-    "waitingForController": "Connection established, waiting for controller..."
+    "waitingForController": "Connection established, waiting for controller...",
+    "connectionFailed": "Cannot connect to the server. Please check your internet connection and reload the page."
   },
   "test": {
     "title": "🌐 Language Selector - Testing",
@@ -365,7 +367,10 @@
     "settingsLabel": "Settings",
     "settingsTabSound": "Sound",
     "settingsTabShortcuts": "Shortcuts",
-    "settingsTabLanguage": "Language"
+    "settingsTabLanguage": "Language",
+    "connectionError": "Failed to connect to session. Please reload the page and try again.",
+    "errorTitle": "Error",
+    "unknownDirection": "❓ Unknown"
   },
   "features": {
     "bilateral": "Bilateral Stimulation (EMDR)",
@@ -509,7 +514,8 @@
     "customIdLabel": "Your Custom ID",
     "customIdPlaceholder": "Enter your custom client ID",
     "customIdRequired": "❌ Please enter your custom client ID",
-    "manageInBot": "Manage in Telegram Bot"
+    "manageInBot": "Manage in Telegram Bot",
+    "priceUnit": "days"
   },
   "cookie": {
     "text": "We use Yandex.Metrica to analyze site traffic. By clicking \"Accept\", you consent to the processing of your data.",
@@ -673,7 +679,8 @@
     "errorInvalid": "Invalid Telegram User ID format",
     "noSubscription": "No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (75⭐ / 30 days).",
     "errorNetwork": "Network error. Please try again.",
-    "backToHome": "← Back to main page"
+    "backToHome": "← Back to main page",
+    "proofRequired": "Proof of Telegram account ownership required"
   },
   "howto": {
     "heading": "How to Use the Online EMDR Tool",
@@ -686,7 +693,15 @@
     "inactive": "Support us",
     "inactiveTitle": "Support the project — 75⭐ / 30 days",
     "dialogTitle": "What you get with Supporter",
-    "dialogClose": "Close"
+    "dialogClose": "Close",
+    "errorEmpty": "Please enter your Telegram User ID",
+    "errorInvalid": "Invalid Telegram User ID",
+    "errorNetwork": "Network error. Please try again.",
+    "orVerify": "or verify existing subscription",
+    "telegramIdPlaceholder": "Telegram User ID",
+    "verifyBtn": "Verify",
+    "verifyFailed": "Verification failed",
+    "verifySuccess": "Subscription verified! Reloading…"
   },
   "hint": {
     "sessionExpired": "Session expired",

@@ -17,7 +17,8 @@
       "ja": "日本語",
       "zh": "中文"
     },
-    "closed": "Закрыто"
+    "closed": "Закрыто",
+    "close": "Закрыть"
   },
   "home": {
     "title": "EMDR (ДПДГ) терапия онлайн — бесплатный тренажёр билатеральной стимуляции",
@@ -164,7 +165,8 @@
     "sessionNotFound": "Сессия не найдена. Убедитесь, что контроллер запущен.",
     "title": "EMDR Сессия | BilateralBound",
     "volumeLabel": "Громкость",
-    "waitingForController": "Соединение установлено, ожидание контроллера..."
+    "waitingForController": "Соединение установлено, ожидание контроллера...",
+    "connectionFailed": "Не удаётся подключиться к серверу. Проверьте интернет-соединение и перезагрузите страницу."
   },
   "test": {
     "title": "🌐 Language Selector - Тестирование",
@@ -391,7 +393,10 @@
     "settingsLabel": "Настройки",
     "settingsTabSound": "Звук",
     "settingsTabShortcuts": "Горячие клавиши",
-    "settingsTabLanguage": "Язык"
+    "settingsTabLanguage": "Язык",
+    "connectionError": "Не удалось подключиться к сессии. Перезагрузите страницу и попробуйте снова.",
+    "errorTitle": "Ошибка",
+    "unknownDirection": "❓ Неизвестно"
   },
   "features": {
     "bilateral": "Билатеральная стимуляция (EMDR)",
@@ -535,7 +540,8 @@
     "customIdLabel": "Ваш Custom ID",
     "customIdPlaceholder": "Введите ваш custom client ID",
     "customIdRequired": "❌ Пожалуйста, введите ваш custom client ID",
-    "manageInBot": "Управлять в Telegram Bot"
+    "manageInBot": "Управлять в Telegram Bot",
+    "priceUnit": "дней"
   },
   "cookie": {
     "text": "Мы используем Yandex.Metrica для анализа трафика. Нажимая «Принять», вы соглашаетесь на обработку ваших данных.",
@@ -699,7 +705,8 @@
     "errorInvalid": "Неверный формат Telegram User ID",
     "noSubscription": "Нет активной подписки для этого Telegram ID. Подпишитесь через @emdrbilateral_bot (75⭐ / 30 дней).",
     "errorNetwork": "Ошибка сети. Пожалуйста, попробуйте снова.",
-    "backToHome": "← На главную"
+    "backToHome": "← На главную",
+    "proofRequired": "Требуется подтверждение владения Telegram аккаунтом"
   },
   "howto": {
     "heading": "Как использовать EMDR тренажёр онлайн",
@@ -712,7 +719,15 @@
     "inactive": "Поддержи",
     "inactiveTitle": "Поддержи проект — 75⭐ / 30 дней",
     "dialogTitle": "Что даёт подписка Supporter",
-    "dialogClose": "Закрыть"
+    "dialogClose": "Закрыть",
+    "errorEmpty": "Пожалуйста, введите ваш Telegram User ID",
+    "errorInvalid": "Неверный формат Telegram User ID",
+    "errorNetwork": "Ошибка сети. Пожалуйста, попробуйте снова.",
+    "orVerify": "или подтвердите существующую подписку",
+    "telegramIdPlaceholder": "Ваш Telegram User ID",
+    "verifyBtn": "Проверить",
+    "verifyFailed": "Проверка не удалась",
+    "verifySuccess": "Подписка подтверждена! Перезагрузка…"
   },
   "hint": {
     "sessionExpired": "Сессия истекла",

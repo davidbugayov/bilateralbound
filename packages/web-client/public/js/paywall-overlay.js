@@ -45,7 +45,8 @@
     errorEmpty: function () { return t('paywall.errorEmpty', 'Please enter your Telegram User ID') },
     errorInvalid: function () { return t('paywall.errorInvalid', 'Invalid Telegram User ID format') },
     errorNetwork: function () { return t('paywall.errorNetwork', 'Network error. Please try again.') },
-    noSub: function () { return t('paywall.noSubscription', 'No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (75⭐ / 30 days).') }
+    noSub: function () { return t('paywall.noSubscription', 'No active subscription for this Telegram ID. Subscribe via @emdrbilateral_bot (75⭐ / 30 days).') },
+    proofRequired: function () { return t('paywall.proofRequired', 'Proof of Telegram account ownership required') }
   }
 
   // ── Build overlay DOM ──

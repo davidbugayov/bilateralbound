@@ -13,7 +13,8 @@
       "pt": "Português",
       "ja": "日本語",
       "zh": "中文"
-    }
+    },
+    "close": "Cerrar"
   },
   "home": {
     "title": "BilateralBound - Terapia EMDR",
@@ -61,7 +62,9 @@
     "errorCreating": "Error al crear enlaces: ",
     "errorCreatingSubscription": "Suscripción requerida. Apoya el proyecto vía @emdrbilateral_bot",
     "validationEmpty": "❌ Por favor, ingrese un ID de cliente",
-    "validationFormat": "❌ Formato inválido. Use solo letras latinas, números, _ o - (3-32 caracteres)"
+    "validationFormat": "❌ Formato inválido. Use solo letras latinas, números, _ o - (3-32 caracteres)",
+    "copied": "¡Enlace copiado!",
+    "yourLinks": "Tus enlaces permanentes"
   },
   "restore": {
     "heading": "🔄 Restaurar sesión por ID",
@@ -76,7 +79,8 @@
     "serverError": "Error del servidor: ",
     "found": "🎉 ¡Sesión encontrada!",
     "validationEmpty": "❌ Por favor, ingrese un ID de sesión.",
-    "errorLoading": "Error al cargar la sesión: "
+    "errorLoading": "Error al cargar la sesión: ",
+    "linksFound": "Enlaces de sesión restaurados"
   },
   "steps": {
     "heading": "📋 Cómo comenzar la terapia:",
@@ -98,7 +102,13 @@
   },
   "footer": {
     "text": "⚡ BilateralBound {{VERSION}}",
-    "about": "Sobre EMDR"
+    "about": "Sobre EMDR",
+    "contactHeading": "📬 Contacto y enlaces",
+    "email": "📧 davidbugayov@ya.ru",
+    "github": "💻 GitHub",
+    "offer": "📄 Términos del Servicio (Oferta)",
+    "privacy": "🔒 Política de privacidad",
+    "telegram": "💬 @emdrbilateral_bot"
   },
   "validation": {
     "enterClientId": "❌ Por favor, ingrese el ID del cliente",
@@ -141,7 +151,10 @@
     "loading": "Cargando...",
     "sessionIdMissing": "ID de sesión no encontrado en URL",
     "title": "BilateralBound - Visor EMDR",
-    "waitingForController": "Conexión establecida, esperando controlador..."
+    "waitingForController": "Conexión establecida, esperando controlador...",
+    "connectionFailed": "No se puede conectar al servidor. Comprueba tu conexión a internet y recarga la página.",
+    "hotkeysHint": "— Pausa/Inicio",
+    "reload": "Recargar página"
   },
   "test": {
     "title": "🌐 Selector de Idioma - Pruebas",
@@ -358,7 +371,11 @@
     "meta": {
       "controllerTitle": "Control de Sesión | BilateralBound",
       "controllerDescription": "Controlador de terapia EMDR para gestionar la estimulación bilateral. Herramienta para terapeutas EMDR durante sesiones de terapia de pareja"
-    }
+    },
+    "connectionError": "No se pudo conectar a la sesión. Recarga la página e inténtalo de nuevo.",
+    "errorTitle": "Error",
+    "sessionLostMsg": "Su sesión ha expirado o fue eliminada del servidor. Recargue la página.",
+    "unknownDirection": "❓ Desconocido"
   },
   "meta": {
     "controllerTitle": "BilateralBound - Controlador de terapia EMDR",
@@ -377,7 +394,8 @@
     "free": "Gratis",
     "freeDesc": "Sin registro, sin suscripción — abierto para terapeutas de todo el mundo",
     "sectionHeading": "Características principales",
-    "heading": "Funcionalidades"
+    "heading": "Funcionalidades",
+    "breathing": "🌬️ Ejercicio de respiración"
   },
   "subscription": {
     "heading": "Apoya el proyecto",
@@ -423,7 +441,8 @@
     "customIdLabel": "Tu Custom ID",
     "customIdPlaceholder": "Ingresa tu custom client ID",
     "customIdRequired": "❌ Por favor, ingresa tu custom client ID",
-    "manageInBot": "Gestionar en Telegram Bot"
+    "manageInBot": "Gestionar en Telegram Bot",
+    "priceUnit": "días"
   },
   "privacy": {
     "title": "Política de Privacidad",
@@ -668,10 +687,12 @@
     "errorInvalid": "Formato de ID de Telegram no válido",
     "noSubscription": "No hay suscripción activa para este ID de Telegram. Suscríbete a través de @emdrbilateral_bot (75⭐ / 30 días).",
     "errorNetwork": "Error de red. Por favor, inténtalo de nuevo.",
-    "backToHome": "← Volver a la página principal"
+    "backToHome": "← Volver a la página principal",
+    "proofRequired": "Se requiere prueba de propiedad de la cuenta de Telegram"
   },
   "premiumHub": {
-    "heading": "Suscripción Premium"
+    "heading": "Suscripción Premium",
+    "manageTitle": "Gestionar suscripción"
   },
   "subscriptionBadge": {
     "active": "PRO",
@@ -679,7 +700,15 @@
     "inactive": "Apoyar",
     "inactiveTitle": "Apoya el proyecto — 75⭐ / 30 días",
     "dialogTitle": "Qué incluye Supporter",
-    "dialogClose": "Cerrar"
+    "dialogClose": "Cerrar",
+    "errorEmpty": "Por favor, introduce tu ID de usuario de Telegram",
+    "errorInvalid": "Formato de ID de Telegram no válido",
+    "errorNetwork": "Error de red. Por favor, inténtalo de nuevo.",
+    "orVerify": "o verificar suscripción existente",
+    "telegramIdPlaceholder": "Tu ID de usuario de Telegram",
+    "verifyBtn": "Verificar",
+    "verifyFailed": "Verificación fallida",
+    "verifySuccess": "¡Suscripción verificada! Recargando…"
   },
   "hint": {
     "sessionExpired": "Sesión expirada",
@@ -688,5 +717,10 @@
     "sessionNotFoundMsg": "Este enlace está desactualizado o fue eliminado. Crea una sesión nueva para continuar.",
     "createNewSession": "Crear sesión nueva",
     "close": "Cerrar sugerencia"
+  },
+  "howto": {
+    "heading": "Cómo usar la herramienta EMDR en línea",
+    "p1": "La herramienta EMDR sirve para la práctica autónoma: simplemente sigue con la mirada la barra de luz en movimiento durante 1-2 minutos. Ayuda a reducir la ansiedad, cambiar la atención y calmar el sistema nervioso.",
+    "p2": "Para una terapia EMDR completa en casos de TEPT y traumas graves, consulta a un terapeuta EMDR certificado. BilateralBound es una herramienta en línea gratuita que complementa la terapia profesional."
   }
 }
