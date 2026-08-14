@@ -37,10 +37,16 @@ const I18n = {
 
   _notifyReady() {
     // Remove ALL anti-flash cloak elements (lang-preload.js creates one,
-    // and privacy/offer HTML pages also have one — only removing the first
-    // leaves the second in place, keeping content invisible)
+    // and privacy/offer HTML pages also have an inline style).
+    // Also remove data-i18n-cloak attribute from body — it has a matching
+    // [data-i18n-cloak]{display:none!important} inline rule that isn't
+    // targeted by #i18n-cloak selector above.
     if (typeof document !== 'undefined') {
       document.querySelectorAll('#i18n-cloak').forEach((el) => el.remove())
+      document.querySelectorAll('style').forEach((el) => {
+        if (el.textContent.includes('data-i18n-cloak')) el.remove()
+      })
+      if (document.body) document.body.removeAttribute('data-i18n-cloak')
       document.documentElement.classList.add('i18n-ready')
     }
 
@@ -140,17 +146,10 @@ const I18n = {
       return
     }
 
-    // 3. Check browser language
-    const browserLang = navigator.language.split('-')[0].toLowerCase()
-    if (this.supportedLanguages.includes(browserLang)) {
-      this.currentLanguage = browserLang
-      localStorage.setItem('emdr-language', browserLang)
-      return
-    }
-
-    // 4. Check domain (lower priority) - только для новых пользователей без сохраненного выбора
-    // Russian domain → Russian language
-    // English domain → English language
+    // 3. Check domain - дефолтная локализация определяется доменом:
+    // .ru → русский, .online → английский. Домен важнее языка браузера,
+    // чтобы emdrbilateral.ru всегда открывался по умолчанию на русском,
+    // а emdrbilateral.online — на английском.
     const hostname =
       typeof globalThis !== 'undefined' &&
       globalThis.location &&
@@ -164,6 +163,14 @@ const I18n = {
     } else if (hostname.includes('emdrbilateral.online')) {
       this.currentLanguage = 'en'
       localStorage.setItem('emdr-language', 'en')
+      return
+    }
+
+    // 4. Check browser language (после домена — домен определяет дефолт)
+    const browserLang = navigator.language.split('-')[0].toLowerCase()
+    if (this.supportedLanguages.includes(browserLang)) {
+      this.currentLanguage = browserLang
+      localStorage.setItem('emdr-language', browserLang)
       return
     }
 

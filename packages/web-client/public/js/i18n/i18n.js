@@ -147,17 +147,10 @@
         return
       }
 
-      // 3. Check browser language
-      const browserLang = navigator.language.split('-')[0].toLowerCase()
-      if (this.supportedLanguages.includes(browserLang)) {
-        this.currentLanguage = browserLang
-        localStorage.setItem('emdr-language', browserLang)
-        return
-      }
-
-      // 4. Check domain (lower priority) - только для новых пользователей без сохраненного выбора
-      // Russian domain → Russian language
-      // English domain → English language
+      // 3. Check domain - дефолтная локализация определяется доменом:
+      // .ru → русский, .online → английский. Домен важнее языка браузера,
+      // чтобы emdrbilateral.ru всегда открывался по умолчанию на русском,
+      // а emdrbilateral.online — на английском.
       const hostname =
         typeof globalThis !== 'undefined' &&
         globalThis.location &&
@@ -171,6 +164,14 @@
       } else if (hostname.includes('emdrbilateral.online')) {
         this.currentLanguage = 'en'
         localStorage.setItem('emdr-language', 'en')
+        return
+      }
+
+      // 4. Check browser language (после домена — домен определяет дефолт)
+      const browserLang = navigator.language.split('-')[0].toLowerCase()
+      if (this.supportedLanguages.includes(browserLang)) {
+        this.currentLanguage = browserLang
+        localStorage.setItem('emdr-language', browserLang)
         return
       }
 

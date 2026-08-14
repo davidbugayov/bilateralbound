@@ -132,6 +132,17 @@ const LanguageSelector = (function () {
       return savedLang
     }
 
+    // Domain default comes before browser language: .ru → ru, .online → en
+    const hostname = globalThis.location?.hostname || ''
+    if (hostname.includes('emdrbilateral.ru')) {
+      localStorage.setItem('emdr-language', 'ru')
+      return 'ru'
+    }
+    if (hostname.includes('emdrbilateral.online')) {
+      localStorage.setItem('emdr-language', 'en')
+      return 'en'
+    }
+
     const browserLang = navigator.language.split('-')[0].toLowerCase()
     if (supportedLanguages.has(browserLang)) {
       localStorage.setItem('emdr-language', browserLang)
