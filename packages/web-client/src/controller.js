@@ -57,6 +57,23 @@ _ViewerStatus.init({
 // Wire play-pause module — deps connected at runtime when called
 _PlayPause.init()
 
+// Wire notifications module
+const {
+  showCriticalError,
+  showNotification,
+  showViewerNotConnectedWarning,
+  showViewerSizeNotReadyWarning,
+  requireViewerConnection,
+  initViewerConnectionWarnings,
+  toggleDebugOverlay
+} = _Notifications
+
+// Wire direction-ui module (must be before _UISync which references its exports)
+_DirectionUI.init({
+  getCurrentDirectionMode
+})
+const { updateDirectionButtons, updateDirectionDisplay } = _DirectionUI
+
 // Wire ui-sync module
 _UISync.init(globalThis.components, {
   getLastServerState: () => lastServerState,
@@ -87,24 +104,6 @@ _UISync.init(globalThis.components, {
  */
 /* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession, setSoundEnabled, setSoundType, showViewerSizeNotReadyWarning */
 /* global debugWarn, debugError, RealtimeClient */
-// Защита от повторной загрузки
-
-// Wire notifications module
-const {
-  showCriticalError,
-  showNotification,
-  showViewerNotConnectedWarning,
-  showViewerSizeNotReadyWarning,
-  requireViewerConnection,
-  initViewerConnectionWarnings,
-  toggleDebugOverlay
-} = _Notifications
-
-// Wire direction-ui module
-_DirectionUI.init({
-  getCurrentDirectionMode
-})
-const { updateDirectionButtons, updateDirectionDisplay } = _DirectionUI
 
 // Wire settings module
 _Settings.init({
