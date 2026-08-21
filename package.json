@@ -60,6 +60,10 @@
     "prepare": "husky",
     "postinstall": "find node_modules -name '.claude' -type d ! -path '*/node_modules/.claude' -exec rm -rf {} + 2>/dev/null; true"
   },
+  "lint-staged": {
+    "*.js": "npx eslint --fix",
+    "*.{js,json,css,html,md}": "npx prettier --write"
+  },
   "keywords": [
     "emdr",
     "therapy",

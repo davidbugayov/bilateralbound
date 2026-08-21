@@ -31,7 +31,8 @@ async function reserveSession(sessionId) {
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
   } catch (e) {
-    console.warn(`⚠️  Could not reserve session ${sessionId}: ${e.message}`)
+    // 402 is expected when subscription is required — session will auto-create on page visit
+    console.warn(`⚠️  Could not reserve session ${sessionId}: ${e.message} (will auto-create on visit)`)
   }
 }
 
@@ -39,8 +40,10 @@ async function main() {
   console.log(`\n🚀 E2E: ${BASE_URL}\n`)
 
   // Reserve sessions before navigating to controller/viewer pages
-  await reserveSession('e2e_session')
-  await reserveSession('e2e_mobile')
+  // Use __test_ prefix for subscription bypass when SUBSCRIPTION_TEST_MODE=true.
+  // Sessions also auto-create on page visit via findOrCreateSession.
+  await reserveSession('__test_e2e_session')
+  await reserveSession('__test_e2e_mobile')
 
   browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] })
 
@@ -110,7 +113,7 @@ async function main() {
 
   // Тест контроллера
   const ctrlPage = await browser.newPage()
-  await ctrlPage.goto(`${BASE_URL}/c/e2e_session`, {
+  await ctrlPage.goto(`${BASE_URL}/c/__test_e2e_session`, {
     waitUntil: 'domcontentloaded',
     timeout: 15000
   })
@@ -170,7 +173,7 @@ async function main() {
 
   // Тест viewer
   const viewPage = await browser.newPage()
-  await viewPage.goto(`${BASE_URL}/s/e2e_session`, {
+  await viewPage.goto(`${BASE_URL}/s/__test_e2e_session`, {
     waitUntil: 'domcontentloaded',
     timeout: 15000
   })
@@ -412,7 +415,7 @@ async function main() {
   // Тест мобильного viewport
   const mobilePage = await browser.newPage()
   await mobilePage.setViewport({ width: 375, height: 667 })
-  await mobilePage.goto(`${BASE_URL}/c/e2e_mobile`, {
+  await mobilePage.goto(`${BASE_URL}/c/__test_e2e_mobile`, {
     waitUntil: 'domcontentloaded',
     timeout: 15000
   })

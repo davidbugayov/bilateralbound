@@ -6,3 +6,14 @@ node scripts/update-version.js
 git add package.json packages/*/package.json packages/web-client/public/*.html
 
 echo "✅ Версия обновлена"
+
+# Lint staged files
+echo "🔍 Running lint-staged..."
+npx lint-staged
+
+if [ $? -ne 0 ]; then
+  echo "❌ Lint failed — commit aborted"
+  exit 1
+fi
+
+echo "✅ Lint passed"
