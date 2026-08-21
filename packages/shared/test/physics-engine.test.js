@@ -203,6 +203,147 @@ test('reset returns ball to center', () => {
   assert.ok(approxEqual(engine.ball.x, engine.centerX, 1), `Ball should be at center after reset: x=${engine.ball.x}`)
 })
 
+// --- Brainspotting mode ---
+console.log('\n🧠 Brainspotting Tests\n')
+
+test('brainspotting defaults to false', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  assert.strictEqual(engine.ball.brainspotting, false)
+})
+
+test('applyCommand enables brainspotting mode', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ brainspotting: true })
+  assert.strictEqual(engine.ball.brainspotting, true)
+})
+
+test('brainspotting and infinity are mutually exclusive', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ brainspotting: true })
+  assert.strictEqual(engine.ball.brainspotting, true)
+  assert.strictEqual(engine.ball.infinity, false)
+  engine.applyCommand({ infinity: true })
+  assert.strictEqual(engine.ball.infinity, true)
+  assert.strictEqual(engine.ball.brainspotting, false)
+})
+
+test('entering infinity disables brainspotting', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ brainspotting: true })
+  assert.strictEqual(engine.ball.brainspotting, true)
+  engine.applyCommand({ infinity: true })
+  assert.strictEqual(engine.ball.brainspotting, false)
+  assert.strictEqual(engine.ball.infinity, true)
+})
+
+test('entering brainspotting disables infinity', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ infinity: true })
+  assert.strictEqual(engine.ball.infinity, true)
+  engine.applyCommand({ brainspotting: true })
+  assert.strictEqual(engine.ball.brainspotting, true)
+  assert.strictEqual(engine.ball.infinity, false)
+})
+
+test('ball stays at manual position in brainspotting mode (viewer)', () => {
+  const engine = new PhysicsEngine({ isViewer: true, worldWidth: 800, worldHeight: 600 })
+  engine.setWorldSize(800, 600)
+  const targetX = 300
+  const targetY = 200
+  engine.applyCommand({ brainspotting: true })
+  engine.setPosition(targetX, targetY)
+  for (let i = 0; i < 10; i++) {
+    engine.update(16)
+  }
+  assert.ok(approxEqual(engine.ball.x, targetX, 0.5), `Ball X should stay at ${targetX}, got ${engine.ball.x}`)
+  assert.ok(approxEqual(engine.ball.y, targetY, 0.5), `Ball Y should stay at ${targetY}, got ${engine.ball.y}`)
+})
+
+test('ball stays at manual position in brainspotting mode (server)', () => {
+  const engine = new PhysicsEngine({ isViewer: false, worldWidth: 800, worldHeight: 600 })
+  engine.setWorldSize(800, 600)
+  const targetX = 500
+  const targetY = 100
+  engine.applyCommand({ brainspotting: true, paused: false })
+  engine.setPosition(targetX, targetY)
+  for (let i = 0; i < 10; i++) {
+    engine.update(16)
+  }
+  assert.ok(approxEqual(engine.ball.x, targetX, 0.5), `Server ball X should stay at ${targetX}, got ${engine.ball.x}`)
+  assert.ok(approxEqual(engine.ball.y, targetY, 0.5), `Server ball Y should stay at ${targetY}, got ${engine.ball.y}`)
+})
+
+test('brainspotting ball does not move even with speed and direction set', () => {
+  const engine = new PhysicsEngine({ isViewer: true, worldWidth: 800, worldHeight: 600 })
+  engine.setWorldSize(800, 600)
+  engine.applyCommand({ brainspotting: true, paused: false, speed: 100, dirX: 1, dirY: 0 })
+  engine.setPosition(400, 300)
+  const startX = engine.ball.x
+  const startY = engine.ball.y
+  for (let i = 0; i < 30; i++) {
+    engine.update(16)
+  }
+  assert.ok(approxEqual(engine.ball.x, startX, 0.5), `Ball should not move in brainspotting, X: ${engine.ball.x}`)
+  assert.ok(approxEqual(engine.ball.y, startY, 0.5), `Ball should not move in brainspotting, Y: ${engine.ball.y}`)
+})
+
+test('moving ball stops when brainspotting is enabled', () => {
+  const engine = new PhysicsEngine({ isViewer: true, worldWidth: 800, worldHeight: 600 })
+  engine.setWorldSize(800, 600)
+  engine.applyCommand({ paused: false, speed: 100, dirX: 1, dirY: 0 })
+  engine.update(100)
+  const movingX = engine.ball.x
+  assert.ok(movingX !== engine.centerX, 'Ball should be moving before brainspotting')
+  engine.applyCommand({ brainspotting: true })
+  const posAfterEnable = { x: engine.ball.x, y: engine.ball.y }
+  for (let i = 0; i < 10; i++) {
+    engine.update(16)
+  }
+  assert.ok(approxEqual(engine.ball.x, posAfterEnable.x, 0.5), 'Ball should freeze after brainspotting enabled')
+  assert.ok(approxEqual(engine.ball.y, posAfterEnable.y, 0.5), 'Ball should freeze after brainspotting enabled')
+})
+
+test('brainspotting mode is included in getState', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ brainspotting: true })
+  const state = engine.getState()
+  assert.strictEqual(state.brainspotting, true)
+  assert.strictEqual(state.infinity, false)
+})
+
+test('reset clears brainspotting mode', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ brainspotting: true })
+  assert.strictEqual(engine.ball.brainspotting, true)
+  engine.applyCommand({ reset: true })
+  assert.strictEqual(engine.ball.brainspotting, false)
+  assert.strictEqual(engine.ball.infinity, false)
+})
+
+test('setPosition works in brainspotting mode', () => {
+  const engine = new PhysicsEngine({ isViewer: true, worldWidth: 800, worldHeight: 600 })
+  engine.setWorldSize(800, 600)
+  engine.applyCommand({ brainspotting: true })
+  engine.setPosition(100, 500)
+  assert.strictEqual(engine.ball.x, 100)
+  assert.strictEqual(engine.ball.y, 500)
+  engine.setPosition(700, 50)
+  assert.strictEqual(engine.ball.x, 700)
+  assert.strictEqual(engine.ball.y, 50)
+})
+
+test('brainspotting ball clamped within bounds', () => {
+  const engine = new PhysicsEngine({ isViewer: true, worldWidth: 800, worldHeight: 600 })
+  engine.setWorldSize(800, 600)
+  engine.applyCommand({ brainspotting: true })
+  engine.setPosition(-100, -100)
+  assert.ok(engine.ball.x >= engine.ball.radius, `X should be clamped: ${engine.ball.x}`)
+  assert.ok(engine.ball.y >= engine.ball.radius, `Y should be clamped: ${engine.ball.y}`)
+  engine.setPosition(900, 700)
+  assert.ok(engine.ball.x <= 800 - engine.ball.radius, `X should be clamped: ${engine.ball.x}`)
+  assert.ok(engine.ball.y <= 600 - engine.ball.radius, `Y should be clamped: ${engine.ball.y}`)
+})
+
 // ============================================
 console.log('\n========================================')
 console.log(`Пройдено: ${passed}/${passed + failed}`)

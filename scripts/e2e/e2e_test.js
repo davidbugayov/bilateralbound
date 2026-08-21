@@ -412,6 +412,139 @@ async function main() {
     }
   })
 
+  // ============================================
+  // Brainspotting mode tests
+  // ============================================
+  await test('Brainspotting: setDirection enables mode on controller', async () => {
+    await ctrlPage.evaluate(() => {
+      if (typeof setDirection === 'function') {
+        setDirection('brainspotting')
+      }
+    })
+    await new Promise((r) => setTimeout(r, 1000))
+    const state = await ctrlPage.evaluate(() => {
+      const engine = globalThis.__previewPhysics
+      return {
+        brainspotting: engine?.ball?.brainspotting,
+        infinity: engine?.ball?.infinity
+      }
+    })
+    if (!state.brainspotting) throw new Error(`Brainspotting not enabled: ${JSON.stringify(state)}`)
+    if (state.infinity) throw new Error('Infinity should be disabled')
+  })
+
+  await test('Brainspotting: ball position can be set via drag', async () => {
+    const result = await ctrlPage.evaluate(() => {
+      const canvas = document.getElementById('preview')
+      if (!canvas) return { error: 'no canvas' }
+      const engine = globalThis.__previewPhysics
+      if (!engine || !engine.ball.brainspotting) return { error: 'not in brainspotting mode' }
+
+      const rect = canvas.getBoundingClientRect()
+      const targetClientX = rect.left + rect.width * 0.25
+      const targetClientY = rect.top + rect.height * 0.3
+
+      canvas.dispatchEvent(new MouseEvent('mousemove', {
+        clientX: targetClientX,
+        clientY: targetClientY,
+        bubbles: true
+      }))
+
+      return {
+        x: engine.ball.x,
+        y: engine.ball.y,
+        worldWidth: engine.options.worldWidth,
+        worldHeight: engine.options.worldHeight
+      }
+    })
+    if (result.error) throw new Error(result.error)
+
+    const distFromCenter = Math.hypot(
+      result.x - result.worldWidth / 2,
+      result.y - result.worldHeight / 2
+    )
+    if (distFromCenter < 50) {
+      throw new Error(`Ball did not move: dist=${distFromCenter.toFixed(1)}, pos=(${result.x.toFixed(1)}, ${result.y.toFixed(1)})`)
+    }
+  })
+
+  await test('Brainspotting: ball stays at position (no physics movement)', async () => {
+    const before = await ctrlPage.evaluate(() => {
+      const engine = globalThis.__previewPhysics
+      return { x: engine?.ball?.x, y: engine?.ball?.y }
+    })
+    await new Promise((r) => setTimeout(r, 1000))
+    const after = await ctrlPage.evaluate(() => {
+      const engine = globalThis.__previewPhysics
+      return { x: engine?.ball?.x, y: engine?.ball?.y }
+    })
+    const drift = Math.hypot(after.x - before.x, after.y - before.y)
+    if (drift > 1) {
+      throw new Error(`Ball moved ${drift.toFixed(2)}px in brainspotting mode (should be 0)`)
+    }
+  })
+
+  await test('Brainspotting: viewer receives ball position', async () => {
+    // Wait for WS sync from controller to viewer
+    await new Promise((r) => setTimeout(r, 2000))
+    const viewerState = await viewPage.evaluate(() => {
+      const engine = globalThis.physicsEngine
+      return {
+        brainspotting: engine?.ball?.brainspotting,
+        x: engine?.ball?.x,
+        y: engine?.ball?.y,
+        centerX: engine?.centerX,
+        centerY: engine?.centerY,
+        paused: engine?.state?.paused
+      }
+    })
+    if (!viewerState.brainspotting) {
+      throw new Error(`Viewer not in brainspotting mode: ${JSON.stringify(viewerState)}`)
+    }
+    // Ball should be off-center (controller moved it via drag)
+    const dist = Math.hypot(
+      viewerState.x - viewerState.centerX,
+      viewerState.y - viewerState.centerY
+    )
+    if (dist < 30) {
+      throw new Error(`Viewer ball at center (dist=${dist.toFixed(1)}), expected off-center from controller drag`)
+    }
+  })
+
+  await test('Brainspotting: viewer ball stays at synced position', async () => {
+    const before = await viewPage.evaluate(() => {
+      const engine = globalThis.physicsEngine
+      return { x: engine?.ball?.x, y: engine?.ball?.y }
+    })
+    await new Promise((r) => setTimeout(r, 1500))
+    const after = await viewPage.evaluate(() => {
+      const engine = globalThis.physicsEngine
+      return { x: engine?.ball?.x, y: engine?.ball?.y }
+    })
+    const drift = Math.hypot(after.x - before.x, after.y - before.y)
+    if (drift > 2) {
+      throw new Error(`Viewer ball drifted ${drift.toFixed(2)}px in brainspotting (should stay still)`)
+    }
+  })
+
+  await test('Brainspotting: exiting mode restores normal physics', async () => {
+    // Switch back to horizontal direction
+    await ctrlPage.evaluate(() => {
+      if (typeof setDirection === 'function') {
+        setDirection('horizontal')
+      }
+    })
+    await new Promise((r) => setTimeout(r, 1000))
+    const state = await ctrlPage.evaluate(() => {
+      const engine = globalThis.previewPhysicsEngine
+      return {
+        brainspotting: engine?.ball?.brainspotting,
+        infinity: engine?.ball?.infinity
+      }
+    })
+    if (state.brainspotting) throw new Error('Brainspotting should be disabled after switching to horizontal')
+  })
+
   // Тест мобильного viewport
   const mobilePage = await browser.newPage()
   await mobilePage.setViewport({ width: 375, height: 667 })

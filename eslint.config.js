@@ -287,6 +287,8 @@ module.exports = [
         document: 'readonly',
         window: 'readonly',
         PhysicsEngine: 'readonly',
+        MouseEvent: 'readonly',
+        setDirection: 'readonly',
       },
     },
     rules: {
