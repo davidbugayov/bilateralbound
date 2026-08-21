@@ -1,17 +1,22 @@
 #!/bin/bash
-# Emergency restart script - kills stuck processes and restarts service
+# Emergency restart script — restarts the dev service without affecting prod.
+# Kills only the PIDs belonging to emdrbilateral-dev, then restarts via systemd.
 
-# Force kill npm processes
-pkill -9 npm
+# Get PIDs of the dev service's node process(es)
+DEV_PIDS=$(systemctl show emdrbilateral-dev --property=MainPID --value)
 
-# Force kill node processes
-pkill -9 node
+if [ -n "$DEV_PIDS" ] && [ "$DEV_PIDS" != "0" ]; then
+  echo "Killing dev service PID: $DEV_PIDS"
+  kill -9 "$DEV_PIDS" 2>/dev/null || true
+fi
+
+# Also kill any child node processes spawned by the dev service
+for pid in $(pgrep -P "$DEV_PIDS" 2>/dev/null); do
+  kill -9 "$pid" 2>/dev/null || true
+done
 
 # Wait a bit
 sleep 3
-
-# Force kill again to be sure
-pkill -9 -f "node|npm" || true
 
 # Now restart service
 systemctl restart emdrbilateral-dev

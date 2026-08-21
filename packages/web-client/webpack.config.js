@@ -22,5 +22,22 @@ module.exports = {
       '@emdr/shared': path.resolve(__dirname, '..', 'shared'),
     },
   },
+  // Extract shared code (physics engine, i18n, network) into a common chunk
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      minSize: 0,
+      cacheGroups: {
+        default: false,
+        defaultVendors: false,
+        shared: {
+          name: 'shared',
+          chunks: 'all',
+          minChunks: 2,
+          minSize: 0,
+        },
+      },
+    },
+  },
   devtool: isProd ? false : 'source-map',
 };

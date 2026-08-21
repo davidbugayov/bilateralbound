@@ -10,21 +10,6 @@ function registerViewerRoutes(
   broadcastService,
   { requireSession, logger }
 ) {
-  // Viewer update (from expressApp L816-828)
-  app.post(
-    '/api/session/:sessionId/viewer/update',
-    requireSession,
-    (req, res) => {
-      const { sessionId } = req.params
-      sessionService.updateBallState(sessionId, req.body)
-
-      // Broadcast update to all WebSocket clients
-      broadcastService.broadcastState(sessionId)
-
-      res.json({ success: true, message: 'Viewer update processed' })
-    }
-  )
-
   // Audio activated notification (from expressApp L831-851)
   app.post(
     '/api/session/:sessionId/viewer/audio-activated',

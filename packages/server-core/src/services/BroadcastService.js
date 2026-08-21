@@ -91,8 +91,6 @@ class BroadcastService {
       'ballEmoji',
       'infinity',
       'brainspotting',
-      'x',
-      'y',
       'trackBand'
     ]
 

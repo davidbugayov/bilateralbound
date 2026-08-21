@@ -106,6 +106,27 @@ function updateHtmlFiles(version, hash) {
     fs.writeFileSync(filePath, content);
     console.log(`✅ Updated ${file}: v${versionString}`);
   });
+
+  // Update sw.js — CACHE_NAME and CACHE_VERSION must stay in sync with app version
+  const swPath = path.join(publicDir, 'sw.js');
+  if (fs.existsSync(swPath)) {
+    let swContent = fs.readFileSync(swPath, 'utf8');
+    const shortVersion = `${version}-${hash}`;
+    swContent = swContent.replace(
+      /const CACHE_NAME = 'bilateralbound-[^']*'/,
+      `const CACHE_NAME = 'bilateralbound-v3-${shortVersion}'`,
+    );
+    swContent = swContent.replace(
+      /const CACHE_VERSION = '[^']*'/,
+      `const CACHE_VERSION = '${shortVersion}'`,
+    );
+    swContent = swContent.replace(
+      /\/\*\* Build: [^*]*\*\//,
+      `/** Build: ${new Date().toISOString()} */`,
+    );
+    fs.writeFileSync(swPath, swContent);
+    console.log(`✅ Updated sw.js: v${shortVersion}`);
+  }
 }
 
 // Locale files now use {{VERSION}} placeholder - no update needed

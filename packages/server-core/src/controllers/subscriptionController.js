@@ -48,30 +48,11 @@ function registerSubscriptionRoutes(
    */
   function verifyTelegramOwnership(req) {
     if (!telegramAuthService || !telegramAuthService.isConfigured) {
-      // Fallback for dev without bot token: accept raw telegramUserId
-      const rawId =
-        (req.body && req.body.telegramUserId) || req.query.telegramUserId
-      if (rawId) {
-        logger.warn(
-          { telegramUserId: rawId },
-          'Accepting raw telegramUserId — TelegramAuthService not configured'
-        )
-        const userId = Number.parseInt(rawId, 10)
-        return Number.isFinite(userId) && userId > 0 ? userId : null
-      }
       return null
     }
 
     const initData = (req.body && req.body.initData) || req.query.initData
     if (!initData) {
-      // Allow raw telegramUserId as fallback during migration
-      const rawId = req.body && req.body.telegramUserId
-      if (rawId) {
-        const userId = Number.parseInt(rawId, 10)
-        if (Number.isFinite(userId) && userId > 0) {
-          return userId
-        }
-      }
       return null
     }
 

@@ -257,6 +257,7 @@ function gracefulShutdown() {
 process.on('SIGTERM', gracefulShutdown)
 process.on('SIGINT', gracefulShutdown)
 process.on('unhandledRejection', (err) => {
-  logger.error({ err }, 'Unhandled rejection')
+  logger.error({ err }, 'Unhandled rejection — exiting for restart')
+  process.exit(1)
 })
 logger.info('BilateralBound modular server started successfully')

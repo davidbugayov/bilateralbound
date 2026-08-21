@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "SUBSCRIPTION_TEST_MODE=true nodemon src/index.js",
     "lint:sonarqube": "node sonar-scanner.js"
   },
   "keywords": [

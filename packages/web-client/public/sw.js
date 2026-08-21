@@ -21,6 +21,7 @@ const STATIC_ASSETS = [
   '/css/light-theme.css?v=' + CACHE_VERSION,
   '/dist/viewer.bundle.js?v=' + CACHE_VERSION,
   '/dist/controller.bundle.js?v=' + CACHE_VERSION,
+  '/dist/shared.bundle.js?v=' + CACHE_VERSION,
   '/js/common.js?v=' + CACHE_VERSION,
   '/js/i18n/i18n.js?v=' + CACHE_VERSION,
   '/js/i18n/lang-preload.js?v=' + CACHE_VERSION,

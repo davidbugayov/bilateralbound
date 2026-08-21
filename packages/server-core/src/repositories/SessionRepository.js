@@ -143,6 +143,7 @@ class SessionRepository {
    * @returns {boolean} Успех удаления
    */
   delete(sessionId) {
+    this.accessOrder.delete(sessionId)
     return this.sessions.delete(sessionId)
   }
 
