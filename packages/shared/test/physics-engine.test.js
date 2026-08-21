@@ -1,5 +1,4 @@
 'use strict'
-/* eslint-env node */
 /**
  * Unit tests for physics-engine
  * Run: node packages/shared/test/physics-engine.test.js
