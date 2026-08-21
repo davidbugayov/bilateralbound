@@ -35,25 +35,27 @@ jobs:
           cache: 'npm'
 
       - name: Install SSH client
-        run: sudo apt-get update && sudo apt-get install -y openssh-client
+        run: sudo apt-get update && sudo apt-get install -y openssh-client rsync
 
-      - name: Setup SSH key
+      - name: Deploy
         env:
           SSH_PRIVATE_KEY: ${{ secrets.DEV_SSH_KEY }}
         run: |
+          set -e
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          # Write key preserving exact newlines
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa_emdr
-          chmod 600 ~/.ssh/id_rsa_emdr
-          # Verify key format
-          head -1 ~/.ssh/id_rsa_emdr
-          tail -1 ~/.ssh/id_rsa_emdr
-          ssh-keygen -l -f ~/.ssh/id_rsa_emdr || { echo "Key format error"; exit 1; }
           ssh-keyscan -t ed25519 144.31.68.9 >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Sync code to server
-        run: |
+          # Write key ensuring proper format
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Verify key is valid
+          ssh-keygen -l -f ~/.ssh/deploy_key || { echo "ERROR: Key format invalid"; exit 1; }
+
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes"
+
+          echo "=== Syncing code ==="
           rsync -az --delete \
             --exclude node_modules \
             --exclude .git \
@@ -62,12 +64,11 @@ jobs:
             --exclude test-results \
             --exclude data \
             --exclude .github \
-            -e "ssh -i ~/.ssh/id_rsa_emdr -o StrictHostKeyChecking=accept-new" \
+            -e "$SSH_CMD" \
             ${{ github.workspace }}/ root@144.31.68.9:/var/www/dev.emdrbilateral.online/
 
-      - name: Install, build, restart
-        run: |
-          ssh -i ~/.ssh/id_rsa_emdr -o StrictHostKeyChecking=accept-new root@144.31.68.9 << 'SCRIPT'
+          echo "=== Installing and building ==="
+          $SSH_CMD root@144.31.68.9 << 'SCRIPT'
           set -e
           cd /var/www/dev.emdrbilateral.online
           npm install --ignore-scripts
@@ -79,13 +80,12 @@ jobs:
           sleep 3
           SCRIPT
 
-      - name: Health check
-        run: |
+          echo "=== Health check ==="
           for i in $(seq 1 30); do
-            STATUS=$(ssh -i ~/.ssh/id_rsa_emdr -o StrictHostKeyChecking=accept-new root@144.31.68.9 "systemctl is-active emdrbilateral-dev" 2>/dev/null)
+            STATUS=$($SSH_CMD root@144.31.68.9 "systemctl is-active emdrbilateral-dev" 2>/dev/null)
             if [ "$STATUS" = "active" ]; then
               echo "Service is running"
-              ssh -i ~/.ssh/id_rsa_emdr -o StrictHostKeyChecking=accept-new root@144.31.68.9 "curl -s -o /dev/null -w 'HTTP %{http_code}' http://localhost:3003/"
+              $SSH_CMD root@144.31.68.9 "curl -s -o /dev/null -w 'HTTP %{http_code}' http://localhost:3003/"
               exit 0
             fi
             echo "Waiting... ($i/30)"
