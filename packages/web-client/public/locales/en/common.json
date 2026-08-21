@@ -598,5 +598,27 @@
     "sessionNotFoundMsg": "This link is outdated or was deleted. Create a new session to continue.",
     "createNewSession": "Create new session",
     "close": "Close hint"
+  },
+  "faq": {
+    "heading": "Frequently Asked Questions",
+    "q1": "What is EMDR therapy?",
+    "a1": "EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy that uses bilateral stimulation to help the brain reprocess traumatic memories. Recognised by WHO and APA for PTSD treatment.",
+    "q2": "How does BilateralBound work?",
+    "a2": "The therapist creates a session and shares a link with the client. The moving ball provides bilateral stimulation (left-right eye movements). Both see the same ball in real-time via WebSocket sync — no registration needed.",
+    "q3": "Is BilateralBound free?",
+    "a3": "Yes. The core tool is completely free — create sessions, use bilateral stimulation, audio, and breathing exercises without registration. Optional subscription via Telegram Stars supports permanent session links.",
+    "q4": "Can I use EMDR online for self-help?",
+    "a4": "While the tool can be used for self-regulation and relaxation, EMDR therapy for trauma should always be conducted with a certified EMDR therapist. Self-use is recommended only for stress relief and emotional regulation.",
+    "q5": "What languages does BilateralBound support?",
+    "a5": "Eight languages: English, Russian, German, Spanish, French, Portuguese, Japanese, and Chinese. The interface auto-detects your language from browser settings or domain."
+  },
+  "usecases": {
+    "heading": "Use Cases",
+    "remote": "Remote EMDR Sessions",
+    "remoteDesc": "Conduct EMDR therapy online with clients anywhere. Real-time WebSocket sync ensures both therapist and client see identical ball movement.",
+    "selfreg": "Self-Regulation",
+    "selfregDesc": "Use the bilateral stimulation tool for emotional regulation, anxiety relief, and stress management between therapy sessions.",
+    "training": "Therapist Training",
+    "trainingDesc": "EMDR trainees can practice bilateral stimulation techniques with different patterns: horizontal, vertical, diagonal, and infinity (figure-8) modes."
   }
 }
