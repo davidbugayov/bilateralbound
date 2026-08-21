@@ -168,7 +168,8 @@ async function main() {
   await ctrlPage.evaluate(async () => {
     const sid = globalThis.__current?.sessionId
     if (sid) {
-      await fetch(`/api/session/${sid}/controller/update`, {
+      const fetchFn = globalThis.csrfFetch || fetch
+      await fetchFn(`/api/session/${sid}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paused: true, returnToCenter: true })
@@ -213,7 +214,8 @@ async function main() {
   await ctrlPage.evaluate(async () => {
     const sid = globalThis.__current?.sessionId
     if (sid) {
-      await fetch(`/api/session/${sid}/controller/update`, {
+      const fetchFn = globalThis.csrfFetch || fetch
+      await fetchFn(`/api/session/${sid}/controller/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paused: true, returnToCenter: true })
@@ -263,7 +265,8 @@ async function main() {
     await ctrlPage.evaluate(async () => {
       const sid = globalThis.__current?.sessionId
       if (sid) {
-        await fetch(`/api/session/${sid}/controller/update`, {
+        const fetchFn = globalThis.csrfFetch || fetch
+        await fetchFn(`/api/session/${sid}/controller/update`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ paused: true, returnToCenter: true })

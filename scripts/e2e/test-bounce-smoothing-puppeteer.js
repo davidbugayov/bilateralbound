@@ -197,9 +197,10 @@ async function main() {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       })
-      await controllerPage.waitForFunction(() => globalThis.physicsEngine, {
-        timeout: 5000
-      })
+      await controllerPage.waitForFunction(
+        () => globalThis.physicsEngine || globalThis.__previewPhysics,
+        { timeout: 5000 }
+      )
     })
 
     // Wait a bit for controller to initialize
@@ -228,7 +229,7 @@ async function main() {
         const sessionId =
           globalThis.RealtimeClient.session.sessionId ||
           globalThis.__current.sessionId
-        const response = await fetch(
+        const response = await (globalThis.csrfFetch || fetch)(
           `/api/session/${sessionId}/controller/update`,
           {
             method: 'POST',
@@ -260,7 +261,8 @@ async function main() {
           globalThis.__current.sessionId
         if (!sessionId) throw new Error('No sessionId')
 
-        await fetch(`/api/session/${sessionId}/controller/update`, {
+        const fetchFn = globalThis.csrfFetch || fetch
+        await fetchFn(`/api/session/${sessionId}/controller/update`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ paused: true })

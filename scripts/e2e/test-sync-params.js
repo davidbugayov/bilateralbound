@@ -38,7 +38,8 @@ async function ctrl(updates) {
   await ctrlPage.evaluate(async (upd) => {
     const sid = globalThis.__current?.sessionId
     if (!sid) throw new Error('No sessionId in __current')
-    const res = await fetch(`/api/session/${sid}/controller/update`, {
+    const fetchFn = globalThis.csrfFetch || fetch
+    const res = await fetchFn(`/api/session/${sid}/controller/update`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(upd)
