@@ -105,6 +105,7 @@ module.exports = [
       'packages/web-client/sonar-scanner.js',
       'ecosystem.config.js',
       'packages/shared/test/**/*.js',
+      'packages/web-client/test/**/*.js',
     ],
     languageOptions: {
       ecmaVersion: 2022,

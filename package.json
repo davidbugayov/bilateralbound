@@ -27,7 +27,7 @@
     "check:outdated": "npm outdated && cd packages/server-core && npm outdated && cd ../web-client && npm outdated",
     "test": "node scripts/e2e/e2e_test.js",
     "test:local": "node scripts/e2e/e2e_test.js http://localhost:3000",
-    "test:unit": "node packages/shared/test/physics-engine.test.js",
+    "test:unit": "node packages/shared/test/physics-engine.test.js && node packages/web-client/test/ui-sync.test.js",
     "test:dev": "node scripts/e2e/e2e_test.js https://dev.emdrbilateral.online",
     "test:prod": "node scripts/e2e/e2e_test.js https://emdrbilateral.ru",
     "test:sync": "node scripts/e2e/test-sync-params.js",

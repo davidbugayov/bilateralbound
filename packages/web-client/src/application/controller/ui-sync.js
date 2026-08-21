@@ -62,6 +62,7 @@ function syncDirection(ballState) {
   if (ballState.dirX === undefined || ballState.dirY === undefined) return
   if (performance.now() < _ignoreDirection()) return
   if (_deps.getCurrentDirectionMode() === 'infinity') return
+  if (_deps.getCurrentDirectionMode() === 'brainspotting') return
   const mode = domainGetDirectionMode(ballState.dirX, ballState.dirY)
   if (mode && mode !== _deps.getCurrentDirectionMode()) {
     _deps.setDirectionState(ballState.dirX, ballState.dirY)

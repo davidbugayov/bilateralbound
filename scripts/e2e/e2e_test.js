@@ -527,6 +527,25 @@ async function main() {
     }
   })
 
+  await test('Brainspotting: mode persists after ignoreDirection expires (3s)', async () => {
+    // Wait long enough for __ignoreServerDirectionUntilTs (1.5s) to expire
+    // and for server delta broadcasts with stale dirX/dirY to arrive
+    await new Promise((r) => setTimeout(r, 3000))
+    const state = await ctrlPage.evaluate(() => {
+      const engine = globalThis.__previewPhysics
+      return {
+        brainspotting: engine?.ball?.brainspotting,
+        currentMode: globalThis.Direction?.getCurrentMode?.() || 'unknown'
+      }
+    })
+    if (!state.brainspotting) {
+      throw new Error(`Brainspotting was overridden after 3s: ${JSON.stringify(state)}`)
+    }
+    if (state.currentMode !== 'brainspotting') {
+      throw new Error(`Direction mode changed from brainspotting to ${state.currentMode}`)
+    }
+  })
+
   await test('Brainspotting: exiting mode restores normal physics', async () => {
     // Switch back to horizontal direction
     await ctrlPage.evaluate(() => {
