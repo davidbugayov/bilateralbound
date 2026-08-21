@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /**
  * Direction utilities for BilateralBound
  * Single source of truth for direction calculations.
@@ -8,8 +8,8 @@
 // Increased from 1e-6 to 1e-4 to prevent micro-drift
 // At 1e-6, direction {x: 0.0000001, y: 1.0} is treated as vertical
 // but causes visible X-axis drift
-const DIRECTION_EPSILON = 1e-4;
-const MAX_DIRECTION_ABS = 1.001;
+const DIRECTION_EPSILON = 1e-4
+const MAX_DIRECTION_ABS = 1.001
 
 // ============================================
 // DIRECTION CHECKS
@@ -21,7 +21,7 @@ const MAX_DIRECTION_ABS = 1.001;
  * @returns {boolean}
  */
 function isVerticalDirection(dirX) {
-  return Math.abs(dirX || 0) < DIRECTION_EPSILON;
+  return Math.abs(dirX || 0) < DIRECTION_EPSILON
 }
 
 /**
@@ -30,7 +30,7 @@ function isVerticalDirection(dirX) {
  * @returns {boolean}
  */
 function isHorizontalDirection(dirY) {
-  return Math.abs(dirY || 0) < DIRECTION_EPSILON;
+  return Math.abs(dirY || 0) < DIRECTION_EPSILON
 }
 
 // ============================================
@@ -44,11 +44,11 @@ function isHorizontalDirection(dirY) {
  * @returns {{x: number, y: number}|null} Unit vector or null if zero
  */
 function normalizeDirection(vx, vy) {
-  const speed = Math.hypot(vx || 0, vy || 0);
+  const speed = Math.hypot(vx || 0, vy || 0)
   if (speed > 0) {
-    return { x: vx / speed, y: vy / speed };
+    return { x: vx / speed, y: vy / speed }
   }
-  return null;
+  return null
 }
 
 /**
@@ -61,7 +61,7 @@ function isValidDirection(value) {
     typeof value === 'number' &&
     Number.isFinite(value) &&
     Math.abs(value) <= MAX_DIRECTION_ABS
-  );
+  )
 }
 
 // ============================================
@@ -79,8 +79,8 @@ function isValidDirection(value) {
 function getFallbackDirection(x, y, centerX, centerY) {
   return {
     x: x < centerX ? 1 : -1,
-    y: y < centerY ? 1 : -1,
-  };
+    y: y < centerY ? 1 : -1
+  }
 }
 
 module.exports = {
@@ -89,5 +89,5 @@ module.exports = {
   isHorizontalDirection,
   normalizeDirection,
   isValidDirection,
-  getFallbackDirection,
-};
+  getFallbackDirection
+}

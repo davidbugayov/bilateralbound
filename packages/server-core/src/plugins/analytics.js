@@ -1,5 +1,5 @@
-'use strict';
-const AnalyticsCollector = require('../services/AnalyticsCollector');
+'use strict'
+const AnalyticsCollector = require('../services/AnalyticsCollector')
 
 // Known scanner paths — return 403 without logging to analytics
 const SCANNER_PATHS = [
@@ -96,46 +96,46 @@ const SCANNER_PATHS = [
   '/api.json',
   '/s/lkx/_/',
   '/@fs/etc/passwd',
-  '/cgi-bin/',
-];
+  '/cgi-bin/'
+]
 
 function isScannerPath(path) {
-  if (!path) return false;
+  if (!path) return false
   // Exact matches
-  if (SCANNER_PATHS.includes(path)) return true;
+  if (SCANNER_PATHS.includes(path)) return true
   // Prefix matches for traversal attempts
   if (
     path.includes('/../') ||
     path.includes('/.%2e/') ||
     path.includes('%2e%2e')
   )
-    return true;
-  return false;
+    return true
+  return false
 }
 
 module.exports = {
   name: 'analytics',
   version: '1.0.0',
   register(app, { config, logger }) {
-    const analytics = new AnalyticsCollector(logger);
+    const analytics = new AnalyticsCollector(logger)
 
     // Bot filter — block known scanner paths BEFORE logging to analytics
     app.use((req, res, next) => {
       if (isScannerPath(req.path)) {
-        return res.status(403).end();
+        return res.status(403).end()
       }
-      next();
-    });
+      next()
+    })
 
     app.use((req, res, next) => {
-      analytics.recordHttpRequest();
+      analytics.recordHttpRequest()
       res.on('finish', () => {
         if (res.statusCode >= 400) {
-          analytics.recordHttpError(res.statusCode, req.path);
+          analytics.recordHttpError(res.statusCode, req.path)
         }
-      });
-      next();
-    });
-    return analytics;
-  },
-};
+      })
+      next()
+    })
+    return analytics
+  }
+}

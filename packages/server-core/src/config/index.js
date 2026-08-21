@@ -1,11 +1,11 @@
-'use strict';
+'use strict'
 
-const isDev = (process.env.NODE_ENV || 'development') !== 'production';
+const isDev = (process.env.NODE_ENV || 'development') !== 'production'
 
 const prodOrigins = [
   'https://emdrbilateral.ru',
-  'https://emdrbilateral.online',
-];
+  'https://emdrbilateral.online'
+]
 
 const devOrigins = [
   'http://localhost:3000',
@@ -13,22 +13,22 @@ const devOrigins = [
   'http://localhost:5000',
   'http://localhost:8080',
   'https://davidbugayov.github.io',
-  'https://bilateralbound.onrender.com',
-];
+  'https://bilateralbound.onrender.com'
+]
 
 module.exports = {
   server: {
     PORT: process.env.NODE_PORT || process.env.PORT || 3000,
     NODE_ENV: process.env.NODE_ENV || 'development',
     PUBLIC_URL: process.env.PUBLIC_URL || 'https://emdrbilateral.online',
-    DATA_DIR: process.env.DATA_DIR || null, // null = use default relative path
+    DATA_DIR: process.env.DATA_DIR || null // null = use default relative path
   },
   runtime: {
     CLIENT_SIM_ONLY:
-      String(process.env.CLIENT_SIM_ONLY || 'true').toLowerCase() === 'true',
+      String(process.env.CLIENT_SIM_ONLY || 'true').toLowerCase() === 'true'
   },
   cors: {
-    origins: isDev ? [...prodOrigins, ...devOrigins] : prodOrigins,
+    origins: isDev ? [...prodOrigins, ...devOrigins] : prodOrigins
   },
   logLevel: process.env.LOG_LEVEL || 'info',
   isDev,
@@ -46,6 +46,6 @@ module.exports = {
       String(process.env.SUBSCRIPTION_TEST_MODE || '').toLowerCase() === 'true',
     BOT_USERNAME: process.env.BOT_USERNAME || 'emdrbilateral_bot',
     WEBHOOK_URL: process.env.WEBHOOK_URL || '',
-    WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || '',
-  },
-};
+    WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || ''
+  }
+}

@@ -1,5 +1,5 @@
 /* jshint node: true, esversion: 11, strict: true */
-'use strict';
+'use strict'
 
 /**
  * Bot translations for all 8 supported languages.
@@ -18,7 +18,7 @@ const TRANSLATIONS = {
     de: 'https://emdrbilateral.online',
     pt: 'https://emdrbilateral.online',
     ja: 'https://emdrbilateral.online',
-    zh: 'https://emdrbilateral.online',
+    zh: 'https://emdrbilateral.online'
   },
 
   // ── Welcome (plain /start, not subscribed) ──
@@ -118,7 +118,7 @@ const TRANSLATIONS = {
       '3. 点击"Subscribe via Telegram"\n\n' +
       '<b>立即支付👇</b>\n' +
       '支付后，您可以为任何客户创建永久链接。\n\n' +
-      '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
+      '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>'
   },
 
   // ── Already subscribed (plain /start) ──
@@ -139,7 +139,7 @@ const TRANSLATIONS = {
       'Clientes: {clients}\n\n' +
       '¡Vuelve al sitio — los enlaces están listos!',
     fr:
-      "✅ <b>L'abonnement est déjà actif !</b>\n\n" +
+      '✅ <b>L\'abonnement est déjà actif !</b>\n\n' +
       'Expire le : {expDate}\n' +
       'Clients : {clients}\n\n' +
       'Retournez sur le site — les liens sont prêts !',
@@ -162,7 +162,7 @@ const TRANSLATIONS = {
       '✅ <b>订阅已激活！</b>\n\n' +
       '到期: {expDate}\n' +
       '客户数: {clients}\n\n' +
-      '返回网站 — 链接已就绪！',
+      '返回网站 — 链接已就绪！'
   },
 
   // ── Already subscribed with renewal prompt (plain /start, has subscription) ──
@@ -201,10 +201,10 @@ const TRANSLATIONS = {
       '✅ <b>Abonnement actif !</b>\n\n' +
       'Expire : {expDate}  ·  Clients : {clients}\n\n' +
       '🌬 <b>/breathe</b> — séance gratuite de respiration\n' +
-      "📋 <b>/status</b> — état de l'abonnement\n" +
-      "🔄 <b>/renew</b> — prolonger l'abonnement\n\n" +
+      '📋 <b>/status</b> — état de l\'abonnement\n' +
+      '🔄 <b>/renew</b> — prolonger l\'abonnement\n\n' +
       '🔗 <b>Lier des clients :</b>\n' +
-      "Allez sur le site → entrez un Custom ID → cliquez sur « Subscribe via Telegram » → l'ID se lie automatiquement.\n\n" +
+      'Allez sur le site → entrez un Custom ID → cliquez sur « Subscribe via Telegram » → l\'ID se lie automatiquement.\n\n' +
       '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
       'Soutenez le projet 👇',
     de:
@@ -246,7 +246,7 @@ const TRANSLATIONS = {
       '🔗 <b>链接客户：</b>\n' +
       '访问网站 → 输入Custom ID → 点击«Subscribe via Telegram» → ID自动链接。\n\n' +
       '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>\n\n' +
-      '支持项目 👇',
+      '支持项目 👇'
   },
 
   // ── Support / Renew button label ──
@@ -258,7 +258,7 @@ const TRANSLATIONS = {
     de: 'Unterstützen mit 75 ⭐',
     pt: 'Apoiar com 75 ⭐',
     ja: '75 ⭐でサポート',
-    zh: '用75 ⭐支持',
+    zh: '用75 ⭐支持'
   },
 
   // ── Client ID linked (when already subscribed, /start customId) ──
@@ -286,7 +286,7 @@ const TRANSLATIONS = {
       'サイトに戻ってください — リンクの準備ができています！',
     zh:
       '✅ 客户 <code>{customId}</code> 已链接到您的账户！\n\n' +
-      '返回网站 — 链接已就绪！',
+      '返回网站 — 链接已就绪！'
   },
 
   // ── Custom ID already linked to another user ──
@@ -298,7 +298,7 @@ const TRANSLATIONS = {
     de: '❌ Diese Kunden-ID ist bereits mit einem anderen Benutzer verknüpft.',
     pt: '❌ Este ID de cliente já está vinculado a outro usuário.',
     ja: '❌ このクライアントIDは既に別のユーザーにリンクされています。',
-    zh: '❌ 此客户ID已链接到其他用户。',
+    zh: '❌ 此客户ID已链接到其他用户。'
   },
 
   // ── Welcome (when customId is empty after stripping lang) ──
@@ -335,8 +335,8 @@ const TRANSLATIONS = {
       'Después del pago, puedes crear enlaces permanentes ilimitados.',
     fr:
       '<b>👋 Bienvenue chez BilateralBound Premium!</b>\n\n' +
-      "Ce bot gère votre abonnement à l'outil EMDR.\n\n" +
-      "👉 <b>Comment s'abonner :</b>\n" +
+      'Ce bot gère votre abonnement à l\'outil EMDR.\n\n' +
+      '👉 <b>Comment s\'abonner :</b>\n' +
       '1. Allez sur <a href="{siteUrl}">{siteUrl}</a>\n' +
       '2. Entrez un nom de client (ex. anna_2025)\n' +
       '3. Cliquez sur "Subscribe via Telegram"\n' +
@@ -382,7 +382,7 @@ const TRANSLATIONS = {
       '3. 点击"Subscribe via Telegram"\n' +
       '4. 在机器人中支付75 ⭐\n\n' +
       '<b>一次支付 — 所有客户。</b>\n' +
-      '支付后，您可以创建无限数量的永久链接。',
+      '支付后，您可以创建无限数量的永久链接。'
   },
 
   // ── Invoice ──
@@ -394,7 +394,7 @@ const TRANSLATIONS = {
     de: 'EMDR Premium Abonnement',
     pt: 'Assinatura EMDR Premium',
     ja: 'EMDR プレミアムサブスクリプション',
-    zh: 'EMDR 高级订阅',
+    zh: 'EMDR 高级订阅'
   },
   invoice_description_plain: {
     en: 'Full access for 30 days. Permanent links for all your clients.',
@@ -404,7 +404,7 @@ const TRANSLATIONS = {
     de: 'Vollzugriff für 30 Tage. Dauerhafte Links für alle Ihre Kunden.',
     pt: 'Acesso completo por 30 dias. Links permanentes para todos os seus clientes.',
     ja: '30日間の完全アクセス。すべてのクライアントに永続的なリンク。',
-    zh: '30天完整访问权限。为所有客户提供永久链接。',
+    zh: '30天完整访问权限。为所有客户提供永久链接。'
   },
   invoice_description_custom: {
     en: 'Permanent links for all your clients. Valid for 30 days.',
@@ -414,7 +414,7 @@ const TRANSLATIONS = {
     de: 'Dauerhafte Links für alle Ihre Kunden. Gültig für 30 Tage.',
     pt: 'Links permanentes para todos os seus clientes. Válido por 30 dias.',
     ja: 'すべてのクライアントに永続的なリンク。30日間有効。',
-    zh: '为所有客户提供永久链接。有效期为30天。',
+    zh: '为所有客户提供永久链接。有效期为30天。'
   },
   invoice_label_plain: {
     en: 'Premium (30 days)',
@@ -424,7 +424,7 @@ const TRANSLATIONS = {
     de: 'Premium (30 Tage)',
     pt: 'Premium (30 dias)',
     ja: 'プレミアム（30日間）',
-    zh: '高级（30天）',
+    zh: '高级（30天）'
   },
   invoice_label_custom: {
     en: 'Premium (30 days)',
@@ -434,7 +434,7 @@ const TRANSLATIONS = {
     de: 'Premium (30 Tage)',
     pt: 'Premium (30 dias)',
     ja: 'プレミアム（30日間）',
-    zh: '高级（30天）',
+    zh: '高级（30天）'
   },
   invoice_failed: {
     en: '❌ Failed to create invoice. Try again later.',
@@ -444,7 +444,7 @@ const TRANSLATIONS = {
     de: '❌ Rechnung konnte nicht erstellt werden. Versuchen Sie es später erneut.',
     pt: '❌ Falha ao criar a fatura. Tente novamente mais tarde.',
     ja: '❌ 請求書の作成に失敗しました。後でもう一度お試しください。',
-    zh: '❌ 创建发票失败。请稍后重试。',
+    zh: '❌ 创建发票失败。请稍后重试。'
   },
 
   // ── /status ──
@@ -488,17 +488,17 @@ const TRANSLATIONS = {
       '✅ <b>订阅已激活</b>\n\n' +
       '到期: {expDate}\n' +
       '客户数: {clients}\n' +
-      '自动续费: {autoRenew}',
+      '自动续费: {autoRenew}'
   },
   status_inactive: {
     en: '❌ <b>No Active Subscription</b>\n\nUse /start to subscribe.',
     ru: '❌ <b>Нет активной подписки</b>\n\nИспользуйте /start для оформления.',
     es: '❌ <b>Sin Suscripción Activa</b>\n\nUsa /start para suscribirte.',
-    fr: "❌ <b>Pas d'abonnement actif</b>\n\nUtilisez /start pour vous abonner.",
+    fr: '❌ <b>Pas d\'abonnement actif</b>\n\nUtilisez /start pour vous abonner.',
     de: '❌ <b>Kein aktives Abonnement</b>\n\nVerwenden Sie /start zum Abonnieren.',
     pt: '❌ <b>Nenhuma Assinatura Ativa</b>\n\nUse /start para assinar.',
     ja: '❌ <b>有効なサブスクリプションがありません</b>\n\n購読するには /start を使用してください。',
-    zh: '❌ <b>没有有效的订阅</b>\n\n使用 /start 订阅。',
+    zh: '❌ <b>没有有效的订阅</b>\n\n使用 /start 订阅。'
   },
 
   // ── /renew (renewal invoice) ──
@@ -510,7 +510,7 @@ const TRANSLATIONS = {
     de: 'EMDR Premium — Verlängern',
     pt: 'EMDR Premium — Renovar',
     ja: 'EMDR プレミアム — 更新',
-    zh: 'EMDR 高级 — 续期',
+    zh: 'EMDR 高级 — 续期'
   },
   renew_invoice_description: {
     en: 'Extend your Premium subscription for another 30 days.',
@@ -520,7 +520,7 @@ const TRANSLATIONS = {
     de: 'Verlängern Sie Ihr Premium-Abonnement um weitere 30 Tage.',
     pt: 'Estenda sua assinatura Premium por mais 30 dias.',
     ja: 'プレミアムサブスクリプションをさらに30日間延長します。',
-    zh: '将您的高级订阅再延长30天。',
+    zh: '将您的高级订阅再延长30天。'
   },
   renew_invoice_label: {
     en: 'Renewal (30 days)',
@@ -530,17 +530,17 @@ const TRANSLATIONS = {
     de: 'Verlängerung (30 Tage)',
     pt: 'Renovação (30 dias)',
     ja: '更新（30日間）',
-    zh: '续期（30天）',
+    zh: '续期（30天）'
   },
   renew_payment_success: {
     en: '✅ <b>Subscription renewed!</b>\n\n🎉 Your Premium is extended!\nNew expiry date: {expDate}',
     ru: '✅ <b>Подписка продлена!</b>\n\n🎉 Premium продлён!\nНовая дата истечения: {expDate}',
     es: '✅ <b>¡Suscripción renovada!</b>\n\n🎉 ¡Tu Premium ha sido extendido!\nNueva fecha de vencimiento: {expDate}',
-    fr: "✅ <b>Abonnement renouvelé !</b>\n\n🎉 Votre Premium est prolongé !\nNouvelle date d'expiration : {expDate}",
+    fr: '✅ <b>Abonnement renouvelé !</b>\n\n🎉 Votre Premium est prolongé !\nNouvelle date d\'expiration : {expDate}',
     de: '✅ <b>Abonnement verlängert!</b>\n\n🎉 Ihr Premium wurde verlängert!\nNeues Ablaufdatum: {expDate}',
     pt: '✅ <b>Assinatura renovada!</b>\n\n🎉 Seu Premium foi estendido!\nNova data de expiração: {expDate}',
     ja: '✅ <b>サブスクリプションが更新されました！</b>\n\n🎉 プレミアムが延長されました！\n新しい期限: {expDate}',
-    zh: '✅ <b>订阅已续期！</b>\n\n🎉 您的高级版已延长！\n新到期日: {expDate}',
+    zh: '✅ <b>订阅已续期！</b>\n\n🎉 您的高级版已延长！\n新到期日: {expDate}'
   },
 
   // ── /renew (legacy free extension — removed, kept for backward compat) ──
@@ -548,31 +548,31 @@ const TRANSLATIONS = {
     en: '✅ <b>Subscription renewed!</b>\n\nNew expiry date: {expDate}',
     ru: '✅ <b>Подписка продлена!</b>\n\nНовая дата истечения: {expDate}',
     es: '✅ <b>¡Suscripción renovada!</b>\n\nNueva fecha de vencimiento: {expDate}',
-    fr: "✅ <b>Abonnement renouvelé !</b>\n\nNouvelle date d'expiration : {expDate}",
+    fr: '✅ <b>Abonnement renouvelé !</b>\n\nNouvelle date d\'expiration : {expDate}',
     de: '✅ <b>Abonnement verlängert!</b>\n\nNeues Ablaufdatum: {expDate}',
     pt: '✅ <b>Assinatura renovada!</b>\n\nNova data de expiração: {expDate}',
     ja: '✅ <b>サブスクリプションが更新されました！</b>\n\n新しい期限: {expDate}',
-    zh: '✅ <b>订阅已续期！</b>\n\n新到期日: {expDate}',
+    zh: '✅ <b>订阅已续期！</b>\n\n新到期日: {expDate}'
   },
   renew_no_subscription: {
     en: '❌ <b>No Active Subscription</b>\n\nUse /start to subscribe.',
     ru: '❌ <b>Нет активной подписки</b>\n\nИспользуйте /start для оформления.',
     es: '❌ <b>Sin Suscripción Activa</b>\n\nUsa /start para suscribirte.',
-    fr: "❌ <b>Pas d'abonnement actif</b>\n\nUtilisez /start pour vous abonner.",
+    fr: '❌ <b>Pas d\'abonnement actif</b>\n\nUtilisez /start pour vous abonner.',
     de: '❌ <b>Kein aktives Abonnement</b>\n\nVerwenden Sie /start zum Abonnieren.',
     pt: '❌ <b>Nenhuma Assinatura Ativa</b>\n\nUse /start para assinar.',
     ja: '❌ <b>有効なサブスクリプションがありません</b>\n\n購読するには /start を使用してください。',
-    zh: '❌ <b>没有有效的订阅</b>\n\n使用 /start 订阅。',
+    zh: '❌ <b>没有有效的订阅</b>\n\n使用 /start 订阅。'
   },
   renew_failed: {
     en: '❌ Failed to renew subscription. Try again later.',
     ru: '❌ Не удалось продлить подписку. Попробуйте позже.',
     es: '❌ No se pudo renovar la suscripción. Inténtalo más tarde.',
-    fr: "❌ Échec du renouvellement de l'abonnement. Réessayez plus tard.",
+    fr: '❌ Échec du renouvellement de l\'abonnement. Réessayez plus tard.',
     de: '❌ Verlängerung fehlgeschlagen. Versuchen Sie es später erneut.',
     pt: '❌ Falha ao renovar assinatura. Tente novamente mais tarde.',
     ja: '❌ サブスクリプションの更新に失敗しました。後でもう一度お試しください。',
-    zh: '❌ 续期失败。请稍后重试。',
+    zh: '❌ 续期失败。请稍后重试。'
   },
 
   // ── /autorenew ──
@@ -584,7 +584,7 @@ const TRANSLATIONS = {
     de: '✅ <b>Auto-Verlängerung aktiviert.</b>\n\nIhr Abonnement verlängert sich automatisch alle 30 Tage.',
     pt: '✅ <b>Renovação automática ativada.</b>\n\nSua assinatura será renovada automaticamente a cada 30 dias.',
     ja: '✅ <b>自動更新が有効になりました。</b>\n\nサブスクリプションは30日ごとに自動更新されます。',
-    zh: '✅ <b>自动续费已启用。</b>\n\n您的订阅将每30天自动续期。',
+    zh: '✅ <b>自动续费已启用。</b>\n\n您的订阅将每30天自动续期。'
   },
   autorenew_disabled: {
     en: '❌ <b>Auto-renew disabled.</b>\n\nYou will need to manually renew with /renew.',
@@ -594,17 +594,17 @@ const TRANSLATIONS = {
     de: '❌ <b>Auto-Verlängerung deaktiviert.</b>\n\nSie müssen manuell mit /renew verlängern.',
     pt: '❌ <b>Renovação automática desativada.</b>\n\nVocê precisará renovar manualmente com /renew.',
     ja: '❌ <b>自動更新が無効になりました。</b>\n\n/renew を使用して手動で更新する必要があります。',
-    zh: '❌ <b>自动续费已禁用。</b>\n\n您需要使用 /renew 手动续期。',
+    zh: '❌ <b>自动续费已禁用。</b>\n\n您需要使用 /renew 手动续期。'
   },
   autorenew_no_subscription: {
     en: '❌ <b>No Active Subscription</b>\n\nUse /start to subscribe.',
     ru: '❌ <b>Нет активной подписки</b>\n\nИспользуйте /start для оформления.',
     es: '❌ <b>Sin Suscripción Activa</b>\n\nUsa /start para suscribirte.',
-    fr: "❌ <b>Pas d'abonnement actif</b>\n\nUtilisez /start pour vous abonner.",
+    fr: '❌ <b>Pas d\'abonnement actif</b>\n\nUtilisez /start pour vous abonner.',
     de: '❌ <b>Kein aktives Abonnement</b>\n\nVerwenden Sie /start zum Abonnieren.',
     pt: '❌ <b>Nenhuma Assinatura Ativa</b>\n\nUse /start para assinar.',
     ja: '❌ <b>有効なサブスクリプションがありません</b>\n\n購読するには /start を使用してください。',
-    zh: '❌ <b>没有有效的订阅</b>\n\n使用 /start 订阅。',
+    zh: '❌ <b>没有有效的订阅</b>\n\n使用 /start 订阅。'
   },
   autorenew_failed: {
     en: '❌ Failed to toggle auto-renew. Try again later.',
@@ -614,7 +614,7 @@ const TRANSLATIONS = {
     de: '❌ Auto-Verlängerung konnte nicht umgeschaltet werden. Versuchen Sie es später erneut.',
     pt: '❌ Falha ao alterar renovação automática. Tente novamente mais tarde.',
     ja: '❌ 自動更新の切り替えに失敗しました。後でもう一度お試しください。',
-    zh: '❌ 切换自动续费失败。请稍后重试。',
+    zh: '❌ 切换自动续费失败。请稍后重试。'
   },
 
   // ── Payment ──
@@ -674,17 +674,17 @@ const TRANSLATIONS = {
       '到期: {expDate}\n\n' +
       '您现在可以为<b>任何客户</b>创建永久链接。\n\n' +
       '前往<a href="https://emdrbilateral.online">emdrbilateral.online</a>或<a href="https://emdrbilateral.ru">emdrbilateral.ru</a>，' +
-      '输入客户名称并点击"Create" — 链接已就绪！🎉',
+      '输入客户名称并点击"Create" — 链接已就绪！🎉'
   },
   payment_failed: {
     en: '❌ <b>Activation error:</b>\n\n{error}\n\nPlease contact support.',
     ru: '❌ <b>Ошибка активации:</b>\n\n{error}\n\nПожалуйста, свяжитесь с поддержкой.',
     es: '❌ <b>Error de activación:</b>\n\n{error}\n\nPor favor, contacta al soporte.',
-    fr: "❌ <b>Erreur d'activation :</b>\n\n{error}\n\nVeuillez contacter le support.",
+    fr: '❌ <b>Erreur d\'activation :</b>\n\n{error}\n\nVeuillez contacter le support.',
     de: '❌ <b>Aktivierungsfehler:</b>\n\n{error}\n\nBitte kontaktieren Sie den Support.',
     pt: '❌ <b>Erro de ativação:</b>\n\n{error}\n\nEntre em contato com o suporte.',
     ja: '❌ <b>アクティベーションエラー：</b>\n\n{error}\n\nサポートにお問い合わせください。',
-    zh: '❌ <b>激活错误：</b>\n\n{error}\n\n请联系支持。',
+    zh: '❌ <b>激活错误：</b>\n\n{error}\n\n请联系支持。'
   },
 
   // ── Pre-checkout ──
@@ -696,7 +696,7 @@ const TRANSLATIONS = {
     de: 'Ungültige Anfrage',
     pt: 'Solicitação inválida',
     ja: '無効なリクエスト',
-    zh: '无效请求',
+    zh: '无效请求'
   },
 
   // ── Bot commands (for setMyCommands) ──
@@ -708,7 +708,7 @@ const TRANSLATIONS = {
     de: 'Bot starten / Abonnement-Info',
     pt: 'Iniciar o bot / obter informações da assinatura',
     ja: 'ボットを起動 / サブスクリプション情報',
-    zh: '启动机器人 / 获取订阅信息',
+    zh: '启动机器人 / 获取订阅信息'
   },
   cmd_status: {
     en: 'Check your subscription status',
@@ -718,7 +718,7 @@ const TRANSLATIONS = {
     de: 'Abonnement-Status prüfen',
     pt: 'Verificar o status da sua assinatura',
     ja: 'サブスクリプションの状態を確認',
-    zh: '检查您的订阅状态',
+    zh: '检查您的订阅状态'
   },
   cmd_renew: {
     en: 'Extend your subscription by 30 days',
@@ -728,7 +728,7 @@ const TRANSLATIONS = {
     de: 'Abonnement um 30 Tage verlängern',
     pt: 'Estender sua assinatura por 30 dias',
     ja: 'サブスクリプションを30日間延長',
-    zh: '将订阅延长30天',
+    zh: '将订阅延长30天'
   },
   cmd_autorenew: {
     en: 'Toggle auto-renew on/off',
@@ -738,7 +738,7 @@ const TRANSLATIONS = {
     de: 'Auto-Verlängerung ein/aus',
     pt: 'Ativar/desativar renovação automática',
     ja: '自動更新のオン/オフ切り替え',
-    zh: '开启/关闭自动续费',
+    zh: '开启/关闭自动续费'
   },
   cmd_breathe: {
     en: 'Coherent breathing session (5s/5s)',
@@ -748,7 +748,7 @@ const TRANSLATIONS = {
     de: 'Kohärentes Atmen (5s/5s)',
     pt: 'Respiração coerente (5s/5s)',
     ja: 'コヒーレント呼吸 (5秒/5秒)',
-    zh: '连贯呼吸 (5秒/5秒)',
+    zh: '连贯呼吸 (5秒/5秒)'
   },
   cmd_myid: {
     en: 'Get your Telegram User ID',
@@ -758,7 +758,7 @@ const TRANSLATIONS = {
     de: 'Deine Telegram-Nutzer-ID abrufen',
     pt: 'Obter seu Telegram User ID',
     ja: 'TelegramユーザーIDを取得',
-    zh: '获取您的Telegram用户ID',
+    zh: '获取您的Telegram用户ID'
   },
 
   // ── /myid ──
@@ -770,7 +770,7 @@ const TRANSLATIONS = {
     de: '📋 <b>Deine Telegram-Nutzer-ID</b>\n\n<code>{userId}</code>\n\nVerwende diese ID im Bereich «Manage Subscription» auf der Website, um dein Abonnement zu verknüpfen.',
     pt: '📋 <b>Seu Telegram User ID</b>\n\n<code>{userId}</code>\n\nUse este ID na seção «Manage Subscription» do site para vincular sua assinatura.',
     ja: '📋 <b>あなたのTelegramユーザーID</b>\n\n<code>{userId}</code>\n\nサイトの「Manage Subscription」セクションでこのIDを使用してサブスクリプションをリンクしてください。',
-    zh: '📋 <b>您的Telegram用户ID</b>\n\n<code>{userId}</code>\n\n在网站的「Manage Subscription」部分使用此ID来链接您的订阅。',
+    zh: '📋 <b>您的Telegram用户ID</b>\n\n<code>{userId}</code>\n\n在网站的「Manage Subscription」部分使用此ID来链接您的订阅。'
   },
 
   // ── /breathe ──
@@ -790,7 +790,7 @@ const TRANSLATIONS = {
     fr:
       '🌬 <b>Respiration cohérente</b>\n\n' +
       'Inspirez 5s / Expirez 5s — le rythme optimal pour calmer le système nerveux.\n\n' +
-      "🦋 Croisez les bras sur la poitrine (Butterfly Hug) et respirez au rythme de l'animation.",
+      '🦋 Croisez les bras sur la poitrine (Butterfly Hug) et respirez au rythme de l\'animation.',
     de:
       '🌬 <b>Kohärentes Atmen</b>\n\n' +
       'Einatmen 5s / Ausatmen 5s — der optimale Rhythmus zur Beruhigung des Nervensystems.\n\n' +
@@ -806,7 +806,7 @@ const TRANSLATIONS = {
     zh:
       '🌬 <b>连贯呼吸</b>\n\n' +
       '吸气5秒 / 呼气5秒 — 平静神经系统的理想节奏。\n\n' +
-      '🦋 双臂交叉在胸前（蝴蝶拥抱），跟随动画节奏呼吸。',
+      '🦋 双臂交叉在胸前（蝴蝶拥抱），跟随动画节奏呼吸。'
   },
   breathe_button: {
     en: '🌬 Open breathing session',
@@ -816,7 +816,7 @@ const TRANSLATIONS = {
     de: '🌬 Atem-Sitzung öffnen',
     pt: '🌬 Abrir sessão de respiração',
     ja: '🌬 呼吸セッションを開く',
-    zh: '🌬 打开呼吸会话',
+    zh: '🌬 打开呼吸会话'
   },
 
   // ── /lang ──
@@ -828,7 +828,7 @@ const TRANSLATIONS = {
     de: 'Bot-Sprache wählen',
     pt: 'Escolher o idioma do bot',
     ja: 'ボットの言語を選択',
-    zh: '选择机器人语言',
+    zh: '选择机器人语言'
   },
   lang_prompt: {
     en: '🌐 <b>Choose your language / Выберите язык:</b>',
@@ -838,7 +838,7 @@ const TRANSLATIONS = {
     de: '🌐 <b>Wähle deine Sprache / Choose your language:</b>',
     pt: '🌐 <b>Escolha seu idioma / Choose your language:</b>',
     ja: '🌐 <b>言語を選択 / Choose your language:</b>',
-    zh: '🌐 <b>选择语言 / Choose your language:</b>',
+    zh: '🌐 <b>选择语言 / Choose your language:</b>'
   },
   lang_changed: {
     en: '✅ Language set to <b>{langName}</b>',
@@ -848,12 +848,12 @@ const TRANSLATIONS = {
     de: '✅ Sprache festgelegt: <b>{langName}</b>',
     pt: '✅ Idioma definido: <b>{langName}</b>',
     ja: '✅ 言語を設定しました：<b>{langName}</b>',
-    zh: '✅ 语言已设置：<b>{langName}</b>',
-  },
-};
+    zh: '✅ 语言已设置：<b>{langName}</b>'
+  }
+}
 
 // ── Supported languages list ──
-const SUPPORTED_LANGUAGES = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh'];
+const SUPPORTED_LANGUAGES = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh']
 
 /**
  * Get a translation for a key in the specified language.
@@ -865,29 +865,29 @@ const SUPPORTED_LANGUAGES = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh'];
  * @returns {string} Translated text
  */
 function t(key, lang, placeholders) {
-  const l = lang && SUPPORTED_LANGUAGES.includes(lang) ? lang : 'en';
-  const entry = TRANSLATIONS[key];
-  if (!entry) return key;
+  const l = lang && SUPPORTED_LANGUAGES.includes(lang) ? lang : 'en'
+  const entry = TRANSLATIONS[key]
+  if (!entry) return key
 
-  let text = entry[l];
+  let text = entry[l]
   if (!text) {
-    text = entry['en'] || key;
+    text = entry['en'] || key
   }
 
   if (placeholders) {
     for (const [k, v] of Object.entries(placeholders)) {
-      text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), v);
+      text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), v)
     }
   }
 
-  return text;
+  return text
 }
 
 /**
  * Get the site URL for a given language.
  */
 function siteUrl(lang) {
-  return t('siteUrl', lang);
+  return t('siteUrl', lang)
 }
 
 /**
@@ -901,23 +901,23 @@ function dateLocale(lang) {
     de: 'de-DE',
     pt: 'pt-BR',
     ja: 'ja-JP',
-    zh: 'zh-CN',
-  };
-  return map[lang] || 'en-US';
+    zh: 'zh-CN'
+  }
+  return map[lang] || 'en-US'
 }
 
 /**
  * Format auto-renew status text for display.
  */
 function autoRenewText(lang, enabled) {
-  if (lang === 'ru') return enabled ? '✅ Вкл' : '❌ Выкл';
-  if (lang === 'es') return enabled ? '✅ Sí' : '❌ No';
-  if (lang === 'fr') return enabled ? '✅ Oui' : '❌ Non';
-  if (lang === 'de') return enabled ? '✅ An' : '❌ Aus';
-  if (lang === 'pt') return enabled ? '✅ Sim' : '❌ Não';
-  if (lang === 'ja') return enabled ? '✅ オン' : '❌ オフ';
-  if (lang === 'zh') return enabled ? '✅ 开' : '❌ 关';
-  return enabled ? '✅ On' : '❌ Off';
+  if (lang === 'ru') return enabled ? '✅ Вкл' : '❌ Выкл'
+  if (lang === 'es') return enabled ? '✅ Sí' : '❌ No'
+  if (lang === 'fr') return enabled ? '✅ Oui' : '❌ Non'
+  if (lang === 'de') return enabled ? '✅ An' : '❌ Aus'
+  if (lang === 'pt') return enabled ? '✅ Sim' : '❌ Não'
+  if (lang === 'ja') return enabled ? '✅ オン' : '❌ オフ'
+  if (lang === 'zh') return enabled ? '✅ 开' : '❌ 关'
+  return enabled ? '✅ On' : '❌ Off'
 }
 
 /**
@@ -931,8 +931,8 @@ function getCommandsForLang(lang) {
     { command: 'autorenew', description: t('cmd_autorenew', lang) },
     { command: 'myid', description: t('cmd_myid', lang) },
     { command: 'breathe', description: t('cmd_breathe', lang) },
-    { command: 'lang', description: t('cmd_lang', lang) },
-  ];
+    { command: 'lang', description: t('cmd_lang', lang) }
+  ]
 }
 
 module.exports = {
@@ -942,5 +942,5 @@ module.exports = {
   siteUrl,
   dateLocale,
   autoRenewText,
-  getCommandsForLang,
-};
+  getCommandsForLang
+}

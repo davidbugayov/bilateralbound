@@ -1,6 +1,6 @@
-'use strict';
+'use strict'
 
-const crypto = require('node:crypto');
+const crypto = require('node:crypto')
 
 /**
  * Issues and verifies short-lived HMAC-signed tokens for WebSocket authentication.
@@ -20,9 +20,9 @@ class WsTokenService {
    * @param {Object} opts.logger
    */
   constructor({ secret, ttlMs, logger } = {}) {
-    this._secret = secret || crypto.randomBytes(32).toString('hex');
-    this._ttlMs = ttlMs || 24 * 60 * 60 * 1000; // 24 hours
-    this._logger = logger || console;
+    this._secret = secret || crypto.randomBytes(32).toString('hex')
+    this._ttlMs = ttlMs || 24 * 60 * 60 * 1000 // 24 hours
+    this._logger = logger || console
   }
 
   /**
@@ -32,13 +32,13 @@ class WsTokenService {
    * @returns {string} token
    */
   generate(sessionId, role) {
-    const expiresAt = Date.now() + this._ttlMs;
-    const payload = `${sessionId}.${role}.${expiresAt}`;
+    const expiresAt = Date.now() + this._ttlMs
+    const payload = `${sessionId}.${role}.${expiresAt}`
     const hmac = crypto
       .createHmac('sha256', this._secret)
       .update(payload)
-      .digest('hex');
-    return `${payload}.${hmac}`;
+      .digest('hex')
+    return `${payload}.${hmac}`
   }
 
   /**
@@ -47,50 +47,50 @@ class WsTokenService {
    * @returns {{ sessionId: string, role: string, expiresAt: number }|null}
    */
   verify(token) {
-    if (!token || typeof token !== 'string') return null;
+    if (!token || typeof token !== 'string') return null
 
-    const lastDot = token.lastIndexOf('.');
-    if (lastDot === -1) return null;
+    const lastDot = token.lastIndexOf('.')
+    if (lastDot === -1) return null
 
-    const payload = token.slice(0, lastDot);
-    const claimedHmac = token.slice(lastDot + 1);
+    const payload = token.slice(0, lastDot)
+    const claimedHmac = token.slice(lastDot + 1)
 
     const expectedHmac = crypto
       .createHmac('sha256', this._secret)
       .update(payload)
-      .digest('hex');
+      .digest('hex')
 
     // Constant-time comparison to prevent timing attacks
-    const claimedBuf = Buffer.from(claimedHmac, 'hex');
-    const expectedBuf = Buffer.from(expectedHmac, 'hex');
+    const claimedBuf = Buffer.from(claimedHmac, 'hex')
+    const expectedBuf = Buffer.from(expectedHmac, 'hex')
     if (claimedBuf.length !== expectedBuf.length || claimedBuf.length === 0) {
-      return null;
+      return null
     }
     if (!crypto.timingSafeEqual(claimedBuf, expectedBuf)) {
-      return null;
+      return null
     }
 
-    const parts = payload.split('.');
-    if (parts.length !== 3) return null;
+    const parts = payload.split('.')
+    if (parts.length !== 3) return null
 
-    const [sessionId, role, expiresStr] = parts;
-    const expiresAt = Number.parseInt(expiresStr, 10);
+    const [sessionId, role, expiresStr] = parts
+    const expiresAt = Number.parseInt(expiresStr, 10)
 
     if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
-      return null;
+      return null
     }
 
     if (role !== 'controller' && role !== 'viewer') {
-      return null;
+      return null
     }
 
     // Validate sessionId format (alphanumeric, dash, underscore, 3-64 chars)
     if (!sessionId || !/^[A-Za-z0-9_-]{3,64}$/.test(sessionId)) {
-      return null;
+      return null
     }
 
-    return { sessionId, role, expiresAt };
+    return { sessionId, role, expiresAt }
   }
 }
 
-module.exports = WsTokenService;
+module.exports = WsTokenService
