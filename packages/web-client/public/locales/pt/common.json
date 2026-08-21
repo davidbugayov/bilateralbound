@@ -267,7 +267,9 @@
     "viewerNotConnectedWarning": "Não é possível alterar as configurações",
     "viewerStarted": "Visualizador iniciado",
     "viewerStopped": "Visualizador parado",
-    "warning": "Aviso"
+    "warning": "Aviso",
+    "brainspottingFull": "Brainspotting mode — move ball manually with mouse",
+    "brainspottingShort": "BSP"
   },
   "features": {
     "bilateral": "Estimulação bilateral",

@@ -274,7 +274,9 @@
     "settingsTabLanguage": "Language",
     "connectionError": "Failed to connect to session. Please reload the page and try again.",
     "errorTitle": "Error",
-    "unknownDirection": "❓ Unknown"
+    "unknownDirection": "❓ Unknown",
+    "brainspottingFull": "Brainspotting mode — move ball manually with mouse",
+    "brainspottingShort": "BSP"
   },
   "features": {
     "bilateral": "Bilateral Stimulation (EMDR)",

@@ -267,7 +267,9 @@
     "viewerNotConnectedWarning": "設定を変更できません",
     "viewerStarted": "ビューアーが開始しました",
     "viewerStopped": "ビューアーが停止しました",
-    "warning": "警告"
+    "warning": "警告",
+    "brainspottingFull": "Brainspotting mode — move ball manually with mouse",
+    "brainspottingShort": "BSP"
   },
   "features": {
     "bilateral": "両側性刺激",

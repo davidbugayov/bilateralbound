@@ -267,7 +267,9 @@
     "connectionError": "No se pudo conectar a la sesión. Recarga la página e inténtalo de nuevo.",
     "errorTitle": "Error",
     "sessionLostMsg": "Su sesión ha expirado o fue eliminada del servidor. Recargue la página.",
-    "unknownDirection": "❓ Desconocido"
+    "unknownDirection": "❓ Desconocido",
+    "brainspottingFull": "Brainspotting mode — move ball manually with mouse",
+    "brainspottingShort": "BSP"
   },
   "features": {
     "bilateral": "Estimulación bilateral",

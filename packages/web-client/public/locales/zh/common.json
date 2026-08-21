@@ -267,7 +267,9 @@
     "viewerNotConnectedWarning": "无法更改设置",
     "viewerStarted": "查看器已开始",
     "viewerStopped": "查看器已停止",
-    "warning": "警告"
+    "warning": "警告",
+    "brainspottingFull": "Brainspotting mode — move ball manually with mouse",
+    "brainspottingShort": "BSP"
   },
   "features": {
     "bilateral": "双侧刺激",

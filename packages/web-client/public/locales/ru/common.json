@@ -274,7 +274,9 @@
     "settingsTabLanguage": "Язык",
     "connectionError": "Не удалось подключиться к сессии. Перезагрузите страницу и попробуйте снова.",
     "errorTitle": "Ошибка",
-    "unknownDirection": "❓ Неизвестно"
+    "unknownDirection": "❓ Неизвестно",
+    "brainspottingFull": "Режим Brainspotting — двигайте шар мышью вручную",
+    "brainspottingShort": "BSP"
   },
   "features": {
     "bilateral": "Билатеральная стимуляция (EMDR)",
