@@ -65,7 +65,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // ------------------------------------------------------------------
   app.post('/api/subscription/:customId/check', (req, res) => {
     const { customId } = req.params
-    if (!customId || !/^[A-Za-z0-9_-]{3,32}$/.test(customId)) {
+    if (!customId || !/^[A-Za-z0-9_-]{3,64}$/.test(customId)) {
       return res.status(400).json({ error: 'Invalid customId format' })
     }
 
@@ -255,7 +255,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // ------------------------------------------------------------------
   app.post('/api/subscription/:customId/renew', (req, res) => {
     const { customId } = req.params
-    if (!customId || !/^[A-Za-z0-9_-]{3,32}$/.test(customId)) {
+    if (!customId || !/^[A-Za-z0-9_-]{3,64}$/.test(customId)) {
       return res.status(400).json({ error: 'Invalid customId format' })
     }
     const status = subscriptionService.getStatusForCustomId
@@ -278,7 +278,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // ------------------------------------------------------------------
   app.post('/api/subscription/:customId/autorenew', (req, res) => {
     const { customId } = req.params
-    if (!customId || !/^[A-Za-z0-9_-]{3,32}$/.test(customId)) {
+    if (!customId || !/^[A-Za-z0-9_-]{3,64}$/.test(customId)) {
       return res.status(400).json({ error: 'Invalid customId format' })
     }
     const enabled = req.body?.enabled === true

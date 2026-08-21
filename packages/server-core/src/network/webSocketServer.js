@@ -1,5 +1,6 @@
 'use strict'
 const { WebSocketServer } = require('ws')
+const ValidationUtils = require('../utils/validation')
 
 function setupWebSocketServer(
   server,
@@ -28,10 +29,15 @@ function setupWebSocketServer(
       }
       sessionId = decoded.sessionId
       role = decoded.role
-    } else {
-      // Fallback for dev environments without WsTokenService
+    } else if (process.env.NODE_ENV !== 'production') {
+      // Dev-only fallback: allows unauthenticated WS for local development.
+      // In production, WsTokenService must be configured — otherwise reject.
       sessionId = url.searchParams.get('sessionId')
       role = url.searchParams.get('role')
+    } else {
+      logger.warn('WS connection rejected: WsTokenService not configured in production')
+      ws.close(4001, 'Unauthorized')
+      return
     }
 
     if (!sessionId || !role) {
@@ -133,7 +139,9 @@ function setupWebSocketServer(
 
           // Save screen size from viewer reconnect — critical for preview sync
           const screenSize = data.payload?.screenSize
-          if (screenSize && typeof screenSize.width === 'number' && typeof screenSize.height === 'number') {
+          if (screenSize && typeof screenSize.width === 'number' && typeof screenSize.height === 'number' &&
+              screenSize.width > 0 && screenSize.height > 0 &&
+              screenSize.width <= 10000 && screenSize.height <= 10000) {
             sessionService.setViewerScreenSize(sessionId, screenSize)
           }
 
@@ -166,7 +174,8 @@ function setupWebSocketServer(
         if (role === 'viewer') {
           const session = sessionService.getSession(sessionId)
           if (session) {
-            session.viewerAudioActivated = data.payload?.activated ?? true
+            const activated = data.payload?.activated
+            session.viewerAudioActivated = typeof activated === 'boolean' ? activated : true
             broadcastService.broadcastViewerAudioActivated(
               sessionId,
               session.viewerAudioActivated
@@ -186,15 +195,21 @@ function setupWebSocketServer(
       // and detect bounces independently. Position relay caused spring-damper jitter.
       bounce: (data) => {
         if (role === 'viewer') {
+          // Validate bounce payload before relaying to controller
+          const validated = ValidationUtils.validateBouncePayload(data.payload)
+          if (!validated) {
+            logger.warn({ sessionId, payload: data.payload }, 'Invalid bounce payload rejected')
+            return
+          }
           const clients = webSocketManager.getClients(sessionId)
           // Direction-only bounce_sync to controller preview
           const bounceMessage = JSON.stringify({
             type: 'bounce_sync',
             payload: {
-              side: data.payload.side,
-              dirX: data.payload.dirX,
-              dirY: data.payload.dirY,
-              timestamp: data.payload.timestamp
+              side: validated.side,
+              dirX: validated.dirX,
+              dirY: validated.dirY,
+              timestamp: validated.timestamp
             }
           })
           for (const { client, info: clientInfo } of clients) {
@@ -210,9 +225,9 @@ function setupWebSocketServer(
           const ackMessage = JSON.stringify({
             type: 'bounce_ack',
             payload: {
-              side: data.payload.side,
-              serverDirX: data.payload.dirX,
-              serverDirY: data.payload.dirY,
+              side: validated.side,
+              serverDirX: validated.dirX,
+              serverDirY: validated.dirY,
               ts: Date.now()
             }
           })
@@ -229,7 +244,8 @@ function setupWebSocketServer(
       viewer_screen_size: (data) => {
         if (role === 'viewer') {
           const { width, height } = data.payload || {}
-          if (typeof width === 'number' && typeof height === 'number') {
+          if (typeof width === 'number' && typeof height === 'number' &&
+              width > 0 && height > 0 && width <= 10000 && height <= 10000) {
             sessionService.setViewerScreenSize(sessionId, { width, height })
           }
         }
@@ -297,6 +313,7 @@ function setupWebSocketServer(
       }
     }
   }, 30000)
+  heartbeatInterval.unref()
 
   return { wss, heartbeatInterval }
 }

@@ -1,5 +1,21 @@
 'use strict'
 
+const isDev = (process.env.NODE_ENV || 'development') !== 'production'
+
+const prodOrigins = [
+  'https://emdrbilateral.ru',
+  'https://emdrbilateral.online'
+]
+
+const devOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3006',
+  'http://localhost:5000',
+  'http://localhost:8080',
+  'https://davidbugayov.github.io',
+  'https://bilateralbound.onrender.com'
+]
+
 module.exports = {
   server: {
     PORT: process.env.NODE_PORT || process.env.PORT || 3000,
@@ -16,19 +32,10 @@ module.exports = {
     )
   },
   cors: {
-    origins: [
-      'https://emdrbilateral.ru',
-      'https://emdrbilateral.online',
-      'http://localhost:3000',
-      'http://localhost:3006',
-      'http://localhost:5000',
-      'http://localhost:8080',
-      'https://davidbugayov.github.io',
-      'https://bilateralbound.onrender.com'
-    ]
+    origins: isDev ? [...prodOrigins, ...devOrigins] : prodOrigins
   },
   logLevel: process.env.LOG_LEVEL || 'info',
-  isDev: (process.env.NODE_ENV || 'development') !== 'production',
+  isDev,
 
   // Telegram Stars subscription (https://core.telegram.org/bots/payments#stars)
   subscription: {

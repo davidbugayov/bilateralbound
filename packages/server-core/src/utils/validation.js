@@ -331,7 +331,7 @@ class ValidationUtils {
    */
   static validateSessionId(sessionId) {
     return (
-      typeof sessionId === 'string' && /^[a-zA-Z0-9_-]{3,32}$/.test(sessionId)
+      typeof sessionId === 'string' && /^[a-zA-Z0-9_-]{3,64}$/.test(sessionId)
     )
   }
 

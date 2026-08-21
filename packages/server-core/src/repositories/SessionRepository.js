@@ -46,7 +46,7 @@ class SessionRepository {
    * @returns {boolean} Результат валидации
    */
   isValidCustomId(id) {
-    return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id)
+    return typeof id === 'string' && /^[A-Za-z0-9_-]{3,64}$/.test(id)
   }
 
   /**
