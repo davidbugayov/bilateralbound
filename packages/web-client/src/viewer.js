@@ -250,7 +250,22 @@ function onStateUpdate(state) {
     onLanguageUpdate({ language: state.language })
   }
   if (physicsEngine && state) {
-    updatePhysicsFromState(state)
+    // When the server reports paused: true, strip x/y coordinates.
+    // The server ball is already at center (server-mode returnToCenter
+    // snaps instantly), but the viewer must animate smoothly from its
+    // current position — not teleport. Receiving x/y=center from the
+    // server would cause an abrupt jump that can trigger adverse
+    // reactions in EMDR clients.
+    if (state.paused === true) {
+      const stateCopy = { ...state }
+      delete stateCopy.x
+      delete stateCopy.y
+      delete stateCopy.vx
+      delete stateCopy.vy
+      updatePhysicsFromState(stateCopy)
+    } else {
+      updatePhysicsFromState(state)
+    }
   }
   if (state && audioManager) {
     updateAudioFromState(state)

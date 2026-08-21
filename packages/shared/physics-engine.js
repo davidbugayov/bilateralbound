@@ -80,7 +80,7 @@ const DEFAULT_STATE = {
   stoppingStartTs: 0,
   stoppingDuration: 0.6,
   seekingCenter: false,
-  seekingCenterDuration: 0.4
+  seekingCenterDuration: 1.2
 }
 
 const DEFAULT_COLORS = {
@@ -807,15 +807,20 @@ class PhysicsEngine {
       if (ball.x < radius) {
         const overflow = radius - ball.x
         ball.x = radius + overflow + 0.1 // Add epsilon to skip wall
-        if (dirX < 0) {
-          state.lastDirection.x = Math.abs(dirX)
+        // Hard clamp: at high speeds the reflected position can still be
+        // outside bounds, so enforce a hard limit.
+        if (ball.x < radius) ball.x = radius + 0.1
+        if (dirX <= 0) {
+          state.lastDirection.x = Math.abs(dirX) || 1
           bounceSide = 'left'
         }
       } else if (ball.x > worldWidth - radius) {
         const overflow = ball.x - (worldWidth - radius)
         ball.x = worldWidth - radius - overflow - 0.1 // Add epsilon to skip wall
-        if (dirX > 0) {
-          state.lastDirection.x = -Math.abs(dirX)
+        // Hard clamp: mirror of the left-wall check.
+        if (ball.x > worldWidth - radius) ball.x = worldWidth - radius - 0.1
+        if (dirX >= 0) {
+          state.lastDirection.x = -(Math.abs(dirX) || 1)
           bounceSide = 'right'
         }
       }
@@ -828,15 +833,20 @@ class PhysicsEngine {
       if (ball.y < yMin + radius) {
         const overflow = (yMin + radius) - ball.y
         ball.y = yMin + radius + overflow + 0.1 // Add epsilon to skip wall
-        if (dirY < 0) {
-          state.lastDirection.y = Math.abs(dirY)
+        // Hard clamp: at high speeds the reflected position can still be
+        // outside bounds, so enforce a hard limit.
+        if (ball.y < yMin + radius) ball.y = yMin + radius + 0.1
+        if (dirY <= 0) {
+          state.lastDirection.y = Math.abs(dirY) || 1
           bounceSide = bounceSide || 'top'
         }
       } else if (ball.y > yMax - radius) {
         const overflow = ball.y - (yMax - radius)
         ball.y = yMax - radius - overflow - 0.1 // Add epsilon to skip wall
-        if (dirY > 0) {
-          state.lastDirection.y = -Math.abs(dirY)
+        // Hard clamp: mirror of the top-wall check.
+        if (ball.y > yMax - radius) ball.y = yMax - radius - 0.1
+        if (dirY >= 0) {
+          state.lastDirection.y = -(Math.abs(dirY) || 1)
           bounceSide = bounceSide || 'bottom'
         }
       }
@@ -845,6 +855,10 @@ class PhysicsEngine {
     if (bounceSide) {
       this.handleBounce(bounceSide)
     }
+
+    // Final safety clamp — guarantees the ball never leaves the screen,
+    // even if bounce logic or floating-point edge cases miss a case.
+    this.clampBallWithinBounds()
   }
 
   /**
@@ -1426,7 +1440,12 @@ class PhysicsEngine {
 
     const elapsed = (performance.now() - this._seekCenterStart.ts) / 1000
     const t = Math.min(1, elapsed / this.state.seekingCenterDuration)
-    const ease = 1 - (1 - t) * (1 - t)
+    // Ease-in-out cubic: slow start, smooth middle, gentle stop.
+    // This prevents abrupt visual jumps that could trigger adverse
+    // reactions in EMDR clients during bilateral stimulation pauses.
+    const ease = t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2
 
     const newX =
       this._seekCenterStart.x + (this.centerX - this._seekCenterStart.x) * ease

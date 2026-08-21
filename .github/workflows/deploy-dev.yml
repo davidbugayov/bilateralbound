@@ -1,0 +1,87 @@
+name: Deploy to Dev
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm install --ignore-scripts
+      - run: npm run lint
+
+  deploy:
+    name: Deploy to dev.emdrbilateral.online
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEV_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa_emdr
+          chmod 600 ~/.ssh/id_rsa_emdr
+          ssh-keyscan -H 144.31.68.9 >> ~/.ssh/known_hosts
+
+      - name: Sync code
+        run: |
+          rsync -avz --delete \
+            --exclude node_modules \
+            --exclude .git \
+            --exclude dist \
+            --exclude .scannerwork \
+            --exclude test-results \
+            --exclude data \
+            -e "ssh -i ~/.ssh/id_rsa_emdr" \
+            ./ root@144.31.68.9:/var/www/dev.emdrbilateral.online/
+
+      - name: Install dependencies and build
+        run: |
+          ssh -i ~/.ssh/id_rsa_emdr root@144.31.68.9 bash << 'EOF'
+          set -e
+          cd /var/www/dev.emdrbilateral.online
+          npm install --ignore-scripts
+          cd packages/web-client
+          npm install --ignore-scripts
+          cd /var/www/dev.emdrbilateral.online
+          npm run build:prod
+          EOF
+
+      - name: Restart service
+        run: |
+          ssh -i ~/.ssh/id_rsa_emdr root@144.31.68.9 "systemctl restart emdrbilateral-dev && sleep 2"
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 30); do
+            if ssh -i ~/.ssh/id_rsa_emdr root@144.31.68.9 "systemctl is-active emdrbilateral-dev" | grep -q active; then
+              echo "Service is running"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+          ssh -i ~/.ssh/id_rsa_emdr root@144.31.68.9 "curl -s -o /dev/null -w 'HTTP %{http_code}' http://localhost:3003/"
