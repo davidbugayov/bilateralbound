@@ -61,9 +61,6 @@ class SessionService {
   }
 
   /**
-   * Gets session by ID
-
-  /**
    * Creates a new session with physics engine
    * @param {Object} ballState - Initial ball state
    * @returns {Promise<Object>} Created session
@@ -471,17 +468,6 @@ class SessionService {
         client.initialStateSent = true
       }
     }
-  }
-
-  /**
-   * Sets default ball state when no physics engine exists
-   * @private
-   */
-  _setDefaultBallState(session, validatedSize) {
-    session.ballState.x = validatedSize.width / 2
-    session.ballState.y = validatedSize.height / 2
-    session.ballState.vx = 0
-    session.ballState.vy = 0
   }
 }
 

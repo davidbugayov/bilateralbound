@@ -15,13 +15,10 @@ const {
   isHorizontalDirection,
   normalizeDirection,
   isValidDirection,
-  // calculateVelocity — unused, kept for API compatibility
   getFallbackDirection
 } = require('./direction-utils')
 
 const {
-  // createBounceMessage — unused, kept for API compatibility
-  // createBounceEventDetail — unused, kept for API compatibility
   createBouncePhysicsData,
   dispatchBounceEvent
 } = require('./bounce-utils')

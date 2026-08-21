@@ -157,24 +157,7 @@ function applyAdaptiveSmoothing(physicsEngine, jitterMs) {
   physicsEngine.setSmoothingOptions(options)
 }
 
-// ============================================
-// DEBUG HELPERS
-// ============================================
-
-/**
- * Gets current smoothing config as human-readable string
- * Useful for debugging/logging
- * @returns {string} Config summary
- */
-function getSmoothingConfigString() {
-  const config = resolveSmoothingConfig()
-  return `SmoothingConfig{damping:${config.damping}, stiffness:${config.stiffness}, maxPredictSec:${config.maxPredictSec}, snapDistance:${config.snapDistance}}`
-}
-
 module.exports = {
-  DEFAULT_SMOOTHING_CONFIG,
   calculateAdaptiveSmoothing,
-  applyAdaptiveSmoothing,
-  resolveSmoothingConfig,
-  getSmoothingConfigString
+  applyAdaptiveSmoothing
 }

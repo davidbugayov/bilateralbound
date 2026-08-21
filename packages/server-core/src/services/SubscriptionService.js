@@ -248,23 +248,6 @@ class SubscriptionService {
   }
 
   /**
-   * Get total number of unique users with active subscriptions.
-   * @returns {number}
-   */
-  getActiveCount() {
-    this._purgeExpired()
-    return this._subscriptions.size
-  }
-
-  /**
-   * Get total Stars revenue.
-   * @returns {number}
-   */
-  getTotalStars() {
-    return this.totalStars
-  }
-
-  /**
    * Handle Telegram pre_checkout_query (validate availability).
    * @param {string} customId
    * @returns {boolean}

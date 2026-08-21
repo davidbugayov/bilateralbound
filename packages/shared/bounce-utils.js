@@ -6,29 +6,11 @@
  */
 
 // ============================================
-// BOUNCE MESSAGE FACTORY
+// BOUNCE PHYSICS DATA
 // ============================================
 
 /**
- * Creates bounce message for WebSocket sync
- * @param {string} side - Bounce side: 'left', 'right', 'top', 'bottom'
- * @param {object} ball - Ball state with x, y
- * @param {object} direction - Direction with x, y
- * @returns {object} Bounce message for sending over network
- */
-function createBounceMessage(side, ball, direction) {
-  return {
-    side,
-    x: ball.x,
-    y: ball.y,
-    dirX: direction.x || 0,
-    dirY: direction.y || 0,
-    timestamp: Date.now()
-  }
-}
-
-/**
- * Creates bounce event detail for DOM events
+ * Creates bounce event detail for DOM events (internal)
  * @param {string} side - Bounce side
  * @param {object} ball - Ball state with x, y
  * @returns {object} Event detail for CustomEvent
@@ -40,10 +22,6 @@ function createBounceEventDetail(side, ball) {
     y: ball.y
   }
 }
-
-// ============================================
-// BOUNCE PHYSICS DATA
-// ============================================
 
 /**
  * Creates complete bounce physics data
@@ -87,8 +65,6 @@ function dispatchBounceEvent(side, ball) {
 }
 
 module.exports = {
-  createBounceMessage,
-  createBounceEventDetail,
   createBouncePhysicsData,
   dispatchBounceEvent
 }
