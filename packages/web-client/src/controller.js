@@ -20,7 +20,6 @@ require('./network/csrf')
 require('./ui/controller-settings')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
-const _PreviewManager = require('./application/controller/preview-manager')
 const _ViewerStatus = require('./application/controller/viewer-status')
 const _PlayPause = require('./application/controller/play-pause')
 const _UIControls = require('./application/controller/ui-controls')
@@ -106,7 +105,6 @@ if (typeof globalThis !== 'undefined') {
 let lastServerState = null // Кэшируем последнее состояние от сервера
 let isPlaying = false
 let wsClient
-let isInitialized = false // Флаг для предотвращения повторной инициализации
 let __ignoreServerDirectionUntilTs = 0 // Кратковременная блокировка переопределения направления сервером
 let previewPhysicsEngine = null // Локальный движок физики для превью
 let hiddenThrottleMs = 100 // при скрытой вкладке обновляем ~10 FPS
@@ -324,21 +322,6 @@ function handlePopState() {
   }
 }
 /**
- * Завершает инициализацию после подключения вьювера
- */
-async function completeInitialization() {
-  if (isInitialized) {
-    return // Уже инициализировано
-  }
-  isInitialized = true
-  const logger = createLogger('Controller')
-  try {
-    // Initialization logic will be added here
-  } catch (error) {
-    await handleInitializationError(error, logger)
-  }
-}
-/**
  * Современная инициализация DOM элементов
  */
 async function initializeDOMElements(sessionId) {
@@ -515,7 +498,6 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
       if (!wasConnected) {
         try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_ready')) } catch (_) { /* noop */ }
       }
-      completeInitialization().catch(debugError)
       _ViewerStatus.updateStatusUI()
     }
     if (wasConnected && !isConnected) {
@@ -919,26 +901,6 @@ function createLogger(moduleName) {
         return
       console.error(`[${moduleName}] ${message}`, data || '')
     }
-  }
-}
-/**
- * Кастомная ошибка приложения
- */
-class AppError extends Error {
-  constructor(code, message) {
-    super(message)
-    this.name = 'AppError'
-    this.code = code
-    this.timestamp = new Date().toISOString()
-  }
-}
-/**
- * Обработка ошибок инициализации
- */
-async function handleInitializationError(error, logger) {
-  logger.error('Критическая ошибка инициализации:', error)
-  if (error instanceof AppError) {
-    // AppError already logged with context
   }
 }
 function syncUIWithState(ballState) {

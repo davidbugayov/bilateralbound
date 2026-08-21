@@ -4,7 +4,7 @@
  * Генерирует уникальный идентификатор сессии
  * @returns {string} Уникальный ID сессии
  */
-/* global debugWarn, debugError, globalThis, crypto, togglePlayPause, setDirection, document, Blob, URL, localStorage, prompt */
+/* global debugWarn, debugError, globalThis, crypto, togglePlayPause, setDirection, document, Blob, URL, localStorage, prompt, WS_MSG */
 
 function _generateId() {
   if (crypto?.randomUUID) {
@@ -732,7 +732,7 @@ class ControllerSettingsManager {
    * Утилиты
    */
   async sendUpdate(data) {
-    await globalThis.wsClient?.send?.('WS_MSG.controllerUpdate', data)
+    await globalThis.wsClient?.send?.(WS_MSG.controllerUpdate, data)
   }
 }
 globalThis.ControllerSettingsManager = ControllerSettingsManager

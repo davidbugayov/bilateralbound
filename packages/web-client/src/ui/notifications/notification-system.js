@@ -327,19 +327,6 @@ class NotificationSystem {
     return notification
   }
   /**
-   * Возвращает иконку для типа уведомления
-   */
-  getIcon(type, customIcon) {
-    if (customIcon) return customIcon
-    const icons = {
-      success: '✅',
-      error: '❌',
-      warning: '⚠️',
-      info: 'ℹ️'
-    }
-    return icons[type] || icons.info
-  }
-  /**
    * Запускает прогресс-бар
    */
   startProgress(notification) {

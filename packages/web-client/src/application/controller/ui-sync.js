@@ -58,17 +58,6 @@ function syncPause(ballState) {
     _deps.syncFsPlayPauseButton()
   }
 }
-function getDirectionMode(dirX, dirY) {
-  const ax = Math.abs(dirX),
-    ay = Math.abs(dirY)
-  if (ax > 0.9 && ay < 0.2) return 'horizontal'
-  if (ay > 0.9 && ax < 0.2) return 'vertical'
-  if (ax > ay * 2) return 'horizontal'
-  if (ay > ax * 2) return 'vertical'
-  if (dirX > 0 && dirY > 0) return 'diagRL'
-  if (dirX > 0 && dirY < 0) return 'diagRLL'
-  return null
-}
 function syncDirection(ballState) {
   if (ballState.dirX === undefined || ballState.dirY === undefined) return
   if (performance.now() < _ignoreDirection()) return
@@ -174,7 +163,6 @@ globalThis.UISync = {
   syncIllustration,
   syncTrackBand,
   syncSound,
-  getDirectionMode,
   setIgnorePausedUntil,
   setIgnoreDirectionUntil
 }
@@ -191,7 +179,6 @@ module.exports = {
   syncIllustration,
   syncTrackBand,
   syncSound,
-  getDirectionMode,
   setIgnorePausedUntil,
   setIgnoreDirectionUntil
 }

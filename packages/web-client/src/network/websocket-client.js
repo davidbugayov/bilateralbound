@@ -38,7 +38,6 @@ class WebSocketClient {
     this.messageIdCounter = 0
     this.reconnectTimer = null
     this.heartbeatTimer = null
-    this.messageTimeouts = new Map()
     this._coalesceBuffers = new Map() // type -> latest payload
     this._coalesceTimers = new Map() // type -> timer id
     this.url = this._generateWebSocketUrl()
@@ -400,10 +399,6 @@ class WebSocketClient {
       clearTimeout(this.heartbeatTimer)
       this.heartbeatTimer = null
     }
-    for (const timeout of this.messageTimeouts.values()) {
-      clearTimeout(timeout)
-    }
-    this.messageTimeouts.clear()
     for (const timerId of this._coalesceTimers.values()) {
       clearTimeout(timerId)
     }

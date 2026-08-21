@@ -185,19 +185,19 @@ const bbCounters = {
       let speedCategory = ''
       let speedColor = ''
       if (currentSpeed <= 15) {
-        speedCategory = 'Очень медленно'
+        speedCategory = globalThis.i18n?.t('controller.speed.verySlow') || 'Very slow'
         speedColor = '#22c55e'
       } else if (currentSpeed <= 25) {
-        speedCategory = 'Медленно'
+        speedCategory = globalThis.i18n?.t('controller.speed.slow') || 'Slow'
         speedColor = '#3b82f6'
       } else if (currentSpeed <= 35) {
-        speedCategory = 'Средне'
+        speedCategory = globalThis.i18n?.t('controller.speed.medium') || 'Medium'
         speedColor = '#8b5cf6'
       } else if (currentSpeed <= 50) {
-        speedCategory = 'Быстро'
+        speedCategory = globalThis.i18n?.t('controller.speed.fast') || 'Fast'
         speedColor = '#f59e0b'
       } else {
-        speedCategory = 'Очень быстро'
+        speedCategory = globalThis.i18n?.t('controller.speed.veryFast') || 'Very fast'
         speedColor = '#ef4444'
       }
       this.$speedInfo.textContent = speedCategory
