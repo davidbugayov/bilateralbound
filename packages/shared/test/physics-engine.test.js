@@ -480,6 +480,61 @@ test('brainspotting ball clamped within bounds', () => {
   )
 })
 
+test('exiting brainspotting via applyCommand with brainspotting: false resumes movement', () => {
+  const engine = new PhysicsEngine({
+    isViewer: true,
+    worldWidth: 800,
+    worldHeight: 600
+  })
+  engine.setWorldSize(800, 600)
+  engine.applyCommand({
+    brainspotting: true,
+    paused: false,
+    speed: 100,
+    dirX: 1,
+    dirY: 0
+  })
+  engine.setPosition(400, 300)
+  for (let i = 0; i < 5; i++) engine.update(16)
+  const frozenX = engine.ball.x
+  assert.ok(approxEqual(frozenX, 400, 0.5), 'Ball should be frozen in BSP')
+  engine.applyCommand({
+    brainspotting: false,
+    paused: false,
+    dirX: 1,
+    dirY: 0
+  })
+  for (let i = 0; i < 30; i++) engine.update(16)
+  assert.ok(
+    engine.ball.x !== frozenX,
+    `Ball should move after exiting BSP, X: ${engine.ball.x} (was ${frozenX})`
+  )
+})
+
+test('exiting brainspotting via applyCommand with dirX/dirY but no brainspotting:false still freezes', () => {
+  const engine = new PhysicsEngine({
+    isViewer: true,
+    worldWidth: 800,
+    worldHeight: 600
+  })
+  engine.setWorldSize(800, 600)
+  engine.applyCommand({
+    brainspotting: true,
+    paused: false,
+    speed: 100,
+    dirX: 1,
+    dirY: 0
+  })
+  engine.setPosition(400, 300)
+  // Simulate the old bug: dirX/dirY sent without brainspotting: false
+  engine.applyCommand({ dirX: 1, dirY: 0, paused: false })
+  for (let i = 0; i < 30; i++) engine.update(16)
+  assert.ok(
+    approxEqual(engine.ball.x, 400, 0.5),
+    `Ball should still be frozen if brainspotting not set to false, X: ${engine.ball.x}`
+  )
+})
+
 // ============================================
 console.log('\n========================================')
 console.log(`Пройдено: ${passed}/${passed + failed}`)

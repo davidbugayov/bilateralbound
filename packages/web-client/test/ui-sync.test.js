@@ -111,6 +111,44 @@ test('syncBrainspotting does not change mode when server sends brainspotting: fa
   assert.strictEqual(deps.getCurrentDirectionMode(), 'horizontal');
 });
 
+test('syncBrainspotting calls disableBrainspottingDrag when brainspotting: false and mode is brainspotting', () => {
+  let disableCalled = false;
+  const deps = createDeps({
+    initialMode: 'brainspotting',
+    disableBrainspottingDrag: () => {
+      disableCalled = true;
+    },
+  });
+  UISync.init({}, deps);
+
+  UISync.syncBrainspotting({ brainspotting: false });
+
+  assert.strictEqual(
+    disableCalled,
+    true,
+    'disableBrainspottingDrag should be called',
+  );
+});
+
+test('syncBrainspotting does not call disableBrainspottingDrag when brainspotting: false but mode is horizontal', () => {
+  let disableCalled = false;
+  const deps = createDeps({
+    initialMode: 'horizontal',
+    disableBrainspottingDrag: () => {
+      disableCalled = true;
+    },
+  });
+  UISync.init({}, deps);
+
+  UISync.syncBrainspotting({ brainspotting: false });
+
+  assert.strictEqual(
+    disableCalled,
+    false,
+    'disableBrainspottingDrag should NOT be called',
+  );
+});
+
 test('syncDirection respects ignoreDirection timestamp (brainspotting stays)', () => {
   const deps = createDeps({
     initialMode: 'brainspotting',

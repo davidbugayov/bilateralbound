@@ -97,6 +97,8 @@ function syncBrainspotting(ballState) {
     _deps.setCurrentDirectionMode('brainspotting')
     _deps.updateDirectionButtons()
     _deps.updateDirectionDisplay(0, 0)
+  } else if (_deps.getCurrentDirectionMode() === 'brainspotting') {
+    _deps.disableBrainspottingDrag?.()
   }
 }
 function syncIllustration(ballState) {

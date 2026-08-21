@@ -93,7 +93,8 @@ _UISync.init(globalThis.components, {
   updateDirectionDisplay,
   updateViewerStatusUI: _ViewerStatus.updateStatusUI,
   updateViewerLinkVisualState: _ViewerStatus.updateLinkVisualState,
-  updateViewerAudioIndicators: _ViewerStatus.updateAudioIndicators
+  updateViewerAudioIndicators: _ViewerStatus.updateAudioIndicators,
+  disableBrainspottingDrag
 })
 
 /**
@@ -1377,7 +1378,8 @@ function _applyDirectionChangeWhenPlaying(dirX, dirY) {
       paused: false,
       dirX,
       dirY,
-      infinity: false
+      infinity: false,
+      brainspotting: false
     })
     if (previewPhysicsEngine) {
       previewPhysicsEngine.setDirection(dirX, dirY)
@@ -1400,7 +1402,8 @@ function _applyDirectionChangeWhenPaused(dirX, dirY) {
   safeSend(WS_MSG.controllerUpdate, {
     dirX,
     dirY,
-    infinity: false
+    infinity: false,
+    brainspotting: false
   })
 }
 /**
@@ -1414,8 +1417,11 @@ function setDirection(directionMode) {
     return
   }
   try {
-    // Exit infinity mode when switching to any non-infinity direction
-    if (lastServerState?.infinity && directionMode !== 'infinity') {
+    // Exit infinity or brainspotting mode when switching to a different direction
+    const exitingSpecialMode =
+      (lastServerState?.infinity && directionMode !== 'infinity') ||
+      (lastServerState?.brainspotting && directionMode !== 'brainspotting')
+    if (exitingSpecialMode) {
       if (previewPhysicsEngine) {
         previewPhysicsEngine.ball.infinity = false
         previewPhysicsEngine._infinityT = 0

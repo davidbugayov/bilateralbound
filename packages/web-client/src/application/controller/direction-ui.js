@@ -65,6 +65,13 @@ function getDirectionInfo(mode) {
         text: globalThis.i18n?.t('controller.infinityFull') || '∞ Infinity',
         icon: '∞'
       }
+    case 'brainspotting':
+      return {
+        text:
+          globalThis.i18n?.t('controller.brainspottingFull') ||
+          '⊕ Brainspotting',
+        icon: '⊕'
+      }
     default:
       return {
         text: globalThis.i18n?.t('controller.unknownDirection') || '❓ Unknown',
