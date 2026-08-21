@@ -37,12 +37,12 @@
     return
   }
 
-  var YM_ID = 104698530
-  var MAX_QUEUE_SIZE = 200
+  const YM_ID = 104698530
+  const MAX_QUEUE_SIZE = 200
 
   // Queue of {name, params} for events that arrived before Metrika was loaded
-  var pendingEvents = []
-  var queueFlushed = false
+  let pendingEvents = []
+  let queueFlushed = false
 
   /**
    * Push to pending queue — bounded to prevent memory leaks
@@ -62,10 +62,10 @@
     if (queueFlushed || typeof globalThis.ym !== 'function') return
     queueFlushed = true
 
-    var events = pendingEvents
+    const events = pendingEvents
     pendingEvents = []
 
-    for (var i = 0; i < events.length; i++) {
+    for (let i = 0; i < events.length; i++) {
       try {
         globalThis.ym(YM_ID, 'reachGoal', events[i].name, events[i].params)
       } catch (_) { /* ignore individual failures */ }
@@ -96,34 +96,34 @@
    * Track session duration when session ends
    */
   function onSessionDuration(e) {
-    var seconds = (e.detail && e.detail.seconds) || 0
+    const seconds = (e.detail && e.detail.seconds) || 0
     if (seconds > 0) {
       reachGoal('session_duration', { seconds: Math.round(seconds) })
     }
   }
 
   // Map event names to Metrika goal names
-  var eventMap = {
-    'bb_metrika_session_created': 'session_created',
-    'bb_metrika_session_started': 'session_started',
-    'bb_metrika_session_stopped': 'session_stopped',
-    'bb_metrika_viewer_connected': 'viewer_connected',
-    'bb_metrika_viewer_disconnected': 'viewer_disconnected',
-    'bb_metrika_ws_reconnect': 'ws_reconnect',
-    'bb_metrika_ws_error': 'ws_error',
-    'bb_metrika_breathing_started': 'breathing_started',
-    'bb_metrika_session_duration': null, // special handler
-    'bb_metrika_settings_changed': 'settings_changed',
-    'bb_metrika_permanent_link_created': 'permanent_link_created',
-    'bb_metrika_subscribe_clicked': 'subscribe_clicked',
-    'bb_metrika_feature_used': 'feature_used',
-    'bb_metrika_viewer_error': 'viewer_error',
-    'bb_metrika_sync_drift': 'sync_drift',
-    'bb_metrika_session_ready': 'session_ready'
+  const eventMap = {
+    bb_metrika_session_created: 'session_created',
+    bb_metrika_session_started: 'session_started',
+    bb_metrika_session_stopped: 'session_stopped',
+    bb_metrika_viewer_connected: 'viewer_connected',
+    bb_metrika_viewer_disconnected: 'viewer_disconnected',
+    bb_metrika_ws_reconnect: 'ws_reconnect',
+    bb_metrika_ws_error: 'ws_error',
+    bb_metrika_breathing_started: 'breathing_started',
+    bb_metrika_session_duration: null, // special handler
+    bb_metrika_settings_changed: 'settings_changed',
+    bb_metrika_permanent_link_created: 'permanent_link_created',
+    bb_metrika_subscribe_clicked: 'subscribe_clicked',
+    bb_metrika_feature_used: 'feature_used',
+    bb_metrika_viewer_error: 'viewer_error',
+    bb_metrika_sync_drift: 'sync_drift',
+    bb_metrika_session_ready: 'session_ready'
   }
 
   function handleEvent(e) {
-    var goal = eventMap[e.type]
+    const goal = eventMap[e.type]
     if (goal) {
       reachGoal(goal, e.detail || {})
     }
@@ -139,7 +139,7 @@
   })
 
   // Track whether we've sent the initial page_view hit
-  var pageViewSent = false
+  let pageViewSent = false
 
   // When consent is granted after page load — flush queue + fire page_view + cookie_accepted
   globalThis.addEventListener('bb_cookie_consent_accepted', function () {

@@ -12,11 +12,11 @@
 (function () {
   'use strict'
 
-  var STORAGE_KEY = 'bb_cookie_consent'
-  var YM_ID = 104698530
+  const STORAGE_KEY = 'bb_cookie_consent'
+  const YM_ID = 104698530
 
   // Skip analytics entirely on dev/local
-  var hostname = globalThis.location?.hostname || ''
+  const hostname = globalThis.location?.hostname || ''
   if (/dev\.emdrbilateral|localhost|127\.0\.0\.1/.test(hostname)) {
     return
   }
@@ -102,7 +102,7 @@
     hideBanner()
     // Track decline via pixel — ym is never loaded, but we can still count declines
     try {
-      var img = new Image()
+      const img = new Image()
       img.src = 'https://mc.yandex.ru/watch/' + YM_ID + '?rn=' + Date.now()
     } catch (_) { /* ignore */ }
     globalThis.dispatchEvent(new CustomEvent('bb_cookie_consent_declined'))

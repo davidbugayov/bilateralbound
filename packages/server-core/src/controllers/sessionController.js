@@ -47,7 +47,7 @@ function registerSessionRoutes(
     } catch (error) {
       logger.error({ err: error, requestId: req.id }, 'Error creating session')
       analytics.recordSessionError('unknown', 'session_create_error')
-      res.status(500).json({ error: error.message, requestId: req.id })
+      res.status(500).json({ error: 'Internal server error', requestId: req.id })
     }
   })
 
@@ -98,7 +98,7 @@ function registerSessionRoutes(
         'Error reserving session'
       )
       analytics.recordSessionError(sessionId, 'session_reserve_error')
-      res.status(500).json({ error: error.message, requestId: req.id })
+      res.status(500).json({ error: 'Internal server error', requestId: req.id })
     }
   })
 

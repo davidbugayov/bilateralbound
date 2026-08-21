@@ -1161,19 +1161,19 @@ function hideWaitingForViewer() {
  */
 function startWaitingTimer() {
   stopWaitingTimer()
-  var startTs = globalThis.__current?.sessionCreatedAt || Date.now()
+  const startTs = globalThis.__current?.sessionCreatedAt || Date.now()
   if (!globalThis.__current) globalThis.__current = {}
   globalThis.__current.sessionCreatedAt = startTs
 
   function tick() {
-    var elapsed = Math.floor((Date.now() - startTs) / 1000)
-    var min = Math.floor(elapsed / 60)
-    var sec = elapsed % 60
-    var timeStr = min + ':' + (sec < 10 ? '0' : '') + sec
-    var base =
+    const elapsed = Math.floor((Date.now() - startTs) / 1000)
+    const min = Math.floor(elapsed / 60)
+    const sec = elapsed % 60
+    const timeStr = min + ':' + (sec < 10 ? '0' : '') + sec
+    const base =
       globalThis.i18n?.t('controller.waitingForViewerConnection') ||
       'Waiting for viewer connection'
-    var viewerInfo = document.getElementById('viewerInfo')
+    const viewerInfo = document.getElementById('viewerInfo')
     if (viewerInfo) {
       viewerInfo.textContent = base + ' — ' + timeStr
     }

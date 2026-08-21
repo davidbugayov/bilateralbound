@@ -68,8 +68,10 @@ class TelegramAuthService {
       .update(dataCheckString)
       .digest('hex')
 
-    // Compare (regular comparison is fine here — the values come from the client anyway)
-    if (expectedHmac !== hash) {
+    // Compare using timing-safe comparison to prevent timing attacks
+    const expectedBuf = Buffer.from(expectedHmac, 'hex')
+    const actualBuf = Buffer.from(hash, 'hex')
+    if (expectedBuf.length !== actualBuf.length || !crypto.timingSafeEqual(expectedBuf, actualBuf)) {
       this._logger.debug('verifyInitData: hash mismatch')
       return null
     }
@@ -123,12 +125,14 @@ class TelegramAuthService {
     const checkParts = keys.map(k => `${k}=${data[k]}`)
     const dataCheckString = checkParts.join('\n')
 
-    const expectedHmac = crypto
+    const expectedHmacWidget = crypto
       .createHmac('sha256', this._secretKey)
       .update(dataCheckString)
       .digest('hex')
 
-    if (expectedHmac !== data.hash) return null
+    const expectedBufW = Buffer.from(expectedHmacWidget, 'hex')
+    const actualBufW = Buffer.from(data.hash, 'hex')
+    if (expectedBufW.length !== actualBufW.length || !crypto.timingSafeEqual(expectedBufW, actualBufW)) return null
 
     const userId = Number.parseInt(data.id, 10)
     if (!Number.isFinite(userId) || userId <= 0) return null

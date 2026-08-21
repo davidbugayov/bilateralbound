@@ -368,15 +368,16 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // ------------------------------------------------------------------
   app.post('/api/subscription/webhook', (req, res) => {
     // Verify webhook authenticity via X-Telegram-Bot-Api-Secret-Token header
-    if (webhookSecret) {
-      const receivedToken = req.headers['x-telegram-bot-api-secret-token']
-      if (!receivedToken || !crypto.timingSafeEqual(
-        Buffer.from(receivedToken),
-        Buffer.from(webhookSecret)
-      )) {
-        logger.warn({ hasToken: !!receivedToken }, 'Webhook request rejected: invalid or missing secret token')
-        return res.status(401).json({ error: 'Unauthorized' })
-      }
+    if (!webhookSecret) {
+      logger.error('Webhook request rejected: WEBHOOK_SECRET not configured — refusing to process unauthenticated webhook')
+      return res.status(503).json({ error: 'Webhook not configured' })
+    }
+    const receivedToken = req.headers['x-telegram-bot-api-secret-token']
+    const receivedBuf = receivedToken ? Buffer.from(receivedToken) : Buffer.alloc(0)
+    const secretBuf = Buffer.from(webhookSecret)
+    if (receivedBuf.length !== secretBuf.length || !crypto.timingSafeEqual(receivedBuf, secretBuf)) {
+      logger.warn({ hasToken: !!receivedToken }, 'Webhook request rejected: invalid or missing secret token')
+      return res.status(401).json({ error: 'Unauthorized' })
     }
 
     const update = req.body || {}
@@ -836,7 +837,7 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
       })
       .catch(err => {
         logger.error({ err }, 'Admin: set commands error')
-        res.status(500).json({ error: err.message })
+        res.status(500).json({ error: 'Internal server error' })
       })
   })
 

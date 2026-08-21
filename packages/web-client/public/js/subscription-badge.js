@@ -200,13 +200,13 @@
       verifyMsg.className = 'sub-dialog__verify-msg'
 
       verifyBtn.addEventListener('click', async function () {
-        var raw = verifyInput.value.trim()
+        const raw = verifyInput.value.trim()
         if (!raw) {
           verifyMsg.textContent = t('subscriptionBadge.errorEmpty', 'Please enter your Telegram User ID')
           verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--error'
           return
         }
-        var tgId = parseInt(raw, 10)
+        const tgId = parseInt(raw, 10)
         if (!tgId || tgId <= 0) {
           verifyMsg.textContent = t('subscriptionBadge.errorInvalid', 'Invalid Telegram User ID')
           verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--error'
@@ -217,13 +217,13 @@
         verifyMsg.textContent = ''
         verifyMsg.className = 'sub-dialog__verify-msg'
         try {
-          var fetchFn = globalThis.csrfFetch || fetch
-          var resp = await fetchFn('/api/link-access/' + encodeURIComponent(SESSION_ID) + '/unlock', {
+          const fetchFn = globalThis.csrfFetch || fetch
+          const resp = await fetchFn('/api/link-access/' + encodeURIComponent(SESSION_ID) + '/unlock', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ telegramUserId: tgId })
           })
-          var data = await resp.json().catch(function () { return {} })
+          const data = await resp.json().catch(function () { return {} })
           if (resp.ok) {
             verifyMsg.textContent = t('subscriptionBadge.verifySuccess', 'Subscription verified! Reloading…')
             verifyMsg.className = 'sub-dialog__verify-msg sub-dialog__verify-msg--success'
@@ -301,7 +301,7 @@
   // ── Read cookie by name ──
   function getCookie(name) {
     try {
-      var m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + '=([^;]*)'))
+      const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)'))
       return m ? decodeURIComponent(m[1]) : null
     } catch (_) { return null }
   }
@@ -309,9 +309,9 @@
   // ── Fetch subscription status ──
   async function checkSubscription() {
     // Fast path 1: sub_active cookie (set by server on link-access unlock or page load)
-    var subActive = getCookie('sub_active')
+    const subActive = getCookie('sub_active')
     if (subActive) {
-      var expiry = parseInt(subActive, 10)
+      const expiry = parseInt(subActive, 10)
       if (expiry && expiry > Date.now()) {
         badge.classList.remove('sub-badge--loading')
         badge.classList.add('sub-badge--active')
@@ -322,17 +322,17 @@
     }
 
     // Fast path 2: localStorage proof from main page (set after successful check)
-    var proofId = null
-    try { proofId = localStorage.getItem('subscriptionProofId') } catch (_) {}
+    let proofId = null
+    try { proofId = localStorage.getItem('subscriptionProofId') } catch { /* ignore */ }
     if (proofId) {
       try {
-        var fetchProof = globalThis.csrfFetch || fetch
-        var respProof = await fetchProof('/api/subscription/' + encodeURIComponent(proofId) + '/check', {
+        const fetchProof = globalThis.csrfFetch || fetch
+        const respProof = await fetchProof('/api/subscription/' + encodeURIComponent(proofId) + '/check', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin'
         })
-        var proofData = await respProof.json().catch(function () { return {} })
+        const proofData = await respProof.json().catch(function () { return {} })
         if (proofData.active) {
           badge.classList.remove('sub-badge--loading')
           badge.classList.add('sub-badge--active')
