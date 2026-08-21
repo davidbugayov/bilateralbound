@@ -105,7 +105,7 @@ npm run deploy:prod:status # Prod service status
 - `rendering/renderer.js` — `BallRenderer`: canvas rendering, interpolation, letterboxing
 - `network/websocket-client.js` — WebSocket client, auto-reconnect, heartbeat
 - `network/realtime-client.js` — transport wrapper (WebSocket)
-- `application/controller/` — modular controller components (fullscreen, play-pause, ui-controls, ui-sync, viewer-status)
+- `application/controller/` — modular controller components (fullscreen, play-pause, ui-controls, ui-sync, viewer-status, notifications, settings, direction-ui, brainspotting-drag)
 - `domain/` — counters, direction, session-state
 - `audio/audio-manager.js` — sound effects (bounce, beep, click)
 - `ui/` — controller-settings, error-overlay, shared-components, success-toast, notifications
