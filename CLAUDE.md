@@ -82,17 +82,21 @@ npm run deploy:prod:status # Prod service status
 - `services/BroadcastService.js` — sends events to WS clients; delta compression
 - `services/SubscriptionService.js` — Telegram Stars subscription management
 - `services/TelegramBotService.js` — Telegram Bot API client (sendInvoice, webhook)
-- `services/LocalizationService.js` — multi-language detection
+- `services/TelegramAuthService.js` — Telegram init data verification (HMAC, timing-safe)
+- `services/WsTokenService.js` — HMAC-signed WS token generation/verification
+- `services/LinkAccessService.js` — permanent link access gating (free trial + subscription)
+- `services/LocalizationService.js` — multi-language detection, HTML localization
 - `services/AnalyticsCollector.js` — usage analytics
 - `services/bot-translations.js` — bot message translations (8 languages)
 - `repositories/SessionRepository.js` — in-memory Map, LRU eviction, MAX_SESSIONS=1000
+- `config/index.js` — server config (CORS origins dev/prod, ports, Telegram, runtime)
 - `controllers/sessionController.js` — REST API handlers
 - `controllers/subscriptionController.js` — webhook + subscription routes
 - `controllers/viewerController.js` — viewer state endpoints
-- `controllers/seoController.js` — SEO meta tags
-- `controllers/static_routes_controller.js` — static file routes
+- `controllers/seoController.js` — dynamic robots.txt, sitemap.xml, RSS, llms.txt
+- `controllers/static_routes_controller.js` — static file routes, HTML serving
 - `plugins/` — logger, analytics plugins
-- `utils/validation.js` — input validation
+- `utils/validation.js` — input validation (ball state, bounce, session ID, screen size)
 
 ### Frontend (`packages/web-client/src/`)
 
@@ -101,11 +105,12 @@ npm run deploy:prod:status # Prod service status
 - `rendering/renderer.js` — `BallRenderer`: canvas rendering, interpolation, letterboxing
 - `network/websocket-client.js` — WebSocket client, auto-reconnect, heartbeat
 - `network/realtime-client.js` — transport wrapper (WebSocket)
-- `application/controller/` — modular controller components (event-handlers, fullscreen, play-pause, preview-manager, ui-controls, ui-sync, viewer-status)
+- `application/controller/` — modular controller components (fullscreen, play-pause, ui-controls, ui-sync, viewer-status)
 - `domain/` — counters, direction, session-state
 - `audio/audio-manager.js` — sound effects (bounce, beep, click)
 - `ui/` — controller-settings, error-overlay, shared-components, success-toast, notifications
 - `i18n/` — internationalization (constants, i18n, language-selector)
+- `network/csrf.js` — CSRF fetch wrapper (`csrfFetch`)
   - **i18n codegen**: `src/i18n/` is the single source of truth. `npm run build` runs `scripts/generate-i18n-iife.js` to generate IIFE-wrapped copies into `public/js/i18n/` for static HTML pages. Never edit `public/js/i18n/i18n.js` or `language-selector.js` directly — edit in `src/i18n/` and rebuild.
 - `core/debug-logger.js` — debug logging
 
@@ -143,7 +148,7 @@ Shared: `packages/shared/physics-engine.js` — deterministic 60Hz fixed-step ph
 - **E2E tests**: Puppeteer-based, use `domcontentloaded` (not `networkidle0`)
 - **Webpack bundle**: client source in `src/`, compiled to `dist/`. Run `npm run build` after any client change before deploying.
 - **Play/pause guards**: `__ignoreServerPausedUntilTs` (800ms) and `__ignoreServerDirectionUntilTs` (1500ms) prevent server state from overriding recent user actions
-- **Viewer pause animation**: `seekingCenter` state triggers 400ms ease-out return-to-center when paused; ball does NOT snap immediately
+- **Viewer pause animation**: `seekingCenter` state triggers 1.2s ease-in-out cubic return-to-center when paused; ball does NOT snap immediately. Viewer strips x/y from `paused:true` state updates to prevent teleport.
 - **`returnToCenter: true`** in controller/update API: snaps server ball to center immediately, broadcasts `{ paused: true }` — viewer then animates to center
 
 ## Sensitive Files — Do Not Touch Without Explicit Instruction

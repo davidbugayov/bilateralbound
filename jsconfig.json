@@ -10,7 +10,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@server/*": ["packages/server-core/server/*"],
+      "@server/*": ["packages/server-core/src/*"],
       "@client/*": ["packages/web-client/public/js/*"]
     }
   },
