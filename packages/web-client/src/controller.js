@@ -25,6 +25,10 @@ const _PlayPause = require('./application/controller/play-pause')
 const _UIControls = require('./application/controller/ui-controls')
 const _UISync = require('./application/controller/ui-sync')
 const _Fullscreen = require('./application/controller/fullscreen')
+const _Notifications = require('./application/controller/notifications')
+const _BrainspottingDrag = require('./application/controller/brainspotting-drag')
+const _Settings = require('./application/controller/settings')
+const _DirectionUI = require('./application/controller/direction-ui')
 const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
 const {
   getDirectionVector,
@@ -84,6 +88,56 @@ _UISync.init(globalThis.components, {
 /* exported setDirection, resetCenter, updateSpeed, setBallColor, setBallSize, setBackgroundColor, togglePlayPause, resetSession, setSoundEnabled, setSoundType, showViewerSizeNotReadyWarning */
 /* global debugWarn, debugError, RealtimeClient */
 // Защита от повторной загрузки
+
+// Wire notifications module
+const {
+  showCriticalError,
+  showNotification,
+  showViewerNotConnectedWarning,
+  showViewerSizeNotReadyWarning,
+  requireViewerConnection,
+  initViewerConnectionWarnings,
+  toggleDebugOverlay
+} = _Notifications
+
+// Wire direction-ui module
+_DirectionUI.init({
+  getCurrentDirectionMode
+})
+const { updateDirectionButtons, updateDirectionDisplay } = _DirectionUI
+
+// Wire settings module
+_Settings.init({
+  safeSend: (type, payload) => safeSend(type, payload),
+  getLastServerState: () => lastServerState,
+  getPreviewPhysicsEngine: () => previewPhysicsEngine,
+  getIsPlaying: () => isPlaying,
+  showViewerNotConnectedWarning,
+  updateAudioIndicators: () => _ViewerStatus.updateAudioIndicators(),
+  setPreviewBackgroundColor: (color) => _Fullscreen.setPreviewBackgroundColor(color),
+  centerBallInViewer: () => centerBallInViewer(),
+  debugWarn
+})
+const {
+  updateSpeed,
+  setBallColor,
+  setBallSize,
+  setSoundEnabled,
+  setSoundType,
+  setBallSizeMultiplier,
+  setBackgroundColor,
+  setIllustration,
+  applyCustomIllustration,
+  switchIllusTab,
+  setTrackBand
+} = _Settings
+
+// Wire brainspotting drag module
+_BrainspottingDrag.init({
+  getPreviewPhysicsEngine: () => previewPhysicsEngine,
+  safeSend: (type, payload) => safeSend(type, payload)
+})
+const { enable: enableBrainspottingDrag, disable: disableBrainspottingDrag } = _BrainspottingDrag
 
 globalThis.__controllerLoaded = true
 
@@ -903,59 +957,7 @@ function createLogger(moduleName) {
     }
   }
 }
-// ============================================
-// Brainspotting: manual ball positioning via mouse/touch drag
-// ============================================
-let _brainspottingDragActive = false
-let _brainspottingThrottleTs = 0
-
-function enableBrainspottingDrag() {
-  if (_brainspottingDragActive) return
-  const canvas = document.getElementById('preview')
-  if (!canvas) return
-  _brainspottingDragActive = true
-
-  const handleMove = (clientX, clientY) => {
-    if (!previewPhysicsEngine || !previewPhysicsEngine.ball.brainspotting) return
-    const rect = canvas.getBoundingClientRect()
-    // Map screen coords to world coords
-    const x = ((clientX - rect.left) / rect.width) * previewPhysicsEngine.options.worldWidth
-    const y = ((clientY - rect.top) / rect.height) * previewPhysicsEngine.options.worldHeight
-    // Clamp to bounds
-    const r = previewPhysicsEngine.ball.radius
-    const clampedX = Math.max(r, Math.min(x, previewPhysicsEngine.options.worldWidth - r))
-    const clampedY = Math.max(r, Math.min(y, previewPhysicsEngine.options.worldHeight - r))
-    previewPhysicsEngine.ball.x = clampedX
-    previewPhysicsEngine.ball.y = clampedY
-    // Throttle WS updates to ~20fps
-    const now = performance.now()
-    if (now - _brainspottingThrottleTs > 50) {
-      _brainspottingThrottleTs = now
-      safeSend(WS_MSG.controllerUpdate, { x: clampedX, y: clampedY })
-    }
-  }
-
-  canvas._bsMouseMove = (e) => handleMove(e.clientX, e.clientY)
-  canvas._bsTouchMove = (e) => {
-    if (e.touches.length > 0) {
-      e.preventDefault()
-      handleMove(e.touches[0].clientX, e.touches[0].clientY)
-    }
-  }
-
-  canvas.addEventListener('mousemove', canvas._bsMouseMove)
-  canvas.addEventListener('touchmove', canvas._bsTouchMove, { passive: false })
-}
-
-function disableBrainspottingDrag() {
-  if (!_brainspottingDragActive) return
-  const canvas = document.getElementById('preview')
-  if (canvas) {
-    if (canvas._bsMouseMove) canvas.removeEventListener('mousemove', canvas._bsMouseMove)
-    if (canvas._bsTouchMove) canvas.removeEventListener('touchmove', canvas._bsTouchMove)
-  }
-  _brainspottingDragActive = false
-}
+// (brainspotting drag functions extracted to application/controller/brainspotting-drag.js)
 
 function syncUIWithState(ballState) {
   try {
@@ -1057,21 +1059,8 @@ function safeSend(type, payload) {
     // Silently ignore errors in speed update
   }
 }
-function updateSpeed(speed) {
-  if (globalThis.__current?.isInitializing) {
-    return
-  }
-  if (!globalThis.__current?.viewerConnected) {
-    showViewerNotConnectedWarning()
-    return
-  }
-  try {
-    safeSend(WS_MSG.controllerUpdate, { speed })
-    try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'speed', value: speed } })) } catch (e) { void e }
-  } catch (err) {
-    debugWarn('Error updating speed:', err)
-  }
-}
+// (settings functions extracted to application/controller/settings.js)
+
 async function initializePreview() {
   showWaitingForViewer()
   const previewWrap = document.getElementById('previewWrap')
@@ -1455,284 +1444,20 @@ function setDirection(directionMode) {
     console.error('Ошибка установки направления:', error)
   }
 }
-function setIllustration(emoji, btnEl) {
-  const val = (typeof emoji === 'string' && emoji.length > 0) ? emoji : null
-  document.querySelectorAll('.illus-emoji-btn').forEach(b => b.classList.remove('active'))
-  if (btnEl) btnEl.classList.add('active')
-  const preview = document.getElementById('illusSelectedPreview')
-  if (preview) preview.textContent = val || ''
-  if (previewPhysicsEngine) previewPhysicsEngine.ball.ballEmoji = val
-  if (lastServerState) lastServerState.ballEmoji = val
-  if (globalThis.__current?.isInitializing) return
-  safeSend(WS_MSG.controllerUpdate, { ballEmoji: val })
-}
+// (settings functions extracted to application/controller/settings.js)
+// (direction UI functions extracted to application/controller/direction-ui.js)
 
-function applyCustomIllustration() {
-  const input = document.getElementById('illusCustomInput')
-  if (!input) return
-  const val = input.value.trim()
-  if (!val) return
-  document.querySelectorAll('.illus-emoji-btn').forEach(b => b.classList.remove('active'))
-  setIllustration(val, null)
-}
-
-const ILLUS_TABS = {
-  animals: ['🦁','🐻','🦊','🐱','🐧','🐼','🦄','🐢','🐝','🐯','🐘','🐮','🐰','🐵','🦅'],
-  sport:   ['⚽','🏀','🎾','🏈','⚾','🎱','🏐','🥎','🏓','🎯','🏒','⛳'],
-  emoji:   ['😀','😎','🤩','😍','🥳','😴','🤔','😱','🔥','⭐','💎','❤️','✨','🌈','🎵']
-}
-
-function switchIllusTab(tab, tabEl) {
-  document.querySelectorAll('.illus-tab').forEach(t => t.classList.remove('active'))
-  if (tabEl) tabEl.classList.add('active')
-  const grid = document.getElementById('illusGrid')
-  if (!grid) return
-  const currentEmoji = lastServerState?.ballEmoji || null
-  grid.innerHTML = `<button class="illus-emoji-btn illus-clear${!currentEmoji ? ' active' : ''}" title="None" onclick="setIllustration(null,this)">✕</button>`
-  for (const e of (ILLUS_TABS[tab] || [])) {
-    const btn = document.createElement('button')
-    btn.className = 'illus-emoji-btn' + (currentEmoji === e ? ' active' : '')
-    btn.textContent = e
-    btn.onclick = function() { setIllustration(e, this) }
-    grid.appendChild(btn)
-  }
-}
-
-function setTrackBand(band) {
-  document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'))
-  const btn = document.querySelector(`.pos-btn[data-band="${band}"]`)
-  if (btn) btn.classList.add('active')
-  if (lastServerState) lastServerState.trackBand = band
-  if (previewPhysicsEngine) previewPhysicsEngine.options.trackBand = band
-  if (globalThis.__current?.isInitializing) return
-  if (isPlaying) {
-    // Pause-center-resume cycle so ball snaps to new band center on unpause
-    globalThis.__suppressPauseNotification = true
-    safeSend(WS_MSG.controllerUpdate, { paused: true, returnToCenter: true })
-    if (previewPhysicsEngine) {
-      centerBallInViewer()
-      previewPhysicsEngine.setPaused(true)
-    }
-    setTimeout(() => {
-      safeSend(WS_MSG.controllerUpdate, { paused: false, trackBand: band })
-      if (previewPhysicsEngine) previewPhysicsEngine.setPaused(false)
-      setTimeout(() => { globalThis.__suppressPauseNotification = false }, 600)
-    }, 400)
-  } else {
-    safeSend(WS_MSG.controllerUpdate, { trackBand: band })
-  }
-}
-
-function setBallColor(color) {
-  if (globalThis.__previewRenderer) {
-    // Preview renderer color update would go here
-  }
-  if (globalThis.__current?.isInitializing) {
-    if (lastServerState) {
-      lastServerState.colorBall = color
-    }
-    return
-  }
-  if (!globalThis.__current?.viewerConnected) {
-    if (lastServerState) {
-      lastServerState.colorBall = color
-    }
-    return
-  }
-  safeSend(WS_MSG.controllerUpdate, { colorBall: color })
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'ballColor', value: color } })) } catch (e) { void e }
-}
-function setBallSize(size) {
-  // Всегда обновляем локальное состояние и превью
-  if (lastServerState) {
-    lastServerState.radius = size
-  }
-  if (previewPhysicsEngine) {
-    previewPhysicsEngine.ball.radius = size
-  }
-  if (globalThis.__current?.isInitializing) {
-    return
-  }
-  safeSend(WS_MSG.controllerUpdate, { radius: size })
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'ballSize', value: size } })) } catch (e) { void e }
-}
-function setSoundEnabled(enabled) {
-  if (globalThis.__current?.isInitializing) {
-    return
-  }
-  if (!globalThis.__current?.viewerConnected) {
-    showViewerNotConnectedWarning()
-    return
-  }
-  safeSend(WS_MSG.controllerUpdate, { soundEnabled: Boolean(enabled) })
-  if (lastServerState) {
-    lastServerState.soundEnabled = Boolean(enabled)
-  }
-  _ViewerStatus.updateAudioIndicators()
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'soundEnabled', value: Boolean(enabled) } })) } catch (e) { void e }
-}
-function setSoundType(soundType) {
-  if (globalThis.__current?.isInitializing) {
-    return
-  }
-  if (!globalThis.__current?.viewerConnected) {
-    showViewerNotConnectedWarning()
-    return
-  }
-  safeSend(WS_MSG.controllerUpdate, { soundType: soundType })
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'soundType', value: soundType } })) } catch (e) { void e }
-}
-function setBallSizeMultiplier(multiplier) {
-  const baseSize = 20
-  const newSize = baseSize * multiplier
-  setBallSize(newSize)
-}
-function setBackgroundColor(color) {
-  if (globalThis.__previewRenderer) {
-    globalThis.__previewRenderer.setBackgroundColor(color)
-  }
-  _Fullscreen.setPreviewBackgroundColor(color)
-  if (globalThis.__current?.isInitializing) {
-    if (lastServerState) {
-      lastServerState.colorBg = color
-    }
-    return
-  }
-  if (!globalThis.__current?.viewerConnected) {
-    if (lastServerState) {
-      lastServerState.colorBg = color
-    }
-    return
-  }
-  safeSend(WS_MSG.controllerUpdate, { colorBg: color })
-  try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'bgColor', value: color } })) } catch (e) { void e }
-}
-function updateDirectionButtons() {
-  const currentMode = getCurrentDirectionMode()
-  const directionButtons = document.querySelectorAll('[data-mode]')
-  for (const button of directionButtons) {
-    button.classList.toggle('active', button.dataset.mode === currentMode)
-  }
-  const fsDirectionButtons = {
-    fsDirH: 'horizontal',
-    fsDirV: 'vertical',
-    fsDirDL: 'diagRLL',
-    fsDirDR: 'diagRL',
-    fsDirRandom: 'random'
-  }
-  for (const [id, mode] of Object.entries(fsDirectionButtons)) {
-    const button = document.getElementById(id)
-    if (button) {
-      button.classList.toggle('active', mode === currentMode)
-    }
-  }
-}
-/**
- * Получает иконку и текст для текущего режима направления
- */
-function getDirectionInfo(mode) {
-  switch (mode) {
-    case 'horizontal':
-      return {
-        text:
-          globalThis.i18n?.t('controller.horizontalFull') || '↔️ Horizontal',
-        icon: '↔️'
-      }
-    case 'vertical':
-      return {
-        text: globalThis.i18n?.t('controller.verticalFull') || '↕️ Vertical',
-        icon: '↕️'
-      }
-    case 'diagRL':
-      return {
-        text: globalThis.i18n?.t('controller.diagLTRB') || '↘️ Diagonal',
-        icon: '↘️'
-      }
-    case 'diagRLL':
-      return {
-        text: globalThis.i18n?.t('controller.diagLBRT') || '↗️ Diagonal',
-        icon: '↗️'
-      }
-    case 'random':
-      return {
-        text: globalThis.i18n?.t('controller.randomFull') || '🎲 Random',
-        icon: '🎲'
-      }
-    case 'infinity':
-      return {
-        text: globalThis.i18n?.t('controller.infinityFull') || '∞ Infinity',
-        icon: '∞'
-      }
-    default:
-      return {
-        text: globalThis.i18n?.t('controller.unknownDirection') || '❓ Unknown',
-        icon: '❓'
-      }
-  }
-}
-/**
- * Обновляет индикатор направления и отображает информацию о текущем направлении.
- * @param {number} dirX - Компонент X вектора направления.
- * @param {number} dirY - Компонент Y вектора направления.
- * @param {string|null} [customText=null] - Пользовательский текст для отображения.
- */
-function updateDirectionDisplay(dirX, dirY, customText = null) {
-  try {
-    const directionDisplay = document.getElementById('currentDirectionDisplay')
-    let directionText = customText || 'Неизвестно'
-    let directionIcon
-    if (!customText) {
-      const currentMode = getCurrentDirectionMode()
-      const directionInfo = getDirectionInfo(currentMode)
-      directionText = directionInfo.text
-      directionIcon = directionInfo.icon
-    }
-    if (directionDisplay) {
-      directionDisplay.textContent = directionIcon || '❓'
-      directionDisplay.title = directionText
-    }
-    const fsDirectionDisplay = document.getElementById('fsCurrentDirection')
-    if (fsDirectionDisplay) {
-      fsDirectionDisplay.textContent = directionDisplay?.textContent || directionIcon || '❓'
-    }
-  } catch (error) {
-    console.error('Ошибка обновления отображения направления:', error)
-  }
-}
-/**
- * Единая функция для управления состоянием Play/Pause.
- * Объединяет проверки подключения, отправку команд и обновление UI.
- * @param {boolean} shouldPlay - true для старта, false для паузы
- * @private
- */
 function _setPlayPauseState(shouldPlay) {
   const result = _PlayPause.setPlayPauseState(shouldPlay)
   isPlaying = _PlayPause.getIsPlaying()
   globalThis.isPlaying = isPlaying
   return result
 }
-/**
- * Переключает состояние воспроизведения/паузы сессии.
- * Отправляет соответствующие команды на сервер и обновляет UI.
- */
+
 function togglePlayPause() {
   _setPlayPauseState(!_PlayPause.getIsPlaying())
 }
-/**
- * Обновляет все кнопки Play/Pause (основную и полноэкранную).
- * @private
- */
-/**
- * Планирует обновления кнопок с анимацией.
- * @private
- */
-/**
- * Нормализует координату, проверяя, является ли она конечным числом.
- * @param {*} coord - Значение координаты для нормализации.
- * @param {*} fallback - Значение по умолчанию, если координата не является конечным числом.
- * @returns {number} Нормализованная координата или значение по умолчанию.
- * @private
- */
+
 function _normalizeCoordinate(coord, fallback) {
   return typeof coord === 'number' && Number.isFinite(coord) ? coord : fallback
 }
@@ -1850,208 +1575,7 @@ function initHintSystem() {
     }).show()
   }
 }
-/**
- * Отображает уведомление пользователю
- * @param {string} message - Текст сообщения
- * @param {string} type - Тип уведомления ('info', 'success', 'warning', 'error')
- */
-function showCriticalError(title, message) {
-  const t = (key, fallback) => globalThis.i18n?.t(key) || fallback
-  if (typeof globalThis.HintBanner === 'function') {
-    const container = document.getElementById('errorStatesContainer')
-    if (container) container.style.display = 'block'
-    new globalThis.HintBanner({
-      container: container || document.body,
-      type: 'error',
-      title: title,
-      message: message,
-      ctaLabel: t('hint.createNewSession', 'Create new session'),
-      onCta: () => { globalThis.location.href = '/' },
-      closeLabel: t('hint.close', 'Close hint'),
-      ariaLive: 'assertive'
-    }).show()
-    return
-  }
-  if (globalThis.errorStateManager?.show) {
-    globalThis.errorStateManager.show('critical-error', {
-      title: title,
-      message: message,
-      actions: [
-        {
-          label: t('hint.createNewSession', 'Create new session'),
-          callback: () => { globalThis.location.href = '/' }
-        },
-        {
-          label: t('viewer.reload', 'Reload page'),
-          callback: () => globalThis.location.reload()
-        }
-      ]
-    })
-  } else if (globalThis.emdrErrorOverlay) {
-    globalThis.emdrErrorOverlay.show({
-      title,
-      message,
-      actionText: globalThis.i18n?.t('viewer.reload') || 'Reload page',
-      onAction: () => globalThis.location.reload()
-    })
-  } else {
-    alert(`${title}\n\n${message}`)
-  }
-}
-function showNotification(message, type = 'info') {
-  try {
-    // Используем errorStateManager для отображения уведомлений
-    if (globalThis.errorStateManager?.show) {
-      const t = globalThis.i18n?.t.bind(globalThis.i18n)
-      const titles = {
-        info: t?.('controller.info') || 'Info',
-        success: t?.('controller.success') || 'Success',
-        warning: t?.('controller.warning') || 'Warning',
-        error: t?.('controller.errored') || 'Error'
-      }
-      globalThis.errorStateManager.show(`notification-${type}`, {
-        title: titles[type] || 'Info',
-        message: message,
-        duration: type === 'error' ? 0 : 4000 // Ошибки не исчезают автоматически
-      })
-    } else if (globalThis.showSuccessToast && type === 'success') {
-      globalThis.showSuccessToast(message)
-    } else {
-      // Fallback: показываем через alert для ошибок
-      if (type === 'error') {
-        alert(`Ошибка: ${message}`)
-      }
-    }
-  } catch (error) {
-    console.error('Error showing notification:', error)
-    if (type === 'error') {
-      alert(message)
-    }
-  }
-}
-/**
- * Отображает предупреждение о неподключенном вьювере
- * Унифицированный обработчик для всех контролов
- */
-function showViewerNotConnectedWarning() {
-  // Не показываем варнинг во время инициализации
-  if (globalThis.__current?.isInitializing) {
-    return
-  }
-
-  const _t = (key, fallback) => {
-    const v = globalThis.i18n?.t(key)
-    return v && v !== key ? v : fallback
-  }
-  const title = _t(
-    'controller.viewerNotConnectedWarning',
-    'Viewer not connected'
-  )
-  const message = _t(
-    'controller.viewerNotConnectedMessage',
-    'Share the viewer link with your client so they can join the session.'
-  )
-
-  // Используем errorStateManager для отображения предупреждения
-  if (globalThis.errorStateManager?.show) {
-    globalThis.errorStateManager.show('viewer-not-connected', {
-      title: title,
-      message: message,
-      duration: 8000 // Увеличиваем время отображения до 8 секунд
-    })
-  } else {
-    // Fallback: показываем через alert если errorStateManager недоступен
-    showNotification(`${title}: ${message}`, 'warning')
-  }
-}
-/**
- * Показывает предупреждение когда размеры экрана viewer ещё не получены
- */
-function showViewerSizeNotReadyWarning() {
-  if (globalThis.__current?.isInitializing) {
-    return
-  }
-  const _t = (key, fallback) => {
-    const v = globalThis.i18n?.t(key)
-    return v && v !== key ? v : fallback
-  }
-  const title = _t(
-    'controller.viewerSizeNotReadyTitle',
-    'Screen size unknown'
-  )
-  const message = _t(
-    'controller.viewerSizeNotReadyMessage',
-    'Waiting for viewer screen size. Please wait a moment and try again.'
-  )
-
-  if (globalThis.errorStateManager?.show) {
-    globalThis.errorStateManager.show('viewer-size-not-ready', {
-      title: title,
-      message: message,
-      duration: 6000
-    })
-  } else {
-    showNotification(`${title}: ${message}`, 'warning')
-  }
-}
-/**
- * Проверяет подключение вьювера перед выполнением действия
- * @param {Function} action - Действие для выполнения, если вьювер подключен
- * @param {boolean} showWarning - Показывать ли предупреждение при отсутствии подключения
- * @returns {boolean} - true если вьювер подключен, false иначе
- */
-function requireViewerConnection(action, showWarning = true) {
-  if (!globalThis.__current?.viewerConnected) {
-    if (showWarning) {
-      showViewerNotConnectedWarning()
-    }
-    return false
-  }
-  if (typeof action === 'function') {
-    action()
-  }
-  return true
-}
-
-/**
- * Single delegated handler on <main> — covers all controls including dynamically added ones.
- * Idempotent: subsequent calls are no-ops (delegated handler is already active).
- */
-function initViewerConnectionWarnings() {
-  const main = document.querySelector('main.wrap')
-  if (!main || main._viewerGuardAdded) return
-  main._viewerGuardAdded = true
-  // Block clicks on controls that require viewer connection
-  main.addEventListener(
-    'click',
-    (event) => {
-      if (globalThis.__current?.viewerConnected) return
-      if (globalThis.__current?.isInitializing) return
-      const t = event.target
-      const inControl = t.closest(
-        '.controls-card, .session-actions-row, #presetControls, .presets-details, #previewFsPanel'
-      )
-      if (!inControl) return
-      const isExempt = t.closest(
-        '.link-group, #autoStopRow, .session-stats-row, .drag-handle, #toggleDebugBtn, .fs-close-btn, .fs-panel-header'
-      )
-      if (isExempt) return
-      event.stopImmediatePropagation()
-      event.preventDefault()
-      showViewerNotConnectedWarning()
-    },
-    true
-  )
-}
-
-/**
- * Переключает отображение отладочной информации на preview
- */
-function toggleDebugOverlay() {
-  if (globalThis.BBDebug && typeof globalThis.BBDebug.toggle === 'function') {
-    globalThis.BBDebug.toggle()
-  }
-}
+// (notification & warning functions extracted to application/controller/notifications.js)
 
 // Экспорт функций в глобальную область видимости для доступа из HTML onclick
 globalThis.togglePlayPause = togglePlayPause
