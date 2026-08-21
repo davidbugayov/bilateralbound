@@ -1,10 +1,10 @@
 /* jshint node: true, esversion: 11, strict: true */
-'use strict'
+'use strict';
 
-const fs = require('node:fs')
-const path = require('node:path')
+const fs = require('node:fs');
+const path = require('node:path');
 
-const DEFAULT_DURATION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
+const DEFAULT_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 /**
  * In-memory subscription store with JSON file persistence.
@@ -26,41 +26,41 @@ class SubscriptionService {
    * @param {string} options.dataDir - Path to data directory
    */
   constructor({ logger, durationMs, dataDir, testMode } = {}) {
-    this.logger = logger || console
-    this.durationMs = durationMs || DEFAULT_DURATION_MS
-    this._testMode = !!testMode
+    this.logger = logger || console;
+    this.durationMs = durationMs || DEFAULT_DURATION_MS;
+    this._testMode = !!testMode;
 
     /** Map<telegramUserId, { token, activatedAt, expiresAt, starsAmount, autoRenew }> */
-    this._subscriptions = new Map()
+    this._subscriptions = new Map();
 
     /** Map<customId, telegramUserId> — links customer IDs to a Telegram user */
-    this._customIdIndex = new Map()
+    this._customIdIndex = new Map();
 
     /** Map<token, telegramUserId> — dedup and lookup by payment token */
-    this._tokenIndex = new Map()
+    this._tokenIndex = new Map();
 
     /** Map<telegramUserId, string> — user's language preference (from /start payload) */
-    this._userLanguages = new Map()
+    this._userLanguages = new Map();
 
     /** Map<telegramUserId, number> — timestamp when auto-renew invoice was last sent */
-    this._autoRenewInvoiceSent = new Map()
+    this._autoRenewInvoiceSent = new Map();
 
     // Total Stars received (for analytics)
-    this.totalStars = 0
+    this.totalStars = 0;
 
     if (dataDir) {
-      this._dataDir = dataDir
+      this._dataDir = dataDir;
     } else {
-      this._dataDir = path.join(__dirname, '..', '..', 'data')
+      this._dataDir = path.join(__dirname, '..', '..', 'data');
     }
-    this._filePath = path.join(this._dataDir, 'subscriptions.json')
+    this._filePath = path.join(this._dataDir, 'subscriptions.json');
 
     // Debounce: coalesce multiple saves within 5s into one write
-    this._saveTimer = null
-    this._saveDebounceMs = 5000
+    this._saveTimer = null;
+    this._saveDebounceMs = 5000;
 
-    this._ensureDataDir()
-    this._loadFromDisk()
+    this._ensureDataDir();
+    this._loadFromDisk();
   }
 
   // ---------------------------------------------------------------------------
@@ -77,43 +77,55 @@ class SubscriptionService {
    */
   activate(telegramUserId, token, starsAmount) {
     if (!telegramUserId || !token) {
-      return { success: false, error: 'Missing telegramUserId or token' }
+      return { success: false, error: 'Missing telegramUserId or token' };
     }
 
     // Dedup: if token already used, return existing subscription info
-    const existingUserId = this._tokenIndex.get(token)
+    const existingUserId = this._tokenIndex.get(token);
     if (existingUserId) {
-      const existing = this._subscriptions.get(existingUserId)
+      const existing = this._subscriptions.get(existingUserId);
       if (existing && existing.expiresAt > Date.now()) {
         if (existingUserId === telegramUserId) {
-          return { success: true, expiresAt: existing.expiresAt, reactivated: false }
+          return {
+            success: true,
+            expiresAt: existing.expiresAt,
+            reactivated: false,
+          };
         }
-        return { success: false, error: 'This payment token is already used for another user' }
+        return {
+          success: false,
+          error: 'This payment token is already used for another user',
+        };
       }
       // Token used but expired — clean up
-      this._removeByToken(token)
+      this._removeByToken(token);
     }
 
-    const now = Date.now()
-    const expiresAt = now + this.durationMs
+    const now = Date.now();
+    const expiresAt = now + this.durationMs;
 
     this._subscriptions.set(telegramUserId, {
       token,
       activatedAt: now,
       expiresAt,
       starsAmount: starsAmount || 0,
-      autoRenew: false
-    })
-    this._tokenIndex.set(token, telegramUserId)
-    this.totalStars += starsAmount || 0
+      autoRenew: false,
+    });
+    this._tokenIndex.set(token, telegramUserId);
+    this.totalStars += starsAmount || 0;
 
-    this._saveImmediately()
+    this._saveImmediately();
     this.logger.info(
-      { telegramUserId, token, expiresAt: new Date(expiresAt).toISOString(), stars: starsAmount },
-      'Subscription activated'
-    )
+      {
+        telegramUserId,
+        token,
+        expiresAt: new Date(expiresAt).toISOString(),
+        stars: starsAmount,
+      },
+      'Subscription activated',
+    );
 
-    return { success: true, expiresAt }
+    return { success: true, expiresAt };
   }
 
   /**
@@ -122,17 +134,17 @@ class SubscriptionService {
    * @returns {boolean}
    */
   isActive(telegramUserId) {
-    this._purgeExpired()
-    const sub = this._subscriptions.get(telegramUserId)
-    if (!sub) return false
+    this._purgeExpired();
+    const sub = this._subscriptions.get(telegramUserId);
+    if (!sub) return false;
     if (sub.expiresAt <= Date.now()) {
-      this._subscriptions.delete(telegramUserId)
-      this._tokenIndex.delete(sub.token)
-      this._removeCustomIdsForUser(telegramUserId)
-      this._scheduleSave()
-      return false
+      this._subscriptions.delete(telegramUserId);
+      this._tokenIndex.delete(sub.token);
+      this._removeCustomIdsForUser(telegramUserId);
+      this._scheduleSave();
+      return false;
     }
-    return true
+    return true;
   }
 
   /**
@@ -142,16 +154,16 @@ class SubscriptionService {
    * @returns {boolean}
    */
   isCustomIdAllowed(customId) {
-    if (!customId) return false
+    if (!customId) return false;
 
     // Test mode bypass: any ID starting with '__test_' is always allowed
     if (this._testMode && customId.startsWith('__test_')) {
-      return true
+      return true;
     }
 
-    const telegramUserId = this._customIdIndex.get(customId)
-    if (!telegramUserId) return false
-    return this.isActive(telegramUserId)
+    const telegramUserId = this._customIdIndex.get(customId);
+    if (!telegramUserId) return false;
+    return this.isActive(telegramUserId);
   }
 
   /**
@@ -161,8 +173,8 @@ class SubscriptionService {
    * @returns {number|null}
    */
   getCustomIdOwner(customId) {
-    if (!customId) return null
-    return this._customIdIndex.get(customId) || null
+    if (!customId) return null;
+    return this._customIdIndex.get(customId) || null;
   }
 
   /**
@@ -174,37 +186,40 @@ class SubscriptionService {
    */
   linkCustomId(customId, telegramUserId) {
     if (!customId || !telegramUserId) {
-      return { success: false, error: 'Missing customId or telegramUserId' }
+      return { success: false, error: 'Missing customId or telegramUserId' };
     }
 
-    const existingOwner = this._customIdIndex.get(customId)
+    const existingOwner = this._customIdIndex.get(customId);
     if (existingOwner === telegramUserId) {
-      return { success: true } // Already linked to this user
+      return { success: true }; // Already linked to this user
     }
     if (existingOwner) {
-      return { success: false, error: 'This Client ID is already linked to another user' }
+      return {
+        success: false,
+        error: 'This Client ID is already linked to another user',
+      };
     }
 
-    this._customIdIndex.set(customId, telegramUserId)
-    this._saveImmediately()
-    this.logger.info({ customId, telegramUserId }, 'Custom ID linked to user')
-    return { success: true }
+    this._customIdIndex.set(customId, telegramUserId);
+    this._saveImmediately();
+    this.logger.info({ customId, telegramUserId }, 'Custom ID linked to user');
+    return { success: true };
   }
 
   /**
    * Get subscription info for a Telegram user.
    * @param {number} telegramUserId
-     * @returns {{ active: boolean, activatedAt: number|null, expiresAt: number|null, starsAmount: number|null, autoRenew: boolean, customIds: string[] }}
+   * @returns {{ active: boolean, activatedAt: number|null, expiresAt: number|null, starsAmount: number|null, autoRenew: boolean, customIds: string[] }}
    */
   getStatus(telegramUserId) {
-    this._purgeExpired()
-    const sub = this._subscriptions.get(telegramUserId)
+    this._purgeExpired();
+    const sub = this._subscriptions.get(telegramUserId);
     if (!sub || sub.expiresAt <= Date.now()) {
       if (sub) {
-        this._subscriptions.delete(telegramUserId)
-        this._tokenIndex.delete(sub.token)
-        this._removeCustomIdsForUser(telegramUserId)
-        this._scheduleSave()
+        this._subscriptions.delete(telegramUserId);
+        this._tokenIndex.delete(sub.token);
+        this._removeCustomIdsForUser(telegramUserId);
+        this._scheduleSave();
       }
       return {
         active: false,
@@ -212,13 +227,13 @@ class SubscriptionService {
         expiresAt: null,
         starsAmount: null,
         autoRenew: false,
-        customIds: []
-      }
+        customIds: [],
+      };
     }
     // Collect all custom IDs linked to this user
-    const customIds = []
+    const customIds = [];
     for (const [cid, uid] of this._customIdIndex) {
-      if (uid === telegramUserId) customIds.push(cid)
+      if (uid === telegramUserId) customIds.push(cid);
     }
     return {
       active: true,
@@ -226,8 +241,8 @@ class SubscriptionService {
       expiresAt: sub.expiresAt,
       starsAmount: sub.starsAmount,
       autoRenew: sub.autoRenew || false,
-      customIds
-    }
+      customIds,
+    };
   }
 
   /**
@@ -238,23 +253,25 @@ class SubscriptionService {
    */
   getStatusForCustomId(customId) {
     if (!customId) {
-      return { active: false, activatedAt: null, expiresAt: null, starsAmount: null, telegramUserId: null }
+      return {
+        active: false,
+        activatedAt: null,
+        expiresAt: null,
+        starsAmount: null,
+        telegramUserId: null,
+      };
     }
-    const telegramUserId = this._customIdIndex.get(customId)
+    const telegramUserId = this._customIdIndex.get(customId);
     if (!telegramUserId) {
-      return { active: false, activatedAt: null, expiresAt: null, starsAmount: null, telegramUserId: null }
+      return {
+        active: false,
+        activatedAt: null,
+        expiresAt: null,
+        starsAmount: null,
+        telegramUserId: null,
+      };
     }
-    return this.getStatus(telegramUserId)
-  }
-
-  /**
-   * Handle Telegram pre_checkout_query (validate availability).
-   * @param {string} customId
-   * @returns {boolean}
-   */
-  canAcceptPayment(customId) {
-    // Always true — no limits on how many subscriptions we can sell
-    return true
+    return this.getStatus(telegramUserId);
   }
 
   /**
@@ -264,10 +281,10 @@ class SubscriptionService {
    * @param {string} lang - Language code (e.g. 'ru', 'en')
    */
   setUserLanguage(telegramUserId, lang) {
-    if (!telegramUserId || !lang) return
-    this._userLanguages.set(telegramUserId, lang)
-    this._saveImmediately()
-    this.logger.info({ telegramUserId, lang }, 'User language stored')
+    if (!telegramUserId || !lang) return;
+    this._userLanguages.set(telegramUserId, lang);
+    this._saveImmediately();
+    this.logger.info({ telegramUserId, lang }, 'User language stored');
   }
 
   /**
@@ -277,7 +294,7 @@ class SubscriptionService {
    * @returns {string} Language code (e.g. 'ru', 'en')
    */
   getUserLanguage(telegramUserId) {
-    return this._userLanguages.get(telegramUserId) || null
+    return this._userLanguages.get(telegramUserId) || null;
   }
 
   /**
@@ -288,26 +305,26 @@ class SubscriptionService {
    */
   renew(telegramUserId) {
     if (!telegramUserId) {
-      return { success: false, error: 'Missing telegramUserId' }
+      return { success: false, error: 'Missing telegramUserId' };
     }
 
-    const sub = this._subscriptions.get(telegramUserId)
+    const sub = this._subscriptions.get(telegramUserId);
     if (!sub) {
-      return { success: false, error: 'No subscription found for this user' }
+      return { success: false, error: 'No subscription found for this user' };
     }
 
-    const now = Date.now()
+    const now = Date.now();
     // If expired, start from now; otherwise extend from current expiresAt
-    const base = sub.expiresAt > now ? sub.expiresAt : now
-    sub.expiresAt = base + this.durationMs
+    const base = sub.expiresAt > now ? sub.expiresAt : now;
+    sub.expiresAt = base + this.durationMs;
 
-    this._saveImmediately()
+    this._saveImmediately();
     this.logger.info(
       { telegramUserId, expiresAt: new Date(sub.expiresAt).toISOString() },
-      'Subscription renewed'
-    )
+      'Subscription renewed',
+    );
 
-    return { success: true, expiresAt: sub.expiresAt }
+    return { success: true, expiresAt: sub.expiresAt };
   }
 
   /**
@@ -318,23 +335,23 @@ class SubscriptionService {
    */
   setAutoRenew(telegramUserId, enabled) {
     if (!telegramUserId) {
-      return { success: false, error: 'Missing telegramUserId' }
+      return { success: false, error: 'Missing telegramUserId' };
     }
 
-    const sub = this._subscriptions.get(telegramUserId)
+    const sub = this._subscriptions.get(telegramUserId);
     if (!sub) {
-      return { success: false, error: 'No subscription found for this user' }
+      return { success: false, error: 'No subscription found for this user' };
     }
 
-    sub.autoRenew = !!enabled
-    this._saveImmediately()
+    sub.autoRenew = !!enabled;
+    this._saveImmediately();
 
     this.logger.info(
       { telegramUserId, autoRenew: sub.autoRenew },
-      'Auto-renew ' + (sub.autoRenew ? 'enabled' : 'disabled')
-    )
+      'Auto-renew ' + (sub.autoRenew ? 'enabled' : 'disabled'),
+    );
 
-    return { success: true, autoRenew: sub.autoRenew }
+    return { success: true, autoRenew: sub.autoRenew };
   }
 
   /**
@@ -344,25 +361,28 @@ class SubscriptionService {
    * @param {number} cooldownMs - Minimum time between auto-renew invoice sends (e.g. 24 hours)
    * @returns {Array<{telegramUserId: number, expiresAt: number, chatId: number}>}
    */
-  getExpiringAutoRenewSubscriptions(thresholdMs = 24 * 60 * 60 * 1000, cooldownMs = 24 * 60 * 60 * 1000) {
-    this._purgeExpired()
-    const now = Date.now()
-    const results = []
+  getExpiringAutoRenewSubscriptions(
+    thresholdMs = 24 * 60 * 60 * 1000,
+    cooldownMs = 24 * 60 * 60 * 1000,
+  ) {
+    this._purgeExpired();
+    const now = Date.now();
+    const results = [];
     for (const [userId, sub] of this._subscriptions) {
-      if (!sub.autoRenew) continue
-      const timeUntilExpiry = sub.expiresAt - now
+      if (!sub.autoRenew) continue;
+      const timeUntilExpiry = sub.expiresAt - now;
       if (timeUntilExpiry > 0 && timeUntilExpiry <= thresholdMs) {
-        const lastSent = this._autoRenewInvoiceSent.get(userId) || 0
+        const lastSent = this._autoRenewInvoiceSent.get(userId) || 0;
         if (now - lastSent >= cooldownMs) {
           results.push({
             telegramUserId: userId,
             expiresAt: sub.expiresAt,
-            chatId: userId // In private chats, chatId === telegramUserId
-          })
+            chatId: userId, // In private chats, chatId === telegramUserId
+          });
         }
       }
     }
-    return results
+    return results;
   }
 
   /**
@@ -370,7 +390,7 @@ class SubscriptionService {
    * @param {number} telegramUserId
    */
   markAutoRenewInvoiceSent(telegramUserId) {
-    this._autoRenewInvoiceSent.set(telegramUserId, Date.now())
+    this._autoRenewInvoiceSent.set(telegramUserId, Date.now());
   }
 
   // ---------------------------------------------------------------------------
@@ -379,27 +399,27 @@ class SubscriptionService {
 
   /** Remove expired subscriptions from memory */
   _purgeExpired() {
-    const now = Date.now()
-    let dirty = false
+    const now = Date.now();
+    let dirty = false;
     for (const [userId, sub] of this._subscriptions) {
       if (sub.expiresAt <= now) {
-        this._subscriptions.delete(userId)
-        this._tokenIndex.delete(sub.token)
-        this._autoRenewInvoiceSent.delete(userId)
-        this._removeCustomIdsForUser(userId)
-        dirty = true
+        this._subscriptions.delete(userId);
+        this._tokenIndex.delete(sub.token);
+        this._autoRenewInvoiceSent.delete(userId);
+        this._removeCustomIdsForUser(userId);
+        dirty = true;
       }
     }
-    if (dirty) this._scheduleSave()
+    if (dirty) this._scheduleSave();
   }
 
   /** Remove subscription by token */
   _removeByToken(token) {
-    const userId = this._tokenIndex.get(token)
+    const userId = this._tokenIndex.get(token);
     if (userId) {
-      this._subscriptions.delete(userId)
-      this._tokenIndex.delete(token)
-      this._removeCustomIdsForUser(userId)
+      this._subscriptions.delete(userId);
+      this._tokenIndex.delete(token);
+      this._removeCustomIdsForUser(userId);
     }
   }
 
@@ -407,7 +427,7 @@ class SubscriptionService {
   _removeCustomIdsForUser(telegramUserId) {
     for (const [cid, uid] of this._customIdIndex) {
       if (uid === telegramUserId) {
-        this._customIdIndex.delete(cid)
+        this._customIdIndex.delete(cid);
       }
     }
   }
@@ -416,10 +436,13 @@ class SubscriptionService {
   _ensureDataDir() {
     try {
       if (!fs.existsSync(this._dataDir)) {
-        fs.mkdirSync(this._dataDir, { recursive: true })
+        fs.mkdirSync(this._dataDir, { recursive: true });
       }
     } catch (err) {
-      this.logger.warn({ err }, 'Could not create data directory for subscriptions')
+      this.logger.warn(
+        { err },
+        'Could not create data directory for subscriptions',
+      );
     }
   }
 
@@ -427,104 +450,116 @@ class SubscriptionService {
   _loadFromDisk() {
     try {
       if (!fs.existsSync(this._filePath)) {
-        this.logger.info('No subscriptions file found, starting fresh')
-        return
+        this.logger.info('No subscriptions file found, starting fresh');
+        return;
       }
-      const raw = fs.readFileSync(this._filePath, 'utf-8')
-      const data = JSON.parse(raw)
+      const raw = fs.readFileSync(this._filePath, 'utf-8');
+      const data = JSON.parse(raw);
 
       // New format: subscriptions keyed by telegramUserId
       if (data.subscriptions && Array.isArray(data.subscriptions)) {
         for (const entry of data.subscriptions) {
           // Support both old (sessionId key) and new (telegramUserId key) formats
-          const userId = entry.telegramUserId || entry.sessionId
+          const userId = entry.telegramUserId || entry.sessionId;
           this._subscriptions.set(userId, {
             token: entry.token,
             activatedAt: entry.activatedAt,
             expiresAt: entry.expiresAt,
             starsAmount: entry.starsAmount || 0,
-            autoRenew: entry.autoRenew || false
-          })
-          this._tokenIndex.set(entry.token, userId)
+            autoRenew: entry.autoRenew || false,
+          });
+          this._tokenIndex.set(entry.token, userId);
         }
       }
 
       // Load custom ID index
       if (data.customIds && Array.isArray(data.customIds)) {
         for (const link of data.customIds) {
-          this._customIdIndex.set(link.customId, link.telegramUserId)
+          this._customIdIndex.set(link.customId, link.telegramUserId);
         }
       }
 
       // Load user language preferences
       if (data.userLanguages && typeof data.userLanguages === 'object') {
         for (const [userId, lang] of Object.entries(data.userLanguages)) {
-          this._userLanguages.set(Number(userId), lang)
+          this._userLanguages.set(Number(userId), lang);
         }
       }
 
-      this.totalStars = data.totalStars || 0
+      this.totalStars = data.totalStars || 0;
       this.logger.info(
-        { count: this._subscriptions.size, customIds: this._customIdIndex.size, languages: this._userLanguages.size },
-        'Subscriptions loaded from disk'
-      )
+        {
+          count: this._subscriptions.size,
+          customIds: this._customIdIndex.size,
+          languages: this._userLanguages.size,
+        },
+        'Subscriptions loaded from disk',
+      );
     } catch (err) {
-      this.logger.warn({ err }, 'Failed to load subscriptions, starting fresh')
+      this.logger.warn({ err }, 'Failed to load subscriptions, starting fresh');
     }
   }
 
   _scheduleSave() {
-    if (this._saveTimer) clearTimeout(this._saveTimer)
+    if (this._saveTimer) clearTimeout(this._saveTimer);
     this._saveTimer = setTimeout(() => {
-      this._saveTimer = null
-      this._saveToDisk()
-    }, this._saveDebounceMs)
+      this._saveTimer = null;
+      this._saveToDisk();
+    }, this._saveDebounceMs);
   }
 
   /** Cancel any pending debounced save and persist immediately. */
   _saveImmediately() {
     if (this._saveTimer) {
-      clearTimeout(this._saveTimer)
-      this._saveTimer = null
+      clearTimeout(this._saveTimer);
+      this._saveTimer = null;
     }
-    this._saveToDisk()
+    this._saveToDisk();
   }
 
   /** Persist subscriptions to JSON file (atomic: tmp + rename) */
   _saveToDisk() {
     // Serialize userLanguages Map to plain object
-    const userLanguages = {}
+    const userLanguages = {};
     for (const [userId, lang] of this._userLanguages) {
-      userLanguages[userId] = lang
+      userLanguages[userId] = lang;
     }
 
     const data = {
       totalStars: this.totalStars,
-      subscriptions: Array.from(this._subscriptions.entries()).map(([userId, sub]) => ({
-        telegramUserId: userId,
-        token: sub.token,
-        activatedAt: sub.activatedAt,
-        expiresAt: sub.expiresAt,
-        starsAmount: sub.starsAmount,
-        autoRenew: sub.autoRenew || false
-      })),
-      customIds: Array.from(this._customIdIndex.entries()).map(([customId, userId]) => ({
-        customId,
-        telegramUserId: userId
-      })),
-      userLanguages
-    }
-    const tmpPath = this._filePath + '.tmp'
+      subscriptions: Array.from(this._subscriptions.entries()).map(
+        ([userId, sub]) => ({
+          telegramUserId: userId,
+          token: sub.token,
+          activatedAt: sub.activatedAt,
+          expiresAt: sub.expiresAt,
+          starsAmount: sub.starsAmount,
+          autoRenew: sub.autoRenew || false,
+        }),
+      ),
+      customIds: Array.from(this._customIdIndex.entries()).map(
+        ([customId, userId]) => ({
+          customId,
+          telegramUserId: userId,
+        }),
+      ),
+      userLanguages,
+    };
+    const tmpPath = this._filePath + '.tmp';
     try {
       // Atomic write: write to temp file, then rename (filesystem-level atomic)
-      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf-8')
-      fs.renameSync(tmpPath, this._filePath)
+      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf-8');
+      fs.renameSync(tmpPath, this._filePath);
     } catch (err) {
-      this.logger.error({ err }, 'Failed to save subscriptions to disk')
+      this.logger.error({ err }, 'Failed to save subscriptions to disk');
       // Clean up temp file on error
-      try { fs.unlinkSync(tmpPath) } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(tmpPath);
+      } catch {
+        /* ignore */
+      }
     }
   }
 }
 
-module.exports = SubscriptionService
+module.exports = SubscriptionService;

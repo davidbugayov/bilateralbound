@@ -4,15 +4,15 @@
  * Standalone version for non-bundled scripts (main-page.js, etc.)
  */
 (function () {
-  'use strict'
+  'use strict';
 
   /**
    * Get CSRF token from the cookie.
    * @returns {string|null} The CSRF token or null if not found.
    */
   function getCsrfToken() {
-    const match = document.cookie.match(/(?:^|; )csrfToken=([^;]*)/)
-    return match ? decodeURIComponent(match[1]) : null
+    const match = document.cookie.match(/(?:^|; )csrfToken=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : null;
   }
 
   /**
@@ -22,23 +22,23 @@
    * @returns {Promise<Response>} The fetch response.
    */
   async function csrfFetch(url, options) {
-    options = options || {}
-    const token = getCsrfToken()
+    options = options || {};
+    const token = getCsrfToken();
     if (token) {
       options.headers = Object.assign({}, options.headers || {}, {
-        'X-CSRF-Token': token
-      })
+        'X-CSRF-Token': token,
+      });
     }
-    return fetch(url, options)
+    return fetch(url, options);
   }
 
   // Expose on globalThis/window
   if (typeof globalThis !== 'undefined') {
-    globalThis.csrfFetch = csrfFetch
-    globalThis.getCsrfToken = getCsrfToken
+    globalThis.csrfFetch = csrfFetch;
+    globalThis.getCsrfToken = getCsrfToken;
   }
   if (typeof window !== 'undefined') {
-    window.csrfFetch = csrfFetch
-    window.getCsrfToken = getCsrfToken
+    window.csrfFetch = csrfFetch;
+    window.getCsrfToken = getCsrfToken;
   }
-})()
+})();

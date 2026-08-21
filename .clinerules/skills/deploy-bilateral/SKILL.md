@@ -26,6 +26,7 @@ npm run deploy:prod:logs
 ## Процесс
 
 ### 1. Перед деплоем
+
 ```bash
 npm run lint        # 0 ошибок
 npm run test:local  # E2E на localhost
@@ -33,10 +34,12 @@ npm run build 2>/dev/null || npm start &  # убедиться что билд �
 ```
 
 ### 2. Ветки
+
 - `main` → dev деплой
 - `stable` → prod деплой
 
 ### 3. Если деплой завис
+
 ```bash
 ssh root@144.31.68.9 'systemctl status emdrbilateral-online.service'
 ssh root@144.31.68.9 'systemctl restart emdrbilateral-online.service'
@@ -44,10 +47,12 @@ ssh root@144.31.68.9 'systemctl restart emdrbilateral-ru.service'
 ```
 
 ### 4. После деплоя — проверка
+
 ```bash
 npm test              # E2E против dev.emdrbilateral.online
 curl -s https://emdrbilateral.online/health | head -5
 ```
 
 ## SSH доступ
+
 SSH key: `~/.ssh/id_rsa_emdr`. Пароль не требуется.

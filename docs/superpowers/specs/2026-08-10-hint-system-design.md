@@ -38,27 +38,30 @@ hotkeys-подсказку на контроллер. Все новые текс
 ### 1. Компонент `bb-hint`
 
 **Файлы:**
+
 - `public/css/shared-components.css` — стили `.bb-hint` (варианты, анимация, тёмная/светлая тема)
 - `public/js/ui/hint-banner.js` — класс `HintBanner` (создание, показ, скрытие, localStorage-dismiss)
 
 **API класса `HintBanner`:**
+
 ```js
 // Создаёт баннер в контейнере
 const banner = new HintBanner({
-  container,      // HTMLElement или id — куда вставить
-  type,           // 'info' | 'success' | 'warning' | 'error'
-  title,          // строка (опционально, i18n)
-  message,        // строка (HTML-совместимая, i18n)
-  ctaLabel,       // строка (опционально)
-  onCta,          // функция (опционально)
-  dismissKey,     // строка для localStorage (опционально) — если есть, баннер скрывается навсегда
-  ariaLive        // 'polite' | 'assertive' (default 'polite')
-})
-banner.show()
-banner.hide()
+  container, // HTMLElement или id — куда вставить
+  type, // 'info' | 'success' | 'warning' | 'error'
+  title, // строка (опционально, i18n)
+  message, // строка (HTML-совместимая, i18n)
+  ctaLabel, // строка (опционально)
+  onCta, // функция (опционально)
+  dismissKey, // строка для localStorage (опционально) — если есть, баннер скрывается навсегда
+  ariaLive, // 'polite' | 'assertive' (default 'polite')
+});
+banner.show();
+banner.hide();
 ```
 
 **Разметка:**
+
 ```html
 <div class="bb-hint bb-hint--info" role="status" aria-live="polite">
   <span class="bb-hint__icon">💡</span>
@@ -72,6 +75,7 @@ banner.hide()
 ```
 
 **Стили (дизайн в существующей теме):**
+
 - Тёмная тема: фон `rgb(15 23 42 / 90%)`, border по варианту,
   левая акцентная полоска (4px) с градиентом, свечение как у `control-section`.
 - Варианты (акценты, перекликаются с существующей палитрой):
@@ -86,18 +90,21 @@ banner.hide()
 ### 2. Контроллер (`session-controller.html` + `src/controller.js` + `public/js/ui/`)
 
 **2.1. Баннер `links.tip` (info)**
+
 - Контейнер: под `link-group` в секции «Session».
 - Текст: существующий ключ `links.tip` (HTML: `<strong>Сохраните эти ссылки!</strong> ...`).
 - `dismissKey: 'bb_hint_links_tip_dismissed'` — после закрытия больше не показывается.
 - Рендер: в `initializeComponents()` / отдельной функции `initHintSystem()`.
 
 **2.2. Статус «waiting for viewer»**
+
 - Превратить текст-статус у ссылки в пилюлю `.viewer-status-pill` с
   пульсирующей точкой (точка уже есть — `preview-dot` в превью; сделать
   аналогичную в пилюле). Цвет: `#f59e0b` (waiting) → `#22c55e` (connected).
 - Затрагивает `updateViewerStatusUI` в `src/application/controller/viewer-status.js`.
 
 **2.3. Error-баннер для `Session Expired` / `Connection Failed`**
+
 - `showCriticalError` (в `src/controller.js`): добавить **CTA «Создать новую сессию»**
   (`window.location.href = '/'`) как первичное действие. Второстепенное — Reload.
 - **Механика (однозначно):** `showCriticalError` рендерит через `HintBanner`
@@ -107,6 +114,7 @@ banner.hide()
   остаётся для `showNotification` (info/warning тосты) без изменений.
 
 **2.4. Hotkeys-подсказка**
+
 - Компактная строка под заголовком секции Session (или под header):
   `Space — Start/Stop · F — Fullscreen · ↑↓←→ — Direction · Ctrl+S — Save preset`.
 - Скрываемая (`dismissKey: 'bb_hotkeys_hint_dismissed'`), кнопка «×».
@@ -116,6 +124,7 @@ banner.hide()
 ### 3. Viewer (`viewer.html` + `src/viewer.js`)
 
 **Протухшая ссылка («Session not found»):**
+
 - В `DOMContentLoaded` catch в `src/viewer.js` (строка ~583): когда ошибка
   содержит «not found», показать вместо текстового `errorBar` баннер `bb-hint--error`
   с заголовком «Сессия не найдена», сообщением «Ссылка устарела или была удалена»
@@ -133,6 +142,7 @@ banner.hide()
 ### 5. i18n
 
 Новые ключи (во все 8 языков: en, ru, es, fr, de, pt, ja, zh):
+
 - `hint.sessionExpired` — заголовок «Сессия истекла»
 - `hint.sessionExpiredMsg` — «Ваша сессия истекла или была удалена с сервера. Создайте новую сессию, чтобы продолжить.»
 - `hint.sessionNotFound` — заголовок «Сессия не найдена»

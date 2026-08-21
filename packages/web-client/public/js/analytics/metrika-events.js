@@ -30,19 +30,23 @@
  *   and flushed when consent is granted. This prevents silent data loss.
  */
 (function () {
-  'use strict'
+  'use strict';
 
   // Skip analytics on dev/local — prevents polluting production Metrika data
-  if (/dev\.emdrbilateral|localhost|127\.0\.0\.1/.test(globalThis.location?.hostname || '')) {
-    return
+  if (
+    /dev\.emdrbilateral|localhost|127\.0\.0\.1/.test(
+      globalThis.location?.hostname || '',
+    )
+  ) {
+    return;
   }
 
-  const YM_ID = 104698530
-  const MAX_QUEUE_SIZE = 200
+  const YM_ID = 104698530;
+  const MAX_QUEUE_SIZE = 200;
 
   // Queue of {name, params} for events that arrived before Metrika was loaded
-  let pendingEvents = []
-  let queueFlushed = false
+  let pendingEvents = [];
+  let queueFlushed = false;
 
   /**
    * Push to pending queue — bounded to prevent memory leaks
@@ -50,29 +54,35 @@
   function enqueue(name, params) {
     if (pendingEvents.length >= MAX_QUEUE_SIZE) {
       // Drop oldest to make room (shouldn't happen in practice)
-      pendingEvents.shift()
+      pendingEvents.shift();
     }
-    pendingEvents.push({ name: name, params: params || {} })
+    pendingEvents.push({ name: name, params: params || {} });
   }
 
   /**
    * Drain the pending queue into Metrika
    */
   function flushQueue() {
-    if (queueFlushed || typeof globalThis.ym !== 'function') return
-    queueFlushed = true
+    if (queueFlushed || typeof globalThis.ym !== 'function') return;
+    queueFlushed = true;
 
-    const events = pendingEvents
-    pendingEvents = []
+    const events = pendingEvents;
+    pendingEvents = [];
 
     for (let i = 0; i < events.length; i++) {
       try {
-        globalThis.ym(YM_ID, 'reachGoal', events[i].name, events[i].params)
-      } catch (_) { /* ignore individual failures */ }
+        globalThis.ym(YM_ID, 'reachGoal', events[i].name, events[i].params);
+      } catch (_) {
+        /* ignore individual failures */
+      }
     }
 
     if (events.length > 0) {
-      console.log('[MetrikaEvents] Flushed ' + events.length + ' queued events after consent')
+      console.log(
+        '[MetrikaEvents] Flushed ' +
+          events.length +
+          ' queued events after consent',
+      );
     }
   }
 
@@ -83,22 +93,24 @@
     try {
       if (typeof globalThis.ym === 'function') {
         // Flush any pending events first (belt-and-suspenders)
-        flushQueue()
-        globalThis.ym(YM_ID, 'reachGoal', name, params || {})
+        flushQueue();
+        globalThis.ym(YM_ID, 'reachGoal', name, params || {});
       } else if (!queueFlushed) {
         // ym not loaded yet and consent not yet granted — queue it
-        enqueue(name, params)
+        enqueue(name, params);
       }
-    } catch (_) { /* ignore */ }
+    } catch (_) {
+      /* ignore */
+    }
   }
 
   /**
    * Track session duration when session ends
    */
   function onSessionDuration(e) {
-    const seconds = (e.detail && e.detail.seconds) || 0
+    const seconds = (e.detail && e.detail.seconds) || 0;
     if (seconds > 0) {
-      reachGoal('session_duration', { seconds: Math.round(seconds) })
+      reachGoal('session_duration', { seconds: Math.round(seconds) });
     }
   }
 
@@ -119,35 +131,35 @@
     bb_metrika_feature_used: 'feature_used',
     bb_metrika_viewer_error: 'viewer_error',
     bb_metrika_sync_drift: 'sync_drift',
-    bb_metrika_session_ready: 'session_ready'
-  }
+    bb_metrika_session_ready: 'session_ready',
+  };
 
   function handleEvent(e) {
-    const goal = eventMap[e.type]
+    const goal = eventMap[e.type];
     if (goal) {
-      reachGoal(goal, e.detail || {})
+      reachGoal(goal, e.detail || {});
     }
   }
 
   // Register listeners for all known events
   Object.keys(eventMap).forEach(function (evt) {
     if (evt === 'bb_metrika_session_duration') {
-      globalThis.addEventListener(evt, onSessionDuration)
+      globalThis.addEventListener(evt, onSessionDuration);
     } else {
-      globalThis.addEventListener(evt, handleEvent)
+      globalThis.addEventListener(evt, handleEvent);
     }
-  })
+  });
 
   // Track whether we've sent the initial page_view hit
-  let pageViewSent = false
+  let pageViewSent = false;
 
   // When consent is granted after page load — flush queue + fire page_view + cookie_accepted
   globalThis.addEventListener('bb_cookie_consent_accepted', function () {
-    flushQueue()
+    flushQueue();
     // Send page_view hit so Metrika knows this page was visited
     // (automatic tracking only works after ym loads, so first visit is lost otherwise)
     if (!pageViewSent) {
-      pageViewSent = true
+      pageViewSent = true;
       try {
         if (typeof globalThis.ym === 'function') {
           // Set user params BEFORE hit so they attach to the pageview
@@ -155,29 +167,33 @@
             screenWidth: globalThis.screen?.width || 0,
             screenHeight: globalThis.screen?.height || 0,
             viewportWidth: globalThis.innerWidth || 0,
-            viewportHeight: globalThis.innerHeight || 0
-          })
+            viewportHeight: globalThis.innerHeight || 0,
+          });
           // Manual hit required because init uses ssr:true (no auto-pageview)
           globalThis.ym(YM_ID, 'hit', globalThis.location.href, {
-            referer: document.referrer || undefined
-          })
+            referer: document.referrer || undefined,
+          });
         }
-      } catch (_) { /* ignore */ }
+      } catch (_) {
+        /* ignore */
+      }
     }
-    reachGoal('cookie_accepted')
-  })
+    reachGoal('cookie_accepted');
+  });
 
   // When user declines — discard queue, stop collecting (no Metrika, no tracking)
   globalThis.addEventListener('bb_cookie_consent_declined', function () {
-    pendingEvents = []
-    queueFlushed = true
-  })
+    pendingEvents = [];
+    queueFlushed = true;
+  });
 
   // Expose for direct calls and testing
   globalThis.MetrikaEvents = {
     reachGoal: reachGoal,
     flushQueue: flushQueue,
-    getPendingCount: function () { return pendingEvents.length },
-    ymId: YM_ID
-  }
-})()
+    getPendingCount: function () {
+      return pendingEvents.length;
+    },
+    ymId: YM_ID,
+  };
+})();

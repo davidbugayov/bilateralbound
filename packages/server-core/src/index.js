@@ -1,55 +1,57 @@
-'use strict'
-const path = require('node:path')
-const http = require('node:http')
-const express = require('express')
-const config = require('./config')
-const { registerPlugins } = require('./plugins')
-const SessionRepository = require('./repositories/SessionRepository')
-const WebSocketManager = require('./network/WebSocketManager')
-const BroadcastService = require('./services/BroadcastService')
-const PhysicsService = require('./services/PhysicsService')
-const SessionService = require('./services/SessionService')
-const LocalizationService = require('./services/LocalizationService')
-const SubscriptionService = require('./services/SubscriptionService')
-const LinkAccessService = require('./services/LinkAccessService')
-const TelegramBotService = require('./services/TelegramBotService')
-const WsTokenService = require('./services/WsTokenService')
-const TelegramAuthService = require('./services/TelegramAuthService')
+'use strict';
+const path = require('node:path');
+const http = require('node:http');
+const express = require('express');
+const config = require('./config');
+const { registerPlugins } = require('./plugins');
+const SessionRepository = require('./repositories/SessionRepository');
+const WebSocketManager = require('./network/WebSocketManager');
+const BroadcastService = require('./services/BroadcastService');
+const PhysicsService = require('./services/PhysicsService');
+const SessionService = require('./services/SessionService');
+const LocalizationService = require('./services/LocalizationService');
+const SubscriptionService = require('./services/SubscriptionService');
+const LinkAccessService = require('./services/LinkAccessService');
+const TelegramBotService = require('./services/TelegramBotService');
+const WsTokenService = require('./services/WsTokenService');
+const TelegramAuthService = require('./services/TelegramAuthService');
 const {
   setupMiddleware,
   requireSession,
   setNoCacheHeaders,
-  csrfProtection
-} = require('./network/middleware')
-const { setupWebSocketServer } = require('./network/webSocketServer')
-const { registerSessionRoutes } = require('./controllers/sessionController')
-const { registerViewerRoutes } = require('./controllers/viewerController')
-const { registerSeoRoutes } = require('./controllers/seoController')
+  csrfProtection,
+} = require('./network/middleware');
+const { setupWebSocketServer } = require('./network/webSocketServer');
+const { registerSessionRoutes } = require('./controllers/sessionController');
+const { registerViewerRoutes } = require('./controllers/viewerController');
+const { registerSeoRoutes } = require('./controllers/seoController');
 const {
-  registerStaticRoutes
-} = require('./controllers/static_routes_controller')
-const { registerSubscriptionRoutes } = require('./controllers/subscriptionController')
+  registerStaticRoutes,
+} = require('./controllers/static_routes_controller');
+const {
+  registerSubscriptionRoutes,
+} = require('./controllers/subscriptionController');
 
 // 1. App + Plugins
-const app = express()
-const { logger, analytics } = registerPlugins(app, config)
+const app = express();
+const { logger, analytics } = registerPlugins(app, config);
 
 // 2. Repositories
-const sessionRepository = new SessionRepository()
+const sessionRepository = new SessionRepository();
 
 // 3. Network
-const webSocketManager = new WebSocketManager(sessionRepository, logger)
+const webSocketManager = new WebSocketManager(sessionRepository, logger);
 
 // 4. Services
-const apiCache = new Map()
+const apiCache = new Map();
 const broadcastService = new BroadcastService(
   sessionRepository,
   webSocketManager,
   {
     clientSimulationOnly: config.runtime.CLIENT_SIM_ONLY,
-    logger
-  }
-)
+    logger,
+  },
+);
 const physicsService = new PhysicsService(
   sessionRepository,
   broadcastService,
@@ -57,29 +59,29 @@ const physicsService = new PhysicsService(
   {
     clientSimulationOnly: config.runtime.CLIENT_SIM_ONLY,
     logger,
-    analytics
-  }
-)
+    analytics,
+  },
+);
 // Use DATA_DIR env var if set (production: /var/data/bilateral-bound/),
 // otherwise fall back to relative path inside the app directory (local dev).
-const dataDir = config.server.DATA_DIR || path.join(__dirname, '..', 'data')
+const dataDir = config.server.DATA_DIR || path.join(__dirname, '..', 'data');
 const subscriptionService = new SubscriptionService({
   logger,
   durationMs: config.subscription.SUBSCRIPTION_DURATION_MS,
   testMode: config.subscription.TEST_MODE,
-  dataDir
-})
+  dataDir,
+});
 
-const linkAccessService = new LinkAccessService({ logger, dataDir })
+const linkAccessService = new LinkAccessService({ logger, dataDir });
 
 // WS token service — issues HMAC-signed tokens for WebSocket authentication
-const wsTokenService = new WsTokenService({ logger })
+const wsTokenService = new WsTokenService({ logger });
 
 // Telegram auth service — validates Mini App initData for subscription endpoints
 const telegramAuthService = new TelegramAuthService({
   botToken: config.subscription.STARS_BOT_TOKEN || '',
-  logger
-})
+  logger,
+});
 
 // Telegram bot — only initialised if a token is provided via env
 const telegramBot = config.subscription.STARS_BOT_TOKEN
@@ -89,150 +91,172 @@ const telegramBot = config.subscription.STARS_BOT_TOKEN
       webhookUrl: config.subscription.WEBHOOK_URL || '',
       webhookSecret: config.subscription.WEBHOOK_SECRET || '',
       botUsername: config.subscription.BOT_USERNAME,
-      logger
+      logger,
     })
-  : null
+  : null;
 if (telegramBot) {
-  telegramBot.setWebhook()
+  telegramBot.setWebhook();
   // Set default (English) commands for all users, then language-specific overrides
-  telegramBot.setMyCommands()
-  const { SUPPORTED_LANGUAGES } = require('./services/bot-translations')
-  SUPPORTED_LANGUAGES.filter(l => l !== 'en').forEach(lang => {
-    telegramBot.setMyCommands(lang)
-  })
+  telegramBot.setMyCommands();
+  const { SUPPORTED_LANGUAGES } = require('./services/bot-translations');
+  SUPPORTED_LANGUAGES.filter((l) => l !== 'en').forEach((lang) => {
+    telegramBot.setMyCommands(lang);
+  });
 }
 const sessionService = new SessionService(
   sessionRepository,
   physicsService,
   broadcastService,
   webSocketManager,
-  { logger, analytics, apiCache, subscriptionService }
-)
-const localizationService = new LocalizationService(config, logger)
+  { logger, analytics, apiCache, subscriptionService },
+);
+const localizationService = new LocalizationService(config, logger);
 
 // 5. HTTP Middleware + Routes
-const boundRequireSession = requireSession(sessionService)
-const mw = { requireSession: boundRequireSession, logger }
-setupMiddleware(app, config, logger)
+const boundRequireSession = requireSession(sessionService);
+const mw = { requireSession: boundRequireSession, logger };
+setupMiddleware(app, config, logger);
 
 // CSRF protection on all API routes
-app.use('/api/', csrfProtection)
+app.use('/api/', csrfProtection);
 
-// Analytics tracking middleware (HTTP request counting + error tracking)
-app.use((req, res, next) => {
-  analytics.recordHttpRequest()
-  res.on('finish', () => {
-    if (res.statusCode >= 400)
-      analytics.recordHttpError(res.statusCode, req.path)
-  })
-  next()
-})
+// Analytics tracking is handled by the analytics plugin (plugins/analytics.js)
+// which registers its own middleware during registerPlugins().
 
-registerSessionRoutes(app, sessionService, apiCache, analytics, mw, subscriptionService)
-registerSubscriptionRoutes(app, subscriptionService, {
-  logger,
-  telegramBot,
-  telegramAuthService,
-  priceStars: config.subscription.PRICE_STARS,
-  testMode: config.subscription.TEST_MODE,
-  webhookSecret: config.subscription.WEBHOOK_SECRET || '',
-  baseUrl: config.server.PUBLIC_URL || '',
-  isDev: config.isDev
-}, linkAccessService)
+registerSessionRoutes(
+  app,
+  sessionService,
+  apiCache,
+  analytics,
+  mw,
+  subscriptionService,
+);
+registerSubscriptionRoutes(
+  app,
+  subscriptionService,
+  {
+    logger,
+    telegramBot,
+    telegramAuthService,
+    priceStars: config.subscription.PRICE_STARS,
+    testMode: config.subscription.TEST_MODE,
+    webhookSecret: config.subscription.WEBHOOK_SECRET || '',
+    baseUrl: config.server.PUBLIC_URL || '',
+    isDev: config.isDev,
+  },
+  linkAccessService,
+);
 
 registerViewerRoutes(
   app,
   sessionService,
   webSocketManager,
   broadcastService,
-  mw
-)
-registerSeoRoutes(app)
-registerStaticRoutes(app, sessionService, localizationService, {
-  setNoCacheHeaders,
-  logger
-}, linkAccessService, subscriptionService, wsTokenService)
+  mw,
+);
+registerSeoRoutes(app);
+registerStaticRoutes(
+  app,
+  sessionService,
+  localizationService,
+  {
+    setNoCacheHeaders,
+    logger,
+  },
+  linkAccessService,
+  subscriptionService,
+  wsTokenService,
+);
 
 // 6. Server + WebSocket
-const server = http.createServer(app)
-const { heartbeatInterval } = setupWebSocketServer(
+const server = http.createServer(app);
+const { heartbeatInterval, wss } = setupWebSocketServer(
   server,
   sessionService,
   webSocketManager,
   broadcastService,
   analytics,
   logger,
-  wsTokenService
-)
+  wsTokenService,
+);
 
 // 7. Start
-const PORT = config.server.PORT
+const PORT = config.server.PORT;
+let eaddrInuseRetries = 0;
+const MAX_EADDRINUSE_RETRIES = 5;
 server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
+  if (err.code === 'EADDRINUSE' && eaddrInuseRetries < MAX_EADDRINUSE_RETRIES) {
+    eaddrInuseRetries++;
     logger.error(
-      { port: PORT },
-      `Port ${PORT} is already in use. Waiting before retry...`
-    )
+      { port: PORT, attempt: eaddrInuseRetries, max: MAX_EADDRINUSE_RETRIES },
+      `Port ${PORT} is already in use. Waiting before retry...`,
+    );
     setTimeout(() => {
       logger.info(
-        { port: PORT },
-        `Attempting to restart server on port ${PORT}...`
-      )
+        { port: PORT, attempt: eaddrInuseRetries },
+        `Attempting to restart server on port ${PORT}...`,
+      );
       server.close(() => {
-        server.listen(PORT)
-      })
-    }, 3000)
+        server.listen(PORT);
+      });
+    }, 3000);
+  } else if (err.code === 'EADDRINUSE') {
+    logger.error(
+      { port: PORT },
+      `Port ${PORT} still in use after ${MAX_EADDRINUSE_RETRIES} retries — giving up`,
+    );
+    process.exit(1);
   } else {
-    logger.error({ err }, 'Server error')
-    process.exit(1)
+    logger.error({ err }, 'Server error');
+    process.exit(1);
   }
-})
+});
 server.listen(PORT, () => {
-  logger.info('Modular server architecture is ready.')
-})
+  logger.info('Modular server architecture is ready.');
+});
 
 // 8. Cleanup intervals
 const cleanupIntervals = [
   setInterval(() => {
-    sessionService.cleanupExpiredSessions()
+    sessionService.cleanupExpiredSessions();
   }, 60000),
   setInterval(() => {
-    const now = Date.now()
-    let removedCount = 0
+    const now = Date.now();
+    let removedCount = 0;
     for (const [key, cached] of apiCache) {
-      const adaptiveTTL = cached.type === 'ball_state' ? 50 : 500
+      const adaptiveTTL = cached.type === 'ball_state' ? 50 : 500;
       if (now - cached.timestamp > adaptiveTTL) {
-        apiCache.delete(key)
-        removedCount += 1
+        apiCache.delete(key);
+        removedCount += 1;
       }
     }
     if (removedCount > 0) {
-      logger.debug({ removedCount }, 'API cache cleanup')
+      logger.debug({ removedCount }, 'API cache cleanup');
     }
-  }, 30 * 1000)
-]
+  }, 30 * 1000),
+];
 
 // 9. Graceful shutdown
 function gracefulShutdown() {
-  logger.info('Shutting down gracefully...')
-  clearInterval(heartbeatInterval)
+  logger.info('Shutting down gracefully...');
+  clearInterval(heartbeatInterval);
   for (const interval of cleanupIntervals) {
-    clearInterval(interval)
+    clearInterval(interval);
   }
-  physicsService.destroy()
-  // Stop broadcast service delta cleanup interval and clear cache
-  broadcastService.destroy()
-  setTimeout(() => process.exit(0), 3000).unref()
-  server.closeAllConnections()
+  physicsService.destroy();
+  broadcastService.destroy();
+  wss.close();
+  setTimeout(() => process.exit(0), 3000).unref();
+  server.closeAllConnections();
   server.close(() => {
-    logger.info('Server stopped.')
-    process.exit(0)
-  })
+    logger.info('Server stopped.');
+    process.exit(0);
+  });
 }
 
-process.on('SIGTERM', gracefulShutdown)
-process.on('SIGINT', gracefulShutdown)
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
 process.on('unhandledRejection', (err) => {
-  logger.error({ err }, 'Unhandled rejection')
-})
-logger.info('BilateralBound modular server started successfully')
+  logger.error({ err }, 'Unhandled rejection');
+});
+logger.info('BilateralBound modular server started successfully');

@@ -3,224 +3,226 @@
  * E2E тест BilateralBound
  */
 
-const puppeteer = require('puppeteer')
+const puppeteer = require('puppeteer');
 
-const BASE_URL = process.argv[2] || 'https://dev.emdrbilateral.online'
+const BASE_URL = process.argv[2] || 'https://dev.emdrbilateral.online';
 let browser,
   passed = 0,
-  failed = 0
+  failed = 0;
 
 async function test(name, fn) {
   try {
     await Promise.race([
       fn(),
-      new Promise((_, r) => setTimeout(() => r(new Error('Timeout')), 8000))
-    ])
-    console.log(`✅ ${name}`)
-    passed++
+      new Promise((_, r) => setTimeout(() => r(new Error('Timeout')), 8000)),
+    ]);
+    console.log(`✅ ${name}`);
+    passed++;
   } catch (e) {
-    console.log(`❌ ${name}: ${e.message}`)
-    failed++
+    console.log(`❌ ${name}: ${e.message}`);
+    failed++;
   }
 }
 
 async function reserveSession(sessionId) {
   try {
     const res = await fetch(`${BASE_URL}/api/session/${sessionId}/reserve`, {
-      method: 'POST'
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      method: 'POST',
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
   } catch (e) {
     // 402 is expected when subscription is required — session will auto-create on page visit
-    console.warn(`⚠️  Could not reserve session ${sessionId}: ${e.message} (will auto-create on visit)`)
+    console.warn(
+      `⚠️  Could not reserve session ${sessionId}: ${e.message} (will auto-create on visit)`,
+    );
   }
 }
 
 async function main() {
-  console.log(`\n🚀 E2E: ${BASE_URL}\n`)
+  console.log(`\n🚀 E2E: ${BASE_URL}\n`);
 
   // Reserve sessions before navigating to controller/viewer pages
   // Use __test_ prefix for subscription bypass when SUBSCRIPTION_TEST_MODE=true.
   // Sessions also auto-create on page visit via findOrCreateSession.
-  await reserveSession('__test_e2e_session')
-  await reserveSession('__test_e2e_mobile')
+  await reserveSession('__test_e2e_session');
+  await reserveSession('__test_e2e_mobile');
 
-  browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] })
+  browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
 
   // Тест главной страницы
-  const mainPage = await browser.newPage()
+  const mainPage = await browser.newPage();
   await mainPage.goto(BASE_URL, {
     waitUntil: 'domcontentloaded',
-    timeout: 15000
-  })
+    timeout: 15000,
+  });
 
   await test('Главная загружается', async () => {
-    const t = await mainPage.title()
-    if (!t.includes('Bilateral')) throw new Error('Bad title')
-  })
+    const t = await mainPage.title();
+    if (!t.includes('Bilateral')) throw new Error('Bad title');
+  });
 
   await test('Кнопка создания сессии', async () => {
-    if (!(await mainPage.$('#createSessionBtn'))) throw new Error('Not found')
-  })
+    if (!(await mainPage.$('#createSessionBtn'))) throw new Error('Not found');
+  });
 
   await test('Генерация ссылок', async () => {
     // Очищаем поле и вводим уникальный ID
-    await mainPage.$eval('#customClientId', (el) => (el.value = ''))
-    const testId = 'e2e_' + Date.now()
-    await mainPage.type('#customClientId', testId)
-    await mainPage.click('#generateLinksBtn')
+    await mainPage.$eval('#customClientId', (el) => (el.value = ''));
+    const testId = 'e2e_' + Date.now();
+    await mainPage.type('#customClientId', testId);
+    await mainPage.click('#generateLinksBtn');
     // Ждём небольшую задержку для запроса
-    await new Promise((r) => setTimeout(r, 2000))
+    await new Promise((r) => setTimeout(r, 2000));
     // Проверяем что контейнер появился или запрос успешен
     const isVisible = await mainPage.evaluate(() => {
-      const container = document.getElementById('generatedLinksContainer')
+      const container = document.getElementById('generatedLinksContainer');
       // eslint-disable-next-line no-undef
-      return container && getComputedStyle(container).display !== 'none'
-    })
+      return container && getComputedStyle(container).display !== 'none';
+    });
     if (!isVisible) {
       // Альтернативная проверка - просто проверяем что кнопка не в состоянии ошибки
       const btnText = await mainPage.$eval(
         '#generateLinksBtn',
-        (el) => el.textContent
-      )
-      if (btnText.includes('❌')) throw new Error('Link generation failed')
+        (el) => el.textContent,
+      );
+      if (btnText.includes('❌')) throw new Error('Link generation failed');
     }
-  })
+  });
 
   await test('Language selector присутствует', async () => {
     if (!(await mainPage.$('#languageSelectorBtn')))
-      throw new Error('Language selector not found')
-  })
+      throw new Error('Language selector not found');
+  });
 
   await test('Переключение языка работает', async () => {
     // Открываем dropdown программно и выбираем English
     const result = await mainPage.evaluate(() => {
-      const dropdown = document.getElementById('languageDropdown')
-      if (dropdown) dropdown.removeAttribute('hidden')
-      const enOption = document.querySelector('[data-lang="en"]')
-      if (enOption) enOption.click()
-      return { clicked: !!enOption, dropdownExists: !!dropdown }
-    })
-    if (!result.clicked) throw new Error('Language option not found')
-    await new Promise((r) => setTimeout(r, 1000))
+      const dropdown = document.getElementById('languageDropdown');
+      if (dropdown) dropdown.removeAttribute('hidden');
+      const enOption = document.querySelector('[data-lang="en"]');
+      if (enOption) enOption.click();
+      return { clicked: !!enOption, dropdownExists: !!dropdown };
+    });
+    if (!result.clicked) throw new Error('Language option not found');
+    await new Promise((r) => setTimeout(r, 1000));
     const langSaved = await mainPage.evaluate(() =>
-      localStorage.getItem('emdr-language')
-    )
-    if (langSaved !== 'en') throw new Error('Language not saved: ' + langSaved)
-  })
+      localStorage.getItem('emdr-language'),
+    );
+    if (langSaved !== 'en') throw new Error('Language not saved: ' + langSaved);
+  });
 
-  await mainPage.close()
+  await mainPage.close();
 
   // Тест контроллера
-  const ctrlPage = await browser.newPage()
+  const ctrlPage = await browser.newPage();
   await ctrlPage.goto(`${BASE_URL}/c/__test_e2e_session`, {
     waitUntil: 'domcontentloaded',
-    timeout: 15000
-  })
+    timeout: 15000,
+  });
 
   await test('Контроллер загружается', async () => {
-    await ctrlPage.waitForSelector('#preview', { timeout: 10000 })
-  })
+    await ctrlPage.waitForSelector('#preview', { timeout: 10000 });
+  });
 
   await test('Play кнопка', async () => {
-    if (!(await ctrlPage.$('#playPauseBtn'))) throw new Error('Not found')
-  })
+    if (!(await ctrlPage.$('#playPauseBtn'))) throw new Error('Not found');
+  });
 
   await test('Скорость контрол', async () => {
-    if (!(await ctrlPage.$('#speedControl'))) throw new Error('Not found')
-  })
+    if (!(await ctrlPage.$('#speedControl'))) throw new Error('Not found');
+  });
 
   await test('PhysicsEngine', async () => {
     const ok = await ctrlPage.evaluate(
-      () => typeof PhysicsEngine !== 'undefined'
-    )
-    if (!ok) throw new Error('Not found')
-  })
+      () => typeof PhysicsEngine !== 'undefined',
+    );
+    if (!ok) throw new Error('Not found');
+  });
 
   await test('togglePlayPause функция доступна', async () => {
     const ok = await ctrlPage.evaluate(
-      () => typeof togglePlayPause === 'function'
-    )
-    if (!ok) throw new Error('togglePlayPause not defined')
-  })
+      () => typeof togglePlayPause === 'function',
+    );
+    if (!ok) throw new Error('togglePlayPause not defined');
+  });
 
   await test('setDirection функция доступна', async () => {
     const ok = await ctrlPage.evaluate(
-      () => typeof setDirection === 'function'
-    )
-    if (!ok) throw new Error('setDirection not defined')
-  })
+      () => typeof setDirection === 'function',
+    );
+    if (!ok) throw new Error('setDirection not defined');
+  });
 
   await test('Клик на Play кнопку не вызывает ошибку', async () => {
     await ctrlPage.evaluate(() => {
-      window.__jsErrors = []
-      window.onerror = (msg) => window.__jsErrors.push(msg)
-    })
-    await ctrlPage.click('#playPauseBtn')
-    await new Promise((r) => setTimeout(r, 500))
-    const errors = await ctrlPage.evaluate(() => window.__jsErrors)
-    if (errors.length > 0) throw new Error('JS errors: ' + errors.join(', '))
-  })
+      window.__jsErrors = [];
+      window.onerror = (msg) => window.__jsErrors.push(msg);
+    });
+    await ctrlPage.click('#playPauseBtn');
+    await new Promise((r) => setTimeout(r, 500));
+    const errors = await ctrlPage.evaluate(() => window.__jsErrors);
+    if (errors.length > 0) throw new Error('JS errors: ' + errors.join(', '));
+  });
 
   await test('i18n модуль загружен', async () => {
     const ok = await ctrlPage.evaluate(
       () =>
         typeof globalThis.i18n !== 'undefined' ||
-        typeof globalThis.I18nConstants !== 'undefined'
-    )
-    if (!ok) throw new Error('i18n not loaded')
-  })
+        typeof globalThis.I18nConstants !== 'undefined',
+    );
+    if (!ok) throw new Error('i18n not loaded');
+  });
 
   // Тест viewer
-  const viewPage = await browser.newPage()
+  const viewPage = await browser.newPage();
   await viewPage.goto(`${BASE_URL}/s/__test_e2e_session`, {
     waitUntil: 'domcontentloaded',
-    timeout: 15000
-  })
+    timeout: 15000,
+  });
 
   await test('Viewer загружается', async () => {
-    await viewPage.waitForSelector('canvas', { timeout: 10000 })
-  })
+    await viewPage.waitForSelector('canvas', { timeout: 10000 });
+  });
 
   await test('Viewer PhysicsEngine', async () => {
     const ok = await viewPage.evaluate(
-      () => typeof PhysicsEngine !== 'undefined'
-    )
-    if (!ok) throw new Error('Not found')
-  })
+      () => typeof PhysicsEngine !== 'undefined',
+    );
+    if (!ok) throw new Error('Not found');
+  });
 
   await test('Realtime соединение работает', async () => {
     // Проверим что viewer получает состояние через WebSocket
-    await new Promise((r) => setTimeout(r, 2000))
+    await new Promise((r) => setTimeout(r, 2000));
     const hasState = await viewPage.evaluate(() => {
       return (
         globalThis.__current?.sessionId !== undefined ||
         document.querySelector('canvas') !== null
-      )
-    })
-    if (!hasState) throw new Error('Realtime state not received')
-  })
+      );
+    });
+    if (!hasState) throw new Error('Realtime state not received');
+  });
 
   // Ждём подключения обоих клиентов (до 8с с polling каждые 500мс)
   await (async () => {
-    const deadline = Date.now() + 8000
+    const deadline = Date.now() + 8000;
     while (Date.now() < deadline) {
       const connected = await ctrlPage.evaluate(
-        () => globalThis.__current?.viewerConnected === true
-      )
-      if (connected) break
-      await new Promise((r) => setTimeout(r, 500))
+        () => globalThis.__current?.viewerConnected === true,
+      );
+      if (connected) break;
+      await new Promise((r) => setTimeout(r, 500));
     }
-  })()
+  })();
 
   // Тест: контроллер видит viewer как подключённый
   await test('Контроллер видит viewer подключён', async () => {
     const viewerConnected = await ctrlPage.evaluate(
-      () => globalThis.__current?.viewerConnected === true
-    )
+      () => globalThis.__current?.viewerConnected === true,
+    );
     if (!viewerConnected)
-      throw new Error('Controller does not see viewer as connected')
-  })
+      throw new Error('Controller does not see viewer as connected');
+  });
 
   // Тест: UI контроллера показывает статус подключения
   await test('viewerStatus shows connected', async () => {
@@ -228,17 +230,17 @@ async function main() {
       return document
         .getElementById('viewerStatus')
         ?.textContent?.trim()
-        ?.toLowerCase()
-    })
+        ?.toLowerCase();
+    });
     if (
       !statusText?.includes('connect') &&
       !statusText?.includes('подключен')
     ) {
       throw new Error(
-        `viewerStatus text is "${statusText}", expected connected status`
-      )
+        `viewerStatus text is "${statusText}", expected connected status`,
+      );
     }
-  })
+  });
 
   // Тест: viewer получает статус контроллера
   await test('Viewer видит controllerConnected', async () => {
@@ -246,88 +248,88 @@ async function main() {
       return (
         globalThis.__current?.controllerConnected === true ||
         globalThis.controllerConnected === true
-      )
-    })
+      );
+    });
     if (!controllerConnected)
-      throw new Error('Viewer does not see controller as connected')
-  })
+      throw new Error('Viewer does not see controller as connected');
+  });
 
   // Тест синхронизации движения viewer <-> controller
   await test('Синхронизация viewer-controller', async () => {
     // Step 1: Force pause via server API + directly reset all client play-state flags
     await ctrlPage.evaluate(async () => {
-      const sid = globalThis.__current?.sessionId
+      const sid = globalThis.__current?.sessionId;
       if (sid) {
         await fetch(`/api/session/${sid}/controller/update`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paused: true, returnToCenter: true })
-        }).catch(() => {})
+          body: JSON.stringify({ paused: true, returnToCenter: true }),
+        }).catch(() => {});
       }
       // Directly reset all play-state variables (avoids togglePlayPause state inconsistency)
       // Atomic assignment: set both variables without intermediate state check
       globalThis.__current = Object.assign(globalThis.__current || {}, {
-        isPlaying: false
-      })
-      globalThis.isPlaying = false
-    })
+        isPlaying: false,
+      });
+      globalThis.isPlaying = false;
+    });
 
     // Wait for server to process and broadcast the pause (state_update)
-    await new Promise((r) => setTimeout(r, 1500))
+    await new Promise((r) => setTimeout(r, 1500));
 
     const beforeClick = await ctrlPage.evaluate(() => ({
       isPlaying: globalThis.__current?.isPlaying,
       viewerConnected: globalThis.__current?.viewerConnected,
       btnDisabled: document.getElementById('playPauseBtn')?.disabled,
-      btnText: document.getElementById('playPauseBtn')?.textContent?.trim()
-    }))
-    console.log('  [SYNC DEBUG before click]', JSON.stringify(beforeClick))
+      btnText: document.getElementById('playPauseBtn')?.textContent?.trim(),
+    }));
+    console.log('  [SYNC DEBUG before click]', JSON.stringify(beforeClick));
 
     // Step 2: Start playback from controller
     await ctrlPage.evaluate(() => {
-      const btn = document.getElementById('playPauseBtn')
-      if (btn) btn.click()
-    })
-    await new Promise((r) => setTimeout(r, 500))
+      const btn = document.getElementById('playPauseBtn');
+      if (btn) btn.click();
+    });
+    await new Promise((r) => setTimeout(r, 500));
     const afterClick = await ctrlPage.evaluate(() => ({
       isPlaying: globalThis.__current?.isPlaying,
-      globalIsPlaying: globalThis.isPlaying
-    }))
-    console.log('  [SYNC DEBUG after click]', JSON.stringify(afterClick))
+      globalIsPlaying: globalThis.isPlaying,
+    }));
+    console.log('  [SYNC DEBUG after click]', JSON.stringify(afterClick));
 
     // Step 3: Wait for sync propagation to viewer
-    await new Promise((r) => setTimeout(r, 3000))
+    await new Promise((r) => setTimeout(r, 3000));
 
     const ctrlState = await ctrlPage.evaluate(() => ({
       isPlaying: globalThis.__current?.isPlaying,
       globalIsPlaying: globalThis.isPlaying,
-      viewerConnected: globalThis.__current?.viewerConnected
-    }))
+      viewerConnected: globalThis.__current?.viewerConnected,
+    }));
 
     const viewState = await viewPage.evaluate(() => {
-      const engine = globalThis.physicsEngine
+      const engine = globalThis.physicsEngine;
       return {
         paused: engine?.state?.paused,
-        engineExists: typeof engine !== 'undefined'
-      }
-    })
+        engineExists: typeof engine !== 'undefined',
+      };
+    });
 
     const isPlayingOnCtrl =
-      ctrlState.isPlaying === true || ctrlState.globalIsPlaying === true
-    const isPlayingOnViewer = viewState.paused === false
-    const isPlaying = isPlayingOnCtrl || isPlayingOnViewer
+      ctrlState.isPlaying === true || ctrlState.globalIsPlaying === true;
+    const isPlayingOnViewer = viewState.paused === false;
+    const isPlaying = isPlayingOnCtrl || isPlayingOnViewer;
     if (!isPlaying) {
       throw new Error(
-        `Sync: ctrl.isPlaying=${ctrlState.isPlaying}/${ctrlState.globalIsPlaying}, view.paused=${viewState.paused}, viewer=${ctrlState.viewerConnected}`
-      )
+        `Sync: ctrl.isPlaying=${ctrlState.isPlaying}/${ctrlState.globalIsPlaying}, view.paused=${viewState.paused}, viewer=${ctrlState.viewerConnected}`,
+      );
     }
-  })
+  });
 
   // Тест возврата мяча в центр при паузе
   await test('Viewer ball returns to center on pause', async () => {
     // Debug: check viewer state before pause
     const viewerBeforePause = await viewPage.evaluate(() => {
-      const engine = globalThis.physicsEngine
+      const engine = globalThis.physicsEngine;
       return {
         paused: engine?.state?.paused,
         seekingCenter: engine?.state?.seekingCenter,
@@ -336,48 +338,54 @@ async function main() {
         centerX: engine?.centerX,
         centerY: engine?.centerY,
         ignoreServerPausedUntilTs: globalThis.__ignoreServerPausedUntilTs,
-        now: Date.now()
-      }
-    })
-    console.log('  [PAUSE DEBUG before]', JSON.stringify(viewerBeforePause))
+        now: Date.now(),
+      };
+    });
+    console.log('  [PAUSE DEBUG before]', JSON.stringify(viewerBeforePause));
 
     // Ball is playing after the sync test — pause with returnToCenter
     // IMPORTANT: must use csrfFetch (not fetch) because CSRF middleware blocks plain fetch
     const serverResponse = await ctrlPage.evaluate(async () => {
-      const sid = globalThis.__current?.sessionId
+      const sid = globalThis.__current?.sessionId;
       if (sid) {
         try {
-          const res = await globalThis.csrfFetch(`/api/session/${sid}/controller/update`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paused: true, returnToCenter: true })
-          })
-          return { status: res.status, ok: res.ok }
+          const res = await globalThis.csrfFetch(
+            `/api/session/${sid}/controller/update`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paused: true, returnToCenter: true }),
+            },
+          );
+          return { status: res.status, ok: res.ok };
         } catch (e) {
-          return { error: e.message }
+          return { error: e.message };
         }
       }
-      return { noSession: true }
-    })
-    console.log('  [PAUSE DEBUG server response]', JSON.stringify(serverResponse))
+      return { noSession: true };
+    });
+    console.log(
+      '  [PAUSE DEBUG server response]',
+      JSON.stringify(serverResponse),
+    );
 
     // Check early: paused should be true within 500ms (before seek animation completes)
-    await new Promise((r) => setTimeout(r, 500))
+    await new Promise((r) => setTimeout(r, 500));
     const earlyState = await viewPage.evaluate(() => {
-      const engine = globalThis.physicsEngine
-      if (!engine) return null
+      const engine = globalThis.physicsEngine;
+      if (!engine) return null;
       return {
         paused: engine.state.paused,
-        seekingCenter: engine.state.seekingCenter
-      }
-    })
+        seekingCenter: engine.state.seekingCenter,
+      };
+    });
 
     // Wait for seek animation to complete (1.2s duration + buffer)
-    await new Promise((r) => setTimeout(r, 2000))
+    await new Promise((r) => setTimeout(r, 2000));
 
     const state = await viewPage.evaluate(() => {
-      const engine = globalThis.physicsEngine
-      if (!engine) return null
+      const engine = globalThis.physicsEngine;
+      if (!engine) return null;
       return {
         x: engine.ball.x,
         y: engine.ball.y,
@@ -387,30 +395,31 @@ async function main() {
         seekingCenter: engine.state.seekingCenter,
         ignoreServerPausedUntilTs: globalThis.__ignoreServerPausedUntilTs,
         now: Date.now(),
-        isPlaying: globalThis.__current?.isPlaying
-      }
-    })
-    console.log('  [PAUSE DEBUG after]', JSON.stringify(state))
+        isPlaying: globalThis.__current?.isPlaying,
+      };
+    });
+    console.log('  [PAUSE DEBUG after]', JSON.stringify(state));
 
-    if (!state) throw new Error('physicsEngine not found on viewer')
-    if (!earlyState?.paused && !state.paused) throw new Error(
-      `Ball not paused after pause command. earlyPaused=${earlyState?.paused}, ` +
-      `latePaused=${state.paused}, seekingCenter=${state.seekingCenter}, ` +
-      `ignoreUntil=${state.ignoreServerPausedUntilTs}, now=${state.now}, ` +
-      `dist=${Math.hypot(state.x - state.centerX, state.y - state.centerY).toFixed(1)}`
-    )
+    if (!state) throw new Error('physicsEngine not found on viewer');
+    if (!earlyState?.paused && !state.paused)
+      throw new Error(
+        `Ball not paused after pause command. earlyPaused=${earlyState?.paused}, ` +
+          `latePaused=${state.paused}, seekingCenter=${state.seekingCenter}, ` +
+          `ignoreUntil=${state.ignoreServerPausedUntilTs}, now=${state.now}, ` +
+          `dist=${Math.hypot(state.x - state.centerX, state.y - state.centerY).toFixed(1)}`,
+      );
 
-    const dist = Math.hypot(state.x - state.centerX, state.y - state.centerY)
+    const dist = Math.hypot(state.x - state.centerX, state.y - state.centerY);
     // Ball should be at or near center after seek animation completes.
     // If still moving (race condition with controller re-play), check early state.
     if (dist > 10 && !earlyState?.paused) {
       throw new Error(
         `Ball not at center: (${state.x.toFixed(1)}, ${state.y.toFixed(1)}) ` +
           `vs center (${state.centerX}, ${state.centerY}), dist=${dist.toFixed(1)}, ` +
-          `seekingCenter=${state.seekingCenter}`
-      )
+          `seekingCenter=${state.seekingCenter}`,
+      );
     }
-  })
+  });
 
   // ============================================
   // Brainspotting mode tests
@@ -418,174 +427,195 @@ async function main() {
   await test('Brainspotting: setDirection enables mode on controller', async () => {
     await ctrlPage.evaluate(() => {
       if (typeof setDirection === 'function') {
-        setDirection('brainspotting')
+        setDirection('brainspotting');
       }
-    })
-    await new Promise((r) => setTimeout(r, 1000))
+    });
+    await new Promise((r) => setTimeout(r, 1000));
     const state = await ctrlPage.evaluate(() => {
-      const engine = globalThis.__previewPhysics
+      const engine = globalThis.__previewPhysics;
       return {
         brainspotting: engine?.ball?.brainspotting,
-        infinity: engine?.ball?.infinity
-      }
-    })
-    if (!state.brainspotting) throw new Error(`Brainspotting not enabled: ${JSON.stringify(state)}`)
-    if (state.infinity) throw new Error('Infinity should be disabled')
-  })
+        infinity: engine?.ball?.infinity,
+      };
+    });
+    if (!state.brainspotting)
+      throw new Error(`Brainspotting not enabled: ${JSON.stringify(state)}`);
+    if (state.infinity) throw new Error('Infinity should be disabled');
+  });
 
   await test('Brainspotting: ball position can be set via drag', async () => {
     const result = await ctrlPage.evaluate(() => {
-      const canvas = document.getElementById('preview')
-      if (!canvas) return { error: 'no canvas' }
-      const engine = globalThis.__previewPhysics
-      if (!engine || !engine.ball.brainspotting) return { error: 'not in brainspotting mode' }
+      const canvas = document.getElementById('preview');
+      if (!canvas) return { error: 'no canvas' };
+      const engine = globalThis.__previewPhysics;
+      if (!engine || !engine.ball.brainspotting)
+        return { error: 'not in brainspotting mode' };
 
-      const rect = canvas.getBoundingClientRect()
-      const targetClientX = rect.left + rect.width * 0.25
-      const targetClientY = rect.top + rect.height * 0.3
+      const rect = canvas.getBoundingClientRect();
+      const targetClientX = rect.left + rect.width * 0.25;
+      const targetClientY = rect.top + rect.height * 0.3;
 
-      canvas.dispatchEvent(new MouseEvent('mousemove', {
-        clientX: targetClientX,
-        clientY: targetClientY,
-        bubbles: true
-      }))
+      canvas.dispatchEvent(
+        new MouseEvent('mousemove', {
+          clientX: targetClientX,
+          clientY: targetClientY,
+          bubbles: true,
+        }),
+      );
 
       return {
         x: engine.ball.x,
         y: engine.ball.y,
         worldWidth: engine.options.worldWidth,
-        worldHeight: engine.options.worldHeight
-      }
-    })
-    if (result.error) throw new Error(result.error)
+        worldHeight: engine.options.worldHeight,
+      };
+    });
+    if (result.error) throw new Error(result.error);
 
     const distFromCenter = Math.hypot(
       result.x - result.worldWidth / 2,
-      result.y - result.worldHeight / 2
-    )
+      result.y - result.worldHeight / 2,
+    );
     if (distFromCenter < 50) {
-      throw new Error(`Ball did not move: dist=${distFromCenter.toFixed(1)}, pos=(${result.x.toFixed(1)}, ${result.y.toFixed(1)})`)
+      throw new Error(
+        `Ball did not move: dist=${distFromCenter.toFixed(1)}, pos=(${result.x.toFixed(1)}, ${result.y.toFixed(1)})`,
+      );
     }
-  })
+  });
 
   await test('Brainspotting: ball stays at position (no physics movement)', async () => {
     const before = await ctrlPage.evaluate(() => {
-      const engine = globalThis.__previewPhysics
-      return { x: engine?.ball?.x, y: engine?.ball?.y }
-    })
-    await new Promise((r) => setTimeout(r, 1000))
+      const engine = globalThis.__previewPhysics;
+      return { x: engine?.ball?.x, y: engine?.ball?.y };
+    });
+    await new Promise((r) => setTimeout(r, 1000));
     const after = await ctrlPage.evaluate(() => {
-      const engine = globalThis.__previewPhysics
-      return { x: engine?.ball?.x, y: engine?.ball?.y }
-    })
-    const drift = Math.hypot(after.x - before.x, after.y - before.y)
+      const engine = globalThis.__previewPhysics;
+      return { x: engine?.ball?.x, y: engine?.ball?.y };
+    });
+    const drift = Math.hypot(after.x - before.x, after.y - before.y);
     if (drift > 1) {
-      throw new Error(`Ball moved ${drift.toFixed(2)}px in brainspotting mode (should be 0)`)
+      throw new Error(
+        `Ball moved ${drift.toFixed(2)}px in brainspotting mode (should be 0)`,
+      );
     }
-  })
+  });
 
   await test('Brainspotting: viewer receives ball position', async () => {
     // Wait for WS sync from controller to viewer
-    await new Promise((r) => setTimeout(r, 2000))
+    await new Promise((r) => setTimeout(r, 2000));
     const viewerState = await viewPage.evaluate(() => {
-      const engine = globalThis.physicsEngine
+      const engine = globalThis.physicsEngine;
       return {
         brainspotting: engine?.ball?.brainspotting,
         x: engine?.ball?.x,
         y: engine?.ball?.y,
         centerX: engine?.centerX,
         centerY: engine?.centerY,
-        paused: engine?.state?.paused
-      }
-    })
+        paused: engine?.state?.paused,
+      };
+    });
     if (!viewerState.brainspotting) {
-      throw new Error(`Viewer not in brainspotting mode: ${JSON.stringify(viewerState)}`)
+      throw new Error(
+        `Viewer not in brainspotting mode: ${JSON.stringify(viewerState)}`,
+      );
     }
     // Ball should be off-center (controller moved it via drag)
     const dist = Math.hypot(
       viewerState.x - viewerState.centerX,
-      viewerState.y - viewerState.centerY
-    )
+      viewerState.y - viewerState.centerY,
+    );
     if (dist < 30) {
-      throw new Error(`Viewer ball at center (dist=${dist.toFixed(1)}), expected off-center from controller drag`)
+      throw new Error(
+        `Viewer ball at center (dist=${dist.toFixed(1)}), expected off-center from controller drag`,
+      );
     }
-  })
+  });
 
   await test('Brainspotting: viewer ball stays at synced position', async () => {
     const before = await viewPage.evaluate(() => {
-      const engine = globalThis.physicsEngine
-      return { x: engine?.ball?.x, y: engine?.ball?.y }
-    })
-    await new Promise((r) => setTimeout(r, 1500))
+      const engine = globalThis.physicsEngine;
+      return { x: engine?.ball?.x, y: engine?.ball?.y };
+    });
+    await new Promise((r) => setTimeout(r, 1500));
     const after = await viewPage.evaluate(() => {
-      const engine = globalThis.physicsEngine
-      return { x: engine?.ball?.x, y: engine?.ball?.y }
-    })
-    const drift = Math.hypot(after.x - before.x, after.y - before.y)
+      const engine = globalThis.physicsEngine;
+      return { x: engine?.ball?.x, y: engine?.ball?.y };
+    });
+    const drift = Math.hypot(after.x - before.x, after.y - before.y);
     if (drift > 2) {
-      throw new Error(`Viewer ball drifted ${drift.toFixed(2)}px in brainspotting (should stay still)`)
+      throw new Error(
+        `Viewer ball drifted ${drift.toFixed(2)}px in brainspotting (should stay still)`,
+      );
     }
-  })
+  });
 
   await test('Brainspotting: mode persists after ignoreDirection expires (3s)', async () => {
     // Wait long enough for __ignoreServerDirectionUntilTs (1.5s) to expire
     // and for server delta broadcasts with stale dirX/dirY to arrive
-    await new Promise((r) => setTimeout(r, 3000))
+    await new Promise((r) => setTimeout(r, 3000));
     const state = await ctrlPage.evaluate(() => {
-      const engine = globalThis.__previewPhysics
+      const engine = globalThis.__previewPhysics;
       return {
         brainspotting: engine?.ball?.brainspotting,
-        currentMode: globalThis.Direction?.getCurrentMode?.() || 'unknown'
-      }
-    })
+        currentMode: globalThis.Direction?.getCurrentMode?.() || 'unknown',
+      };
+    });
     if (!state.brainspotting) {
-      throw new Error(`Brainspotting was overridden after 3s: ${JSON.stringify(state)}`)
+      throw new Error(
+        `Brainspotting was overridden after 3s: ${JSON.stringify(state)}`,
+      );
     }
     if (state.currentMode !== 'brainspotting') {
-      throw new Error(`Direction mode changed from brainspotting to ${state.currentMode}`)
+      throw new Error(
+        `Direction mode changed from brainspotting to ${state.currentMode}`,
+      );
     }
-  })
+  });
 
   await test('Brainspotting: exiting mode restores normal physics', async () => {
     // Switch back to horizontal direction
     await ctrlPage.evaluate(() => {
       if (typeof setDirection === 'function') {
-        setDirection('horizontal')
+        setDirection('horizontal');
       }
-    })
-    await new Promise((r) => setTimeout(r, 1000))
+    });
+    await new Promise((r) => setTimeout(r, 1000));
     const state = await ctrlPage.evaluate(() => {
-      const engine = globalThis.previewPhysicsEngine
+      const engine = globalThis.previewPhysicsEngine;
       return {
         brainspotting: engine?.ball?.brainspotting,
-        infinity: engine?.ball?.infinity
-      }
-    })
-    if (state.brainspotting) throw new Error('Brainspotting should be disabled after switching to horizontal')
-  })
+        infinity: engine?.ball?.infinity,
+      };
+    });
+    if (state.brainspotting)
+      throw new Error(
+        'Brainspotting should be disabled after switching to horizontal',
+      );
+  });
 
   // Тест мобильного viewport
-  const mobilePage = await browser.newPage()
-  await mobilePage.setViewport({ width: 375, height: 667 })
+  const mobilePage = await browser.newPage();
+  await mobilePage.setViewport({ width: 375, height: 667 });
   await mobilePage.goto(`${BASE_URL}/c/__test_e2e_mobile`, {
     waitUntil: 'domcontentloaded',
-    timeout: 15000
-  })
+    timeout: 15000,
+  });
 
   await test('Mobile viewport', async () => {
-    await mobilePage.waitForSelector('#preview', { timeout: 10000 })
-  })
+    await mobilePage.waitForSelector('#preview', { timeout: 10000 });
+  });
 
-  await browser.close()
+  await browser.close();
 
   // Результат
-  console.log(`\n${'='.repeat(40)}`)
-  console.log(`Пройдено: ${passed}/${passed + failed}`)
-  process.exit(failed > 0 ? 1 : 0)
+  console.log(`\n${'='.repeat(40)}`);
+  console.log(`Пройдено: ${passed}/${passed + failed}`);
+  process.exit(failed > 0 ? 1 : 0);
 }
 
 main().catch((e) => {
-  console.error('Fatal:', e)
-  if (browser) browser.close()
-  process.exit(1)
-})
+  console.error('Fatal:', e);
+  if (browser) browser.close();
+  process.exit(1);
+});

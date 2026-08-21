@@ -1,13 +1,13 @@
-'use strict'
+'use strict';
 
 function registerSeoRoutes(app) {
   // Dynamic robots.txt per domain (.ru gets Host directive, .online does not)
   app.get('/robots.txt', (req, res) => {
-    const host = req.get('host') || ''
-    const isRu = host.endsWith('.ru')
+    const host = req.get('host') || '';
+    const isRu = host.endsWith('.ru');
     const base = isRu
       ? 'https://emdrbilateral.ru'
-      : 'https://emdrbilateral.online'
+      : 'https://emdrbilateral.online';
     const lines = [
       '# Robots.txt - BilateralBound EMDR Therapy',
       '',
@@ -84,52 +84,55 @@ function registerSeoRoutes(app) {
       'User-agent: Google-Extended',
       'Allow: /',
       '',
-      `Sitemap: ${base}/sitemap.xml`
-    ]
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.setHeader('Cache-Control', 'public, max-age=86400')
-    res.send(lines.join('\n'))
-  })
+      `Sitemap: ${base}/sitemap.xml`,
+    ];
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(lines.join('\n'));
+  });
 
   // Dynamic sitemap.xml per domain
   app.get('/sitemap.xml', (req, res) => {
-    const host = req.get('host') || ''
-    const isRu = host.endsWith('.ru')
+    const host = req.get('host') || '';
+    const isRu = host.endsWith('.ru');
     const base = isRu
       ? 'https://emdrbilateral.ru'
-      : 'https://emdrbilateral.online'
-    const today = new Date().toISOString().split('T')[0]
+      : 'https://emdrbilateral.online';
+    const today = new Date().toISOString().split('T')[0];
     const imageTitle = isRu
       ? 'BilateralBound - EMDR терапия онлайн'
-      : 'BilateralBound - Online EMDR Therapy Platform'
+      : 'BilateralBound - Online EMDR Therapy Platform';
     const imageCaption = isRu
       ? 'Профессиональная платформа EMDR терапии с биодинамической стимуляцией'
-      : 'Professional EMDR therapy platform with bilateral stimulation'
+      : 'Professional EMDR therapy platform with bilateral stimulation';
     const verificationUrls = isRu
       ? [
           '  <url>\n    <loc>https://emdrbilateral.ru/google0a8d78e57c19cb2f.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
           '  <url>\n    <loc>https://emdrbilateral.ru/yandex_736ad8daf3553b6b.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
           '  <url>\n    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
-          '  <url>\n    <loc>https://emdrbilateral.ru/yandex_72cd656986fd6d28.html</loc>\n    <lastmod>2026-06-01</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>'
+          '  <url>\n    <loc>https://emdrbilateral.ru/yandex_72cd656986fd6d28.html</loc>\n    <lastmod>2026-06-01</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
         ].join('\n')
       : [
-          '  <url>\n    <loc>https://emdrbilateral.online/yandex_1e5d10534d3a2826.html</loc>\n    <lastmod>2026-06-01</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>'
-        ].join('\n')
+          '  <url>\n    <loc>https://emdrbilateral.online/yandex_1e5d10534d3a2826.html</loc>\n    <lastmod>2026-06-01</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
+        ].join('\n');
 
     // hreflang alternates: ru lives on .ru, other languages on .online (with ?lang=)
     const buildHreflang = (path) => {
-      const langs = ['ru', 'en', 'de', 'es', 'fr', 'pt', 'ja', 'zh']
+      const langs = ['ru', 'en', 'de', 'es', 'fr', 'pt', 'ja', 'zh'];
       return langs
         .map((l) => {
-          const domain = l === 'ru' ? 'https://emdrbilateral.ru' : 'https://emdrbilateral.online'
-          const suffix = l === 'ru' || l === 'en' ? '' : `?lang=${l}`
-          return `    <xhtml:link rel="alternate" hreflang="${l}" href="${domain}${path}${suffix}" />`
+          const domain =
+            l === 'ru'
+              ? 'https://emdrbilateral.ru'
+              : 'https://emdrbilateral.online';
+          const suffix = l === 'ru' || l === 'en' ? '' : `?lang=${l}`;
+          return `    <xhtml:link rel="alternate" hreflang="${l}" href="${domain}${path}${suffix}" />`;
         })
-        .join('\n')
-    }
+        .join('\n');
+    };
     const hreflangDefault = isRu
       ? 'https://emdrbilateral.ru/'
-      : 'https://emdrbilateral.online/'
+      : 'https://emdrbilateral.online/';
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -177,23 +180,24 @@ ${buildHreflang('/breathing')}
 ${buildHreflang('/about')}
   </url>
 ${verificationUrls}
-</urlset>`
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8')
-    res.setHeader('Cache-Control', 'public, max-age=86400')
-    res.send(xml.trim())
-  })
+</urlset>`;
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(xml.trim());
+  });
 
   // llms.txt — structured summary for LLM crawlers (Perplexity, Claude, Gemini)
   // Spec: https://llmstxt.org/ — must be valid Markdown with H1 + links
   // Returns locale-specific content: Russian for .ru, English for .online
   app.get('/llms.txt', (req, res) => {
-    const host = req.get('host') || ''
-    const isRu = host.endsWith('.ru')
+    const host = req.get('host') || '';
+    const isRu = host.endsWith('.ru');
     const base = isRu
       ? 'https://emdrbilateral.ru'
-      : 'https://emdrbilateral.online'
+      : 'https://emdrbilateral.online';
 
-    const content = isRu ? `# BilateralBound — Бесплатный EMDR (ДПДГ) тренажёр онлайн
+    const content = isRu
+      ? `# BilateralBound — Бесплатный EMDR (ДПДГ) тренажёр онлайн
 
 > Бесплатный онлайн-тренажёр для билатеральной стимуляции в EMDR (ДПДГ) терапии. Движущийся шарик (световой бар) помогает снизить тревогу и переработать стресс. Терапевт управляет сессией в реальном времени, пациент следит за стимуляцией с любого устройства. Без регистрации. Используется терапевтами по всему миру на 8 языках.
 
@@ -235,7 +239,8 @@ ${verificationUrls}
 - Давид Бугаев
 - [GitHub](https://github.com/davidbugayov)
 - [Email](mailto:davidbugayov@ya.ru)
-` : `# BilateralBound — Free Online EMDR Therapy Platform
+`
+      : `# BilateralBound — Free Online EMDR Therapy Platform
 
 > Free online EMDR therapy platform for bilateral stimulation. Therapists control a moving ball in real-time; patients follow it with their eyes from any device. No registration required. Used by therapists worldwide in 8 languages.
 
@@ -277,15 +282,15 @@ ${verificationUrls}
 - David Bugaev
 - [GitHub](https://github.com/davidbugayov)
 - [Email](mailto:davidbugayov@ya.ru)
-`
-    res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
-    res.setHeader('Cache-Control', 'public, max-age=86400')
-    res.send(content)
-  })
+`;
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(content);
+  });
 
   // RSS feed
   app.get('/rss.xml', (req, res) => {
-    const baseUrl = `${req.protocol}://${req.get('host')}`
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
     const rss = `
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -311,9 +316,9 @@ ${verificationUrls}
   </item>
 </channel>
 </rss>
-    `.trim()
-    res.type('application/xml').send(rss)
-  })
+    `.trim();
+    res.type('application/xml').send(rss);
+  });
 }
 
-module.exports = { registerSeoRoutes }
+module.exports = { registerSeoRoutes };

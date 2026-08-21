@@ -24,11 +24,13 @@ controller.js (2696 строк, 70+ функций)
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Подключить 5 существующих модулей через `init(deps)`
 - Удалить дублирующие функции из controller.js
 - Сохранить обратную совместимость: все вызовы функций должны работать как раньше
 
 **Non-Goals:**
+
 - Не меняем структуру модулей (DI, exports)
 - Не добавляем event bus или другие абстракции
 - Не трогаем preview-manager.js (уже подключён)
@@ -54,16 +56,18 @@ controller.js (2696 строк, 70+ функций)
 
 ```javascript
 // Было (инлайн):
-function updateViewerStatusUI() { /* ... 37 строк ... */ }
+function updateViewerStatusUI() {
+  /* ... 37 строк ... */
+}
 
 // Стало (через модуль):
-const _ViewerStatus = require('./application/controller/viewer-status')
+const _ViewerStatus = require("./application/controller/viewer-status");
 _ViewerStatus.init({
   hideWaitingForViewer,
   updatePreviewSize,
   setControlsEnabled,
-  updateConnectionStatus
-})
+  updateConnectionStatus,
+});
 // Использование: _ViewerStatus.updateStatusUI()
 ```
 

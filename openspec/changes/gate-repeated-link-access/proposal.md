@@ -16,6 +16,7 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `link-access-gating`: ограничение повторного доступа к постоянным ссылкам (`/c/`, `/s/`) по cookie-метке браузера и проверка подписки при повторном входе.
 
 ### Modified Capabilities

@@ -14,14 +14,14 @@
 
 Хуже того: в `application/controller/` уже лежат 6 извлечённых модулей (1371 строка суммарно), но **5 из них не используются** — controller.js содержит те же функции инлайн:
 
-| Модуль | Строк | Импортируется? | Дублирует функции в controller.js |
-|--------|-------|----------------|----------------------------------|
-| `preview-manager.js` | 380 | ✅ Да | — |
-| `fullscreen.js` | 389 | ❌ Нет | `openPreviewFullscreen`, `closePreviewFullscreen`, `resizePreviewFullscreen` |
-| `play-pause.js` | 152 | ❌ Нет | `togglePlayPause`, `updatePlayPauseButton` |
-| `ui-controls.js` | 202 | ❌ Нет | `initializeComponents`, `setControlsEnabled` |
-| `ui-sync.js` | 134 | ❌ Нет | `syncUIWithState` |
-| `viewer-status.js` | 114 | ❌ Нет | `updateViewerStatusUI`, `updateViewerLinkVisualState`, `updateViewerAudioIndicators` |
+| Модуль               | Строк | Импортируется? | Дублирует функции в controller.js                                                    |
+| -------------------- | ----- | -------------- | ------------------------------------------------------------------------------------ |
+| `preview-manager.js` | 380   | ✅ Да          | —                                                                                    |
+| `fullscreen.js`      | 389   | ❌ Нет         | `openPreviewFullscreen`, `closePreviewFullscreen`, `resizePreviewFullscreen`         |
+| `play-pause.js`      | 152   | ❌ Нет         | `togglePlayPause`, `updatePlayPauseButton`                                           |
+| `ui-controls.js`     | 202   | ❌ Нет         | `initializeComponents`, `setControlsEnabled`                                         |
+| `ui-sync.js`         | 134   | ❌ Нет         | `syncUIWithState`                                                                    |
+| `viewer-status.js`   | 114   | ❌ Нет         | `updateViewerStatusUI`, `updateViewerLinkVisualState`, `updateViewerAudioIndicators` |
 
 **991 строка мёртвого кода + дублирования**. Рефакторинг был начат (модули написаны качественно, с DI-паттерном `init(deps)`), но wiring в controller.js не доделан.
 
@@ -30,6 +30,7 @@
 Доделать рефакторинг: подключить 5 неиспользуемых модулей через их `init(deps)` интерфейс и удалить дублирующие функции из controller.js.
 
 Шаги (от простого к сложному):
+
 1. **viewer-status.js** — 4 функции, чистый DI
 2. **ui-controls.js** — 2 функции, уже ссылается на `globalThis.components`
 3. **play-pause.js** — 2 функции, зависит от глобального состояния

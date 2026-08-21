@@ -4,9 +4,15 @@
     <!-- Language pre-loader (MUST be first to prevent flashing) -->
     <link rel="preload" href="/js/i18n/lang-preload.js" as="script" />
     <script src="/js/i18n/lang-preload.js"></script>
-    <script src="/js/constants/i18n-constants.js?v=2.39.817-52def66d" defer></script>
+    <script
+      src="/js/constants/i18n-constants.js?v=2.39.817-52def66d"
+      defer
+    ></script>
     <script src="/js/i18n/i18n.js?v=2.39.817-52def66d" defer></script>
-    <script src="/js/i18n/language-selector.js?v=2.39.817-52def66d" defer></script>
+    <script
+      src="/js/i18n/language-selector.js?v=2.39.817-52def66d"
+      defer
+    ></script>
 
     <meta charset="UTF-8" />
     <meta
@@ -62,7 +68,10 @@
       data-i18n-attr="content:viewer.description"
       content="EMDR therapy viewer for observing bilateral stimulation during remote sessions"
     />
-    <meta property="og:image" content="https://emdrbilateral.online/emdr-eye.png" />
+    <meta
+      property="og:image"
+      content="https://emdrbilateral.online/emdr-eye.png"
+    />
     <meta property="og:url" content="https://emdrbilateral.online/" />
     <meta property="og:site_name" content="BilateralBound" />
     <meta property="og:locale" content="en_US" />
@@ -73,7 +82,10 @@
     <link rel="stylesheet" href="/css/common.css?v=2.39.817-52def66d" />
     <link rel="stylesheet" href="/css/viewer.css?v=2.39.817-52def66d" />
     <script src="/js/ui/cookie-consent.js?v=2.39.817-52def66d" defer></script>
-    <script src="/js/analytics/metrika-events.js?v=2.39.817-52def66d" defer></script>
+    <script
+      src="/js/analytics/metrika-events.js?v=2.39.817-52def66d"
+      defer
+    ></script>
   </head>
   <body>
     <main class="viewer-container">
@@ -118,8 +130,14 @@
         Loading...
       </div>
       <div id="hotkeysHint" class="hotkeys-hint">
-        <div class="hotkeys-row"><kbd>Space</kbd> <span data-i18n="viewer.hotkeysHint">— Start/Stop</span></div>
-        <div class="hotkeys-row"><kbd>Esc</kbd> <span data-i18n="viewer.hotkeysEscHint">— Fullscreen</span></div>
+        <div class="hotkeys-row">
+          <kbd>Space</kbd>
+          <span data-i18n="viewer.hotkeysHint">— Start/Stop</span>
+        </div>
+        <div class="hotkeys-row">
+          <kbd>Esc</kbd>
+          <span data-i18n="viewer.hotkeysEscHint">— Fullscreen</span>
+        </div>
       </div>
       <div id="unmuteOverlay" class="unmute-overlay hidden">
         <button id="unmuteBtn" class="unmute-btn">
@@ -127,7 +145,7 @@
           <span data-i18n="viewer.enableSound">Enable sound</span>
         </button>
       </div>
-      <div id="errorBar" class="error-bar hidden">
+      <div id="errorBar" class="error-bar hidden" role="alert">
         <div class="error-bar-icon">⚠️</div>
         <div class="error-bar-content">
           <div class="error-bar-title" id="errorBarTitle"></div>
@@ -138,11 +156,14 @@
             class="error-bar-btn"
             id="errorBarRetry"
             style="display: none"
+            data-i18n="viewer.retry"
           >
             Retry
           </button>
           <button
             class="error-bar-btn error-bar-close"
+            aria-label="Close"
+            data-i18n-attr="aria-label:common.close"
             onclick="
               document.getElementById('errorBar').classList.add('hidden')
             "
@@ -151,10 +172,15 @@
           </button>
         </div>
       </div>
-      <div id="errorStatesContainer" class="error-states-container"></div>
+      <div
+        id="errorStatesContainer"
+        class="error-states-container"
+        role="alert"
+        aria-live="polite"
+      ></div>
     </main>
     <script src="/js/ui/hint-banner.js?v=2.39.817-52def66d" defer></script>
-    <script src="/js/ui/error-states.js" defer></script>
+    <script src="/js/ui/error-states.js?v=2.39.817-52def66d" defer></script>
     <script src="/dist/viewer.bundle.js?v=2.39.817-52def66d" defer></script>
   </body>
 </html>

@@ -7,11 +7,13 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Закрыть 3 критические уязвимости (утечка `/test`, подделка вебхука, обход localhost-защиты)
 - Устранить 4 уязвимости высокого уровня (IDOR, WS без auth, клиентский paywall, ошибки Express)
 - Сохранить обратную совместимость для легитимных клиентов где возможно
 
 **Non-Goals:**
+
 - Полная переработка архитектуры (переход на БД, микросервисы) — вне скоупа
 - Перенос на общий персистентный слой между инстансами — deferred
 - Ужесточение CSP — отдельная задача
@@ -24,10 +26,12 @@
 **Выбор**: Использовать стандартный механизм Telegram — параметр `secret_token` при регистрации вебхука и проверка заголовка `X-Telegram-Bot-Api-Secret-Token` на стороне сервера.
 
 **Альтернативы**:
-- *IP-whitelist*: ненадёжно, IP Telegram могут меняться
-- *Подпись тела запроса*: избыточно для нашего случая, Telegram сам рекомендует secret_token
+
+- _IP-whitelist_: ненадёжно, IP Telegram могут меняться
+- _Подпись тела запроса_: избыточно для нашего случая, Telegram сам рекомендует secret_token
 
 **Реализация**:
+
 - `TelegramBotService.setWebhook()`: добавить `secret_token: config.subscription.WEBHOOK_SECRET`
 - `subscriptionController.js` webhook handler: перед обработкой `update` проверить `req.headers['x-telegram-bot-api-secret-token'] === WEBHOOK_SECRET` (через `crypto.timingSafeEqual`)
 - Требуется ре-регистрация вебхука при деплое (setWebhook вызывается при старте)
@@ -39,8 +43,9 @@
 **Формат токена**: `<sessionId>.<role>.<expiresAt>.<hmac>`, где HMAC = HMAC-SHA256(sessionId.role.expiresAt, SECRET).
 
 **Альтернативы**:
-- *JWT*: избыточно, требует библиотеку; HMAC с одним секретом проще
-- *Server-side token store*: добавляет состояние, сложнее для мультиинстанс
+
+- _JWT_: избыточно, требует библиотеку; HMAC с одним секретом проще
+- _Server-side token store_: добавляет состояние, сложнее для мультиинстанс
 
 **Влияние на фронт**: `websocket-client.js` должен читать `window.__WS_TOKEN__` и добавлять в URL подключения. Обратная совместимость: сервер сначала проверяет токен, если его нет — отклоняет (breaking change для старого фронта).
 
@@ -49,8 +54,9 @@
 **Выбор**: Принимать `initData` строку от Telegram Mini App (или `hash` от Login Widget), валидировать подпись через HMAC-SHA256 с `WebAppData` secret key. Извлекать `user.id` из проверенных данных и использовать как `telegramUserId`.
 
 **Альтернативы**:
-- *Telegram Login Widget*: только для браузера, требует отдельный flow
-- *Одноразовые коды через бота*: UX хуже, требует round-trip
+
+- _Telegram Login Widget_: только для браузера, требует отдельный flow
+- _Одноразовые коды через бота_: UX хуже, требует round-trip
 
 **Компромисс**: На первый этап — проверка `initData` для Mini App (основной сценарий). Для веб-версии — временно разрешить передачу `hash` от Login Widget с валидацией через `bot_token`.
 
@@ -59,16 +65,18 @@
 **Выбор**: Полностью исключить `test-activate` и `admin/set-commands` из prod-сборки через проверку `NODE_ENV`. В dev-окружении они остаются.
 
 **Альтернативы**:
-- *Shared secret token*: требует управления секретами, overhead
-- *nginx internal location*: не решает проблему прямого доступа к порту
+
+- _Shared secret token_: требует управления секретами, overhead
+- _nginx internal location_: не решает проблему прямого доступа к порту
 
 ### 5. Atomic writes: tmp + rename
 
 **Выбор**: В `LinkAccessService._saveToDisk()` и `SubscriptionService._saveToDisk()` писать сначала во временный файл (`<path>.tmp`), затем атомарно переименовывать через `fs.renameSync`. Добавить дебаунс (сохранять не чаще раза в 5 секунд).
 
 **Альтернативы**:
-- *Асинхронный writeFile*: решает блокировку event loop, но не атомарность
-- *SQLite*: overkill для текущего масштаба, см. deferred improvements
+
+- _Асинхронный writeFile_: решает блокировку event loop, но не атомарность
+- _SQLite_: overkill для текущего масштаба, см. deferred improvements
 
 ## Risks / Trade-offs
 

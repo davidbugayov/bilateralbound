@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 /**
  * PhysicsEngine - optimized physics engine for BilateralBound
  * Manages movement, bounces, and ball scaling
@@ -15,13 +15,13 @@ const {
   isHorizontalDirection,
   normalizeDirection,
   isValidDirection,
-  getFallbackDirection
-} = require('./direction-utils')
+  getFallbackDirection,
+} = require('./direction-utils');
 
 const {
   createBouncePhysicsData,
-  dispatchBounceEvent
-} = require('./bounce-utils')
+  dispatchBounceEvent,
+} = require('./bounce-utils');
 
 // ============================================
 // CONSTANTS
@@ -32,13 +32,13 @@ const {
  * Both viewer and server step physics at exactly this interval,
  * eliminating drift caused by different FPS / deltaTime values.
  */
-const FIXED_DT = 1 / 60
+const FIXED_DT = 1 / 60;
 
 /**
  * Maximum accumulated time per frame (3 steps).
  * Prevents "spiral of death" on slow machines or hidden tabs.
  */
-const MAX_ACCUMULATOR = FIXED_DT * 3
+const MAX_ACCUMULATOR = FIXED_DT * 3;
 
 const DEFAULT_OPTIONS = {
   worldWidth: 800,
@@ -61,9 +61,9 @@ const DEFAULT_OPTIONS = {
     driftCheckIntervalMs: 50,
     // Adaptive spring-damper parameters (used by _applyDriftCorrection)
     stiffness: 3,
-    damping: 2
-  }
-}
+    damping: 2,
+  },
+};
 
 const DEFAULT_STATE = {
   paused: true,
@@ -77,17 +77,17 @@ const DEFAULT_STATE = {
   stoppingStartTs: 0,
   stoppingDuration: 0.6,
   seekingCenter: false,
-  seekingCenterDuration: 1.2
-}
+  seekingCenterDuration: 1.2,
+};
 
 const DEFAULT_COLORS = {
   ball: '#60a5fa',
-  bg: '#020617'
-}
+  bg: '#020617',
+};
 
-const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/
-const MAX_RADIUS = 500
-const MAX_COMMAND_RADIUS = 1000
+const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+const MAX_RADIUS = 500;
+const MAX_COMMAND_RADIUS = 1000;
 
 // ============================================
 // VALIDATION HELPERS
@@ -99,7 +99,7 @@ const MAX_COMMAND_RADIUS = 1000
  * @returns {boolean}
  */
 function isFiniteNumber(value) {
-  return typeof value === 'number' && Number.isFinite(value)
+  return typeof value === 'number' && Number.isFinite(value);
 }
 
 /**
@@ -113,7 +113,7 @@ function isValidSpeed(value) {
     value >= 0 &&
     value <= 100 &&
     !Number.isNaN(value)
-  )
+  );
 }
 
 /**
@@ -122,7 +122,7 @@ function isValidSpeed(value) {
  * @returns {boolean}
  */
 function isValidHexColor(value) {
-  return typeof value === 'string' && HEX_COLOR_REGEX.test(value)
+  return typeof value === 'string' && HEX_COLOR_REGEX.test(value);
 }
 
 /**
@@ -131,7 +131,7 @@ function isValidHexColor(value) {
  * @returns {boolean}
  */
 function isValidRadius(value) {
-  return isFiniteNumber(value) && value > 0 && value <= MAX_COMMAND_RADIUS
+  return isFiniteNumber(value) && value > 0 && value <= MAX_COMMAND_RADIUS;
 }
 
 // ============================================
@@ -144,17 +144,17 @@ function isValidRadius(value) {
  * @returns {object} Validated fields
  */
 function validateViewerCommand(command) {
-  const validated = {}
+  const validated = {};
 
-  if (isFiniteNumber(command.x)) validated.x = command.x
-  if (isFiniteNumber(command.y)) validated.y = command.y
-  if (isFiniteNumber(command.vx)) validated.vx = command.vx
-  if (isFiniteNumber(command.vy)) validated.vy = command.vy
-  if (isValidDirection(command.dirX)) validated.dirX = command.dirX
-  if (isValidDirection(command.dirY)) validated.dirY = command.dirY
-  if (isValidSpeed(command.speed)) validated.speed = command.speed
+  if (isFiniteNumber(command.x)) validated.x = command.x;
+  if (isFiniteNumber(command.y)) validated.y = command.y;
+  if (isFiniteNumber(command.vx)) validated.vx = command.vx;
+  if (isFiniteNumber(command.vy)) validated.vy = command.vy;
+  if (isValidDirection(command.dirX)) validated.dirX = command.dirX;
+  if (isValidDirection(command.dirY)) validated.dirY = command.dirY;
+  if (isValidSpeed(command.speed)) validated.speed = command.speed;
 
-  return validated
+  return validated;
 }
 
 /**
@@ -163,13 +163,13 @@ function validateViewerCommand(command) {
  * @returns {object} Validated fields
  */
 function validateServerCommand(command) {
-  const validated = {}
+  const validated = {};
 
-  if (isValidDirection(command.dirX)) validated.dirX = command.dirX
-  if (isValidDirection(command.dirY)) validated.dirY = command.dirY
-  if (isValidSpeed(command.speed)) validated.speed = command.speed
+  if (isValidDirection(command.dirX)) validated.dirX = command.dirX;
+  if (isValidDirection(command.dirY)) validated.dirY = command.dirY;
+  if (isValidSpeed(command.speed)) validated.speed = command.speed;
 
-  return validated
+  return validated;
 }
 
 /**
@@ -178,24 +178,37 @@ function validateServerCommand(command) {
  * @returns {object} Validated fields
  */
 function validateCommonCommand(command) {
-  const validated = {}
+  const validated = {};
 
-  if (typeof command.paused === 'boolean') validated.paused = command.paused
+  if (typeof command.paused === 'boolean') validated.paused = command.paused;
   if (typeof command.stopping === 'boolean')
-    validated.stopping = command.stopping
-  if (command.reset === true) validated.reset = true
-  if (isValidRadius(command.radius)) validated.radius = command.radius
+    validated.stopping = command.stopping;
+  if (command.reset === true) validated.reset = true;
+  if (isValidRadius(command.radius)) validated.radius = command.radius;
   if (isValidHexColor(command.colorBall))
-    validated.colorBall = command.colorBall
-  if (isValidHexColor(command.colorBg)) validated.colorBg = command.colorBg
-  if (command.ballEmoji !== undefined && (command.ballEmoji === null || (typeof command.ballEmoji === 'string' && command.ballEmoji.length <= 2))) {
-    validated.ballEmoji = command.ballEmoji
+    validated.colorBall = command.colorBall;
+  if (isValidHexColor(command.colorBg)) validated.colorBg = command.colorBg;
+  if (
+    command.ballEmoji !== undefined &&
+    (command.ballEmoji === null ||
+      (typeof command.ballEmoji === 'string' && command.ballEmoji.length <= 2))
+  ) {
+    validated.ballEmoji = command.ballEmoji;
   }
-  if (command.infinity !== undefined && typeof command.infinity === 'boolean') validated.infinity = command.infinity
-  if (command.brainspotting !== undefined && typeof command.brainspotting === 'boolean') validated.brainspotting = command.brainspotting
-  if (command.trackBand !== undefined && ['top', 'center', 'bottom'].includes(command.trackBand)) validated.trackBand = command.trackBand
+  if (command.infinity !== undefined && typeof command.infinity === 'boolean')
+    validated.infinity = command.infinity;
+  if (
+    command.brainspotting !== undefined &&
+    typeof command.brainspotting === 'boolean'
+  )
+    validated.brainspotting = command.brainspotting;
+  if (
+    command.trackBand !== undefined &&
+    ['top', 'center', 'bottom'].includes(command.trackBand)
+  )
+    validated.trackBand = command.trackBand;
 
-  return validated
+  return validated;
 }
 
 // ============================================
@@ -209,7 +222,7 @@ function validateCommonCommand(command) {
  * @returns {number}
  */
 function calculatePixelsPerSecond(speedPercent, maxSpeed) {
-  return (speedPercent / 100) * maxSpeed
+  return (speedPercent / 100) * maxSpeed;
 }
 
 /**
@@ -220,7 +233,7 @@ function calculatePixelsPerSecond(speedPercent, maxSpeed) {
  * @returns {number}
  */
 function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value))
+  return Math.max(min, Math.min(max, value));
 }
 
 // NOTE: isVerticalDirection and isHorizontalDirection are imported from direction-utils.js
@@ -248,68 +261,68 @@ class PhysicsEngine {
       ...options,
       smoothing: {
         ...DEFAULT_OPTIONS.smoothing,
-        ...(options.smoothing || {})
-      }
-    }
+        ...(options.smoothing || {}),
+      },
+    };
 
     // Merge global smoothing config if available
-    this._mergeGlobalSmoothingConfig()
+    this._mergeGlobalSmoothingConfig();
 
-    this.isViewer = Boolean(options.isViewer ?? false)
-    this._worldSizeSet = false
+    this.isViewer = Boolean(options.isViewer ?? false);
+    this._worldSizeSet = false;
 
     // Initialize center coordinates
-    this.centerX = this.options.worldWidth / 2
-    this.centerY = this.options.worldHeight / 2
+    this.centerX = this.options.worldWidth / 2;
+    this.centerY = this.options.worldHeight / 2;
 
     // Initialize ball state
-    this.ball = this._createInitialBall()
+    this.ball = this._createInitialBall();
 
     // Position tracking for interpolation
-    this._prevPos = { x: this.ball.x, y: this.ball.y }
-    this._currPos = { x: this.ball.x, y: this.ball.y }
+    this._prevPos = { x: this.ball.x, y: this.ball.y };
+    this._currPos = { x: this.ball.x, y: this.ball.y };
     this._interpBall = {
       x: this.ball.x,
       y: this.ball.y,
       radius: this.ball.radius,
       colorBall: null,
-      ballEmoji: null
-    }
+      ballEmoji: null,
+    };
 
     // Colors
-    this.colors = { ...DEFAULT_COLORS }
+    this.colors = { ...DEFAULT_COLORS };
 
     // Physics state
-    this.state = this._createInitialState()
+    this.state = this._createInitialState();
 
     // Drift correction state (spring-damper model)
-    this._lastServerPos = null
-    this._lastDriftCheckTs = 0
-    this._driftCorrection = null
-    this._currentJitterMs = 0
-    this._lastLocalBounceTs = 0
-    this._seekCenterStart = null
+    this._lastServerPos = null;
+    this._lastDriftCheckTs = 0;
+    this._driftCorrection = null;
+    this._currentJitterMs = 0;
+    this._lastLocalBounceTs = 0;
+    this._seekCenterStart = null;
     // Spring-damper state for continuous drift correction
-    this._springState = { active: false, targetX: 0, targetY: 0, lastDt: 0 }
+    this._springState = { active: false, targetX: 0, targetY: 0, lastDt: 0 };
 
     // Speed transition: smooths instantaneous speed changes on viewer (clientSimulation only)
-    this._speedTransition = null
+    this._speedTransition = null;
 
     // Visual offset: decouples physics position from render position.
     // When drift correction teleports ball.x/y, an equal+opposite offset is applied
     // here so the rendered position doesn't change. The offset decays to zero over
     // ~300ms, hiding the correction behind a smooth visual slide.
-    this._visualOffsetX = 0
-    this._visualOffsetY = 0
+    this._visualOffsetX = 0;
+    this._visualOffsetY = 0;
 
     // Fixed-timestep accumulator for deterministic simulation.
     // Ensures identical physics output regardless of caller FPS.
-    this._accumulator = 0
-    this._infinityT = 0
+    this._accumulator = 0;
+    this._infinityT = 0;
 
     // Callbacks
-    this.bounceCallback = this.options.bounceCallback
-    this.renderer = null
+    this.bounceCallback = this.options.bounceCallback;
+    this.renderer = null;
   }
 
   /**
@@ -320,8 +333,8 @@ class PhysicsEngine {
     if (typeof globalThis !== 'undefined' && globalThis.BBConfig?.smoothing) {
       this.options.smoothing = {
         ...this.options.smoothing,
-        ...globalThis.BBConfig.smoothing
-      }
+        ...globalThis.BBConfig.smoothing,
+      };
     }
   }
 
@@ -340,8 +353,8 @@ class PhysicsEngine {
       radius: this.options.ballRadius,
       infinity: false,
       brainspotting: false,
-      ballEmoji: null
-    }
+      ballEmoji: null,
+    };
   }
 
   /**
@@ -353,8 +366,8 @@ class PhysicsEngine {
     return {
       ...DEFAULT_STATE,
       targetX: this.centerX,
-      targetY: this.centerY
-    }
+      targetY: this.centerY,
+    };
   }
 
   // ============================================
@@ -366,7 +379,7 @@ class PhysicsEngine {
    * @param {object} renderer - BallRenderer instance
    */
   setRenderer(renderer) {
-    this.renderer = renderer
+    this.renderer = renderer;
   }
 
   /**
@@ -375,7 +388,7 @@ class PhysicsEngine {
    */
   setSmoothingOptions(opts = {}) {
     if (opts && typeof opts === 'object') {
-      this.options.smoothing = { ...this.options.smoothing, ...opts }
+      this.options.smoothing = { ...this.options.smoothing, ...opts };
     }
   }
 
@@ -384,7 +397,7 @@ class PhysicsEngine {
    * @param {number} jitterMs - Current jitter in milliseconds
    */
   updateJitter(jitterMs) {
-    this._currentJitterMs = jitterMs
+    this._currentJitterMs = jitterMs;
   }
 
   /**
@@ -392,18 +405,18 @@ class PhysicsEngine {
    * @returns {{driftPx:number,jitterMs:number,springActive:boolean}}
    */
   getSyncDiagnostics() {
-    let driftPx = 0
+    let driftPx = 0;
     if (this._lastServerPos) {
-      const dx = this._lastServerPos.x - this.ball.x
-      const dy = this._lastServerPos.y - this.ball.y
-      driftPx = Math.round(Math.hypot(dx, dy) * 10) / 10
+      const dx = this._lastServerPos.x - this.ball.x;
+      const dy = this._lastServerPos.y - this.ball.y;
+      driftPx = Math.round(Math.hypot(dx, dy) * 10) / 10;
     }
 
     return {
       driftPx,
       jitterMs: Number(this._currentJitterMs) || 0,
-      springActive: this._springState?.active === true
-    }
+      springActive: this._springState?.active === true,
+    };
   }
 
   // ============================================
@@ -416,19 +429,19 @@ class PhysicsEngine {
    * @param {number} height - World height
    */
   setWorldSize(width, height) {
-    this.options.worldWidth = width
-    this.options.worldHeight = height
-    this.centerX = width / 2
-    this.centerY = height / 2
-    this._worldSizeSet = true
+    this.options.worldWidth = width;
+    this.options.worldHeight = height;
+    this.centerX = width / 2;
+    this.centerY = height / 2;
+    this._worldSizeSet = true;
 
     if (this.state?.paused) {
-      this.state.seekingCenter = false
-      this._seekCenterStart = null
-      this._snapToCenter()
+      this.state.seekingCenter = false;
+      this._seekCenterStart = null;
+      this._snapToCenter();
     }
 
-    this.clampBallWithinBounds()
+    this.clampBallWithinBounds();
   }
 
   /**
@@ -437,28 +450,28 @@ class PhysicsEngine {
    * @param {number} y - Y coordinate
    */
   setPosition(x, y) {
-    this.ball.x = x
-    this.ball.y = y
+    this.ball.x = x;
+    this.ball.y = y;
 
-    this.state.seekingCenter = false
-    this._seekCenterStart = null
+    this.state.seekingCenter = false;
+    this._seekCenterStart = null;
 
-    this.clampBallWithinBounds()
+    this.clampBallWithinBounds();
 
-    this._prevPos.x = this.ball.x
-    this._prevPos.y = this.ball.y
-    this._currPos.x = this.ball.x
-    this._currPos.y = this.ball.y
-    this._visualOffsetX = 0
-    this._visualOffsetY = 0
+    this._prevPos.x = this.ball.x;
+    this._prevPos.y = this.ball.y;
+    this._currPos.x = this.ball.x;
+    this._currPos.y = this.ball.y;
+    this._visualOffsetX = 0;
+    this._visualOffsetY = 0;
 
     if (this.isViewer) {
-      this.state.targetX = this.ball.x
-      this.state.targetY = this.ball.y
-      this.state.smoothVx = 0
-      this.state.smoothVy = 0
-      this.state.lastVx = 0
-      this.state.lastVy = 0
+      this.state.targetX = this.ball.x;
+      this.state.targetY = this.ball.y;
+      this.state.smoothVx = 0;
+      this.state.smoothVy = 0;
+      this.state.lastVx = 0;
+      this.state.lastVy = 0;
     }
   }
 
@@ -471,7 +484,7 @@ class PhysicsEngine {
    * @param {number} percent - Speed percentage (0-100)
    */
   setSpeed(percent) {
-    this.ball.speed = clamp(percent, 0, 100)
+    this.ball.speed = clamp(percent, 0, 100);
   }
 
   /**
@@ -480,16 +493,16 @@ class PhysicsEngine {
    * @param {number} dirY - Y direction (-1 to 1)
    */
   setDirection(dirX, dirY) {
-    this.state.lastDirection.x = dirX
-    this.state.lastDirection.y = dirY
+    this.state.lastDirection.x = dirX;
+    this.state.lastDirection.y = dirY;
 
     if (!this.isViewer || this.options.clientSimulation) {
       const pps = calculatePixelsPerSecond(
         this.ball.speed,
-        this.options.maxSpeed
-      )
-      this.ball.vx = dirX * pps
-      this.ball.vy = dirY * pps
+        this.options.maxSpeed,
+      );
+      this.ball.vx = dirX * pps;
+      this.ball.vy = dirY * pps;
     }
   }
 
@@ -499,15 +512,15 @@ class PhysicsEngine {
    * @param {number} vy - Velocity Y
    */
   setVelocity(vx, vy) {
-    this.ball.vx = vx
-    this.ball.vy = vy
-    this.state.targetVx = vx
-    this.state.targetVy = vy
+    this.ball.vx = vx;
+    this.ball.vy = vy;
+    this.state.targetVx = vx;
+    this.state.targetVy = vy;
 
-    const normalized = normalizeDirection(vx, vy)
+    const normalized = normalizeDirection(vx, vy);
     if (normalized) {
-      this.state.lastDirection.x = normalized.x
-      this.state.lastDirection.y = normalized.y
+      this.state.lastDirection.x = normalized.x;
+      this.state.lastDirection.y = normalized.y;
     }
   }
 
@@ -520,17 +533,17 @@ class PhysicsEngine {
    * @param {boolean} paused - Pause state
    */
   setPaused(paused) {
-    const wasPaused = this.state.paused
-    this.state.paused = Boolean(paused)
+    const wasPaused = this.state.paused;
+    this.state.paused = Boolean(paused);
 
-    if (wasPaused === this.state.paused) return
+    if (wasPaused === this.state.paused) return;
 
-    this.state.stopping = false
+    this.state.stopping = false;
 
     if (this.state.paused) {
-      this._handlePause()
+      this._handlePause();
     } else {
-      this._handleUnpause()
+      this._handleUnpause();
     }
   }
 
@@ -540,9 +553,9 @@ class PhysicsEngine {
    */
   _handlePause() {
     if (this.isViewer) {
-      this._handleViewerPause()
+      this._handleViewerPause();
     } else {
-      this._resetBallToCenter()
+      this._resetBallToCenter();
     }
   }
 
@@ -551,40 +564,40 @@ class PhysicsEngine {
    * @private
    */
   _handleViewerPause() {
-    this.state.allowInterpWhenPaused = false
-    this.state.lastVx = 0
-    this.state.lastVy = 0
-    this.state.smoothVx = 0
-    this.state.smoothVy = 0
-    this.ball.vx = 0
-    this.ball.vy = 0
+    this.state.allowInterpWhenPaused = false;
+    this.state.lastVx = 0;
+    this.state.lastVy = 0;
+    this.state.smoothVx = 0;
+    this.state.smoothVy = 0;
+    this.ball.vx = 0;
+    this.ball.vy = 0;
 
-    this._speedTransition = null
+    this._speedTransition = null;
 
     // Clear drift correction state during pause to prevent conflict with seek-center animation
-    this._lastServerPos = null
-    this._springState.active = false
-    this._springState._desyncStartTs = null
-    this._visualOffsetX = 0
-    this._visualOffsetY = 0
+    this._lastServerPos = null;
+    this._springState.active = false;
+    this._springState._desyncStartTs = null;
+    this._visualOffsetX = 0;
+    this._visualOffsetY = 0;
 
-    const dx = this.centerX - this.ball.x
-    const dy = this.centerY - this.ball.y
-    const distanceFromCenter = Math.hypot(dx, dy)
+    const dx = this.centerX - this.ball.x;
+    const dy = this.centerY - this.ball.y;
+    const distanceFromCenter = Math.hypot(dx, dy);
 
     if (distanceFromCenter > this.options.centerSnapThreshold) {
-      this.state.seekingCenter = true
+      this.state.seekingCenter = true;
       this._seekCenterStart = {
         x: this.ball.x,
         y: this.ball.y,
-        ts: performance.now()
-      }
+        ts: performance.now(),
+      };
     } else {
-      this.state.seekingCenter = false
-      this._snapToCenter()
+      this.state.seekingCenter = false;
+      this._snapToCenter();
     }
 
-    this.clampBallWithinBounds()
+    this.clampBallWithinBounds();
   }
 
   /**
@@ -592,36 +605,36 @@ class PhysicsEngine {
    * @private
    */
   _handleUnpause() {
-    this.state.allowInterpWhenPaused = false
+    this.state.allowInterpWhenPaused = false;
 
     // Infinity mode: reset phase so server and viewer restart from t=0 simultaneously.
     // Early return prevents trackBand snap (infinity uses full-screen center).
     if (this.ball.infinity) {
-      this._infinityT = 0
-      this._snapToCenter()
+      this._infinityT = 0;
+      this._snapToCenter();
       if (this.options.clientSimulation) {
-        this._restoreLocalVelocity()
+        this._restoreLocalVelocity();
       }
-      return
+      return;
     }
 
     if (this.state.seekingCenter) {
-      this._snapToCenter()
+      this._snapToCenter();
     }
 
-    this.state.seekingCenter = false
-    this._seekCenterStart = null
+    this.state.seekingCenter = false;
+    this._seekCenterStart = null;
 
     if (this.options.trackBand && this.options.trackBand !== 'center') {
-      const bandY = this._getTrackBandCenterY()
-      this.ball.y = bandY
-      this._prevPos.y = bandY
-      this._currPos.y = bandY
-      if (typeof this.state.targetY === 'number') this.state.targetY = bandY
+      const bandY = this._getTrackBandCenterY();
+      this.ball.y = bandY;
+      this._prevPos.y = bandY;
+      this._currPos.y = bandY;
+      if (typeof this.state.targetY === 'number') this.state.targetY = bandY;
     }
 
     if (this.options.clientSimulation) {
-      this._restoreLocalVelocity()
+      this._restoreLocalVelocity();
     }
   }
 
@@ -630,11 +643,11 @@ class PhysicsEngine {
    * @param {number} [duration=0.6] - Deceleration duration in seconds
    */
   startStopping(duration = 0.6) {
-    if (this.state.paused) return
+    if (this.state.paused) return;
 
-    this.state.stopping = true
-    this.state.stoppingStartTs = performance.now()
-    this.state.stoppingDuration = duration
+    this.state.stopping = true;
+    this.state.stoppingStartTs = performance.now();
+    this.state.stoppingDuration = duration;
   }
 
   /**
@@ -644,24 +657,24 @@ class PhysicsEngine {
    */
   returnToCenter() {
     if (this.isViewer) {
-      const dx = this.centerX - this.ball.x
-      const dy = this.centerY - this.ball.y
-      const distanceFromCenter = Math.hypot(dx, dy)
+      const dx = this.centerX - this.ball.x;
+      const dy = this.centerY - this.ball.y;
+      const distanceFromCenter = Math.hypot(dx, dy);
 
       if (distanceFromCenter > this.options.centerSnapThreshold) {
-        this.state.seekingCenter = true
+        this.state.seekingCenter = true;
         this._seekCenterStart = {
           x: this.ball.x,
           y: this.ball.y,
-          ts: performance.now()
-        }
+          ts: performance.now(),
+        };
       } else {
-        this.state.seekingCenter = false
-        this._snapToCenter()
+        this.state.seekingCenter = false;
+        this._snapToCenter();
       }
-      this.clampBallWithinBounds()
+      this.clampBallWithinBounds();
     } else {
-      this._resetBallToCenter()
+      this._resetBallToCenter();
     }
   }
 
@@ -675,8 +688,8 @@ class PhysicsEngine {
    */
   setBallColor(color) {
     if (typeof color === 'string' && color.length > 0) {
-      this.colors.ball = color
-      this._invalidateRendererCache()
+      this.colors.ball = color;
+      this._invalidateRendererCache();
     }
   }
 
@@ -686,8 +699,8 @@ class PhysicsEngine {
    */
   setBgColor(color) {
     if (typeof color === 'string' && color.length > 0) {
-      this.colors.bg = color
-      this._invalidateRendererCache()
+      this.colors.bg = color;
+      this._invalidateRendererCache();
     }
   }
 
@@ -697,8 +710,8 @@ class PhysicsEngine {
    */
   setBallSize(radius) {
     if (typeof radius === 'number' && radius > 0 && radius <= MAX_RADIUS) {
-      this.ball.radius = radius
-      this.clampBallWithinBounds()
+      this.ball.radius = radius;
+      this.clampBallWithinBounds();
     }
   }
 
@@ -711,7 +724,7 @@ class PhysicsEngine {
       this.renderer &&
       typeof this.renderer.invalidateBallCache === 'function'
     ) {
-      this.renderer.invalidateBallCache()
+      this.renderer.invalidateBallCache();
     }
   }
 
@@ -735,18 +748,18 @@ class PhysicsEngine {
   update(deltaTime) {
     // Guard: clamp incoming deltaTime — large spikes (tab hidden, debugger) must not
     // cause runaway physics by only allowing up to MAX_ACCUMULATOR worth of work.
-    this._accumulator += Math.min(deltaTime, MAX_ACCUMULATOR)
+    this._accumulator += Math.min(deltaTime, MAX_ACCUMULATOR);
 
     while (this._accumulator >= FIXED_DT) {
       if (this.isViewer) {
-        this._updateViewerPhysics(FIXED_DT)
+        this._updateViewerPhysics(FIXED_DT);
       } else {
-        this._updateServerPhysics(FIXED_DT)
+        this._updateServerPhysics(FIXED_DT);
       }
-      this._accumulator -= FIXED_DT
+      this._accumulator -= FIXED_DT;
     }
 
-    this.__lastPhysicsUpdateTs = performance?.now?.() ?? Date.now()
+    this.__lastPhysicsUpdateTs = performance?.now?.() ?? Date.now();
   }
 
   /**
@@ -754,23 +767,23 @@ class PhysicsEngine {
    * @param {number} deltaTime - Time elapsed since last frame
    */
   updateClientPhysics(deltaTime) {
-    if (this.state.paused) return
-    if (!this._ensureWorldSizeSet()) return
+    if (this.state.paused) return;
+    if (!this._ensureWorldSizeSet()) return;
 
-    const speedFactor = this._calculateSpeedFactor()
+    const speedFactor = this._calculateSpeedFactor();
     if (speedFactor <= 0) {
-      this.setPaused(true)
-      return
+      this.setPaused(true);
+      return;
     }
 
-    const velocity = this._calculateClientVelocity()
-    this._applyAxisLock(velocity)
-    velocity.vx *= speedFactor
-    velocity.vy *= speedFactor
+    const velocity = this._calculateClientVelocity();
+    this._applyAxisLock(velocity);
+    velocity.vx *= speedFactor;
+    velocity.vy *= speedFactor;
 
-    this._updateBallPosition(velocity, deltaTime)
-    this.handleBoundaryCollisions()
-    this._updateCurrentPosition()
+    this._updateBallPosition(velocity, deltaTime);
+    this.handleBoundaryCollisions();
+    this._updateCurrentPosition();
   }
 
   // ============================================
@@ -785,79 +798,79 @@ class PhysicsEngine {
    * Prevents the ball from leaving the screen.
    */
   handleBoundaryCollisions() {
-    const { ball, options, state } = this
-    const { radius } = ball
-    const { worldWidth } = options
+    const { ball, options, state } = this;
+    const { radius } = ball;
+    const { worldWidth } = options;
 
-    let bounceSide = null
-    const dirX = state.lastDirection.x || 0
-    const dirY = state.lastDirection.y || 0
+    let bounceSide = null;
+    const dirX = state.lastDirection.x || 0;
+    const dirY = state.lastDirection.y || 0;
 
     // Check if movement is locked to a single axis
     // Pure horizontal: dirY ≈ 0 and dirX ≠ 0 → skip vertical wall checks
     const isPureHorizontal =
-      Math.abs(dirY) < DIRECTION_EPSILON && Math.abs(dirX) >= DIRECTION_EPSILON
+      Math.abs(dirY) < DIRECTION_EPSILON && Math.abs(dirX) >= DIRECTION_EPSILON;
     // Pure vertical: dirX ≈ 0 and dirY ≠ 0 → skip horizontal wall checks
     const isPureVertical =
-      Math.abs(dirX) < DIRECTION_EPSILON && Math.abs(dirY) >= DIRECTION_EPSILON
+      Math.abs(dirX) < DIRECTION_EPSILON && Math.abs(dirY) >= DIRECTION_EPSILON;
 
     // Horizontal bounds — check unless locked to pure vertical movement
     if (!isPureVertical) {
       if (ball.x < radius) {
-        const overflow = radius - ball.x
-        ball.x = radius + overflow + 0.1 // Add epsilon to skip wall
+        const overflow = radius - ball.x;
+        ball.x = radius + overflow + 0.1; // Add epsilon to skip wall
         // Hard clamp: at high speeds the reflected position can still be
         // outside bounds, so enforce a hard limit.
-        if (ball.x < radius) ball.x = radius + 0.1
+        if (ball.x < radius) ball.x = radius + 0.1;
         if (dirX <= 0) {
-          state.lastDirection.x = Math.abs(dirX) || 1
-          bounceSide = 'left'
+          state.lastDirection.x = Math.abs(dirX) || 1;
+          bounceSide = 'left';
         }
       } else if (ball.x > worldWidth - radius) {
-        const overflow = ball.x - (worldWidth - radius)
-        ball.x = worldWidth - radius - overflow - 0.1 // Add epsilon to skip wall
+        const overflow = ball.x - (worldWidth - radius);
+        ball.x = worldWidth - radius - overflow - 0.1; // Add epsilon to skip wall
         // Hard clamp: mirror of the left-wall check.
-        if (ball.x > worldWidth - radius) ball.x = worldWidth - radius - 0.1
+        if (ball.x > worldWidth - radius) ball.x = worldWidth - radius - 0.1;
         if (dirX >= 0) {
-          state.lastDirection.x = -(Math.abs(dirX) || 1)
-          bounceSide = 'right'
+          state.lastDirection.x = -(Math.abs(dirX) || 1);
+          bounceSide = 'right';
         }
       }
     }
 
     // Vertical bounds — check unless locked to pure horizontal movement
     if (!isPureHorizontal) {
-      const yMin = this._getTrackBandYMin()
-      const yMax = this._getTrackBandYMax()
+      const yMin = this._getTrackBandYMin();
+      const yMax = this._getTrackBandYMax();
       if (ball.y < yMin + radius) {
-        const overflow = (yMin + radius) - ball.y
-        ball.y = yMin + radius + overflow + 0.1 // Add epsilon to skip wall
+        const overflow = yMin + radius - ball.y;
+        ball.y = yMin + radius + overflow + 0.1; // Add epsilon to skip wall
         // Hard clamp: at high speeds the reflected position can still be
         // outside bounds, so enforce a hard limit.
-        if (ball.y < yMin + radius) ball.y = yMin + radius + 0.1
+        if (ball.y < yMin + radius) ball.y = yMin + radius + 0.1;
         if (dirY <= 0) {
-          state.lastDirection.y = Math.abs(dirY) || 1
-          bounceSide = bounceSide || 'top'
+          state.lastDirection.y = Math.abs(dirY) || 1;
+          bounceSide = bounceSide || 'top';
         }
       } else if (ball.y > yMax - radius) {
-        const overflow = ball.y - (yMax - radius)
-        ball.y = yMax - radius - overflow - 0.1 // Add epsilon to skip wall
+        const overflow = ball.y - (yMax - radius);
+        ball.y = yMax - radius - overflow - 0.1; // Add epsilon to skip wall
         // Hard clamp: mirror of the top-wall check.
-        if (ball.y > yMax - radius) ball.y = yMax - radius - 0.1
+        if (ball.y > yMax - radius) ball.y = yMax - radius - 0.1;
         if (dirY >= 0) {
-          state.lastDirection.y = -(Math.abs(dirY) || 1)
-          bounceSide = bounceSide || 'bottom'
+          state.lastDirection.y = -(Math.abs(dirY) || 1);
+          bounceSide = bounceSide || 'bottom';
         }
       }
     }
 
     if (bounceSide) {
-      this.handleBounce(bounceSide)
+      this.handleBounce(bounceSide);
     }
 
     // Final safety clamp — guarantees the ball never leaves the screen,
     // even if bounce logic or floating-point edge cases miss a case.
-    this.clampBallWithinBounds()
+    this.clampBallWithinBounds();
   }
 
   /**
@@ -866,31 +879,31 @@ class PhysicsEngine {
    */
   handleBounce(side) {
     // Cancel speed transition on bounce — bounce is a natural velocity discontinuity
-    this._speedTransition = null
+    this._speedTransition = null;
     const pps = calculatePixelsPerSecond(
       this.ball.speed,
-      this.options.maxSpeed
-    )
-    this.ball.vx = this.state.lastDirection.x * pps
-    this.ball.vy = this.state.lastDirection.y * pps
+      this.options.maxSpeed,
+    );
+    this.ball.vx = this.state.lastDirection.x * pps;
+    this.ball.vy = this.state.lastDirection.y * pps;
 
-    this.ensureMinimumSpeed()
+    this.ensureMinimumSpeed();
 
-    this.state.lastVx = this.ball.vx
-    this.state.lastVy = this.ball.vy
-    this._lastLocalBounceTs = performance.now()
+    this.state.lastVx = this.ball.vx;
+    this.state.lastVy = this.ball.vy;
+    this._lastLocalBounceTs = performance.now();
 
     // After a local bounce, stale server snapshots can briefly pull the ball back to the wall.
     // Clear correction target and let local physics settle first.
     if (this.isViewer && this.options.clientSimulation) {
-      this._lastServerPos = null
-      this._springState.active = false
-      this._springState.driftMagnitude = 0
-      this._springState._desyncStartTs = null
+      this._lastServerPos = null;
+      this._springState.active = false;
+      this._springState.driftMagnitude = 0;
+      this._springState._desyncStartTs = null;
     }
 
-    this._triggerBounceCallback(side)
-    this._dispatchBounceEvent(side)
+    this._triggerBounceCallback(side);
+    this._dispatchBounceEvent(side);
   }
 
   /**
@@ -901,14 +914,14 @@ class PhysicsEngine {
    * @private
    */
   _triggerBounceCallback(side, direction) {
-    if (!this.bounceCallback) return
+    if (!this.bounceCallback) return;
 
     const data = createBouncePhysicsData(
       side,
       this.ball,
-      direction || this.state.lastDirection
-    )
-    this.bounceCallback(data)
+      direction || this.state.lastDirection,
+    );
+    this.bounceCallback(data);
   }
 
   /**
@@ -917,21 +930,21 @@ class PhysicsEngine {
    * @private
    */
   _dispatchBounceEvent(side) {
-    dispatchBounceEvent(side, this.ball)
+    dispatchBounceEvent(side, this.ball);
   }
 
   /**
    * Ensures minimum speed after bounce
    */
   ensureMinimumSpeed() {
-    const currentSpeed = Math.hypot(this.ball.vx, this.ball.vy)
+    const currentSpeed = Math.hypot(this.ball.vx, this.ball.vy);
 
     if (currentSpeed > 0 && currentSpeed < this.options.minSpeed) {
-      const scale = this.options.minSpeed / currentSpeed
-      this.ball.vx *= scale
-      this.ball.vy *= scale
+      const scale = this.options.minSpeed / currentSpeed;
+      this.ball.vx *= scale;
+      this.ball.vy *= scale;
     } else if (currentSpeed === 0) {
-      this._setFallbackVelocity()
+      this._setFallbackVelocity();
     }
   }
 
@@ -940,24 +953,24 @@ class PhysicsEngine {
    * @private
    */
   _setFallbackVelocity() {
-    const dirX = this.state.lastDirection.x || 0
-    const dirY = this.state.lastDirection.y || 0
+    const dirX = this.state.lastDirection.x || 0;
+    const dirY = this.state.lastDirection.y || 0;
 
     if (isVerticalDirection(dirX) && Math.abs(dirY) > 0) {
-      this.ball.vx = 0
-      this.ball.vy = Math.sign(dirY) * this.options.minSpeed
+      this.ball.vx = 0;
+      this.ball.vy = Math.sign(dirY) * this.options.minSpeed;
     } else if (isHorizontalDirection(dirY) && Math.abs(dirX) > 0) {
-      this.ball.vx = Math.sign(dirX) * this.options.minSpeed
-      this.ball.vy = 0
+      this.ball.vx = Math.sign(dirX) * this.options.minSpeed;
+      this.ball.vy = 0;
     } else {
       const fallback = getFallbackDirection(
         this.ball.x,
         this.ball.y,
         this.centerX,
-        this.centerY
-      )
-      this.ball.vx = fallback.x * this.options.minSpeed
-      this.ball.vy = fallback.y * this.options.minSpeed
+        this.centerY,
+      );
+      this.ball.vx = fallback.x * this.options.minSpeed;
+      this.ball.vy = fallback.y * this.options.minSpeed;
     }
   }
 
@@ -965,31 +978,31 @@ class PhysicsEngine {
    * Ensures ball stays within world boundaries
    */
   clampBallWithinBounds() {
-    const { radius } = this.ball
-    const w = this.options.worldWidth
-    const h = this.options.worldHeight
+    const { radius } = this.ball;
+    const w = this.options.worldWidth;
+    const h = this.options.worldHeight;
 
-    if (w <= 0 || h <= 0 || radius < 0) return
+    if (w <= 0 || h <= 0 || radius < 0) return;
 
-    const clampedX = clamp(this.ball.x, radius, w - radius)
-    const clampedY = clamp(this.ball.y, radius, h - radius)
+    const clampedX = clamp(this.ball.x, radius, w - radius);
+    const clampedY = clamp(this.ball.y, radius, h - radius);
 
     if (clampedX !== this.ball.x) {
-      this.ball.x = clampedX
-      if (this.isViewer) this.state.smoothVx = 0
+      this.ball.x = clampedX;
+      if (this.isViewer) this.state.smoothVx = 0;
     }
 
     if (clampedY !== this.ball.y) {
-      this.ball.y = clampedY
-      if (this.isViewer) this.state.smoothVy = 0
+      this.ball.y = clampedY;
+      if (this.isViewer) this.state.smoothVy = 0;
     }
 
     if (typeof this.state.targetX === 'number') {
-      this.state.targetX = clamp(this.state.targetX, radius, w - radius)
+      this.state.targetX = clamp(this.state.targetX, radius, w - radius);
     }
 
     if (typeof this.state.targetY === 'number') {
-      this.state.targetY = clamp(this.state.targetY, radius, h - radius)
+      this.state.targetY = clamp(this.state.targetY, radius, h - radius);
     }
   }
 
@@ -1003,7 +1016,7 @@ class PhysicsEngine {
    * @returns {number}
    */
   getInterpolationAlpha() {
-    return Math.max(0, Math.min(1, this._accumulator / (1 / 60))) // Use 1/60 (FIXED_DT)
+    return Math.max(0, Math.min(1, this._accumulator / (1 / 60))); // Use 1/60 (FIXED_DT)
   }
 
   /**
@@ -1012,17 +1025,24 @@ class PhysicsEngine {
    * @returns {object}
    */
   getInterpolatedBall(alpha) {
-    const a = typeof alpha === 'number' ? Math.max(0, Math.min(1, alpha)) : this.getInterpolationAlpha()
+    const a =
+      typeof alpha === 'number'
+        ? Math.max(0, Math.min(1, alpha))
+        : this.getInterpolationAlpha();
 
     this._interpBall.x =
-      this._prevPos.x + (this._currPos.x - this._prevPos.x) * a + this._visualOffsetX
+      this._prevPos.x +
+      (this._currPos.x - this._prevPos.x) * a +
+      this._visualOffsetX;
     this._interpBall.y =
-      this._prevPos.y + (this._currPos.y - this._prevPos.y) * a + this._visualOffsetY
-    this._interpBall.radius = this.ball.radius
-    this._interpBall.colorBall = this.ball.colorBall || null
-    this._interpBall.ballEmoji = this.ball.ballEmoji ?? null
+      this._prevPos.y +
+      (this._currPos.y - this._prevPos.y) * a +
+      this._visualOffsetY;
+    this._interpBall.radius = this.ball.radius;
+    this._interpBall.colorBall = this.ball.colorBall || null;
+    this._interpBall.ballEmoji = this.ball.ballEmoji ?? null;
 
-    return this._interpBall
+    return this._interpBall;
   }
 
   // ============================================
@@ -1034,17 +1054,17 @@ class PhysicsEngine {
    * @param {object} command - Command object
    */
   applyCommand(command) {
-    if (!command) return
+    if (!command) return;
 
-    const validatedCommand = this._validateCommand(command)
-    if (Object.keys(validatedCommand).length === 0) return
+    const validatedCommand = this._validateCommand(command);
+    if (Object.keys(validatedCommand).length === 0) return;
 
-    this._handleCommonCommands(validatedCommand)
+    this._handleCommonCommands(validatedCommand);
 
     if (this.isViewer) {
-      this._handleViewerCommand(validatedCommand)
+      this._handleViewerCommand(validatedCommand);
     } else {
-      this._handleServerCommand(validatedCommand)
+      this._handleServerCommand(validatedCommand);
     }
   }
 
@@ -1069,34 +1089,34 @@ class PhysicsEngine {
       ballEmoji: this.ball.ballEmoji ?? null,
       infinity: this.ball.infinity ?? false,
       brainspotting: this.ball.brainspotting ?? false,
-      trackBand: this.options.trackBand ?? 'center'
-    }
+      trackBand: this.options.trackBand ?? 'center',
+    };
   }
 
   /**
    * Resets state to initial
    */
   reset() {
-    this.ball.x = this.centerX
-    this.ball.y = this.centerY
-    this.ball.vx = 0
-    this.ball.vy = 0
-    this.ball.speed = DEFAULT_OPTIONS.defaultSpeed
-    this.ball.radius = this.options.ballRadius
+    this.ball.x = this.centerX;
+    this.ball.y = this.centerY;
+    this.ball.vx = 0;
+    this.ball.vy = 0;
+    this.ball.speed = DEFAULT_OPTIONS.defaultSpeed;
+    this.ball.radius = this.options.ballRadius;
 
-    this.state.lastDirection.x = 0
-    this.state.lastDirection.y = 0
-    this.state.targetVx = 0
-    this.state.targetVy = 0
-    this.state.targetX = this.centerX
-    this.state.targetY = this.centerY
+    this.state.lastDirection.x = 0;
+    this.state.lastDirection.y = 0;
+    this.state.targetVx = 0;
+    this.state.targetVy = 0;
+    this.state.targetX = this.centerX;
+    this.state.targetY = this.centerY;
 
-    this._speedTransition = null
+    this._speedTransition = null;
 
-    this.ball.ballEmoji = null
-    this.ball.infinity = false
-    this.ball.brainspotting = false
-    this._infinityT = 0
+    this.ball.ballEmoji = null;
+    this.ball.infinity = false;
+    this.ball.brainspotting = false;
+    this._infinityT = 0;
   }
 
   // ============================================
@@ -1104,17 +1124,17 @@ class PhysicsEngine {
   // ============================================
 
   _getTrackBandYMin() {
-    const h = this.options.worldHeight
-    return this.options.trackBand === 'bottom' ? h * 0.5 : 0
+    const h = this.options.worldHeight;
+    return this.options.trackBand === 'bottom' ? h * 0.5 : 0;
   }
 
   _getTrackBandYMax() {
-    const h = this.options.worldHeight
-    return this.options.trackBand === 'top' ? h * 0.5 : h
+    const h = this.options.worldHeight;
+    return this.options.trackBand === 'top' ? h * 0.5 : h;
   }
 
   _getTrackBandCenterY() {
-    return (this._getTrackBandYMin() + this._getTrackBandYMax()) / 2
+    return (this._getTrackBandYMin() + this._getTrackBandYMax()) / 2;
   }
 
   // Lemniscate (Bernoulli figure-8) path. Parametric formula:
@@ -1122,40 +1142,42 @@ class PhysicsEngine {
   //   y(t) = cy + (H/2 * scale) * sin(t)*cos(t) / (1 + sin²(t))
   // Both server and viewer advance _infinityT at the same rate → identical trajectory.
   _stepInfinityPath() {
-    const w = this.options.worldWidth
-    const cx = w / 2
-    const cy = this._getTrackBandCenterY()
-    const bandHalfH = (this._getTrackBandYMax() - this._getTrackBandYMin()) / 2
+    const w = this.options.worldWidth;
+    const cx = w / 2;
+    const cy = this._getTrackBandCenterY();
+    const bandHalfH = (this._getTrackBandYMax() - this._getTrackBandYMin()) / 2;
     // scale: ball reaches ~95% of screen edges (vs 75% before) — keeps ball radius
     // off the literal edge while visually reaching the sides
-    const scale = 0.95
+    const scale = 0.95;
 
     // Store prev t to detect center-crossings (cos(t) sign change)
-    const prevT = this._infinityT || 0
+    const prevT = this._infinityT || 0;
     // Advance phase: 0.10 factor → ~3.0 rad/s at speed=30 → ~2.1s per cycle
     // (comparable to regular horizontal mode at same speed)
-    this._infinityT = ((this._infinityT || 0) + this.ball.speed * FIXED_DT * 0.10) % (2 * Math.PI)
-    const t = this._infinityT
-    const denom = 1 + Math.sin(t) * Math.sin(t)
+    this._infinityT =
+      ((this._infinityT || 0) + this.ball.speed * FIXED_DT * 0.1) %
+      (2 * Math.PI);
+    const t = this._infinityT;
+    const denom = 1 + Math.sin(t) * Math.sin(t);
 
-    this._prevPos.x = this.ball.x
-    this._prevPos.y = this.ball.y
-    this.ball.x = cx + (w / 2 * scale) * Math.cos(t) / denom
-    this.ball.y = cy + (bandHalfH * scale) * Math.sin(t) * Math.cos(t) / denom
-    this.ball.vx = 0
-    this.ball.vy = 0
-    this._currPos.x = this.ball.x
-    this._currPos.y = this.ball.y
+    this._prevPos.x = this.ball.x;
+    this._prevPos.y = this.ball.y;
+    this.ball.x = cx + ((w / 2) * scale * Math.cos(t)) / denom;
+    this.ball.y = cy + (bandHalfH * scale * Math.sin(t) * Math.cos(t)) / denom;
+    this.ball.vx = 0;
+    this.ball.vy = 0;
+    this._currPos.x = this.ball.x;
+    this._currPos.y = this.ball.y;
 
     // Detect center-crossing: cos(t) changes sign → ball crossed the vertical midline.
     // Crossing at π/2 (right→left) and 3π/2 (left→right) — one pass per half-cycle.
     // Skip detection on the very first tick (prevT === 0 on first frame).
     if (prevT > 0 && Math.cos(prevT) * Math.cos(t) < 0) {
-      const crossingRight = Math.cos(prevT) > 0
-      const side = crossingRight ? 'left' : 'right'
-      const dir = { x: crossingRight ? -1 : 1, y: 0 }
-      this._triggerBounceCallback(side, dir)
-      this._dispatchBounceEvent(side)
+      const crossingRight = Math.cos(prevT) > 0;
+      const side = crossingRight ? 'left' : 'right';
+      const dir = { x: crossingRight ? -1 : 1, y: 0 };
+      this._triggerBounceCallback(side, dir);
+      this._dispatchBounceEvent(side);
     }
   }
 
@@ -1172,18 +1194,18 @@ class PhysicsEngine {
       Math.abs(this.state.lastDirection.x || 0) < DIRECTION_EPSILON &&
       Math.abs(this.state.lastDirection.y || 0) < DIRECTION_EPSILON
     ) {
-      this.state.lastDirection.x = 1
-      this.state.lastDirection.y = 0
+      this.state.lastDirection.x = 1;
+      this.state.lastDirection.y = 0;
     }
 
     const pps = calculatePixelsPerSecond(
       this.ball.speed,
-      this.options.maxSpeed
-    )
-    this.ball.vx = this.state.lastDirection.x * pps
-    this.ball.vy = this.state.lastDirection.y * pps
-    this.state.lastVx = this.ball.vx
-    this.state.lastVy = this.ball.vy
+      this.options.maxSpeed,
+    );
+    this.ball.vx = this.state.lastDirection.x * pps;
+    this.ball.vy = this.state.lastDirection.y * pps;
+    this.state.lastVx = this.ball.vx;
+    this.state.lastVy = this.ball.vy;
   }
 
   /**
@@ -1191,13 +1213,13 @@ class PhysicsEngine {
    * @private
    */
   _resetBallToCenter() {
-    this.ball.x = this.centerX
-    this.ball.y = this.centerY
-    this.ball.vx = 0
-    this.ball.vy = 0
-    this.state.targetX = this.centerX
-    this.state.targetY = this.centerY
-    this.clampBallWithinBounds()
+    this.ball.x = this.centerX;
+    this.ball.y = this.centerY;
+    this.ball.vx = 0;
+    this.ball.vy = 0;
+    this.state.targetX = this.centerX;
+    this.state.targetY = this.centerY;
+    this.clampBallWithinBounds();
   }
 
   /**
@@ -1205,18 +1227,18 @@ class PhysicsEngine {
    * @private
    */
   _snapToCenter() {
-    this.ball.x = this.centerX
-    this.ball.y = this.centerY
-    this.ball.vx = 0
-    this.ball.vy = 0
-    this._prevPos.x = this.centerX
-    this._prevPos.y = this.centerY
-    this._currPos.x = this.centerX
-    this._currPos.y = this.centerY
-    this.state.targetX = this.centerX
-    this.state.targetY = this.centerY
-    this._visualOffsetX = 0
-    this._visualOffsetY = 0
+    this.ball.x = this.centerX;
+    this.ball.y = this.centerY;
+    this.ball.vx = 0;
+    this.ball.vy = 0;
+    this._prevPos.x = this.centerX;
+    this._prevPos.y = this.centerY;
+    this._currPos.x = this.centerX;
+    this._currPos.y = this.centerY;
+    this.state.targetX = this.centerX;
+    this.state.targetY = this.centerY;
+    this._visualOffsetX = 0;
+    this._visualOffsetY = 0;
   }
 
   // ============================================
@@ -1230,12 +1252,12 @@ class PhysicsEngine {
    * @private
    */
   _decayVisualOffset(dt) {
-    if (this._visualOffsetX === 0 && this._visualOffsetY === 0) return
-    const factor = Math.pow(0.5, dt / 0.15)
-    this._visualOffsetX *= factor
-    this._visualOffsetY *= factor
-    if (Math.abs(this._visualOffsetX) < 0.05) this._visualOffsetX = 0
-    if (Math.abs(this._visualOffsetY) < 0.05) this._visualOffsetY = 0
+    if (this._visualOffsetX === 0 && this._visualOffsetY === 0) return;
+    const factor = Math.pow(0.5, dt / 0.15);
+    this._visualOffsetX *= factor;
+    this._visualOffsetY *= factor;
+    if (Math.abs(this._visualOffsetX) < 0.05) this._visualOffsetX = 0;
+    if (Math.abs(this._visualOffsetY) < 0.05) this._visualOffsetY = 0;
   }
 
   /**
@@ -1246,34 +1268,34 @@ class PhysicsEngine {
   _updateViewerPhysics(deltaTime) {
     if (this.state.paused) {
       if (this.state.seekingCenter) {
-        this._updateSeekCenter()
+        this._updateSeekCenter();
       }
-      return
+      return;
     }
 
     // Lemniscate (∞) path: deterministic center-crossing detection replaces wall bounces
     if (this.ball.infinity) {
-      this._stepInfinityPath()
-      this._decayVisualOffset(deltaTime)
-      return
+      this._stepInfinityPath();
+      this._decayVisualOffset(deltaTime);
+      return;
     }
 
     // Brainspotting: ball position is manually controlled by therapist.
     // No physics updates — position is set via setPosition() from controller input.
     if (this.ball.brainspotting) {
-      this._decayVisualOffset(deltaTime)
-      return
+      this._decayVisualOffset(deltaTime);
+      return;
     }
 
     if (this.options.clientSimulation) {
-      this.updateClientPhysics(deltaTime)
-      this._applyDriftCorrection()
-      this._checkDriftCorrection()
+      this.updateClientPhysics(deltaTime);
+      this._applyDriftCorrection();
+      this._checkDriftCorrection();
     } else {
-      this.updateClientPhysics(deltaTime)
+      this.updateClientPhysics(deltaTime);
     }
 
-    this._decayVisualOffset(deltaTime)
+    this._decayVisualOffset(deltaTime);
   }
 
   /**
@@ -1282,42 +1304,42 @@ class PhysicsEngine {
    * @private
    */
   _updateServerPhysics(deltaTime) {
-    if (this.state.paused) return
-    if (!this._worldSizeSet) return
+    if (this.state.paused) return;
+    if (!this._worldSizeSet) return;
 
     // Lemniscate (∞) path: deterministic center-crossing detection replaces wall bounces
     if (this.ball.infinity) {
-      this._stepInfinityPath()
-      return
+      this._stepInfinityPath();
+      return;
     }
 
     // Brainspotting: no server physics — controller sets position directly
     if (this.ball.brainspotting) {
-      return
+      return;
     }
 
-    const speedFactor = this._calculateSpeedFactor()
+    const speedFactor = this._calculateSpeedFactor();
     if (speedFactor <= 0) {
-      this.setPaused(true)
-      return
+      this.setPaused(true);
+      return;
     }
 
     const pps =
       calculatePixelsPerSecond(this.ball.speed, this.options.maxSpeed) *
-      speedFactor
-    this.ball.vx = this.state.lastDirection.x * pps
-    this.ball.vy = this.state.lastDirection.y * pps
+      speedFactor;
+    this.ball.vx = this.state.lastDirection.x * pps;
+    this.ball.vy = this.state.lastDirection.y * pps;
 
-    this._prevPos.x = this.ball.x
-    this._prevPos.y = this.ball.y
+    this._prevPos.x = this.ball.x;
+    this._prevPos.y = this.ball.y;
 
-    this.ball.x += this.ball.vx * deltaTime
-    this.ball.y += this.ball.vy * deltaTime
+    this.ball.x += this.ball.vx * deltaTime;
+    this.ball.y += this.ball.vy * deltaTime;
 
-    this.handleBoundaryCollisions()
+    this.handleBoundaryCollisions();
 
-    this._currPos.x = this.ball.x
-    this._currPos.y = this.ball.y
+    this._currPos.x = this.ball.x;
+    this._currPos.y = this.ball.y;
   }
 
   /**
@@ -1327,12 +1349,12 @@ class PhysicsEngine {
    * @private
    */
   _calculateSpeedFactor() {
-    if (!this.state.stopping) return 1.0
+    if (!this.state.stopping) return 1.0;
 
-    const elapsed = (performance.now() - this.state.stoppingStartTs) / 1000
-    const t = Math.min(1, elapsed / this.state.stoppingDuration)
+    const elapsed = (performance.now() - this.state.stoppingStartTs) / 1000;
+    const t = Math.min(1, elapsed / this.state.stoppingDuration);
     // Cubic ease-out: 1 - (1-t)^3 creates smooth deceleration curve
-    return 1 - (1 - t) * (1 - t) * (1 - t)
+    return 1 - (1 - t) * (1 - t) * (1 - t);
   }
 
   /**
@@ -1341,14 +1363,14 @@ class PhysicsEngine {
    * @private
    */
   _ensureWorldSizeSet() {
-    if (this._worldSizeSet) return true
+    if (this._worldSizeSet) return true;
 
     if (this.options.worldWidth > 0 && this.options.worldHeight > 0) {
-      this._worldSizeSet = true
-      return true
+      this._worldSizeSet = true;
+      return true;
     }
 
-    return false
+    return false;
   }
 
   /**
@@ -1359,15 +1381,18 @@ class PhysicsEngine {
    * @private
    */
   _getEffectiveSpeed() {
-    if (!this._speedTransition) return this.ball.speed
-    const elapsed = performance.now() - this._speedTransition.startTs
+    if (!this._speedTransition) return this.ball.speed;
+    const elapsed = performance.now() - this._speedTransition.startTs;
     if (elapsed >= this._speedTransition.duration) {
-      this._speedTransition = null
-      return this.ball.speed
+      this._speedTransition = null;
+      return this.ball.speed;
     }
-    const t = elapsed / this._speedTransition.duration
-    const eased = 1 - (1 - t) * (1 - t)
-    return this._speedTransition.from + (this._speedTransition.to - this._speedTransition.from) * eased
+    const t = elapsed / this._speedTransition.duration;
+    const eased = 1 - (1 - t) * (1 - t);
+    return (
+      this._speedTransition.from +
+      (this._speedTransition.to - this._speedTransition.from) * eased
+    );
   }
 
   /**
@@ -1378,12 +1403,12 @@ class PhysicsEngine {
   _calculateClientVelocity() {
     const pps = calculatePixelsPerSecond(
       this._getEffectiveSpeed(),
-      this.options.maxSpeed
-    )
+      this.options.maxSpeed,
+    );
     return {
       vx: (this.state.lastDirection.x || 0) * pps,
-      vy: (this.state.lastDirection.y || 0) * pps
-    }
+      vy: (this.state.lastDirection.y || 0) * pps,
+    };
   }
 
   /**
@@ -1392,27 +1417,27 @@ class PhysicsEngine {
    * @private
    */
   _applyAxisLock(velocity) {
-    const dirX = this.state.lastDirection.x || 0
-    const dirY = this.state.lastDirection.y || 0
+    const dirX = this.state.lastDirection.x || 0;
+    const dirY = this.state.lastDirection.y || 0;
     const pps = calculatePixelsPerSecond(
       this._getEffectiveSpeed(),
-      this.options.maxSpeed
-    )
+      this.options.maxSpeed,
+    );
 
-    const isVertical = isVerticalDirection(dirX) && Math.abs(dirY) > 0
-    const isHorizontal = isHorizontalDirection(dirY) && Math.abs(dirX) > 0
+    const isVertical = isVerticalDirection(dirX) && Math.abs(dirY) > 0;
+    const isHorizontal = isHorizontalDirection(dirY) && Math.abs(dirX) > 0;
 
     if (isVertical) {
-      velocity.vx = 0
-      velocity.vy = dirY * pps
-      this.state.smoothVx = 0
+      velocity.vx = 0;
+      velocity.vy = dirY * pps;
+      this.state.smoothVx = 0;
     } else if (isHorizontal) {
-      velocity.vy = 0
-      velocity.vx = dirX * pps
-      this.state.smoothVy = 0
+      velocity.vy = 0;
+      velocity.vx = dirX * pps;
+      this.state.smoothVy = 0;
     } else if (Math.abs(dirX) > 0 || Math.abs(dirY) > 0) {
-      velocity.vx = dirX * pps
-      velocity.vy = dirY * pps
+      velocity.vx = dirX * pps;
+      velocity.vy = dirY * pps;
     }
   }
 
@@ -1423,12 +1448,12 @@ class PhysicsEngine {
    * @private
    */
   _updateBallPosition(velocity, deltaTime) {
-    this.ball.vx = velocity.vx
-    this.ball.vy = velocity.vy
-    this._prevPos.x = this.ball.x
-    this._prevPos.y = this.ball.y
-    this.ball.x += velocity.vx * deltaTime
-    this.ball.y += velocity.vy * deltaTime
+    this.ball.vx = velocity.vx;
+    this.ball.vy = velocity.vy;
+    this._prevPos.x = this.ball.x;
+    this._prevPos.y = this.ball.y;
+    this.ball.x += velocity.vx * deltaTime;
+    this.ball.y += velocity.vy * deltaTime;
   }
 
   /**
@@ -1436,8 +1461,8 @@ class PhysicsEngine {
    * @private
    */
   _updateCurrentPosition() {
-    this._currPos.x = this.ball.x
-    this._currPos.y = this.ball.y
+    this._currPos.x = this.ball.x;
+    this._currPos.y = this.ball.y;
   }
 
   /**
@@ -1446,36 +1471,34 @@ class PhysicsEngine {
    */
   _updateSeekCenter() {
     if (!this._seekCenterStart) {
-      this.state.seekingCenter = false
-      this._snapToCenter()
-      return
+      this.state.seekingCenter = false;
+      this._snapToCenter();
+      return;
     }
 
-    const elapsed = (performance.now() - this._seekCenterStart.ts) / 1000
-    const t = Math.min(1, elapsed / this.state.seekingCenterDuration)
+    const elapsed = (performance.now() - this._seekCenterStart.ts) / 1000;
+    const t = Math.min(1, elapsed / this.state.seekingCenterDuration);
     // Ease-in-out cubic: slow start, smooth middle, gentle stop.
     // This prevents abrupt visual jumps that could trigger adverse
     // reactions in EMDR clients during bilateral stimulation pauses.
-    const ease = t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2
+    const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
     const newX =
-      this._seekCenterStart.x + (this.centerX - this._seekCenterStart.x) * ease
+      this._seekCenterStart.x + (this.centerX - this._seekCenterStart.x) * ease;
     const newY =
-      this._seekCenterStart.y + (this.centerY - this._seekCenterStart.y) * ease
+      this._seekCenterStart.y + (this.centerY - this._seekCenterStart.y) * ease;
 
-    this._prevPos.x = newX
-    this._prevPos.y = newY
-    this._currPos.x = newX
-    this._currPos.y = newY
-    this.ball.x = newX
-    this.ball.y = newY
+    this._prevPos.x = newX;
+    this._prevPos.y = newY;
+    this._currPos.x = newX;
+    this._currPos.y = newY;
+    this.ball.x = newX;
+    this.ball.y = newY;
 
     if (t >= 1) {
-      this.state.seekingCenter = false
-      this._seekCenterStart = null
-      this._snapToCenter()
+      this.state.seekingCenter = false;
+      this._seekCenterStart = null;
+      this._snapToCenter();
     }
   }
 
@@ -1499,14 +1522,14 @@ class PhysicsEngine {
     // never fights the bounce logic on either side of impact.
     // Server extrapolation can place the ball slightly outside bounds;
     // this larger margin prevents "bumping" when the viewer is near a wall.
-    const margin = this.ball.radius + 40
-    const { worldWidth, worldHeight } = this.options
+    const margin = this.ball.radius + 40;
+    const { worldWidth, worldHeight } = this.options;
     return (
       this.ball.x <= margin ||
       this.ball.x >= worldWidth - margin ||
       this.ball.y <= margin ||
       this.ball.y >= worldHeight - margin
-    )
+    );
   }
 
   /**
@@ -1522,117 +1545,117 @@ class PhysicsEngine {
    * @private
    */
   _checkDriftCorrection() {
-    if (!this._lastServerPos || this.state.paused) return
-    const now = performance.now()
+    if (!this._lastServerPos || this.state.paused) return;
+    const now = performance.now();
 
     // CLIENT-SIDE AUTHORITY: Extended cooldown after local wall bounce.
     // 500ms (was 250ms) — server packets confirming the old direction
     // arrive late and would fight with post-bounce local physics.
     if (now - this._lastLocalBounceTs < 500) {
-      this._springState.active = false
-      return
+      this._springState.active = false;
+      return;
     }
 
-    const posAge = now - this._lastServerPos.ts
+    const posAge = now - this._lastServerPos.ts;
     const serverTimeAge = this._lastServerPos.serverTime
-      ? (Date.now() - this._lastServerPos.serverTime)
-      : posAge
+      ? Date.now() - this._lastServerPos.serverTime
+      : posAge;
 
     if (posAge > this.options.driftStaleMs) {
-      this._springState.active = false
-      return
+      this._springState.active = false;
+      return;
     }
 
-    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 50
+    const checkInterval = this.options.smoothing.driftCheckIntervalMs || 50;
     if (this._lastDriftCheckTs && now - this._lastDriftCheckTs < checkInterval)
-      return
+      return;
 
     // CLIENT-SIDE AUTHORITY: Skip drift correction near walls.
     // Expanded immunity zone (radius+40) prevents correction fighting bounce logic.
     if (this._isNearWall()) {
-      this._springState.active = false
-      return
+      this._springState.active = false;
+      return;
     }
 
-    this._lastDriftCheckTs = now
+    this._lastDriftCheckTs = now;
 
     // Extrapolate server position based on its velocity and time since last update
-    let serverX = this._lastServerPos.x
-    let serverY = this._lastServerPos.y
-    const serverVx = this._lastServerPos.vx
-    const serverVy = this._lastServerPos.vy
+    let serverX = this._lastServerPos.x;
+    let serverY = this._lastServerPos.y;
+    const serverVx = this._lastServerPos.vx;
+    const serverVy = this._lastServerPos.vy;
 
     if (serverVx !== undefined && serverVy !== undefined) {
-      const dt = serverTimeAge / 1000
-      serverX += serverVx * dt
-      serverY += serverVy * dt
+      const dt = serverTimeAge / 1000;
+      serverX += serverVx * dt;
+      serverY += serverVy * dt;
     }
 
     // Clamp extrapolated server position to viewer's world bounds.
-    const { worldWidth, worldHeight } = this.options
-    const { radius } = this.ball
-    serverX = Math.max(radius, Math.min(worldWidth - radius, serverX))
-    serverY = Math.max(radius, Math.min(worldHeight - radius, serverY))
+    const { worldWidth, worldHeight } = this.options;
+    const { radius } = this.ball;
+    serverX = Math.max(radius, Math.min(worldWidth - radius, serverX));
+    serverY = Math.max(radius, Math.min(worldHeight - radius, serverY));
 
-    const dx = serverX - this.ball.x
-    const dy = serverY - this.ball.y
-    const drift = Math.hypot(dx, dy)
+    const dx = serverX - this.ball.x;
+    const dy = serverY - this.ball.y;
+    const drift = Math.hypot(dx, dy);
 
     // CLIENT-SIDE AUTHORITY: Velocity vector guard.
     // If server velocity matches local velocity closely, the simulation is already
     // in sync by parameters — skip position correction entirely.
     // This is the core of "sync by events, not coordinates".
     if (serverVx !== undefined && serverVy !== undefined) {
-      const velDx = Math.abs(serverVx - this.ball.vx)
-      const velDy = Math.abs(serverVy - this.ball.vy)
-      const velocitiesMatch = velDx < 10 && velDy < 10
+      const velDx = Math.abs(serverVx - this.ball.vx);
+      const velDy = Math.abs(serverVy - this.ball.vy);
+      const velocitiesMatch = velDx < 10 && velDy < 10;
       if (velocitiesMatch && drift < this.options.smoothing.driftThresholdPx) {
         // Vectors are aligned — viewer's local simulation is authoritative
-        this._springState._desyncStartTs = null
-        this._springState.active = false
-        this._springState.driftMagnitude = 0
-        return
+        this._springState._desyncStartTs = null;
+        this._springState.active = false;
+        this._springState.driftMagnitude = 0;
+        return;
       }
     }
 
     // Adaptive threshold: base 100px + speed scaling.
     // High threshold means server coords are only used for coarse correction.
-    const baseThreshold = this.options.smoothing.driftThresholdPx || 100
-    const speedPercent = this.ball.speed || 30
-    const adaptiveThreshold = baseThreshold + speedPercent * 0.3
+    const baseThreshold = this.options.smoothing.driftThresholdPx || 100;
+    const speedPercent = this.ball.speed || 30;
+    const adaptiveThreshold = baseThreshold + speedPercent * 0.3;
 
     if (drift > adaptiveThreshold) {
       // Track persistent desync for hard recovery
       if (!this._springState._desyncStartTs) {
-        this._springState._desyncStartTs = now
+        this._springState._desyncStartTs = now;
       }
-      const desyncDuration = now - this._springState._desyncStartTs
+      const desyncDuration = now - this._springState._desyncStartTs;
 
       // Hard snap recovery: if drift > 200px for > 3 seconds, teleport to server
       if (drift > 200 && desyncDuration > 3000) {
-        this.ball.x = serverX
-        this.ball.y = serverY
-        this._visualOffsetX = 0
-        this._visualOffsetY = 0
-        this._springState.active = false
-        this._springState.driftMagnitude = 0
-        this._springState._desyncStartTs = null
-        return
+        this.ball.x = serverX;
+        this.ball.y = serverY;
+        this._visualOffsetX = 0;
+        this._visualOffsetY = 0;
+        this._springState.active = false;
+        this._springState.driftMagnitude = 0;
+        this._springState._desyncStartTs = null;
+        return;
       }
 
       // Activate spring-damper correction
-      this._springState.active = true
-      this._springState.targetX = serverX
-      this._springState.targetY = serverY
-      this._springState.driftMagnitude = drift
+      this._springState.active = true;
+      this._springState.targetX = serverX;
+      this._springState.targetY = serverY;
+      this._springState.driftMagnitude = drift;
     } else {
       // Drift is within tolerance — deactivate correction, let local physics run.
       // NOTE: The old "5% subtle correction" block (drift > 2px) has been REMOVED.
       // It was the primary source of visual jitter. Local physics is now authoritative
       // for all drift below adaptiveThreshold.
-      this._springState._desyncStartTs = null
-      this._springState.active = false
-      this._springState.driftMagnitude = 0
+      this._springState._desyncStartTs = null;
+      this._springState.active = false;
+      this._springState.driftMagnitude = 0;
     }
   }
 
@@ -1647,48 +1670,47 @@ class PhysicsEngine {
    * @private
    */
   _applyDriftCorrection() {
-    if (!this._springState.active || !this._lastServerPos) return
+    if (!this._springState.active || !this._lastServerPos) return;
     if (this._isNearWall()) {
-      this._springState.active = false
-      return
+      this._springState.active = false;
+      return;
     }
 
-    const now = performance.now()
-    const lastTs = this._springState._lastCorrectionTs || now
+    const now = performance.now();
+    const lastTs = this._springState._lastCorrectionTs || now;
     // Cap dt at 33ms (30fps) to prevent instability on hidden tabs
-    const dt = Math.min(33, now - lastTs) / 1000
-    this._springState._lastCorrectionTs = now
+    const dt = Math.min(33, now - lastTs) / 1000;
+    this._springState._lastCorrectionTs = now;
 
     // Advance the target position so it moves alongside the ball
-    this._springState.targetX += this.ball.vx * dt
-    this._springState.targetY += this.ball.vy * dt
+    this._springState.targetX += this.ball.vx * dt;
+    this._springState.targetY += this.ball.vy * dt;
 
-    const sm = this.options.smoothing || {}
-    const stiffness = sm.stiffness !== undefined ? sm.stiffness : 3
+    const sm = this.options.smoothing || {};
+    const stiffness = sm.stiffness !== undefined ? sm.stiffness : 3;
 
-    const dx = this._springState.targetX - this.ball.x
-    const dy = this._springState.targetY - this.ball.y
+    const dx = this._springState.targetX - this.ball.x;
+    const dy = this._springState.targetY - this.ball.y;
 
     // Smooth proportional correction toward the moving target
-    const correctionX = dx * stiffness * dt
-    const correctionY = dy * stiffness * dt
+    const correctionX = dx * stiffness * dt;
+    const correctionY = dy * stiffness * dt;
 
     // Adaptive maxCorrection based on drift magnitude
-    const driftMag = this._springState.driftMagnitude || 0
-    const maxCorrection = driftMag > 100
-      ? Math.min(25, 8 + (driftMag - 100) * 0.08)
-      : 8
+    const driftMag = this._springState.driftMagnitude || 0;
+    const maxCorrection =
+      driftMag > 100 ? Math.min(25, 8 + (driftMag - 100) * 0.08) : 8;
 
-    const appliedX = clamp(correctionX, -maxCorrection, maxCorrection)
-    const appliedY = clamp(correctionY, -maxCorrection, maxCorrection)
+    const appliedX = clamp(correctionX, -maxCorrection, maxCorrection);
+    const appliedY = clamp(correctionY, -maxCorrection, maxCorrection);
 
-    this.ball.x += appliedX
-    this.ball.y += appliedY
+    this.ball.x += appliedX;
+    this.ball.y += appliedY;
 
     // Equal+opposite offset so the rendered position doesn't jump.
     // Decays to zero over ~300ms via _decayVisualOffset().
-    this._visualOffsetX -= appliedX
-    this._visualOffsetY -= appliedY
+    this._visualOffsetX -= appliedX;
+    this._visualOffsetY -= appliedY;
   }
 
   // ============================================
@@ -1704,11 +1726,11 @@ class PhysicsEngine {
   _validateCommand(command) {
     const modeSpecific = this.isViewer
       ? validateViewerCommand(command)
-      : validateServerCommand(command)
+      : validateServerCommand(command);
 
-    const common = validateCommonCommand(command)
+    const common = validateCommonCommand(command);
 
-    return { ...modeSpecific, ...common }
+    return { ...modeSpecific, ...common };
   }
 
   // ============================================
@@ -1727,15 +1749,15 @@ class PhysicsEngine {
       !this.state.paused &&
       !this.state.stopping
     ) {
-      this.startStopping()
+      this.startStopping();
     }
 
     if (command.paused !== undefined) {
-      const wasPaused = this.state.paused
-      this.setPaused(command.paused)
+      const wasPaused = this.state.paused;
+      this.setPaused(command.paused);
 
       if (this.isViewer && wasPaused && command.paused === false) {
-        this._handleViewerUnpause(command)
+        this._handleViewerUnpause(command);
       }
     }
 
@@ -1743,37 +1765,39 @@ class PhysicsEngine {
       // _handleViewerPause (called via setPaused above) already starts seekingCenter.
       // Only call returnToCenter if seekingCenter wasn't already started by the pause handler.
       if (this.isViewer && !this.state.seekingCenter) {
-        this.returnToCenter()
+        this.returnToCenter();
       } else if (!this.isViewer) {
-        this.returnToCenter()
+        this.returnToCenter();
       }
       if (this.options.clientSimulation) {
-        this._hasReceivedFirstMovingUpdate = false
+        this._hasReceivedFirstMovingUpdate = false;
       }
     }
 
-    if (command.reset) this.reset()
-    if (command.radius !== undefined) this.setBallSize(command.radius)
-    if (command.colorBall !== undefined) this.setBallColor(command.colorBall)
-    if (command.colorBg !== undefined) this.setBgColor(command.colorBg)
-    if (command.ballEmoji !== undefined) this.ball.ballEmoji = command.ballEmoji
+    if (command.reset) this.reset();
+    if (command.radius !== undefined) this.setBallSize(command.radius);
+    if (command.colorBall !== undefined) this.setBallColor(command.colorBall);
+    if (command.colorBg !== undefined) this.setBgColor(command.colorBg);
+    if (command.ballEmoji !== undefined)
+      this.ball.ballEmoji = command.ballEmoji;
     if (typeof command.infinity === 'boolean') {
-      this.ball.infinity = command.infinity
+      this.ball.infinity = command.infinity;
       // Reset phase on any infinity state change so viewer and controller preview
       // always start lemniscate from the same origin (t=0)
-      this._infinityT = 0
+      this._infinityT = 0;
       // Entering infinity disables brainspotting
-      if (command.infinity) this.ball.brainspotting = false
+      if (command.infinity) this.ball.brainspotting = false;
     }
     if (typeof command.brainspotting === 'boolean') {
-      this.ball.brainspotting = command.brainspotting
+      this.ball.brainspotting = command.brainspotting;
       // Entering brainspotting disables infinity
       if (command.brainspotting) {
-        this.ball.infinity = false
+        this.ball.infinity = false;
         // Ball stays at current position — therapist moves it manually
       }
     }
-    if (command.trackBand !== undefined) this.options.trackBand = command.trackBand
+    if (command.trackBand !== undefined)
+      this.options.trackBand = command.trackBand;
   }
 
   /**
@@ -1783,20 +1807,20 @@ class PhysicsEngine {
    */
   _handleViewerUnpause(command) {
     if (command.dirX !== undefined || command.dirY !== undefined) {
-      const newDx = command.dirX ?? this.state.lastDirection.x ?? 1
-      const newDy = command.dirY ?? this.state.lastDirection.y ?? 0
-      this.state.lastDirection.x = newDx
-      this.state.lastDirection.y = newDy
+      const newDx = command.dirX ?? this.state.lastDirection.x ?? 1;
+      const newDy = command.dirY ?? this.state.lastDirection.y ?? 0;
+      this.state.lastDirection.x = newDx;
+      this.state.lastDirection.y = newDy;
     }
 
     if (
       Math.abs(this.state.lastDirection.x || 0) < DIRECTION_EPSILON &&
       Math.abs(this.state.lastDirection.y || 0) < DIRECTION_EPSILON
     ) {
-      this.setDirection(1, 0)
+      this.setDirection(1, 0);
     }
 
-    this._updatePredictionBase()
+    this._updatePredictionBase();
   }
 
   /**
@@ -1805,10 +1829,10 @@ class PhysicsEngine {
    * @private
    */
   _handleViewerCommand(command) {
-    this._handleViewerPositionUpdate(command)
-    this._handleViewerVelocityUpdate(command)
-    this._handleViewerSpeedUpdate(command)
-    this._handleViewerDirectionUpdate(command)
+    this._handleViewerPositionUpdate(command);
+    this._handleViewerVelocityUpdate(command);
+    this._handleViewerSpeedUpdate(command);
+    this._handleViewerDirectionUpdate(command);
   }
 
   /**
@@ -1817,24 +1841,24 @@ class PhysicsEngine {
    * @private
    */
   _handleViewerPositionUpdate(command) {
-    if (command.x === undefined || command.y === undefined) return
+    if (command.x === undefined || command.y === undefined) return;
 
     const cx = clamp(
       command.x,
       this.ball.radius,
-      this.options.worldWidth - this.ball.radius
-    )
+      this.options.worldWidth - this.ball.radius,
+    );
     const cy = clamp(
       command.y,
       this.ball.radius,
-      this.options.worldHeight - this.ball.radius
-    )
+      this.options.worldHeight - this.ball.radius,
+    );
 
-    this.state.targetX = cx
-    this.state.targetY = cy
+    this.state.targetX = cx;
+    this.state.targetY = cy;
 
-    const serverTime = command.serverTimestamp || command.ts || Date.now()
-    const now = performance.now()
+    const serverTime = command.serverTimestamp || command.ts || Date.now();
+    const now = performance.now();
 
     if (this.options.clientSimulation) {
       this._lastServerPos = {
@@ -1843,16 +1867,16 @@ class PhysicsEngine {
         vx: command.vx,
         vy: command.vy,
         ts: now,
-        serverTime: serverTime
-      }
-      return
+        serverTime: serverTime,
+      };
+      return;
     }
 
     if (command.paused === true) {
-      this._handleViewerPositionPause()
+      this._handleViewerPositionPause();
     } else if (command.paused === false) {
-      if (command.vx !== undefined) this.state.lastVx = command.vx
-      if (command.vy !== undefined) this.state.lastVy = command.vy
+      if (command.vx !== undefined) this.state.lastVx = command.vx;
+      if (command.vy !== undefined) this.state.lastVy = command.vy;
     }
   }
 
@@ -1861,23 +1885,23 @@ class PhysicsEngine {
    * @private
    */
   _handleViewerPositionPause() {
-    this.state.allowInterpWhenPaused = false
-    this.state.smoothVx = 0
-    this.state.smoothVy = 0
-    this.state.lastVx = 0
-    this.state.lastVy = 0
+    this.state.allowInterpWhenPaused = false;
+    this.state.smoothVx = 0;
+    this.state.smoothVy = 0;
+    this.state.lastVx = 0;
+    this.state.lastVy = 0;
 
     if (!this.state.seekingCenter) {
-      const dx = this.centerX - this.ball.x
-      const dy = this.centerY - this.ball.y
+      const dx = this.centerX - this.ball.x;
+      const dy = this.centerY - this.ball.y;
 
       if (Math.hypot(dx, dy) > this.options.centerSnapThreshold) {
-        this.state.seekingCenter = true
+        this.state.seekingCenter = true;
         this._seekCenterStart = {
           x: this.ball.x,
           y: this.ball.y,
-          ts: performance.now()
-        }
+          ts: performance.now(),
+        };
       }
     }
   }
@@ -1888,56 +1912,56 @@ class PhysicsEngine {
    * @private
    */
   _handleViewerVelocityUpdate(command) {
-    if (this.options.clientSimulation) return
+    if (this.options.clientSimulation) return;
 
-    let newVx = command.vx
-    let newVy = command.vy
+    let newVx = command.vx;
+    let newVy = command.vy;
 
     if (newVx !== undefined) {
-      const wallMargin = this.ball.radius + this.options.bounceWallMargin
-      const nearLeftWall = this.ball.x <= wallMargin
-      const nearRightWall = this.ball.x >= this.options.worldWidth - wallMargin
-      const serverMovingLeft = newVx < 0
-      const serverMovingRight = newVx > 0
-      const localMovingLeft = this.ball.vx < 0
-      const localMovingRight = this.ball.vx > 0
+      const wallMargin = this.ball.radius + this.options.bounceWallMargin;
+      const nearLeftWall = this.ball.x <= wallMargin;
+      const nearRightWall = this.ball.x >= this.options.worldWidth - wallMargin;
+      const serverMovingLeft = newVx < 0;
+      const serverMovingRight = newVx > 0;
+      const localMovingLeft = this.ball.vx < 0;
+      const localMovingRight = this.ball.vx > 0;
 
       if (
         (nearLeftWall && serverMovingLeft && localMovingRight) ||
         (nearRightWall && serverMovingRight && localMovingLeft)
       ) {
-        newVx = undefined
+        newVx = undefined;
       }
     }
 
     if (newVy !== undefined) {
-      const wallMargin = this.ball.radius + this.options.bounceWallMargin
-      const nearTopWall = this.ball.y <= wallMargin
+      const wallMargin = this.ball.radius + this.options.bounceWallMargin;
+      const nearTopWall = this.ball.y <= wallMargin;
       const nearBottomWall =
-        this.ball.y >= this.options.worldHeight - wallMargin
-      const serverMovingUp = newVy < 0
-      const serverMovingDown = newVy > 0
-      const localMovingUp = this.ball.vy < 0
-      const localMovingDown = this.ball.vy > 0
+        this.ball.y >= this.options.worldHeight - wallMargin;
+      const serverMovingUp = newVy < 0;
+      const serverMovingDown = newVy > 0;
+      const localMovingUp = this.ball.vy < 0;
+      const localMovingDown = this.ball.vy > 0;
 
       if (
         (nearTopWall && serverMovingUp && localMovingDown) ||
         (nearBottomWall && serverMovingDown && localMovingUp)
       ) {
-        newVy = undefined
+        newVy = undefined;
       }
     }
 
-    if (newVx !== undefined) this.state.lastVx = newVx
-    if (newVy !== undefined) this.state.lastVy = newVy
+    if (newVx !== undefined) this.state.lastVx = newVx;
+    if (newVy !== undefined) this.state.lastVy = newVy;
 
-    const lvx = typeof this.state.lastVx === 'number' ? this.state.lastVx : 0
-    const lvy = typeof this.state.lastVy === 'number' ? this.state.lastVy : 0
-    const sp = Math.hypot(lvx, lvy)
+    const lvx = typeof this.state.lastVx === 'number' ? this.state.lastVx : 0;
+    const lvy = typeof this.state.lastVy === 'number' ? this.state.lastVy : 0;
+    const sp = Math.hypot(lvx, lvy);
 
     if (sp > 0) {
-      this.state.lastDirection.x = lvx / sp
-      this.state.lastDirection.y = lvy / sp
+      this.state.lastDirection.x = lvx / sp;
+      this.state.lastDirection.y = lvy / sp;
     }
   }
 
@@ -1947,21 +1971,25 @@ class PhysicsEngine {
    * @private
    */
   _handleViewerSpeedUpdate(command) {
-    if (command.speed === undefined) return
+    if (command.speed === undefined) return;
 
-    if (!this.state.paused && this.options.clientSimulation && this.ball.speed !== command.speed) {
+    if (
+      !this.state.paused &&
+      this.options.clientSimulation &&
+      this.ball.speed !== command.speed
+    ) {
       this._speedTransition = {
         from: this.ball.speed,
         to: command.speed,
         startTs: performance.now(),
-        duration: 100
-      }
+        duration: 100,
+      };
     }
 
-    this.setSpeed(command.speed)
+    this.setSpeed(command.speed);
 
     if (!this.state.paused) {
-      this._updatePredictionBase()
+      this._updatePredictionBase();
     }
   }
 
@@ -1971,14 +1999,14 @@ class PhysicsEngine {
    * @private
    */
   _handleViewerDirectionUpdate(command) {
-    if (command.dirX === undefined && command.dirY === undefined) return
+    if (command.dirX === undefined && command.dirY === undefined) return;
 
     // Accept direction updates even if moving.
     // Sync by parameters (Client-Side Authority) means we should follow the server's
     // intention, but let local boundary detection handle the exact bounce timing.
 
-    let newDx = command.dirX ?? this.state.lastDirection.x
-    let newDy = command.dirY ?? this.state.lastDirection.y
+    let newDx = command.dirX ?? this.state.lastDirection.x;
+    let newDy = command.dirY ?? this.state.lastDirection.y;
 
     if (
       Math.abs(newDx) < DIRECTION_EPSILON &&
@@ -1988,28 +2016,28 @@ class PhysicsEngine {
         Math.abs(this.state.lastDirection.x) > DIRECTION_EPSILON ||
         Math.abs(this.state.lastDirection.y) > DIRECTION_EPSILON
       ) {
-        newDx = this.state.lastDirection.x
-        newDy = this.state.lastDirection.y
+        newDx = this.state.lastDirection.x;
+        newDy = this.state.lastDirection.y;
       } else {
-        newDx = 1
-        newDy = 0
+        newDx = 1;
+        newDy = 0;
       }
     }
 
-    this.state.lastDirection.x = newDx
-    this.state.lastDirection.y = newDy
+    this.state.lastDirection.x = newDx;
+    this.state.lastDirection.y = newDy;
 
     if (this.options.clientSimulation) {
       const pps = calculatePixelsPerSecond(
         this.ball.speed,
-        this.options.maxSpeed
-      )
-      this.ball.vx = newDx * pps
-      this.ball.vy = newDy * pps
+        this.options.maxSpeed,
+      );
+      this.ball.vx = newDx * pps;
+      this.ball.vy = newDy * pps;
     }
 
     if (!this.state.paused) {
-      this._updatePredictionBase()
+      this._updatePredictionBase();
     }
   }
 
@@ -2020,18 +2048,18 @@ class PhysicsEngine {
   _updatePredictionBase() {
     const pps = calculatePixelsPerSecond(
       this._getEffectiveSpeed(),
-      this.options.maxSpeed
-    )
-    const dx = this.state.lastDirection.x || 0
-    const dy = this.state.lastDirection.y || 0
+      this.options.maxSpeed,
+    );
+    const dx = this.state.lastDirection.x || 0;
+    const dy = this.state.lastDirection.y || 0;
 
     if (dx !== 0 || dy !== 0) {
-      this.state.lastVx = dx * pps
-      this.state.lastVy = dy * pps
+      this.state.lastVx = dx * pps;
+      this.state.lastVy = dy * pps;
 
       if (this.options.clientSimulation) {
-        this.ball.vx = dx * pps
-        this.ball.vy = dy * pps
+        this.ball.vx = dx * pps;
+        this.ball.vy = dy * pps;
       }
     }
   }
@@ -2042,9 +2070,9 @@ class PhysicsEngine {
    * @private
    */
   _handleServerCommand(command) {
-    this._handleServerDirection(command)
-    this._handleServerSpeed(command)
-    this._handleServerUnpause(command)
+    this._handleServerDirection(command);
+    this._handleServerSpeed(command);
+    this._handleServerUnpause(command);
   }
 
   /**
@@ -2053,11 +2081,11 @@ class PhysicsEngine {
    * @private
    */
   _handleServerDirection(command) {
-    if (command.dirX === undefined && command.dirY === undefined) return
+    if (command.dirX === undefined && command.dirY === undefined) return;
 
-    const newDx = command.dirX ?? this.state.lastDirection.x
-    const newDy = command.dirY ?? this.state.lastDirection.y
-    this.setDirection(newDx, newDy)
+    const newDx = command.dirX ?? this.state.lastDirection.x;
+    const newDy = command.dirY ?? this.state.lastDirection.y;
+    this.setDirection(newDx, newDy);
   }
 
   /**
@@ -2067,7 +2095,7 @@ class PhysicsEngine {
    */
   _handleServerSpeed(command) {
     if (command.speed !== undefined) {
-      this.setSpeed(command.speed)
+      this.setSpeed(command.speed);
     }
   }
 
@@ -2077,11 +2105,11 @@ class PhysicsEngine {
    * @private
    */
   _handleServerUnpause(command) {
-    if (this.ball.infinity) return
+    if (this.ball.infinity) return;
     const willBeUnpaused =
-      command.paused === false || this.state.paused === false
+      command.paused === false || this.state.paused === false;
     if (willBeUnpaused) {
-      this._restoreServerVelocity()
+      this._restoreServerVelocity();
     }
   }
 
@@ -2092,19 +2120,19 @@ class PhysicsEngine {
   _restoreServerVelocity() {
     const pps = calculatePixelsPerSecond(
       this.ball.speed,
-      this.options.maxSpeed
-    )
-    let dirX = this.state.lastDirection.x || 0
-    let dirY = this.state.lastDirection.y || 0
+      this.options.maxSpeed,
+    );
+    let dirX = this.state.lastDirection.x || 0;
+    let dirY = this.state.lastDirection.y || 0;
 
     if (dirX === 0 && dirY === 0) {
-      dirX = 1
-      dirY = 0
-      this.setDirection(dirX, dirY)
+      dirX = 1;
+      dirY = 0;
+      this.setDirection(dirX, dirY);
     }
 
-    this.setVelocity(dirX * pps, dirY * pps)
+    this.setVelocity(dirX * pps, dirY * pps);
   }
 }
 
-module.exports = PhysicsEngine
+module.exports = PhysicsEngine;

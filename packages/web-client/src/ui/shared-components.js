@@ -1,6 +1,6 @@
 /* jshint esversion: 11, -W033, -W104, -W119 */
 /* global globalThis, Map, module */
-'use strict'
+'use strict';
 /**
  * SharedComponents - переиспользуемые компоненты для BilateralBound
  * Содержит общую логику для controller и viewer
@@ -8,7 +8,7 @@
 
 class SharedComponents {
   constructor() {
-    this.components = new Map()
+    this.components = new Map();
   }
   /**
    * Создает переиспользуемый компонент управления скоростью
@@ -22,20 +22,27 @@ class SharedComponents {
       showValue: true,
       showLabels: true,
       simple: true,
-      ...options
-    }
+      ...options,
+    };
     const component = {
       container,
       options: defaultOptions,
       currentSpeed: defaultOptions.defaultValue,
       elements: {},
       render() {
-        const speedControl = document.createElement('div')
-        speedControl.className = 'speed-control'
+        const speedControl = document.createElement('div');
+        speedControl.className = 'speed-control';
         if (defaultOptions.simple) {
           speedControl.innerHTML = `
   <div class="speed-info">
-  ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${(() => { const v = globalThis.i18n?.t('controller.speedMedium'); return v && v !== 'controller.speedMedium' ? v : 'Medium' })()}</span></div>` : ''}
+  ${
+    defaultOptions.showValue
+      ? `<div class="speed-display"><span class="speed-value">${(() => {
+          const v = globalThis.i18n?.t('controller.speedMedium');
+          return v && v !== 'controller.speedMedium' ? v : 'Medium';
+        })()}</span></div>`
+      : ''
+  }
   </div>
   <div class="speed-slider-container">
   <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
@@ -47,13 +54,20 @@ class SharedComponents {
   value="${defaultOptions.currentSpeed}"
   step="1">
   </div>
-  `
+  `;
         } else {
           speedControl.innerHTML = `
   <div class="speed-header">
   <div class="speed-icon">⚡</div>
   <div class="speed-info">
-  ${defaultOptions.showValue ? `<div class="speed-display"><span class="speed-value">${(() => { const v = globalThis.i18n?.t('controller.speedMedium'); return v && v !== 'controller.speedMedium' ? v : 'Medium' })()}</span></div>` : ''}
+  ${
+    defaultOptions.showValue
+      ? `<div class="speed-display"><span class="speed-value">${(() => {
+          const v = globalThis.i18n?.t('controller.speedMedium');
+          return v && v !== 'controller.speedMedium' ? v : 'Medium';
+        })()}</span></div>`
+      : ''
+  }
   </div>
   <div class="speed-indicator">
   <div class="speed-bar">
@@ -63,9 +77,18 @@ class SharedComponents {
   </div>
   <div class="speed-controls">
   <div class="speed-presets">
-  <button class="speed-preset slow" data-speed="20">🐌<span>${(() => { const v = globalThis.i18n?.t('controller.speedSlow'); return v && v !== 'controller.speedSlow' ? v : 'Slow' })()}</span></button>
-  <button class="speed-preset normal active" data-speed="40">⚡<span>${(() => { const v = globalThis.i18n?.t('controller.speedMedium'); return v && v !== 'controller.speedMedium' ? v : 'Medium' })()}</span></button>
-  <button class="speed-preset fast" data-speed="80">🚀<span>${(() => { const v = globalThis.i18n?.t('controller.speedFast'); return v && v !== 'controller.speedFast' ? v : 'Fast' })()}</span></button>
+  <button class="speed-preset slow" data-speed="20">🐌<span>${(() => {
+    const v = globalThis.i18n?.t('controller.speedSlow');
+    return v && v !== 'controller.speedSlow' ? v : 'Slow';
+  })()}</span></button>
+  <button class="speed-preset normal active" data-speed="40">⚡<span>${(() => {
+    const v = globalThis.i18n?.t('controller.speedMedium');
+    return v && v !== 'controller.speedMedium' ? v : 'Medium';
+  })()}</span></button>
+  <button class="speed-preset fast" data-speed="80">🚀<span>${(() => {
+    const v = globalThis.i18n?.t('controller.speedFast');
+    return v && v !== 'controller.speedFast' ? v : 'Fast';
+  })()}</span></button>
   </div>
   <div class="speed-slider-container">
   <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
@@ -87,112 +110,115 @@ class SharedComponents {
   </div>
   </div>
   </div>
-  `
+  `;
         }
-        container.appendChild(speedControl)
-        this.setupElements()
-        this.setupEventListeners()
-        return this
+        container.appendChild(speedControl);
+        this.setupElements();
+        this.setupEventListeners();
+        return this;
       },
       setupElements() {
-        this.elements.range = container.querySelector('.speed-range')
-        this.elements.value = container.querySelector('.speed-value')
-        this.elements.display = container.querySelector('.speed-display')
-        this.elements.fill = container.querySelector('.speed-fill')
-        this.elements.presets = container.querySelectorAll('.speed-preset')
+        this.elements.range = container.querySelector('.speed-range');
+        this.elements.value = container.querySelector('.speed-value');
+        this.elements.display = container.querySelector('.speed-display');
+        this.elements.fill = container.querySelector('.speed-fill');
+        this.elements.presets = container.querySelectorAll('.speed-preset');
       },
       setupEventListeners() {
         if (this.elements.range) {
           this.elements.range.addEventListener('input', (e) => {
-            this.setSpeed(Number.parseInt(e.target.value, 10))
-          })
+            this.setSpeed(Number.parseInt(e.target.value, 10));
+          });
         }
         if (this.elements?.presets?.length) {
           for (const preset of this.elements.presets) {
             preset.addEventListener('click', () => {
-              const speed = Number.parseInt(preset.dataset.speed, 10)
-              this.setSpeed(speed)
-              this.updateActivePreset(speed)
-            })
+              const speed = Number.parseInt(preset.dataset.speed, 10);
+              this.setSpeed(speed);
+              this.updateActivePreset(speed);
+            });
           }
         }
       },
       updateActivePreset(speed) {
         if (this.elements?.presets?.length === 0) {
-          return
+          return;
         }
         for (const preset of this.elements.presets) {
-          preset.classList.remove('active')
+          preset.classList.remove('active');
         }
-        let activePreset = null
+        let activePreset = null;
         if (speed <= 30) {
-          activePreset = 'slow'
+          activePreset = 'slow';
         } else if (speed <= 60) {
-          activePreset = 'normal'
+          activePreset = 'normal';
         } else {
-          activePreset = 'fast'
+          activePreset = 'fast';
         }
         const activeElement = container.querySelector(
-          `.speed-preset.${activePreset}`
-        )
+          `.speed-preset.${activePreset}`,
+        );
         if (activeElement) {
-          activeElement.classList.add('active')
+          activeElement.classList.add('active');
         }
       },
       setSpeed(speed, silent = false) {
         this.currentSpeed = Math.max(
           this.options.min,
-          Math.min(this.options.max, speed)
-        )
+          Math.min(this.options.max, speed),
+        );
         if (this.elements.range) {
-          this.elements.range.value = this.currentSpeed
+          this.elements.range.value = this.currentSpeed;
         }
         // Get speed category and color based on current speed
         const { category, color } = this._getSpeedCategoryAndColor(
-          this.currentSpeed
-        )
+          this.currentSpeed,
+        );
         if (this.elements.value) {
-          this.elements.value.textContent = category
-          this.elements.value.style.color = color
+          this.elements.value.textContent = category;
+          this.elements.value.style.color = color;
         }
         if (this.elements.fill) {
-          this.elements.fill.style.width = `${this.currentSpeed}%`
-          this.elements.fill.style.background = color
+          this.elements.fill.style.width = `${this.currentSpeed}%`;
+          this.elements.fill.style.background = color;
         }
-        this.updateActivePreset(this.currentSpeed)
+        this.updateActivePreset(this.currentSpeed);
         if (!silent && this.options.onSpeedChange) {
-          this.options.onSpeedChange(this.currentSpeed)
+          this.options.onSpeedChange(this.currentSpeed);
         }
       },
       _getSpeedCategoryAndColor(speed) {
-        const t = (key) => { const v = globalThis.i18n?.t(key); return v && v !== key ? v : key }
+        const t = (key) => {
+          const v = globalThis.i18n?.t(key);
+          return v && v !== key ? v : key;
+        };
         if (speed <= 15) {
-          return { category: t('controller.speedVerySlow'), color: '#22c55e' }
+          return { category: t('controller.speedVerySlow'), color: '#22c55e' };
         }
         if (speed <= 25) {
-          return { category: t('controller.speedSlow'), color: '#3b82f6' }
+          return { category: t('controller.speedSlow'), color: '#3b82f6' };
         }
         if (speed <= 35) {
-          return { category: t('controller.speedMedium'), color: '#8b5cf6' }
+          return { category: t('controller.speedMedium'), color: '#8b5cf6' };
         }
         if (speed <= 50) {
-          return { category: t('controller.speedFast'), color: '#f59e0b' }
+          return { category: t('controller.speedFast'), color: '#f59e0b' };
         }
-        return { category: t('controller.speedVeryFast'), color: '#ef4444' }
+        return { category: t('controller.speedVeryFast'), color: '#ef4444' };
       },
       getSpeed() {
-        return this.currentSpeed
+        return this.currentSpeed;
       },
       reset() {
-        this.setSpeed(this.options.defaultValue)
-      }
-    }
-    component.render()
+        this.setSpeed(this.options.defaultValue);
+      },
+    };
+    component.render();
     // Refresh speed label on language change
     globalThis.addEventListener('i18nLanguageChanged', () => {
-      component.setSpeed(component.currentSpeed, true)
-    })
-    return component
+      component.setSpeed(component.currentSpeed, true);
+    });
+    return component;
   }
   /**
    * Создает переиспользуемый компонент управления цветом
@@ -205,21 +231,21 @@ class SharedComponents {
         '#10b981',
         '#f59e0b',
         '#8b5cf6',
-        '#ec4899'
+        '#ec4899',
       ],
       defaultValue: null, // Будет установлен в colors[0] если не указан
       onColorChange: null,
       title: '🎨 Цвет',
-      ...options
-    }
+      ...options,
+    };
     const component = {
       container,
       options: defaultOptions,
       currentColor: defaultOptions.defaultValue || defaultOptions.colors[0],
       elements: {},
       render() {
-        const colorControl = document.createElement('div')
-        colorControl.className = 'color-control'
+        const colorControl = document.createElement('div');
+        colorControl.className = 'color-control';
         colorControl.innerHTML = `
   <h3>${defaultOptions.title}</h3>
   <div class="color-palette">
@@ -232,35 +258,35 @@ class SharedComponents {
   title="${color}"
   aria-label="Color: ${color}">
   </button>
-  `
+  `,
     )
     .join('')}
   </div>
-  `
-        container.appendChild(colorControl)
-        this.setupEventListeners()
-        this.setColor(this.currentColor)
-        return this
+  `;
+        container.appendChild(colorControl);
+        this.setupEventListeners();
+        this.setColor(this.currentColor);
+        return this;
       },
       setupEventListeners() {
-        const buttons = container.querySelectorAll('.color-btn')
+        const buttons = container.querySelectorAll('.color-btn');
         for (const button of buttons) {
           button.addEventListener('click', () => {
-            const color = button.dataset.color
-            this.setColor(color)
-          })
+            const color = button.dataset.color;
+            this.setColor(color);
+          });
         }
       },
       setColor(color) {
-        this.currentColor = color
-        const buttons = container.querySelectorAll('.color-btn')
+        this.currentColor = color;
+        const buttons = container.querySelectorAll('.color-btn');
         for (const btn of buttons) {
-          btn.classList.toggle('active', btn.dataset.color === color)
+          btn.classList.toggle('active', btn.dataset.color === color);
         }
-        this.options.onColorChange?.(color)
-      }
-    }
-    return component.render()
+        this.options.onColorChange?.(color);
+      },
+    };
+    return component.render();
   }
   /**
    * Создает переиспользуемый компонент управления размером
@@ -271,16 +297,16 @@ class SharedComponents {
       defaultValue: 40,
       onSizeChange: null,
       title: '📏 Размер',
-      ...options
-    }
+      ...options,
+    };
     const component = {
       container,
       options: defaultOptions,
       currentSize: defaultOptions.defaultValue,
       elements: {},
       render() {
-        const sizeControl = document.createElement('div')
-        sizeControl.className = 'size-control'
+        const sizeControl = document.createElement('div');
+        sizeControl.className = 'size-control';
         sizeControl.innerHTML = `
   <h3>${defaultOptions.title}</h3>
   <div class="size-palette">
@@ -293,38 +319,38 @@ class SharedComponents {
   aria-label="Size: x${index + 1} (${size}px)">
   x${index + 1}
   </button>
-  `
+  `,
     )
     .join('')}
   </div>
-  `
-        container.appendChild(sizeControl)
-        this.setupEventListeners()
-        this.setSize(this.currentSize)
-        return this
+  `;
+        container.appendChild(sizeControl);
+        this.setupEventListeners();
+        this.setSize(this.currentSize);
+        return this;
       },
       setupEventListeners() {
-        const buttons = container.querySelectorAll('.size-btn')
+        const buttons = container.querySelectorAll('.size-btn');
         for (const button of buttons) {
           button.addEventListener('click', () => {
-            const size = Number.parseInt(button.dataset.size, 10)
-            this.setSize(size)
-          })
+            const size = Number.parseInt(button.dataset.size, 10);
+            this.setSize(size);
+          });
         }
       },
       setSize(size) {
-        this.currentSize = size
-        const buttons = container.querySelectorAll('.size-btn')
+        this.currentSize = size;
+        const buttons = container.querySelectorAll('.size-btn');
         for (const btn of buttons) {
           btn.classList.toggle(
             'active',
-            Number.parseInt(btn.dataset.size, 10) === size
-          )
+            Number.parseInt(btn.dataset.size, 10) === size,
+          );
         }
-        this.options.onSizeChange?.(size)
-      }
-    }
-    return component.render()
+        this.options.onSizeChange?.(size);
+      },
+    };
+    return component.render();
   }
   /**
    * Создает переиспользуемый компонент статуса
@@ -338,35 +364,35 @@ class SharedComponents {
       showIcon: true,
       autoHide: false,
       hideDelay: 3000,
-      ...options
-    }
+      ...options,
+    };
     const component = {
       container,
       options: defaultOptions,
       currentStatus: 'idle',
       elements: {},
       render() {
-        const statusIndicator = document.createElement('div')
-        statusIndicator.className = 'status-indicator'
+        const statusIndicator = document.createElement('div');
+        statusIndicator.className = 'status-indicator';
         statusIndicator.innerHTML = `
   <div class="status-content">
   ${defaultOptions.showIcon ? '<span class="status-icon">⏳</span>' : ''}
   <span class="status-text">${defaultOptions.title}</span>
   </div>
-  `
-        container.appendChild(statusIndicator)
-        this.setupElements()
-        return this
+  `;
+        container.appendChild(statusIndicator);
+        this.setupElements();
+        return this;
       },
       setupElements() {
-        this.elements.container = container.querySelector('.status-indicator')
-        this.elements.icon = container.querySelector('.status-icon')
-        this.elements.text = container.querySelector('.status-text')
+        this.elements.container = container.querySelector('.status-indicator');
+        this.elements.icon = container.querySelector('.status-icon');
+        this.elements.text = container.querySelector('.status-text');
       },
       setStatus(status, message) {
-        this.currentStatus = status
+        this.currentStatus = status;
         if (this.elements.text) {
-          this.elements.text.textContent = message || ''
+          this.elements.text.textContent = message || '';
         }
         if (this.elements.icon) {
           const icons = {
@@ -374,23 +400,23 @@ class SharedComponents {
             warning: '⚠️',
             error: '❌',
             waiting: '⏳',
-            idle: '⏳'
-          }
-          this.elements.icon.textContent = icons[status] || '⏳'
+            idle: '⏳',
+          };
+          this.elements.icon.textContent = icons[status] || '⏳';
         }
         if (this.elements.container) {
           this.elements.container.className =
-            'status-indicator status-' + status
+            'status-indicator status-' + status;
         }
-      }
-    }
-    return component.render()
+      },
+    };
+    return component.render();
   }
 }
-const sharedComponents = new SharedComponents()
+const sharedComponents = new SharedComponents();
 if (typeof globalThis !== 'undefined') {
-  globalThis.SharedComponents = SharedComponents
-  globalThis.sharedComponents = sharedComponents
+  globalThis.SharedComponents = SharedComponents;
+  globalThis.sharedComponents = sharedComponents;
 }
 
-module.exports = { SharedComponents, sharedComponents }
+module.exports = { SharedComponents, sharedComponents };

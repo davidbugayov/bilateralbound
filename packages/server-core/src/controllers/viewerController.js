@@ -1,122 +1,122 @@
-'use strict'
+'use strict';
 
-const { clearStateCache } = require('../network/middleware')
-const ValidationUtils = require('../utils/validation')
+const { clearStateCache } = require('../network/middleware');
+const ValidationUtils = require('../utils/validation');
 
 function registerViewerRoutes(
   app,
   sessionService,
   webSocketManager,
   broadcastService,
-  { requireSession, logger }
+  { requireSession, logger },
 ) {
   // Viewer update (from expressApp L816-828)
   app.post(
     '/api/session/:sessionId/viewer/update',
     requireSession,
     (req, res) => {
-      const { sessionId } = req.params
-      sessionService.updateBallState(sessionId, req.body)
+      const { sessionId } = req.params;
+      sessionService.updateBallState(sessionId, req.body);
 
       // Broadcast update to all WebSocket clients
-      broadcastService.broadcastState(sessionId)
+      broadcastService.broadcastState(sessionId);
 
-      res.json({ success: true, message: 'Viewer update processed' })
-    }
-  )
+      res.json({ success: true, message: 'Viewer update processed' });
+    },
+  );
 
   // Audio activated notification (from expressApp L831-851)
   app.post(
     '/api/session/:sessionId/viewer/audio-activated',
     requireSession,
     (req, res) => {
-      const { sessionId } = req.params
-      const session = req.session
+      const { sessionId } = req.params;
+      const session = req.session;
 
-      session.viewerAudioActivated = req.body?.activated ?? true
+      session.viewerAudioActivated = req.body?.activated ?? true;
 
       // Use dedicated broadcastViewerAudioActivated instead of broadcastState with 3 args
       broadcastService.broadcastViewerAudioActivated(
         sessionId,
-        session.viewerAudioActivated
-      )
+        session.viewerAudioActivated,
+      );
 
-      res.json({ success: true })
-    }
-  )
+      res.json({ success: true });
+    },
+  );
 
   // Bounce sync - viewer sends ball position for controller preview sync (from expressApp L852-879)
   app.post(
     '/api/session/:sessionId/viewer/bounce',
     requireSession,
     (req, res) => {
-      const { sessionId } = req.params
-      const validated = ValidationUtils.validateBouncePayload(req.body)
+      const { sessionId } = req.params;
+      const validated = ValidationUtils.validateBouncePayload(req.body);
       if (!validated) {
         return res
           .status(400)
-          .json({ error: 'Invalid bounce data', requestId: req.id })
+          .json({ error: 'Invalid bounce data', requestId: req.id });
       }
 
       // Broadcast bounce_sync to controllers via WebSocket
       const bounceMessage = JSON.stringify({
         type: 'bounce_sync',
-        payload: validated
-      })
+        payload: validated,
+      });
       for (const { client, info } of webSocketManager.getClients(sessionId)) {
         if (info.role === 'controller' && client.readyState === 1) {
           try {
-            client.send(bounceMessage)
+            client.send(bounceMessage);
           } catch {
             /* ignore */
           }
         }
       }
 
-      res.json({ success: true })
-    }
-  )
+      res.json({ success: true });
+    },
+  );
 
   // Viewer connect (from expressApp L880-898)
   app.post(
     '/api/session/:sessionId/viewer/connect',
     requireSession,
     (req, res) => {
-      const { sessionId } = req.params
-      const { screenSize } = req.body
-      const session = req.session
-      session.viewerConnected = true
+      const { sessionId } = req.params;
+      const { screenSize } = req.body;
+      const session = req.session;
+      session.viewerConnected = true;
 
       if (screenSize) {
-        sessionService.setViewerScreenSize(sessionId, screenSize)
-        clearStateCache(sessionService.apiCache, sessionId)
+        sessionService.setViewerScreenSize(sessionId, screenSize);
+        clearStateCache(sessionService.apiCache, sessionId);
       }
 
-      broadcastService.broadcastViewerConnection(sessionId, true, screenSize)
+      broadcastService.broadcastViewerConnection(sessionId, true, screenSize);
 
-      res.json({ success: true, message: 'Viewer connected' })
-    }
-  )
+      res.json({ success: true, message: 'Viewer connected' });
+    },
+  );
 
   // Viewer screen size (from expressApp L899-916)
   app.post(
     '/api/session/:sessionId/viewer/screen-size',
     requireSession,
     (req, res) => {
-      const { sessionId } = req.params
-      const { width, height } = req.body || {}
+      const { sessionId } = req.params;
+      const { width, height } = req.body || {};
 
       if (typeof width === 'number' && typeof height === 'number') {
-        sessionService.setViewerScreenSize(sessionId, { width, height })
-        clearStateCache(sessionService.apiCache, sessionId)
-        return res.json({ success: true })
+        sessionService.setViewerScreenSize(sessionId, { width, height });
+        clearStateCache(sessionService.apiCache, sessionId);
+        return res.json({ success: true });
       }
 
       return res
         .status(400)
-        .json({ error: 'Invalid screen size', requestId: req.id })
-    }
-  )
+        .json({ error: 'Invalid screen size', requestId: req.id });
+    },
+  );
 }
 
-module.exports = { registerViewerRoutes }
+module.exports = { registerViewerRoutes };

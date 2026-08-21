@@ -13,7 +13,10 @@ const commonRules = {
   'no-redeclare': 'error',
   'no-const-assign': 'error',
   'no-var': 'error',
-  'no-unused-vars': ['error', { args: 'none', caughtErrorsIgnorePattern: '^_' }],
+  'no-unused-vars': [
+    'error',
+    { args: 'none', caughtErrorsIgnorePattern: '^_' },
+  ],
   'no-async-promise-executor': 'error',
   'no-await-in-loop': 'error',
   'require-atomic-updates': 'error',
@@ -91,7 +94,10 @@ module.exports = [
       ...commonRules,
       // Allow JSHint directives and legacy comments
       'no-redeclare': 'off',
-      'no-unused-vars': ['error', { args: 'none', caughtErrorsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'error',
+        { args: 'none', caughtErrorsIgnorePattern: '^_' },
+      ],
     },
   },
 
@@ -119,7 +125,10 @@ module.exports = [
       'no-undef': 'off', // Allow global Node.js features
       'no-console': 'off',
       'no-debugger': 'off',
-      'no-unused-vars': ['warn', { args: 'none', caughtErrorsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'warn',
+        { args: 'none', caughtErrorsIgnorePattern: '^_' },
+      ],
     },
   },
 
@@ -294,7 +303,10 @@ module.exports = [
     },
     rules: {
       'no-await-in-loop': 'off', // Disable in test scripts where sequential awaiting is often necessary
-      'no-unused-vars': ['warn', { args: 'none', caughtErrorsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'warn',
+        { args: 'none', caughtErrorsIgnorePattern: '^_' },
+      ],
     },
   },
 
@@ -386,7 +398,12 @@ module.exports = [
       'no-redeclare': 'off',
       'no-unused-vars': [
         'error',
-        { args: 'none', varsIgnorePattern: '^_', argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        {
+          args: 'none',
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
       ],
     },
   },

@@ -226,13 +226,19 @@ iptables -A FORWARD -d 10.10.10.0/24 -j ACCEPT
 **Token**: `YM_ID = 104698530` (counter ID)
 
 **Architecture**: two scripts in `<head>` with `defer`:
+
 - `public/js/ui/cookie-consent.js` — consent banner, loads ym on accept
 - `public/js/analytics/metrika-events.js` — event bus → ym(`reachGoal`)
 
 **Event bus**:
+
 ```js
-globalThis.dispatchEvent(new CustomEvent('bb_metrika_session_started'))
-globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail: { setting: 'speed' } }))
+globalThis.dispatchEvent(new CustomEvent("bb_metrika_session_started"));
+globalThis.dispatchEvent(
+  new CustomEvent("bb_metrika_settings_changed", {
+    detail: { setting: "speed" },
+  }),
+);
 ```
 
 **Cookie consent flow** (`localStorage` key `bb_cookie_consent`): `accepted` → ym loads; `null` → banner, queue; `declined` → discard.
@@ -245,9 +251,9 @@ globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `STARS_BOT_TOKEN` | For subs | Telegram bot token for @emdrbilateral_bot |
+| Variable               | Required | Description                                           |
+| ---------------------- | -------- | ----------------------------------------------------- |
+| `STARS_BOT_TOKEN`      | For subs | Telegram bot token for @emdrbilateral_bot             |
 | `STARS_PROVIDER_TOKEN` | Optional | Telegram Stars provider token (usually empty for XTR) |
 
 ## Playwright Testing
@@ -255,11 +261,13 @@ globalThis.dispatchEvent(new CustomEvent('bb_metrika_settings_changed', { detail
 Use Playwright MCP server for browser automation and E2E testing. Available tools:
 
 ### Navigation & Pages
+
 - `playwright_navigate` — open URL in browser (chromium/firefox/webkit)
 - `playwright_go_back` / `playwright_go_forward` — browser history
 - `playwright_close` — close browser
 
 ### Interaction
+
 - `playwright_click` — click element by CSS selector
 - `playwright_fill` — fill input field
 - `playwright_select` — select dropdown option
@@ -269,28 +277,33 @@ Use Playwright MCP server for browser automation and E2E testing. Available tool
 - `playwright_drag` — drag element to target
 
 ### Assertions & Inspection
+
 - `playwright_get_visible_text` — get page text content
 - `playwright_get_visible_html` — get page HTML
 - `playwright_screenshot` — capture screenshot (base64 or PNG file)
 - `playwright_console_logs` — retrieve browser console logs
 
 ### Network & API
+
 - `playwright_get` / `playwright_post` / `playwright_put` / `playwright_patch` / `playwright_delete` — HTTP requests from browser context
 - `playwright_expect_response` + `playwright_assert_response` — wait for and validate HTTP responses
 
 ### Advanced
+
 - `playwright_evaluate` — execute JavaScript in page context
 - `playwright_resize` — resize viewport (supports device presets: iPhone, iPad, etc.)
 - `playwright_custom_user_agent` — set custom User-Agent
 - `playwright_save_as_pdf` — save page as PDF
 
 ### Code Generation
+
 - `start_codegen_session` — record Playwright actions
 - `end_codegen_session` — generate test file from recorded actions
 - `get_codegen_session` — view session info
 - `clear_codegen_session` — discard session
 
 ### Usage Example
+
 ```
 # Open controller page
 playwright_navigate url="http://localhost:3000/c/test123"
@@ -326,6 +339,7 @@ Use plugins proactively for relevant tasks:
 ## Sensitive Files
 
 Do not modify without explicit instruction:
+
 - `packages/shared/physics-engine.js` — deterministic physics; changes break viewer/controller sync
 - `packages/server-core/src/network/webSocketServer.js` — WS message routing
 - `packages/server-core/src/services/BroadcastService.js` — delta compression, event relay

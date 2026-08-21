@@ -107,26 +107,29 @@ self.addEventListener('fetch', (event) => {
   }
 
   // For other requests: network first, cache fallback
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok && request.url.startsWith(self.location.origin)) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            return response;
-          }
-          // Non-OK — serve any cached version as fallback
-          return caches
-            .match(request, { ignoreSearch: true })
-            .then((fallback) => fallback || response);
-        })
-        .catch(async () => {
-           const cached = await caches.match(request, { ignoreSearch: true });
-           if (cached) return cached;
-           // If we have nothing, throw so the browser handles it naturally, 
-           // but respondWith must receive a promise that resolves to a Response.
-           // For non-essential assets, we can return a generic error response.
-           return new Response('Network error', { status: 408, headers: { 'Content-Type': 'text/plain' } });
-        }),
-    );
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        if (response.ok && request.url.startsWith(self.location.origin)) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        }
+        // Non-OK — serve any cached version as fallback
+        return caches
+          .match(request, { ignoreSearch: true })
+          .then((fallback) => fallback || response);
+      })
+      .catch(async () => {
+        const cached = await caches.match(request, { ignoreSearch: true });
+        if (cached) return cached;
+        // If we have nothing, throw so the browser handles it naturally,
+        // but respondWith must receive a promise that resolves to a Response.
+        // For non-essential assets, we can return a generic error response.
+        return new Response('Network error', {
+          status: 408,
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      }),
+  );
 });

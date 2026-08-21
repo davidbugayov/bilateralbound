@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /**
  * Shared smoothing utilities for adaptive physics smoothing
@@ -30,9 +30,9 @@ const DEFAULT_SMOOTHING_CONFIG = {
   // Adaptive factors — how much jitter affects each parameter
   dampingJitterFactor: 20, // jitterMs / factor added to damping
   stiffnessJitterFactor: 30, // jitterMs / factor subtracted from stiffness
-  highJitterThreshold: 15 // Threshold for snapDistance increase
+  highJitterThreshold: 15, // Threshold for snapDistance increase
   // Removed: exponentialSmoothing, stateBuffering, bufferSize — unused
-}
+};
 
 // ============================================
 // CONFIG RESOLUTION
@@ -46,9 +46,9 @@ function resolveSmoothingConfig() {
   const globalConfig =
     typeof globalThis !== 'undefined' && globalThis.BBConfig
       ? globalThis.BBConfig.smoothing || globalThis.BBConfig
-      : {}
+      : {};
 
-  return { ...DEFAULT_SMOOTHING_CONFIG, ...globalConfig }
+  return { ...DEFAULT_SMOOTHING_CONFIG, ...globalConfig };
 }
 
 // ============================================
@@ -74,20 +74,20 @@ function resolveSmoothingConfig() {
  * // jitter=50: damping = 20 + 50/20 = 22.5 (capped at 25)
  */
 function calculateAdaptiveSmoothing(jitterMs, customConfig) {
-  const config = customConfig || resolveSmoothingConfig()
+  const config = customConfig || resolveSmoothingConfig();
 
   // Extract adaptive factors
-  const baseDamping = config.damping || DEFAULT_SMOOTHING_CONFIG.damping
-  const baseStiffness = config.stiffness || DEFAULT_SMOOTHING_CONFIG.stiffness
+  const baseDamping = config.damping || DEFAULT_SMOOTHING_CONFIG.damping;
+  const baseStiffness = config.stiffness || DEFAULT_SMOOTHING_CONFIG.stiffness;
   const dampingFactor =
-    config.dampingJitterFactor || DEFAULT_SMOOTHING_CONFIG.dampingJitterFactor
+    config.dampingJitterFactor || DEFAULT_SMOOTHING_CONFIG.dampingJitterFactor;
   const stiffnessFactor =
     config.stiffnessJitterFactor ||
-    DEFAULT_SMOOTHING_CONFIG.stiffnessJitterFactor
+    DEFAULT_SMOOTHING_CONFIG.stiffnessJitterFactor;
   const highJitterThreshold =
-    config.highJitterThreshold || DEFAULT_SMOOTHING_CONFIG.highJitterThreshold
+    config.highJitterThreshold || DEFAULT_SMOOTHING_CONFIG.highJitterThreshold;
   const baseSnapDistance =
-    config.snapDistance || DEFAULT_SMOOTHING_CONFIG.snapDistance
+    config.snapDistance || DEFAULT_SMOOTHING_CONFIG.snapDistance;
 
   // Calculate adaptive values with clamping
   // Base values are now 2 (damping) and 3 (stiffness) — aligned with physics-engine.
@@ -100,35 +100,35 @@ function calculateAdaptiveSmoothing(jitterMs, customConfig) {
     8, // max clamp
     Math.max(
       1, // min clamp
-      baseDamping + jitterMs / dampingFactor
-    )
-  )
+      baseDamping + jitterMs / dampingFactor,
+    ),
+  );
 
   // Stiffness: decreases with jitter → gentler correction when network is bad
   const adaptiveStiffness = Math.min(
     10, // max clamp
     Math.max(
       1, // min clamp
-      baseStiffness - jitterMs / stiffnessFactor
-    )
-  )
+      baseStiffness - jitterMs / stiffnessFactor,
+    ),
+  );
 
   // Snap distance: increases when jitter is high → wider catch zone
   const adaptiveSnapDistance = Math.min(
     0.4, // max clamp
     Math.max(
       0.2, // min clamp
-      baseSnapDistance + (jitterMs > highJitterThreshold ? 0.05 : 0)
-    )
-  )
+      baseSnapDistance + (jitterMs > highJitterThreshold ? 0.05 : 0),
+    ),
+  );
 
   return {
     damping: adaptiveDamping,
     stiffness: adaptiveStiffness,
     maxPredictSec:
       config.maxPredictSec || DEFAULT_SMOOTHING_CONFIG.maxPredictSec,
-    snapDistance: adaptiveSnapDistance
-  }
+    snapDistance: adaptiveSnapDistance,
+  };
 }
 
 // ============================================
@@ -145,19 +145,19 @@ function calculateAdaptiveSmoothing(jitterMs, customConfig) {
  * @param {number} jitterMs - Current network jitter in milliseconds
  */
 function applyAdaptiveSmoothing(physicsEngine, jitterMs) {
-  if (!physicsEngine) return
+  if (!physicsEngine) return;
 
   // Update jitter metric on the engine (used for drift correction)
-  physicsEngine.updateJitter(jitterMs)
+  physicsEngine.updateJitter(jitterMs);
 
   // Calculate adaptive options based on current jitter
-  const options = calculateAdaptiveSmoothing(jitterMs)
+  const options = calculateAdaptiveSmoothing(jitterMs);
 
   // Apply to physics engine
-  physicsEngine.setSmoothingOptions(options)
+  physicsEngine.setSmoothingOptions(options);
 }
 
 module.exports = {
   calculateAdaptiveSmoothing,
-  applyAdaptiveSmoothing
-}
+  applyAdaptiveSmoothing,
+};

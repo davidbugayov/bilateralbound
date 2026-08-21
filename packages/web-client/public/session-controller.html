@@ -3,11 +3,38 @@
   <head>
     <!-- Language pre-loader (inlined to avoid blocking network request) -->
     <script>
-      (function(){var L='en',S=['en','ru','es','fr','de','pt','ja','zh'],K='emdr-language';try{L=localStorage.getItem(K)}catch(e){}if(!L||S.indexOf(L)===-1){L=location.hostname.includes('emdrbilateral.ru')?'ru':'en';try{localStorage.setItem(K,L)}catch(e){}}document.documentElement.lang=L;document.documentElement.dataset.lang=L;if(!document.documentElement.hasAttribute('data-i18n-rendered')){var s=document.createElement('style');s.id='i18n-cloak';s.innerHTML='[data-i18n]{visibility:hidden!important}';document.head.appendChild(s)}})();
+      (function () {
+        var L = "en",
+          S = ["en", "ru", "es", "fr", "de", "pt", "ja", "zh"],
+          K = "emdr-language";
+        try {
+          L = localStorage.getItem(K);
+        } catch (e) {}
+        if (!L || S.indexOf(L) === -1) {
+          L = location.hostname.includes("emdrbilateral.ru") ? "ru" : "en";
+          try {
+            localStorage.setItem(K, L);
+          } catch (e) {}
+        }
+        document.documentElement.lang = L;
+        document.documentElement.dataset.lang = L;
+        if (!document.documentElement.hasAttribute("data-i18n-rendered")) {
+          var s = document.createElement("style");
+          s.id = "i18n-cloak";
+          s.innerHTML = "[data-i18n]{visibility:hidden!important}";
+          document.head.appendChild(s);
+        }
+      })();
     </script>
     <script src="/js/i18n/i18n.js?v=2.39.817-52def66d" defer></script>
-    <script src="/js/i18n/language-selector.js?v=2.39.817-52def66d" defer></script>
-    <script src="/js/constants/i18n-constants.js?v=2.39.817-52def66d" defer></script>
+    <script
+      src="/js/i18n/language-selector.js?v=2.39.817-52def66d"
+      defer
+    ></script>
+    <script
+      src="/js/constants/i18n-constants.js?v=2.39.817-52def66d"
+      defer
+    ></script>
 
     <meta charset="utf-8" />
     <meta
@@ -114,9 +141,15 @@
     <link rel="stylesheet" href="/css/common.css?v=2.39.817-52def66d" />
     <link rel="stylesheet" href="/css/light-theme.css?v=2.39.817-52def66d" />
     <link rel="stylesheet" href="/css/controller.css?v=2.39.817-52def66d" />
-    <link rel="stylesheet" href="/css/subscription-badge.css?v=2.39.817-52def66d" />
+    <link
+      rel="stylesheet"
+      href="/css/subscription-badge.css?v=2.39.817-52def66d"
+    />
     <script src="/js/ui/cookie-consent.js?v=2.39.817-52def66d" defer></script>
-    <script src="/js/analytics/metrika-events.js?v=2.39.817-52def66d" defer></script>
+    <script
+      src="/js/analytics/metrika-events.js?v=2.39.817-52def66d"
+      defer
+    ></script>
   </head>
   <body>
     <header>
@@ -140,9 +173,21 @@
         data-i18n-attr="aria-label:controller.settingsLabel"
         title="Settings"
       >
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        <svg
+          viewBox="0 0 24 24"
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+          />
         </svg>
       </button>
     </header>
@@ -250,10 +295,38 @@
               data-i18n="controller.sizeLabel"
               >Size</span
             >
-            <button class="size-btn fs-size-btn" id="fsSize1">×1</button>
-            <button class="size-btn fs-size-btn" id="fsSize2">×2</button>
-            <button class="size-btn fs-size-btn" id="fsSize3">×3</button>
-            <button class="size-btn fs-size-btn" id="fsSize4">×4</button>
+            <button
+              class="size-btn fs-size-btn"
+              id="fsSize1"
+              aria-label="Size multiplier 1"
+              data-i18n-attr="aria-label:controller.sizeOne"
+            >
+              ×1
+            </button>
+            <button
+              class="size-btn fs-size-btn"
+              id="fsSize2"
+              aria-label="Size multiplier 2"
+              data-i18n-attr="aria-label:controller.sizeTwo"
+            >
+              ×2
+            </button>
+            <button
+              class="size-btn fs-size-btn"
+              id="fsSize3"
+              aria-label="Size multiplier 3"
+              data-i18n-attr="aria-label:controller.sizeThree"
+            >
+              ×3
+            </button>
+            <button
+              class="size-btn fs-size-btn"
+              id="fsSize4"
+              aria-label="Size multiplier 4"
+              data-i18n-attr="aria-label:controller.sizeFour"
+            >
+              ×4
+            </button>
           </div>
           <div class="fs-control-group fs-control-group--colors">
             <span
@@ -266,61 +339,73 @@
               class="color-btn fs-color-btn"
               id="fsBallCol1"
               data-color="#60a5fa"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol2"
               data-color="#ef4444"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol3"
               data-color="#10b981"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol4"
               data-color="#f59e0b"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol5"
               data-color="#8b5cf6"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol6"
               data-color="#f97316"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol7"
               data-color="#06b6d4"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol8"
               data-color="#84cc16"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol9"
               data-color="#fb7185"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol10"
               data-color="#ffffff"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol11"
               data-color="#a855f7"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBallCol12"
               data-color="#f472b6"
+              aria-label="Color"
             ></button>
           </div>
           <div class="fs-control-group fs-control-group--colors">
@@ -334,61 +419,73 @@
               class="color-btn fs-color-btn"
               id="fsBg1"
               data-color="#020617"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg2"
               data-color="#000000"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg3"
               data-color="#111827"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg4"
               data-color="#0a2540"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg5"
               data-color="#052e16"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg6"
               data-color="#1a102a"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg7"
               data-color="#2b1b0e"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg8"
               data-color="#032f2f"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg9"
               data-color="#2a0e14"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg10"
               data-color="#0f172a"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg11"
               data-color="#1a0b3d"
+              aria-label="Color"
             ></button>
             <button
               class="color-btn fs-color-btn"
               id="fsBg12"
               data-color="#3d1a0b"
+              aria-label="Color"
             ></button>
           </div>
         </div>
@@ -421,36 +518,158 @@
             </div>
             <details class="illus-accordion" id="illustrationCard">
               <summary class="illus-accordion__summary">
-                <span data-i18n="controller.illustrationTitle">Illustration</span>
-                <span id="illusSelectedPreview" class="illus-selected-preview"></span>
+                <span data-i18n="controller.illustrationTitle"
+                  >Illustration</span
+                >
+                <span
+                  id="illusSelectedPreview"
+                  class="illus-selected-preview"
+                ></span>
               </summary>
               <div class="illus-section">
                 <div class="illus-tabs" role="tablist">
-                  <button class="illus-tab active" role="tab" data-tab="animals" onclick="switchIllusTab('animals',this)" data-i18n="controller.illustrationAnimals">Animals</button>
-                  <button class="illus-tab" role="tab" data-tab="sport" onclick="switchIllusTab('sport',this)" data-i18n="controller.illustrationSport">Sport</button>
-                  <button class="illus-tab" role="tab" data-tab="emoji" onclick="switchIllusTab('emoji',this)" data-i18n="controller.illustrationEmoji">Emoji</button>
+                  <button
+                    class="illus-tab active"
+                    role="tab"
+                    data-tab="animals"
+                    onclick="switchIllusTab('animals', this)"
+                    data-i18n="controller.illustrationAnimals"
+                  >
+                    Animals
+                  </button>
+                  <button
+                    class="illus-tab"
+                    role="tab"
+                    data-tab="sport"
+                    onclick="switchIllusTab('sport', this)"
+                    data-i18n="controller.illustrationSport"
+                  >
+                    Sport
+                  </button>
+                  <button
+                    class="illus-tab"
+                    role="tab"
+                    data-tab="emoji"
+                    onclick="switchIllusTab('emoji', this)"
+                    data-i18n="controller.illustrationEmoji"
+                  >
+                    Emoji
+                  </button>
                 </div>
                 <div class="illus-grid" id="illusGrid">
-                  <button class="illus-emoji-btn illus-clear active" title="None" onclick="setIllustration(null,this)">✕</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🦁',this)">🦁</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐻',this)">🐻</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🦊',this)">🦊</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐱',this)">🐱</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐧',this)">🐧</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐼',this)">🐼</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🦄',this)">🦄</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐢',this)">🐢</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐝',this)">🐝</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐯',this)">🐯</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐘',this)">🐘</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐮',this)">🐮</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐰',this)">🐰</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🐵',this)">🐵</button>
-                  <button class="illus-emoji-btn" onclick="setIllustration('🦅',this)">🦅</button>
+                  <button
+                    class="illus-emoji-btn illus-clear active"
+                    title="None"
+                    onclick="setIllustration(null, this)"
+                  >
+                    ✕
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🦁', this)"
+                  >
+                    🦁
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐻', this)"
+                  >
+                    🐻
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🦊', this)"
+                  >
+                    🦊
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐱', this)"
+                  >
+                    🐱
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐧', this)"
+                  >
+                    🐧
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐼', this)"
+                  >
+                    🐼
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🦄', this)"
+                  >
+                    🦄
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐢', this)"
+                  >
+                    🐢
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐝', this)"
+                  >
+                    🐝
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐯', this)"
+                  >
+                    🐯
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐘', this)"
+                  >
+                    🐘
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐮', this)"
+                  >
+                    🐮
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐰', this)"
+                  >
+                    🐰
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🐵', this)"
+                  >
+                    🐵
+                  </button>
+                  <button
+                    class="illus-emoji-btn"
+                    onclick="setIllustration('🦅', this)"
+                  >
+                    🦅
+                  </button>
                 </div>
                 <div class="illus-custom-row">
-                  <input class="illus-custom-input" id="illusCustomInput" maxlength="2" placeholder="" data-i18n-attr="placeholder:controller.illustrationCustom">
-                  <button class="illus-apply-btn" onclick="applyCustomIllustration()" data-i18n="controller.illustrationApply">Apply</button>
+                  <input
+                    class="illus-custom-input"
+                    id="illusCustomInput"
+                    maxlength="2"
+                    placeholder=""
+                    data-i18n-attr="placeholder:controller.illustrationCustom"
+                  />
+                  <button
+                    class="illus-apply-btn"
+                    onclick="applyCustomIllustration()"
+                    data-i18n="controller.illustrationApply"
+                  >
+                    Apply
+                  </button>
                 </div>
               </div>
             </details>
@@ -459,61 +678,123 @@
 
         <!-- Sound -->
         <section class="control-section" aria-labelledby="sound-heading">
-          <h3 id="sound-heading" data-i18n="controller.settingsTabSound">Sound</h3>
+          <h3 id="sound-heading" data-i18n="controller.settingsTabSound">
+            Sound
+          </h3>
           <div class="sound-card">
             <!-- Enable toggle -->
             <div class="sound-card__enable">
               <div class="sound-card__enable-info">
-                <span class="sound-card__title" data-i18n="controller.enableSound">Enable sound</span>
-                <span class="sound-card__desc" data-i18n="controller.soundDesc">Play audio cues during the session</span>
+                <span
+                  class="sound-card__title"
+                  data-i18n="controller.enableSound"
+                  >Enable sound</span
+                >
+                <span class="sound-card__desc" data-i18n="controller.soundDesc"
+                  >Play audio cues during the session</span
+                >
               </div>
               <label class="sound-toggle">
-                <input type="checkbox" id="soundEnabledCheckbox">
-                <span class="sound-toggle__track"><span class="sound-toggle__thumb"></span></span>
+                <input type="checkbox" id="soundEnabledCheckbox" />
+                <span class="sound-toggle__track"
+                  ><span class="sound-toggle__thumb"></span
+                ></span>
               </label>
             </div>
             <!-- Sound type -->
-            <div id="soundTypeControl" class="sound-card__row sound-card__row--type">
-              <span class="sound-card__label" data-i18n="controller.soundTypeLabel">Sound type</span>
+            <div
+              id="soundTypeControl"
+              class="sound-card__row sound-card__row--type"
+            >
+              <span
+                class="sound-card__label"
+                data-i18n="controller.soundTypeLabel"
+                >Sound type</span
+              >
               <div class="sound-card__select-wrap">
                 <select id="soundTypeSelect" class="sound-card__select">
-                  <option value="soft" data-i18n="controller.soundTypeSoft">🎵 Soft (EMDR)</option>
-                  <option value="tick" data-i18n="controller.soundTypeTick">⏱️ Tick</option>
-                  <option value="tone" data-i18n="controller.soundTypeTone">🎹 Tone</option>
-                  <option value="click" data-i18n="controller.soundTypeClick">🖱️ Click</option>
-                  <option value="bounce" data-i18n="controller.soundTypeBounce">🎾 Bounce</option>
-                  <option value="beep" data-i18n="controller.soundTypeBeep">📢 Beep</option>
+                  <option value="soft" data-i18n="controller.soundTypeSoft">
+                    🎵 Soft (EMDR)
+                  </option>
+                  <option value="tick" data-i18n="controller.soundTypeTick">
+                    ⏱️ Tick
+                  </option>
+                  <option value="tone" data-i18n="controller.soundTypeTone">
+                    🎹 Tone
+                  </option>
+                  <option value="click" data-i18n="controller.soundTypeClick">
+                    🖱️ Click
+                  </option>
+                  <option value="bounce" data-i18n="controller.soundTypeBounce">
+                    🎾 Bounce
+                  </option>
+                  <option value="beep" data-i18n="controller.soundTypeBeep">
+                    📢 Beep
+                  </option>
                 </select>
-                <span class="sound-card__select-arrow" aria-hidden="true">▾</span>
+                <span class="sound-card__select-arrow" aria-hidden="true"
+                  >▾</span
+                >
               </div>
             </div>
             <!-- Controller monitor -->
             <div id="controllerMonitorControl" class="sound-card__row">
               <span class="sound-card__row-icon" aria-hidden="true">🖥️</span>
               <div class="sound-card__row-text">
-                <span class="sound-card__row-title" data-i18n="controller.monitorSound">Controller audio</span>
-                <span class="sound-card__row-desc" data-i18n="controller.monitorDesc">Play sound on therapist's device</span>
+                <span
+                  class="sound-card__row-title"
+                  data-i18n="controller.monitorSound"
+                  >Controller audio</span
+                >
+                <span
+                  class="sound-card__row-desc"
+                  data-i18n="controller.monitorDesc"
+                  >Play sound on therapist's device</span
+                >
               </div>
               <label class="sound-toggle sound-toggle--sm">
-                <input id="controllerMonitorCheckbox" type="checkbox">
-                <span class="sound-toggle__track"><span class="sound-toggle__thumb"></span></span>
+                <input id="controllerMonitorCheckbox" type="checkbox" />
+                <span class="sound-toggle__track"
+                  ><span class="sound-toggle__thumb"></span
+                ></span>
               </label>
             </div>
             <!-- Volume -->
-            <div id="controllerVolumeControl" class="sound-card__row sound-card__row--vol">
+            <div
+              id="controllerVolumeControl"
+              class="sound-card__row sound-card__row--vol"
+            >
               <span class="sound-card__row-icon" aria-hidden="true">🔈</span>
-              <span class="sound-card__vol-label" data-i18n="controller.volumeLabel">Volume</span>
-              <input id="controllerVolumeSlider" type="range" min="0" max="100" value="50" class="sound-card__slider">
-              <span id="controllerVolumeValue" class="sound-card__vol-val">50%</span>
+              <span
+                class="sound-card__vol-label"
+                data-i18n="controller.volumeLabel"
+                >Volume</span
+              >
+              <input
+                id="controllerVolumeSlider"
+                type="range"
+                min="0"
+                max="100"
+                value="50"
+                class="sound-card__slider"
+              />
+              <span id="controllerVolumeValue" class="sound-card__vol-val"
+                >50%</span
+              >
             </div>
             <!-- Viewer audio indicator -->
-            <div class="viewer-audio-indicator hidden" id="viewerAudioIndicator">
+            <div
+              class="viewer-audio-indicator hidden"
+              id="viewerAudioIndicator"
+            >
               <span class="icon">🔊</span>
-              <span data-i18n="controller.viewerSoundOff" id="viewerAudioText"></span>
+              <span
+                data-i18n="controller.viewerSoundOff"
+                id="viewerAudioText"
+              ></span>
             </div>
           </div>
         </section>
-
       </div>
 
       <!-- CENTER COLUMN: session + preview -->
@@ -525,9 +806,7 @@
           </h3>
           <p id="sessionInfo" class="session-info">
             <span class="session-info-item">
-              <span
-                class="session-info-timestamp"
-                id="sessionTimestamp"
+              <span class="session-info-timestamp" id="sessionTimestamp"
                 >Created: loading...</span
               >
             </span>
@@ -575,7 +854,9 @@
           <div class="preview-header">
             <div class="preview-header-left">
               <span class="preview-dot"></span>
-              <span id="preview-heading" data-i18n="controller.previewHeading">Movement preview</span>
+              <span id="preview-heading" data-i18n="controller.previewHeading"
+                >Movement preview</span
+              >
             </div>
             <button
               id="openPreviewFullscreenBtn"
@@ -584,22 +865,43 @@
               aria-label="Fullscreen"
               title="Fullscreen"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 5V1H5M9 1H13V5M13 9V13H9M5 13H1V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1 5V1H5M9 1H13V5M13 9V13H9M5 13H1V9"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </button>
           </div>
           <div class="preview-canvas-wrapper">
             <canvas id="preview"></canvas>
           </div>
-          <div id="viewerInfo" class="preview-viewer-info hidden" data-i18n="controller.waitingForViewer">
+          <div
+            id="viewerInfo"
+            class="preview-viewer-info hidden"
+            data-i18n="controller.waitingForViewer"
+          >
             Waiting for viewer connection
           </div>
         </aside>
       </div>
 
       <!-- Error state container (injected dynamically) -->
-      <div id="errorStatesContainer" class="error-states-container"></div>
+      <div
+        id="errorStatesContainer"
+        class="error-states-container"
+        role="alert"
+        aria-live="polite"
+      ></div>
 
       <!-- RIGHT COLUMN: primary controls -->
       <div class="controller-right-col">
@@ -695,9 +997,19 @@
                 >sec</span
               >
             </div>
-            <div id="autoStopCountdownRow" class="autostop-countdown-row" style="display:none">
-              <span id="autoStopCountdownPasses" class="autostop-countdown-val"></span>
-              <span id="autoStopCountdownSeconds" class="autostop-countdown-val"></span>
+            <div
+              id="autoStopCountdownRow"
+              class="autostop-countdown-row"
+              style="display: none"
+            >
+              <span
+                id="autoStopCountdownPasses"
+                class="autostop-countdown-val"
+              ></span>
+              <span
+                id="autoStopCountdownSeconds"
+                class="autostop-countdown-val"
+              ></span>
             </div>
           </div>
         </div>
@@ -766,7 +1078,9 @@
               data-i18n-attr="title:controller.infinityFull"
             >
               <span class="dir-icon">∞</span>
-              <span class="dir-lbl" data-i18n="controller.infinityShort">∞</span>
+              <span class="dir-lbl" data-i18n="controller.infinityShort"
+                >∞</span
+              >
             </button>
             <button
               class="dir-btn dir-brainspotting-btn"
@@ -775,27 +1089,54 @@
               data-i18n-attr="title:controller.brainspottingFull"
             >
               <span class="dir-icon">⊕</span>
-              <span class="dir-lbl" data-i18n="controller.brainspottingShort">BSP</span>
+              <span class="dir-lbl" data-i18n="controller.brainspottingShort"
+                >BSP</span
+              >
             </button>
           </fieldset>
         </div>
 
         <!-- Position -->
         <div class="controls-card">
-          <p class="controls-title" data-i18n="controller.positionTitle">Position</p>
+          <p class="controls-title" data-i18n="controller.positionTitle">
+            Position
+          </p>
           <fieldset class="pos-btns" id="posButtons">
-            <legend class="sr-only" data-i18n="controller.positionTitle">Position</legend>
-            <button class="pos-btn" data-band="top" onclick="setTrackBand('top')" data-i18n-attr="title:controller.positionTop">
+            <legend class="sr-only" data-i18n="controller.positionTitle">
+              Position
+            </legend>
+            <button
+              class="pos-btn"
+              data-band="top"
+              onclick="setTrackBand('top')"
+              data-i18n-attr="title:controller.positionTop"
+            >
               <span class="pos-icon">↑</span>
-              <span class="pos-lbl" data-i18n="controller.positionTop">Top</span>
+              <span class="pos-lbl" data-i18n="controller.positionTop"
+                >Top</span
+              >
             </button>
-            <button class="pos-btn active" data-band="center" onclick="setTrackBand('center')" data-i18n-attr="title:controller.positionCenter">
+            <button
+              class="pos-btn active"
+              data-band="center"
+              onclick="setTrackBand('center')"
+              data-i18n-attr="title:controller.positionCenter"
+            >
               <span class="pos-icon">⬤</span>
-              <span class="pos-lbl" data-i18n="controller.positionCenter">Center</span>
+              <span class="pos-lbl" data-i18n="controller.positionCenter"
+                >Center</span
+              >
             </button>
-            <button class="pos-btn" data-band="bottom" onclick="setTrackBand('bottom')" data-i18n-attr="title:controller.positionBottom">
+            <button
+              class="pos-btn"
+              data-band="bottom"
+              onclick="setTrackBand('bottom')"
+              data-i18n-attr="title:controller.positionBottom"
+            >
               <span class="pos-icon">↓</span>
-              <span class="pos-lbl" data-i18n="controller.positionBottom">Bottom</span>
+              <span class="pos-lbl" data-i18n="controller.positionBottom"
+                >Bottom</span
+              >
             </button>
           </fieldset>
         </div>
@@ -808,35 +1149,115 @@
 
         <!-- Presets -->
         <section class="control-section" aria-labelledby="presets-heading">
-          <h3 id="presets-heading" data-i18n="controller.presetsTitle">🎯 Presets</h3>
+          <h3 id="presets-heading" data-i18n="controller.presetsTitle">
+            🎯 Presets
+          </h3>
           <div id="presetControls"></div>
         </section>
-
       </div>
     </main>
     <!-- ===== SETTINGS MODAL ===== -->
-    <div id="settingsModal" class="smodal" role="dialog" aria-modal="true" aria-labelledby="smodal-title" hidden>
+    <div
+      id="settingsModal"
+      class="smodal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="smodal-title"
+      hidden
+    >
       <div class="smodal__overlay" id="smodalOverlay"></div>
       <div class="smodal__dialog">
         <aside class="smodal__sidebar">
           <h2 id="smodal-title" class="smodal__sidebar-title">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
             </svg>
             <span data-i18n="controller.settingsHeading">Settings</span>
           </h2>
           <nav class="smodal__nav" role="tablist">
-            <button class="smodal__tab active" role="tab" aria-selected="true" data-tab="sound" aria-controls="smodal-panel-sound">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <button
+              class="smodal__tab active"
+              role="tab"
+              aria-selected="true"
+              data-tab="sound"
+              aria-controls="smodal-panel-sound"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="15"
+                height="15"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
               <span data-i18n="controller.settingsTabSound">Sound</span>
             </button>
-            <button class="smodal__tab" role="tab" aria-selected="false" data-tab="shortcuts" aria-controls="smodal-panel-shortcuts">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+            <button
+              class="smodal__tab"
+              role="tab"
+              aria-selected="false"
+              data-tab="shortcuts"
+              aria-controls="smodal-panel-shortcuts"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="15"
+                height="15"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="2" y="6" width="20" height="12" rx="2" />
+                <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8" />
+              </svg>
               <span data-i18n="controller.settingsTabShortcuts">Shortcuts</span>
             </button>
-            <button class="smodal__tab" role="tab" aria-selected="false" data-tab="language" aria-controls="smodal-panel-language">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <button
+              class="smodal__tab"
+              role="tab"
+              aria-selected="false"
+              data-tab="language"
+              aria-controls="smodal-panel-language"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="15"
+                height="15"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path
+                  d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                />
+              </svg>
               <span data-i18n="controller.settingsTabLanguage">Language</span>
             </button>
           </nav>
@@ -844,32 +1265,65 @@
 
         <div class="smodal__content">
           <!-- SOUND PANEL (mirrors left-col controls) -->
-          <section class="smodal__panel" id="smodal-panel-sound" role="tabpanel">
-            <h3 class="smodal__panel-title" data-i18n="controller.settingsTabSound">Sound</h3>
+          <section
+            class="smodal__panel"
+            id="smodal-panel-sound"
+            role="tabpanel"
+          >
+            <h3
+              class="smodal__panel-title"
+              data-i18n="controller.settingsTabSound"
+            >
+              Sound
+            </h3>
             <div class="controls-card settings-card">
               <div class="settings-row settings-row--toggle">
                 <div class="settings-row__content">
                   <span class="settings-row__icon" aria-hidden="true">🔊</span>
                   <div class="settings-row__text">
-                    <span data-i18n="controller.enableSound" class="settings-row__title"></span>
-                    <span class="settings-row__desc" data-i18n="controller.soundDesc"></span>
+                    <span
+                      data-i18n="controller.enableSound"
+                      class="settings-row__title"
+                    ></span>
+                    <span
+                      class="settings-row__desc"
+                      data-i18n="controller.soundDesc"
+                    ></span>
                   </div>
                 </div>
                 <label class="toggle-switch">
-                  <input type="checkbox" data-mirror="soundEnabledCheckbox">
+                  <input type="checkbox" data-mirror="soundEnabledCheckbox" />
                   <span class="slider round"></span>
                 </label>
               </div>
               <div class="settings-row settings-row--select">
-                <label data-i18n="controller.soundTypeLabel" class="settings-row__label"></label>
+                <label
+                  data-i18n="controller.soundTypeLabel"
+                  class="settings-row__label"
+                ></label>
                 <div class="select-wrapper">
                   <select data-mirror="soundTypeSelect" class="settings-select">
-                    <option value="soft" data-i18n="controller.soundTypeSoft">🎵 Soft (EMDR)</option>
-                    <option value="tick" data-i18n="controller.soundTypeTick">⏱️ Tick</option>
-                    <option value="tone" data-i18n="controller.soundTypeTone">🎹 Tone</option>
-                    <option value="click" data-i18n="controller.soundTypeClick">🖱️ Click</option>
-                    <option value="bounce" data-i18n="controller.soundTypeBounce">🎾 Bounce</option>
-                    <option value="beep" data-i18n="controller.soundTypeBeep">📢 Beep</option>
+                    <option value="soft" data-i18n="controller.soundTypeSoft">
+                      🎵 Soft (EMDR)
+                    </option>
+                    <option value="tick" data-i18n="controller.soundTypeTick">
+                      ⏱️ Tick
+                    </option>
+                    <option value="tone" data-i18n="controller.soundTypeTone">
+                      🎹 Tone
+                    </option>
+                    <option value="click" data-i18n="controller.soundTypeClick">
+                      🖱️ Click
+                    </option>
+                    <option
+                      value="bounce"
+                      data-i18n="controller.soundTypeBounce"
+                    >
+                      🎾 Bounce
+                    </option>
+                    <option value="beep" data-i18n="controller.soundTypeBeep">
+                      📢 Beep
+                    </option>
                   </select>
                   <span class="select-arrow" aria-hidden="true">▾</span>
                 </div>
@@ -878,70 +1332,153 @@
                 <div class="settings-row__content">
                   <span class="settings-row__icon" aria-hidden="true">🖥️</span>
                   <div class="settings-row__text">
-                    <span data-i18n="controller.monitorSound" class="settings-row__title"></span>
-                    <span class="settings-row__desc" data-i18n="controller.monitorDesc"></span>
+                    <span
+                      data-i18n="controller.monitorSound"
+                      class="settings-row__title"
+                    ></span>
+                    <span
+                      class="settings-row__desc"
+                      data-i18n="controller.monitorDesc"
+                    ></span>
                   </div>
                 </div>
                 <label class="toggle-switch">
-                  <input type="checkbox" data-mirror="controllerMonitorCheckbox">
+                  <input
+                    type="checkbox"
+                    data-mirror="controllerMonitorCheckbox"
+                  />
                   <span class="slider round"></span>
                 </label>
               </div>
               <div class="settings-row settings-row--volume">
-                <span class="settings-row__icon volume-icon" aria-hidden="true">🔈</span>
-                <span data-i18n="controller.volumeLabel" class="settings-row__label--compact"></span>
-                <input type="range" min="0" max="100" value="50" class="settings-volume-slider" data-mirror="controllerVolumeSlider">
-                <span class="settings-volume-value" data-mirror-display="controllerVolumeValue">50%</span>
+                <span class="settings-row__icon volume-icon" aria-hidden="true"
+                  >🔈</span
+                >
+                <span
+                  data-i18n="controller.volumeLabel"
+                  class="settings-row__label--compact"
+                ></span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="50"
+                  class="settings-volume-slider"
+                  data-mirror="controllerVolumeSlider"
+                />
+                <span
+                  class="settings-volume-value"
+                  data-mirror-display="controllerVolumeValue"
+                  >50%</span
+                >
               </div>
             </div>
           </section>
 
           <!-- SHORTCUTS PANEL -->
-          <section class="smodal__panel smodal__panel--hidden" id="smodal-panel-shortcuts" role="tabpanel">
-            <h3 class="smodal__panel-title" data-i18n="controller.settingsTabShortcuts">Keyboard Shortcuts</h3>
+          <section
+            class="smodal__panel smodal__panel--hidden"
+            id="smodal-panel-shortcuts"
+            role="tabpanel"
+          >
+            <h3
+              class="smodal__panel-title"
+              data-i18n="controller.settingsTabShortcuts"
+            >
+              Keyboard Shortcuts
+            </h3>
             <div class="smodal__shortcuts-list">
               <div class="smodal__shortcut-row">
-                <kbd class="smodal__kbd" data-i18n="controller.hotkeySpaceKey">Space</kbd>
-                <span data-i18n="controller.hotkeySpaceAction">— Start / Stop</span>
+                <kbd class="smodal__kbd" data-i18n="controller.hotkeySpaceKey"
+                  >Space</kbd
+                >
+                <span data-i18n="controller.hotkeySpaceAction"
+                  >— Start / Stop</span
+                >
               </div>
               <div class="smodal__shortcut-row">
                 <kbd class="smodal__kbd">↑↓←→</kbd>
-                <span data-i18n="controller.hotkeyArrowsAction">— Direction control</span>
+                <span data-i18n="controller.hotkeyArrowsAction"
+                  >— Direction control</span
+                >
               </div>
               <div class="smodal__shortcut-row">
-                <kbd class="smodal__kbd" data-i18n="controller.hotkeyFKey">F</kbd>
+                <kbd class="smodal__kbd" data-i18n="controller.hotkeyFKey"
+                  >F</kbd
+                >
                 <span data-i18n="controller.hotkeyFAction">— Fullscreen</span>
               </div>
             </div>
           </section>
 
           <!-- LANGUAGE PANEL -->
-          <section class="smodal__panel smodal__panel--hidden" id="smodal-panel-language" role="tabpanel">
-            <h3 class="smodal__panel-title" data-i18n="controller.settingsTabLanguage">Language</h3>
+          <section
+            class="smodal__panel smodal__panel--hidden"
+            id="smodal-panel-language"
+            role="tabpanel"
+          >
+            <h3
+              class="smodal__panel-title"
+              data-i18n="controller.settingsTabLanguage"
+            >
+              Language
+            </h3>
             <div class="smodal__lang-grid" id="smodalLangGrid">
-              <button class="smodal__lang-btn" data-lang="ru">🇷🇺 Русский</button>
-              <button class="smodal__lang-btn" data-lang="en">🇬🇧 English</button>
-              <button class="smodal__lang-btn" data-lang="de">🇩🇪 Deutsch</button>
-              <button class="smodal__lang-btn" data-lang="fr">🇫🇷 Français</button>
-              <button class="smodal__lang-btn" data-lang="es">🇪🇸 Español</button>
-              <button class="smodal__lang-btn" data-lang="pt">🇵🇹 Português</button>
+              <button class="smodal__lang-btn" data-lang="ru">
+                🇷🇺 Русский
+              </button>
+              <button class="smodal__lang-btn" data-lang="en">
+                🇬🇧 English
+              </button>
+              <button class="smodal__lang-btn" data-lang="de">
+                🇩🇪 Deutsch
+              </button>
+              <button class="smodal__lang-btn" data-lang="fr">
+                🇫🇷 Français
+              </button>
+              <button class="smodal__lang-btn" data-lang="es">
+                🇪🇸 Español
+              </button>
+              <button class="smodal__lang-btn" data-lang="pt">
+                🇵🇹 Português
+              </button>
               <button class="smodal__lang-btn" data-lang="ja">🇯🇵 日本語</button>
               <button class="smodal__lang-btn" data-lang="zh">🇨🇳 中文</button>
             </div>
           </section>
         </div>
 
-        <button class="smodal__close" id="smodalClose" aria-label="Close settings">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <button
+          class="smodal__close"
+          id="smodalClose"
+          aria-label="Close settings"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
       </div>
     </div>
 
     <script src="/js/ui/hint-banner.js?v=2.39.817-52def66d" defer></script>
-    <script src="/js/ui/settings-modal.js" defer></script>
-    <script src="/js/ui/error-states.js" defer></script>
-    <script src="/js/ui/success-toast.js" defer></script>
-    <script src="/js/ui/notifications/notification-system.js" defer></script>
+    <script src="/js/ui/settings-modal.js?v=2.39.817-52def66d" defer></script>
+    <script src="/js/ui/error-states.js?v=2.39.817-52def66d" defer></script>
+    <script src="/js/ui/success-toast.js?v=2.39.817-52def66d" defer></script>
+    <script
+      src="/js/ui/notifications/notification-system.js?v=2.39.817-52def66d"
+      defer
+    ></script>
     <script src="/dist/controller.bundle.js?v=2.39.817-52def66d" defer></script>
     <script src="/js/subscription-badge.js?v=2.39.817-52def66d" defer></script>
   </body>

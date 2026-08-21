@@ -1,11 +1,11 @@
-'use strict'
+'use strict';
 
-const isDev = (process.env.NODE_ENV || 'development') !== 'production'
+const isDev = (process.env.NODE_ENV || 'development') !== 'production';
 
 const prodOrigins = [
   'https://emdrbilateral.ru',
-  'https://emdrbilateral.online'
-]
+  'https://emdrbilateral.online',
+];
 
 const devOrigins = [
   'http://localhost:3000',
@@ -13,26 +13,22 @@ const devOrigins = [
   'http://localhost:5000',
   'http://localhost:8080',
   'https://davidbugayov.github.io',
-  'https://bilateralbound.onrender.com'
-]
+  'https://bilateralbound.onrender.com',
+];
 
 module.exports = {
   server: {
     PORT: process.env.NODE_PORT || process.env.PORT || 3000,
     NODE_ENV: process.env.NODE_ENV || 'development',
     PUBLIC_URL: process.env.PUBLIC_URL || 'https://emdrbilateral.online',
-    DATA_DIR: process.env.DATA_DIR || null  // null = use default relative path
+    DATA_DIR: process.env.DATA_DIR || null, // null = use default relative path
   },
   runtime: {
     CLIENT_SIM_ONLY:
       String(process.env.CLIENT_SIM_ONLY || 'true').toLowerCase() === 'true',
-    DEAD_RECKON_EPS: Math.max(
-      0,
-      Number.parseFloat(process.env.DEAD_RECKON_EPS || '1.5') || 1.5
-    )
   },
   cors: {
-    origins: isDev ? [...prodOrigins, ...devOrigins] : prodOrigins
+    origins: isDev ? [...prodOrigins, ...devOrigins] : prodOrigins,
   },
   logLevel: process.env.LOG_LEVEL || 'info',
   isDev,
@@ -40,7 +36,8 @@ module.exports = {
   // Telegram Stars subscription (https://core.telegram.org/bots/payments#stars)
   subscription: {
     ENABLED:
-      String(process.env.SUBSCRIPTION_ENABLED || 'true').toLowerCase() === 'true',
+      String(process.env.SUBSCRIPTION_ENABLED || 'true').toLowerCase() ===
+      'true',
     STARS_BOT_TOKEN: process.env.STARS_BOT_TOKEN || '',
     STARS_PROVIDER_TOKEN: process.env.STARS_PROVIDER_TOKEN || '',
     PRICE_STARS: Number.parseInt(process.env.PRICE_STARS || '75', 10), // 75 Stars (~100 RUB)
@@ -49,6 +46,6 @@ module.exports = {
       String(process.env.SUBSCRIPTION_TEST_MODE || '').toLowerCase() === 'true',
     BOT_USERNAME: process.env.BOT_USERNAME || 'emdrbilateral_bot',
     WEBHOOK_URL: process.env.WEBHOOK_URL || '',
-    WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || ''
-  }
-}
+    WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || '',
+  },
+};

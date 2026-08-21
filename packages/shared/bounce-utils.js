@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 /**
  * Bounce utilities for BilateralBound
  * Single source of truth for bounce message/event creation.
@@ -19,8 +19,8 @@ function createBounceEventDetail(side, ball) {
   return {
     side,
     x: ball.x,
-    y: ball.y
-  }
+    y: ball.y,
+  };
 }
 
 /**
@@ -38,8 +38,8 @@ function createBouncePhysicsData(side, ball, direction) {
     vx: ball.vx,
     vy: ball.vy,
     dirX: direction.x,
-    dirY: direction.y
-  }
+    dirY: direction.y,
+  };
 }
 
 // ============================================
@@ -55,9 +55,9 @@ function dispatchBounceEvent(side, ball) {
   try {
     if (typeof globalThis !== 'undefined') {
       const ev = new CustomEvent('bb_bounce', {
-        detail: createBounceEventDetail(side, ball)
-      })
-      globalThis.dispatchEvent(ev)
+        detail: createBounceEventDetail(side, ball),
+      });
+      globalThis.dispatchEvent(ev);
     }
   } catch {
     // Silently ignore event dispatch errors
@@ -66,5 +66,5 @@ function dispatchBounceEvent(side, ball) {
 
 module.exports = {
   createBouncePhysicsData,
-  dispatchBounceEvent
-}
+  dispatchBounceEvent,
+};

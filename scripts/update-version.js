@@ -54,7 +54,16 @@ function updateHtmlFiles(version, hash) {
   const versionString = `${version}-${hash}`;
   const publicDir = path.join(ROOT, 'packages/web-client/public');
 
-  const htmlFiles = ['index.html', 'session-controller.html', 'viewer.html'];
+  const htmlFiles = [
+    'index.html',
+    'session-controller.html',
+    'viewer.html',
+    'breathing.html',
+    'privacy.html',
+    'offer.html',
+    'about.html',
+    'paywall.html',
+  ];
 
   htmlFiles.forEach((file) => {
     const filePath = path.join(publicDir, file);
@@ -67,11 +76,20 @@ function updateHtmlFiles(version, hash) {
       /<meta name="version" content="[^"]*"\s*\/?>\s*/g,
       '',
     );
-    // STEP 2: Update version query parameter in all resource URLs (script, link, etc)
+    // STEP 2: Update existing version query parameter in all resource URLs
     content = content.replace(/\?v=[^"'\s]*/g, `?v=${versionString}`);
-    
-    // STEP 2.1: Specifically ensure /sw.js has a version query param in registrations
-    content = content.replace(/\/sw\.js(?:\?v=[^"']*)?/g, `/sw.js?v=${versionString}`);
+
+    // STEP 2.1: Add ?v= to script/link tags that are missing it (local assets only)
+    content = content.replace(
+      /((?:src|href)=["'])(\/(?:js|css|dist|manifest\.json|favicon)[^"'?]*)(["'])/g,
+      (match, prefix, p, quote) => `${prefix}${p}?v=${versionString}${quote}`,
+    );
+
+    // STEP 2.2: Specifically ensure /sw.js has a version query param in registrations
+    content = content.replace(
+      /\/sw\.js(?:\?v=[^"']*)?/g,
+      `/sw.js?v=${versionString}`,
+    );
 
     // STEP 3: Add single meta version tag (before theme-color for consistency)
     content = content.replace(
@@ -79,13 +97,11 @@ function updateHtmlFiles(version, hash) {
       `<meta name="version" content="${versionString}" />\n    <meta name="theme-color"`,
     );
 
-    // STEP 4: Update version display in page content (⚡ BilateralBound)
-    if (content.includes('⚡ BilateralBound')) {
-      content = content.replace(
-        /⚡ BilateralBound v?\d+\.\d+\.\d+(?:-[a-f0-9]+)?/g,
-        `⚡ BilateralBound v${versionString}`,
-      );
-    }
+    // STEP 4: Update version display in page content (BilateralBound footer)
+    content = content.replace(
+      /(?:⚡\s*)?BilateralBound v?\d+\.\d+\.\d+(?:-[a-f0-9]+)?/g,
+      `BilateralBound v${versionString}`,
+    );
 
     fs.writeFileSync(filePath, content);
     console.log(`✅ Updated ${file}: v${versionString}`);

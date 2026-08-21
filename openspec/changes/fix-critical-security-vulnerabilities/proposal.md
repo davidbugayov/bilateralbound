@@ -16,6 +16,7 @@ Security audit выявил три критические уязвимости (
 ## Capabilities
 
 ### New Capabilities
+
 - `webhook-authentication`: Telegram-вебхук аутентифицирует входящие запросы через проверку секретного заголовка, установленного при регистрации вебхука
 - `websocket-authentication`: WebSocket-подключения аутентифицируются через короткоживущий токен, выданный сервером при отдаче HTML-страницы; роль (controller/viewer) проверяется по токену
 - `subscription-authorization`: Эндпоинты управления подписками (`unlock`, `activate-by-telegram`, `status/:telegramUserId`) требуют доказательства владения Telegram-аккаунтом через проверку initData/Login Widget
@@ -23,6 +24,7 @@ Security audit выявил три критические уязвимости (
 - `data-access-control`: Платёжные данные и исходный код сервера не отдаются через статические роуты; `data/` директория находится вне статического корня
 
 ### Modified Capabilities
+
 <!-- Нет — существующие спецификации controller и i18n не затрагиваются изменениями требований -->
 
 ## Impact

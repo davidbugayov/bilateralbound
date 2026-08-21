@@ -1,5 +1,5 @@
 /* jshint node: true, esversion: 11, strict: true */
-'use strict'
+'use strict';
 
 /**
  * Subscription routes: check/status + Telegram webhook.
@@ -11,14 +11,35 @@
  * Bot messages support 8 languages via bot-translations.js.
  */
 
-const { t, siteUrl, dateLocale, autoRenewText } = require('../services/bot-translations')
-const crypto = require('node:crypto')
+const {
+  t,
+  siteUrl,
+  dateLocale,
+  autoRenewText,
+} = require('../services/bot-translations');
+const crypto = require('node:crypto');
 
-function registerSubscriptionRoutes(app, subscriptionService, { logger, telegramBot, telegramAuthService, priceStars, testMode, webhookSecret, baseUrl, isDev }, linkAccessService) {
-  const STARS_PRICE = priceStars || 75
+function registerSubscriptionRoutes(
+  app,
+  subscriptionService,
+  {
+    logger,
+    telegramBot,
+    telegramAuthService,
+    priceStars,
+    testMode,
+    webhookSecret,
+    baseUrl,
+    isDev,
+  },
+  linkAccessService,
+) {
+  const STARS_PRICE = priceStars || 75;
   if (!subscriptionService) {
-    logger.warn('SubscriptionService not provided — subscription routes disabled')
-    return
+    logger.warn(
+      'SubscriptionService not provided — subscription routes disabled',
+    );
+    return;
   }
 
   /**
@@ -28,34 +49,38 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   function verifyTelegramOwnership(req) {
     if (!telegramAuthService || !telegramAuthService.isConfigured) {
       // Fallback for dev without bot token: accept raw telegramUserId
-      const rawId = (req.body && req.body.telegramUserId) || req.query.telegramUserId
+      const rawId =
+        (req.body && req.body.telegramUserId) || req.query.telegramUserId;
       if (rawId) {
-        logger.warn({ telegramUserId: rawId }, 'Accepting raw telegramUserId — TelegramAuthService not configured')
-        const userId = Number.parseInt(rawId, 10)
-        return Number.isFinite(userId) && userId > 0 ? userId : null
+        logger.warn(
+          { telegramUserId: rawId },
+          'Accepting raw telegramUserId — TelegramAuthService not configured',
+        );
+        const userId = Number.parseInt(rawId, 10);
+        return Number.isFinite(userId) && userId > 0 ? userId : null;
       }
-      return null
+      return null;
     }
 
-    const initData = (req.body && req.body.initData) || req.query.initData
+    const initData = (req.body && req.body.initData) || req.query.initData;
     if (!initData) {
       // Allow raw telegramUserId as fallback during migration
-      const rawId = (req.body && req.body.telegramUserId)
+      const rawId = req.body && req.body.telegramUserId;
       if (rawId) {
-        const userId = Number.parseInt(rawId, 10)
+        const userId = Number.parseInt(rawId, 10);
         if (Number.isFinite(userId) && userId > 0) {
-          return userId
+          return userId;
         }
       }
-      return null
+      return null;
     }
 
-    const result = telegramAuthService.verifyInitData(initData)
+    const result = telegramAuthService.verifyInitData(initData);
     if (!result) {
-      logger.warn('initData verification failed')
-      return null
+      logger.warn('initData verification failed');
+      return null;
     }
-    return result.userId
+    return result.userId;
   }
 
   // ------------------------------------------------------------------
@@ -64,30 +89,30 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // Returns { active: boolean, subscription: { expiresAt, ... } | null }
   // ------------------------------------------------------------------
   app.post('/api/subscription/:customId/check', (req, res) => {
-    const { customId } = req.params
+    const { customId } = req.params;
     if (!customId || !/^[A-Za-z0-9_-]{3,64}$/.test(customId)) {
-      return res.status(400).json({ error: 'Invalid customId format' })
+      return res.status(400).json({ error: 'Invalid customId format' });
     }
 
-    const allowed = subscriptionService.isCustomIdAllowed(customId)
+    const allowed = subscriptionService.isCustomIdAllowed(customId);
     if (!allowed) {
       return res.json({
         active: false,
-        subscription: null
-      })
+        subscription: null,
+      });
     }
 
     // Find the owner and get full status
     // We need to look up the telegramUserId from the custom ID index
     const status = subscriptionService.getStatusForCustomId
       ? subscriptionService.getStatusForCustomId(customId)
-      : null
+      : null;
 
     res.json({
       active: true,
-      subscription: status || { expiresAt: null }
-    })
-  })
+      subscription: status || { expiresAt: null },
+    });
+  });
 
   // ------------------------------------------------------------------
   // POST /api/subscription/activate-by-telegram
@@ -95,35 +120,35 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // Body: { customId, telegramUserId }
   // ------------------------------------------------------------------
   app.post('/api/subscription/activate-by-telegram', (req, res) => {
-    const { customId } = req.body || {}
+    const { customId } = req.body || {};
     if (!customId) {
-      return res.status(400).json({ error: 'Missing customId' })
+      return res.status(400).json({ error: 'Missing customId' });
     }
 
-    const userId = verifyTelegramOwnership(req)
+    const userId = verifyTelegramOwnership(req);
     if (!userId) {
       return res.status(403).json({
         error: 'Proof of Telegram account ownership required',
-        hint: 'Send initData from Telegram.WebApp.initData'
-      })
+        hint: 'Send initData from Telegram.WebApp.initData',
+      });
     }
 
     // Check that the user has an active subscription
     if (!subscriptionService.isActive(userId)) {
       return res.status(402).json({
         error: 'No active subscription',
-        message: 'Please subscribe via Telegram first'
-      })
+        message: 'Please subscribe via Telegram first',
+      });
     }
 
     // Link custom ID to user
-    const result = subscriptionService.linkCustomId(customId, userId)
+    const result = subscriptionService.linkCustomId(customId, userId);
     if (!result.success) {
-      return res.status(409).json({ error: result.error })
+      return res.status(409).json({ error: result.error });
     }
 
-    res.json({ success: true, customId, telegramUserId: userId })
-  })
+    res.json({ success: true, customId, telegramUserId: userId });
+  });
 
   // ------------------------------------------------------------------
   // GET /api/link-access/:sessionId/check
@@ -132,22 +157,22 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // ------------------------------------------------------------------
   app.get('/api/link-access/:sessionId/check', (req, res) => {
     if (!linkAccessService) {
-      return res.json({ unlocked: false, unlockedUntil: null })
+      return res.json({ unlocked: false, unlockedUntil: null });
     }
-    const { sessionId } = req.params
-    const BROWSER_COOKIE = 'bb_lk'
-    const browserId = req.cookies && req.cookies[BROWSER_COOKIE]
+    const { sessionId } = req.params;
+    const BROWSER_COOKIE = 'bb_lk';
+    const browserId = req.cookies && req.cookies[BROWSER_COOKIE];
     if (!browserId) {
-      return res.json({ unlocked: false, unlockedUntil: null })
+      return res.json({ unlocked: false, unlockedUntil: null });
     }
-    const state = linkAccessService.get(browserId, sessionId)
-    const now = Date.now()
-    const unlocked = !!(state.unlockedUntil && state.unlockedUntil > now)
+    const state = linkAccessService.get(browserId, sessionId);
+    const now = Date.now();
+    const unlocked = !!(state.unlockedUntil && state.unlockedUntil > now);
     res.json({
       unlocked,
-      unlockedUntil: unlocked ? state.unlockedUntil : null
-    })
-  })
+      unlockedUntil: unlocked ? state.unlockedUntil : null,
+    });
+  });
 
   // ------------------------------------------------------------------
   // POST /api/link-access/:sessionId/unlock
@@ -158,23 +183,25 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // ------------------------------------------------------------------
   app.post('/api/link-access/:sessionId/unlock', (req, res) => {
     if (!linkAccessService) {
-      return res.status(500).json({ error: 'Link access service not available' })
+      return res
+        .status(500)
+        .json({ error: 'Link access service not available' });
     }
-    const { sessionId } = req.params
+    const { sessionId } = req.params;
 
     // Validate sessionId format (same constraints as customId)
     if (!sessionId || !/^[A-Za-z0-9_-]{3,64}$/.test(sessionId)) {
-      return res.status(400).json({ error: 'Invalid sessionId format' })
+      return res.status(400).json({ error: 'Invalid sessionId format' });
     }
 
     // Verify Telegram account ownership via initData
-    const userId = verifyTelegramOwnership(req)
+    const userId = verifyTelegramOwnership(req);
     if (!userId) {
       return res.status(403).json({
         error: 'Proof of Telegram account ownership required',
         i18nKey: 'paywall.proofRequired',
-        hint: 'Send initData from Telegram.WebApp.initData or hash from Login Widget'
-      })
+        hint: 'Send initData from Telegram.WebApp.initData or hash from Login Widget',
+      });
     }
 
     // Check active subscription
@@ -182,29 +209,33 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
       return res.status(402).json({
         error: 'No active subscription',
         i18nKey: 'paywall.noSubscription',
-        message: 'No active subscription found for this Telegram User ID. Please subscribe via @emdrbilateral_bot (75⭐ / 30 days).'
-      })
+        message:
+          'No active subscription found for this Telegram User ID. Please subscribe via @emdrbilateral_bot (75⭐ / 30 days).',
+      });
     }
 
     // Get subscription expiry
-    const status = subscriptionService.getStatus(userId)
-    const expiresAt = status && status.expiresAt ? status.expiresAt : Date.now() + subscriptionService.durationMs
+    const status = subscriptionService.getStatus(userId);
+    const expiresAt =
+      status && status.expiresAt
+        ? status.expiresAt
+        : Date.now() + subscriptionService.durationMs;
 
     // Get or issue browser cookie
-    const BROWSER_COOKIE = 'bb_lk'
-    let browserId = req.cookies && req.cookies[BROWSER_COOKIE]
+    const BROWSER_COOKIE = 'bb_lk';
+    let browserId = req.cookies && req.cookies[BROWSER_COOKIE];
     if (!browserId) {
-      browserId = require('node:crypto').randomUUID()
+      browserId = require('node:crypto').randomUUID();
       res.cookie(BROWSER_COOKIE, browserId, {
         httpOnly: true,
         secure: !req.app.get('isDev'),
         sameSite: 'lax',
-        maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
-      })
+        maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+      });
     }
 
     // Unlock access
-    linkAccessService.setUnlocked(browserId, sessionId, expiresAt)
+    linkAccessService.setUnlocked(browserId, sessionId, expiresAt);
 
     // Also set a non-httpOnly cookie so the subscription badge can read it client-side
     // without needing an API call. Cookie name: sub_active, value: expiry timestamp.
@@ -212,16 +243,21 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
       httpOnly: false,
       secure: !req.app.get('isDev'),
       sameSite: 'lax',
-      maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
-    })
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+    });
 
     logger.info(
-      { browserId, sessionId, telegramUserId: userId, expiresAt: new Date(expiresAt).toISOString() },
-      'Link access unlocked via subscription verification'
-    )
+      {
+        browserId,
+        sessionId,
+        telegramUserId: userId,
+        expiresAt: new Date(expiresAt).toISOString(),
+      },
+      'Link access unlocked via subscription verification',
+    );
 
-    res.json({ success: true, unlockedUntil: expiresAt })
-  })
+    res.json({ success: true, unlockedUntil: expiresAt });
+  });
 
   // ------------------------------------------------------------------
   // GET /api/subscription/status/:telegramUserId
@@ -229,47 +265,53 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // Requires proof of ownership via initData (query param or Authorization header).
   // ------------------------------------------------------------------
   app.get('/api/subscription/status/:telegramUserId', (req, res) => {
-    const paramUserId = Number.parseInt(req.params.telegramUserId, 10)
+    const paramUserId = Number.parseInt(req.params.telegramUserId, 10);
     if (!paramUserId) {
-      return res.status(400).json({ error: 'Invalid telegramUserId' })
+      return res.status(400).json({ error: 'Invalid telegramUserId' });
     }
 
     // Require proof of ownership — initData must validate to the same user
-    const verifiedUserId = verifyTelegramOwnership(req)
+    const verifiedUserId = verifyTelegramOwnership(req);
     if (!verifiedUserId) {
-      return res.status(401).json({ error: 'Proof of Telegram account ownership required' })
+      return res
+        .status(401)
+        .json({ error: 'Proof of Telegram account ownership required' });
     }
 
     // Ensure the verified user matches the requested user
     if (verifiedUserId !== paramUserId) {
-      return res.status(403).json({ error: 'Access denied — ownership mismatch' })
+      return res
+        .status(403)
+        .json({ error: 'Access denied — ownership mismatch' });
     }
 
-    const status = subscriptionService.getStatus(verifiedUserId)
-    res.json(status)
-  })
+    const status = subscriptionService.getStatus(verifiedUserId);
+    res.json(status);
+  });
 
   // ------------------------------------------------------------------
   // POST /api/subscription/:customId/renew
   // Renew subscription for a custom ID owner
   // ------------------------------------------------------------------
   app.post('/api/subscription/:customId/renew', (req, res) => {
-    const { customId } = req.params
+    const { customId } = req.params;
     if (!customId || !/^[A-Za-z0-9_-]{3,64}$/.test(customId)) {
-      return res.status(400).json({ error: 'Invalid customId format' })
+      return res.status(400).json({ error: 'Invalid customId format' });
     }
     const status = subscriptionService.getStatusForCustomId
       ? subscriptionService.getStatusForCustomId(customId)
-      : null
+      : null;
     if (!status || !status.active || !status.telegramUserId) {
-      return res.status(402).json({ error: 'No active subscription for this custom ID' })
+      return res
+        .status(402)
+        .json({ error: 'No active subscription for this custom ID' });
     }
-    const result = subscriptionService.renew(status.telegramUserId)
+    const result = subscriptionService.renew(status.telegramUserId);
     if (!result.success) {
-      return res.status(400).json({ error: result.error })
+      return res.status(400).json({ error: result.error });
     }
-    res.json(result)
-  })
+    res.json(result);
+  });
 
   // ------------------------------------------------------------------
   // POST /api/subscription/:customId/autorenew
@@ -277,49 +319,56 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   // Body: { enabled: boolean }
   // ------------------------------------------------------------------
   app.post('/api/subscription/:customId/autorenew', (req, res) => {
-    const { customId } = req.params
+    const { customId } = req.params;
     if (!customId || !/^[A-Za-z0-9_-]{3,64}$/.test(customId)) {
-      return res.status(400).json({ error: 'Invalid customId format' })
+      return res.status(400).json({ error: 'Invalid customId format' });
     }
-    const enabled = req.body?.enabled === true
+    const enabled = req.body?.enabled === true;
     const status = subscriptionService.getStatusForCustomId
       ? subscriptionService.getStatusForCustomId(customId)
-      : null
+      : null;
     if (!status || !status.telegramUserId) {
-      return res.status(402).json({ error: 'No subscription linked to this custom ID' })
+      return res
+        .status(402)
+        .json({ error: 'No subscription linked to this custom ID' });
     }
-    const arResult = subscriptionService.setAutoRenew(status.telegramUserId, enabled)
+    const arResult = subscriptionService.setAutoRenew(
+      status.telegramUserId,
+      enabled,
+    );
     if (!arResult.success) {
-      return res.status(400).json({ error: arResult.error })
+      return res.status(400).json({ error: arResult.error });
     }
-    res.json(arResult)
-  })
+    res.json(arResult);
+  });
 
   // ------------------------------------------------------------------
   // Helper: detect user language from update and persist it
   // Priority: 1) stored preference, 2) __lang_XX from payload, 3) Telegram language_code, 4) 'en'
   // ------------------------------------------------------------------
   function detectLanguage(update) {
-    let lang = update.message?.from?.language_code || 'en'
-    let langFromPayload = null
+    let lang = update.message?.from?.language_code || 'en';
+    let langFromPayload = null;
     if (update.message?.text && update.message.text.startsWith('/start ')) {
-      const payloadMatch = update.message.text.match(/__lang_([a-z]{2}(-[A-Z]{2})?)$/)
+      const payloadMatch = update.message.text.match(
+        /__lang_([a-z]{2}(-[A-Z]{2})?)$/,
+      );
       if (payloadMatch) {
-        langFromPayload = payloadMatch[1]
-        lang = langFromPayload
-        const senderId = update.message?.from?.id
+        langFromPayload = payloadMatch[1];
+        lang = langFromPayload;
+        const senderId = update.message?.from?.id;
         if (senderId) {
-          subscriptionService.setUserLanguage(senderId, lang)
+          subscriptionService.setUserLanguage(senderId, lang);
         }
       }
     }
     // Resolve stored language preference (overrides Telegram locale)
-    const telegramUserId = update.message?.from?.id
+    const telegramUserId = update.message?.from?.id;
     if (telegramUserId) {
-      const storedLang = subscriptionService.getUserLanguage(telegramUserId)
-      if (storedLang) lang = storedLang
+      const storedLang = subscriptionService.getUserLanguage(telegramUserId);
+      if (storedLang) lang = storedLang;
     }
-    return lang
+    return lang;
   }
 
   // ------------------------------------------------------------------
@@ -331,35 +380,40 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   app.post('/api/subscription/test-activate', (req, res) => {
     // Only available in development — never exposed in production behind nginx
     if (!isDev) {
-      return res.status(404).json({ error: 'Not found' })
+      return res.status(404).json({ error: 'Not found' });
     }
     if (!testMode) {
-      return res.status(404).json({ error: 'Not found' })
+      return res.status(404).json({ error: 'Not found' });
     }
 
-    const { telegramUserId, customId } = req.body || {}
-    const tgId = Number.parseInt(telegramUserId, 10)
+    const { telegramUserId, customId } = req.body || {};
+    const tgId = Number.parseInt(telegramUserId, 10);
     if (!tgId || !customId) {
-      return res.status(400).json({ error: 'Missing telegramUserId or customId' })
+      return res
+        .status(400)
+        .json({ error: 'Missing telegramUserId or customId' });
     }
 
     // Use a fake charge ID for test
-    const testToken = 'test_' + Date.now()
-    const result = subscriptionService.activate(tgId, testToken, 75)
+    const testToken = 'test_' + Date.now();
+    const result = subscriptionService.activate(tgId, testToken, 75);
     if (!result.success) {
-      return res.status(400).json({ error: result.error })
+      return res.status(400).json({ error: result.error });
     }
 
-    subscriptionService.linkCustomId(customId, tgId)
-    logger.info({ telegramUserId: tgId, customId, testToken }, 'TEST: subscription activated')
+    subscriptionService.linkCustomId(customId, tgId);
+    logger.info(
+      { telegramUserId: tgId, customId, testToken },
+      'TEST: subscription activated',
+    );
 
     res.json({
       success: true,
       customId,
       telegramUserId: tgId,
-      expiresAt: new Date(result.expiresAt).toISOString()
-    })
-  })
+      expiresAt: new Date(result.expiresAt).toISOString(),
+    });
+  });
 
   // ------------------------------------------------------------------
   // POST /api/subscription/webhook
@@ -369,248 +423,329 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   app.post('/api/subscription/webhook', (req, res) => {
     // Verify webhook authenticity via X-Telegram-Bot-Api-Secret-Token header
     if (!webhookSecret) {
-      logger.error('Webhook request rejected: WEBHOOK_SECRET not configured — refusing to process unauthenticated webhook')
-      return res.status(503).json({ error: 'Webhook not configured' })
+      logger.error(
+        'Webhook request rejected: WEBHOOK_SECRET not configured — refusing to process unauthenticated webhook',
+      );
+      return res.status(503).json({ error: 'Webhook not configured' });
     }
-    const receivedToken = req.headers['x-telegram-bot-api-secret-token']
-    const receivedBuf = receivedToken ? Buffer.from(receivedToken) : Buffer.alloc(0)
-    const secretBuf = Buffer.from(webhookSecret)
-    if (receivedBuf.length !== secretBuf.length || !crypto.timingSafeEqual(receivedBuf, secretBuf)) {
-      logger.warn({ hasToken: !!receivedToken }, 'Webhook request rejected: invalid or missing secret token')
-      return res.status(401).json({ error: 'Unauthorized' })
+    const receivedToken = req.headers['x-telegram-bot-api-secret-token'];
+    const receivedBuf = receivedToken
+      ? Buffer.from(receivedToken)
+      : Buffer.alloc(0);
+    const secretBuf = Buffer.from(webhookSecret);
+    if (
+      receivedBuf.length !== secretBuf.length ||
+      !crypto.timingSafeEqual(receivedBuf, secretBuf)
+    ) {
+      logger.warn(
+        { hasToken: !!receivedToken },
+        'Webhook request rejected: invalid or missing secret token',
+      );
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const update = req.body || {}
+    const update = req.body || {};
 
     // Respond quickly — Telegram expects 200 within a few seconds
-    res.status(200).json({ ok: true })
+    res.status(200).json({ ok: true });
 
     // Detect user language
-    const lang = detectLanguage(update)
+    const lang = detectLanguage(update);
 
     // ---- /start command — send welcome + invoice ----
     if (update.message?.text) {
-      const { chat, from } = update.message
-      const chatId = chat.id
+      const { chat, from } = update.message;
+      const chatId = chat.id;
 
-      const msgText = update.message.text
+      const msgText = update.message.text;
 
       if (msgText === '/start') {
-        const sUrl = siteUrl(lang)
-        const telegramUserId = from.id
+        const sUrl = siteUrl(lang);
+        const telegramUserId = from.id;
 
         // Check if already subscribed
-        const isSubscribed = subscriptionService.isActive(telegramUserId)
+        const isSubscribed = subscriptionService.isActive(telegramUserId);
 
         if (isSubscribed) {
           // Already subscribed — show renewal prompt with inline button
-          const status = subscriptionService.getStatus(telegramUserId)
-          const expDate = new Date(status.expiresAt).toLocaleDateString(dateLocale(lang))
+          const status = subscriptionService.getStatus(telegramUserId);
+          const expDate = new Date(status.expiresAt).toLocaleDateString(
+            dateLocale(lang),
+          );
           const statusMsg = t('already_subscribed_renewal', lang, {
             expDate,
-            clients: String(status.customIds?.length || 0)
-          })
+            clients: String(status.customIds?.length || 0),
+          });
           telegramBot?.sendMessage(chatId, statusMsg, {
             parse_mode: 'HTML',
             reply_markup: {
-              inline_keyboard: [[
-                { text: t('support_button', lang), callback_data: 'support_renew' }
-              ]]
-            }
-          })
-          return
+              inline_keyboard: [
+                [
+                  {
+                    text: t('support_button', lang),
+                    callback_data: 'support_renew',
+                  },
+                ],
+              ],
+            },
+          });
+          return;
         }
 
         // Not subscribed — send welcome + invoice
-        const msg = t('welcome_new', lang, { siteUrl: sUrl })
-        const msgResult = telegramBot?.sendMessage(chatId, msg, { parse_mode: 'HTML' })
-        logger.info({ chatId, msgSent: !!msgResult }, '/start welcome sent')
+        const msg = t('welcome_new', lang, { siteUrl: sUrl });
+        const msgResult = telegramBot?.sendMessage(chatId, msg, {
+          parse_mode: 'HTML',
+        });
+        logger.info({ chatId, msgSent: !!msgResult }, '/start welcome sent');
 
         // Send invoice directly for plain /start (payload = telegramUserId)
-        telegramBot?.sendInvoice(chatId, String(telegramUserId), STARS_PRICE, {
-          title: t('invoice_title', lang),
-          description: t('invoice_description_plain', lang),
-          label: t('invoice_label_plain', lang)
-        }).then(function (resp) {
-          logger.info({ chatId, respOk: resp?.ok, respCode: resp?.error_code }, '/start invoice response')
-          if (!resp?.ok) {
-            telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
-          }
-        })
-        return
+        telegramBot
+          ?.sendInvoice(chatId, String(telegramUserId), STARS_PRICE, {
+            title: t('invoice_title', lang),
+            description: t('invoice_description_plain', lang),
+            label: t('invoice_label_plain', lang),
+          })
+          .then(function (resp) {
+            logger.info(
+              { chatId, respOk: resp?.ok, respCode: resp?.error_code },
+              '/start invoice response',
+            );
+            if (!resp?.ok) {
+              telegramBot?.sendMessage(chatId, t('invoice_failed', lang));
+            }
+          })
+          .catch(function (err) {
+            logger.error({ err, chatId }, '/start invoice sendInvoice failed');
+          });
+        return;
       }
-
 
       // Handle /start customId deep links from the site
       if (msgText.startsWith('/start ')) {
-        const telegramUserId = from.id
-        let rest = msgText.slice(7).trim()
+        const telegramUserId = from.id;
+        let rest = msgText.slice(7).trim();
         // Strip language suffix from customId if present (e.g. "anna_2025__lang_ru" → "anna_2025")
-        const payloadMatch = msgText.match(/__lang_([a-z]{2}(-[A-Z]{2})?)$/)
+        const payloadMatch = msgText.match(/__lang_([a-z]{2}(-[A-Z]{2})?)$/);
         if (payloadMatch) {
-          rest = rest.replace(/__lang_[a-z]{2}(-[A-Z]{2})?$/, '')
+          rest = rest.replace(/__lang_[a-z]{2}(-[A-Z]{2})?$/, '');
         }
 
         // If after stripping lang suffix rest is empty, treat as from site
         if (!rest) {
           // Check if already subscribed before sending invoice
-          const isSubscribed = subscriptionService.isActive(telegramUserId)
+          const isSubscribed = subscriptionService.isActive(telegramUserId);
 
           if (isSubscribed) {
             // Already subscribed — show renewal prompt with inline button
-            const status = subscriptionService.getStatus(telegramUserId)
-            const expDate = new Date(status.expiresAt).toLocaleDateString(dateLocale(lang))
+            const status = subscriptionService.getStatus(telegramUserId);
+            const expDate = new Date(status.expiresAt).toLocaleDateString(
+              dateLocale(lang),
+            );
             const statusMsg = t('already_subscribed_renewal', lang, {
               expDate,
-              clients: String(status.customIds?.length || 0)
-            })
+              clients: String(status.customIds?.length || 0),
+            });
             telegramBot?.sendMessage(chatId, statusMsg, {
               parse_mode: 'HTML',
               reply_markup: {
-                inline_keyboard: [[
-                  { text: t('support_button', lang), callback_data: 'support_renew' }
-                ]]
-              }
-            })
+                inline_keyboard: [
+                  [
+                    {
+                      text: t('support_button', lang),
+                      callback_data: 'support_renew',
+                    },
+                  ],
+                ],
+              },
+            });
           } else {
             // Not subscribed — send invoice immediately
-            telegramBot?.sendInvoice(chatId, String(telegramUserId), STARS_PRICE, {
-              title: t('invoice_title', lang),
-              description: t('invoice_description_plain', lang),
-              label: t('invoice_label_plain', lang)
-            }).then(function (resp) {
-              if (!resp?.ok) {
-                telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
-              }
-            })
+            telegramBot
+              ?.sendInvoice(chatId, String(telegramUserId), STARS_PRICE, {
+                title: t('invoice_title', lang),
+                description: t('invoice_description_plain', lang),
+                label: t('invoice_label_plain', lang),
+              })
+              .then(function (resp) {
+                if (!resp?.ok) {
+                  telegramBot?.sendMessage(chatId, t('invoice_failed', lang));
+                }
+              })
+              .catch(function (err) {
+                logger.error(
+                  { err, chatId },
+                  'sendInvoice failed (site /start)',
+                );
+              });
           }
-          return
+          return;
         }
 
         // Check if already subscribed
-        const isSubscribed = subscriptionService.isActive(telegramUserId)
+        const isSubscribed = subscriptionService.isActive(telegramUserId);
 
         if (isSubscribed) {
           // Already subscribed — link this customId automatically, then show renewal prompt
-          const linkResult = subscriptionService.linkCustomId(rest, telegramUserId)
+          const linkResult = subscriptionService.linkCustomId(
+            rest,
+            telegramUserId,
+          );
           const linkMsg = linkResult.success
             ? t('client_linked', lang, { customId: rest })
-            : t('client_already_linked', lang)
-          telegramBot?.sendMessage(chatId, linkMsg)
+            : t('client_already_linked', lang);
+          telegramBot?.sendMessage(chatId, linkMsg);
 
           // Also show renewal prompt with inline button
-          const status = subscriptionService.getStatus(telegramUserId)
-          const expDate = new Date(status.expiresAt).toLocaleDateString(dateLocale(lang))
+          const status = subscriptionService.getStatus(telegramUserId);
+          const expDate = new Date(status.expiresAt).toLocaleDateString(
+            dateLocale(lang),
+          );
           const statusMsg = t('already_subscribed_renewal', lang, {
             expDate,
-            clients: String(status.customIds?.length || 0)
-          })
+            clients: String(status.customIds?.length || 0),
+          });
           telegramBot?.sendMessage(chatId, statusMsg, {
             parse_mode: 'HTML',
             reply_markup: {
-              inline_keyboard: [[
-                { text: t('support_button', lang), callback_data: 'support_renew' }
-              ]]
-            }
-          })
-          return
+              inline_keyboard: [
+                [
+                  {
+                    text: t('support_button', lang),
+                    callback_data: 'support_renew',
+                  },
+                ],
+              ],
+            },
+          });
+          return;
         }
 
         // Check if this is a renewal request (renew_ prefix)
         if (rest.startsWith('renew_')) {
           // remove 'renew_' prefix
           // Send renewal invoice
-          telegramBot?.sendInvoice(chatId, 'renew_' + String(telegramUserId), STARS_PRICE, {
-            title: t('renew_invoice_title', lang),
-            description: t('renew_invoice_description', lang),
-            label: t('renew_invoice_label', lang)
-          }).then(function (resp) {
-            if (!resp?.ok) {
-              telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
-            }
-          })
-          return
+          telegramBot
+            ?.sendInvoice(
+              chatId,
+              'renew_' + String(telegramUserId),
+              STARS_PRICE,
+              {
+                title: t('renew_invoice_title', lang),
+                description: t('renew_invoice_description', lang),
+                label: t('renew_invoice_label', lang),
+              },
+            )
+            .then(function (resp) {
+              if (!resp?.ok) {
+                telegramBot?.sendMessage(chatId, t('invoice_failed', lang));
+              }
+            })
+            .catch(function (err) {
+              logger.error({ err, chatId }, 'sendInvoice failed (renew_)');
+            });
+          return;
         }
 
         // Not subscribed — send invoice
-        telegramBot?.sendInvoice(chatId, rest, STARS_PRICE, {
-          title: t('invoice_title', lang),
-          description: t('invoice_description_custom', lang),
-          label: t('invoice_label_custom', lang)
-        }).then(function (resp) {
-          if (!resp?.ok) {
-            telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
-          }
-        })
-        return
+        telegramBot
+          ?.sendInvoice(chatId, rest, STARS_PRICE, {
+            title: t('invoice_title', lang),
+            description: t('invoice_description_custom', lang),
+            label: t('invoice_label_custom', lang),
+          })
+          .then(function (resp) {
+            if (!resp?.ok) {
+              telegramBot?.sendMessage(chatId, t('invoice_failed', lang));
+            }
+          })
+          .catch(function (err) {
+            logger.error({ err, chatId }, 'sendInvoice failed (custom /start)');
+          });
+        return;
       }
 
       // ---- /status — check subscription status ----
       if (msgText === '/status') {
-        const telegramUserId = from.id
-        const status = subscriptionService.getStatus(telegramUserId)
-        let statusMsg
+        const telegramUserId = from.id;
+        const status = subscriptionService.getStatus(telegramUserId);
+        let statusMsg;
         if (status.active) {
-          const expDate = new Date(status.expiresAt).toLocaleDateString(dateLocale(lang))
+          const expDate = new Date(status.expiresAt).toLocaleDateString(
+            dateLocale(lang),
+          );
           statusMsg = t('status_active', lang, {
             expDate,
             clients: String(status.customIds?.length || 0),
-            autoRenew: autoRenewText(lang, status.autoRenew)
-          })
+            autoRenew: autoRenewText(lang, status.autoRenew),
+          });
         } else {
-          statusMsg = t('status_inactive', lang)
+          statusMsg = t('status_inactive', lang);
         }
-        telegramBot?.sendMessage(chatId, statusMsg)
-        return
+        telegramBot?.sendMessage(chatId, statusMsg);
+        return;
       }
 
       // ---- /renew — send renewal invoice ----
       if (msgText === '/renew') {
-        const telegramUserId = from.id
+        const telegramUserId = from.id;
 
         // Check that user has a subscription to renew
         if (!subscriptionService.isActive(telegramUserId)) {
-          telegramBot?.sendMessage(chatId, t('renew_no_subscription', lang))
-          return
+          telegramBot?.sendMessage(chatId, t('renew_no_subscription', lang));
+          return;
         }
 
         // Send renewal invoice — payment will extend the subscription
-        telegramBot?.sendInvoice(chatId, 'renew_' + String(telegramUserId), STARS_PRICE, {
-          title: t('renew_invoice_title', lang),
-          description: t('renew_invoice_description', lang),
-          label: t('renew_invoice_label', lang)
-        }).then(function (resp) {
-          if (!resp?.ok) {
-            telegramBot?.sendMessage(chatId, t('invoice_failed', lang))
-          }
-        })
-        return
+        telegramBot
+          ?.sendInvoice(
+            chatId,
+            'renew_' + String(telegramUserId),
+            STARS_PRICE,
+            {
+              title: t('renew_invoice_title', lang),
+              description: t('renew_invoice_description', lang),
+              label: t('renew_invoice_label', lang),
+            },
+          )
+          .then(function (resp) {
+            if (!resp?.ok) {
+              telegramBot?.sendMessage(chatId, t('invoice_failed', lang));
+            }
+          })
+          .catch(function (err) {
+            logger.error({ err, chatId }, 'sendInvoice failed (/renew)');
+          });
+        return;
       }
 
       // ---- /autorenew — toggle auto-renew ----
       if (msgText === '/autorenew') {
-        const telegramUserId = from.id
-        const status2 = subscriptionService.getStatus(telegramUserId)
-        const newVal = !(status2.autoRenew || false)
-        const arResult = subscriptionService.setAutoRenew(telegramUserId, newVal)
-        let arMsg
+        const telegramUserId = from.id;
+        const status2 = subscriptionService.getStatus(telegramUserId);
+        const newVal = !(status2.autoRenew || false);
+        const arResult = subscriptionService.setAutoRenew(
+          telegramUserId,
+          newVal,
+        );
+        let arMsg;
         if (arResult.success) {
           arMsg = arResult.autoRenew
             ? t('autorenew_enabled', lang)
-            : t('autorenew_disabled', lang)
+            : t('autorenew_disabled', lang);
         } else {
           // Translate known errors from SubscriptionService (always English)
           if (arResult.error?.includes('No subscription')) {
-            arMsg = t('autorenew_no_subscription', lang)
+            arMsg = t('autorenew_no_subscription', lang);
           } else {
-            arMsg = t('autorenew_failed', lang)
+            arMsg = t('autorenew_failed', lang);
           }
         }
-        telegramBot?.sendMessage(chatId, arMsg)
-        return
+        telegramBot?.sendMessage(chatId, arMsg);
+        return;
       }
 
-                  // ---- /lang — choose bot language (inline keyboard) ----
+      // ---- /lang — choose bot language (inline keyboard) ----
       if (msgText === '/lang' || msgText === '/language') {
         const langOptions = [
           ['ru', '🇷🇺 Русский'],
@@ -620,91 +755,116 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
           ['fr', '🇫🇷 Français'],
           ['pt', '🇵🇹 Português'],
           ['ja', '🇯🇵 日本語'],
-          ['zh', '🇨🇳 中文']
-        ]
+          ['zh', '🇨🇳 中文'],
+        ];
         // Rows of 2 for a compact keyboard
-        const keyboard = []
+        const keyboard = [];
         for (let i = 0; i < langOptions.length; i += 2) {
           keyboard.push(
             langOptions.slice(i, i + 2).map(function (opt) {
-              return { text: opt[1], callback_data: 'lang_' + opt[0] }
-            })
-          )
+              return { text: opt[1], callback_data: 'lang_' + opt[0] };
+            }),
+          );
         }
         telegramBot?.sendMessage(chatId, t('lang_prompt', lang), {
           parse_mode: 'HTML',
-          reply_markup: { inline_keyboard: keyboard }
-        })
-        return
+          reply_markup: { inline_keyboard: keyboard },
+        });
+        return;
       }
 
-                  // ---- /breathe — launch coherent breathing Mini App ----
+      // ---- /breathe — launch coherent breathing Mini App ----
       if (msgText === '/breathe') {
-        const bUrl = baseUrl || 'https://emdrbilateral.online'
-        const webAppUrl = bUrl + '/breathing'
+        const bUrl = baseUrl || 'https://emdrbilateral.online';
+        const webAppUrl = bUrl + '/breathing';
 
-        telegramBot?.sendMessage(chatId,
-          t('breathe_msg', lang) + '\n\n' +
-          '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
+        telegramBot?.sendMessage(
+          chatId,
+          t('breathe_msg', lang) +
+            '\n\n' +
+            '🌐 <a href="https://emdrbilateral.online">emdrbilateral.online</a>  ·  <a href="https://emdrbilateral.ru">emdrbilateral.ru</a>',
           {
             reply_markup: {
-              inline_keyboard: [[
-                {
-                  text: t('breathe_button', lang),
-                  web_app: { url: webAppUrl }
-                }
-              ]]
+              inline_keyboard: [
+                [
+                  {
+                    text: t('breathe_button', lang),
+                    web_app: { url: webAppUrl },
+                  },
+                ],
+              ],
             },
             parse_mode: 'HTML',
-            link_preview_options: { is_disabled: true }
-          }
-        )
-        return
+            link_preview_options: { is_disabled: true },
+          },
+        );
+        return;
       }
 
       // ---- /myid — show user's Telegram User ID ----
       if (msgText === '/myid') {
-        const telegramUserId = from.id
-        const myIdMsg = t('myid_response', lang, { userId: String(telegramUserId) })
-        telegramBot?.sendMessage(chatId, myIdMsg)
-        return
+        const telegramUserId = from.id;
+        const myIdMsg = t('myid_response', lang, {
+          userId: String(telegramUserId),
+        });
+        telegramBot?.sendMessage(chatId, myIdMsg);
+        return;
       }
     }
 
     // ---- callback_query — handle inline keyboard button clicks ----
     if (update.callback_query) {
-      const { id: callbackId, data: callbackData, message: cbMessage, from: cbFrom } = update.callback_query
-      const chatId = cbMessage.chat.id
-      const telegramUserId = cbFrom.id
-      const cbLang = subscriptionService.getUserLanguage(telegramUserId) || 'en'
+      const {
+        id: callbackId,
+        data: callbackData,
+        message: cbMessage,
+        from: cbFrom,
+      } = update.callback_query;
+      const chatId = cbMessage.chat.id;
+      const telegramUserId = cbFrom.id;
+      const cbLang =
+        subscriptionService.getUserLanguage(telegramUserId) || 'en';
 
       // Answer callback query immediately (Telegram requires this)
-      telegramBot?.answerCallbackQuery(callbackId)
-        .catch(function (err) {
-          logger.error({ err, callbackId }, 'answerCallbackQuery error')
-        })
+      telegramBot?.answerCallbackQuery(callbackId).catch(function (err) {
+        logger.error({ err, callbackId }, 'answerCallbackQuery error');
+      });
 
       if (callbackData === 'support_renew') {
         // User clicked "Support with 75 ⭐" — send renewal invoice
-        logger.info({ telegramUserId, chatId }, 'Support button clicked — sending renewal invoice')
+        logger.info(
+          { telegramUserId, chatId },
+          'Support button clicked — sending renewal invoice',
+        );
 
-        telegramBot?.sendInvoice(chatId, 'renew_' + String(telegramUserId), STARS_PRICE, {
-          title: t('renew_invoice_title', cbLang),
-          description: t('renew_invoice_description', cbLang),
-          label: t('renew_invoice_label', cbLang)
-        }).then(function (resp) {
-          if (!resp?.ok) {
-            telegramBot?.sendMessage(chatId, t('invoice_failed', cbLang))
-          }
-        })
+        telegramBot
+          ?.sendInvoice(
+            chatId,
+            'renew_' + String(telegramUserId),
+            STARS_PRICE,
+            {
+              title: t('renew_invoice_title', cbLang),
+              description: t('renew_invoice_description', cbLang),
+              label: t('renew_invoice_label', cbLang),
+            },
+          )
+          .then(function (resp) {
+            if (!resp?.ok) {
+              telegramBot?.sendMessage(chatId, t('invoice_failed', cbLang));
+            }
+          })
+          .catch(function (err) {
+            logger.error({ err, chatId }, 'sendInvoice failed (support_renew)');
+          });
       }
 
       // ---- lang_XX — user picked a language from the /lang keyboard ----
       if (callbackData && callbackData.startsWith('lang_')) {
-        const chosenLang = callbackData.slice(5)
-        const supported = require('../services/bot-translations').SUPPORTED_LANGUAGES
+        const chosenLang = callbackData.slice(5);
+        const supported =
+          require('../services/bot-translations').SUPPORTED_LANGUAGES;
         if (supported.includes(chosenLang)) {
-          subscriptionService.setUserLanguage(telegramUserId, chosenLang)
+          subscriptionService.setUserLanguage(telegramUserId, chosenLang);
           const langName = {
             ru: 'Русский',
             en: 'English',
@@ -713,96 +873,138 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
             fr: 'Français',
             pt: 'Português',
             ja: '日本語',
-            zh: '中文'
-          }[chosenLang]
-          telegramBot?.sendMessage(chatId, t('lang_changed', chosenLang, { langName }), {
-            parse_mode: 'HTML'
-          })
-          logger.info({ telegramUserId, chosenLang }, 'Bot language changed via /lang')
+            zh: '中文',
+          }[chosenLang];
+          telegramBot?.sendMessage(
+            chatId,
+            t('lang_changed', chosenLang, { langName }),
+            {
+              parse_mode: 'HTML',
+            },
+          );
+          logger.info(
+            { telegramUserId, chosenLang },
+            'Bot language changed via /lang',
+          );
         }
       }
-      return
+      return;
     }
 
     // ---- pre_checkout_query — validate ----
     if (update.pre_checkout_query) {
-      const { id, invoice_payload: customId } = update.pre_checkout_query
-      const qLang = update.pre_checkout_query.from?.language_code || 'en'
-      const storedQLang = subscriptionService.getUserLanguage(update.pre_checkout_query.from?.id)
-      const effectiveQLang = storedQLang || qLang
+      const { id, invoice_payload: customId } = update.pre_checkout_query;
+      const qLang = update.pre_checkout_query.from?.language_code || 'en';
+      const storedQLang = subscriptionService.getUserLanguage(
+        update.pre_checkout_query.from?.id,
+      );
+      const effectiveQLang = storedQLang || qLang;
 
-      if (customId && subscriptionService.canAcceptPayment(customId)) {
-        telegramBot?.answerPreCheckoutQuery(id, true)
-        logger.info({ preCheckoutQueryId: id, customId }, 'Pre-checkout approved')
+      if (customId) {
+        telegramBot?.answerPreCheckoutQuery(id, true);
+        logger.info(
+          { preCheckoutQueryId: id, customId },
+          'Pre-checkout approved',
+        );
       } else {
-        telegramBot?.answerPreCheckoutQuery(id, false, t('pre_checkout_invalid', effectiveQLang))
-        logger.warn({ preCheckoutQueryId: id, customId }, 'Pre-checkout rejected')
+        telegramBot?.answerPreCheckoutQuery(
+          id,
+          false,
+          t('pre_checkout_invalid', effectiveQLang),
+        );
+        logger.warn(
+          { preCheckoutQueryId: id, customId },
+          'Pre-checkout rejected',
+        );
       }
-      return
+      return;
     }
 
     // ---- successful_payment — activate by telegramUserId ----
     if (update.message?.successful_payment) {
-      const chatId = update.message.chat.id
-      const telegramUserId = update.message.from.id
+      const chatId = update.message.chat.id;
+      const telegramUserId = update.message.from.id;
       const {
         invoice_payload: customId,
         telegram_payment_charge_id: chargeId,
-        total_amount: starsAmount
-      } = update.message.successful_payment
-      const pLang = subscriptionService.getUserLanguage(telegramUserId) || 'en'
+        total_amount: starsAmount,
+      } = update.message.successful_payment;
+      const pLang = subscriptionService.getUserLanguage(telegramUserId) || 'en';
 
       logger.info(
         { telegramUserId, customId, chargeId, starsAmount },
-        'Telegram Stars payment received'
-      )
+        'Telegram Stars payment received',
+      );
 
       // Check if this is a renewal (payload starts with 'renew_')
-      const isRenewal = typeof customId === 'string' && customId.startsWith('renew_')
+      const isRenewal =
+        typeof customId === 'string' && customId.startsWith('renew_');
 
-      let result
+      let result;
       if (isRenewal) {
         // Renewal — extend existing subscription
-        result = subscriptionService.renew(telegramUserId)
+        result = subscriptionService.renew(telegramUserId);
       } else {
         // New subscription
-        result = subscriptionService.activate(telegramUserId, chargeId, starsAmount)
+        result = subscriptionService.activate(
+          telegramUserId,
+          chargeId,
+          starsAmount,
+        );
 
         if (result.success) {
           // Link the customId to this user (skip for plain /start — payload is telegramUserId)
-          const isNumericPayload = /^\d+$/.test(customId) && String(customId) === String(telegramUserId)
+          const isNumericPayload =
+            /^\d+$/.test(customId) &&
+            String(customId) === String(telegramUserId);
           if (!isNumericPayload) {
-            subscriptionService.linkCustomId(customId, telegramUserId)
+            subscriptionService.linkCustomId(customId, telegramUserId);
           }
         }
       }
 
       if (result.success) {
         logger.info(
-          { telegramUserId, customId, chargeId, expiresAt: new Date(result.expiresAt).toISOString() },
-          isRenewal ? 'Subscription renewed via payment' : 'Subscription activated and customId linked'
-        )
+          {
+            telegramUserId,
+            customId,
+            chargeId,
+            expiresAt: new Date(result.expiresAt).toISOString(),
+          },
+          isRenewal
+            ? 'Subscription renewed via payment'
+            : 'Subscription activated and customId linked',
+        );
 
         const msg = isRenewal
           ? t('renew_payment_success', pLang, {
-              expDate: new Date(result.expiresAt).toLocaleDateString(dateLocale(pLang))
+              expDate: new Date(result.expiresAt).toLocaleDateString(
+                dateLocale(pLang),
+              ),
             })
           : t('payment_success', pLang, {
-              expDate: new Date(result.expiresAt).toLocaleDateString(dateLocale(pLang)),
-              siteUrl: siteUrl(pLang)
-            })
+              expDate: new Date(result.expiresAt).toLocaleDateString(
+                dateLocale(pLang),
+              ),
+              siteUrl: siteUrl(pLang),
+            });
 
-        telegramBot?.sendMessage(chatId, msg)
+        telegramBot?.sendMessage(chatId, msg);
       } else {
-        logger.warn({ telegramUserId, chargeId, error: result.error }, 'Activation/renewal failed')
+        logger.warn(
+          { telegramUserId, chargeId, error: result.error },
+          'Activation/renewal failed',
+        );
 
-        const msg = t('payment_failed', pLang, { error: result.error || 'Unknown error' })
+        const msg = t('payment_failed', pLang, {
+          error: result.error || 'Unknown error',
+        });
 
-        telegramBot?.sendMessage(chatId, msg)
+        telegramBot?.sendMessage(chatId, msg);
       }
-      return
+      return;
     }
-  })
+  });
 
   // ------------------------------------------------------------------
   // ------------------------------------------------------------------
@@ -812,53 +1014,69 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
   app.post('/api/admin/set-commands', (req, res) => {
     // Only available in development — never exposed in production behind nginx
     if (!isDev) {
-      return res.status(404).json({ error: 'Not found' })
+      return res.status(404).json({ error: 'Not found' });
     }
     if (!telegramBot) {
-      return res.status(400).json({ error: 'Telegram bot not configured' })
+      return res.status(400).json({ error: 'Telegram bot not configured' });
     }
-    const { SUPPORTED_LANGUAGES } = require('../services/bot-translations')
-    const results = []
+    const { SUPPORTED_LANGUAGES } = require('../services/bot-translations');
+    const results = [];
     // Step 1: set English as the default (no language_code) — applies to all users
-    telegramBot.setMyCommands('en')
-      .then(ok => results.push({ lang: 'en_default', ok }))
+    telegramBot
+      .setMyCommands('en')
+      .then((ok) => results.push({ lang: 'en_default', ok }))
       .catch(() => results.push({ lang: 'en_default', ok: false }))
       .then(() => {
         // Step 2: set language-specific overrides (with language_code)
-        return Promise.all(SUPPORTED_LANGUAGES.filter(l => l !== 'en').map(lang =>
-          telegramBot.setMyCommands(lang)
-            .then(ok => { results.push({ lang, ok }); return ok })
-            .catch(() => { results.push({ lang, ok: false }) })
-        ))
+        return Promise.all(
+          SUPPORTED_LANGUAGES.filter((l) => l !== 'en').map((lang) =>
+            telegramBot
+              .setMyCommands(lang)
+              .then((ok) => {
+                results.push({ lang, ok });
+                return ok;
+              })
+              .catch(() => {
+                results.push({ lang, ok: false });
+              }),
+          ),
+        );
       })
       .then(() => {
-        logger.info({ results }, 'Admin: bot commands updated')
-        res.json({ success: true, results })
+        logger.info({ results }, 'Admin: bot commands updated');
+        res.json({ success: true, results });
       })
-      .catch(err => {
-        logger.error({ err }, 'Admin: set commands error')
-        res.status(500).json({ error: 'Internal server error' })
-      })
-  })
+      .catch((err) => {
+        logger.error({ err }, 'Admin: set commands error');
+        res.status(500).json({ error: 'Internal server error' });
+      });
+  });
 
   // Auto-renew checker — runs every hour, sends invoices to users
   // with autoRenew=true whose subscription expires within 24 hours
   // ------------------------------------------------------------------
   if (telegramBot) {
-    const CHECK_INTERVAL = 60 * 60 * 1000 // 1 hour
-    const EXPIRY_THRESHOLD = 24 * 60 * 60 * 1000 // 24 hours
-    const COOLDOWN = 24 * 60 * 60 * 1000 // 24 hours
+    const CHECK_INTERVAL = 60 * 60 * 1000; // 1 hour
+    const EXPIRY_THRESHOLD = 24 * 60 * 60 * 1000; // 24 hours
+    const COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours
 
     async function checkAutoRenew() {
       try {
-        const expiring = subscriptionService.getExpiringAutoRenewSubscriptions(EXPIRY_THRESHOLD, COOLDOWN)
-        if (expiring.length === 0) return
+        const expiring = subscriptionService.getExpiringAutoRenewSubscriptions(
+          EXPIRY_THRESHOLD,
+          COOLDOWN,
+        );
+        if (expiring.length === 0) return;
 
-        logger.info({ count: expiring.length }, 'Auto-renew checker: sending renewal invoices')
+        logger.info(
+          { count: expiring.length },
+          'Auto-renew checker: sending renewal invoices',
+        );
 
         for (const user of expiring) {
           try {
-            const lang = subscriptionService.getUserLanguage(user.telegramUserId) || 'en'
+            const lang =
+              subscriptionService.getUserLanguage(user.telegramUserId) || 'en';
             // eslint-disable-next-line no-await-in-loop
             const result = await telegramBot.sendInvoice(
               user.chatId,
@@ -867,33 +1085,39 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
               {
                 title: t('renew_invoice_title', lang),
                 description: t('renew_invoice_description', lang),
-                label: t('renew_invoice_label', lang)
-              }
-            )
+                label: t('renew_invoice_label', lang),
+              },
+            );
             if (result?.ok) {
-              subscriptionService.markAutoRenewInvoiceSent(user.telegramUserId)
+              subscriptionService.markAutoRenewInvoiceSent(user.telegramUserId);
               logger.info(
-                { telegramUserId: user.telegramUserId, expiresAt: new Date(user.expiresAt).toISOString() },
-                'Auto-renew invoice sent'
-              )
+                {
+                  telegramUserId: user.telegramUserId,
+                  expiresAt: new Date(user.expiresAt).toISOString(),
+                },
+                'Auto-renew invoice sent',
+              );
             }
           } catch (err) {
-            logger.error({ err, telegramUserId: user.telegramUserId }, 'Auto-renew invoice failed')
+            logger.error(
+              { err, telegramUserId: user.telegramUserId },
+              'Auto-renew invoice failed',
+            );
           }
         }
       } catch (err) {
-        logger.error({ err }, 'Auto-renew checker error')
+        logger.error({ err }, 'Auto-renew checker error');
       }
     }
 
     // Run immediately on startup, then every hour
-    checkAutoRenew()
-    const autoRenewInterval = setInterval(checkAutoRenew, CHECK_INTERVAL)
-    autoRenewInterval.unref()
-    logger.info({ intervalMs: CHECK_INTERVAL }, 'Auto-renew checker started')
+    checkAutoRenew();
+    const autoRenewInterval = setInterval(checkAutoRenew, CHECK_INTERVAL);
+    autoRenewInterval.unref();
+    logger.info({ intervalMs: CHECK_INTERVAL }, 'Auto-renew checker started');
   } else {
-    logger.info('No Telegram bot configured — auto-renew checker disabled')
+    logger.info('No Telegram bot configured — auto-renew checker disabled');
   }
 }
 
-module.exports = { registerSubscriptionRoutes }
+module.exports = { registerSubscriptionRoutes };

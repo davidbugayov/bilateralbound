@@ -21,10 +21,12 @@
 ### Task 1: Компонент `HintBanner` (JS) + стили `.bb-hint` (CSS)
 
 **Files:**
+
 - Create: `packages/web-client/public/js/ui/hint-banner.js`
 - Modify: `packages/web-client/public/css/shared-components.css` (append)
 
 **Interfaces:**
+
 - Produces: `globalThis.HintBanner` — конструктор `new HintBanner(config)`, методы `show()` (возвращает элемент или `undefined` при dismiss), `hide()`.
   `config = { container, type ('info'|'success'|'warning'|'error'), title, message (innerHTML), icon, ctaLabel, onCta, dismissKey, closeLabel, ariaLive }`.
 
@@ -37,104 +39,115 @@
  * Используется на контроллере, viewer и главном экране.
  */
 (function () {
-  'use strict'
+  "use strict";
 
-  var ICONS = { info: '💡', success: '✅', warning: '⚠️', error: '🚫' }
-  var TYPES = ['info', 'success', 'warning', 'error']
+  var ICONS = { info: "💡", success: "✅", warning: "⚠️", error: "🚫" };
+  var TYPES = ["info", "success", "warning", "error"];
 
   function storageGet(key) {
-    try { return window.localStorage.getItem(key) } catch (e) { return null }
+    try {
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
   }
   function storageSet(key, value) {
-    try { window.localStorage.setItem(key, value) } catch (e) { /* noop */ }
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (e) {
+      /* noop */
+    }
   }
 
   function HintBanner(config) {
-    this.config = config || {}
-    this.el = null
+    this.config = config || {};
+    this.el = null;
   }
 
   HintBanner.prototype.show = function () {
-    var cfg = this.config
-    if (cfg.dismissKey && storageGet(cfg.dismissKey)) return undefined
-    if (this.el) return this.el
+    var cfg = this.config;
+    if (cfg.dismissKey && storageGet(cfg.dismissKey)) return undefined;
+    if (this.el) return this.el;
 
-    var type = TYPES.indexOf(cfg.type) !== -1 ? cfg.type : 'info'
+    var type = TYPES.indexOf(cfg.type) !== -1 ? cfg.type : "info";
 
-    var el = document.createElement('div')
-    el.className = 'bb-hint bb-hint--' + type
-    el.setAttribute('role', cfg.ariaLive === 'assertive' ? 'alert' : 'status')
-    el.setAttribute('aria-live', cfg.ariaLive || 'polite')
+    var el = document.createElement("div");
+    el.className = "bb-hint bb-hint--" + type;
+    el.setAttribute("role", cfg.ariaLive === "assertive" ? "alert" : "status");
+    el.setAttribute("aria-live", cfg.ariaLive || "polite");
 
-    var icon = document.createElement('span')
-    icon.className = 'bb-hint__icon'
-    icon.textContent = cfg.icon || ICONS[type]
-    el.appendChild(icon)
+    var icon = document.createElement("span");
+    icon.className = "bb-hint__icon";
+    icon.textContent = cfg.icon || ICONS[type];
+    el.appendChild(icon);
 
-    var body = document.createElement('div')
-    body.className = 'bb-hint__body'
+    var body = document.createElement("div");
+    body.className = "bb-hint__body";
     if (cfg.title) {
-      var title = document.createElement('div')
-      title.className = 'bb-hint__title'
-      title.textContent = cfg.title
-      body.appendChild(title)
+      var title = document.createElement("div");
+      title.className = "bb-hint__title";
+      title.textContent = cfg.title;
+      body.appendChild(title);
     }
     if (cfg.message) {
-      var msg = document.createElement('div')
-      msg.className = 'bb-hint__message'
-      msg.innerHTML = cfg.message
-      body.appendChild(msg)
+      var msg = document.createElement("div");
+      msg.className = "bb-hint__message";
+      msg.innerHTML = cfg.message;
+      body.appendChild(msg);
     }
-    el.appendChild(body)
+    el.appendChild(body);
 
-    if (cfg.ctaLabel && typeof cfg.onCta === 'function') {
-      var cta = document.createElement('button')
-      cta.type = 'button'
-      cta.className = 'bb-hint__cta'
-      cta.textContent = cfg.ctaLabel
-      cta.addEventListener('click', function () { cfg.onCta() })
-      el.appendChild(cta)
+    if (cfg.ctaLabel && typeof cfg.onCta === "function") {
+      var cta = document.createElement("button");
+      cta.type = "button";
+      cta.className = "bb-hint__cta";
+      cta.textContent = cfg.ctaLabel;
+      cta.addEventListener("click", function () {
+        cfg.onCta();
+      });
+      el.appendChild(cta);
     }
 
-    var self = this
-    var closeBtn = document.createElement('button')
-    closeBtn.type = 'button'
-    closeBtn.className = 'bb-hint__close'
-    closeBtn.setAttribute('aria-label', cfg.closeLabel || 'Close')
-    closeBtn.innerHTML = '&times;'
-    closeBtn.addEventListener('click', function () {
-      if (cfg.dismissKey) storageSet(cfg.dismissKey, '1')
-      self.hide()
-    })
-    el.appendChild(closeBtn)
+    var self = this;
+    var closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "bb-hint__close";
+    closeBtn.setAttribute("aria-label", cfg.closeLabel || "Close");
+    closeBtn.innerHTML = "&times;";
+    closeBtn.addEventListener("click", function () {
+      if (cfg.dismissKey) storageSet(cfg.dismissKey, "1");
+      self.hide();
+    });
+    el.appendChild(closeBtn);
 
-    var container = cfg.container
-    if (typeof container === 'string') container = document.getElementById(container)
+    var container = cfg.container;
+    if (typeof container === "string")
+      container = document.getElementById(container);
     if (!container || container.nodeType !== 1) {
-      container = document.createElement('div')
-      container.className = 'bb-hint-container'
-      document.body.appendChild(container)
+      container = document.createElement("div");
+      container.className = "bb-hint-container";
+      document.body.appendChild(container);
     }
-    container.appendChild(el)
-    this.el = el
-    return el
-  }
+    container.appendChild(el);
+    this.el = el;
+    return el;
+  };
 
   HintBanner.prototype.hide = function () {
-    if (!this.el || !this.el.parentNode) return
-    var el = this.el
-    this.el = null
-    el.classList.add('bb-hint--leaving')
+    if (!this.el || !this.el.parentNode) return;
+    var el = this.el;
+    this.el = null;
+    el.classList.add("bb-hint--leaving");
     setTimeout(function () {
-      if (el.parentNode) el.parentNode.removeChild(el)
-    }, 200)
-  }
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, 200);
+  };
 
-  if (typeof globalThis !== 'undefined') globalThis.HintBanner = HintBanner
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { HintBanner: HintBanner }
+  if (typeof globalThis !== "undefined") globalThis.HintBanner = HintBanner;
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = { HintBanner: HintBanner };
   }
-})()
+})();
 ```
 
 - [ ] **Step 2: Проверить синтаксис**
@@ -195,9 +208,11 @@ git commit -m "feat: shared HintBanner component (bb-hint) with info/success/war
 ### Task 2: i18n ключи блока `hint` во все 8 языков
 
 **Files:**
+
 - Modify: `packages/web-client/public/locales/{en,ru,es,fr,de,pt,ja,zh}/common.json` (добавить блок `hint` рядом с блоком `howto`)
 
 **Interfaces:**
+
 - Produces: ключи `hint.sessionExpired`, `hint.sessionExpiredMsg`, `hint.sessionNotFound`, `hint.sessionNotFoundMsg`, `hint.createNewSession`, `hint.close`.
 
 - [ ] **Step 1: Добавить блок `hint` в `en/common.json`**
@@ -282,10 +297,12 @@ git commit -m "feat(i18n): hint block keys in all 8 languages (session expired/n
 ### Task 3: Контроллер — рендер `links.tip` и hotkeys-подсказки
 
 **Files:**
+
 - Modify: `packages/web-client/public/session-controller.html` (контейнеры + script-тег)
 - Modify: `packages/web-client/src/controller.js` (функция `initHintSystem` + вызов)
 
 **Interfaces:**
+
 - Consumes: `globalThis.HintBanner` (Task 1), ключи `links.tip`, `controller.hotkeysTitle`, `controller.hotkeySpaceKey/Action`, `controller.hotkeyFKey/FAction`, `controller.hotkeyArrowsKeys/Action`, `controller.hotkeyCtrlSAction`, `hint.close` (Task 2).
 - Produces: контейнеры `#linkTipContainer` и `#hotkeysHintContainer`; функция `initHintSystem()` (не экспортируется глобально, вызывается внутри).
 
@@ -294,14 +311,14 @@ git commit -m "feat(i18n): hint block keys in all 8 languages (session expired/n
 После закрывающего `</div>` элемента `.link-group` (строка ~565, перед `</section>` секции Session) добавить:
 
 ```html
-          <div id="linkTipContainer"></div>
-          <div id="hotkeysHintContainer"></div>
+<div id="linkTipContainer"></div>
+<div id="hotkeysHintContainer"></div>
 ```
 
 Перед `<script src="/js/ui/settings-modal.js" ...>` (строка ~929) добавить:
 
 ```html
-    <script src="/js/ui/hint-banner.js?v=2.39.794-4826549e" defer></script>
+<script src="/js/ui/hint-banner.js?v=2.39.794-4826549e" defer></script>
 ```
 
 (суффикс версии — такой же, как у соседних ресурсов в файле; см. `grep -o 'v=[0-9.]*-[a-f0-9]*' public/session-controller.html | head -1`)
@@ -316,38 +333,45 @@ git commit -m "feat(i18n): hint block keys in all 8 languages (session expired/n
  * Использует общий компонент HintBanner (public/js/ui/hint-banner.js).
  */
 function initHintSystem() {
-  if (typeof globalThis.HintBanner !== 'function') return
-  const t = (key, fallback) => globalThis.i18n?.t(key) || fallback
+  if (typeof globalThis.HintBanner !== "function") return;
+  const t = (key, fallback) => globalThis.i18n?.t(key) || fallback;
 
   // 1. 💡 Сохраните эти ссылки (links.tip)
-  const tipContainer = document.getElementById('linkTipContainer')
+  const tipContainer = document.getElementById("linkTipContainer");
   if (tipContainer) {
     new globalThis.HintBanner({
       container: tipContainer,
-      type: 'info',
-      message: t('links.tip', '<strong>Save these links!</strong> They are permanent and will always work.'),
-      dismissKey: 'bb_hint_links_tip_dismissed',
-      closeLabel: t('hint.close', 'Close hint')
-    }).show()
+      type: "info",
+      message: t(
+        "links.tip",
+        "<strong>Save these links!</strong> They are permanent and will always work.",
+      ),
+      dismissKey: "bb_hint_links_tip_dismissed",
+      closeLabel: t("hint.close", "Close hint"),
+    }).show();
   }
 
   // 2. ⌨️ Горячие клавиши
-  const hkContainer = document.getElementById('hotkeysHintContainer')
+  const hkContainer = document.getElementById("hotkeysHintContainer");
   if (hkContainer) {
     const hotkeysHtml =
-      '<kbd>Space</kbd> ' + t('controller.hotkeySpaceAction', '— Start/Stop') +
-      ' &nbsp;·&nbsp; <kbd>F</kbd> ' + t('controller.hotkeyFAction', '— Fullscreen') +
-      ' &nbsp;·&nbsp; <kbd>↑↓←→</kbd> ' + t('controller.hotkeyArrowsAction', '— Direction') +
-      ' &nbsp;·&nbsp; <kbd>Ctrl+S</kbd> ' + t('controller.hotkeyCtrlSAction', '— Save preset')
+      "<kbd>Space</kbd> " +
+      t("controller.hotkeySpaceAction", "— Start/Stop") +
+      " &nbsp;·&nbsp; <kbd>F</kbd> " +
+      t("controller.hotkeyFAction", "— Fullscreen") +
+      " &nbsp;·&nbsp; <kbd>↑↓←→</kbd> " +
+      t("controller.hotkeyArrowsAction", "— Direction") +
+      " &nbsp;·&nbsp; <kbd>Ctrl+S</kbd> " +
+      t("controller.hotkeyCtrlSAction", "— Save preset");
     new globalThis.HintBanner({
       container: hkContainer,
-      type: 'info',
-      icon: '⌨️',
-      title: t('controller.hotkeysTitle', '⌨️ Hotkeys'),
+      type: "info",
+      icon: "⌨️",
+      title: t("controller.hotkeysTitle", "⌨️ Hotkeys"),
       message: hotkeysHtml,
-      dismissKey: 'bb_hotkeys_hint_dismissed',
-      closeLabel: t('hint.close', 'Close hint')
-    }).show()
+      dismissKey: "bb_hotkeys_hint_dismissed",
+      closeLabel: t("hint.close", "Close hint"),
+    }).show();
   }
 }
 ```
@@ -385,9 +409,11 @@ git commit -m "feat(controller): render links.tip and hotkeys hints via shared H
 ### Task 4: Контроллер — статус «waiting for viewer» как пилюля
 
 **Files:**
+
 - Modify: `packages/web-client/public/css/controller.css` (append стилей пилюли)
 
 **Interfaces:**
+
 - Consumes: существующий элемент `#viewerStatus` с классами `.connected`/`.disconnected` (управляются в `src/application/controller/viewer-status.js` — НЕ менять).
 
 - [ ] **Step 1: Добавить стили пилюли в конец `controller.css`**
@@ -430,9 +456,11 @@ git commit -m "feat(controller): viewer status as pulsing pill (waiting/connecte
 ### Task 5: Контроллер — `showCriticalError` с CTA «Создать новую сессию»
 
 **Files:**
+
 - Modify: `packages/web-client/src/controller.js` (функция `showCriticalError`, строка ~1772)
 
 **Interfaces:**
+
 - Consumes: `globalThis.HintBanner`, ключи `hint.sessionExpired`, `hint.sessionExpiredMsg`, `hint.createNewSession`, `hint.close`, `viewer.reload` (Task 2).
 - Produces: поведение — критические ошибки рендерятся баннером `bb-hint--error` с двумя действиями: «Создать новую сессию» → `location.href = '/'`, «Reload» → `location.reload()`. Fallback — прежняя логика.
 
@@ -449,44 +477,49 @@ function showCriticalError(title, message) {
 
 ```js
 function showCriticalError(title, message) {
-  const t = (key, fallback) => globalThis.i18n?.t(key) || fallback
-  if (typeof globalThis.HintBanner === 'function') {
+  const t = (key, fallback) => globalThis.i18n?.t(key) || fallback;
+  if (typeof globalThis.HintBanner === "function") {
     new globalThis.HintBanner({
-      container: document.getElementById('errorStatesContainer') || document.body,
-      type: 'error',
+      container:
+        document.getElementById("errorStatesContainer") || document.body,
+      type: "error",
       title: title,
       message: message,
-      ctaLabel: t('hint.createNewSession', 'Create new session'),
-      onCta: () => { globalThis.location.href = '/' },
-      closeLabel: t('hint.close', 'Close hint'),
-      ariaLive: 'assertive'
-    }).show()
-    return
+      ctaLabel: t("hint.createNewSession", "Create new session"),
+      onCta: () => {
+        globalThis.location.href = "/";
+      },
+      closeLabel: t("hint.close", "Close hint"),
+      ariaLive: "assertive",
+    }).show();
+    return;
   }
   if (globalThis.errorStateManager?.show) {
-    globalThis.errorStateManager.show('critical-error', {
+    globalThis.errorStateManager.show("critical-error", {
       title: title,
       message: message,
       actions: [
         {
-          label: t('hint.createNewSession', 'Create new session'),
-          callback: () => { globalThis.location.href = '/' }
+          label: t("hint.createNewSession", "Create new session"),
+          callback: () => {
+            globalThis.location.href = "/";
+          },
         },
         {
-          label: t('viewer.reload', 'Reload page'),
-          callback: () => globalThis.location.reload()
-        }
-      ]
-    })
+          label: t("viewer.reload", "Reload page"),
+          callback: () => globalThis.location.reload(),
+        },
+      ],
+    });
   } else if (globalThis.emdrErrorOverlay) {
     globalThis.emdrErrorOverlay.show({
       title,
       message,
-      actionText: t('viewer.reload', 'Reload page'),
-      onAction: () => globalThis.location.reload()
-    })
+      actionText: t("viewer.reload", "Reload page"),
+      onAction: () => globalThis.location.reload(),
+    });
   } else {
-    alert(`${title}\n\n${message}`)
+    alert(`${title}\n\n${message}`);
   }
 }
 ```
@@ -518,10 +551,12 @@ git commit -m "feat(controller): critical errors render as bb-hint error with Cr
 ### Task 6: Viewer — протухшая ссылка → баннер с CTA
 
 **Files:**
+
 - Modify: `packages/web-client/public/viewer.html` (контейнер + script-тег)
 - Modify: `packages/web-client/src/viewer.js` (catch-блок инициализации)
 
 **Interfaces:**
+
 - Consumes: `globalThis.HintBanner`, ключи `hint.sessionNotFound`, `hint.sessionNotFoundMsg`, `hint.createNewSession`, `hint.close`, `viewer.reload`.
 - Produces: при «Session not found» viewer показывает баннер `bb-hint--error` с CTA «Создать новую сессию» и «Reload». Остальные ошибки — прежний `showError`.
 
@@ -530,13 +565,13 @@ git commit -m "feat(controller): critical errors render as bb-hint error with Cr
 В `<main class="viewer-container">` после `</div>` ошибки `errorBar` (строка ~151) добавить:
 
 ```html
-      <div id="errorStatesContainer" class="error-states-container"></div>
+<div id="errorStatesContainer" class="error-states-container"></div>
 ```
 
 Перед `<script src="/js/ui/error-states.js" ...>` (строка ~153) добавить:
 
 ```html
-    <script src="/js/ui/hint-banner.js?v=2.39.794-4826549e" defer></script>
+<script src="/js/ui/hint-banner.js?v=2.39.794-4826549e" defer></script>
 ```
 
 (суффикс версии — как у соседних ресурсов в `viewer.html`)
@@ -670,6 +705,7 @@ git push origin main
 ```bash
 npm run deploy:dev
 ```
+
 Expected: `✅ Deployment completed` (rsync на `dev.emdrbilateral.online`).
 
 - [ ] **Step 3: Проверка на dev**

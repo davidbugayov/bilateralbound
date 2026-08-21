@@ -1,6 +1,6 @@
-'use strict'
-const { WebSocketServer } = require('ws')
-const ValidationUtils = require('../utils/validation')
+'use strict';
+const { WebSocketServer } = require('ws');
+const ValidationUtils = require('../utils/validation');
 
 function setupWebSocketServer(
   server,
@@ -9,74 +9,79 @@ function setupWebSocketServer(
   broadcastService,
   analytics,
   logger,
-  wsTokenService
+  wsTokenService,
 ) {
   // maxPayload: 4KB limit prevents memory exhaustion attacks
-  const wss = new WebSocketServer({ server, maxPayload: 4096 })
+  const wss = new WebSocketServer({ server, maxPayload: 4096 });
 
   wss.on('connection', (ws, req) => {
-    const url = new URL(req.url, `https://${req.headers.host}`)
+    const url = new URL(req.url, `https://${req.headers.host}`);
 
     // Authenticate via HMAC-signed WS token (replaces insecure query-param role)
-    let sessionId, role
+    let sessionId, role;
     if (wsTokenService) {
-      const token = url.searchParams.get('token')
-      const decoded = wsTokenService.verify(token)
+      const token = url.searchParams.get('token');
+      const decoded = wsTokenService.verify(token);
       if (!decoded) {
-        logger.warn({ hasToken: !!token }, 'WS connection rejected: invalid or expired token')
-        ws.close(4001, 'Unauthorized — invalid or expired token')
-        return
+        logger.warn(
+          { hasToken: !!token },
+          'WS connection rejected: invalid or expired token',
+        );
+        ws.close(4001, 'Unauthorized — invalid or expired token');
+        return;
       }
-      sessionId = decoded.sessionId
-      role = decoded.role
+      sessionId = decoded.sessionId;
+      role = decoded.role;
     } else if (process.env.NODE_ENV !== 'production') {
       // Dev-only fallback: allows unauthenticated WS for local development.
       // In production, WsTokenService must be configured — otherwise reject.
-      sessionId = url.searchParams.get('sessionId')
-      role = url.searchParams.get('role')
+      sessionId = url.searchParams.get('sessionId');
+      role = url.searchParams.get('role');
     } else {
-      logger.warn('WS connection rejected: WsTokenService not configured in production')
-      ws.close(4001, 'Unauthorized')
-      return
+      logger.warn(
+        'WS connection rejected: WsTokenService not configured in production',
+      );
+      ws.close(4001, 'Unauthorized');
+      return;
     }
 
     if (!sessionId || !role) {
-      ws.close(1008, 'Session ID and role are required')
-      return
+      ws.close(1008, 'Session ID and role are required');
+      return;
     }
 
     // Validate role is one of the expected values
     if (role !== 'controller' && role !== 'viewer') {
-      ws.close(1008, 'Invalid role')
-      return
+      ws.close(1008, 'Invalid role');
+      return;
     }
 
     // Ensure session exists for permanent links
-    const ensured = sessionService.findOrCreateSession(sessionId)
+    const ensured = sessionService.findOrCreateSession(sessionId);
     if (!ensured) {
-      ws.close(1008, 'Invalid session id')
-      return
+      ws.close(1008, 'Invalid session id');
+      return;
     }
 
-    ws.isAlive = true
-    ws._missedPings = 0
+    ws.isAlive = true;
+    ws._missedPings = 0;
     ws.on('pong', () => {
-      ws.isAlive = true
-      ws._missedPings = 0
-    })
+      ws.isAlive = true;
+      ws._missedPings = 0;
+    });
 
-    sessionService.handleWebSocketConnection(ws, sessionId, role)
+    sessionService.handleWebSocketConnection(ws, sessionId, role);
 
     if (role === 'viewer') {
-      analytics.recordViewerConnected(sessionId)
+      analytics.recordViewerConnected(sessionId);
     } else if (role === 'controller') {
-      analytics.recordControllerConnected(sessionId)
+      analytics.recordControllerConnected(sessionId);
     }
 
     const messageHandlers = {
       request_state_sync: () => {
-        if (ws.readyState !== 1) return
-        const session = sessionService.getSession(sessionId)
+        if (ws.readyState !== 1) return;
+        const session = sessionService.getSession(sessionId);
         if (session) {
           const initialState = {
             type: 'initial_state',
@@ -85,21 +90,21 @@ function setupWebSocketServer(
               ...session.ballState,
               viewerConnected: session.viewerConnected,
               controllerConnected: session.controllerConnected,
-              viewerScreenSize: session.viewerScreenSize
-            }
-          }
+              viewerScreenSize: session.viewerScreenSize,
+            },
+          };
           try {
-            ws.send(JSON.stringify(initialState))
-            logger.info({ sessionId }, 'Sent state sync on reconnection')
+            ws.send(JSON.stringify(initialState));
+            logger.info({ sessionId }, 'Sent state sync on reconnection');
           } catch (error) {
-            logger.error({ err: error }, 'Error sending state sync')
+            logger.error({ err: error }, 'Error sending state sync');
           }
         }
       },
 
       controller_connected: () => {
         if (role === 'controller') {
-          const clients = webSocketManager.getClients(sessionId)
+          const clients = webSocketManager.getClients(sessionId);
           for (const { client } of clients) {
             if (client !== ws && client.readyState === 1) {
               try {
@@ -109,16 +114,16 @@ function setupWebSocketServer(
                     payload: {
                       controllerConnected: true,
                       timestamp: Date.now(),
-                      sessionId
+                      sessionId,
                     },
-                    timestamp: Date.now()
-                  })
-                )
+                    timestamp: Date.now(),
+                  }),
+                );
               } catch (error) {
                 logger.error(
                   { err: error },
-                  'Error sending controller_connected'
-                )
+                  'Error sending controller_connected',
+                );
               }
             }
           }
@@ -128,25 +133,25 @@ function setupWebSocketServer(
       viewer_connected: (data) => {
         if (role === 'viewer') {
           // Save theme from viewer to session
-          const theme = data.payload?.theme
+          const theme = data.payload?.theme;
           if (theme && (theme === 'dark' || theme === 'light')) {
-            const session = sessionService.getSession(sessionId)
+            const session = sessionService.getSession(sessionId);
             if (session) {
-              session.theme = theme
-              logger.debug({ sessionId, theme }, 'Theme saved from viewer')
+              session.theme = theme;
+              logger.debug({ sessionId, theme }, 'Theme saved from viewer');
             }
           }
 
           // Save screen size from viewer reconnect — critical for preview sync
-          const screenSize = data.payload?.screenSize
+          const screenSize = data.payload?.screenSize;
           if (screenSize) {
-            const validated = ValidationUtils.validateScreenSize(screenSize)
+            const validated = ValidationUtils.validateScreenSize(screenSize);
             if (validated) {
-              sessionService.setViewerScreenSize(sessionId, validated)
+              sessionService.setViewerScreenSize(sessionId, validated);
             }
           }
 
-          const clients = webSocketManager.getClients(sessionId)
+          const clients = webSocketManager.getClients(sessionId);
           for (const { client } of clients) {
             if (client !== ws && client.readyState === 1) {
               try {
@@ -158,13 +163,13 @@ function setupWebSocketServer(
                       timestamp: Date.now(),
                       sessionId,
                       theme,
-                      screenSize
+                      screenSize,
                     },
-                    timestamp: Date.now()
-                  })
-                )
+                    timestamp: Date.now(),
+                  }),
+                );
               } catch (error) {
-                logger.error({ err: error }, 'Error sending viewer_connected')
+                logger.error({ err: error }, 'Error sending viewer_connected');
               }
             }
           }
@@ -173,21 +178,22 @@ function setupWebSocketServer(
 
       viewer_audio_activated: (data) => {
         if (role === 'viewer') {
-          const session = sessionService.getSession(sessionId)
+          const session = sessionService.getSession(sessionId);
           if (session) {
-            const activated = data.payload?.activated
-            session.viewerAudioActivated = typeof activated === 'boolean' ? activated : true
+            const activated = data.payload?.activated;
+            session.viewerAudioActivated =
+              typeof activated === 'boolean' ? activated : true;
             broadcastService.broadcastViewerAudioActivated(
               sessionId,
-              session.viewerAudioActivated
-            )
+              session.viewerAudioActivated,
+            );
           }
         }
       },
 
       controller_update: (data) => {
         if (role === 'controller') {
-          sessionService.updateBallState(sessionId, data.payload)
+          sessionService.updateBallState(sessionId, data.payload);
         }
       },
 
@@ -197,12 +203,15 @@ function setupWebSocketServer(
       bounce: (data) => {
         if (role === 'viewer') {
           // Validate bounce payload before relaying to controller
-          const validated = ValidationUtils.validateBouncePayload(data.payload)
+          const validated = ValidationUtils.validateBouncePayload(data.payload);
           if (!validated) {
-            logger.warn({ sessionId, payload: data.payload }, 'Invalid bounce payload rejected')
-            return
+            logger.warn(
+              { sessionId, payload: data.payload },
+              'Invalid bounce payload rejected',
+            );
+            return;
           }
-          const clients = webSocketManager.getClients(sessionId)
+          const clients = webSocketManager.getClients(sessionId);
           // Direction-only bounce_sync to controller preview
           const bounceMessage = JSON.stringify({
             type: 'bounce_sync',
@@ -210,15 +219,15 @@ function setupWebSocketServer(
               side: validated.side,
               dirX: validated.dirX,
               dirY: validated.dirY,
-              timestamp: validated.timestamp
-            }
-          })
+              timestamp: validated.timestamp,
+            },
+          });
           for (const { client, info: clientInfo } of clients) {
             if (clientInfo.role === 'controller' && client.readyState === 1) {
               try {
-                client.send(bounceMessage)
+                client.send(bounceMessage);
               } catch (error) {
-                logger.error({ err: error }, 'Error sending bounce_sync')
+                logger.error({ err: error }, 'Error sending bounce_sync');
               }
             }
           }
@@ -229,14 +238,14 @@ function setupWebSocketServer(
               side: validated.side,
               serverDirX: validated.dirX,
               serverDirY: validated.dirY,
-              ts: Date.now()
-            }
-          })
+              ts: Date.now(),
+            },
+          });
           if (ws.readyState === 1) {
             try {
-              ws.send(ackMessage)
+              ws.send(ackMessage);
             } catch (error) {
-              logger.error({ err: error }, 'Error sending bounce_ack')
+              logger.error({ err: error }, 'Error sending bounce_ack');
             }
           }
         }
@@ -244,26 +253,26 @@ function setupWebSocketServer(
 
       viewer_screen_size: (data) => {
         if (role === 'viewer') {
-          const validated = ValidationUtils.validateScreenSize(data.payload)
+          const validated = ValidationUtils.validateScreenSize(data.payload);
           if (validated) {
-            sessionService.setViewerScreenSize(sessionId, validated)
+            sessionService.setViewerScreenSize(sessionId, validated);
           }
         }
       },
 
       language: (data) => {
-        const language = data.payload?.language
+        const language = data.payload?.language;
         if (language) {
-          sessionService.setLanguage(sessionId, language)
+          sessionService.setLanguage(sessionId, language);
         }
       },
 
       viewer_update: (data) => {
         if (role === 'viewer') {
-          sessionService.updateBallState(sessionId, data.payload)
+          sessionService.updateBallState(sessionId, data.payload);
         }
-      }
-    }
+      },
+    };
 
     ws.on('message', (message) => {
       handleWebSocketMessage(
@@ -272,9 +281,9 @@ function setupWebSocketServer(
         webSocketManager,
         messageHandlers,
         analytics,
-        logger
-      )
-    })
+        logger,
+      );
+    });
 
     ws.on('close', () => {
       handleWebSocketClose(
@@ -284,38 +293,49 @@ function setupWebSocketServer(
         sessionService,
         analytics,
         webSocketManager,
-        logger
-      )
-    })
+        logger,
+      );
+    });
 
     ws.on('error', (error) => {
-      logger.error({ err: error, sessionId }, 'WebSocket error')
-      analytics.recordSessionError(sessionId, 'ws_error')
-    })
-  })
+      logger.error({ err: error, sessionId }, 'WebSocket error');
+      analytics.recordSessionError(sessionId, 'ws_error');
+    });
+  });
 
   // Allow up to 3 missed pings (90s grace period) before terminating.
   // This prevents false disconnects for mobile/bg tabs where timers are throttled.
-  const MAX_MISSED_PINGS = 3
+  const MAX_MISSED_PINGS = 3;
   const heartbeatInterval = setInterval(function ping() {
     for (const ws of wss.clients) {
       if (ws.isAlive === false) {
-        ws._missedPings = (ws._missedPings || 0) + 1
+        ws._missedPings = (ws._missedPings || 0) + 1;
         if (ws._missedPings > MAX_MISSED_PINGS) {
-          logger.debug({ missedPings: ws._missedPings }, 'WS terminated after max missed pings')
-          return ws.terminate()
+          logger.debug(
+            { missedPings: ws._missedPings },
+            'WS terminated after max missed pings',
+          );
+          return ws.terminate();
         }
         // Still send a ping to give it one more chance
-        try { ws.ping() } catch { /* ignore */ }
+        try {
+          ws.ping();
+        } catch {
+          /* ignore */
+        }
       } else {
-        ws.isAlive = false
-        try { ws.ping() } catch { /* ignore */ }
+        ws.isAlive = false;
+        try {
+          ws.ping();
+        } catch {
+          /* ignore */
+        }
       }
     }
-  }, 30000)
-  heartbeatInterval.unref()
+  }, 30000);
+  heartbeatInterval.unref();
 
-  return { wss, heartbeatInterval }
+  return { wss, heartbeatInterval };
 }
 
 /**
@@ -328,24 +348,27 @@ function handleWebSocketMessage(
   webSocketManager,
   messageHandlers,
   analytics,
-  logger
+  logger,
 ) {
   try {
-    const clientInfo = webSocketManager.getClientInfo(ws)
+    const clientInfo = webSocketManager.getClientInfo(ws);
     if (!clientInfo) {
-      return
+      return;
     }
 
-    const data = JSON.parse(message)
+    const data = JSON.parse(message);
     if (data.type === 'heartbeat') {
-      return
+      return;
     }
 
     // Validate sessionId format in WS messages
     if (data.payload?.sessionId) {
       if (!ValidationUtils.validateSessionId(data.payload.sessionId)) {
-        logger.warn({ sessionId: clientInfo.sessionId }, 'Invalid sessionId in WS message')
-        return
+        logger.warn(
+          { sessionId: clientInfo.sessionId },
+          'Invalid sessionId in WS message',
+        );
+        return;
       }
     }
 
@@ -353,23 +376,23 @@ function handleWebSocketMessage(
       {
         sessionId: clientInfo.sessionId,
         role: clientInfo.role,
-        type: data.type
+        type: data.type,
       },
-      'WS message received'
-    )
+      'WS message received',
+    );
 
-    const handler = messageHandlers[data.type]
+    const handler = messageHandlers[data.type];
     if (handler) {
-      handler(data)
+      handler(data);
     }
   } catch (error) {
-    const clientInfoForError = webSocketManager.getClientInfo(ws)
-    const sid = clientInfoForError ? clientInfoForError.sessionId : 'unknown'
+    const clientInfoForError = webSocketManager.getClientInfo(ws);
+    const sid = clientInfoForError ? clientInfoForError.sessionId : 'unknown';
     logger.error(
       { err: error, sessionId: sid },
-      'WebSocket message processing error'
-    )
-    analytics.recordSessionError(sid, 'ws_message_error')
+      'WebSocket message processing error',
+    );
+    analytics.recordSessionError(sid, 'ws_message_error');
   }
 }
 
@@ -384,28 +407,28 @@ function handleWebSocketClose(
   sessionService,
   analyticsModule,
   webSocketManager,
-  logger
+  logger,
 ) {
   // Record analytics for disconnection
   if (role === 'viewer') {
-    analyticsModule.recordViewerDisconnected()
+    analyticsModule.recordViewerDisconnected();
   } else if (role === 'controller') {
-    analyticsModule.recordControllerDisconnected()
+    analyticsModule.recordControllerDisconnected();
   }
 
   // Capture client info BEFORE removing from registry
-  const clientInfo = webSocketManager.getClientInfo(ws)
-  sessionService.handleWebSocketDisconnection(ws)
+  const clientInfo = webSocketManager.getClientInfo(ws);
+  sessionService.handleWebSocketDisconnection(ws);
 
-  if (!clientInfo) return
+  if (!clientInfo) return;
 
   sendDisconnectionNotification(
     sessionId,
     clientInfo,
     ws,
     webSocketManager,
-    logger
-  )
+    logger,
+  );
 }
 
 /**
@@ -417,9 +440,9 @@ function sendDisconnectionNotification(
   clientInfo,
   ws,
   webSocketManager,
-  logger
+  logger,
 ) {
-  const clients = webSocketManager.getClients(sessionId)
+  const clients = webSocketManager.getClients(sessionId);
 
   if (clientInfo.role === 'controller') {
     broadcastDisconnectionMessage(
@@ -427,8 +450,8 @@ function sendDisconnectionNotification(
       ws,
       'controller_disconnected',
       { controllerConnected: false },
-      logger
-    )
+      logger,
+    );
   } else if (clientInfo.role === 'viewer') {
     broadcastDisconnectionMessage(
       clients,
@@ -436,10 +459,10 @@ function sendDisconnectionNotification(
       'viewer_status',
       {
         connected: false,
-        viewerConnected: false
+        viewerConnected: false,
       },
-      logger
-    )
+      logger,
+    );
   }
 }
 
@@ -452,23 +475,23 @@ function broadcastDisconnectionMessage(
   excludeWs,
   messageType,
   payload,
-  logger
+  logger,
 ) {
   const msg = JSON.stringify({
     type: messageType,
     payload,
-    timestamp: Date.now()
-  })
+    timestamp: Date.now(),
+  });
 
   for (const { client } of clients) {
     if (client !== excludeWs && client.readyState === 1) {
       try {
-        client.send(msg)
+        client.send(msg);
       } catch (error) {
-        logger.error({ err: error }, `Error sending ${messageType}`)
+        logger.error({ err: error }, `Error sending ${messageType}`);
       }
     }
   }
 }
 
-module.exports = { setupWebSocketServer }
+module.exports = { setupWebSocketServer };

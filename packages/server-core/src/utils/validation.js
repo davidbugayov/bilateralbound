@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 /**
  * Централизованная валидация данных для BilateralBound
  * Упрощает и унифицирует валидацию по всему приложению
@@ -10,21 +10,21 @@ class ValidationUtils {
    */
   static validateBallStateUpdates(updates) {
     if (!updates || typeof updates !== 'object') {
-      return {}
+      return {};
     }
 
-    const validated = {}
+    const validated = {};
 
-    this._validateSpeed(updates, validated)
-    this._validateRadius(updates, validated)
-    this._validatePause(updates, validated)
-    this._validateDirection(updates, validated)
-    this._validateColors(updates, validated)
-    this._validateSound(updates, validated)
-    this._validateCommands(updates, validated)
-    this._validateNewFields(updates, validated)
+    this._validateSpeed(updates, validated);
+    this._validateRadius(updates, validated);
+    this._validatePause(updates, validated);
+    this._validateDirection(updates, validated);
+    this._validateColors(updates, validated);
+    this._validateSound(updates, validated);
+    this._validateCommands(updates, validated);
+    this._validateNewFields(updates, validated);
 
-    return validated
+    return validated;
   }
 
   /**
@@ -34,7 +34,7 @@ class ValidationUtils {
   static _validateSpeed(updates, validated) {
     if (updates.speed !== undefined)
       if (this._isValidSpeed(updates.speed)) {
-        validated.speed = updates.speed
+        validated.speed = updates.speed;
       }
   }
 
@@ -44,7 +44,7 @@ class ValidationUtils {
    */
   static _validateRadius(updates, validated) {
     if (this._isValidRadius(updates.radius)) {
-      validated.radius = updates.radius
+      validated.radius = updates.radius;
     }
   }
 
@@ -55,7 +55,7 @@ class ValidationUtils {
   static _validatePause(updates, validated) {
     if (updates.paused !== undefined)
       if (typeof updates.paused === 'boolean') {
-        validated.paused = updates.paused
+        validated.paused = updates.paused;
       }
   }
 
@@ -68,13 +68,13 @@ class ValidationUtils {
       updates.dirX !== undefined &&
       this._isValidDirectionValue(updates.dirX)
     ) {
-      validated.dirX = updates.dirX
+      validated.dirX = updates.dirX;
     }
     if (
       updates.dirY !== undefined &&
       this._isValidDirectionValue(updates.dirY)
     ) {
-      validated.dirY = updates.dirY
+      validated.dirY = updates.dirY;
     }
   }
 
@@ -84,10 +84,10 @@ class ValidationUtils {
    */
   static _validateColors(updates, validated) {
     if (this._isValidColor(updates.colorBall)) {
-      validated.colorBall = updates.colorBall
+      validated.colorBall = updates.colorBall;
     }
     if (this._isValidColor(updates.colorBg)) {
-      validated.colorBg = updates.colorBg
+      validated.colorBg = updates.colorBg;
     }
   }
 
@@ -97,15 +97,15 @@ class ValidationUtils {
    */
   static _validateSound(updates, validated) {
     if (typeof updates.soundEnabled === 'boolean') {
-      validated.soundEnabled = updates.soundEnabled
+      validated.soundEnabled = updates.soundEnabled;
     }
     if (
       updates.soundType &&
       ['soft', 'tick', 'tone', 'click', 'bounce', 'beep'].includes(
-        updates.soundType
+        updates.soundType,
       )
     ) {
-      validated.soundType = updates.soundType
+      validated.soundType = updates.soundType;
     }
   }
 
@@ -115,19 +115,19 @@ class ValidationUtils {
    */
   static _validateCommands(updates, validated) {
     if (updates.reset === true) {
-      validated.reset = true
+      validated.reset = true;
     }
     if (updates.resume === true) {
-      validated.paused = false
+      validated.paused = false;
     }
     if (updates.pause === true) {
-      validated.paused = true
+      validated.paused = true;
     }
     if (updates.returnToCenter === true) {
-      validated.returnToCenter = true
+      validated.returnToCenter = true;
     }
     if (typeof updates.stopping === 'boolean') {
-      validated.stopping = updates.stopping
+      validated.stopping = updates.stopping;
     }
   }
 
@@ -136,24 +136,46 @@ class ValidationUtils {
    * @private
    */
   static _validateNewFields(updates, validated) {
-    if (updates.ballEmoji !== undefined && (updates.ballEmoji === null || (typeof updates.ballEmoji === 'string' && updates.ballEmoji.length <= 2))) {
-      validated.ballEmoji = updates.ballEmoji
+    if (
+      updates.ballEmoji !== undefined &&
+      (updates.ballEmoji === null ||
+        (typeof updates.ballEmoji === 'string' &&
+          updates.ballEmoji.length <= 2))
+    ) {
+      validated.ballEmoji = updates.ballEmoji;
     }
-    if (updates.infinity !== undefined && typeof updates.infinity === 'boolean') {
-      validated.infinity = updates.infinity
+    if (
+      updates.infinity !== undefined &&
+      typeof updates.infinity === 'boolean'
+    ) {
+      validated.infinity = updates.infinity;
     }
-    if (updates.brainspotting !== undefined && typeof updates.brainspotting === 'boolean') {
-      validated.brainspotting = updates.brainspotting
+    if (
+      updates.brainspotting !== undefined &&
+      typeof updates.brainspotting === 'boolean'
+    ) {
+      validated.brainspotting = updates.brainspotting;
     }
     // Allow x/y position updates for brainspotting mode (therapist sets position)
-    if (updates.x !== undefined && typeof updates.x === 'number' && !Number.isNaN(updates.x)) {
-      validated.x = updates.x
+    if (
+      updates.x !== undefined &&
+      typeof updates.x === 'number' &&
+      !Number.isNaN(updates.x)
+    ) {
+      validated.x = updates.x;
     }
-    if (updates.y !== undefined && typeof updates.y === 'number' && !Number.isNaN(updates.y)) {
-      validated.y = updates.y
+    if (
+      updates.y !== undefined &&
+      typeof updates.y === 'number' &&
+      !Number.isNaN(updates.y)
+    ) {
+      validated.y = updates.y;
     }
-    if (updates.trackBand !== undefined && ['top', 'center', 'bottom'].includes(updates.trackBand)) {
-      validated.trackBand = updates.trackBand
+    if (
+      updates.trackBand !== undefined &&
+      ['top', 'center', 'bottom'].includes(updates.trackBand)
+    ) {
+      validated.trackBand = updates.trackBand;
     }
   }
 
@@ -164,7 +186,7 @@ class ValidationUtils {
   static _isValidDirectionValue(value) {
     return (
       typeof value === 'number' && Math.abs(value) <= 1 && !Number.isNaN(value)
-    )
+    );
   }
 
   /**
@@ -177,7 +199,7 @@ class ValidationUtils {
       value >= 0 &&
       value <= 100 &&
       !Number.isNaN(value)
-    )
+    );
   }
 
   /**
@@ -190,7 +212,7 @@ class ValidationUtils {
       value > 0 &&
       value <= 1000 &&
       !Number.isNaN(value)
-    )
+    );
   }
 
   /**
@@ -202,7 +224,7 @@ class ValidationUtils {
     return (
       typeof value === 'string' &&
       /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
-    )
+    );
   }
 
   /**
@@ -210,23 +232,23 @@ class ValidationUtils {
    */
   static validateBouncePayload(data) {
     if (!data || typeof data !== 'object') {
-      return null
+      return null;
     }
 
-    const validated = {}
+    const validated = {};
 
     // side: string, one of allowed values
-    const allowedSides = ['left', 'right', 'top', 'bottom']
+    const allowedSides = ['left', 'right', 'top', 'bottom'];
     if (typeof data.side === 'string' && allowedSides.includes(data.side)) {
-      validated.side = data.side
+      validated.side = data.side;
     }
 
     // x, y: numbers
     if (typeof data.x === 'number' && !Number.isNaN(data.x)) {
-      validated.x = data.x
+      validated.x = data.x;
     }
     if (typeof data.y === 'number' && !Number.isNaN(data.y)) {
-      validated.y = data.y
+      validated.y = data.y;
     }
 
     // dirX, dirY: numbers between -1 and 1
@@ -235,14 +257,14 @@ class ValidationUtils {
       !Number.isNaN(data.dirX) &&
       Math.abs(data.dirX) <= 1
     ) {
-      validated.dirX = data.dirX
+      validated.dirX = data.dirX;
     }
     if (
       typeof data.dirY === 'number' &&
       !Number.isNaN(data.dirY) &&
       Math.abs(data.dirY) <= 1
     ) {
-      validated.dirY = data.dirY
+      validated.dirY = data.dirY;
     }
 
     // timestamp: positive number
@@ -251,10 +273,10 @@ class ValidationUtils {
       !Number.isNaN(data.timestamp) &&
       data.timestamp > 0
     ) {
-      validated.timestamp = data.timestamp
+      validated.timestamp = data.timestamp;
     }
 
-    return Object.keys(validated).length > 0 ? validated : null
+    return Object.keys(validated).length > 0 ? validated : null;
   }
 
   /**
@@ -263,7 +285,7 @@ class ValidationUtils {
   static validateSessionId(sessionId) {
     return (
       typeof sessionId === 'string' && /^[a-zA-Z0-9_-]{3,64}$/.test(sessionId)
-    )
+    );
   }
 
   /**
@@ -271,11 +293,11 @@ class ValidationUtils {
    */
   static validateScreenSize(screenSize) {
     if (!screenSize || typeof screenSize !== 'object') {
-      return null
+      return null;
     }
 
-    const width = Number.parseInt(screenSize.width)
-    const height = Number.parseInt(screenSize.height)
+    const width = Number.parseInt(screenSize.width);
+    const height = Number.parseInt(screenSize.height);
 
     if (
       Number.isNaN(width) ||
@@ -285,11 +307,11 @@ class ValidationUtils {
       width > 10000 ||
       height > 10000
     ) {
-      return null
+      return null;
     }
 
-    return { width, height }
+    return { width, height };
   }
 }
 
-module.exports = ValidationUtils
+module.exports = ValidationUtils;

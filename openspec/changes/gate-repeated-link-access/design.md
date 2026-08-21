@@ -5,6 +5,7 @@
 См. proposal.md — Why. Текущее поведение: GET `/c/:sessionId` и `/s/:sessionId` в `static_routes_controller.js` безусловно отдают HTML (controller/viewer) через `localizationService.getLocalizedHtml`. Подписка проверяется только в `POST /api/session/:sessionId/reserve` (`subscriptionService.isCustomIdAllowed`). Подписка привязана к Telegram User ID (`_subscriptions`), сессии — in-memory LRU.
 
 Ограничения текущей архитектуры:
+
 - Нет логина и пользовательских аккаунтов на web-клиенте — идентификация только через cookie/браузер.
 - Подписка — Telegram ID, привязка customId ↔ telegramUserId в `SubscriptionService._customIdIndex`.
 - i18n single-source: строки в `src/i18n/i18n.js`, при сборке генерируются IIFE в `public/js/i18n/`.
@@ -14,12 +15,14 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Первый вход по ссылке с браузера — бесплатный, дальше повторный вход без подписки — paywall.
 - Проверка подписки по Telegram User ID на paywall-странице, разблокировка закрепляется за браузером.
 - Владелец ссылки (активная подписка по customId) не видит paywall.
 - Работает одинаково для `/c/` и `/s/` (одна ссылка = один бесплатный доступ).
 
 **Non-Goals:**
+
 - Не добавляем полноценные аккаунты/логин.
 - Не делаем проверку по IP (выбрано cookie) и по счётчику подключений сессии.
 - Не защищаем от удаления cookie (это осознанный компромисс, см. Risks).
@@ -59,6 +62,7 @@ else
 ### D3: Paywall — отдельная HTML-страница с JS
 
 Новая статическая страница `public/paywall.html` (по образцу `breathing.html`/`about.html`), отдаётся через `localizationService.getStaticLocalizedHtml('paywall.html', req)` с no-cache. Содержит:
+
 - Кнопку на бота @emdrbilateral_bot (`https://t.me/emdrbilateral_bot`) — оплата 75⭐.
 - Форму ввода Telegram User ID + подсказку `/myid` в боте.
 - JS: находит sessionId из `location.pathname` (`/c/` → controller, `/s/` → viewer), при сабмите делает POST на разблокировку, при успехе `location.reload()`.
@@ -68,6 +72,7 @@ else
 ### D4: Эндпоинт разблокировки
 
 `POST /api/link-access/:sessionId/unlock`, тело `{ telegramUserId }`:
+
 1. Валидация: `sessionId` — строка (существующая сессия не обязательна для проверки подписки, но лучше проверить формат), `telegramUserId` — число.
 2. `subscriptionService.isActive(telegramUserId)` — если нет, `402 { error, i18nKey: 'paywall.invalidId' }`.
 3. Если есть — `linkAccessService.setUnlocked(req.cookies.bb_lk, sessionId, expiresAt)` (достаём `expiresAt` через `getStatus(telegramUserId)`), отвечаем `{ success: true }`.
@@ -87,7 +92,7 @@ else
 
 - **Удаление cookie = снова бесплатно** → Осознанный компромисс без логина. Смягчение: cookie живёт 1 год, большинство пользователей не чистит cookie. Фиксируем в README/offer как ограничение бесплатной модели.
 - **Один браузер = один бесплатный доступ на ссылку**: если терапевт и пациент на одном устройстве (общий ПК), второй увидит paywall → Смягчение: владелец ссылки с подпиской не блокируется (D5); в UI paywall явно объясняет, как проверить подписку.
-- **Разрастание `data/link-access.json`** → Очистка устаревших записей при загрузке и периодически (D6). 
+- **Разрастание `data/link-access.json`** → Очистка устаревших записей при загрузке и периодически (D6).
 - **Сервис-воркер может кэшировать HTML** → Проверить обработку `/c/` и `/s/` в sw; если кэширует — исключить эти пути (no-cache уже стоит на HTTP-уровне, но SW может обойти).
 - **Смена языка/повторный редирект после разблокировки** → После успешного unlock JS делает `location.reload()` — сервер сам отдаст контент или paywall (если истекла).
 - **Race: параллельные запросы того же браузера** (вкладки) → Операции идемпотентны (get/set по ключу), гонка безвредна.

@@ -2,9 +2,18 @@
 <html lang="en" data-lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title data-i18n="offer.metaTitle">Terms of Service (Public Offer) | BilateralBound</title>
-    <meta name="description" data-i18n-attr="content:offer.metaDescription" content="Terms of Service and public offer agreement for BilateralBound — EMDR therapy platform" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title data-i18n="offer.metaTitle">
+      Terms of Service (Public Offer) | BilateralBound
+    </title>
+    <meta
+      name="description"
+      data-i18n-attr="content:offer.metaDescription"
+      content="Terms of Service and public offer agreement for BilateralBound — EMDR therapy platform"
+    />
     <meta name="author" content="Bugaev David" />
     <meta name="robots" content="index, follow" />
     <meta name="version" content="2.39.543-4d9f8a65" />
@@ -14,21 +23,28 @@
     <link rel="stylesheet" href="/css/legal-page.css" />
     <link rel="manifest" href="/manifest.json?v=2.39.543-4d9f8a65" />
 
-    <link href="/favicon.svg?v=2.39.543-4d9f8a65" rel="icon" type="image/svg+xml" />
-    <link href="/favicon.ico?v=2.39.543-4d9f8a65" rel="icon" type="image/x-icon" />
+    <link
+      href="/favicon.svg?v=2.39.543-4d9f8a65"
+      rel="icon"
+      type="image/svg+xml"
+    />
+    <link
+      href="/favicon.ico?v=2.39.543-4d9f8a65"
+      rel="icon"
+      type="image/x-icon"
+    />
     <link rel="apple-touch-icon" href="/favicon.svg?v=2.39.543-4d9f8a65" />
 
     <script>
       // Anti-flash cloak: only hide the body when the server has NOT
       // already rendered localized content (data-i18n-rendered set by
       // LocalizationService). Hiding pre-rendered content breaks SEO.
-      if (!document.documentElement.hasAttribute('data-i18n-rendered')) {
-        var s = document.createElement('style');
-        s.textContent = '[data-i18n-cloak]{display:none!important}';
+      if (!document.documentElement.hasAttribute("data-i18n-rendered")) {
+        var s = document.createElement("style");
+        s.textContent = "[data-i18n-cloak]{display:none!important}";
         document.head.appendChild(s);
       }
     </script>
-    
 
     <script src="/js/i18n/lang-preload.js?v=2.39.543-4d9f8a65"></script>
   </head>
@@ -36,198 +52,471 @@
     <div class="container">
       <!-- Language selector + back link -->
       <div class="header-bar">
-        <a href="/" class="back-link" data-i18n="offer.backLink">← Back to home</a>
-        <div class="language-selector" role="navigation" aria-label="Language selection">
-          <button id="languageSelectorBtn" class="language-selector__btn" aria-haspopup="listbox" aria-expanded="false" data-i18n-attr="aria-label:common.languageSelectorLabel">
+        <a href="/" class="back-link" data-i18n="offer.backLink"
+          >← Back to home</a
+        >
+        <div
+          class="language-selector"
+          role="navigation"
+          aria-label="Language selection"
+        >
+          <button
+            id="languageSelectorBtn"
+            class="language-selector__btn"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            data-i18n-attr="aria-label:common.languageSelectorLabel"
+          >
             🌐 <span id="currentLanguageLabel">English</span>
           </button>
-          <ul id="languageDropdown" class="language-selector__dropdown" role="listbox" hidden>
+          <ul
+            id="languageDropdown"
+            class="language-selector__dropdown"
+            role="listbox"
+            hidden
+          >
             <li data-lang="en" class="language-option language-option--active">
-              <span class="lang-code">🇬🇧</span><span class="lang-name" data-i18n="common.lang.en">English</span>
+              <span class="lang-code">🇬🇧</span
+              ><span class="lang-name" data-i18n="common.lang.en">English</span>
             </li>
             <li data-lang="ru" class="language-option">
-              <span class="lang-code">🇷🇺</span><span class="lang-name" data-i18n="common.lang.ru">Русский</span>
+              <span class="lang-code">🇷🇺</span
+              ><span class="lang-name" data-i18n="common.lang.ru">Русский</span>
             </li>
             <li data-lang="es" class="language-option">
-              <span class="lang-code">🇪🇸</span><span class="lang-name" data-i18n="common.lang.es">Español</span>
+              <span class="lang-code">🇪🇸</span
+              ><span class="lang-name" data-i18n="common.lang.es">Español</span>
             </li>
             <li data-lang="fr" class="language-option">
-              <span class="lang-code">🇫🇷</span><span class="lang-name" data-i18n="common.lang.fr">Français</span>
+              <span class="lang-code">🇫🇷</span
+              ><span class="lang-name" data-i18n="common.lang.fr"
+                >Français</span
+              >
             </li>
             <li data-lang="de" class="language-option">
-              <span class="lang-code">🇩🇪</span><span class="lang-name" data-i18n="common.lang.de">Deutsch</span>
+              <span class="lang-code">🇩🇪</span
+              ><span class="lang-name" data-i18n="common.lang.de">Deutsch</span>
             </li>
             <li data-lang="pt" class="language-option">
-              <span class="lang-code">🇵🇹</span><span class="lang-name" data-i18n="common.lang.pt">Português</span>
+              <span class="lang-code">🇵🇹</span
+              ><span class="lang-name" data-i18n="common.lang.pt"
+                >Português</span
+              >
             </li>
             <li data-lang="ja" class="language-option">
-              <span class="lang-code">🇯🇵</span><span class="lang-name" data-i18n="common.lang.ja">日本語</span>
+              <span class="lang-code">🇯🇵</span
+              ><span class="lang-name" data-i18n="common.lang.ja">日本語</span>
             </li>
             <li data-lang="zh" class="language-option">
-              <span class="lang-code">🇨🇳</span><span class="lang-name" data-i18n="common.lang.zh">中文</span>
+              <span class="lang-code">🇨🇳</span
+              ><span class="lang-name" data-i18n="common.lang.zh">中文</span>
             </li>
           </ul>
         </div>
       </div>
 
       <h1 data-i18n="offer.title">Terms of Service (Public Offer)</h1>
-      <p class="meta" data-i18n="offer.lastUpdated">Last updated: May 8, 2026</p>
+      <p class="meta" data-i18n="offer.lastUpdated">
+        Last updated: May 8, 2026
+      </p>
 
       <!-- Section 1 -->
       <div class="card">
         <h2 data-i18n="offer.s1Title">1. General Provisions</h2>
-        <p data-i18n="offer.s1p1">This document (hereinafter referred to as the "Offer") is a public offer by <strong>Bugaev David</strong> (hereinafter referred to as the "Administrator") to provide access to the functionality of the <strong>BilateralBound</strong> website (hereinafter referred to as the "Site"), located at <a href="https://emdrbilateral.ru/">https://emdrbilateral.ru/</a>, on the terms described below.</p>
-        <p data-i18n="offer.s1p2">This Offer is governed by Article 437 of the Civil Code of the Russian Federation and constitutes a legally binding agreement between the Administrator and any person who accepts this Offer (hereinafter referred to as the "User").</p>
-        <p data-i18n="offer.s1p3">By using the Site, creating sessions, or subscribing to paid services, the User confirms full and unconditional acceptance (acceptance) of this Offer.</p>
+        <p data-i18n="offer.s1p1">
+          This document (hereinafter referred to as the "Offer") is a public
+          offer by <strong>Bugaev David</strong> (hereinafter referred to as the
+          "Administrator") to provide access to the functionality of the
+          <strong>BilateralBound</strong> website (hereinafter referred to as
+          the "Site"), located at
+          <a href="https://emdrbilateral.ru/">https://emdrbilateral.ru/</a>, on
+          the terms described below.
+        </p>
+        <p data-i18n="offer.s1p2">
+          This Offer is governed by Article 437 of the Civil Code of the Russian
+          Federation and constitutes a legally binding agreement between the
+          Administrator and any person who accepts this Offer (hereinafter
+          referred to as the "User").
+        </p>
+        <p data-i18n="offer.s1p3">
+          By using the Site, creating sessions, or subscribing to paid services,
+          the User confirms full and unconditional acceptance (acceptance) of
+          this Offer.
+        </p>
       </div>
 
       <!-- Section 2 -->
       <div class="card">
         <h2 data-i18n="offer.s2Title">2. Definitions</h2>
-        <p data-i18n="offer.s2Intro">For the purposes of this Offer, the following terms have the meanings set forth below:</p>
+        <p data-i18n="offer.s2Intro">
+          For the purposes of this Offer, the following terms have the meanings
+          set forth below:
+        </p>
         <ul>
-          <li data-i18n="offer.s2Li1"><strong>"Site"</strong> — a set of web pages and software located at <a href="https://emdrbilateral.ru/">https://emdrbilateral.ru/</a>, including its subdomains.</li>
-          <li data-i18n="offer.s2Li2"><strong>"Administrator"</strong> — Bugaev David, an individual who manages and maintains the Site.</li>
-          <li data-i18n="offer.s2Li3"><strong>"User"</strong> — any person who accesses the Site and/or accepts this Offer.</li>
-          <li data-i18n="offer.s2Li4"><strong>"Offer"</strong> — this public offer document.</li>
-          <li data-i18n="offer.s2Li5"><strong>"Acceptance"</strong> — full and unconditional acceptance of the Offer terms by the User.</li>
-          <li data-i18n="offer.s2Li6"><strong>"EMDR Session"</strong> — a therapy session using bilateral stimulation created through the Site.</li>
-          <li data-i18n="offer.s2Li7"><strong>"Premium Subscription"</strong> — a paid service providing access to additional Site features.</li>
-          <li data-i18n="offer.s2Li8"><strong>"Permanent Links"</strong> — custom session links that do not expire.</li>
+          <li data-i18n="offer.s2Li1">
+            <strong>"Site"</strong> — a set of web pages and software located at
+            <a href="https://emdrbilateral.ru/">https://emdrbilateral.ru/</a>,
+            including its subdomains.
+          </li>
+          <li data-i18n="offer.s2Li2">
+            <strong>"Administrator"</strong> — Bugaev David, an individual who
+            manages and maintains the Site.
+          </li>
+          <li data-i18n="offer.s2Li3">
+            <strong>"User"</strong> — any person who accesses the Site and/or
+            accepts this Offer.
+          </li>
+          <li data-i18n="offer.s2Li4">
+            <strong>"Offer"</strong> — this public offer document.
+          </li>
+          <li data-i18n="offer.s2Li5">
+            <strong>"Acceptance"</strong> — full and unconditional acceptance of
+            the Offer terms by the User.
+          </li>
+          <li data-i18n="offer.s2Li6">
+            <strong>"EMDR Session"</strong> — a therapy session using bilateral
+            stimulation created through the Site.
+          </li>
+          <li data-i18n="offer.s2Li7">
+            <strong>"Premium Subscription"</strong> — a paid service providing
+            access to additional Site features.
+          </li>
+          <li data-i18n="offer.s2Li8">
+            <strong>"Permanent Links"</strong> — custom session links that do
+            not expire.
+          </li>
         </ul>
       </div>
 
       <!-- Section 3 -->
       <div class="card">
         <h2 data-i18n="offer.s3Title">3. Subject of the Offer</h2>
-        <p data-i18n="offer.s3p1">The Administrator provides the User with access to the functionality of the Site — a platform for conducting EMDR therapy sessions using bilateral stimulation.</p>
+        <p data-i18n="offer.s3p1">
+          The Administrator provides the User with access to the functionality
+          of the Site — a platform for conducting EMDR therapy sessions using
+          bilateral stimulation.
+        </p>
         <p data-i18n="offer.s3p2">The Site offers the following services:</p>
         <ul>
-          <li data-i18n="offer.s3Li1">Free creation of EMDR therapy sessions with random session identifiers.</li>
-          <li data-i18n="offer.s3Li2">Real-time bilateral stimulation with ball movement on the viewer's screen.</li>
-          <li data-i18n="offer.s3Li3">Premium Subscription (paid): creation of permanent custom session links with personalized identifiers.</li>
-          <li data-i18n="offer.s3Li4">Other functionality as described on the Site.</li>
+          <li data-i18n="offer.s3Li1">
+            Free creation of EMDR therapy sessions with random session
+            identifiers.
+          </li>
+          <li data-i18n="offer.s3Li2">
+            Real-time bilateral stimulation with ball movement on the viewer's
+            screen.
+          </li>
+          <li data-i18n="offer.s3Li3">
+            Premium Subscription (paid): creation of permanent custom session
+            links with personalized identifiers.
+          </li>
+          <li data-i18n="offer.s3Li4">
+            Other functionality as described on the Site.
+          </li>
         </ul>
       </div>
 
       <!-- Section 4 -->
       <div class="card">
         <h2 data-i18n="offer.s4Title">4. Acceptance of the Offer</h2>
-        <p data-i18n="offer.s4p1">Acceptance of this Offer is considered to have been made by the User from the moment of any of the following actions:</p>
+        <p data-i18n="offer.s4p1">
+          Acceptance of this Offer is considered to have been made by the User
+          from the moment of any of the following actions:
+        </p>
         <ul>
-          <li data-i18n="offer.s4Li1">Starting to use any functionality of the Site;</li>
+          <li data-i18n="offer.s4Li1">
+            Starting to use any functionality of the Site;
+          </li>
           <li data-i18n="offer.s4Li2">Creating an EMDR therapy session;</li>
-          <li data-i18n="offer.s4Li3">Making payment for a Premium Subscription;</li>
-          <li data-i18n="offer.s4Li4">Clicking "Accept" on the cookie consent banner.</li>
+          <li data-i18n="offer.s4Li3">
+            Making payment for a Premium Subscription;
+          </li>
+          <li data-i18n="offer.s4Li4">
+            Clicking "Accept" on the cookie consent banner.
+          </li>
         </ul>
-        <p data-i18n="offer.s4p2">Acceptance of this Offer means the User agrees with all its terms without exception. If the User does not agree with any of the terms, they must immediately stop using the Site.</p>
+        <p data-i18n="offer.s4p2">
+          Acceptance of this Offer means the User agrees with all its terms
+          without exception. If the User does not agree with any of the terms,
+          they must immediately stop using the Site.
+        </p>
       </div>
 
       <!-- Section 5 -->
       <div class="card">
         <h2 data-i18n="offer.s5Title">5. Free Services</h2>
-        <p data-i18n="offer.s5p1">The following services are provided free of charge: creating EMDR therapy sessions with random identifiers, conducting bilateral stimulation sessions in real time, and basic session management features.</p>
-        <p data-i18n="offer.s5p2">Free sessions are temporary: session data is stored in the server's RAM and may be deleted after 24 hours of inactivity or when the server is restarted.</p>
-        <p data-i18n="offer.s5p3">The Administrator reserves the right to limit the number of free sessions and change the terms of free services at any time.</p>
+        <p data-i18n="offer.s5p1">
+          The following services are provided free of charge: creating EMDR
+          therapy sessions with random identifiers, conducting bilateral
+          stimulation sessions in real time, and basic session management
+          features.
+        </p>
+        <p data-i18n="offer.s5p2">
+          Free sessions are temporary: session data is stored in the server's
+          RAM and may be deleted after 24 hours of inactivity or when the server
+          is restarted.
+        </p>
+        <p data-i18n="offer.s5p3">
+          The Administrator reserves the right to limit the number of free
+          sessions and change the terms of free services at any time.
+        </p>
       </div>
 
       <!-- Section 6 -->
       <div class="card">
-        <h2 data-i18n="offer.s6Title">6. Premium Subscription (Paid Services)</h2>
-        <p data-i18n="offer.s6p1">The Premium Subscription provides the User with access to additional features: permanent custom session links with personalized identifiers, priority technical support, and other features specified on the Site.</p>
-        <p data-i18n="offer.s6p2">The cost of the Premium Subscription is 75 ⭐ Telegram Stars per month. Payment is made via Telegram Stars (internal Telegram currency).</p>
-        <p data-i18n="offer.s6p3">The Premium Subscription is valid for 30 (thirty) calendar days from the date of payment. The subscription is automatically renewed if auto-renewal is enabled.</p>
-        <p data-i18n="offer.s6p4">The User has the right to cancel the Premium Subscription at any time. When cancelling, the subscription remains active until the end of the paid period without refund of unused funds, unless otherwise provided by applicable law.</p>
-        <p data-i18n="offer.s6p5">Payment for the Premium Subscription is processed through the Telegram payment system. The Administrator does not process, store, or transmit payment data.</p>
+        <h2 data-i18n="offer.s6Title">
+          6. Premium Subscription (Paid Services)
+        </h2>
+        <p data-i18n="offer.s6p1">
+          The Premium Subscription provides the User with access to additional
+          features: permanent custom session links with personalized
+          identifiers, priority technical support, and other features specified
+          on the Site.
+        </p>
+        <p data-i18n="offer.s6p2">
+          The cost of the Premium Subscription is 75 ⭐ Telegram Stars per
+          month. Payment is made via Telegram Stars (internal Telegram
+          currency).
+        </p>
+        <p data-i18n="offer.s6p3">
+          The Premium Subscription is valid for 30 (thirty) calendar days from
+          the date of payment. The subscription is automatically renewed if
+          auto-renewal is enabled.
+        </p>
+        <p data-i18n="offer.s6p4">
+          The User has the right to cancel the Premium Subscription at any time.
+          When cancelling, the subscription remains active until the end of the
+          paid period without refund of unused funds, unless otherwise provided
+          by applicable law.
+        </p>
+        <p data-i18n="offer.s6p5">
+          Payment for the Premium Subscription is processed through the Telegram
+          payment system. The Administrator does not process, store, or transmit
+          payment data.
+        </p>
       </div>
 
       <!-- Section 7 -->
       <div class="card">
-        <h2 data-i18n="offer.s7Title">7. Rights and Obligations of the Parties</h2>
-        <h3 data-i18n="offer.s7AdminTitle">7.1. Obligations of the Administrator:</h3>
+        <h2 data-i18n="offer.s7Title">
+          7. Rights and Obligations of the Parties
+        </h2>
+        <h3 data-i18n="offer.s7AdminTitle">
+          7.1. Obligations of the Administrator:
+        </h3>
         <ul>
-          <li data-i18n="offer.s7AdminLi1">Ensure the operability of the Site in accordance with current technical standards;</li>
-          <li data-i18n="offer.s7AdminLi2">Provide technical support to Users via email <a href="mailto:davidbugayov@ya.ru">davidbugayov@ya.ru</a>;</li>
-          <li data-i18n="offer.s7AdminLi3">Not to disclose Users' personal data in accordance with the Privacy Policy;</li>
-          <li data-i18n="offer.s7AdminLi4">Notify Users of changes to this Offer by posting a new version on the Site.</li>
+          <li data-i18n="offer.s7AdminLi1">
+            Ensure the operability of the Site in accordance with current
+            technical standards;
+          </li>
+          <li data-i18n="offer.s7AdminLi2">
+            Provide technical support to Users via email
+            <a href="mailto:davidbugayov@ya.ru">davidbugayov@ya.ru</a>;
+          </li>
+          <li data-i18n="offer.s7AdminLi3">
+            Not to disclose Users' personal data in accordance with the Privacy
+            Policy;
+          </li>
+          <li data-i18n="offer.s7AdminLi4">
+            Notify Users of changes to this Offer by posting a new version on
+            the Site.
+          </li>
         </ul>
         <h3 data-i18n="offer.s7UserTitle">7.2. Obligations of the User:</h3>
         <ul>
-          <li data-i18n="offer.s7UserLi1">Use the Site exclusively for lawful purposes;</li>
-          <li data-i18n="offer.s7UserLi2">Not to attempt to disrupt the Site's operation, hack its security, or use the Site for malicious activities;</li>
-          <li data-i18n="offer.s7UserLi3">Not to use the Site for providing medical services requiring a license, or to represent the Site as a certified medical device;</li>
-          <li data-i18n="offer.s7UserLi4">Independently ensure that EMDR therapy sessions are conducted by qualified professionals in accordance with applicable law.</li>
+          <li data-i18n="offer.s7UserLi1">
+            Use the Site exclusively for lawful purposes;
+          </li>
+          <li data-i18n="offer.s7UserLi2">
+            Not to attempt to disrupt the Site's operation, hack its security,
+            or use the Site for malicious activities;
+          </li>
+          <li data-i18n="offer.s7UserLi3">
+            Not to use the Site for providing medical services requiring a
+            license, or to represent the Site as a certified medical device;
+          </li>
+          <li data-i18n="offer.s7UserLi4">
+            Independently ensure that EMDR therapy sessions are conducted by
+            qualified professionals in accordance with applicable law.
+          </li>
         </ul>
       </div>
 
       <!-- Section 8 -->
       <div class="card">
         <h2 data-i18n="offer.s8Title">8. Liability of the Parties</h2>
-        <p data-i18n="offer.s8p1">The Site is provided on an "as is" basis. The Administrator makes no guarantees regarding the uninterrupted or error-free operation of the Site, or the achievement of any therapeutic results.</p>
-        <p data-i18n="offer.s8p2">The Administrator is not liable for any direct or indirect damages arising from the use or inability to use the Site, including but not limited to: loss of data, loss of profit, disruption of therapy sessions.</p>
-        <p data-i18n="offer.s8p3">The User bears full responsibility for the use of the Site in their professional practice, including compliance with professional standards and legal requirements.</p>
-        <p data-i18n="offer.s8p4">The Administrator's liability to the User for any claims arising from the use of the Site is limited to the amount paid by the User for the Premium Subscription during the last 30 (thirty) days preceding the claim.</p>
+        <p data-i18n="offer.s8p1">
+          The Site is provided on an "as is" basis. The Administrator makes no
+          guarantees regarding the uninterrupted or error-free operation of the
+          Site, or the achievement of any therapeutic results.
+        </p>
+        <p data-i18n="offer.s8p2">
+          The Administrator is not liable for any direct or indirect damages
+          arising from the use or inability to use the Site, including but not
+          limited to: loss of data, loss of profit, disruption of therapy
+          sessions.
+        </p>
+        <p data-i18n="offer.s8p3">
+          The User bears full responsibility for the use of the Site in their
+          professional practice, including compliance with professional
+          standards and legal requirements.
+        </p>
+        <p data-i18n="offer.s8p4">
+          The Administrator's liability to the User for any claims arising from
+          the use of the Site is limited to the amount paid by the User for the
+          Premium Subscription during the last 30 (thirty) days preceding the
+          claim.
+        </p>
       </div>
 
       <!-- Section 9 -->
       <div class="card">
         <h2 data-i18n="offer.s9Title">9. Limitation of Liability</h2>
-        <p data-i18n="offer.s9p1">The Site is a technical tool for bilateral stimulation and is NOT a certified medical device. EMDR therapy sessions should be conducted exclusively by qualified mental health professionals.</p>
-        <p data-i18n="offer.s9p2">The Administrator is not a medical organization and does not provide medical services. The Site does not diagnose, treat, or prevent any diseases.</p>
-        <p data-i18n="offer.s9p3">The User acknowledges that they use the Site at their own risk and that the Administrator is not liable for any consequences of using the Site for therapeutic purposes.</p>
+        <p data-i18n="offer.s9p1">
+          The Site is a technical tool for bilateral stimulation and is NOT a
+          certified medical device. EMDR therapy sessions should be conducted
+          exclusively by qualified mental health professionals.
+        </p>
+        <p data-i18n="offer.s9p2">
+          The Administrator is not a medical organization and does not provide
+          medical services. The Site does not diagnose, treat, or prevent any
+          diseases.
+        </p>
+        <p data-i18n="offer.s9p3">
+          The User acknowledges that they use the Site at their own risk and
+          that the Administrator is not liable for any consequences of using the
+          Site for therapeutic purposes.
+        </p>
       </div>
 
       <!-- Section 10 -->
       <div class="card">
         <h2 data-i18n="offer.s10Title">10. Confidentiality</h2>
-        <p data-i18n="offer.s10p1">The processing of personal data is carried out in accordance with the <a href="/privacy">Privacy Policy</a> available at <a href="https://emdrbilateral.ru/privacy">https://emdrbilateral.ru/privacy</a>, which is an integral part of this Offer.</p>
-        <p data-i18n="offer.s10p2">By accepting this Offer, the User confirms that they have read and agree with the terms of the Privacy Policy.</p>
+        <p data-i18n="offer.s10p1">
+          The processing of personal data is carried out in accordance with the
+          <a href="/privacy">Privacy Policy</a> available at
+          <a href="https://emdrbilateral.ru/privacy"
+            >https://emdrbilateral.ru/privacy</a
+          >, which is an integral part of this Offer.
+        </p>
+        <p data-i18n="offer.s10p2">
+          By accepting this Offer, the User confirms that they have read and
+          agree with the terms of the Privacy Policy.
+        </p>
       </div>
 
       <!-- Section 11 -->
       <div class="card">
         <h2 data-i18n="offer.s11Title">11. Dispute Resolution</h2>
-        <p data-i18n="offer.s11p1">All disputes arising from this Offer shall be resolved through negotiations. If agreement cannot be reached, disputes shall be resolved in accordance with the current legislation of the Russian Federation.</p>
-        <p data-i18n="offer.s11p2">The place of dispute resolution is the location of the Administrator: the Russian Federation.</p>
+        <p data-i18n="offer.s11p1">
+          All disputes arising from this Offer shall be resolved through
+          negotiations. If agreement cannot be reached, disputes shall be
+          resolved in accordance with the current legislation of the Russian
+          Federation.
+        </p>
+        <p data-i18n="offer.s11p2">
+          The place of dispute resolution is the location of the Administrator:
+          the Russian Federation.
+        </p>
       </div>
 
       <!-- Section 12 -->
       <div class="card">
         <h2 data-i18n="offer.s12Title">12. Changes to the Offer</h2>
-        <p data-i18n="offer.s12p1">The Administrator reserves the right to unilaterally change the terms of this Offer. Changes take effect from the moment the updated Offer is published on the Site.</p>
-        <p data-i18n="offer.s12p2">Continued use of the Site after changes to the Offer means the User's acceptance of the new terms. If the User does not agree with the changes, they must stop using the Site.</p>
+        <p data-i18n="offer.s12p1">
+          The Administrator reserves the right to unilaterally change the terms
+          of this Offer. Changes take effect from the moment the updated Offer
+          is published on the Site.
+        </p>
+        <p data-i18n="offer.s12p2">
+          Continued use of the Site after changes to the Offer means the User's
+          acceptance of the new terms. If the User does not agree with the
+          changes, they must stop using the Site.
+        </p>
       </div>
 
       <!-- Section 13 -->
       <div class="card">
         <h2 data-i18n="offer.s13Title">13. Administrator Details</h2>
-        <p data-i18n="offer.s13p1">This Site is operated by an individual and is not a legal entity in accordance with the legislation of the Russian Federation.</p>
-        <p><strong data-i18n="offer.s13AdminLabel">Administrator:</strong> <span data-i18n="offer.s13AdminName">Bugaev David</span></p>
-        <p><strong data-i18n="offer.s13EmailLabel">Contact email:</strong> <a href="mailto:davidbugayov@ya.ru">davidbugayov@ya.ru</a></p>
-        <p><strong data-i18n="offer.s13TgLabel">Telegram bot:</strong> <a href="https://t.me/emdrbilateral_bot" target="_blank" rel="noopener">@emdrbilateral_bot</a></p>
-        <p><strong data-i18n="offer.s13StatusLabel">Legal status:</strong> <span data-i18n="offer.s13StatusValue">Individual (self-employed), not a legal entity. INN/TIN, OGRN, and KPP are not applicable.</span></p>
-        <p><strong data-i18n="offer.s13JurisdictionLabel">Jurisdiction:</strong> <span data-i18n="offer.s13JurisdictionValue">Russian Federation</span></p>
+        <p data-i18n="offer.s13p1">
+          This Site is operated by an individual and is not a legal entity in
+          accordance with the legislation of the Russian Federation.
+        </p>
+        <p>
+          <strong data-i18n="offer.s13AdminLabel">Administrator:</strong>
+          <span data-i18n="offer.s13AdminName">Bugaev David</span>
+        </p>
+        <p>
+          <strong data-i18n="offer.s13EmailLabel">Contact email:</strong>
+          <a href="mailto:davidbugayov@ya.ru">davidbugayov@ya.ru</a>
+        </p>
+        <p>
+          <strong data-i18n="offer.s13TgLabel">Telegram bot:</strong>
+          <a
+            href="https://t.me/emdrbilateral_bot"
+            target="_blank"
+            rel="noopener"
+            >@emdrbilateral_bot</a
+          >
+        </p>
+        <p>
+          <strong data-i18n="offer.s13StatusLabel">Legal status:</strong>
+          <span data-i18n="offer.s13StatusValue"
+            >Individual (self-employed), not a legal entity. INN/TIN, OGRN, and
+            KPP are not applicable.</span
+          >
+        </p>
+        <p>
+          <strong data-i18n="offer.s13JurisdictionLabel">Jurisdiction:</strong>
+          <span data-i18n="offer.s13JurisdictionValue">Russian Federation</span>
+        </p>
       </div>
 
       <!-- Section 14 -->
       <div class="card">
         <h2 data-i18n="offer.s14Title">14. Contact Information</h2>
-        <p data-i18n="offer.s14p1">For all questions regarding this Offer, please contact:</p>
+        <p data-i18n="offer.s14p1">
+          For all questions regarding this Offer, please contact:
+        </p>
         <p>
-          <span data-i18n="offer.s14Email"><strong>Email:</strong> <a href="mailto:davidbugayov@ya.ru">davidbugayov@ya.ru</a></span><br />
-          <span data-i18n="offer.s14TgBot"><strong>Telegram:</strong> <a href="https://t.me/emdrbilateral_bot" target="_blank" rel="noopener">@emdrbilateral_bot</a></span><br />
-          <span data-i18n="offer.s14GitHub"><strong>GitHub:</strong> <a href="https://github.com/davidbugayov" target="_blank" rel="noopener">github.com/davidbugayov</a></span>
+          <span data-i18n="offer.s14Email"
+            ><strong>Email:</strong>
+            <a href="mailto:davidbugayov@ya.ru">davidbugayov@ya.ru</a></span
+          ><br />
+          <span data-i18n="offer.s14TgBot"
+            ><strong>Telegram:</strong>
+            <a
+              href="https://t.me/emdrbilateral_bot"
+              target="_blank"
+              rel="noopener"
+              >@emdrbilateral_bot</a
+            ></span
+          ><br />
+          <span data-i18n="offer.s14GitHub"
+            ><strong>GitHub:</strong>
+            <a
+              href="https://github.com/davidbugayov"
+              target="_blank"
+              rel="noopener"
+              >github.com/davidbugayov</a
+            ></span
+          >
         </p>
       </div>
 
       <!-- Footer -->
       <div class="footer">
-        <p data-i18n="offer.footerCopyright">© 2024-2026 BilateralBound. All rights reserved.</p>
+        <p data-i18n="offer.footerCopyright">
+          © 2024-2026 BilateralBound. All rights reserved.
+        </p>
         <p><a href="/" data-i18n="offer.footerHome">Back to home</a></p>
       </div>
     </div>
 
     <script src="/js/i18n/i18n.js?v=2.39.543-4d9f8a65" defer></script>
-    <script src="/js/i18n/language-selector.js?v=2.39.543-4d9f8a65" defer></script>
+    <script
+      src="/js/i18n/language-selector.js?v=2.39.543-4d9f8a65"
+      defer
+    ></script>
   </body>
 </html>

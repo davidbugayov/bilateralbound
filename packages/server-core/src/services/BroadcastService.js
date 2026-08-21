@@ -1,24 +1,24 @@
 /* jshint node: true, esversion: 11, strict: true */
-'use strict'
+'use strict';
 
 class BroadcastService {
   constructor(
     sessionRepository,
     webSocketManager,
-    { clientSimulationOnly, logger }
+    { clientSimulationOnly, logger },
   ) {
-    this.sessionRepository = sessionRepository
-    this.webSocketManager = webSocketManager
-    this.logger = logger
-    this.clientSimulationOnly = clientSimulationOnly === true
+    this.sessionRepository = sessionRepository;
+    this.webSocketManager = webSocketManager;
+    this.logger = logger;
+    this.clientSimulationOnly = clientSimulationOnly === true;
     // Храним последнее отправленное состояние для delta compression
-    this._lastBroadcastedState = new Map() // sessionId -> lastState
+    this._lastBroadcastedState = new Map(); // sessionId -> lastState
     // Cleanup interval для stale delta entries
     this._deltaCleanupInterval = setInterval(
       () => this._cleanupStaleDeltaEntries(),
-      60 * 1000
-    )
-    this._deltaCleanupInterval.unref()
+      60 * 1000,
+    );
+    this._deltaCleanupInterval.unref();
   }
 
   _buildStatePayload(session, stateType, payloadOverride = null, options = {}) {
@@ -26,19 +26,19 @@ class BroadcastService {
       return {
         ...payloadOverride,
         viewerScreenSize: session.viewerScreenSize,
-        clientSimulationOnly: this.clientSimulationOnly
-      }
+        clientSimulationOnly: this.clientSimulationOnly,
+      };
     }
 
     const basePayload = {
       ...session.ballState,
       viewerScreenSize: session.viewerScreenSize,
       viewerConnected: session.viewerConnected,
-      controllerConnected: session.controllerConnected
-    }
+      controllerConnected: session.controllerConnected,
+    };
 
     if (this.clientSimulationOnly) {
-      basePayload.clientSimulationOnly = true
+      basePayload.clientSimulationOnly = true;
     }
 
     // Delta compression: отправляем только изменившиеся поля
@@ -46,10 +46,10 @@ class BroadcastService {
       options.deltaCompression &&
       this._lastBroadcastedState.has(session.id)
     ) {
-      return this._getDeltaPayload(session.id, basePayload)
+      return this._getDeltaPayload(session.id, basePayload);
     }
 
-    return basePayload
+    return basePayload;
   }
 
   /**
@@ -60,13 +60,13 @@ class BroadcastService {
    * @private
    */
   _getDeltaPayload(sessionId, currentPayload) {
-    const lastState = this._lastBroadcastedState.get(sessionId)
-    const delta = {}
+    const lastState = this._lastBroadcastedState.get(sessionId);
+    const delta = {};
 
-    this._addChangedFields(delta, currentPayload, lastState)
-    this._addScreenSizeIfChanged(delta, currentPayload, lastState)
+    this._addChangedFields(delta, currentPayload, lastState);
+    this._addScreenSizeIfChanged(delta, currentPayload, lastState);
 
-    return delta
+    return delta;
   }
 
   /**
@@ -93,12 +93,12 @@ class BroadcastService {
       'brainspotting',
       'x',
       'y',
-      'trackBand'
-    ]
+      'trackBand',
+    ];
 
     for (const field of fieldsToCheck) {
       if (currentPayload[field] !== lastState[field]) {
-        delta[field] = currentPayload[field]
+        delta[field] = currentPayload[field];
       }
     }
   }
@@ -108,39 +108,39 @@ class BroadcastService {
    * @private
    */
   _addScreenSizeIfChanged(delta, currentPayload, lastState) {
-    const cur = currentPayload.viewerScreenSize
-    const prev = lastState.viewerScreenSize
+    const cur = currentPayload.viewerScreenSize;
+    const prev = lastState.viewerScreenSize;
     if (cur?.width !== prev?.width || cur?.height !== prev?.height) {
-      delta.viewerScreenSize = currentPayload.viewerScreenSize
+      delta.viewerScreenSize = currentPayload.viewerScreenSize;
     }
   }
 
   broadcastState(sessionId, options = {}) {
-    const session = this.sessionRepository.findById(sessionId)
+    const session = this.sessionRepository.findById(sessionId);
     if (!session) {
-      return false
+      return false;
     }
 
-    const stateType = options.stateType || 'state_update'
-    const payload = options.payload || null
+    const stateType = options.stateType || 'state_update';
+    const payload = options.payload || null;
     const fullPayload = this._buildStatePayload(
       session,
       stateType,
       payload,
-      options
-    )
+      options,
+    );
 
     const eventData = {
       type: stateType,
       timestamp: Date.now(),
-      payload: fullPayload
-    }
+      payload: fullPayload,
+    };
 
-    const sentCount = this._sendMessageToClients(sessionId, eventData)
-    this._saveBroadcastStateIfNeeded(sessionId, session, options)
-    this._logBroadcastIfDebug(sessionId, stateType, sentCount, options)
+    const sentCount = this._sendMessageToClients(sessionId, eventData);
+    this._saveBroadcastStateIfNeeded(sessionId, session, options);
+    this._logBroadcastIfDebug(sessionId, stateType, sentCount, options);
 
-    return sentCount > 0
+    return sentCount > 0;
   }
 
   /**
@@ -149,20 +149,20 @@ class BroadcastService {
    */
   _sendMessageToClients(sessionId, eventData) {
     if (!this.webSocketManager) {
-      return 0
+      return 0;
     }
 
-    const message = JSON.stringify(eventData)
-    let sentCount = 0
+    const message = JSON.stringify(eventData);
+    let sentCount = 0;
 
     for (const { client } of this.webSocketManager.getClients(sessionId)) {
       if (this._isClientReady(client)) {
-        this._sendToClient(client, message)
-        sentCount++
+        this._sendToClient(client, message);
+        sentCount++;
       }
     }
 
-    return sentCount
+    return sentCount;
   }
 
   /**
@@ -171,9 +171,9 @@ class BroadcastService {
    */
   _sendToClient(client, message) {
     try {
-      client.send(message)
+      client.send(message);
     } catch (error) {
-      this.logger.error(`Error broadcasting to WS client: ${error.message}`)
+      this.logger.error(`Error broadcasting to WS client: ${error.message}`);
     }
   }
 
@@ -183,7 +183,7 @@ class BroadcastService {
    */
   _saveBroadcastStateIfNeeded(sessionId, session, options) {
     if (options.deltaCompression) {
-      this._lastBroadcastedState.set(sessionId, { ...session.ballState })
+      this._lastBroadcastedState.set(sessionId, { ...session.ballState });
     }
   }
 
@@ -193,18 +193,18 @@ class BroadcastService {
    */
   _logBroadcastIfDebug(sessionId, stateType, sentCount, options) {
     if (sentCount > 0) {
-      const deltaInfo = options.deltaCompression ? ' (delta)' : ''
+      const deltaInfo = options.deltaCompression ? ' (delta)' : '';
       this.logger.debug(
         { sessionId },
-        `Broadcasted ${stateType} to ${sentCount} clients${deltaInfo}`
-      )
+        `Broadcasted ${stateType} to ${sentCount} clients${deltaInfo}`,
+      );
     }
   }
 
   broadcastViewerStatus(sessionId) {
-    const session = this.sessionRepository.findById(sessionId)
+    const session = this.sessionRepository.findById(sessionId);
     if (!session) {
-      return false
+      return false;
     }
     return this.broadcastState(sessionId, {
       stateType: 'viewer_status',
@@ -212,18 +212,18 @@ class BroadcastService {
         connected: session.viewerConnected,
         viewerConnected: session.viewerConnected,
         controllerConnected: session.controllerConnected,
-        screenSize: session.viewerScreenSize
-      }
-    })
+        screenSize: session.viewerScreenSize,
+      },
+    });
   }
 
   broadcastInitialState(sessionId, client, currentState) {
-    const session = this.sessionRepository.findById(sessionId)
+    const session = this.sessionRepository.findById(sessionId);
     if (!session) {
-      return false
+      return false;
     }
 
-    const ballState = currentState || session.ballState
+    const ballState = currentState || session.ballState;
     const initialState = {
       type: 'initial_state',
       timestamp: Date.now(),
@@ -234,56 +234,56 @@ class BroadcastService {
         viewerScreenSize: session.viewerScreenSize,
         viewerAudioActivated: session.viewerAudioActivated || false,
         clientSimulationOnly: this.clientSimulationOnly,
-        language: session.language || 'en'
-      }
-    }
+        language: session.language || 'en',
+      },
+    };
 
     if (this._isClientReady(client)) {
       try {
-        client.send(JSON.stringify(initialState))
-        this.logger.debug({ sessionId }, 'Sent initial_state to WS client')
-        return true
+        client.send(JSON.stringify(initialState));
+        this.logger.debug({ sessionId }, 'Sent initial_state to WS client');
+        return true;
       } catch (error) {
-        this.logger.error(`Error sending initial state: ${error.message}`)
-        return false
+        this.logger.error(`Error sending initial state: ${error.message}`);
+        return false;
       }
     }
 
-    return false
+    return false;
   }
 
   broadcastControllerConnection(sessionId, isConnected) {
-    const session = this.sessionRepository.findById(sessionId)
+    const session = this.sessionRepository.findById(sessionId);
     if (!session) {
-      return false
+      return false;
     }
 
     const eventType = isConnected
       ? 'controller_connected'
-      : 'controller_disconnected'
+      : 'controller_disconnected';
     const event = {
       type: eventType,
       timestamp: Date.now(),
       payload: {
-        controllerConnected: isConnected
-      }
-    }
+        controllerConnected: isConnected,
+      },
+    };
 
-    let sentCount = 0
+    let sentCount = 0;
 
     if (this.webSocketManager) {
-      const message = JSON.stringify(event)
+      const message = JSON.stringify(event);
       for (const { client, info } of this.webSocketManager.getClients(
-        sessionId
+        sessionId,
       )) {
         if (info.role === 'viewer' && this._isClientReady(client)) {
           try {
-            client.send(message)
-            sentCount++
+            client.send(message);
+            sentCount++;
           } catch (error) {
             this.logger.error(
-              `Error broadcasting ${eventType} to WS viewer: ${error.message}`
-            )
+              `Error broadcasting ${eventType} to WS viewer: ${error.message}`,
+            );
           }
         }
       }
@@ -291,16 +291,16 @@ class BroadcastService {
 
     this.logger.debug(
       { sessionId },
-      `Broadcasted controller_connection (connected=${isConnected}) to ${sentCount} viewers`
-    )
+      `Broadcasted controller_connection (connected=${isConnected}) to ${sentCount} viewers`,
+    );
 
-    return sentCount > 0
+    return sentCount > 0;
   }
 
   broadcastViewerConnection(sessionId, isConnected, screenSize = null) {
-    const session = this.sessionRepository.findById(sessionId)
+    const session = this.sessionRepository.findById(sessionId);
     if (!session) {
-      return false
+      return false;
     }
 
     const event = {
@@ -309,25 +309,25 @@ class BroadcastService {
       payload: {
         connected: isConnected,
         viewerConnected: isConnected,
-        screenSize: screenSize || session.viewerScreenSize
-      }
-    }
+        screenSize: screenSize || session.viewerScreenSize,
+      },
+    };
 
-    let sentCount = 0
+    let sentCount = 0;
 
     if (this.webSocketManager) {
-      const message = JSON.stringify(event)
+      const message = JSON.stringify(event);
       for (const { client, info } of this.webSocketManager.getClients(
-        sessionId
+        sessionId,
       )) {
         if (info.role === 'controller' && this._isClientReady(client)) {
           try {
-            client.send(message)
-            sentCount++
+            client.send(message);
+            sentCount++;
           } catch (error) {
             this.logger.error(
-              `Error broadcasting viewer_status to WS controller: ${error.message}`
-            )
+              `Error broadcasting viewer_status to WS controller: ${error.message}`,
+            );
           }
         }
       }
@@ -335,10 +335,10 @@ class BroadcastService {
 
     this.logger.debug(
       { sessionId },
-      `Broadcasted viewer_connection (connected=${isConnected}) to ${sentCount} controllers`
-    )
+      `Broadcasted viewer_connection (connected=${isConnected}) to ${sentCount} controllers`,
+    );
 
-    return sentCount > 0
+    return sentCount > 0;
   }
 
   /**
@@ -351,23 +351,23 @@ class BroadcastService {
       type: 'language_updated',
       timestamp: Date.now(),
       payload: {
-        language
-      }
-    }
+        language,
+      },
+    };
 
-    let sentCount = 0
+    let sentCount = 0;
 
     if (this.webSocketManager) {
-      const message = JSON.stringify(eventData)
+      const message = JSON.stringify(eventData);
       for (const { client } of this.webSocketManager.getClients(sessionId)) {
         if (this._isClientReady(client)) {
           try {
-            client.send(message)
-            sentCount++
+            client.send(message);
+            sentCount++;
           } catch (error) {
             this.logger.error(
-              `Error broadcasting language_updated to WS client: ${error.message}`
-            )
+              `Error broadcasting language_updated to WS client: ${error.message}`,
+            );
           }
         }
       }
@@ -376,8 +376,8 @@ class BroadcastService {
     if (sentCount > 0) {
       this.logger.debug(
         { sessionId },
-        `Broadcasted language_updated to ${sentCount} clients`
-      )
+        `Broadcasted language_updated to ${sentCount} clients`,
+      );
     }
   }
 
@@ -392,25 +392,25 @@ class BroadcastService {
       timestamp: Date.now(),
       payload: {
         activated,
-        timestamp: Date.now()
-      }
-    }
+        timestamp: Date.now(),
+      },
+    };
 
-    let sentCount = 0
+    let sentCount = 0;
 
     if (this.webSocketManager) {
-      const message = JSON.stringify(eventData)
+      const message = JSON.stringify(eventData);
       for (const { client, info } of this.webSocketManager.getClients(
-        sessionId
+        sessionId,
       )) {
         if (info.role === 'controller' && this._isClientReady(client)) {
           try {
-            client.send(message)
-            sentCount++
+            client.send(message);
+            sentCount++;
           } catch (error) {
             this.logger.error(
-              `Error broadcasting viewer_audio_activated to WS controller: ${error.message}`
-            )
+              `Error broadcasting viewer_audio_activated to WS controller: ${error.message}`,
+            );
           }
         }
       }
@@ -419,13 +419,13 @@ class BroadcastService {
     if (sentCount > 0) {
       this.logger.debug(
         { sessionId },
-        `Broadcasted viewer_audio_activated (activated=${activated}) to ${sentCount} controllers`
-      )
+        `Broadcasted viewer_audio_activated (activated=${activated}) to ${sentCount} controllers`,
+      );
     }
   }
 
   _isClientReady(client) {
-    return client?.readyState === 1 // WebSocket.OPEN
+    return client?.readyState === 1; // WebSocket.OPEN
   }
 
   /**
@@ -433,10 +433,10 @@ class BroadcastService {
    */
   destroy() {
     if (this._deltaCleanupInterval) {
-      clearInterval(this._deltaCleanupInterval)
-      this._deltaCleanupInterval = null
+      clearInterval(this._deltaCleanupInterval);
+      this._deltaCleanupInterval = null;
     }
-    this._lastBroadcastedState.clear()
+    this._lastBroadcastedState.clear();
   }
 
   /**
@@ -444,7 +444,7 @@ class BroadcastService {
    * @param {string} sessionId
    */
   clearDeltaCache(sessionId) {
-    this._lastBroadcastedState.delete(sessionId)
+    this._lastBroadcastedState.delete(sessionId);
   }
 
   /**
@@ -453,25 +453,25 @@ class BroadcastService {
    * @private
    */
   _cleanupStaleDeltaEntries() {
-    const now = Date.now()
-    const MAX_AGE = 10 * 60 * 1000 // 10 минут
-    let removedCount = 0
+    const now = Date.now();
+    const MAX_AGE = 10 * 60 * 1000; // 10 минут
+    let removedCount = 0;
 
     for (const [sessionId] of this._lastBroadcastedState) {
-      const session = this.sessionRepository.findById(sessionId)
+      const session = this.sessionRepository.findById(sessionId);
       if (!session || now - session.lastActivity > MAX_AGE) {
-        this._lastBroadcastedState.delete(sessionId)
-        removedCount++
+        this._lastBroadcastedState.delete(sessionId);
+        removedCount++;
       }
     }
 
     if (removedCount > 0) {
       this.logger.debug(
         { removedCount, remainingSize: this._lastBroadcastedState.size },
-        'Delta cache cleanup'
-      )
+        'Delta cache cleanup',
+      );
     }
   }
 }
 
-module.exports = BroadcastService
+module.exports = BroadcastService;

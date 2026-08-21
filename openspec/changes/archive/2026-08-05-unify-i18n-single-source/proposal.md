@@ -12,12 +12,12 @@
 
 Логика i18n дублируется в двух местах:
 
-| Файл | Строк | Использование |
-|------|-------|---------------|
-| `src/i18n/i18n.js` | 463 | webpack → viewer/controller SPA |
-| `src/i18n/language-selector.js` | 392 | webpack → viewer/controller SPA |
-| `public/js/i18n/i18n.js` | 467 | `<script>` в статических HTML |
-| `public/js/i18n/language-selector.js` | 390 | `<script>` в статических HTML |
+| Файл                                  | Строк | Использование                   |
+| ------------------------------------- | ----- | ------------------------------- |
+| `src/i18n/i18n.js`                    | 463   | webpack → viewer/controller SPA |
+| `src/i18n/language-selector.js`       | 392   | webpack → viewer/controller SPA |
+| `public/js/i18n/i18n.js`              | 467   | `<script>` в статических HTML   |
+| `public/js/i18n/language-selector.js` | 390   | `<script>` в статических HTML   |
 
 Статические страницы (index, about, privacy, offer, breathing) не проходят через webpack и загружают собственную копию i18n. Это приводит к рассинхронизации исправлений.
 
@@ -57,6 +57,6 @@ public/js/i18n/
 
 1. `src/i18n/i18n.js` и `public/js/i18n/i18n.js` идентичны по логике (различаются только обёрткой)
 2. `_notifyReady()` фикс (querySelectorAll) применён в обеих копиях
-3. `npm run build` генерирует public/js/i18n/*.js из src/i18n/
+3. `npm run build` генерирует public/js/i18n/\*.js из src/i18n/
 4. Все 8 языков работают на статических страницах и в SPA без регрессий
 5. E2E тесты (`npm test`) проходят

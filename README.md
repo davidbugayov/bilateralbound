@@ -72,11 +72,11 @@ npm run deploy:prod      # На emdrbilateral.online + emdrbilateral.ru
 
 ## 🌐 Окружения
 
-| Environment | URL                              | Branch   | Service                     | Port |
-| ----------- | -------------------------------- | -------- | --------------------------- | ---- |
-| Development | https://dev.emdrbilateral.online | `main`   | `emdrbilateral-dev`         | 3003 |
-| Production  | https://emdrbilateral.online     | `stable` | `emdrbilateral-online`      | 8080 |
-| Production  | https://emdrbilateral.ru         | `stable` | `emdrbilateral-ru`          | 8081 |
+| Environment | URL                              | Branch   | Service                | Port |
+| ----------- | -------------------------------- | -------- | ---------------------- | ---- |
+| Development | https://dev.emdrbilateral.online | `main`   | `emdrbilateral-dev`    | 3003 |
+| Production  | https://emdrbilateral.online     | `stable` | `emdrbilateral-online` | 8080 |
+| Production  | https://emdrbilateral.ru         | `stable` | `emdrbilateral-ru`     | 8081 |
 
 **Сервер**: 144.31.68.9 (u1host, Ubuntu 24.04), домены emdrbilateral.online / emdrbilateral.ru
 **SSH**: `ssh -i ~/.ssh/id_rsa_emdr root@144.31.68.9`

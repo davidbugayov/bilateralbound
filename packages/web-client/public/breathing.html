@@ -1,756 +1,1106 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#020617">
-  <meta name="description" content="Coherent breathing exercise — guided breathing practice for relaxation, anxiety and stress relief. Free, no registration required.">
-  <meta name="keywords" content="coherent breathing, breathing exercise, relaxation technique, stress relief, anxiety relief, butterfly hug, breathing tool online">
-  <meta name="robots" content="index, follow, max-image-preview:large">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" href="/favicon.ico">
-  <title>Coherent Breathing Exercise | CalmFlow — Free Online Breathing Tool</title>
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Coherent Breathing Exercise | CalmFlow">
-  <meta property="og:description" content="Guided coherent breathing practice for relaxation, anxiety and stress relief. Free, no registration.">
-  <meta property="og:image" content="https://emdrbilateral.online/og-breathing.png">
-  <meta property="og:url" content="https://emdrbilateral.online/breathing">
-  <meta property="og:site_name" content="BilateralBound">
-  <meta property="og:locale" content="en_US">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Coherent Breathing Exercise | CalmFlow">
-  <meta name="twitter:description" content="Guided coherent breathing practice for relaxation, anxiety and stress relief. Free, no registration.">
-  <meta name="twitter:image" content="https://emdrbilateral.online/og-breathing.png">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "CalmFlow — Coherent Breathing",
-    "description": "Free online coherent breathing exercise tool for relaxation and stress relief",
-    "url": "https://emdrbilateral.online/breathing",
-    "applicationCategory": "HealthApplication",
-    "operatingSystem": "Any",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "isAccessibleForFree": true
-  }
-  </script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #020617;
-      color: #e2e8f0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      overflow: hidden;
-      height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-      -webkit-user-select: none;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="theme-color" content="#020617" />
+    <meta
+      name="description"
+      content="Coherent breathing exercise — guided breathing practice for relaxation, anxiety and stress relief. Free, no registration required."
+    />
+    <meta
+      name="keywords"
+      content="coherent breathing, breathing exercise, relaxation technique, stress relief, anxiety relief, butterfly hug, breathing tool online"
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>
+      Coherent Breathing Exercise | CalmFlow — Free Online Breathing Tool
+    </title>
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Coherent Breathing Exercise | CalmFlow"
+    />
+    <meta
+      property="og:description"
+      content="Guided coherent breathing practice for relaxation, anxiety and stress relief. Free, no registration."
+    />
+    <meta
+      property="og:image"
+      content="https://emdrbilateral.online/og-breathing.png"
+    />
+    <meta property="og:url" content="https://emdrbilateral.online/breathing" />
+    <meta property="og:site_name" content="BilateralBound" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Coherent Breathing Exercise | CalmFlow"
+    />
+    <meta
+      name="twitter:description"
+      content="Guided coherent breathing practice for relaxation, anxiety and stress relief. Free, no registration."
+    />
+    <meta
+      name="twitter:image"
+      content="https://emdrbilateral.online/og-breathing.png"
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "CalmFlow — Coherent Breathing",
+        "description": "Free online coherent breathing exercise tool for relaxation and stress relief",
+        "url": "https://emdrbilateral.online/breathing",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "isAccessibleForFree": true
+      }
+    </script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #020617;
+        color: #e2e8f0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        overflow: hidden;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        -webkit-user-select: none;
+      }
 
-    #breathCanvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
-    }
+      #breathCanvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
 
-    .overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 2;
-    }
+      .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 2;
+      }
 
-    .phase-label {
-      font-size: clamp(2rem, 8vw, 4rem);
-      font-weight: 300;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.7);
-      transition: opacity 0.3s;
-      margin-bottom: 0.5rem;
-    }
+      .phase-label {
+        font-size: clamp(2rem, 8vw, 4rem);
+        font-weight: 300;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.7);
+        transition: opacity 0.3s;
+        margin-bottom: 0.5rem;
+      }
 
-    .timer-display {
-      font-size: clamp(1rem, 3vw, 1.5rem);
-      color: rgba(255,255,255,0.4);
-      font-variant-numeric: tabular-nums;
-      margin-bottom: 2rem;
-    }
+      .timer-display {
+        font-size: clamp(1rem, 3vw, 1.5rem);
+        color: rgba(255, 255, 255, 0.4);
+        font-variant-numeric: tabular-nums;
+        margin-bottom: 2rem;
+      }
 
-    .cycle-counter {
-      font-size: clamp(0.8rem, 2vw, 1rem);
-      color: rgba(255,255,255,0.3);
-      margin-top: 1rem;
-    }
+      .cycle-counter {
+        font-size: clamp(0.8rem, 2vw, 1rem);
+        color: rgba(255, 255, 255, 0.3);
+        margin-top: 1rem;
+      }
 
-    .controls {
-      position: absolute;
-      bottom: max(2rem, env(safe-area-inset-bottom, 1rem));
-      left: 0; right: 0;
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      padding: 1rem;
-      pointer-events: auto;
-      z-index: 10;
-    }
+      .controls {
+        position: absolute;
+        bottom: max(2rem, env(safe-area-inset-bottom, 1rem));
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+        pointer-events: auto;
+        z-index: 10;
+      }
 
-    .btn {
-      padding: 1rem 3rem;
-      border: none;
-      border-radius: 50px;
-      font-size: 1.05rem;
-      font-weight: 500;
-      letter-spacing: 0.03em;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      text-align: center;
-      pointer-events: auto;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      -webkit-user-select: none;
-    }
+      .btn {
+        padding: 1rem 3rem;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.05rem;
+        font-weight: 500;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        pointer-events: auto;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        -webkit-user-select: none;
+      }
 
-    .btn:active {
-      transform: scale(0.96);
-    }
+      .btn:active {
+        transform: scale(0.96);
+      }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      color: white;
-      box-shadow: 0 2px 12px rgba(59,130,246,0.35);
-      min-width: 160px;
-    }
-    .btn-primary:hover {
-      box-shadow: 0 4px 20px rgba(59,130,246,0.5);
-      transform: translateY(-1px);
-    }
+      .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        box-shadow: 0 2px 12px rgba(59, 130, 246, 0.35);
+        min-width: 160px;
+      }
+      .btn-primary:hover {
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
+        transform: translateY(-1px);
+      }
 
-    .btn-primary.active {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      box-shadow: 0 2px 12px rgba(239,68,68,0.35);
-    }
-    .btn-primary.active:hover {
-      box-shadow: 0 4px 20px rgba(239,68,68,0.5);
-      transform: translateY(-1px);
-    }
+      .btn-primary.active {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        box-shadow: 0 2px 12px rgba(239, 68, 68, 0.35);
+      }
+      .btn-primary.active:hover {
+        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+        transform: translateY(-1px);
+      }
 
-    .duration-selector {
-      position: absolute;
-      top: max(1.5rem, env(safe-area-inset-top, 1rem));
-      left: 0; right: 0;
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 0 1rem;
-      pointer-events: auto;
-    }
+      .duration-selector {
+        position: absolute;
+        top: max(1.5rem, env(safe-area-inset-top, 1rem));
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0 1rem;
+        pointer-events: auto;
+      }
 
-    .duration-btn {
-      padding: 0.55rem 1.1rem;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      background: rgba(255,255,255,0.03);
-      color: rgba(255,255,255,0.5);
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      pointer-events: auto;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
+      .duration-btn {
+        padding: 0.55rem 1.1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        pointer-events: auto;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    .duration-btn.active {
-      background: rgba(59,130,246,0.3);
-      border-color: #3b82f6;
-      color: white;
-    }
+      .duration-btn.active {
+        background: rgba(59, 130, 246, 0.3);
+        border-color: #3b82f6;
+        color: white;
+      }
 
-    .duration-btn:disabled {
-      opacity: 0.3;
-      pointer-events: none;
-    }
+      .duration-btn:disabled {
+        opacity: 0.3;
+        pointer-events: none;
+      }
 
-    /* Кнопка Назад — левый верхний угол */
-    .back-link {
-      position: absolute;
-      top: max(0.6rem, env(safe-area-inset-top, 0.5rem));
-      left: 0.8rem;
-      color: rgba(255,255,255,0.45);
-      font-size: 0.8rem;
-      cursor: pointer;
-      z-index: 20;
-      text-decoration: none;
-      pointer-events: auto;
-      user-select: none;
-      -webkit-user-select: none;
-      transition: color 0.25s;
-      font-weight: 500;
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      padding: 0 0.4rem;
-    }
-    .back-link:hover,
-    .back-link:active {
-      color: rgba(255,255,255,0.85);
-    }
+      /* Кнопка Назад — левый верхний угол */
+      .back-link {
+        position: absolute;
+        top: max(0.6rem, env(safe-area-inset-top, 0.5rem));
+        left: 0.8rem;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 0.8rem;
+        cursor: pointer;
+        z-index: 20;
+        text-decoration: none;
+        pointer-events: auto;
+        user-select: none;
+        -webkit-user-select: none;
+        transition: color 0.25s;
+        font-weight: 500;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 0.4rem;
+      }
+      .back-link:hover,
+      .back-link:active {
+        color: rgba(255, 255, 255, 0.85);
+      }
 
-    /* Кнопка звука — правый верхний угол */
-    .sound-btn {
-      position: absolute;
-      top: max(0.45rem, env(safe-area-inset-top, 0.35rem));
-      right: 0.8rem;
-      width: 2.75rem;
-      height: 2.75rem;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 50%;
-      background: rgba(255,255,255,0.04);
-      color: rgba(255,255,255,0.45);
-      font-size: 0.75rem;
-      cursor: pointer;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: auto;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      -webkit-user-select: none;
-      transition: all 0.25s;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-    .sound-btn:hover,
-    .sound-btn:active {
-      color: rgba(255,255,255,0.85);
-      border-color: rgba(255,255,255,0.3);
-      background: rgba(255,255,255,0.1);
-    }
-    .sound-btn.muted {
-      opacity: 0.35;
-      border-color: rgba(255,255,255,0.06);
-    }
+      /* Кнопка звука — правый верхний угол */
+      .sound-btn {
+        position: absolute;
+        top: max(0.45rem, env(safe-area-inset-top, 0.35rem));
+        right: 0.8rem;
+        width: 2.75rem;
+        height: 2.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 0.75rem;
+        cursor: pointer;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: auto;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        -webkit-user-select: none;
+        transition: all 0.25s;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .sound-btn:hover,
+      .sound-btn:active {
+        color: rgba(255, 255, 255, 0.85);
+        border-color: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .sound-btn.muted {
+        opacity: 0.35;
+        border-color: rgba(255, 255, 255, 0.06);
+      }
 
-    /* Ссылка на сайт — правый верхний угол */
-    .site-link {
-      position: absolute;
-      top: max(0.6rem, env(safe-area-inset-top, 0.5rem));
-      right: 0.8rem;
-      color: rgba(255,255,255,0.45);
-      font-size: 0.8rem;
-      cursor: pointer;
-      z-index: 20;
-      text-decoration: none;
-      pointer-events: auto;
-      user-select: none;
-      -webkit-user-select: none;
-      transition: color 0.25s;
-      font-weight: 500;
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      padding: 0 0.4rem;
-    }
-    .site-link:hover,
-    .site-link:active {
-      color: rgba(255,255,255,0.85);
-    }
+      /* Ссылка на сайт — правый верхний угол */
+      .site-link {
+        position: absolute;
+        top: max(0.6rem, env(safe-area-inset-top, 0.5rem));
+        right: 0.8rem;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 0.8rem;
+        cursor: pointer;
+        z-index: 20;
+        text-decoration: none;
+        pointer-events: auto;
+        user-select: none;
+        -webkit-user-select: none;
+        transition: color 0.25s;
+        font-weight: 500;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 0.4rem;
+      }
+      .site-link:hover,
+      .site-link:active {
+        color: rgba(255, 255, 255, 0.85);
+      }
 
-    /* Инфо-карточка под кнопкой Старт */
-    .info-card {
-      position: absolute;
-      bottom: max(6.5rem, calc(env(safe-area-inset-bottom, 1rem) + 5rem));
-      left: 1.5rem;
-      right: 1.5rem;
-      text-align: center;
-      pointer-events: none;
-      transition: opacity 0.5s, transform 0.5s;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .info-card.hidden {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    .info-card .butterfly-icon {
-      font-size: 2rem;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-    .info-card .info-title {
-      font-size: clamp(0.9rem, 3vw, 1.1rem);
-      font-weight: 500;
-      color: rgba(255,255,255,0.7);
-      margin-bottom: 0.25rem;
-      letter-spacing: 0.02em;
-    }
-    .info-card .info-subtitle {
-      font-size: clamp(0.8rem, 2.5vw, 0.9rem);
-      color: rgba(255,255,255,0.35);
-      line-height: 1.5;
-    }
-    .info-card .info-subtitle span {
-      display: inline-block;
-      padding: 0.15rem 0.6rem;
-      margin: 0 0.15rem;
-      border-radius: 12px;
-      background: rgba(59,130,246,0.15);
-      border: 1px solid rgba(59,130,246,0.2);
-      color: rgba(255,255,255,0.5);
-      font-size: clamp(0.78rem, 2vw, 0.85rem);
-      font-variant-numeric: tabular-nums;
-    }
+      /* Инфо-карточка под кнопкой Старт */
+      .info-card {
+        position: absolute;
+        bottom: max(6.5rem, calc(env(safe-area-inset-bottom, 1rem) + 5rem));
+        left: 1.5rem;
+        right: 1.5rem;
+        text-align: center;
+        pointer-events: none;
+        transition:
+          opacity 0.5s,
+          transform 0.5s;
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .info-card.hidden {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      .info-card .butterfly-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+      .info-card .info-title {
+        font-size: clamp(0.9rem, 3vw, 1.1rem);
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 0.25rem;
+        letter-spacing: 0.02em;
+      }
+      .info-card .info-subtitle {
+        font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+        color: rgba(255, 255, 255, 0.35);
+        line-height: 1.5;
+      }
+      .info-card .info-subtitle span {
+        display: inline-block;
+        padding: 0.15rem 0.6rem;
+        margin: 0 0.15rem;
+        border-radius: 12px;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: clamp(0.78rem, 2vw, 0.85rem);
+        font-variant-numeric: tabular-nums;
+      }
 
-    /* Сообщение о завершении */
-    .complete-message {
-      position: absolute;
-      bottom: max(6.5rem, calc(env(safe-area-inset-bottom, 1rem) + 5rem));
-      left: 1.5rem;
-      right: 1.5rem;
-      text-align: center;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-    .complete-message.show {
-      opacity: 1;
-    }
-    .complete-message .check-icon {
-      font-size: 2.5rem;
-      display: block;
-      margin-bottom: 0.3rem;
-    }
-    .complete-message .complete-text {
-      font-size: clamp(0.85rem, 3vw, 1rem);
-      color: #10b981;
-      font-weight: 400;
-    }
+      /* Сообщение о завершении */
+      .complete-message {
+        position: absolute;
+        bottom: max(6.5rem, calc(env(safe-area-inset-bottom, 1rem) + 5rem));
+        left: 1.5rem;
+        right: 1.5rem;
+        text-align: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+      .complete-message.show {
+        opacity: 1;
+      }
+      .complete-message .check-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 0.3rem;
+      }
+      .complete-message .complete-text {
+        font-size: clamp(0.85rem, 3vw, 1rem);
+        color: #10b981;
+        font-weight: 400;
+      }
 
-    /* Cookie consent banner — breathing.html doesn't load common.css,
+      /* Cookie consent banner — breathing.html doesn't load common.css,
        so these rules are inlined here (same styles as common.css) */
-    .cookie-consent{position:fixed;bottom:0;left:0;right:0;z-index:10000;background:var(--card-bg,#1e293b);border-top:1px solid var(--border,#334155);padding:16px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;transform:translateY(100%);transition:transform .3s ease;box-shadow:0 -4px 12px rgb(0 0 0 / 20%)}
-    .cookie-consent--visible{transform:translateY(0)}
-    .cookie-consent--hidden{transform:translateY(100%)}
-    .cookie-consent__text{color:var(--text-muted,#94a3b8);font-size:.9rem;margin:0;flex:1;min-width:200px}
-    .cookie-consent__actions{display:flex;gap:8px;flex-shrink:0}
-    .cookie-consent__btn{padding:8px 20px;border:1px solid var(--border,#334155);border-radius:8px;font-size:.9rem;cursor:pointer;transition:background .2s,color .2s;font-family:inherit}
-    .cookie-consent__btn--accept{background:var(--accent,#60a5fa);color:#fff;border-color:var(--accent,#60a5fa)}
-    .cookie-consent__btn--accept:hover{background:var(--accent-hover,#3b82f6)}
-    .cookie-consent__btn--decline{background:0 0;color:var(--text-muted,#94a3b8)}
-    .cookie-consent__btn--decline:hover{background:rgb(255 255 255 / 5%);color:var(--text,#e2e8f0)}
-    @media (width <= 480px){.cookie-consent{flex-direction:column;text-align:center}.cookie-consent__actions{width:100%;justify-content:center}}
-  </style>
-  <script src="/js/ui/cookie-consent.js?v=2.39.698-bdbcbb41" defer></script>
-  <script src="/js/analytics/metrika-events.js?v=2.39.698-bdbcbb41" defer></script>
-</head>
-<body>
-  <!-- Telegram Mini App: signal ready IMMEDIATELY — before any heavy rendering -->
-  <script>
-    (function(){try{if(window.Telegram&&window.Telegram.WebApp){window.Telegram.WebApp.ready();window.Telegram.WebApp.expand()}}catch(e){}})()
-  </script>
+      .cookie-consent {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10000;
+        background: var(--card-bg, #1e293b);
+        border-top: 1px solid var(--border, #334155);
+        padding: 16px 24px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        box-shadow: 0 -4px 12px rgb(0 0 0 / 20%);
+      }
+      .cookie-consent--visible {
+        transform: translateY(0);
+      }
+      .cookie-consent--hidden {
+        transform: translateY(100%);
+      }
+      .cookie-consent__text {
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.9rem;
+        margin: 0;
+        flex: 1;
+        min-width: 200px;
+      }
+      .cookie-consent__actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .cookie-consent__btn {
+        padding: 8px 20px;
+        border: 1px solid var(--border, #334155);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          color 0.2s;
+        font-family: inherit;
+      }
+      .cookie-consent__btn--accept {
+        background: var(--accent, #60a5fa);
+        color: #fff;
+        border-color: var(--accent, #60a5fa);
+      }
+      .cookie-consent__btn--accept:hover {
+        background: var(--accent-hover, #3b82f6);
+      }
+      .cookie-consent__btn--decline {
+        background: 0 0;
+        color: var(--text-muted, #94a3b8);
+      }
+      .cookie-consent__btn--decline:hover {
+        background: rgb(255 255 255 / 5%);
+        color: var(--text, #e2e8f0);
+      }
+      @media (width <= 480px) {
+        .cookie-consent {
+          flex-direction: column;
+          text-align: center;
+        }
+        .cookie-consent__actions {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+    <script src="/js/ui/cookie-consent.js?v=2.39.698-bdbcbb41" defer></script>
+    <script
+      src="/js/analytics/metrika-events.js?v=2.39.698-bdbcbb41"
+      defer
+    ></script>
+  </head>
+  <body>
+    <!-- Telegram Mini App: signal ready IMMEDIATELY — before any heavy rendering -->
+    <script>
+      (function () {
+        try {
+          if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+          }
+        } catch (e) {}
+      })();
+    </script>
 
-  <canvas id="breathCanvas"></canvas>
+    <canvas id="breathCanvas"></canvas>
 
-  <div class="duration-selector" id="durationSelector">
-    <button class="duration-btn" data-minutes="1">1 мин</button>
-    <button class="duration-btn active" data-minutes="3">3 мин</button>
-    <button class="duration-btn" data-minutes="5">5 мин</button>
-    <button class="duration-btn" data-minutes="10">10 мин</button>
-  </div>
-
-  <div class="overlay">
-    <div class="phase-label" id="phaseLabel">Готов</div>
-    <div class="timer-display" id="timerDisplay">0:00</div>
-    <div class="cycle-counter" id="cycleCounter">0 циклов</div>
-  </div>
-
-  <a class="back-link" href="/">← Назад</a>
-  <button class="sound-btn" id="muteBtn" title="Звук">🔊</button>
-  <a class="site-link" id="siteLink">↗ сайт</a>
-
-  <div class="controls">
-    <button class="btn btn-primary" id="startBtn">Начать</button>
-  </div>
-
-  <!-- Инфо-карточка с инструкцией Butterfly Hug -->
-  <div class="info-card" id="infoCard">
-    <span class="butterfly-icon">🦋</span>
-    <div class="info-title">Butterfly Hug</div>
-    <div class="info-subtitle">
-      Скрести руки на груди и дыши<br>в ритм анимации
+    <div class="duration-selector" id="durationSelector">
+      <button class="duration-btn" data-minutes="1">1 мин</button>
+      <button class="duration-btn active" data-minutes="3">3 мин</button>
+      <button class="duration-btn" data-minutes="5">5 мин</button>
+      <button class="duration-btn" data-minutes="10">10 мин</button>
     </div>
-    <div class="info-subtitle" style="margin-top:0.6rem">
-      <span>Вдох 5с</span> <span style="opacity:0.3">⟷</span> <span>Выдох 5с</span>
+
+    <div class="overlay">
+      <div class="phase-label" id="phaseLabel">Готов</div>
+      <div class="timer-display" id="timerDisplay">0:00</div>
+      <div class="cycle-counter" id="cycleCounter">0 циклов</div>
     </div>
-  </div>
 
-  <!-- Сообщение о завершении -->
-  <div class="complete-message" id="completeMessage">
-    <span class="check-icon">✅</span>
-    <div class="complete-text">Сессия завершена</div>
-  </div>
+    <a class="back-link" href="/">← Назад</a>
+    <button class="sound-btn" id="muteBtn" title="Звук">🔊</button>
+    <a class="site-link" id="siteLink">↗ сайт</a>
 
-  <script>
-    // ── BreathingEngine (inlined) ──
-    'use strict'
-    class BreathingEngine {constructor(o){this.inhaleSec=o.inhaleSec||5;this.exhaleSec=o.exhaleSec||5;this.holdAfterInhale=o.holdAfterInhale||0;this.holdAfterExhale=o.holdAfterExhale||0;this.totalCycleSec=this.inhaleSec+this.holdAfterInhale+this.exhaleSec+this.holdAfterExhale;this.phase='idle';this.running=false;this.elapsed=0;this.cycleCount=0;this.targetCycles=0;this.startTimestamp=0;this.breathProgress=0;this.onPhaseChange=null;this.onCycleComplete=null;this.onComplete=null;this.audioEnabled=false;this.audioContext=null;this._leftGain=null;this._rightGain=null;this._leftOsc=null;this._rightOsc=null;this.toneFreqL=180;this.toneFreqR=220;this.toneVolume=.3;this.bpm=o.bpm||30;this._tickInterval=null;this._side=false;this.muted=false}
-    start(m){if(this.running)return;this.running=true;this.phase='inhale';this.elapsed=0;this.cycleCount=0;this.breathProgress=0;this.startTimestamp=performance.now();this.targetCycles=m>0?Math.round(m*60/this.totalCycleSec):0;this._initAudio();this._startTickTones();if(this.onPhaseChange)this.onPhaseChange('inhale')}
-    stop(){if(!this.running)return;this.running=false;this.phase='idle';this.breathProgress=0;this.elapsed=0;this._stopTickTones();this._stopAudio();if(this.onPhaseChange)this.onPhaseChange('idle');if(typeof navigator!=='undefined'&&navigator.vibrate)navigator.vibrate(0)}
-    update(d){if(!this.running)return;this.elapsed+=d;const T=this.totalCycleSec*1e3;if(this.elapsed>=T){this.elapsed=this.elapsed%T;this.cycleCount++;if(this.onCycleComplete)this.onCycleComplete(this.cycleCount);if(this.targetCycles>0&&this.cycleCount>=this.targetCycles){this.stop();if(this.onComplete)this.onComplete();return}}this._updatePhase()}
-    _updatePhase(){const e=this.elapsed/1e3,i=this.inhaleSec,h=this.holdAfterInhale,x=this.exhaleSec;let p,n;if(e<i){p='inhale';n=e/i;this._doVibration(2e3)}else if(e<i+h){p='hold_in';n=1}else if(e<i+h+x){p='exhale';n=1-(e-i-h)/x;this._doVibration(500)}else{p='hold_out';n=0}if(p!==this.phase){this.phase=p;if(this.onPhaseChange)this.onPhaseChange(p)}this.breathProgress+=(n-this.breathProgress)*.3}
-    getCircleRadius(){const t=Math.max(0,Math.min(1,this.breathProgress));return t*t*(3-2*t)}
-    getPhaseLabel(l){const L=l==='ru'?'ru':'en',lb={idle:{ru:'Готов',en:'Ready'},inhale:{ru:'Вдох',en:'Inhale'},hold_in:{ru:'Задержка',en:'Hold'},exhale:{ru:'Выдох',en:'Exhale'},hold_out:{ru:'Задержка',en:'Hold'}};return lb[this.phase]?.[L]||lb.idle[L]}
-    _doVibration(d){if(this.muted)return;if(typeof navigator!=='undefined'&&navigator.vibrate)navigator.vibrate(d)}
-    _initAudio(){if(this.audioContext)return;const A=globalThis.AudioContext||globalThis.webkitAudioContext;if(!A)return;try{this.audioContext=new A();this._leftGain=this.audioContext.createGain();this._leftGain.gain.value=0;this._leftOsc=this.audioContext.createOscillator();this._leftOsc.type='sine';this._leftOsc.frequency.value=this.toneFreqL;this._leftOsc.connect(this._leftGain);this._rightGain=this.audioContext.createGain();this._rightGain.gain.value=0;this._rightOsc=this.audioContext.createOscillator();this._rightOsc.type='sine';this._rightOsc.frequency.value=this.toneFreqR;this._rightOsc.connect(this._rightGain);const m=this.audioContext.createChannelMerger(2);this._leftGain.connect(m,0,0);this._rightGain.connect(m,0,1);m.connect(this.audioContext.destination);this._leftOsc.start();this._rightOsc.start();this.audioEnabled=true}catch(e){console.warn('BreathingEngine: Audio init failed',e)}}
-    _startTickTones(){if(this._tickInterval)return;const h=6e4/this.bpm/2;this._side=false;this._tickInterval=setInterval(()=>{this._side=!this._side;this._playBilateralTick(this._side)},h)}
-    _stopTickTones(){if(this._tickInterval){clearInterval(this._tickInterval);this._tickInterval=null}}
-    _playBilateralTick(L){if(this.muted||!this.audioContext||!this.audioEnabled)return;try{const g=L?this._leftGain:this._rightGain,n=this.audioContext.currentTime;g.gain.setValueAtTime(this.toneVolume,n);g.gain.exponentialRampToValueAtTime(.001,n+.08)}catch(e){}}
-    _stopAudio(){if(this._leftOsc){try{this._leftOsc.stop()}catch(e){}this._leftOsc=null}if(this._rightOsc){try{this._rightOsc.stop()}catch(e){}this._rightOsc=null}this._leftGain=null;this._rightGain=null;this.audioContext=null;this.audioEnabled=false}
-    setMuted(m){this.muted=!!m}
-    toggleMute(){this.muted=!this.muted;if(this.muted&&typeof navigator!=='undefined'&&navigator.vibrate)navigator.vibrate(0);return this.muted}
-    getStats(){const e=this.running?(performance.now()-this.startTimestamp)/1e3:0;return{running:this.running,phase:this.phase,cycleCount:this.cycleCount,elapsedSec:Math.round(e),targetCycles:this.targetCycles}}
-    }
-  </script>
-  <script>
-    (function() {
-      'use strict'
+    <div class="controls">
+      <button class="btn btn-primary" id="startBtn">Начать</button>
+    </div>
 
-      // ── DOM refs ──
-      const canvas = document.getElementById('breathCanvas')
-      const ctx = canvas.getContext('2d')
-      const phaseLabel = document.getElementById('phaseLabel')
-      const timerDisplay = document.getElementById('timerDisplay')
-      const cycleCounter = document.getElementById('cycleCounter')
-      const startBtn = document.getElementById('startBtn')
-      const muteBtn = document.getElementById('muteBtn')
-      const siteLink = document.getElementById('siteLink')
-      const infoCard = document.getElementById('infoCard')
-      const completeMessage = document.getElementById('completeMessage')
-      const durationBtns = document.querySelectorAll('.duration-btn')
+    <!-- Инфо-карточка с инструкцией Butterfly Hug -->
+    <div class="info-card" id="infoCard">
+      <span class="butterfly-icon">🦋</span>
+      <div class="info-title">Butterfly Hug</div>
+      <div class="info-subtitle">
+        Скрести руки на груди и дыши<br />в ритм анимации
+      </div>
+      <div class="info-subtitle" style="margin-top: 0.6rem">
+        <span>Вдох 5с</span> <span style="opacity: 0.3">⟷</span>
+        <span>Выдох 5с</span>
+      </div>
+    </div>
 
-      // ── State ──
-      let selectedMinutes = 3
-      let animFrameId = null
-      let lastTs = 0
-      let windowWidth = window.innerWidth
-      let windowHeight = window.innerHeight
+    <!-- Сообщение о завершении -->
+    <div class="complete-message" id="completeMessage">
+      <span class="check-icon">✅</span>
+      <div class="complete-text">Сессия завершена</div>
+    </div>
 
-      // ── Engine ──
-      const engine = new BreathingEngine({
-        inhaleSec: 5,
-        exhaleSec: 5,
-        bpm: 30
-      })
-
-      // ── Telegram WebApp ──
-      let tg = null
-      try {
-        if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
-          tg = window.Telegram.WebApp
-          tg.ready()
-          tg.expand()
+    <script>
+      // ── BreathingEngine (inlined) ──
+      "use strict";
+      class BreathingEngine {
+        constructor(o) {
+          this.inhaleSec = o.inhaleSec || 5;
+          this.exhaleSec = o.exhaleSec || 5;
+          this.holdAfterInhale = o.holdAfterInhale || 0;
+          this.holdAfterExhale = o.holdAfterExhale || 0;
+          this.totalCycleSec =
+            this.inhaleSec +
+            this.holdAfterInhale +
+            this.exhaleSec +
+            this.holdAfterExhale;
+          this.phase = "idle";
+          this.running = false;
+          this.elapsed = 0;
+          this.cycleCount = 0;
+          this.targetCycles = 0;
+          this.startTimestamp = 0;
+          this.breathProgress = 0;
+          this.onPhaseChange = null;
+          this.onCycleComplete = null;
+          this.onComplete = null;
+          this.audioEnabled = false;
+          this.audioContext = null;
+          this._leftGain = null;
+          this._rightGain = null;
+          this._leftOsc = null;
+          this._rightOsc = null;
+          this.toneFreqL = 180;
+          this.toneFreqR = 220;
+          this.toneVolume = 0.3;
+          this.bpm = o.bpm || 30;
+          this._tickInterval = null;
+          this._side = false;
+          this.muted = false;
         }
-      } catch (e) { /* ignore */ }
-
-      // ── Conditional UI ──
-      // On website → hide «↗ сайт» (already on the site)
-      const host = window.location.hostname
-      const isOnSite = host === 'emdrbilateral.online' || host === 'emdrbilateral.ru'
-      if (isOnSite && siteLink) siteLink.style.display = 'none'
-
-      // ── Canvas resize ──
-      function resizeCanvas() {
-        windowWidth = window.innerWidth
-        windowHeight = window.innerHeight
-        canvas.width = windowWidth
-        canvas.height = windowHeight
-        drawIdle()
-      }
-
-      window.addEventListener('resize', resizeCanvas)
-      resizeCanvas()
-
-      // ── Drawing ──
-      function drawCircle(progress, phase) {
-        const cx = canvas.width / 2
-        const cy = canvas.height / 2
-        const maxR = Math.min(cx, cy) * 0.75
-        const minR = maxR * 0.15
-        // progress 0..1 от smoothstep в engine
-        const radius = minR + (maxR - minR) * progress
-
-        // Цвет в зависимости от фазы
-        let color1, color2
-        if (phase === 'inhale') {
-          color1 = '#3b82f6'
-          color2 = '#1d4ed8'
-        } else if (phase === 'exhale') {
-          color1 = '#8b5cf6'
-          color2 = '#6d28d9'
-        } else if (phase === 'hold_in' || phase === 'hold_out') {
-          color1 = '#60a5fa'
-          color2 = '#2563eb'
-        } else {
-          color1 = '#1e293b'
-          color2 = '#0f172a'
+        start(m) {
+          if (this.running) return;
+          this.running = true;
+          this.phase = "inhale";
+          this.elapsed = 0;
+          this.cycleCount = 0;
+          this.breathProgress = 0;
+          this.startTimestamp = performance.now();
+          this.targetCycles =
+            m > 0 ? Math.round((m * 60) / this.totalCycleSec) : 0;
+          this._initAudio();
+          this._startTickTones();
+          if (this.onPhaseChange) this.onPhaseChange("inhale");
         }
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-        // Glow
-        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 1.2)
-        gradient.addColorStop(0, color1 + '33')
-        gradient.addColorStop(0.5, color2 + '11')
-        gradient.addColorStop(1, 'transparent')
-        ctx.fillStyle = gradient
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-        // Circle
-        const g = ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.3, 0, cx, cy, radius)
-        g.addColorStop(0, color1)
-        g.addColorStop(1, color2)
-        ctx.shadowColor = color1 + '66'
-        ctx.shadowBlur = radius * 0.5
-        ctx.beginPath()
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-        ctx.fillStyle = g
-        ctx.fill()
-        ctx.shadowBlur = 0
-
-        // Bilateral side glow — синхронизация ладоней Butterfly Hug
-        if (engine.running) {
-          const halfW = canvas.width / 2
-          const tickMs = 60000 / engine.bpm / 2
-          const elapsed = performance.now() % (tickMs * 2)
-          const fadeProgress = 1 - Math.abs(elapsed - tickMs) / tickMs
-          const glowStrength = 0.40 * Math.max(0, Math.min(1, fadeProgress))
-
-          // Фоновая подсветка всей половины
-          ctx.save()
-          ctx.globalAlpha = glowStrength * 0.6
-          const bgGlow = ctx.createLinearGradient(
-            engine._side ? 0 : canvas.width,
-            0,
-            engine._side ? halfW : halfW,
-            0
+        stop() {
+          if (!this.running) return;
+          this.running = false;
+          this.phase = "idle";
+          this.breathProgress = 0;
+          this.elapsed = 0;
+          this._stopTickTones();
+          this._stopAudio();
+          if (this.onPhaseChange) this.onPhaseChange("idle");
+          if (typeof navigator !== "undefined" && navigator.vibrate)
+            navigator.vibrate(0);
+        }
+        update(d) {
+          if (!this.running) return;
+          this.elapsed += d;
+          const T = this.totalCycleSec * 1e3;
+          if (this.elapsed >= T) {
+            this.elapsed = this.elapsed % T;
+            this.cycleCount++;
+            if (this.onCycleComplete) this.onCycleComplete(this.cycleCount);
+            if (this.targetCycles > 0 && this.cycleCount >= this.targetCycles) {
+              this.stop();
+              if (this.onComplete) this.onComplete();
+              return;
+            }
+          }
+          this._updatePhase();
+        }
+        _updatePhase() {
+          const e = this.elapsed / 1e3,
+            i = this.inhaleSec,
+            h = this.holdAfterInhale,
+            x = this.exhaleSec;
+          let p, n;
+          if (e < i) {
+            p = "inhale";
+            n = e / i;
+            this._doVibration(2e3);
+          } else if (e < i + h) {
+            p = "hold_in";
+            n = 1;
+          } else if (e < i + h + x) {
+            p = "exhale";
+            n = 1 - (e - i - h) / x;
+            this._doVibration(500);
+          } else {
+            p = "hold_out";
+            n = 0;
+          }
+          if (p !== this.phase) {
+            this.phase = p;
+            if (this.onPhaseChange) this.onPhaseChange(p);
+          }
+          this.breathProgress += (n - this.breathProgress) * 0.3;
+        }
+        getCircleRadius() {
+          const t = Math.max(0, Math.min(1, this.breathProgress));
+          return t * t * (3 - 2 * t);
+        }
+        getPhaseLabel(l) {
+          const L = l === "ru" ? "ru" : "en",
+            lb = {
+              idle: { ru: "Готов", en: "Ready" },
+              inhale: { ru: "Вдох", en: "Inhale" },
+              hold_in: { ru: "Задержка", en: "Hold" },
+              exhale: { ru: "Выдох", en: "Exhale" },
+              hold_out: { ru: "Задержка", en: "Hold" },
+            };
+          return lb[this.phase]?.[L] || lb.idle[L];
+        }
+        _doVibration(d) {
+          if (this.muted) return;
+          if (typeof navigator !== "undefined" && navigator.vibrate)
+            navigator.vibrate(d);
+        }
+        _initAudio() {
+          if (this.audioContext) return;
+          const A = globalThis.AudioContext || globalThis.webkitAudioContext;
+          if (!A) return;
+          try {
+            this.audioContext = new A();
+            this._leftGain = this.audioContext.createGain();
+            this._leftGain.gain.value = 0;
+            this._leftOsc = this.audioContext.createOscillator();
+            this._leftOsc.type = "sine";
+            this._leftOsc.frequency.value = this.toneFreqL;
+            this._leftOsc.connect(this._leftGain);
+            this._rightGain = this.audioContext.createGain();
+            this._rightGain.gain.value = 0;
+            this._rightOsc = this.audioContext.createOscillator();
+            this._rightOsc.type = "sine";
+            this._rightOsc.frequency.value = this.toneFreqR;
+            this._rightOsc.connect(this._rightGain);
+            const m = this.audioContext.createChannelMerger(2);
+            this._leftGain.connect(m, 0, 0);
+            this._rightGain.connect(m, 0, 1);
+            m.connect(this.audioContext.destination);
+            this._leftOsc.start();
+            this._rightOsc.start();
+            this.audioEnabled = true;
+          } catch (e) {
+            console.warn("BreathingEngine: Audio init failed", e);
+          }
+        }
+        _startTickTones() {
+          if (this._tickInterval) return;
+          const h = 6e4 / this.bpm / 2;
+          this._side = false;
+          this._tickInterval = setInterval(() => {
+            this._side = !this._side;
+            this._playBilateralTick(this._side);
+          }, h);
+        }
+        _stopTickTones() {
+          if (this._tickInterval) {
+            clearInterval(this._tickInterval);
+            this._tickInterval = null;
+          }
+        }
+        _playBilateralTick(L) {
+          if (this.muted || !this.audioContext || !this.audioEnabled) return;
+          try {
+            const g = L ? this._leftGain : this._rightGain,
+              n = this.audioContext.currentTime;
+            g.gain.setValueAtTime(this.toneVolume, n);
+            g.gain.exponentialRampToValueAtTime(0.001, n + 0.08);
+          } catch (e) {}
+        }
+        _stopAudio() {
+          if (this._leftOsc) {
+            try {
+              this._leftOsc.stop();
+            } catch (e) {}
+            this._leftOsc = null;
+          }
+          if (this._rightOsc) {
+            try {
+              this._rightOsc.stop();
+            } catch (e) {}
+            this._rightOsc = null;
+          }
+          this._leftGain = null;
+          this._rightGain = null;
+          this.audioContext = null;
+          this.audioEnabled = false;
+        }
+        setMuted(m) {
+          this.muted = !!m;
+        }
+        toggleMute() {
+          this.muted = !this.muted;
+          if (
+            this.muted &&
+            typeof navigator !== "undefined" &&
+            navigator.vibrate
           )
-          bgGlow.addColorStop(0, '#3b82f6')
-          bgGlow.addColorStop(1, 'transparent')
-          ctx.fillStyle = bgGlow
-          ctx.fillRect(
-            engine._side ? 0 : halfW,
+            navigator.vibrate(0);
+          return this.muted;
+        }
+        getStats() {
+          const e = this.running
+            ? (performance.now() - this.startTimestamp) / 1e3
+            : 0;
+          return {
+            running: this.running,
+            phase: this.phase,
+            cycleCount: this.cycleCount,
+            elapsedSec: Math.round(e),
+            targetCycles: this.targetCycles,
+          };
+        }
+      }
+    </script>
+    <script>
+      (function () {
+        "use strict";
+
+        // ── DOM refs ──
+        const canvas = document.getElementById("breathCanvas");
+        const ctx = canvas.getContext("2d");
+        const phaseLabel = document.getElementById("phaseLabel");
+        const timerDisplay = document.getElementById("timerDisplay");
+        const cycleCounter = document.getElementById("cycleCounter");
+        const startBtn = document.getElementById("startBtn");
+        const muteBtn = document.getElementById("muteBtn");
+        const siteLink = document.getElementById("siteLink");
+        const infoCard = document.getElementById("infoCard");
+        const completeMessage = document.getElementById("completeMessage");
+        const durationBtns = document.querySelectorAll(".duration-btn");
+
+        // ── State ──
+        let selectedMinutes = 3;
+        let animFrameId = null;
+        let lastTs = 0;
+        let windowWidth = window.innerWidth;
+        let windowHeight = window.innerHeight;
+
+        // ── Engine ──
+        const engine = new BreathingEngine({
+          inhaleSec: 5,
+          exhaleSec: 5,
+          bpm: 30,
+        });
+
+        // ── Telegram WebApp ──
+        let tg = null;
+        try {
+          if (
+            typeof window.Telegram !== "undefined" &&
+            window.Telegram.WebApp
+          ) {
+            tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+          }
+        } catch (e) {
+          /* ignore */
+        }
+
+        // ── Conditional UI ──
+        // On website → hide «↗ сайт» (already on the site)
+        const host = window.location.hostname;
+        const isOnSite =
+          host === "emdrbilateral.online" || host === "emdrbilateral.ru";
+        if (isOnSite && siteLink) siteLink.style.display = "none";
+
+        // ── Canvas resize ──
+        function resizeCanvas() {
+          windowWidth = window.innerWidth;
+          windowHeight = window.innerHeight;
+          canvas.width = windowWidth;
+          canvas.height = windowHeight;
+          drawIdle();
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        // ── Drawing ──
+        function drawCircle(progress, phase) {
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          const maxR = Math.min(cx, cy) * 0.75;
+          const minR = maxR * 0.15;
+          // progress 0..1 от smoothstep в engine
+          const radius = minR + (maxR - minR) * progress;
+
+          // Цвет в зависимости от фазы
+          let color1, color2;
+          if (phase === "inhale") {
+            color1 = "#3b82f6";
+            color2 = "#1d4ed8";
+          } else if (phase === "exhale") {
+            color1 = "#8b5cf6";
+            color2 = "#6d28d9";
+          } else if (phase === "hold_in" || phase === "hold_out") {
+            color1 = "#60a5fa";
+            color2 = "#2563eb";
+          } else {
+            color1 = "#1e293b";
+            color2 = "#0f172a";
+          }
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Glow
+          const gradient = ctx.createRadialGradient(
+            cx,
+            cy,
             0,
-            halfW,
-            canvas.height
-          )
-          ctx.restore()
+            cx,
+            cy,
+            maxR * 1.2,
+          );
+          gradient.addColorStop(0, color1 + "33");
+          gradient.addColorStop(0.5, color2 + "11");
+          gradient.addColorStop(1, "transparent");
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Яркая полоса у края — «вспышка» тика
-          ctx.save()
-          ctx.globalAlpha = glowStrength
-          const flashGradient = ctx.createLinearGradient(
-            engine._side ? 0 : canvas.width,
+          // Circle
+          const g = ctx.createRadialGradient(
+            cx - radius * 0.3,
+            cy - radius * 0.3,
             0,
-            engine._side ? halfW * 0.4 : canvas.width - halfW * 0.4,
-            0
-          )
-          flashGradient.addColorStop(0, '#93c5fd')
-          flashGradient.addColorStop(0.3, '#60a5fa')
-          flashGradient.addColorStop(1, 'transparent')
-          ctx.fillStyle = flashGradient
-          ctx.fillRect(
-            engine._side ? 0 : halfW,
-            0,
-            halfW,
-            canvas.height
-          )
-          ctx.restore()
+            cx,
+            cy,
+            radius,
+          );
+          g.addColorStop(0, color1);
+          g.addColorStop(1, color2);
+          ctx.shadowColor = color1 + "66";
+          ctx.shadowBlur = radius * 0.5;
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fillStyle = g;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Bilateral side glow — синхронизация ладоней Butterfly Hug
+          if (engine.running) {
+            const halfW = canvas.width / 2;
+            const tickMs = 60000 / engine.bpm / 2;
+            const elapsed = performance.now() % (tickMs * 2);
+            const fadeProgress = 1 - Math.abs(elapsed - tickMs) / tickMs;
+            const glowStrength = 0.4 * Math.max(0, Math.min(1, fadeProgress));
+
+            // Фоновая подсветка всей половины
+            ctx.save();
+            ctx.globalAlpha = glowStrength * 0.6;
+            const bgGlow = ctx.createLinearGradient(
+              engine._side ? 0 : canvas.width,
+              0,
+              engine._side ? halfW : halfW,
+              0,
+            );
+            bgGlow.addColorStop(0, "#3b82f6");
+            bgGlow.addColorStop(1, "transparent");
+            ctx.fillStyle = bgGlow;
+            ctx.fillRect(engine._side ? 0 : halfW, 0, halfW, canvas.height);
+            ctx.restore();
+
+            // Яркая полоса у края — «вспышка» тика
+            ctx.save();
+            ctx.globalAlpha = glowStrength;
+            const flashGradient = ctx.createLinearGradient(
+              engine._side ? 0 : canvas.width,
+              0,
+              engine._side ? halfW * 0.4 : canvas.width - halfW * 0.4,
+              0,
+            );
+            flashGradient.addColorStop(0, "#93c5fd");
+            flashGradient.addColorStop(0.3, "#60a5fa");
+            flashGradient.addColorStop(1, "transparent");
+            ctx.fillStyle = flashGradient;
+            ctx.fillRect(engine._side ? 0 : halfW, 0, halfW, canvas.height);
+            ctx.restore();
+          }
+
+          // Pulse ring
+          if (engine.running) {
+            const pulseSize =
+              radius + 8 + Math.sin(performance.now() / 200) * 4;
+            ctx.beginPath();
+            ctx.arc(cx, cy, pulseSize, 0, Math.PI * 2);
+            ctx.strokeStyle = color1 + "44";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
         }
 
-        // Pulse ring
-        if (engine.running) {
-          const pulseSize = radius + 8 + Math.sin(performance.now() / 200) * 4
-          ctx.beginPath()
-          ctx.arc(cx, cy, pulseSize, 0, Math.PI * 2)
-          ctx.strokeStyle = color1 + '44'
-          ctx.lineWidth = 2
-          ctx.stroke()
-        }
-      }
-
-      function drawIdle() {
-        drawCircle(0.15, 'idle')
-      }
-
-      // ── UI update ──
-      function updateUI() {
-        const stats = engine.getStats()
-        phaseLabel.textContent = engine.getPhaseLabel('ru')
-
-        if (stats.running) {
-          const mins = Math.floor(stats.elapsedSec / 60)
-          const secs = stats.elapsedSec % 60
-          timerDisplay.textContent = mins + ':' + String(secs).padStart(2, '0')
-          cycleCounter.textContent = stats.cycleCount + ' циклов'
-        } else {
-          timerDisplay.textContent = '0:00'
-          cycleCounter.textContent = '0 циклов'
-        }
-      }
-
-      // ── Animation loop ──
-      function loop(timestamp) {
-        if (!lastTs) lastTs = timestamp
-        const delta = timestamp - lastTs
-        lastTs = timestamp
-
-        if (engine.running) {
-          engine.update(delta)
-          const progress = engine.getCircleRadius()
-          drawCircle(progress, engine.phase)
-          updateUI()
+        function drawIdle() {
+          drawCircle(0.15, "idle");
         }
 
-        animFrameId = requestAnimationFrame(loop)
-      }
+        // ── UI update ──
+        function updateUI() {
+          const stats = engine.getStats();
+          phaseLabel.textContent = engine.getPhaseLabel("ru");
 
-      function startAnimation() {
-        if (animFrameId) cancelAnimationFrame(animFrameId)
-        lastTs = 0
-        animFrameId = requestAnimationFrame(loop)
-      }
-
-      // ── Controls ──
-      function startBreathing() {
-        if (engine.running) {
-          engine.stop()
-          startBtn.textContent = 'Начать'
-          startBtn.classList.remove('active')
-          enableDurationButtons()
-          infoCard.classList.remove('hidden')
-          completeMessage.classList.remove('show')
-          drawIdle()
-          return
+          if (stats.running) {
+            const mins = Math.floor(stats.elapsedSec / 60);
+            const secs = stats.elapsedSec % 60;
+            timerDisplay.textContent =
+              mins + ":" + String(secs).padStart(2, "0");
+            cycleCounter.textContent = stats.cycleCount + " циклов";
+          } else {
+            timerDisplay.textContent = "0:00";
+            cycleCounter.textContent = "0 циклов";
+          }
         }
 
-        // User gesture → init AudioContext
-        if (engine.audioContext && engine.audioContext.state === 'suspended') {
-          engine.audioContext.resume()
+        // ── Animation loop ──
+        function loop(timestamp) {
+          if (!lastTs) lastTs = timestamp;
+          const delta = timestamp - lastTs;
+          lastTs = timestamp;
+
+          if (engine.running) {
+            engine.update(delta);
+            const progress = engine.getCircleRadius();
+            drawCircle(progress, engine.phase);
+            updateUI();
+          }
+
+          animFrameId = requestAnimationFrame(loop);
         }
 
-        engine.start(selectedMinutes)
-        // Track breathing start in Metrika
-        try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_breathing_started', { detail: { minutes: selectedMinutes } })) } catch (_) { /* noop */ }
-        startBtn.textContent = 'Стоп'
-        startBtn.classList.add('active')
-        disableDurationButtons()
-        infoCard.classList.add('hidden')
-        completeMessage.classList.remove('show')
-        startAnimation()
-      }
-
-      function disableDurationButtons() {
-        durationBtns.forEach(function(b) { b.disabled = true })
-      }
-
-      function enableDurationButtons() {
-        durationBtns.forEach(function(b) { b.disabled = false })
-      }
-
-      // ── Mute toggle ──
-      muteBtn.addEventListener('pointerdown', function(e) {
-        e.preventDefault()
-        const nowMuted = engine.toggleMute()
-        muteBtn.textContent = nowMuted ? '🔇' : '🔊'
-        if (nowMuted) {
-          muteBtn.classList.add('muted')
-        } else {
-          muteBtn.classList.remove('muted')
+        function startAnimation() {
+          if (animFrameId) cancelAnimationFrame(animFrameId);
+          lastTs = 0;
+          animFrameId = requestAnimationFrame(loop);
         }
-        muteBtn.title = nowMuted ? 'Включить звук' : 'Выключить звук'
-      })
 
-      // ── Events ──
-      startBtn.addEventListener('click', startBreathing)
+        // ── Controls ──
+        function startBreathing() {
+          if (engine.running) {
+            engine.stop();
+            startBtn.textContent = "Начать";
+            startBtn.classList.remove("active");
+            enableDurationButtons();
+            infoCard.classList.remove("hidden");
+            completeMessage.classList.remove("show");
+            drawIdle();
+            return;
+          }
 
-      durationBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          durationBtns.forEach(function(b) { b.classList.remove('active') })
-          btn.classList.add('active')
-          selectedMinutes = parseInt(btn.dataset.minutes, 10)
-        })
-      })
+          // User gesture → init AudioContext
+          if (
+            engine.audioContext &&
+            engine.audioContext.state === "suspended"
+          ) {
+            engine.audioContext.resume();
+          }
 
-      function goToSite(url) {
-        if (engine.running) engine.stop()
-        if (tg) {
-          tg.openLink(url, { try_instant_view: false })
-        } else {
-          window.location.href = url
+          engine.start(selectedMinutes);
+          // Track breathing start in Metrika
+          try {
+            globalThis.dispatchEvent(
+              new CustomEvent("bb_metrika_breathing_started", {
+                detail: { minutes: selectedMinutes },
+              }),
+            );
+          } catch (_) {
+            /* noop */
+          }
+          startBtn.textContent = "Стоп";
+          startBtn.classList.add("active");
+          disableDurationButtons();
+          infoCard.classList.add("hidden");
+          completeMessage.classList.remove("show");
+          startAnimation();
         }
-      }
 
-      // Single subtle site link — auto-detect opposite domain
-      (function() {
-        const host = window.location.hostname
-        const targetUrl = host.endsWith('.ru')
-          ? 'https://emdrbilateral.online'
-          : 'https://emdrbilateral.ru'
-        siteLink.setAttribute('data-url', targetUrl)
-        siteLink.addEventListener('click', function(e) {
-          e.preventDefault()
-          goToSite(targetUrl)
-        })
-      })()
+        function disableDurationButtons() {
+          durationBtns.forEach(function (b) {
+            b.disabled = true;
+          });
+        }
 
-      // Engine callbacks
-      engine.onPhaseChange = function(phase) {
-        phaseLabel.textContent = engine.getPhaseLabel('ru')
-      }
+        function enableDurationButtons() {
+          durationBtns.forEach(function (b) {
+            b.disabled = false;
+          });
+        }
 
-      engine.onComplete = function() {
-        startBtn.textContent = 'Завершено'
-        startBtn.classList.remove('active')
-        startBtn.style.background = '#10b981'
-        startBtn.style.borderColor = '#10b981'
-        startBtn.style.display = 'none'
-        enableDurationButtons()
-        completeMessage.classList.add('show')
-        setTimeout(function() {
-          startBtn.textContent = 'Начать'
-          startBtn.style.background = ''
-          startBtn.style.borderColor = ''
-          startBtn.style.display = ''
-          completeMessage.classList.remove('show')
-          infoCard.classList.remove('hidden')
-        }, 4000)
-      }
+        // ── Mute toggle ──
+        muteBtn.addEventListener("pointerdown", function (e) {
+          e.preventDefault();
+          const nowMuted = engine.toggleMute();
+          muteBtn.textContent = nowMuted ? "🔇" : "🔊";
+          if (nowMuted) {
+            muteBtn.classList.add("muted");
+          } else {
+            muteBtn.classList.remove("muted");
+          }
+          muteBtn.title = nowMuted ? "Включить звук" : "Выключить звук";
+        });
 
-      // ── Init ──
-      drawIdle()
-      startAnimation()
-    })()
-  </script>
-</body>
+        // ── Events ──
+        startBtn.addEventListener("click", startBreathing);
+
+        durationBtns.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            durationBtns.forEach(function (b) {
+              b.classList.remove("active");
+            });
+            btn.classList.add("active");
+            selectedMinutes = parseInt(btn.dataset.minutes, 10);
+          });
+        });
+
+        function goToSite(url) {
+          if (engine.running) engine.stop();
+          if (tg) {
+            tg.openLink(url, { try_instant_view: false });
+          } else {
+            window.location.href = url;
+          }
+        }
+
+        // Single subtle site link — auto-detect opposite domain
+        (function () {
+          const host = window.location.hostname;
+          const targetUrl = host.endsWith(".ru")
+            ? "https://emdrbilateral.online"
+            : "https://emdrbilateral.ru";
+          siteLink.setAttribute("data-url", targetUrl);
+          siteLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            goToSite(targetUrl);
+          });
+        })();
+
+        // Engine callbacks
+        engine.onPhaseChange = function (phase) {
+          phaseLabel.textContent = engine.getPhaseLabel("ru");
+        };
+
+        engine.onComplete = function () {
+          startBtn.textContent = "Завершено";
+          startBtn.classList.remove("active");
+          startBtn.style.background = "#10b981";
+          startBtn.style.borderColor = "#10b981";
+          startBtn.style.display = "none";
+          enableDurationButtons();
+          completeMessage.classList.add("show");
+          setTimeout(function () {
+            startBtn.textContent = "Начать";
+            startBtn.style.background = "";
+            startBtn.style.borderColor = "";
+            startBtn.style.display = "";
+            completeMessage.classList.remove("show");
+            infoCard.classList.remove("hidden");
+          }, 4000);
+        };
+
+        // ── Init ──
+        drawIdle();
+        startAnimation();
+      })();
+    </script>
+  </body>
 </html>

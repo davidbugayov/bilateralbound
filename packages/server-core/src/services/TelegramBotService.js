@@ -1,5 +1,5 @@
 /* jshint node: true, esversion: 11, strict: true */
-'use strict'
+'use strict';
 
 /**
  * Minimal Telegram Bot API client for Star payments + subscription flow.
@@ -9,8 +9,8 @@
  * Stars: https://core.telegram.org/bots/payments#stars
  */
 
-const TELEGRAM_API_BASE = 'https://api.telegram.org/bot'
-const { getCommandsForLang } = require('./bot-translations')
+const TELEGRAM_API_BASE = 'https://api.telegram.org/bot';
+const { getCommandsForLang } = require('./bot-translations');
 
 class TelegramBotService {
   /**
@@ -21,18 +21,25 @@ class TelegramBotService {
    * @param {string} opts.botUsername — Bot username (for deep links)
    * @param {Object} opts.logger
    */
-  constructor({ token, providerToken, webhookUrl, webhookSecret, botUsername, logger } = {}) {
-    this.token = token || ''
-    this.providerToken = providerToken || ''
-    this.webhookUrl = webhookUrl || ''
-    this.webhookSecret = webhookSecret || ''
-    this.botUsername = botUsername || ''
-    this.logger = logger || console
-    this._apiBase = TELEGRAM_API_BASE + this.token
+  constructor({
+    token,
+    providerToken,
+    webhookUrl,
+    webhookSecret,
+    botUsername,
+    logger,
+  } = {}) {
+    this.token = token || '';
+    this.providerToken = providerToken || '';
+    this.webhookUrl = webhookUrl || '';
+    this.webhookSecret = webhookSecret || '';
+    this.botUsername = botUsername || '';
+    this.logger = logger || console;
+    this._apiBase = TELEGRAM_API_BASE + this.token;
   }
 
   get isConfigured() {
-    return this.token.length > 0
+    return this.token.length > 0;
   }
 
   // ---------------------------------------------------------------------------
@@ -41,10 +48,10 @@ class TelegramBotService {
 
   /** Register (or update) the webhook URL */
   async setWebhook() {
-    if (!this.isConfigured) return false
+    if (!this.isConfigured) return false;
     if (!this.webhookUrl) {
-      this.logger.warn('Webhook URL not configured — cannot set webhook')
-      return false
+      this.logger.warn('Webhook URL not configured — cannot set webhook');
+      return false;
     }
     try {
       const params = {
@@ -54,25 +61,30 @@ class TelegramBotService {
           'message',
           'callback_query',
           'pre_checkout_query',
-          'successful_payment'
-        ]
-      }
+          'successful_payment',
+        ],
+      };
       // Pass secret_token for webhook authentication (X-Telegram-Bot-Api-Secret-Token header)
       if (this.webhookSecret) {
-        params.secret_token = this.webhookSecret
+        params.secret_token = this.webhookSecret;
       } else {
-        this.logger.warn('WEBHOOK_SECRET not set — webhook will accept unauthenticated requests')
+        this.logger.warn(
+          'WEBHOOK_SECRET not set — webhook will accept unauthenticated requests',
+        );
       }
-      const res = await this._call('setWebhook', params)
+      const res = await this._call('setWebhook', params);
       if (res.ok) {
-        this.logger.info({ webhookUrl: this.webhookUrl }, 'Telegram webhook set')
+        this.logger.info(
+          { webhookUrl: this.webhookUrl },
+          'Telegram webhook set',
+        );
       } else {
-        this.logger.error({ res }, 'Failed to set Telegram webhook')
+        this.logger.error({ res }, 'Failed to set Telegram webhook');
       }
-      return res.ok
+      return res.ok;
     } catch (err) {
-      this.logger.error({ err }, 'Telegram setWebhook error')
-      return false
+      this.logger.error({ err }, 'Telegram setWebhook error');
+      return false;
     }
   }
 
@@ -82,18 +94,18 @@ class TelegramBotService {
 
   /** Send a text message to a chat */
   async sendMessage(chatId, text, opts = {}) {
-    if (!this.isConfigured) return null
+    if (!this.isConfigured) return null;
     try {
       return await this._call('sendMessage', {
         chat_id: chatId,
         text,
         parse_mode: 'HTML',
         disable_web_page_preview: true,
-        ...opts
-      })
+        ...opts,
+      });
     } catch (err) {
-      this.logger.error({ err, chatId }, 'sendMessage failed')
-      return null
+      this.logger.error({ err, chatId }, 'sendMessage failed');
+      return null;
     }
   }
 
@@ -108,17 +120,17 @@ class TelegramBotService {
    * @param {string} [errorMessage] — required if ok=false
    */
   async answerPreCheckoutQuery(queryId, ok, errorMessage) {
-    if (!this.isConfigured) return false
+    if (!this.isConfigured) return false;
     try {
       const res = await this._call('answerPreCheckoutQuery', {
         pre_checkout_query_id: queryId,
         ok,
-        error_message: errorMessage || undefined
-      })
-      return res.ok
+        error_message: errorMessage || undefined,
+      });
+      return res.ok;
     } catch (err) {
-      this.logger.error({ err, queryId }, 'answerPreCheckoutQuery failed')
-      return false
+      this.logger.error({ err, queryId }, 'answerPreCheckoutQuery failed');
+      return false;
     }
   }
 
@@ -132,16 +144,16 @@ class TelegramBotService {
    * @param {Object} [opts] — optional { text: string, show_alert: boolean, url: string }
    */
   async answerCallbackQuery(queryId, opts = {}) {
-    if (!this.isConfigured) return false
+    if (!this.isConfigured) return false;
     try {
       const res = await this._call('answerCallbackQuery', {
         callback_query_id: queryId,
-        ...opts
-      })
-      return res.ok
+        ...opts,
+      });
+      return res.ok;
     } catch (err) {
-      this.logger.error({ err, queryId }, 'answerCallbackQuery failed')
-      return false
+      this.logger.error({ err, queryId }, 'answerCallbackQuery failed');
+      return false;
     }
   }
 
@@ -155,8 +167,8 @@ class TelegramBotService {
    * @param {Object} opts
    */
   async sendInvoice(chatId, sessionId, starsAmount, opts = {}) {
-    if (!this.isConfigured) return null
-    const providerToken = this.providerToken || undefined
+    if (!this.isConfigured) return null;
+    const providerToken = this.providerToken || undefined;
     try {
       const payload = {
         chat_id: chatId,
@@ -167,29 +179,37 @@ class TelegramBotService {
         payload: sessionId,
         currency: 'XTR',
         prices: [
-          { label: opts.label || 'Premium Plan (30 days)', amount: starsAmount }
+          {
+            label: opts.label || 'Premium Plan (30 days)',
+            amount: starsAmount,
+          },
         ],
         max_tip_amount: 0,
         suggested_tip_amounts: [],
         need_email: false,
         need_phone_number: false,
         need_shipping_address: false,
-        is_flexible: false
-      }
+        is_flexible: false,
+      };
       // provider_token is optional for XTR (Telegram Stars) — omit entirely if empty
       if (providerToken) {
-        payload.provider_token = providerToken
+        payload.provider_token = providerToken;
       }
 
-      const res = await this._call('sendInvoice', payload)
-      this.logger.info({ chatId, sessionId, starsAmount, ok: res?.ok }, 'sendInvoice result')
-      return res
+      const res = await this._call('sendInvoice', payload);
+      this.logger.info(
+        { chatId, sessionId, starsAmount, ok: res?.ok },
+        'sendInvoice result',
+      );
+      return res;
     } catch (err) {
-      this.logger.error({ err, chatId, sessionId, starsAmount }, 'sendInvoice failed')
-      return null
+      this.logger.error(
+        { err, chatId, sessionId, starsAmount },
+        'sendInvoice failed',
+      );
+      return null;
     }
   }
-
 
   // ---------------------------------------------------------------------------
   // Bot commands menu
@@ -205,26 +225,29 @@ class TelegramBotService {
    *   'ru', 'es', etc. → language-specific overrides.
    */
   async setMyCommands(lang = 'en') {
-    if (!this.isConfigured) return false
+    if (!this.isConfigured) return false;
     try {
       const payload = {
         commands: getCommandsForLang(lang),
-        scope: { type: 'all_private_chats' }
-      }
+        scope: { type: 'all_private_chats' },
+      };
       // Only send language_code for non-English; English is the default (no code = all users)
       if (lang && lang !== 'en') {
-        payload.language_code = lang
+        payload.language_code = lang;
       }
-      const res = await this._call('setMyCommands', payload)
+      const res = await this._call('setMyCommands', payload);
       if (res.ok) {
-        this.logger.info({ lang, language_code: payload.language_code || 'default' }, 'Bot commands menu set')
+        this.logger.info(
+          { lang, language_code: payload.language_code || 'default' },
+          'Bot commands menu set',
+        );
       } else {
-        this.logger.error({ res }, 'Failed to set bot commands')
+        this.logger.error({ res }, 'Failed to set bot commands');
       }
-      return res.ok
+      return res.ok;
     } catch (err) {
-      this.logger.error({ err }, 'setMyCommands error')
-      return false
+      this.logger.error({ err }, 'setMyCommands error');
+      return false;
     }
   }
 
@@ -234,13 +257,8 @@ class TelegramBotService {
 
   /** Generate a deep link: https://t.me/bot?start=payload */
   getDeepLink(payload) {
-    const bot = this.botUsername || 'emdrbilateral_bot'
-    return `https://t.me/${bot}?start=${encodeURIComponent(payload || '')}`
-  }
-
-  /** Generate a deep link for subscription: https://t.me/bot?start=subscribe_sessionId */
-  getSubscribeLink(sessionId) {
-    return this.getDeepLink('subscribe_' + sessionId)
+    const bot = this.botUsername || 'emdrbilateral_bot';
+    return `https://t.me/${bot}?start=${encodeURIComponent(payload || '')}`;
   }
 
   // ---------------------------------------------------------------------------
@@ -249,20 +267,20 @@ class TelegramBotService {
 
   async _call(method, params) {
     if (!this.isConfigured) {
-      throw new Error('Telegram bot not configured — token missing')
+      throw new Error('Telegram bot not configured — token missing');
     }
-    const url = `${this._apiBase}/${method}`
+    const url = `${this._apiBase}/${method}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    })
+      body: JSON.stringify(params),
+    });
     if (!response.ok) {
-      const text = await response.text()
-      throw new Error(`Telegram API ${method}: ${response.status} ${text}`)
+      const text = await response.text();
+      throw new Error(`Telegram API ${method}: ${response.status} ${text}`);
     }
-    return response.json()
+    return response.json();
   }
 }
 
-module.exports = TelegramBotService
+module.exports = TelegramBotService;
