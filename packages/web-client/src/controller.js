@@ -903,6 +903,60 @@ function createLogger(moduleName) {
     }
   }
 }
+// ============================================
+// Brainspotting: manual ball positioning via mouse/touch drag
+// ============================================
+let _brainspottingDragActive = false
+let _brainspottingThrottleTs = 0
+
+function enableBrainspottingDrag() {
+  if (_brainspottingDragActive) return
+  const canvas = document.getElementById('preview')
+  if (!canvas) return
+  _brainspottingDragActive = true
+
+  const handleMove = (clientX, clientY) => {
+    if (!previewPhysicsEngine || !previewPhysicsEngine.ball.brainspotting) return
+    const rect = canvas.getBoundingClientRect()
+    // Map screen coords to world coords
+    const x = ((clientX - rect.left) / rect.width) * previewPhysicsEngine.options.worldWidth
+    const y = ((clientY - rect.top) / rect.height) * previewPhysicsEngine.options.worldHeight
+    // Clamp to bounds
+    const r = previewPhysicsEngine.ball.radius
+    const clampedX = Math.max(r, Math.min(x, previewPhysicsEngine.options.worldWidth - r))
+    const clampedY = Math.max(r, Math.min(y, previewPhysicsEngine.options.worldHeight - r))
+    previewPhysicsEngine.ball.x = clampedX
+    previewPhysicsEngine.ball.y = clampedY
+    // Throttle WS updates to ~20fps
+    const now = performance.now()
+    if (now - _brainspottingThrottleTs > 50) {
+      _brainspottingThrottleTs = now
+      safeSend(WS_MSG.controllerUpdate, { x: clampedX, y: clampedY })
+    }
+  }
+
+  canvas._bsMouseMove = (e) => handleMove(e.clientX, e.clientY)
+  canvas._bsTouchMove = (e) => {
+    if (e.touches.length > 0) {
+      e.preventDefault()
+      handleMove(e.touches[0].clientX, e.touches[0].clientY)
+    }
+  }
+
+  canvas.addEventListener('mousemove', canvas._bsMouseMove)
+  canvas.addEventListener('touchmove', canvas._bsTouchMove, { passive: false })
+}
+
+function disableBrainspottingDrag() {
+  if (!_brainspottingDragActive) return
+  const canvas = document.getElementById('preview')
+  if (canvas) {
+    if (canvas._bsMouseMove) canvas.removeEventListener('mousemove', canvas._bsMouseMove)
+    if (canvas._bsTouchMove) canvas.removeEventListener('touchmove', canvas._bsTouchMove)
+  }
+  _brainspottingDragActive = false
+}
+
 function syncUIWithState(ballState) {
   try {
     _UISync.syncAll(ballState)
@@ -1331,8 +1385,13 @@ function setDirection(directionMode) {
       if (previewPhysicsEngine) {
         previewPhysicsEngine.ball.infinity = false
         previewPhysicsEngine._infinityT = 0
+        previewPhysicsEngine.ball.brainspotting = false
       }
-      if (lastServerState) lastServerState.infinity = false
+      if (lastServerState) {
+        lastServerState.infinity = false
+        lastServerState.brainspotting = false
+      }
+      disableBrainspottingDrag()
     }
 
     if (directionMode === 'infinity') {
@@ -1352,6 +1411,26 @@ function setDirection(directionMode) {
       updateDirectionButtons()
       updateDirectionDisplay(0, 0)
       safeSend(WS_MSG.controllerUpdate, { infinity: true, dirX: 0, dirY: 0 })
+      return
+    }
+
+    if (directionMode === 'brainspotting') {
+      setCurrentDirectionMode('brainspotting')
+      __ignoreServerDirectionUntilTs = performance.now() + 1500
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.ball.brainspotting = true
+        previewPhysicsEngine.ball.infinity = false
+      }
+      try { globalThis.dispatchEvent(new CustomEvent('bb_metrika_feature_used', { detail: { feature: 'brainspotting', action: 'enable' } })) } catch (_) { /* noop */ }
+      if (lastServerState) {
+        lastServerState.brainspotting = true
+        lastServerState.infinity = false
+      }
+      updateDirectionButtons()
+      updateDirectionDisplay(0, 0)
+      safeSend(WS_MSG.controllerUpdate, { brainspotting: true, infinity: false, paused: false })
+      // Enable mouse/touch drag on preview canvas for manual ball positioning
+      enableBrainspottingDrag()
       return
     }
 

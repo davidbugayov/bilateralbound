@@ -142,6 +142,16 @@ class ValidationUtils {
     if (updates.infinity !== undefined && typeof updates.infinity === 'boolean') {
       validated.infinity = updates.infinity
     }
+    if (updates.brainspotting !== undefined && typeof updates.brainspotting === 'boolean') {
+      validated.brainspotting = updates.brainspotting
+    }
+    // Allow x/y position updates for brainspotting mode (therapist sets position)
+    if (updates.x !== undefined && typeof updates.x === 'number' && !Number.isNaN(updates.x)) {
+      validated.x = updates.x
+    }
+    if (updates.y !== undefined && typeof updates.y === 'number' && !Number.isNaN(updates.y)) {
+      validated.y = updates.y
+    }
     if (updates.trackBand !== undefined && ['top', 'center', 'bottom'].includes(updates.trackBand)) {
       validated.trackBand = updates.trackBand
     }

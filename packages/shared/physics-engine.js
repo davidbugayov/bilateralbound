@@ -195,6 +195,7 @@ function validateCommonCommand(command) {
     validated.ballEmoji = command.ballEmoji
   }
   if (command.infinity !== undefined && typeof command.infinity === 'boolean') validated.infinity = command.infinity
+  if (command.brainspotting !== undefined && typeof command.brainspotting === 'boolean') validated.brainspotting = command.brainspotting
   if (command.trackBand !== undefined && ['top', 'center', 'bottom'].includes(command.trackBand)) validated.trackBand = command.trackBand
 
   return validated
@@ -341,6 +342,7 @@ class PhysicsEngine {
       speed: DEFAULT_OPTIONS.defaultSpeed,
       radius: this.options.ballRadius,
       infinity: false,
+      brainspotting: false,
       ballEmoji: null
     }
   }
@@ -1069,6 +1071,7 @@ class PhysicsEngine {
       colorBg: this.colors.bg,
       ballEmoji: this.ball.ballEmoji ?? null,
       infinity: this.ball.infinity ?? false,
+      brainspotting: this.ball.brainspotting ?? false,
       trackBand: this.options.trackBand ?? 'center'
     }
   }
@@ -1095,6 +1098,7 @@ class PhysicsEngine {
 
     this.ball.ballEmoji = null
     this.ball.infinity = false
+    this.ball.brainspotting = false
     this._infinityT = 0
   }
 
@@ -1257,6 +1261,13 @@ class PhysicsEngine {
       return
     }
 
+    // Brainspotting: ball position is manually controlled by therapist.
+    // No physics updates — position is set via setPosition() from controller input.
+    if (this.ball.brainspotting) {
+      this._decayVisualOffset(deltaTime)
+      return
+    }
+
     if (this.options.clientSimulation) {
       this.updateClientPhysics(deltaTime)
       this._applyDriftCorrection()
@@ -1280,6 +1291,11 @@ class PhysicsEngine {
     // Lemniscate (∞) path: deterministic center-crossing detection replaces wall bounces
     if (this.ball.infinity) {
       this._stepInfinityPath()
+      return
+    }
+
+    // Brainspotting: no server physics — controller sets position directly
+    if (this.ball.brainspotting) {
       return
     }
 
@@ -1749,6 +1765,16 @@ class PhysicsEngine {
       // Reset phase on any infinity state change so viewer and controller preview
       // always start lemniscate from the same origin (t=0)
       this._infinityT = 0
+      // Entering infinity disables brainspotting
+      if (command.infinity) this.ball.brainspotting = false
+    }
+    if (typeof command.brainspotting === 'boolean') {
+      this.ball.brainspotting = command.brainspotting
+      // Entering brainspotting disables infinity
+      if (command.brainspotting) {
+        this.ball.infinity = false
+        // Ball stays at current position — therapist moves it manually
+      }
     }
     if (command.trackBand !== undefined) this.options.trackBand = command.trackBand
   }

@@ -83,6 +83,19 @@ function syncInfinity(ballState) {
     _deps.updateDirectionDisplay(0, 0)
   }
 }
+function syncBrainspotting(ballState) {
+  if (ballState.brainspotting === undefined) return
+  if (performance.now() < _ignoreDirection()) return
+  const engine = _deps.getPreviewPhysicsEngine?.()
+  if (engine) engine.ball.brainspotting = ballState.brainspotting
+  const lastState = _deps.getLastServerState?.()
+  if (lastState) lastState.brainspotting = ballState.brainspotting
+  if (ballState.brainspotting) {
+    _deps.setCurrentDirectionMode('brainspotting')
+    _deps.updateDirectionButtons()
+    _deps.updateDirectionDisplay(0, 0)
+  }
+}
 function syncIllustration(ballState) {
   if (ballState.ballEmoji === undefined) return
   const engine = _deps.getPreviewPhysicsEngine?.()
@@ -141,6 +154,7 @@ function syncAll(ballState) {
   syncPause(ballState)
   syncDirection(ballState)
   syncInfinity(ballState)
+  syncBrainspotting(ballState)
   syncIllustration(ballState)
   syncTrackBand(ballState)
   syncSound(ballState)
@@ -160,6 +174,7 @@ globalThis.UISync = {
   syncPause,
   syncDirection,
   syncInfinity,
+  syncBrainspotting,
   syncIllustration,
   syncTrackBand,
   syncSound,
@@ -176,6 +191,7 @@ module.exports = {
   syncPause,
   syncDirection,
   syncInfinity,
+  syncBrainspotting,
   syncIllustration,
   syncTrackBand,
   syncSound,

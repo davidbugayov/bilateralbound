@@ -90,6 +90,9 @@ class BroadcastService {
       'clientSimulationOnly',
       'ballEmoji',
       'infinity',
+      'brainspotting',
+      'x',
+      'y',
       'trackBand'
     ]
 

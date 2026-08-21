@@ -298,6 +298,18 @@ function updatePhysicsFromState(state) {
   // when the simulation is already in sync "by parameters".
   const stateToApply = { ...state }
   const isMoving = !physicsEngine.state.paused && !physicsEngine.state.stopping
+
+  // Brainspotting mode: always accept x/y from controller (manual positioning).
+  // The sync filter below strips coordinates to prevent jitter, but in
+  // brainspotting mode the controller IS the authority for position.
+  if (physicsEngine.ball.brainspotting && typeof stateToApply.x === 'number' && typeof stateToApply.y === 'number') {
+    physicsEngine.ball.x = stateToApply.x
+    physicsEngine.ball.y = stateToApply.y
+    // Still apply other params (color, radius, etc) but strip x/y to avoid double-apply
+    delete stateToApply.x
+    delete stateToApply.y
+  }
+
   if (
     isMoving &&
     stateToApply.paused !== true &&   // always honour pause/unpause fully
