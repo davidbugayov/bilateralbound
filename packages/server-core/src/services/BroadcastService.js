@@ -108,10 +108,9 @@ class BroadcastService {
    * @private
    */
   _addScreenSizeIfChanged(delta, currentPayload, lastState) {
-    if (
-      JSON.stringify(currentPayload.viewerScreenSize) !==
-      JSON.stringify(lastState.viewerScreenSize)
-    ) {
+    const cur = currentPayload.viewerScreenSize
+    const prev = lastState.viewerScreenSize
+    if (cur?.width !== prev?.width || cur?.height !== prev?.height) {
       delta.viewerScreenSize = currentPayload.viewerScreenSize
     }
   }

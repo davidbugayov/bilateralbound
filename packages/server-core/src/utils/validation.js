@@ -360,7 +360,9 @@ class ValidationUtils {
       Number.isNaN(width) ||
       Number.isNaN(height) ||
       width <= 0 ||
-      height <= 0
+      height <= 0 ||
+      width > 10000 ||
+      height > 10000
     ) {
       return null
     }

@@ -75,7 +75,7 @@ function setupWebSocketServer(
 
     const messageHandlers = {
       request_state_sync: () => {
-        // CRITICAL FIX: Upon reconnection, send full state to restore ball position
+        if (ws.readyState !== 1) return
         const session = sessionService.getSession(sessionId)
         if (session) {
           const initialState = {
@@ -139,10 +139,11 @@ function setupWebSocketServer(
 
           // Save screen size from viewer reconnect — critical for preview sync
           const screenSize = data.payload?.screenSize
-          if (screenSize && typeof screenSize.width === 'number' && typeof screenSize.height === 'number' &&
-              screenSize.width > 0 && screenSize.height > 0 &&
-              screenSize.width <= 10000 && screenSize.height <= 10000) {
-            sessionService.setViewerScreenSize(sessionId, screenSize)
+          if (screenSize) {
+            const validated = ValidationUtils.validateScreenSize(screenSize)
+            if (validated) {
+              sessionService.setViewerScreenSize(sessionId, validated)
+            }
           }
 
           const clients = webSocketManager.getClients(sessionId)
@@ -243,10 +244,9 @@ function setupWebSocketServer(
 
       viewer_screen_size: (data) => {
         if (role === 'viewer') {
-          const { width, height } = data.payload || {}
-          if (typeof width === 'number' && typeof height === 'number' &&
-              width > 0 && height > 0 && width <= 10000 && height <= 10000) {
-            sessionService.setViewerScreenSize(sessionId, { width, height })
+          const validated = ValidationUtils.validateScreenSize(data.payload)
+          if (validated) {
+            sessionService.setViewerScreenSize(sessionId, validated)
           }
         }
       },
@@ -343,7 +343,6 @@ function handleWebSocketMessage(
 
     // Validate sessionId format in WS messages
     if (data.payload?.sessionId) {
-      const ValidationUtils = require('../utils/validation')
       if (!ValidationUtils.validateSessionId(data.payload.sessionId)) {
         logger.warn({ sessionId: clientInfo.sessionId }, 'Invalid sessionId in WS message')
         return

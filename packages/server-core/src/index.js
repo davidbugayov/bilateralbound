@@ -219,6 +219,7 @@ function gracefulShutdown() {
   for (const interval of cleanupIntervals) {
     clearInterval(interval)
   }
+  physicsService.destroy()
   // Stop broadcast service delta cleanup interval and clear cache
   broadcastService.destroy()
   setTimeout(() => process.exit(0), 3000).unref()
@@ -231,4 +232,7 @@ function gracefulShutdown() {
 
 process.on('SIGTERM', gracefulShutdown)
 process.on('SIGINT', gracefulShutdown)
+process.on('unhandledRejection', (err) => {
+  logger.error({ err }, 'Unhandled rejection')
+})
 logger.info('BilateralBound modular server started successfully')

@@ -212,6 +212,9 @@ class WebSocketClient {
   close() {
     this._intentionallyClosed = true
     this._clearTimers()
+    if (typeof document !== 'undefined' && this._visibilityHandler) {
+      document.removeEventListener('visibilitychange', this._visibilityHandler)
+    }
     if (this.ws) {
       this.ws.onclose = null // prevent reconnect on intentional close
       const ws = this.ws

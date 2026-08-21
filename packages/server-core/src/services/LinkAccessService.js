@@ -181,8 +181,27 @@ class LinkAccessService {
     if (this._saveTimer) clearTimeout(this._saveTimer)
     this._saveTimer = setTimeout(() => {
       this._saveTimer = null
+      this._cleanupExpired()
       this._saveToDisk()
     }, this._saveDebounceMs)
+    if (this._saveTimer.unref) this._saveTimer.unref()
+  }
+
+  _cleanupExpired() {
+    const now = Date.now()
+    const maxAge = 30 * 24 * 60 * 60 * 1000
+    for (const [browserId, perBrowser] of this._entries) {
+      for (const [sessionId, record] of perBrowser) {
+        const expired = record.unlockedUntil && record.unlockedUntil <= now
+        const tooOld = record.firstSeenAt && (now - record.firstSeenAt > maxAge)
+        if (expired && tooOld) {
+          perBrowser.delete(sessionId)
+        }
+      }
+      if (perBrowser.size === 0) {
+        this._entries.delete(browserId)
+      }
+    }
   }
 
   _saveToDisk() {

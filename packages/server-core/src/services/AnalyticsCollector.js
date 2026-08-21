@@ -33,10 +33,14 @@ class AnalyticsCollector {
     this.recentSessionErrors = [] // last 50: { ts, sessionId, type }
     // Stale sessions: controller created but viewer never connected
     this.totalStaleSessions = 0
-    // Physics tick jitter tracking (last 120 intervals, ~2 seconds at 60Hz)
-    this._physicsTickIntervals = []
+    // Physics tick jitter tracking (circular buffer, last 120 intervals)
+    this._physicsTickIntervals = new Array(120).fill(0)
+    this._physicsTickHead = 0
+    this._physicsTickCount = 0
     // Persist every N requests to reduce I/O
     this._requestsSinceLastPersist = 0
+    this._persistDirty = false
+    this._persistTimer = null
     this._persistPath = this._resolvePersistPath()
     this._loadPersistedData()
   }
@@ -74,33 +78,41 @@ class AnalyticsCollector {
   }
 
   _persist() {
-    try {
-      const data = {
-        totalSessionsCreated: this.totalSessionsCreated,
-        peakConcurrentSessions: this.peakConcurrentSessions,
-        totalViewerConnections: this.totalViewerConnections,
-        totalControllerConnections: this.totalControllerConnections,
-        totalHttpRequests: this.totalHttpRequests,
-        errors4xx: this.errors4xx,
-        errors5xx: this.errors5xx,
-        errors4xxPaths: this.errors4xxPaths,
-        completedSessionDurations: this.completedSessionDurations.slice(-200),
-        languageStats: this.languageStats,
-        totalPairedSessions: this.totalPairedSessions,
-        totalPairTimeMs: this.totalPairTimeMs,
-        pairedWithTimeCount: this.pairedWithTimeCount,
-        sessionErrors: this.sessionErrors,
-        totalStaleSessions: this.totalStaleSessions,
-        recentSessionErrors: this.recentSessionErrors.slice(-50),
-        sessionTimestamps: this._trimTimestamps(
-          Date.now() - 90 * 24 * 3600 * 1000
-        ),
-        savedAt: Date.now()
+    this._persistDirty = true
+    if (this._persistTimer) return
+    this._persistTimer = setTimeout(() => {
+      this._persistTimer = null
+      if (!this._persistDirty) return
+      this._persistDirty = false
+      try {
+        const data = {
+          totalSessionsCreated: this.totalSessionsCreated,
+          peakConcurrentSessions: this.peakConcurrentSessions,
+          totalViewerConnections: this.totalViewerConnections,
+          totalControllerConnections: this.totalControllerConnections,
+          totalHttpRequests: this.totalHttpRequests,
+          errors4xx: this.errors4xx,
+          errors5xx: this.errors5xx,
+          errors4xxPaths: this.errors4xxPaths,
+          completedSessionDurations: this.completedSessionDurations.slice(-200),
+          languageStats: this.languageStats,
+          totalPairedSessions: this.totalPairedSessions,
+          totalPairTimeMs: this.totalPairTimeMs,
+          pairedWithTimeCount: this.pairedWithTimeCount,
+          sessionErrors: this.sessionErrors,
+          totalStaleSessions: this.totalStaleSessions,
+          recentSessionErrors: this.recentSessionErrors.slice(-50),
+          sessionTimestamps: this._trimTimestamps(
+            Date.now() - 90 * 24 * 3600 * 1000
+          ),
+          savedAt: Date.now()
+        }
+        fs.writeFileSync(this._persistPath, JSON.stringify(data), 'utf8')
+      } catch {
+        /* ignore */
       }
-      fs.writeFileSync(this._persistPath, JSON.stringify(data), 'utf8')
-    } catch {
-      /* ignore */
-    }
+    }, 2000)
+    if (this._persistTimer.unref) this._persistTimer.unref()
   }
 
   _trimTimestamps(cutoffMs) {
@@ -232,9 +244,9 @@ class AnalyticsCollector {
   }
 
   recordPhysicsTick(actualIntervalMs) {
-    this._physicsTickIntervals.push(actualIntervalMs)
-    if (this._physicsTickIntervals.length > 120)
-      this._physicsTickIntervals.shift()
+    this._physicsTickIntervals[this._physicsTickHead] = actualIntervalMs
+    this._physicsTickHead = (this._physicsTickHead + 1) % 120
+    if (this._physicsTickCount < 120) this._physicsTickCount++
   }
 
   recordLanguage(lang) {
@@ -279,7 +291,9 @@ class AnalyticsCollector {
         return obj
       }, {})
 
-    const ticks = this._physicsTickIntervals
+    const ticks = this._physicsTickCount > 0
+      ? this._physicsTickIntervals.slice(0, this._physicsTickCount)
+      : []
     const TARGET_TICK_MS = 1000 / 60
     const avgTickMs = ticks.length
       ? Math.round((ticks.reduce((a, b) => a + b, 0) / ticks.length) * 10) / 10

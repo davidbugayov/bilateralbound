@@ -888,7 +888,8 @@ function registerSubscriptionRoutes(app, subscriptionService, { logger, telegram
 
     // Run immediately on startup, then every hour
     checkAutoRenew()
-    setInterval(checkAutoRenew, CHECK_INTERVAL)
+    const autoRenewInterval = setInterval(checkAutoRenew, CHECK_INTERVAL)
+    autoRenewInterval.unref()
     logger.info({ intervalMs: CHECK_INTERVAL }, 'Auto-renew checker started')
   } else {
     logger.info('No Telegram bot configured — auto-renew checker disabled')

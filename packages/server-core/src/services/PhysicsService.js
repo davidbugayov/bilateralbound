@@ -302,8 +302,7 @@ class PhysicsService {
           if (!session.physicsEngine) continue
 
           const hasViewers = this.webSocketManager
-            .getClients(session.id)
-            .some(({ info }) => info.role === 'viewer')
+            .hasRole(session.id, 'viewer')
           if (!hasViewers) continue
 
           try {
@@ -336,6 +335,11 @@ class PhysicsService {
     }
 
     this._sharedPhysicsLoop = setTimeout(tick, PHYSICS_DT)
+  }
+
+  destroy() {
+    clearTimeout(this._sharedPhysicsLoop)
+    this._sharedPhysicsLoop = null
   }
 }
 

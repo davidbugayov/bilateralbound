@@ -402,6 +402,7 @@ class SubscriptionService {
       if (sub.expiresAt <= now) {
         this._subscriptions.delete(userId)
         this._tokenIndex.delete(sub.token)
+        this._autoRenewInvoiceSent.delete(userId)
         this._removeCustomIdsForUser(userId)
         dirty = true
       }

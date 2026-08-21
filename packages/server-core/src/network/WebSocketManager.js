@@ -107,6 +107,22 @@ class WebSocketManager {
       info
     }))
   }
+
+  /**
+   * Check if a session has at least one client of the given role.
+   * More efficient than getClients().some() — no array allocation.
+   * @param {string} sessionId
+   * @param {string} role
+   * @returns {boolean}
+   */
+  hasRole(sessionId, role) {
+    const session = this.sessionRepository.findById(sessionId)
+    if (!session) return false
+    for (const [, info] of session.clients) {
+      if (info.role === role) return true
+    }
+    return false
+  }
 }
 
 module.exports = WebSocketManager
