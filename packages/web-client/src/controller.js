@@ -74,6 +74,10 @@ _DirectionUI.init({
 })
 const { updateDirectionButtons, updateDirectionDisplay } = _DirectionUI
 
+// Destructure brainspotting-drag exports before _UISync.init references disableBrainspottingDrag
+const { enable: enableBrainspottingDrag, disable: disableBrainspottingDrag } =
+  _BrainspottingDrag
+
 // Wire ui-sync module
 _UISync.init(globalThis.components, {
   getLastServerState: () => lastServerState,
@@ -138,8 +142,6 @@ _BrainspottingDrag.init({
   getPreviewPhysicsEngine: () => previewPhysicsEngine,
   safeSend: (type, payload) => safeSend(type, payload)
 })
-const { enable: enableBrainspottingDrag, disable: disableBrainspottingDrag } =
-  _BrainspottingDrag
 
 globalThis.__controllerLoaded = true
 
