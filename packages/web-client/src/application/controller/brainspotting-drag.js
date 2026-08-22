@@ -55,11 +55,16 @@ function enable() {
     if (dist <= 1) {
       engine.ball.x = _target.x
       engine.ball.y = _target.y
+      _syncRenderPositions(engine)
       _target = null
       return
     }
     engine.ball.x += dx * 0.33
     engine.ball.y += dy * 0.33
+    // Keep the render interpolation anchors in sync, otherwise the canvas
+    // keeps drawing the ball at the last engine-updated position (jitter /
+    // "ball does not follow the cursor").
+    _syncRenderPositions(engine)
     const now = performance.now()
     const moved =
       _lastSentX === null ||
@@ -73,6 +78,17 @@ function enable() {
         x: engine.ball.x,
         y: engine.ball.y
       })
+    }
+  }
+
+  const _syncRenderPositions = (engine) => {
+    if (engine._prevPos) {
+      engine._prevPos.x = engine.ball.x
+      engine._prevPos.y = engine.ball.y
+    }
+    if (engine._currPos) {
+      engine._currPos.x = engine.ball.x
+      engine._currPos.y = engine.ball.y
     }
   }
 
