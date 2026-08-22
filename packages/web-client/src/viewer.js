@@ -326,13 +326,14 @@ function updatePhysicsFromState(state) {
   // Brainspotting mode: always accept x/y from controller (manual positioning).
   // The sync filter below strips coordinates to prevent jitter, but in
   // brainspotting mode the controller IS the authority for position.
+  // The ball chases the received point smoothly instead of teleporting so
+  // the client sees the same gentle motion as the therapist's cursor.
   if (
     physicsEngine.ball.brainspotting &&
     typeof stateToApply.x === 'number' &&
     typeof stateToApply.y === 'number'
   ) {
-    physicsEngine.ball.x = stateToApply.x
-    physicsEngine.ball.y = stateToApply.y
+    physicsEngine.setBrainspottingTarget(stateToApply.x, stateToApply.y)
     // Still apply other params (color, radius, etc) but strip x/y to avoid double-apply
     delete stateToApply.x
     delete stateToApply.y

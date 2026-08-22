@@ -651,6 +651,17 @@ class PhysicsEngine {
   }
 
   /**
+   * Sets the brainspotting cursor target. While in brainspotting mode the
+   * ball smoothly chases this target instead of teleporting, so it visibly
+   * moves behind the therapist's cursor.
+   * @param {number} x - Target X in world coordinates
+   * @param {number} y - Target Y in world coordinates
+   */
+  setBrainspottingTarget(x, y) {
+    this._bsTarget = { x, y }
+  }
+
+  /**
    * Public method for returning to center.
    * For viewer mode: starts smooth seek-center animation (like pause).
    * For server mode: instant snap to center.
@@ -660,7 +671,6 @@ class PhysicsEngine {
       const dx = this.centerX - this.ball.x
       const dy = this.centerY - this.ball.y
       const distanceFromCenter = Math.hypot(dx, dy)
-
       if (distanceFromCenter > this.options.centerSnapThreshold) {
         this.state.seekingCenter = true
         this._seekCenterStart = {
@@ -1282,7 +1292,9 @@ class PhysicsEngine {
 
     // Brainspotting: ball position is manually controlled by therapist.
     // No physics updates — position is set via setPosition() from controller input.
+    // When a cursor target is set, the ball smoothly chases it instead of teleporting.
     if (this.ball.brainspotting) {
+      this._updateBrainspottingChase(deltaTime)
       this._decayVisualOffset(deltaTime)
       return
     }
@@ -1521,6 +1533,37 @@ class PhysicsEngine {
       this._seekCenterStart = null
       this._snapToCenter()
     }
+  }
+
+  /**
+   * Smoothly moves the ball toward the brainspotting cursor target.
+   * Frame-rate independent exponential chase: fast when far from the cursor,
+   * gentle near it, and no teleporting.
+   * @private
+   */
+  _updateBrainspottingChase(deltaTime) {
+    const target = this._bsTarget
+    if (!target) return
+
+    const dx = target.x - this.ball.x
+    const dy = target.y - this.ball.y
+    const dist = Math.hypot(dx, dy)
+
+    if (dist <= 1) {
+      this.ball.x = target.x
+      this.ball.y = target.y
+      this._bsTarget = null
+      return
+    }
+
+    // k approaches 1 as deltaTime grows; ~0.18 per frame at 60fps
+    const k = 1 - Math.exp(-deltaTime * 12)
+    this.ball.x += dx * k
+    this.ball.y += dy * k
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
   }
 
   // ============================================
@@ -1815,6 +1858,9 @@ class PhysicsEngine {
       if (command.brainspotting) {
         this.ball.infinity = false
         // Ball stays at current position — therapist moves it manually
+      } else {
+        // Leaving brainspotting: drop any pending cursor-chase target
+        this._bsTarget = null
       }
     }
     if (command.trackBand !== undefined)

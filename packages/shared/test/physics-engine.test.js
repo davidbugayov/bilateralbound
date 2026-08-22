@@ -371,6 +371,52 @@ test('entering infinity disables brainspotting', () => {
   assert.strictEqual(engine.ball.infinity, true)
 })
 
+test('brainspotting chase moves ball toward cursor target smoothly', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ brainspotting: true, paused: false })
+  engine.ball.x = 400
+  engine.ball.y = 300
+  engine.setBrainspottingTarget(600, 300)
+
+  // A few steps: ball must move toward target but not teleport or overshoot
+  engine.update(1 / 60)
+  const x1 = engine.ball.x
+  assert.ok(x1 > 400 && x1 < 600, `Ball should be between start and target: x=${x1}`)
+  assert.ok(
+    x1 < 500,
+    `Ball should not overshoot halfway on first step: x=${x1}`
+  )
+  // Continues toward target
+  engine.update(1 / 60)
+  engine.update(1 / 60)
+  assert.ok(engine.ball.x > x1, 'Ball should keep moving toward target')
+})
+
+test('brainspotting chase reaches target and clears it', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ brainspotting: true, paused: false })
+  engine.ball.x = 400
+  engine.ball.y = 300
+  engine.setBrainspottingTarget(600, 300)
+  for (let i = 0; i < 120; i++) {
+    engine.update(1 / 60)
+  }
+  assert.ok(
+    Math.abs(engine.ball.x - 600) <= 1,
+    `Ball should reach target x: ${engine.ball.x}`
+  )
+  assert.strictEqual(engine._bsTarget, null, 'Target should be cleared on arrival')
+})
+
+test('brainspotting chase is cleared when mode is exited', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ brainspotting: true, paused: false })
+  engine.setBrainspottingTarget(600, 300)
+  assert.ok(engine._bsTarget, 'Target should be set while in brainspotting')
+  engine.applyCommand({ brainspotting: false })
+  assert.strictEqual(engine._bsTarget, null, 'Target must be cleared on exit')
+})
+
 test('entering brainspotting disables infinity', () => {
   const engine = new PhysicsEngine({ isViewer: true })
   engine.applyCommand({ infinity: true })

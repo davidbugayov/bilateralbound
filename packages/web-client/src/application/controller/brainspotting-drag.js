@@ -1,12 +1,17 @@
 'use strict'
 /**
  * Brainspotting drag — manual ball positioning via mouse/touch on preview canvas.
+ * The ball smoothly chases the cursor (no teleporting) and the current
+ * position is streamed to the server so the viewer mirrors the motion.
  * @module application/controller/brainspotting-drag
  */
 
 let _deps = {}
 let _dragActive = false
 let _throttleTs = 0
+let _lastSentX = null
+let _lastSentY = null
+let _rafId = null
 
 function init(deps) {
   _deps = deps
@@ -17,6 +22,8 @@ function enable() {
   const canvas = document.getElementById('preview')
   if (!canvas) return
   _dragActive = true
+  _lastSentX = null
+  _lastSentY = null
 
   const handleMove = (clientX, clientY) => {
     const engine = _deps.getPreviewPhysicsEngine?.()
@@ -27,16 +34,8 @@ function enable() {
     const r = engine.ball.radius
     const clampedX = Math.max(r, Math.min(x, engine.options.worldWidth - r))
     const clampedY = Math.max(r, Math.min(y, engine.options.worldHeight - r))
-    engine.ball.x = clampedX
-    engine.ball.y = clampedY
-    const now = performance.now()
-    if (now - _throttleTs > 50) {
-      _throttleTs = now
-      _deps.safeSend?.(globalThis.WS_MSG?.controllerUpdate, {
-        x: clampedX,
-        y: clampedY
-      })
-    }
+    // Set the chase target — the engine animates the ball toward it smoothly
+    engine.setBrainspottingTarget(clampedX, clampedY)
   }
 
   canvas._bsMouseMove = (e) => handleMove(e.clientX, e.clientY)
@@ -49,6 +48,30 @@ function enable() {
 
   canvas.addEventListener('mousemove', canvas._bsMouseMove)
   canvas.addEventListener('touchmove', canvas._bsTouchMove, { passive: false })
+
+  // Stream the ball's animated position to the server (throttled) while it
+  // is still moving toward the cursor target. Stops once it settles.
+  const loop = () => {
+    const engine = _deps.getPreviewPhysicsEngine?.()
+    if (engine && engine.ball.brainspotting && engine._bsTarget) {
+      const now = performance.now()
+      const moved =
+        _lastSentX === null ||
+        Math.abs(engine.ball.x - _lastSentX) > 0.5 ||
+        Math.abs(engine.ball.y - _lastSentY) > 0.5
+      if (moved && now - _throttleTs > 50) {
+        _throttleTs = now
+        _lastSentX = engine.ball.x
+        _lastSentY = engine.ball.y
+        _deps.safeSend?.(globalThis.WS_MSG?.controllerUpdate, {
+          x: engine.ball.x,
+          y: engine.ball.y
+        })
+      }
+    }
+    _rafId = requestAnimationFrame(loop)
+  }
+  _rafId = requestAnimationFrame(loop)
 }
 
 function disable() {
@@ -60,7 +83,13 @@ function disable() {
     if (canvas._bsTouchMove)
       canvas.removeEventListener('touchmove', canvas._bsTouchMove)
   }
+  if (_rafId) {
+    cancelAnimationFrame(_rafId)
+    _rafId = null
+  }
   _dragActive = false
+  _lastSentX = null
+  _lastSentY = null
 }
 
 module.exports = { init, enable, disable }

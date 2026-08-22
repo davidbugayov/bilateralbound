@@ -444,7 +444,7 @@ async function main() {
   })
 
   await test('Brainspotting: ball position can be set via drag', async () => {
-    const result = await ctrlPage.evaluate(() => {
+    const result = await ctrlPage.evaluate(async () => {
       const canvas = document.getElementById('preview')
       if (!canvas) return { error: 'no canvas' }
       const engine = globalThis.__previewPhysics
@@ -462,6 +462,9 @@ async function main() {
           bubbles: true
         })
       )
+
+      // Ball chases the cursor smoothly — wait for it to arrive at the target
+      await new Promise((r) => setTimeout(r, 1000))
 
       return {
         x: engine.ball.x,
@@ -591,6 +594,24 @@ async function main() {
     if (state.brainspotting)
       throw new Error(
         'Brainspotting should be disabled after switching to horizontal'
+      )
+
+    // Regression guard: the ball must actually MOVE after leaving BSP
+    // (not just clear the flag). A double-direction switch was needed before
+    // the TDZ/init-order fixes — verify one switch is enough now.
+    const moved = await ctrlPage.evaluate(async () => {
+      const engine = globalThis.__previewPhysics
+      if (!engine) return false
+      const p1 = { x: engine.ball.x, y: engine.ball.y }
+      await new Promise((r) => setTimeout(r, 800))
+      const p2 = { x: engine.ball.x, y: engine.ball.y }
+      return (
+        Math.abs(p2.x - p1.x) > 3 || Math.abs(p2.y - p1.y) > 3
+      )
+    })
+    if (!moved)
+      throw new Error(
+        'Ball did not move after exiting brainspotting to horizontal'
       )
   })
 
