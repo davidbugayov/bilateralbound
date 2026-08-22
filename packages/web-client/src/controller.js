@@ -264,7 +264,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function _hideBrainspottingOnProduction() {
   try {
     const host = window.location.hostname || ''
-    const isProdHost = /(^|\.)emdrbilateral\.(online|ru)$/.test(host)
+    // Production = emdrbilateral.online / emdrbilateral.ru (excluding dev.*)
+    const isProdHost =
+      !host.startsWith('dev.') &&
+      /(^|\.)emdrbilateral\.(online|ru)$/.test(host)
     if (!isProdHost) return
     const btn = document.querySelector('.dir-brainspotting-btn')
     if (btn) btn.style.display = 'none'
