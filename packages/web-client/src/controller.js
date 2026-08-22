@@ -257,6 +257,23 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 })
 /**
+ * Hides the Brainspotting direction button on production hosts until the
+ * feature is ready. BSP stays available on dev (dev.emdrbilateral.online)
+ * and localhost.
+ */
+function _hideBrainspottingOnProduction() {
+  try {
+    const host = window.location.hostname || ''
+    const isProdHost = /(^|\.)emdrbilateral\.(online|ru)$/.test(host)
+    if (!isProdHost) return
+    const btn = document.querySelector('.dir-brainspotting-btn')
+    if (btn) btn.style.display = 'none'
+  } catch (err) {
+    debugWarn('Unable to hide brainspotting on production:', err)
+  }
+}
+
+/**
  * Современная инициализация контроллера с улучшенной обработкой ошибок
  */
 async function initializeController() {
@@ -278,6 +295,7 @@ async function initializeController() {
     await initializeDOMElements(sessionId)
     await initializePreviewUI()
     initializeComponents()
+    _hideBrainspottingOnProduction()
     await initializePreview()
     setupFullscreenListeners()
     await initializeWebSocketClient(sessionId)
