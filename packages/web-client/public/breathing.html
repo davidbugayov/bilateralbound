@@ -12,7 +12,7 @@
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-    <meta name="version" content="2.39.820-d8cf5f5e" />
+    <meta name="version" content="2.39.821-51cded9c" />
     <meta name="theme-color" content="#020617" />
     <meta
       name="description"
@@ -23,8 +23,8 @@
       content="coherent breathing, breathing exercise, relaxation technique, stress relief, anxiety relief, butterfly hug, breathing tool online"
     />
     <meta name="robots" content="index, follow, max-image-preview:large" />
-    <link rel="manifest" href="/manifest.json?v=2.39.820-d8cf5f5e" />
-    <link rel="icon" href="/favicon.ico?v=2.39.820-d8cf5f5e" />
+    <link rel="manifest" href="/manifest.json?v=2.39.821-51cded9c" />
+    <link rel="icon" href="/favicon.ico?v=2.39.821-51cded9c" />
     <title>
       Coherent Breathing Exercise | CalmFlow — Free Online Breathing Tool
     </title>
@@ -80,7 +80,7 @@
         background: #020617;
         color: #e2e8f0;
         font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         overflow: hidden;
         height: 100dvh;
         display: flex;
@@ -468,23 +468,23 @@
         }
       }
     </style>
-    <script src="/js/ui/cookie-consent.js?v=2.39.820-d8cf5f5e" defer></script>
+    <script src="/js/ui/cookie-consent.js?v=2.39.821-51cded9c" defer></script>
     <script
-      src="/js/analytics/metrika-events.js?v=2.39.820-d8cf5f5e"
+      src="/js/analytics/metrika-events.js?v=2.39.821-51cded9c"
       defer
     ></script>
   </head>
   <body>
     <!-- Telegram Mini App: signal ready IMMEDIATELY — before any heavy rendering -->
     <script>
-      (function () {
+      ;(function () {
         try {
           if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
+            window.Telegram.WebApp.ready()
+            window.Telegram.WebApp.expand()
           }
         } catch (e) {}
-      })();
+      })()
     </script>
 
     <canvas id="breathCanvas"></canvas>
@@ -531,270 +531,270 @@
 
     <script>
       // ── BreathingEngine (inlined) ──
-      "use strict";
+      'use strict'
       class BreathingEngine {
         constructor(o) {
-          this.inhaleSec = o.inhaleSec || 5;
-          this.exhaleSec = o.exhaleSec || 5;
-          this.holdAfterInhale = o.holdAfterInhale || 0;
-          this.holdAfterExhale = o.holdAfterExhale || 0;
+          this.inhaleSec = o.inhaleSec || 5
+          this.exhaleSec = o.exhaleSec || 5
+          this.holdAfterInhale = o.holdAfterInhale || 0
+          this.holdAfterExhale = o.holdAfterExhale || 0
           this.totalCycleSec =
             this.inhaleSec +
             this.holdAfterInhale +
             this.exhaleSec +
-            this.holdAfterExhale;
-          this.phase = "idle";
-          this.running = false;
-          this.elapsed = 0;
-          this.cycleCount = 0;
-          this.targetCycles = 0;
-          this.startTimestamp = 0;
-          this.breathProgress = 0;
-          this.onPhaseChange = null;
-          this.onCycleComplete = null;
-          this.onComplete = null;
-          this.audioEnabled = false;
-          this.audioContext = null;
-          this._leftGain = null;
-          this._rightGain = null;
-          this._leftOsc = null;
-          this._rightOsc = null;
-          this.toneFreqL = 180;
-          this.toneFreqR = 220;
-          this.toneVolume = 0.3;
-          this.bpm = o.bpm || 30;
-          this._tickInterval = null;
-          this._side = false;
-          this.muted = false;
+            this.holdAfterExhale
+          this.phase = 'idle'
+          this.running = false
+          this.elapsed = 0
+          this.cycleCount = 0
+          this.targetCycles = 0
+          this.startTimestamp = 0
+          this.breathProgress = 0
+          this.onPhaseChange = null
+          this.onCycleComplete = null
+          this.onComplete = null
+          this.audioEnabled = false
+          this.audioContext = null
+          this._leftGain = null
+          this._rightGain = null
+          this._leftOsc = null
+          this._rightOsc = null
+          this.toneFreqL = 180
+          this.toneFreqR = 220
+          this.toneVolume = 0.3
+          this.bpm = o.bpm || 30
+          this._tickInterval = null
+          this._side = false
+          this.muted = false
         }
         start(m) {
-          if (this.running) return;
-          this.running = true;
-          this.phase = "inhale";
-          this.elapsed = 0;
-          this.cycleCount = 0;
-          this.breathProgress = 0;
-          this.startTimestamp = performance.now();
+          if (this.running) return
+          this.running = true
+          this.phase = 'inhale'
+          this.elapsed = 0
+          this.cycleCount = 0
+          this.breathProgress = 0
+          this.startTimestamp = performance.now()
           this.targetCycles =
-            m > 0 ? Math.round((m * 60) / this.totalCycleSec) : 0;
-          this._initAudio();
-          this._startTickTones();
-          if (this.onPhaseChange) this.onPhaseChange("inhale");
+            m > 0 ? Math.round((m * 60) / this.totalCycleSec) : 0
+          this._initAudio()
+          this._startTickTones()
+          if (this.onPhaseChange) this.onPhaseChange('inhale')
         }
         stop() {
-          if (!this.running) return;
-          this.running = false;
-          this.phase = "idle";
-          this.breathProgress = 0;
-          this.elapsed = 0;
-          this._stopTickTones();
-          this._stopAudio();
-          if (this.onPhaseChange) this.onPhaseChange("idle");
-          if (typeof navigator !== "undefined" && navigator.vibrate)
-            navigator.vibrate(0);
+          if (!this.running) return
+          this.running = false
+          this.phase = 'idle'
+          this.breathProgress = 0
+          this.elapsed = 0
+          this._stopTickTones()
+          this._stopAudio()
+          if (this.onPhaseChange) this.onPhaseChange('idle')
+          if (typeof navigator !== 'undefined' && navigator.vibrate)
+            navigator.vibrate(0)
         }
         update(d) {
-          if (!this.running) return;
-          this.elapsed += d;
-          const T = this.totalCycleSec * 1e3;
+          if (!this.running) return
+          this.elapsed += d
+          const T = this.totalCycleSec * 1e3
           if (this.elapsed >= T) {
-            this.elapsed = this.elapsed % T;
-            this.cycleCount++;
-            if (this.onCycleComplete) this.onCycleComplete(this.cycleCount);
+            this.elapsed = this.elapsed % T
+            this.cycleCount++
+            if (this.onCycleComplete) this.onCycleComplete(this.cycleCount)
             if (this.targetCycles > 0 && this.cycleCount >= this.targetCycles) {
-              this.stop();
-              if (this.onComplete) this.onComplete();
-              return;
+              this.stop()
+              if (this.onComplete) this.onComplete()
+              return
             }
           }
-          this._updatePhase();
+          this._updatePhase()
         }
         _updatePhase() {
           const e = this.elapsed / 1e3,
             i = this.inhaleSec,
             h = this.holdAfterInhale,
-            x = this.exhaleSec;
-          let p, n;
+            x = this.exhaleSec
+          let p, n
           if (e < i) {
-            p = "inhale";
-            n = e / i;
-            this._doVibration(2e3);
+            p = 'inhale'
+            n = e / i
+            this._doVibration(2e3)
           } else if (e < i + h) {
-            p = "hold_in";
-            n = 1;
+            p = 'hold_in'
+            n = 1
           } else if (e < i + h + x) {
-            p = "exhale";
-            n = 1 - (e - i - h) / x;
-            this._doVibration(500);
+            p = 'exhale'
+            n = 1 - (e - i - h) / x
+            this._doVibration(500)
           } else {
-            p = "hold_out";
-            n = 0;
+            p = 'hold_out'
+            n = 0
           }
           if (p !== this.phase) {
-            this.phase = p;
-            if (this.onPhaseChange) this.onPhaseChange(p);
+            this.phase = p
+            if (this.onPhaseChange) this.onPhaseChange(p)
           }
-          this.breathProgress += (n - this.breathProgress) * 0.3;
+          this.breathProgress += (n - this.breathProgress) * 0.3
         }
         getCircleRadius() {
-          const t = Math.max(0, Math.min(1, this.breathProgress));
-          return t * t * (3 - 2 * t);
+          const t = Math.max(0, Math.min(1, this.breathProgress))
+          return t * t * (3 - 2 * t)
         }
         getPhaseLabel(l) {
-          const L = l === "ru" ? "ru" : "en",
+          const L = l === 'ru' ? 'ru' : 'en',
             lb = {
-              idle: { ru: "Готов", en: "Ready" },
-              inhale: { ru: "Вдох", en: "Inhale" },
-              hold_in: { ru: "Задержка", en: "Hold" },
-              exhale: { ru: "Выдох", en: "Exhale" },
-              hold_out: { ru: "Задержка", en: "Hold" },
-            };
-          return lb[this.phase]?.[L] || lb.idle[L];
+              idle: { ru: 'Готов', en: 'Ready' },
+              inhale: { ru: 'Вдох', en: 'Inhale' },
+              hold_in: { ru: 'Задержка', en: 'Hold' },
+              exhale: { ru: 'Выдох', en: 'Exhale' },
+              hold_out: { ru: 'Задержка', en: 'Hold' }
+            }
+          return lb[this.phase]?.[L] || lb.idle[L]
         }
         _doVibration(d) {
-          if (this.muted) return;
-          if (typeof navigator !== "undefined" && navigator.vibrate)
-            navigator.vibrate(d);
+          if (this.muted) return
+          if (typeof navigator !== 'undefined' && navigator.vibrate)
+            navigator.vibrate(d)
         }
         _initAudio() {
-          if (this.audioContext) return;
-          const A = globalThis.AudioContext || globalThis.webkitAudioContext;
-          if (!A) return;
+          if (this.audioContext) return
+          const A = globalThis.AudioContext || globalThis.webkitAudioContext
+          if (!A) return
           try {
-            this.audioContext = new A();
-            this._leftGain = this.audioContext.createGain();
-            this._leftGain.gain.value = 0;
-            this._leftOsc = this.audioContext.createOscillator();
-            this._leftOsc.type = "sine";
-            this._leftOsc.frequency.value = this.toneFreqL;
-            this._leftOsc.connect(this._leftGain);
-            this._rightGain = this.audioContext.createGain();
-            this._rightGain.gain.value = 0;
-            this._rightOsc = this.audioContext.createOscillator();
-            this._rightOsc.type = "sine";
-            this._rightOsc.frequency.value = this.toneFreqR;
-            this._rightOsc.connect(this._rightGain);
-            const m = this.audioContext.createChannelMerger(2);
-            this._leftGain.connect(m, 0, 0);
-            this._rightGain.connect(m, 0, 1);
-            m.connect(this.audioContext.destination);
-            this._leftOsc.start();
-            this._rightOsc.start();
-            this.audioEnabled = true;
+            this.audioContext = new A()
+            this._leftGain = this.audioContext.createGain()
+            this._leftGain.gain.value = 0
+            this._leftOsc = this.audioContext.createOscillator()
+            this._leftOsc.type = 'sine'
+            this._leftOsc.frequency.value = this.toneFreqL
+            this._leftOsc.connect(this._leftGain)
+            this._rightGain = this.audioContext.createGain()
+            this._rightGain.gain.value = 0
+            this._rightOsc = this.audioContext.createOscillator()
+            this._rightOsc.type = 'sine'
+            this._rightOsc.frequency.value = this.toneFreqR
+            this._rightOsc.connect(this._rightGain)
+            const m = this.audioContext.createChannelMerger(2)
+            this._leftGain.connect(m, 0, 0)
+            this._rightGain.connect(m, 0, 1)
+            m.connect(this.audioContext.destination)
+            this._leftOsc.start()
+            this._rightOsc.start()
+            this.audioEnabled = true
           } catch (e) {
-            console.warn("BreathingEngine: Audio init failed", e);
+            console.warn('BreathingEngine: Audio init failed', e)
           }
         }
         _startTickTones() {
-          if (this._tickInterval) return;
-          const h = 6e4 / this.bpm / 2;
-          this._side = false;
+          if (this._tickInterval) return
+          const h = 6e4 / this.bpm / 2
+          this._side = false
           this._tickInterval = setInterval(() => {
-            this._side = !this._side;
-            this._playBilateralTick(this._side);
-          }, h);
+            this._side = !this._side
+            this._playBilateralTick(this._side)
+          }, h)
         }
         _stopTickTones() {
           if (this._tickInterval) {
-            clearInterval(this._tickInterval);
-            this._tickInterval = null;
+            clearInterval(this._tickInterval)
+            this._tickInterval = null
           }
         }
         _playBilateralTick(L) {
-          if (this.muted || !this.audioContext || !this.audioEnabled) return;
+          if (this.muted || !this.audioContext || !this.audioEnabled) return
           try {
             const g = L ? this._leftGain : this._rightGain,
-              n = this.audioContext.currentTime;
-            g.gain.setValueAtTime(this.toneVolume, n);
-            g.gain.exponentialRampToValueAtTime(0.001, n + 0.08);
+              n = this.audioContext.currentTime
+            g.gain.setValueAtTime(this.toneVolume, n)
+            g.gain.exponentialRampToValueAtTime(0.001, n + 0.08)
           } catch (e) {}
         }
         _stopAudio() {
           if (this._leftOsc) {
             try {
-              this._leftOsc.stop();
+              this._leftOsc.stop()
             } catch (e) {}
-            this._leftOsc = null;
+            this._leftOsc = null
           }
           if (this._rightOsc) {
             try {
-              this._rightOsc.stop();
+              this._rightOsc.stop()
             } catch (e) {}
-            this._rightOsc = null;
+            this._rightOsc = null
           }
-          this._leftGain = null;
-          this._rightGain = null;
-          this.audioContext = null;
-          this.audioEnabled = false;
+          this._leftGain = null
+          this._rightGain = null
+          this.audioContext = null
+          this.audioEnabled = false
         }
         setMuted(m) {
-          this.muted = !!m;
+          this.muted = !!m
         }
         toggleMute() {
-          this.muted = !this.muted;
+          this.muted = !this.muted
           if (
             this.muted &&
-            typeof navigator !== "undefined" &&
+            typeof navigator !== 'undefined' &&
             navigator.vibrate
           )
-            navigator.vibrate(0);
-          return this.muted;
+            navigator.vibrate(0)
+          return this.muted
         }
         getStats() {
           const e = this.running
             ? (performance.now() - this.startTimestamp) / 1e3
-            : 0;
+            : 0
           return {
             running: this.running,
             phase: this.phase,
             cycleCount: this.cycleCount,
             elapsedSec: Math.round(e),
-            targetCycles: this.targetCycles,
-          };
+            targetCycles: this.targetCycles
+          }
         }
       }
     </script>
     <script>
-      (function () {
-        "use strict";
+      ;(function () {
+        'use strict'
 
         // ── DOM refs ──
-        const canvas = document.getElementById("breathCanvas");
-        const ctx = canvas.getContext("2d");
-        const phaseLabel = document.getElementById("phaseLabel");
-        const timerDisplay = document.getElementById("timerDisplay");
-        const cycleCounter = document.getElementById("cycleCounter");
-        const startBtn = document.getElementById("startBtn");
-        const muteBtn = document.getElementById("muteBtn");
-        const siteLink = document.getElementById("siteLink");
-        const infoCard = document.getElementById("infoCard");
-        const completeMessage = document.getElementById("completeMessage");
-        const durationBtns = document.querySelectorAll(".duration-btn");
+        const canvas = document.getElementById('breathCanvas')
+        const ctx = canvas.getContext('2d')
+        const phaseLabel = document.getElementById('phaseLabel')
+        const timerDisplay = document.getElementById('timerDisplay')
+        const cycleCounter = document.getElementById('cycleCounter')
+        const startBtn = document.getElementById('startBtn')
+        const muteBtn = document.getElementById('muteBtn')
+        const siteLink = document.getElementById('siteLink')
+        const infoCard = document.getElementById('infoCard')
+        const completeMessage = document.getElementById('completeMessage')
+        const durationBtns = document.querySelectorAll('.duration-btn')
 
         // ── State ──
-        let selectedMinutes = 3;
-        let animFrameId = null;
-        let lastTs = 0;
-        let windowWidth = window.innerWidth;
-        let windowHeight = window.innerHeight;
+        let selectedMinutes = 3
+        let animFrameId = null
+        let lastTs = 0
+        let windowWidth = window.innerWidth
+        let windowHeight = window.innerHeight
 
         // ── Engine ──
         const engine = new BreathingEngine({
           inhaleSec: 5,
           exhaleSec: 5,
-          bpm: 30,
-        });
+          bpm: 30
+        })
 
         // ── Telegram WebApp ──
-        let tg = null;
+        let tg = null
         try {
           if (
-            typeof window.Telegram !== "undefined" &&
+            typeof window.Telegram !== 'undefined' &&
             window.Telegram.WebApp
           ) {
-            tg = window.Telegram.WebApp;
-            tg.ready();
-            tg.expand();
+            tg = window.Telegram.WebApp
+            tg.ready()
+            tg.expand()
           }
         } catch (e) {
           /* ignore */
@@ -802,49 +802,49 @@
 
         // ── Conditional UI ──
         // On website → hide «↗ сайт» (already on the site)
-        const host = window.location.hostname;
+        const host = window.location.hostname
         const isOnSite =
-          host === "emdrbilateral.online" || host === "emdrbilateral.ru";
-        if (isOnSite && siteLink) siteLink.style.display = "none";
+          host === 'emdrbilateral.online' || host === 'emdrbilateral.ru'
+        if (isOnSite && siteLink) siteLink.style.display = 'none'
 
         // ── Canvas resize ──
         function resizeCanvas() {
-          windowWidth = window.innerWidth;
-          windowHeight = window.innerHeight;
-          canvas.width = windowWidth;
-          canvas.height = windowHeight;
-          drawIdle();
+          windowWidth = window.innerWidth
+          windowHeight = window.innerHeight
+          canvas.width = windowWidth
+          canvas.height = windowHeight
+          drawIdle()
         }
 
-        window.addEventListener("resize", resizeCanvas);
-        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas)
+        resizeCanvas()
 
         // ── Drawing ──
         function drawCircle(progress, phase) {
-          const cx = canvas.width / 2;
-          const cy = canvas.height / 2;
-          const maxR = Math.min(cx, cy) * 0.75;
-          const minR = maxR * 0.15;
+          const cx = canvas.width / 2
+          const cy = canvas.height / 2
+          const maxR = Math.min(cx, cy) * 0.75
+          const minR = maxR * 0.15
           // progress 0..1 от smoothstep в engine
-          const radius = minR + (maxR - minR) * progress;
+          const radius = minR + (maxR - minR) * progress
 
           // Цвет в зависимости от фазы
-          let color1, color2;
-          if (phase === "inhale") {
-            color1 = "#3b82f6";
-            color2 = "#1d4ed8";
-          } else if (phase === "exhale") {
-            color1 = "#8b5cf6";
-            color2 = "#6d28d9";
-          } else if (phase === "hold_in" || phase === "hold_out") {
-            color1 = "#60a5fa";
-            color2 = "#2563eb";
+          let color1, color2
+          if (phase === 'inhale') {
+            color1 = '#3b82f6'
+            color2 = '#1d4ed8'
+          } else if (phase === 'exhale') {
+            color1 = '#8b5cf6'
+            color2 = '#6d28d9'
+          } else if (phase === 'hold_in' || phase === 'hold_out') {
+            color1 = '#60a5fa'
+            color2 = '#2563eb'
           } else {
-            color1 = "#1e293b";
-            color2 = "#0f172a";
+            color1 = '#1e293b'
+            color2 = '#0f172a'
           }
 
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
 
           // Glow
           const gradient = ctx.createRadialGradient(
@@ -853,13 +853,13 @@
             0,
             cx,
             cy,
-            maxR * 1.2,
-          );
-          gradient.addColorStop(0, color1 + "33");
-          gradient.addColorStop(0.5, color2 + "11");
-          gradient.addColorStop(1, "transparent");
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+            maxR * 1.2
+          )
+          gradient.addColorStop(0, color1 + '33')
+          gradient.addColorStop(0.5, color2 + '11')
+          gradient.addColorStop(1, 'transparent')
+          ctx.fillStyle = gradient
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
 
           // Circle
           const g = ctx.createRadialGradient(
@@ -868,240 +868,239 @@
             0,
             cx,
             cy,
-            radius,
-          );
-          g.addColorStop(0, color1);
-          g.addColorStop(1, color2);
-          ctx.shadowColor = color1 + "66";
-          ctx.shadowBlur = radius * 0.5;
-          ctx.beginPath();
-          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-          ctx.fillStyle = g;
-          ctx.fill();
-          ctx.shadowBlur = 0;
+            radius
+          )
+          g.addColorStop(0, color1)
+          g.addColorStop(1, color2)
+          ctx.shadowColor = color1 + '66'
+          ctx.shadowBlur = radius * 0.5
+          ctx.beginPath()
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+          ctx.fillStyle = g
+          ctx.fill()
+          ctx.shadowBlur = 0
 
           // Bilateral side glow — синхронизация ладоней Butterfly Hug
           if (engine.running) {
-            const halfW = canvas.width / 2;
-            const tickMs = 60000 / engine.bpm / 2;
-            const elapsed = performance.now() % (tickMs * 2);
-            const fadeProgress = 1 - Math.abs(elapsed - tickMs) / tickMs;
-            const glowStrength = 0.4 * Math.max(0, Math.min(1, fadeProgress));
+            const halfW = canvas.width / 2
+            const tickMs = 60000 / engine.bpm / 2
+            const elapsed = performance.now() % (tickMs * 2)
+            const fadeProgress = 1 - Math.abs(elapsed - tickMs) / tickMs
+            const glowStrength = 0.4 * Math.max(0, Math.min(1, fadeProgress))
 
             // Фоновая подсветка всей половины
-            ctx.save();
-            ctx.globalAlpha = glowStrength * 0.6;
+            ctx.save()
+            ctx.globalAlpha = glowStrength * 0.6
             const bgGlow = ctx.createLinearGradient(
               engine._side ? 0 : canvas.width,
               0,
               engine._side ? halfW : halfW,
-              0,
-            );
-            bgGlow.addColorStop(0, "#3b82f6");
-            bgGlow.addColorStop(1, "transparent");
-            ctx.fillStyle = bgGlow;
-            ctx.fillRect(engine._side ? 0 : halfW, 0, halfW, canvas.height);
-            ctx.restore();
+              0
+            )
+            bgGlow.addColorStop(0, '#3b82f6')
+            bgGlow.addColorStop(1, 'transparent')
+            ctx.fillStyle = bgGlow
+            ctx.fillRect(engine._side ? 0 : halfW, 0, halfW, canvas.height)
+            ctx.restore()
 
             // Яркая полоса у края — «вспышка» тика
-            ctx.save();
-            ctx.globalAlpha = glowStrength;
+            ctx.save()
+            ctx.globalAlpha = glowStrength
             const flashGradient = ctx.createLinearGradient(
               engine._side ? 0 : canvas.width,
               0,
               engine._side ? halfW * 0.4 : canvas.width - halfW * 0.4,
-              0,
-            );
-            flashGradient.addColorStop(0, "#93c5fd");
-            flashGradient.addColorStop(0.3, "#60a5fa");
-            flashGradient.addColorStop(1, "transparent");
-            ctx.fillStyle = flashGradient;
-            ctx.fillRect(engine._side ? 0 : halfW, 0, halfW, canvas.height);
-            ctx.restore();
+              0
+            )
+            flashGradient.addColorStop(0, '#93c5fd')
+            flashGradient.addColorStop(0.3, '#60a5fa')
+            flashGradient.addColorStop(1, 'transparent')
+            ctx.fillStyle = flashGradient
+            ctx.fillRect(engine._side ? 0 : halfW, 0, halfW, canvas.height)
+            ctx.restore()
           }
 
           // Pulse ring
           if (engine.running) {
-            const pulseSize =
-              radius + 8 + Math.sin(performance.now() / 200) * 4;
-            ctx.beginPath();
-            ctx.arc(cx, cy, pulseSize, 0, Math.PI * 2);
-            ctx.strokeStyle = color1 + "44";
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            const pulseSize = radius + 8 + Math.sin(performance.now() / 200) * 4
+            ctx.beginPath()
+            ctx.arc(cx, cy, pulseSize, 0, Math.PI * 2)
+            ctx.strokeStyle = color1 + '44'
+            ctx.lineWidth = 2
+            ctx.stroke()
           }
         }
 
         function drawIdle() {
-          drawCircle(0.15, "idle");
+          drawCircle(0.15, 'idle')
         }
 
         // ── UI update ──
         function updateUI() {
-          const stats = engine.getStats();
-          phaseLabel.textContent = engine.getPhaseLabel("ru");
+          const stats = engine.getStats()
+          phaseLabel.textContent = engine.getPhaseLabel('ru')
 
           if (stats.running) {
-            const mins = Math.floor(stats.elapsedSec / 60);
-            const secs = stats.elapsedSec % 60;
+            const mins = Math.floor(stats.elapsedSec / 60)
+            const secs = stats.elapsedSec % 60
             timerDisplay.textContent =
-              mins + ":" + String(secs).padStart(2, "0");
-            cycleCounter.textContent = stats.cycleCount + " циклов";
+              mins + ':' + String(secs).padStart(2, '0')
+            cycleCounter.textContent = stats.cycleCount + ' циклов'
           } else {
-            timerDisplay.textContent = "0:00";
-            cycleCounter.textContent = "0 циклов";
+            timerDisplay.textContent = '0:00'
+            cycleCounter.textContent = '0 циклов'
           }
         }
 
         // ── Animation loop ──
         function loop(timestamp) {
-          if (!lastTs) lastTs = timestamp;
-          const delta = timestamp - lastTs;
-          lastTs = timestamp;
+          if (!lastTs) lastTs = timestamp
+          const delta = timestamp - lastTs
+          lastTs = timestamp
 
           if (engine.running) {
-            engine.update(delta);
-            const progress = engine.getCircleRadius();
-            drawCircle(progress, engine.phase);
-            updateUI();
+            engine.update(delta)
+            const progress = engine.getCircleRadius()
+            drawCircle(progress, engine.phase)
+            updateUI()
           }
 
-          animFrameId = requestAnimationFrame(loop);
+          animFrameId = requestAnimationFrame(loop)
         }
 
         function startAnimation() {
-          if (animFrameId) cancelAnimationFrame(animFrameId);
-          lastTs = 0;
-          animFrameId = requestAnimationFrame(loop);
+          if (animFrameId) cancelAnimationFrame(animFrameId)
+          lastTs = 0
+          animFrameId = requestAnimationFrame(loop)
         }
 
         // ── Controls ──
         function startBreathing() {
           if (engine.running) {
-            engine.stop();
-            startBtn.textContent = "Начать";
-            startBtn.classList.remove("active");
-            enableDurationButtons();
-            infoCard.classList.remove("hidden");
-            completeMessage.classList.remove("show");
-            drawIdle();
-            return;
+            engine.stop()
+            startBtn.textContent = 'Начать'
+            startBtn.classList.remove('active')
+            enableDurationButtons()
+            infoCard.classList.remove('hidden')
+            completeMessage.classList.remove('show')
+            drawIdle()
+            return
           }
 
           // User gesture → init AudioContext
           if (
             engine.audioContext &&
-            engine.audioContext.state === "suspended"
+            engine.audioContext.state === 'suspended'
           ) {
-            engine.audioContext.resume();
+            engine.audioContext.resume()
           }
 
-          engine.start(selectedMinutes);
+          engine.start(selectedMinutes)
           // Track breathing start in Metrika
           try {
             globalThis.dispatchEvent(
-              new CustomEvent("bb_metrika_breathing_started", {
-                detail: { minutes: selectedMinutes },
-              }),
-            );
+              new CustomEvent('bb_metrika_breathing_started', {
+                detail: { minutes: selectedMinutes }
+              })
+            )
           } catch (_) {
             /* noop */
           }
-          startBtn.textContent = "Стоп";
-          startBtn.classList.add("active");
-          disableDurationButtons();
-          infoCard.classList.add("hidden");
-          completeMessage.classList.remove("show");
-          startAnimation();
+          startBtn.textContent = 'Стоп'
+          startBtn.classList.add('active')
+          disableDurationButtons()
+          infoCard.classList.add('hidden')
+          completeMessage.classList.remove('show')
+          startAnimation()
         }
 
         function disableDurationButtons() {
           durationBtns.forEach(function (b) {
-            b.disabled = true;
-          });
+            b.disabled = true
+          })
         }
 
         function enableDurationButtons() {
           durationBtns.forEach(function (b) {
-            b.disabled = false;
-          });
+            b.disabled = false
+          })
         }
 
         // ── Mute toggle ──
-        muteBtn.addEventListener("pointerdown", function (e) {
-          e.preventDefault();
-          const nowMuted = engine.toggleMute();
-          muteBtn.textContent = nowMuted ? "🔇" : "🔊";
+        muteBtn.addEventListener('pointerdown', function (e) {
+          e.preventDefault()
+          const nowMuted = engine.toggleMute()
+          muteBtn.textContent = nowMuted ? '🔇' : '🔊'
           if (nowMuted) {
-            muteBtn.classList.add("muted");
+            muteBtn.classList.add('muted')
           } else {
-            muteBtn.classList.remove("muted");
+            muteBtn.classList.remove('muted')
           }
-          muteBtn.title = nowMuted ? "Включить звук" : "Выключить звук";
-        });
+          muteBtn.title = nowMuted ? 'Включить звук' : 'Выключить звук'
+        })
 
         // ── Events ──
-        startBtn.addEventListener("click", startBreathing);
+        startBtn.addEventListener('click', startBreathing)
 
         durationBtns.forEach(function (btn) {
-          btn.addEventListener("click", function () {
+          btn.addEventListener('click', function () {
             durationBtns.forEach(function (b) {
-              b.classList.remove("active");
-            });
-            btn.classList.add("active");
-            selectedMinutes = parseInt(btn.dataset.minutes, 10);
-          });
-        });
+              b.classList.remove('active')
+            })
+            btn.classList.add('active')
+            selectedMinutes = parseInt(btn.dataset.minutes, 10)
+          })
+        })
 
         function goToSite(url) {
-          if (engine.running) engine.stop();
+          if (engine.running) engine.stop()
           if (tg) {
-            tg.openLink(url, { try_instant_view: false });
+            tg.openLink(url, { try_instant_view: false })
           } else {
-            window.location.href = url;
+            window.location.href = url
           }
         }
 
         // Single subtle site link — auto-detect opposite domain
-        (function () {
-          const host = window.location.hostname;
-          const targetUrl = host.endsWith(".ru")
-            ? "https://emdrbilateral.online"
-            : "https://emdrbilateral.ru";
-          siteLink.setAttribute("data-url", targetUrl);
-          siteLink.addEventListener("click", function (e) {
-            e.preventDefault();
-            goToSite(targetUrl);
-          });
-        })();
+        ;(function () {
+          const host = window.location.hostname
+          const targetUrl = host.endsWith('.ru')
+            ? 'https://emdrbilateral.online'
+            : 'https://emdrbilateral.ru'
+          siteLink.setAttribute('data-url', targetUrl)
+          siteLink.addEventListener('click', function (e) {
+            e.preventDefault()
+            goToSite(targetUrl)
+          })
+        })()
 
         // Engine callbacks
         engine.onPhaseChange = function (phase) {
-          phaseLabel.textContent = engine.getPhaseLabel("ru");
-        };
+          phaseLabel.textContent = engine.getPhaseLabel('ru')
+        }
 
         engine.onComplete = function () {
-          startBtn.textContent = "Завершено";
-          startBtn.classList.remove("active");
-          startBtn.style.background = "#10b981";
-          startBtn.style.borderColor = "#10b981";
-          startBtn.style.display = "none";
-          enableDurationButtons();
-          completeMessage.classList.add("show");
+          startBtn.textContent = 'Завершено'
+          startBtn.classList.remove('active')
+          startBtn.style.background = '#10b981'
+          startBtn.style.borderColor = '#10b981'
+          startBtn.style.display = 'none'
+          enableDurationButtons()
+          completeMessage.classList.add('show')
           setTimeout(function () {
-            startBtn.textContent = "Начать";
-            startBtn.style.background = "";
-            startBtn.style.borderColor = "";
-            startBtn.style.display = "";
-            completeMessage.classList.remove("show");
-            infoCard.classList.remove("hidden");
-          }, 4000);
-        };
+            startBtn.textContent = 'Начать'
+            startBtn.style.background = ''
+            startBtn.style.borderColor = ''
+            startBtn.style.display = ''
+            completeMessage.classList.remove('show')
+            infoCard.classList.remove('hidden')
+          }, 4000)
+        }
 
         // ── Init ──
-        drawIdle();
-        startAnimation();
-      })();
+        drawIdle()
+        startAnimation()
+      })()
     </script>
   </body>
 </html>
