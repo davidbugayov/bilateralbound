@@ -76,8 +76,7 @@ const DEFAULT_STATE = {
   stopping: false,
   stoppingStartTs: 0,
   stoppingDuration: 0.6,
-  seekingCenter: false,
-  seekingCenterDuration: 1.2
+  seekingCenter: false
 }
 
 const DEFAULT_COLORS = {
@@ -181,6 +180,7 @@ function validateCommonCommand(command) {
   const validated = {}
 
   if (typeof command.paused === 'boolean') validated.paused = command.paused
+  if (command.returnToCenter === true) validated.returnToCenter = true
   if (typeof command.stopping === 'boolean')
     validated.stopping = command.stopping
   if (command.reset === true) validated.reset = true
@@ -1476,26 +1476,47 @@ class PhysicsEngine {
       return
     }
 
-    const elapsed = (performance.now() - this._seekCenterStart.ts) / 1000
-    const t = Math.min(1, elapsed / this.state.seekingCenterDuration)
-    // Ease-in-out cubic: slow start, smooth middle, gentle stop.
-    // This prevents abrupt visual jumps that could trigger adverse
-    // reactions in EMDR clients during bilateral stimulation pauses.
-    const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+    const dx = this.centerX - this.ball.x
+    const dy = this.centerY - this.ball.y
+    const dist = Math.hypot(dx, dy)
 
-    const newX =
-      this._seekCenterStart.x + (this.centerX - this._seekCenterStart.x) * ease
-    const newY =
-      this._seekCenterStart.y + (this.centerY - this._seekCenterStart.y) * ease
+    if (dist <= this.options.centerSnapThreshold) {
+      this.state.seekingCenter = false
+      this._seekCenterStart = null
+      this._snapToCenter()
+      return
+    }
 
-    this._prevPos.x = newX
-    this._prevPos.y = newY
+    // Return to center at the same speed the user selected — the same
+    // pixels-per-second as normal movement — so the pause animation matches
+    // the chosen pace. Near the center the ball decelerates smoothly to
+    // avoid an abrupt stop (jerk) that could be jarring for EMDR clients.
+    const pps = calculatePixelsPerSecond(
+      this._getEffectiveSpeed(),
+      this.options.maxSpeed
+    )
+    // Deceleration zone: ~0.1s of travel, clamped to [60, 200] px. The cap
+    // keeps the return time proportional to the selected speed (a faster
+    // ball must not stretch its braking zone across the whole screen).
+    const decelDist = clamp(pps * 0.1, 60, 200)
+    const speedFactor = clamp(dist / decelDist, 0, 1)
+    const step = pps * speedFactor * FIXED_DT
+
+    const invDist = 1 / dist
+    const newX = this.ball.x + dx * invDist * step
+    const newY = this.ball.y + dy * invDist * step
+
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
     this._currPos.x = newX
     this._currPos.y = newY
     this.ball.x = newX
     this.ball.y = newY
 
-    if (t >= 1) {
+    if (
+      Math.hypot(this.centerX - newX, this.centerY - newY) <=
+      this.options.centerSnapThreshold
+    ) {
       this.state.seekingCenter = false
       this._seekCenterStart = null
       this._snapToCenter()

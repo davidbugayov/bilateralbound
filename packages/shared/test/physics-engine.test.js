@@ -220,6 +220,74 @@ test('seekingCenter starts on pause with returnToCenter', () => {
   )
 })
 
+test('return-to-center speed matches user-selected speed', () => {
+  const makeReturning = (speed) => {
+    const engine = new PhysicsEngine({ isViewer: true })
+    engine.ball.speed = speed
+    engine.ball.x = 200
+    engine.ball.y = engine.centerY
+    engine.applyCommand({ paused: true, returnToCenter: true })
+    assert.strictEqual(
+      engine.state.seekingCenter,
+      true,
+      'seekingCenter should start'
+    )
+    return engine
+  }
+
+  const fast = makeReturning(100) // pps = maxSpeed
+  const slow = makeReturning(5) // pps = 5% of maxSpeed
+
+  // 20 fixed steps (~333ms): fast must be closer to center than slow
+  for (let i = 0; i < 20; i++) {
+    fast.update(1 / 60)
+    slow.update(1 / 60)
+  }
+  const fastDist = Math.abs(fast.centerX - fast.ball.x)
+  const slowDist = Math.abs(slow.centerX - slow.ball.x)
+  assert.ok(
+    fastDist < slowDist,
+    `Faster ball should be closer to center: fast=${fastDist.toFixed(1)}, slow=${slowDist.toFixed(1)}`
+  )
+})
+
+test('return-to-center moves smoothly without jumps', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.ball.speed = 10 // pps = 500 → below deceleration zone for this distance
+  engine.ball.x = 50
+  engine.ball.y = engine.centerY
+  engine.applyCommand({ paused: true, returnToCenter: true })
+  const pps = (10 / 100) * engine.options.maxSpeed
+  const maxStep = pps * (1 / 60) * 1.01
+  let prevX = engine.ball.x
+  for (let i = 0; i < 30; i++) {
+    engine.update(1 / 60)
+    const step = Math.abs(engine.ball.x - prevX)
+    assert.ok(
+      step <= maxStep,
+      `Step ${step.toFixed(2)} exceeds max movement ${maxStep.toFixed(2)} (teleport/jerk)`
+    )
+    prevX = engine.ball.x
+  }
+})
+
+test('return-to-center reaches center and stops seeking', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.ball.speed = 50
+  engine.ball.x = 100
+  engine.ball.y = engine.centerY
+  engine.applyCommand({ paused: true, returnToCenter: true })
+  for (let i = 0; i < 120; i++) {
+    engine.update(1 / 60)
+  }
+  assert.ok(
+    Math.abs(engine.ball.x - engine.centerX) <=
+      engine.options.centerSnapThreshold + 0.5,
+    `Ball should reach center: x=${engine.ball.x}`
+  )
+  assert.strictEqual(engine.state.seekingCenter, false, 'seeking should end')
+})
+
 // --- Determinism ---
 // Determinism is tested in E2E sync tests — performance.now() based
 // bounce detection makes frame-perfect unit comparison unreliable.
