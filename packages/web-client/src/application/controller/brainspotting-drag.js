@@ -41,42 +41,25 @@ function enable() {
       x: Math.max(r, Math.min(x, engine.options.worldWidth - r)),
       y: Math.max(r, Math.min(y, engine.options.worldHeight - r))
     }
+    // Immediately move a step toward the cursor and stream the position.
+    // Doing this inside the event handler (not a timer) keeps the drag
+    // responsive even when rAF/setInterval are throttled in background tabs.
+    _chaseStep(engine)
   }
 
-  canvas._bsMouseMove = (e) => handleMove(e.clientX, e.clientY)
-  canvas._bsTouchMove = (e) => {
-    if (e.touches.length > 0) {
-      e.preventDefault()
-      handleMove(e.touches[0].clientX, e.touches[0].clientY)
-    }
-  }
-
-  canvas.addEventListener('mousemove', canvas._bsMouseMove)
-  canvas.addEventListener('touchmove', canvas._bsTouchMove, { passive: false })
-
-  // Chase the cursor target and stream the animated position to the server.
-  // Runs on an interval so it works even when the render loop (rAF) is
-  // throttled or paused in a background tab / headless environment.
-  const intervalMs = 33
-  const chaseFactor = 1 - Math.exp(-(intervalMs / 1000) * 12) // ~0.33 per tick
-  _intervalId = setInterval(() => {
-    const engine = _deps.getPreviewPhysicsEngine?.()
-    if (!engine || !engine.ball.brainspotting || !_target) return
-
+  const _chaseStep = (engine) => {
+    if (!_target) return
     const dx = _target.x - engine.ball.x
     const dy = _target.y - engine.ball.y
     const dist = Math.hypot(dx, dy)
-
     if (dist <= 1) {
       engine.ball.x = _target.x
       engine.ball.y = _target.y
       _target = null
       return
     }
-
-    engine.ball.x += dx * chaseFactor
-    engine.ball.y += dy * chaseFactor
-
+    engine.ball.x += dx * 0.33
+    engine.ball.y += dy * 0.33
     const now = performance.now()
     const moved =
       _lastSentX === null ||
@@ -91,7 +74,27 @@ function enable() {
         y: engine.ball.y
       })
     }
-  }, intervalMs)
+  }
+
+  canvas._bsMouseMove = (e) => handleMove(e.clientX, e.clientY)
+  canvas._bsTouchMove = (e) => {
+    if (e.touches.length > 0) {
+      e.preventDefault()
+      handleMove(e.touches[0].clientX, e.touches[0].clientY)
+    }
+  }
+
+  canvas.addEventListener('mousemove', canvas._bsMouseMove)
+  canvas.addEventListener('touchmove', canvas._bsTouchMove, { passive: false })
+
+  // Chase the cursor target and stream the animated position to the server.
+  // Runs on an interval so the ball still settles on the target even when no
+  // further mousemove events arrive (or the render loop is throttled).
+  _intervalId = setInterval(() => {
+    const engine = _deps.getPreviewPhysicsEngine?.()
+    if (!engine || !engine.ball.brainspotting || !_target) return
+    _chaseStep(engine)
+  }, 33)
 }
 
 function disable() {
