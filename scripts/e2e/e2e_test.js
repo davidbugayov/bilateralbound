@@ -585,7 +585,7 @@ async function main() {
     })
     await new Promise((r) => setTimeout(r, 1000))
     const state = await ctrlPage.evaluate(() => {
-      const engine = globalThis.previewPhysicsEngine
+      const engine = globalThis.__previewPhysics
       return {
         brainspotting: engine?.ball?.brainspotting,
         infinity: engine?.ball?.infinity
@@ -597,10 +597,10 @@ async function main() {
       )
 
     // Regression guard: the ball must actually MOVE after leaving BSP
-    // (not just clear the flag). A double-direction switch was needed before
-    // the TDZ/init-order fixes — verify one switch is enough now.
-    const moved = await ctrlPage.evaluate(async () => {
-      const engine = globalThis.__previewPhysics
+    // (not just clear the flag). Verify on the VIEWER — the controller
+    // preview render loop (rAF) is throttled in headless/background tabs.
+    const moved = await viewPage.evaluate(async () => {
+      const engine = globalThis.physicsEngine
       if (!engine) return false
       const p1 = { x: engine.ball.x, y: engine.ball.y }
       await new Promise((r) => setTimeout(r, 800))
@@ -611,7 +611,7 @@ async function main() {
     })
     if (!moved)
       throw new Error(
-        'Ball did not move after exiting brainspotting to horizontal'
+        'Viewer ball did not move after exiting brainspotting to horizontal'
       )
   })
 
