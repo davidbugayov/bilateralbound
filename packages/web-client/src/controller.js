@@ -257,26 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 })
 /**
- * Hides the Brainspotting direction button on production hosts until the
- * feature is ready. BSP stays available on dev (dev.emdrbilateral.online)
- * and localhost.
- */
-function _hideBrainspottingOnProduction() {
-  try {
-    const host = window.location.hostname || ''
-    // Production = emdrbilateral.online / emdrbilateral.ru (excluding dev.*)
-    const isProdHost =
-      !host.startsWith('dev.') &&
-      /(^|\.)emdrbilateral\.(online|ru)$/.test(host)
-    if (!isProdHost) return
-    const btn = document.querySelector('.dir-brainspotting-btn')
-    if (btn) btn.style.display = 'none'
-  } catch (err) {
-    debugWarn('Unable to hide brainspotting on production:', err)
-  }
-}
-
-/**
  * Современная инициализация контроллера с улучшенной обработкой ошибок
  */
 async function initializeController() {
@@ -298,7 +278,6 @@ async function initializeController() {
     await initializeDOMElements(sessionId)
     await initializePreviewUI()
     initializeComponents()
-    _hideBrainspottingOnProduction()
     await initializePreview()
     setupFullscreenListeners()
     await initializeWebSocketClient(sessionId)
@@ -587,8 +566,7 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
   wsClient.on('error', () => {})
   wsClient.on(WS_MSG.viewerStatus, (data) => {
     const wasConnected = globalThis.__current.viewerConnected
-    const isConnected =
-      data.connected === true || data.viewerConnected === true
+    const isConnected = data.connected === true || data.viewerConnected === true
     globalThis.__current.viewerConnected = isConnected
     if (data.screenSize) {
       globalThis.__current.viewerScreenSize = data.screenSize
@@ -824,8 +802,7 @@ function applyServerStateToPreview(state) {
     // CLIENT-SIDE AUTHORITY: Parameter-based sync filter (identical to viewer.js).
     // Near walls (immunity zone) or when already in sync by velocity, we ignore x/y.
     const isMoving =
-      !previewPhysicsEngine.state.paused &&
-      !previewPhysicsEngine.state.stopping
+      !previewPhysicsEngine.state.paused && !previewPhysicsEngine.state.stopping
     if (
       isMoving &&
       typeof state.x === 'number' &&
@@ -987,10 +964,7 @@ function renderPreviewLoop(timestamp) {
   const stateToRender = getScaledState(interpolatedState)
   globalThis.__previewRenderer?.drawFrame(stateToRender)
   if (document.hidden) {
-    setTimeout(
-      () => requestAnimationFrame(renderPreviewLoop),
-      hiddenThrottleMs
-    )
+    setTimeout(() => requestAnimationFrame(renderPreviewLoop), hiddenThrottleMs)
   } else {
     requestAnimationFrame(renderPreviewLoop)
   }
