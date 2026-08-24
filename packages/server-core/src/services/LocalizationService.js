@@ -49,6 +49,7 @@ const controllerMetaMap = [
 const indexMetaMap = [
   { isTitle: true, key: 'home.pageTitle' },
   { attr: 'name', attrValue: 'description', key: 'home.metaDescription' },
+  { attr: 'name', attrValue: 'keywords', key: 'home.metaKeywords' },
   { attr: 'property', attrValue: 'og:title', key: 'home.pageTitle' },
   {
     attr: 'property',
