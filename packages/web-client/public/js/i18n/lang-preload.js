@@ -1,11 +1,11 @@
-'use strict';
+'use strict'
 /**
  * @fileoverview Language pre-loader - prevents flashing of wrong language
  * Must be loaded BEFORE i18n.js in the <head> section
  * @module lang-preload
  */
 
-(function () {
+;(function () {
   const SUPPORTED_LANGUAGES = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh']
   const STORAGE_KEY = 'emdr-language'
 
@@ -28,13 +28,28 @@
   }
 
   /**
+   * Per-domain storage key: each domain remembers its own language preference.
+   * Without this, a user who visited .online (en) would see English on .ru too,
+   * because the shared "emdr-language" key overrides domain detection.
+   * @returns {string}
+   */
+  function domainStorageKey() {
+    const hostname = (typeof globalThis !== 'undefined' ? globalThis : window)
+      .location.hostname
+    if (hostname.includes('emdrbilateral.ru')) return 'emdr-language-ru'
+    if (hostname.includes('emdrbilateral.online')) return 'emdr-language-online'
+    return STORAGE_KEY
+  }
+
+  /**
    * Get and apply language setting
    */
   function applyLanguage() {
     let lang = null
+    const key = domainStorageKey()
 
     try {
-      lang = localStorage.getItem(STORAGE_KEY)
+      lang = localStorage.getItem(key)
     } catch (e) {
       // localStorage not available (private mode, etc.)
     }
@@ -44,7 +59,7 @@
       lang = detectFromDomain()
 
       try {
-        localStorage.setItem(STORAGE_KEY, lang)
+        localStorage.setItem(key, lang)
       } catch (e) {
         // Ignore storage errors
       }

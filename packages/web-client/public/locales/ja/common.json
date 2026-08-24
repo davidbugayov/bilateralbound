@@ -547,7 +547,9 @@
     "s5li5desc": "プレミアムサブスクリプション",
     "s5li6desc": "どのブラウザでも動作",
     "s5li7desc": "目の疲れを軽減",
-    "s5li8desc": "自己調整のために"
+    "s5li8desc": "自己調整のために",
+    "s5li9": "Brainspotting (BSP)",
+    "s5li9desc": "セラピストによるボール位置調整（ブレインスポッティング療法）"
   },
   "paywall": {
     "title": "サブスクリプションが必要です — BilateralBound",

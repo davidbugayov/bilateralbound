@@ -451,9 +451,9 @@ class LocalizationService {
     // Fix og:title and twitter:title for .ru (static HTML defaults to English)
     if (isRu) {
       const ruTitle =
-        'EMDR (ДПДГ) терапия онлайн — бесплатный тренажёр билатеральной стимуляции | BilateralBound'
+        'ДПДГ онлайн — бесплатный EMDR тренажёр билатеральной стимуляции | BilateralBound'
       const ruDesc =
-        'Бесплатный EMDR (ДПДГ) тренажёр онлайн: билатеральная стимуляция движущимся шариком для снижения тревоги, стресса и ПТСР. Без регистрации. Начните сессию за 2 минуты.'
+        'ДПДГ онлайн бесплатно: EMDR тренажёр с билатеральной стимуляцией движущимся шариком для снижения тревоги, стресса и ПТСР. Без регистрации. Начните сессию за 2 минуты.'
       html = html.replace(
         /(<meta property="og:title"[^>]*content=")[^"]*(")/,
         `$1${ruTitle}$2`
@@ -484,6 +484,91 @@ class LocalizationService {
       /(<script type="application\/ld\+json">[\s\S]*?<\/script>)/g,
       (block) => block.split(wrongBase).join(base)
     )
+
+    // Localize JSON-LD content for .ru: replace English names/descriptions
+    // with Russian equivalents so search engines index Russian structured data
+    if (isRu) {
+      html = html.replace(
+        /(<script type="application\/ld\+json">[\s\S]*?<\/script>)/g,
+        (block) => {
+          return block
+            .replace(
+              /"alternateName":\s*"Free Online EMDR Tool — Bilateral Stimulation Light Bar"/,
+              '"alternateName": "ДПДГ онлайн — бесплатный EMDR тренажёр билатеральной стимуляции"'
+            )
+            .replace(
+              /"description":\s*"Free online EMDR tool with bilateral stimulation light bar for anxiety, stress and PTSD relief\. No registration\. 8 languages\."/,
+              '"description": "Бесплатный ДПДГ (EMDR) тренажёр онлайн: билатеральная стимуляция движущимся шариком для снижения тревоги, стресса и ПТСР. Без регистрации. 8 языков."'
+            )
+            .replace(
+              /"Real-time bilateral stimulation light bar"/,
+              '"Билатеральная стимуляция в реальном времени"'
+            )
+            .replace(
+              /"Moving ball EMDR tool"/,
+              '"EMDR тренажёр с движущимся шариком"'
+            )
+            .replace(/"Remote EMDR sessions"/, '"Удалённые EMDR сессии"')
+            .replace(/"Bilateral audio"/, '"Билатеральный звук"')
+            .replace(
+              /"Permanent session links"/,
+              '"Постоянные ссылки на сессии"'
+            )
+            .replace(/"No registration"/, '"Без регистрации"')
+            .replace(/"Free EMDR online"/, '"Бесплатный EMDR онлайн"')
+            .replace(/"8 languages"/, '"8 языков"')
+            .replace(
+              /"name":\s*"What is EMDR therapy\?"/,
+              '"name": "Что такое EMDR (ДПДГ) терапия?"'
+            )
+            .replace(
+              /"text":\s*"EMDR \(Eye Movement Desensitization and Reprocessing\) is an evidence-based psychotherapy[^"]*"/,
+              '"text": "EMDR (ДПДГ — десенсибилизация и переработка движениями глаз) — научно обоснованный метод психотерапии, использующий билатеральную стимуляцию для переработки травматических воспоминаний. Признан ВОЗ и APA для лечения ПТСР."'
+            )
+            .replace(
+              /"name":\s*"How does BilateralBound work\?"/,
+              '"name": "Как работает BilateralBound?"'
+            )
+            .replace(
+              /"text":\s*"The therapist creates a session[^"]*"/,
+              '"text": "Терапевт создаёт сессию и отправляет ссылку пациенту. Терапевт управляет движущимся шариком в реальном времени — пациент следит за ним глазами. Установка не требуется."'
+            )
+            .replace(
+              /"name":\s*"Is BilateralBound free\?"/,
+              '"name": "BilateralBound бесплатный?"'
+            )
+            .replace(
+              /"text":\s*"Yes, completely free for therapists[^"]*"/,
+              '"text": "Да, полностью бесплатно для терапевтов и пациентов по всему миру. Без регистрации, подписки и ограничений по времени."'
+            )
+            .replace(
+              /"name":\s*"Does EMDR work online\?"/,
+              '"name": "Работает ли EMDR онлайн?"'
+            )
+            .replace(
+              /"text":\s*"Yes\. BilateralBound delivers[^"]*"/,
+              '"text": "Да. BilateralBound обеспечивает билатеральную стимуляцию в реальном времени через WebSocket с миллисекундной точностью."'
+            )
+            .replace(
+              /"name":\s*"What conditions does EMDR treat\?"/,
+              '"name": "Какие состояния лечит EMDR?"'
+            )
+            .replace(
+              /"text":\s*"EMDR treats PTSD, anxiety[^"]*"/,
+              '"text": "EMDR лечит ПТСР, тревожные расстройства, депрессию, фобии, ОКР и травмы. Также применяется в парной терапии."'
+            )
+            .replace(
+              /"name":\s*"Does the therapist need special training\?"/,
+              '"name": "Нужна ли терапевту специальная подготовка?"'
+            )
+            .replace(
+              /"text":\s*"Yes\. EMDR should only be conducted[^"]*"/,
+              '"text": "Да. EMDR должны проводить только квалифицированные специалисты, прошедшие обучение EMDR. BilateralBound предоставляет инструмент — клиническая ответственность остаётся за терапевтом."'
+            )
+            .replace(/"name":\s*"Home"/, '"name": "Главная"')
+        }
+      )
+    }
 
     return html
   }

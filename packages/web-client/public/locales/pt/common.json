@@ -547,7 +547,9 @@
     "s5li5desc": "Com assinatura Premium",
     "s5li6desc": "Funciona em qualquer navegador",
     "s5li7desc": "Reduz fadiga ocular",
-    "s5li8desc": "Para autorregulação"
+    "s5li8desc": "Para autorregulação",
+    "s5li9": "Brainspotting (BSP)",
+    "s5li9desc": "Posicionamento da bola guiado pelo terapeuta para terapia de brainspotting"
   },
   "paywall": {
     "title": "Assinatura necessária — BilateralBound",

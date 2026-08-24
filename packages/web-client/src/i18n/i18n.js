@@ -135,12 +135,13 @@ const I18n = {
     const langParam = params.get('lang')
     if (langParam && this.supportedLanguages.includes(langParam)) {
       this.currentLanguage = langParam
-      localStorage.setItem('emdr-language', langParam)
+      this._persistLanguage(langParam)
       return
     }
 
-    // 2. Check localStorage (second priority) - сохраненный выбор пользователя
-    const savedLang = localStorage.getItem('emdr-language')
+    // 2. Per-domain localStorage — each domain remembers its own language.
+    // A shared key caused .ru to show English when the user had visited .online first.
+    const savedLang = this._getPersistedLanguage()
     if (savedLang && this.supportedLanguages.includes(savedLang)) {
       this.currentLanguage = savedLang
       return
@@ -158,11 +159,11 @@ const I18n = {
         : ''
     if (hostname.includes('emdrbilateral.ru')) {
       this.currentLanguage = 'ru'
-      localStorage.setItem('emdr-language', 'ru')
+      this._persistLanguage('ru')
       return
     } else if (hostname.includes('emdrbilateral.online')) {
       this.currentLanguage = 'en'
-      localStorage.setItem('emdr-language', 'en')
+      this._persistLanguage('en')
       return
     }
 
@@ -170,13 +171,54 @@ const I18n = {
     const browserLang = navigator.language.split('-')[0].toLowerCase()
     if (this.supportedLanguages.includes(browserLang)) {
       this.currentLanguage = browserLang
-      localStorage.setItem('emdr-language', browserLang)
+      this._persistLanguage(browserLang)
       return
     }
 
     // 5. Fallback to default English
     this.currentLanguage = this.defaultLanguage
-    localStorage.setItem('emdr-language', this.defaultLanguage)
+    this._persistLanguage(this.defaultLanguage)
+  },
+
+  /**
+   * Per-domain storage key: each domain remembers its own language preference.
+   * @returns {string}
+   * @private
+   */
+  _getStorageKey: function () {
+    const hostname =
+      typeof globalThis !== 'undefined' && globalThis.location
+        ? globalThis.location.hostname
+        : ''
+    if (hostname.includes('emdrbilateral.ru')) return 'emdr-language-ru'
+    if (hostname.includes('emdrbilateral.online')) return 'emdr-language-online'
+    return 'emdr-language'
+  },
+
+  /**
+   * Get persisted language for the current domain.
+   * @returns {string|null}
+   * @private
+   */
+  _getPersistedLanguage: function () {
+    try {
+      return localStorage.getItem(this._getStorageKey())
+    } catch (_e) {
+      return null
+    }
+  },
+
+  /**
+   * Persist language for the current domain.
+   * @param {string} lang
+   * @private
+   */
+  _persistLanguage: function (lang) {
+    try {
+      localStorage.setItem(this._getStorageKey(), lang)
+    } catch (_e) {
+      // Ignore storage errors
+    }
   },
 
   /**
@@ -301,7 +343,7 @@ const I18n = {
       return false
     }
     this.currentLanguage = lang
-    localStorage.setItem('emdr-language', lang)
+    this._persistLanguage(lang)
 
     // Update document language immediately for accessibility
     if (typeof document !== 'undefined') {

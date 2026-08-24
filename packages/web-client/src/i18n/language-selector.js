@@ -123,11 +123,11 @@ const LanguageSelector = (function () {
     const params = new URLSearchParams(globalThis.location.search)
     const langParam = params.get('lang')
     if (langParam && supportedLanguages.has(langParam)) {
-      localStorage.setItem('emdr-language', langParam)
+      _persistLang(langParam)
       return langParam
     }
 
-    const savedLang = localStorage.getItem('emdr-language')
+    const savedLang = _getPersistedLang()
     if (savedLang && supportedLanguages.has(savedLang)) {
       return savedLang
     }
@@ -135,23 +135,46 @@ const LanguageSelector = (function () {
     // Domain default comes before browser language: .ru → ru, .online → en
     const hostname = globalThis.location?.hostname || ''
     if (hostname.includes('emdrbilateral.ru')) {
-      localStorage.setItem('emdr-language', 'ru')
+      _persistLang('ru')
       return 'ru'
     }
     if (hostname.includes('emdrbilateral.online')) {
-      localStorage.setItem('emdr-language', 'en')
+      _persistLang('en')
       return 'en'
     }
 
     const browserLang = navigator.language.split('-')[0].toLowerCase()
     if (supportedLanguages.has(browserLang)) {
-      localStorage.setItem('emdr-language', browserLang)
+      _persistLang(browserLang)
       return browserLang
     }
 
     // Default to English if no match found
-    localStorage.setItem('emdr-language', 'en')
+    _persistLang('en')
     return 'en'
+  }
+
+  function _storageKey() {
+    const hostname = globalThis.location?.hostname || ''
+    if (hostname.includes('emdrbilateral.ru')) return 'emdr-language-ru'
+    if (hostname.includes('emdrbilateral.online')) return 'emdr-language-online'
+    return 'emdr-language'
+  }
+
+  function _getPersistedLang() {
+    try {
+      return localStorage.getItem(_storageKey())
+    } catch (_e) {
+      return null
+    }
+  }
+
+  function _persistLang(lang) {
+    try {
+      localStorage.setItem(_storageKey(), lang)
+    } catch (_e) {
+      // Ignore storage errors
+    }
   }
 
   function updateCurrentLanguage(lang) {
@@ -254,8 +277,8 @@ const LanguageSelector = (function () {
       return
     }
 
-    // Сохраняем выбор
-    localStorage.setItem('emdr-language', lang)
+    // Сохраняем выбор (per-domain)
+    _persistLang(lang)
 
     // Обновляем UI селектора языка
     updateCurrentLanguage(lang)
@@ -334,10 +357,10 @@ const LanguageSelector = (function () {
   return {
     init
   }
-})();
+})()
 
 // Инициализируем после готовности i18n и DOM
-(function () {
+;(function () {
   if (globalThis?.window === undefined) return
 
   let initialized = false

@@ -554,7 +554,9 @@
     "s5li5desc": "With Premium subscription",
     "s5li6desc": "Works in any modern browser",
     "s5li7desc": "Reduces eye strain during therapy",
-    "s5li8desc": "For self-regulation"
+    "s5li8desc": "For self-regulation",
+    "s5li9": "Brainspotting (BSP)",
+    "s5li9desc": "Therapist-guided ball positioning for brainspotting therapy"
   },
   "paywall": {
     "title": "Subscription Required — BilateralBound",

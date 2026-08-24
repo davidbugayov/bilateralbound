@@ -215,6 +215,7 @@ ${verificationUrls}
 - Поддерживает билатеральный звук (чередование левого/правого уха) для полного эффекта
 - Работает на любом устройстве с современным браузером — установка не требуется
 - Постоянные ссылки на сессии для терапевтов с подпиской
+- Режим Brainspotting (BSP): терапевт перемещает шар мышью, пациент видит плавное движение в реальном времени
 
 ## Для кого
 - Лицензированные EMDR терапевты, проводящие удалённые сессии
@@ -258,6 +259,7 @@ ${verificationUrls}
 - Supports bilateral audio (alternating left/right ear) for full bilateral effect
 - Works on any device with a modern browser — no installation required
 - Permanent custom session links for subscribed therapists
+- Brainspotting (BSP) mode: therapist moves the ball with the mouse, patient sees smooth real-time motion
 
 ## Who It Serves
 - Licensed EMDR therapists conducting remote therapy sessions
@@ -291,26 +293,54 @@ ${verificationUrls}
   // RSS feed
   app.get('/rss.xml', (req, res) => {
     const baseUrl = `${req.protocol}://${req.get('host')}`
-    const rss = `
+    const isRu = baseUrl.endsWith('.ru')
+    const rss = isRu
+      ? `
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-  <title>BilateralBound - EMDR Терапия</title>
+  <title>ДПДГ онлайн — бесплатный EMDR тренажёр | BilateralBound</title>
   <link>${baseUrl}</link>
-  <description>Инновационная платформа для EMDR терапии с биодинамической стимуляцией</description>
+  <description>ДПДГ (EMDR) онлайн бесплатно: билатеральная стимуляция движущимся шариком для лечения ПТСР, тревоги и травм. Без регистрации.</description>
   <language>ru</language>
   <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
   <item>
-    <title>BilateralBound - EMDR терапия для пациентов</title>
+    <title>ДПДГ онлайн — бесплатный EMDR тренажёр билатеральной стимуляции</title>
     <link>${baseUrl}/</link>
-    <description>Профессиональная платформа EMDR терапии с биодинамической стимуляцией для лечения ПТСР, тревоги и травм. Движение шарика создает двустороннюю стимуляцию мозга для переработки травматических воспоминаний.</description>
+    <description>Бесплатный ДПДГ (EMDR) тренажёр онлайн: билатеральная стимуляция движущимся шариком для снижения тревоги, стресса и ПТСР. Без регистрации. 8 языков.</description>
     <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
     <guid>${baseUrl}/</guid>
   </item>
   <item>
-    <title>О EMDR терапии | BilateralBound</title>
+    <title>О ДПДГ (EMDR) терапии | BilateralBound</title>
     <link>${baseUrl}/about</link>
-    <description>Что такое EMDR терапия и билатеральная стимуляция. Бесплатный онлайн-инструмент для сессий EMDR: движение шарика, билатеральный звук, синхронизация в реальном времени.</description>
+    <description>Что такое ДПДГ (EMDR) терапия и билатеральная стимуляция. Бесплатный онлайн-инструмент для сессий EMDR: движение шарика, билатеральный звук, синхронизация в реальном времени.</description>
+    <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
+    <guid>${baseUrl}/about</guid>
+  </item>
+</channel>
+</rss>
+    `.trim()
+      : `
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>BilateralBound — Free Online EMDR Therapy Platform</title>
+  <link>${baseUrl}</link>
+  <description>Free online EMDR (bilateral stimulation) tool for anxiety, stress and PTSD relief. No registration. 8 languages.</description>
+  <language>en</language>
+  <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
+  <item>
+    <title>Free Online EMDR Tool — Bilateral Stimulation Light Bar</title>
+    <link>${baseUrl}/</link>
+    <description>Free online EMDR tool with bilateral stimulation light bar for anxiety, stress and PTSD relief. No registration. 8 languages.</description>
+    <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
+    <guid>${baseUrl}/</guid>
+  </item>
+  <item>
+    <title>About EMDR Therapy | BilateralBound</title>
+    <link>${baseUrl}/about</link>
+    <description>What is EMDR therapy and bilateral stimulation. Free online tool for EMDR sessions: moving ball, bilateral audio, real-time sync.</description>
     <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
     <guid>${baseUrl}/about</guid>
   </item>
