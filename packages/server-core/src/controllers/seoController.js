@@ -105,16 +105,6 @@ function registerSeoRoutes(app) {
     const imageCaption = isRu
       ? 'Профессиональная платформа EMDR терапии с биодинамической стимуляцией'
       : 'Professional EMDR therapy platform with bilateral stimulation'
-    const verificationUrls = isRu
-      ? [
-          '  <url>\n    <loc>https://emdrbilateral.ru/google0a8d78e57c19cb2f.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
-          '  <url>\n    <loc>https://emdrbilateral.ru/yandex_736ad8daf3553b6b.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
-          '  <url>\n    <loc>https://emdrbilateral.ru/yandex_e2cd8b8974eaa9c4.html</loc>\n    <lastmod>2024-07-25</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>',
-          '  <url>\n    <loc>https://emdrbilateral.ru/yandex_72cd656986fd6d28.html</loc>\n    <lastmod>2026-06-01</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>'
-        ].join('\n')
-      : [
-          '  <url>\n    <loc>https://emdrbilateral.online/yandex_1e5d10534d3a2826.html</loc>\n    <lastmod>2026-06-01</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.1</priority>\n  </url>'
-        ].join('\n')
 
     // hreflang alternates: ru lives on .ru, other languages on .online (with ?lang=)
     const buildHreflang = (path) => {
@@ -179,7 +169,6 @@ ${buildHreflang('/breathing')}
     <priority>0.7</priority>
 ${buildHreflang('/about')}
   </url>
-${verificationUrls}
 </urlset>`
     res.setHeader('Content-Type', 'application/xml; charset=utf-8')
     res.setHeader('Cache-Control', 'public, max-age=86400')
