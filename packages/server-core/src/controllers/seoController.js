@@ -143,14 +143,14 @@ ${buildHreflang('/')}
   </url>
   <url>
     <loc>${base}/privacy</loc>
-    <lastmod>2026-05-08</lastmod>
+    <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
 ${buildHreflang('/privacy')}
   </url>
   <url>
     <loc>${base}/offer</loc>
-    <lastmod>2026-05-08</lastmod>
+    <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
 ${buildHreflang('/offer')}

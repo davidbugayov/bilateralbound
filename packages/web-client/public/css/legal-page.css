@@ -15,7 +15,7 @@
 }
 body {
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -83,6 +83,23 @@ a:hover {
 }
 .back-link:hover {
   text-decoration: underline;
+}
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+.breadcrumbs a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+.breadcrumbs span[aria-current='page'] {
+  color: var(--text-muted);
 }
 .footer {
   margin-top: 48px;
@@ -272,7 +289,7 @@ a:hover {
     min-height: 44px;
     padding: 10px 14px;
   }
-  .header-bar a[href="/"] {
+  .header-bar a[href='/'] {
     min-height: 44px;
     align-items: center;
     display: inline-flex;

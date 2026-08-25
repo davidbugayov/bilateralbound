@@ -13,7 +13,8 @@
       "ja": "日本語",
       "zh": "中文"
     },
-    "close": "閉じる"
+    "close": "閉じる",
+    "breadcrumbsHome": "ホーム"
   },
   "home": {
     "title": "無料オンラインEMDRツール — 両側刺激",
@@ -330,6 +331,7 @@
     "metaDescription": "BilateralBound — EMDRセラピープラットフォームのプライバシーポリシーと個人データ処理について",
     "lastUpdated": "最終更新日：2026年5月8日",
     "backLink": "← ホームに戻る",
+    "breadcrumbsCurrent": "プライバシーポリシー",
     "s1Title": "1. 総則",
     "s1p1": "本プライバシーポリシー（以下「本ポリシー」）は、<a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a>にある<strong>BilateralBound</strong>ウェブサイト（以下「本サイト」）のユーザーの個人データの処理および保護に関する手順を定めます。",
     "s1p2": "本サイトを使用することにより、お客様は本ポリシーの条件に同意したものとみなされます。同意されない場合は、本サイトの使用を中止してください。",
@@ -416,6 +418,7 @@
     "title": "利用規約（公開オファー）",
     "lastUpdated": "最終更新日：2026年5月8日",
     "backLink": "← ホームに戻る",
+    "breadcrumbsCurrent": "利用規約",
     "s1Title": "1. 総則",
     "s1p1": "本書（以下「オファー」）は、<strong>Bugaev David</strong>（以下「管理者」）が<strong>BilateralBound</strong>ウェブサイト（以下「サイト」）、<a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a>にある、の機能へのアクセスを以下の条件で提供する公開オファーです。",
     "s1p2": "本オファーはロシア連邦民法第437条に準拠し、管理者と本オファーを受け入れるすべての人（以下「ユーザー」）との間の法的拘束力のある契約を構成します。",
@@ -505,6 +508,7 @@
     "metaTitle": "EMDR療法について | BilateralBound",
     "metaDescription": "EMDR療法、BilateralBoundの両側性刺激の仕組み、セラピストがPTSD、不安、トラウマ治療にどのように使用するかについて学びましょう。",
     "backLink": "← Back to home",
+    "breadcrumbsCurrent": "EMDRについて",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",
     "s1p1": "EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy. Recognized by WHO and APA for PTSD treatment.",

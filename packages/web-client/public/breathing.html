@@ -39,7 +39,7 @@
     />
     <meta
       property="og:image"
-      content="https://emdrbilateral.online/og-breathing.png"
+      content="https://emdrbilateral.online/emdr-eye.png"
     />
     <meta property="og:url" content="https://emdrbilateral.online/breathing" />
     <meta property="og:site_name" content="BilateralBound" />
@@ -55,7 +55,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://emdrbilateral.online/og-breathing.png"
+      content="https://emdrbilateral.online/emdr-eye.png"
     />
     <script type="application/ld+json">
       {
@@ -68,6 +68,26 @@
         "operatingSystem": "Any",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "isAccessibleForFree": true
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://emdrbilateral.online/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Breathing Exercise",
+            "item": "https://emdrbilateral.online/breathing"
+          }
+        ]
       }
     </script>
     <style>
@@ -488,6 +508,24 @@
     </script>
 
     <canvas id="breathCanvas"></canvas>
+
+    <!-- SEO breadcrumbs (visually hidden, accessible to screen readers) -->
+    <nav
+      class="breadcrumbs-sr"
+      aria-label="Breadcrumb"
+      style="
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      "
+    >
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li aria-current="page">Breathing Exercise</li>
+      </ol>
+    </nav>
 
     <div class="duration-selector" id="durationSelector">
       <button class="duration-btn" data-minutes="1">1 мин</button>

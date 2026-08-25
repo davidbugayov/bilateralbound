@@ -16,7 +16,8 @@
       "ja": "日本語",
       "zh": "中文"
     },
-    "close": "Close"
+    "close": "Close",
+    "breadcrumbsHome": "Home"
   },
   "home": {
     "title": "Free Online EMDR Tool — Bilateral Stimulation Light Bar",
@@ -300,6 +301,7 @@
     "metaDescription": "Privacy policy and personal data processing for BilateralBound — EMDR therapy platform",
     "lastUpdated": "Last updated: May 8, 2026",
     "backLink": "← Back to home",
+    "breadcrumbsCurrent": "Privacy Policy",
     "s1Title": "1. General Provisions",
     "s1p1": "This Privacy Policy (hereinafter referred to as the \"Policy\") defines the procedure for processing and protecting personal data of users of the <strong>BilateralBound</strong> website (hereinafter referred to as the \"Site\"), located at <a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a>.",
     "s1p2": "By using the Site, you agree to the terms of this Policy. If you do not agree, please stop using the Site.",
@@ -423,6 +425,7 @@
     "title": "Terms of Service (Public Offer)",
     "lastUpdated": "Last updated: May 8, 2026",
     "backLink": "← Back to home",
+    "breadcrumbsCurrent": "Terms of Service",
     "s1Title": "1. General Provisions",
     "s1p1": "This document (hereinafter referred to as the \"Offer\") is a public offer by <strong>Bugaev David</strong> (hereinafter referred to as the \"Administrator\") to provide access to the functionality of the <strong>BilateralBound</strong> website (hereinafter referred to as the \"Site\"), located at <a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a>, on the terms described below.",
     "s1p2": "This Offer is governed by Article 437 of the Civil Code of the Russian Federation and constitutes a legally binding agreement between the Administrator and any person who accepts this Offer (hereinafter referred to as the \"User\").",
@@ -512,6 +515,7 @@
     "metaTitle": "About EMDR Therapy | BilateralBound",
     "metaDescription": "Learn about EMDR therapy, how BilateralBound works for bilateral stimulation, and how therapists use it for PTSD, anxiety, and trauma treatment.",
     "backLink": "← Back to home",
+    "breadcrumbsCurrent": "About EMDR",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",
     "s1p1": "EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy developed by Dr. Francine Shapiro in 1987. It is recognized by the WHO and APA as a first-line treatment for PTSD.",

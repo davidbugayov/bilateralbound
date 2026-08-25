@@ -13,7 +13,8 @@
       "ja": "日本語",
       "zh": "中文"
     },
-    "close": "Schließen"
+    "close": "Schließen",
+    "breadcrumbsHome": "Startseite"
   },
   "home": {
     "title": "Kostenloses EMDR Online Tool — Bilaterale Stimulation",
@@ -330,6 +331,7 @@
     "metaDescription": "Datenschutzerklärung und Verarbeitung personenbezogener Daten für BilateralBound — EMDR-Therapieplattform",
     "lastUpdated": "Zuletzt aktualisiert: 8. Mai 2026",
     "backLink": "← Zurück zur Startseite",
+    "breadcrumbsCurrent": "Datenschutzrichtlinie",
     "s1Title": "1. Allgemeine Bestimmungen",
     "s1p1": "Diese Datenschutzerklärung (im Folgenden als „Richtlinie“ bezeichnet) legt das Verfahren für die Verarbeitung und den Schutz personenbezogener Daten von Nutzern der Website <strong>BilateralBound</strong> (im Folgenden als „Website“ bezeichnet) fest, die sich unter <a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a> befindet.",
     "s1p2": "Durch die Nutzung der Website stimmen Sie den Bedingungen dieser Richtlinie zu. Wenn Sie nicht zustimmen, stellen Sie bitte die Nutzung der Website ein.",
@@ -416,6 +418,7 @@
     "title": "Nutzungsbedingungen (Öffentliches Angebot)",
     "lastUpdated": "Zuletzt aktualisiert: 8. Mai 2026",
     "backLink": "← Zurück zur Startseite",
+    "breadcrumbsCurrent": "Nutzungsbedingungen",
     "s1Title": "1. Allgemeine Bestimmungen",
     "s1p1": "Dieses Dokument (im Folgenden als „Angebot“ bezeichnet) ist ein öffentliches Angebot von <strong>Bugaev David</strong> (im Folgenden als „Administrator“ bezeichnet) zur Gewährung des Zugangs zur Funktionalität der Website <strong>BilateralBound</strong> (im Folgenden als „Website“ bezeichnet), die sich unter <a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a> befindet, zu den unten beschriebenen Bedingungen.",
     "s1p2": "Dieses Angebot unterliegt Artikel 437 des Bürgerlichen Gesetzbuchs der Russischen Föderation und stellt eine rechtlich bindende Vereinbarung zwischen dem Administrator und jeder Person dar, die dieses Angebot annimmt (im Folgenden als „Nutzer“ bezeichnet).",
@@ -505,6 +508,7 @@
     "metaTitle": "Über EMDR-Therapie | BilateralBound",
     "metaDescription": "Erfahren Sie mehr über EMDR-Therapie, wie BilateralBound für bilaterale Stimulation funktioniert und wie Therapeuten es zur Behandlung von PTBS, Angstzuständen und Traumata einsetzen.",
     "backLink": "← Back to home",
+    "breadcrumbsCurrent": "Über EMDR",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",
     "s1p1": "EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy. Recognized by WHO and APA for PTSD treatment.",

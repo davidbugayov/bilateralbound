@@ -13,7 +13,8 @@
       "ja": "日本語",
       "zh": "中文"
     },
-    "close": "关闭"
+    "close": "关闭",
+    "breadcrumbsHome": "首页"
   },
   "home": {
     "title": "免费在线EMDR工具 — 双侧刺激",
@@ -330,6 +331,7 @@
     "metaDescription": "BilateralBound — EMDR治疗平台的隐私政策和个人数据处理",
     "lastUpdated": "最后更新：2026年5月8日",
     "backLink": "← 返回主页",
+    "breadcrumbsCurrent": "隐私政策",
     "s1Title": "1. 总则",
     "s1p1": "本隐私政策（以下简称「本政策」）规定了位于 <a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a> 的 <strong>BilateralBound</strong> 网站（以下简称「本网站」）用户个人数据的处理和保护程序。",
     "s1p2": "使用本网站即表示您同意本政策的条款。如果您不同意，请停止使用本网站。",
@@ -416,6 +418,7 @@
     "title": "服务条款（公开要约）",
     "lastUpdated": "最后更新：2026年5月8日",
     "backLink": "← 返回主页",
+    "breadcrumbsCurrent": "服务条款",
     "s1Title": "1. 总则",
     "s1p1": "本文档（以下简称「要约」）是<strong>Bugaev David</strong>（以下简称「管理员」）根据以下条款提供位于<a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a>的<strong>BilateralBound</strong>网站（以下简称「网站」）功能的公开要约。",
     "s1p2": "本要约受俄罗斯联邦民法典第437条管辖，构成管理员与接受本要约的任何个人（以下简称「用户」）之间具有法律约束力的协议。",
@@ -505,6 +508,7 @@
     "metaTitle": "关于EMDR疗法 | BilateralBound",
     "metaDescription": "了解EMDR疗法，BilateralBound如何进行双侧刺激，以及治疗师如何将其用于PTSD、焦虑和创伤治疗。",
     "backLink": "← Back to home",
+    "breadcrumbsCurrent": "关于EMDR",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",
     "s1p1": "EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy. Recognized by WHO and APA for PTSD treatment.",

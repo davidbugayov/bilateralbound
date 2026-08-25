@@ -13,7 +13,8 @@
       "ja": "日本語",
       "zh": "中文"
     },
-    "close": "Fechar"
+    "close": "Fechar",
+    "breadcrumbsHome": "Início"
   },
   "home": {
     "title": "Ferramenta EMDR Online Grátis — Estimulação Bilateral",
@@ -330,6 +331,7 @@
     "metaDescription": "Política de privacidade e processamento de dados pessoais para BilateralBound — plataforma de terapia EMDR",
     "lastUpdated": "Última atualização: 8 de maio de 2026",
     "backLink": "← Voltar ao início",
+    "breadcrumbsCurrent": "Política de Privacidade",
     "s1Title": "1. Disposições Gerais",
     "s1p1": "Esta Política de Privacidade (doravante — «Política») define o procedimento para processamento e proteção de dados pessoais dos usuários do site <strong>BilateralBound</strong> (doravante — «Site»), localizado em <a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a>.",
     "s1p2": "Ao usar o Site, você concorda com os termos desta Política. Se não concordar, por favor, pare de usar o Site.",
@@ -411,6 +413,7 @@
     "title": "Termos de Uso (Oferta Pública)",
     "lastUpdated": "Última atualização: 8 de maio de 2026",
     "backLink": "← Voltar ao início",
+    "breadcrumbsCurrent": "Termos de Serviço",
     "s1Title": "1. Disposições Gerais",
     "s1p1": "O presente documento (doravante — «Oferta») é uma oferta pública de <strong>Bugaev David</strong> (doravante — «Administrador») para conceder acesso à funcionalidade do site <strong>BilateralBound</strong> (doravante — «Site»), localizado em <a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a>, nos termos descritos abaixo.",
     "s1p2": "Esta Oferta é regida pelo artigo 437 do Código Civil da Federação Russa e constitui um acordo juridicamente vinculativo entre o Administrador e qualquer pessoa que aceite esta Oferta (doravante — «Usuário»).",
@@ -505,6 +508,7 @@
     "metaTitle": "Sobre a Terapia EMDR | BilateralBound",
     "metaDescription": "Saiba mais sobre a terapia EMDR, como o BilateralBound funciona para estimulação bilateral e como os terapeutas o utilizam para o tratamento de TEPT, ansiedade e trauma.",
     "backLink": "← Back to home",
+    "breadcrumbsCurrent": "Sobre EMDR",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",
     "s1p1": "EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy. Recognized by WHO and APA for PTSD treatment.",

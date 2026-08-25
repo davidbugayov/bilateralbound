@@ -15,6 +15,10 @@
       content="Learn about EMDR therapy, how BilateralBound works, and how therapists use it for PTSD, anxiety, and trauma treatment."
     />
     <meta name="author" content="Bugaev David" />
+    <meta
+      name="keywords"
+      content="EMDR therapy, bilateral stimulation, PTSD treatment, EMDR online, free EMDR tool, BilateralBound, EMDR eye movement, trauma therapy, anxiety treatment"
+    />
     <meta name="robots" content="index, follow" />
     <meta name="version" content="2.39.827-fbdac978" />
     <meta name="theme-color" content="#0f172a" />
@@ -110,10 +114,15 @@
   </head>
   <body>
     <div class="container">
+      <!-- Breadcrumbs + language selector -->
       <div class="header-bar">
-        <a href="/" class="back-link" data-i18n="about.backLink"
-          >← Back to home</a
-        >
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="/" data-i18n="common.breadcrumbsHome">Home</a>
+          <span aria-hidden="true">›</span>
+          <span aria-current="page" data-i18n="about.breadcrumbsCurrent"
+            >About EMDR</span
+          >
+        </nav>
         <div
           class="language-selector"
           role="navigation"

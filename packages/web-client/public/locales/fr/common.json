@@ -13,7 +13,8 @@
       "ja": "日本語",
       "zh": "中文"
     },
-    "close": "Fermer"
+    "close": "Fermer",
+    "breadcrumbsHome": "Accueil"
   },
   "home": {
     "title": "Outil EMDR en Ligne Gratuit — Stimulation Bilatérale",
@@ -330,6 +331,7 @@
     "metaDescription": "Politique de confidentialité et traitement des données personnelles pour BilateralBound — plateforme de thérapie EMDR",
     "lastUpdated": "Dernière mise à jour : 8 mai 2026",
     "backLink": "← Retour à l'accueil",
+    "breadcrumbsCurrent": "Politique de Confidentialité",
     "s1Title": "1. Dispositions Générales",
     "s1p1": "La présente Politique de Confidentialité (ci-après dénommée la « Politique ») définit la procédure de traitement et de protection des données personnelles des utilisateurs du site Web <strong>BilateralBound</strong> (ci-après dénommé le « Site »), situé à l'adresse <a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a>.",
     "s1p2": "En utilisant le Site, vous acceptez les termes de cette Politique. Si vous n'êtes pas d'accord, veuillez cesser d'utiliser le Site.",
@@ -411,6 +413,7 @@
     "title": "Conditions d'utilisation (Offre publique)",
     "lastUpdated": "Dernière mise à jour : 8 mai 2026",
     "backLink": "← Retour à l'accueil",
+    "breadcrumbsCurrent": "Conditions d'Utilisation",
     "s1Title": "1. Dispositions générales",
     "s1p1": "Le présent document (ci-après dénommé « Offre ») est une offre publique de <strong>Bugaev David</strong> (ci-après dénommé « Administrateur ») visant à accorder l'accès à la fonctionnalité du site <strong>BilateralBound</strong> (ci-après dénommé « Site »), situé à <a href=\"https://emdrbilateral.ru/\">https://emdrbilateral.ru/</a>, selon les modalités décrites ci-dessous.",
     "s1p2": "Cette offre est régie par l'article 437 du Code civil de la Fédération de Russie et constitue un accord juridiquement contraignant entre l'Administrateur et toute personne qui accepte cette offre (ci-après dénommée « Utilisateur »).",
@@ -505,6 +508,7 @@
     "metaTitle": "À propos de la Thérapie EMDR | BilateralBound",
     "metaDescription": "Découvrez la thérapie EMDR, comment BilateralBound fonctionne pour la stimulation bilatérale et comment les thérapeutes l'utilisent pour le traitement du TSPT, de l'anxiété et des traumatismes.",
     "backLink": "← Back to home",
+    "breadcrumbsCurrent": "À propos d'EMDR",
     "title": "About EMDR Therapy & BilateralBound",
     "s1Title": "What is EMDR Therapy?",
     "s1p1": "EMDR (Eye Movement Desensitization and Reprocessing) is an evidence-based psychotherapy. Recognized by WHO and APA for PTSD treatment.",
