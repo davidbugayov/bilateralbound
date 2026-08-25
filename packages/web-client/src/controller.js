@@ -491,7 +491,13 @@ function setupWebSocketEventHandlers(wsClient, logger, sessionId) {
     }
     updateConnectionStatus(true)
     // Sync current language to session so viewer gets the same locale
-    const currentLang = localStorage.getItem('emdr-language')
+    const _langKey = (() => {
+      const h = location.hostname
+      if (h.includes('emdrbilateral.ru')) return 'emdr-language-ru'
+      if (h.includes('emdrbilateral.online')) return 'emdr-language-online'
+      return 'emdr-language'
+    })()
+    const currentLang = localStorage.getItem(_langKey)
     if (currentLang && sessionId) {
       globalThis
         .csrfFetch(`/api/session/${sessionId}/language`, {

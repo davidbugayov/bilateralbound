@@ -1,10 +1,10 @@
 /* global Event, MutationObserver */
-'use strict';
+'use strict'
 /**
  * Settings modal — tab switching, mirror syncing, language buttons, volume slider.
  * Extracted from session-controller.html to reduce inline script weight.
  */
-(function () {
+;(function () {
   const modal = document.getElementById('settingsModal')
   const openBtn = document.getElementById('settingsBtn')
   const closeBtn = document.getElementById('smodalClose')
@@ -52,10 +52,7 @@
       t.setAttribute('aria-selected', String(active))
     })
     panels.forEach(function (p) {
-      p.classList.toggle(
-        'smodal__panel--hidden',
-        p.id !== 'smodal-panel-' + id
-      )
+      p.classList.toggle('smodal__panel--hidden', p.id !== 'smodal-panel-' + id)
     })
   }
 
@@ -75,6 +72,14 @@
     if (e.key === 'Escape' && !modal.hasAttribute('hidden')) closeModal()
   })
 
+  // Per-domain storage key — same logic as i18n.js
+  function _storageKey() {
+    const h = location.hostname
+    if (h.indexOf('emdrbilateral.ru') !== -1) return 'emdr-language-ru'
+    if (h.indexOf('emdrbilateral.online') !== -1) return 'emdr-language-online'
+    return 'emdr-language'
+  }
+
   // Language buttons
   function detectCurrentLang() {
     try {
@@ -84,7 +89,7 @@
       /* ignore */
     }
     return (
-      localStorage.getItem('emdr-language') ||
+      localStorage.getItem(_storageKey()) ||
       navigator.language.split('-')[0] ||
       'en'
     )
@@ -101,7 +106,7 @@
     btn.addEventListener('click', function () {
       const lang = btn.dataset.lang
       try {
-        localStorage.setItem('emdr-language', lang)
+        localStorage.setItem(_storageKey(), lang)
       } catch (_) {
         /* ignore */
       }

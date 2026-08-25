@@ -267,12 +267,17 @@
       ;(function () {
         var L = 'en',
           S = ['en', 'ru', 'es', 'fr', 'de', 'pt', 'ja', 'zh'],
-          K = 'emdr-language'
+          H = location.hostname,
+          K = H.includes('emdrbilateral.ru')
+            ? 'emdr-language-ru'
+            : H.includes('emdrbilateral.online')
+              ? 'emdr-language-online'
+              : 'emdr-language'
         try {
           L = localStorage.getItem(K)
         } catch (e) {}
         if (!L || S.indexOf(L) === -1) {
-          L = location.hostname.includes('emdrbilateral.ru') ? 'ru' : 'en'
+          L = H.includes('emdrbilateral.ru') ? 'ru' : 'en'
           try {
             localStorage.setItem(K, L)
           } catch (e) {}

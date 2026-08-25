@@ -253,8 +253,7 @@ function updateStatus(data) {
   const isControllerDisconnected = data.controllerConnected === false
   if (isControllerConnected) {
     const msg =
-      globalThis.i18n?.t('viewer.controllerConnected') ||
-      'Controller connected'
+      globalThis.i18n?.t('viewer.controllerConnected') || 'Controller connected'
     components.status.setStatus('success', msg)
   } else if (isControllerDisconnected) {
     const msg =
@@ -268,7 +267,14 @@ function onStateUpdate(state) {
   if (
     state &&
     state.language &&
-    state.language !== localStorage.getItem('emdr-language')
+    state.language !==
+      localStorage.getItem(
+        location.hostname.includes('emdrbilateral.ru')
+          ? 'emdr-language-ru'
+          : location.hostname.includes('emdrbilateral.online')
+            ? 'emdr-language-online'
+            : 'emdr-language'
+      )
   ) {
     onLanguageUpdate({ language: state.language })
   }
@@ -971,9 +977,7 @@ async function initializeViewer(sessionId) {
 function setupWebSocketHandlers(wsClient, sessionId) {
   async function fetchAndApplyState() {
     try {
-      const resp = await globalThis.csrfFetch(
-        `/api/session/${sessionId}/state`
-      )
+      const resp = await globalThis.csrfFetch(`/api/session/${sessionId}/state`)
       if (!resp.ok) return
       const state = await resp.json()
       onStateUpdate(state)
@@ -1119,8 +1123,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
       _controllerDisconnectTimer = null
     }
     hideConnectionBanner()
-    const hasControllerConnected =
-      typeof data.controllerConnected === 'boolean'
+    const hasControllerConnected = typeof data.controllerConnected === 'boolean'
     const statusData = hasControllerConnected
       ? data
       : { controllerConnected: true }
