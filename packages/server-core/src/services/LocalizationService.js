@@ -321,9 +321,10 @@ class LocalizationService {
         /<html lang="[^"]*"/,
         `<html lang="${lang}" data-i18n-rendered="true"`
       )
-      // Some templates carry a static data-lang attribute (e.g. privacy.html
-      // has <html lang="en" data-lang="en">) — keep it in sync with lang
-      .replace(/data-lang="[^"]*"/, `data-lang="${lang}"`)
+      // Sync data-lang on the <html> element only (some templates have
+      // <html lang="en" data-lang="en">). Must NOT touch data-lang on other
+      // elements — language selector options use data-lang="en"/"ru"/etc.
+      .replace(/(<html[^>]*\bdata-lang=")[^"]*"/, `$1${lang}"`)
 
     // Match each <meta ... /> or <meta ... > tag
     result = result.replace(/<meta\b[^>]*?\/?>/g, (tag) => {
