@@ -22,18 +22,27 @@ function init(deps) {
   _deps = deps
 }
 
+function _getCanvases() {
+  // Attach to both canvases so brainspotting works regardless of whether
+  // fullscreen was opened before or after enabling brainspotting mode.
+  return [
+    document.getElementById('preview'),
+    document.getElementById('previewFullscreenCanvas')
+  ].filter(Boolean)
+}
+
 function enable() {
   if (_dragActive) return
-  const canvas = document.getElementById('preview')
-  if (!canvas) return
+  const canvases = _getCanvases()
+  if (canvases.length === 0) return
   _dragActive = true
   _lastSentX = null
   _lastSentY = null
 
-  const handleMove = (clientX, clientY) => {
+  const handleMove = (clientX, clientY, rect) => {
     const engine = _deps.getPreviewPhysicsEngine?.()
     if (!engine || !engine.ball.brainspotting) return
-    const rect = canvas.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0) return
     const x = ((clientX - rect.left) / rect.width) * engine.options.worldWidth
     const y = ((clientY - rect.top) / rect.height) * engine.options.worldHeight
     const r = engine.ball.radius
@@ -92,16 +101,25 @@ function enable() {
     }
   }
 
-  canvas._bsMouseMove = (e) => handleMove(e.clientX, e.clientY)
-  canvas._bsTouchMove = (e) => {
-    if (e.touches.length > 0) {
-      e.preventDefault()
-      handleMove(e.touches[0].clientX, e.touches[0].clientY)
+  for (const canvas of canvases) {
+    canvas._bsMouseMove = (e) =>
+      handleMove(e.clientX, e.clientY, canvas.getBoundingClientRect())
+    canvas._bsTouchMove = (e) => {
+      if (e.touches.length > 0) {
+        e.preventDefault()
+        handleMove(
+          e.touches[0].clientX,
+          e.touches[0].clientY,
+          canvas.getBoundingClientRect()
+        )
+      }
     }
-  }
 
-  canvas.addEventListener('mousemove', canvas._bsMouseMove)
-  canvas.addEventListener('touchmove', canvas._bsTouchMove, { passive: false })
+    canvas.addEventListener('mousemove', canvas._bsMouseMove)
+    canvas.addEventListener('touchmove', canvas._bsTouchMove, {
+      passive: false
+    })
+  }
 
   // Chase the cursor target and stream the animated position to the server.
   // Runs on an interval so the ball still settles on the target even when no
@@ -115,12 +133,16 @@ function enable() {
 
 function disable() {
   if (!_dragActive) return
-  const canvas = document.getElementById('preview')
-  if (canvas) {
-    if (canvas._bsMouseMove)
-      canvas.removeEventListener('mousemove', canvas._bsMouseMove)
-    if (canvas._bsTouchMove)
-      canvas.removeEventListener('touchmove', canvas._bsTouchMove)
+  // Remove from both canvases — listeners may have been attached to either
+  const canvases = [
+    document.getElementById('preview'),
+    document.getElementById('previewFullscreenCanvas')
+  ]
+  for (const el of canvases) {
+    if (el && el._bsMouseMove)
+      el.removeEventListener('mousemove', el._bsMouseMove)
+    if (el && el._bsTouchMove)
+      el.removeEventListener('touchmove', el._bsTouchMove)
   }
   if (_intervalId) {
     clearInterval(_intervalId)
