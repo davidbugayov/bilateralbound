@@ -409,16 +409,32 @@ class LocalizationService {
       `$1${canonicalUrl}$2`
     )
 
-    // Fix og:image (preserve path+query after domain)
+    // Fix og:image — property and content may be on separate lines
     html = html.replace(
-      /(<meta property="og:image" content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
+      /(<meta\s+property="og:image"[\s\S]*?content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
       `$1${base}$3`
     )
 
-    // Fix twitter:image
+    // Fix twitter:image — same multi-line issue
     html = html.replace(
-      /(<meta name="twitter:image" content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
+      /(<meta\s+name="twitter:image"[\s\S]*?content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
       `$1${base}$3`
+    )
+    html = html.replace(
+      /(<meta\s+property="og:image"\s*>)\s*<[^>]*content="https:\/\/emdrbilateral\.(ru|online)([^"]*)"/,
+      (m, p1, _domain, path) =>
+        p1.replace(/\s*>$/, '') + `\n      content="${base}${path}">`
+    )
+
+    // Fix twitter:image — same multi-line issue
+    html = html.replace(
+      /(<meta\s+name="twitter:image"\s+content=")https:\/\/emdrbilateral\.(ru|online)([^"]*")/,
+      `$1${base}$3`
+    )
+    html = html.replace(
+      /(<meta\s+name="twitter:image"\s*>)\s*<[^>]*content="https:\/\/emdrbilateral\.(ru|online)([^"]*)"/,
+      (m, p1, _domain, path) =>
+        p1.replace(/\s*>$/, '') + `\n      content="${base}${path}">`
     )
 
     // Fix og:locale
@@ -457,19 +473,19 @@ class LocalizationService {
       const ruDesc =
         'ДПДГ онлайн бесплатно: EMDR тренажёр с билатеральной стимуляцией движущимся шариком для снижения тревоги, стресса и ПТСР. Без регистрации. Начните сессию за 2 минуты.'
       html = html.replace(
-        /(<meta property="og:title"[^>]*content=")[^"]*(")/,
+        /(<meta\s+property="og:title"[\s\S]*?content=")[^"]*(")/,
         `$1${ruTitle}$2`
       )
       html = html.replace(
-        /(<meta property="og:description"[^>]*content=")[^"]*(")/,
+        /(<meta\s+property="og:description"[\s\S]*?content=")[^"]*(")/,
         `$1${ruDesc}$2`
       )
       html = html.replace(
-        /(<meta name="twitter:title"[^>]*content=")[^"]*(")/,
+        /(<meta\s+name="twitter:title"[\s\S]*?content=")[^"]*(")/,
         `$1${ruTitle}$2`
       )
       html = html.replace(
-        /(<meta name="twitter:description"[^>]*content=")[^"]*(")/,
+        /(<meta\s+name="twitter:description"[\s\S]*?content=")[^"]*(")/,
         `$1${ruDesc}$2`
       )
     }
