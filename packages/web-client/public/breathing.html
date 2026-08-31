@@ -550,45 +550,48 @@
       </ol>
     </nav>
 
-    <div class="duration-selector" id="durationSelector">
-      <button class="duration-btn" data-minutes="1">1 мин</button>
-      <button class="duration-btn active" data-minutes="3">3 мин</button>
-      <button class="duration-btn" data-minutes="5">5 мин</button>
-      <button class="duration-btn" data-minutes="10">10 мин</button>
-    </div>
-
-    <div class="overlay">
-      <div class="phase-label" id="phaseLabel">Готов</div>
-      <div class="timer-display" id="timerDisplay">0:00</div>
-      <div class="cycle-counter" id="cycleCounter">0 циклов</div>
-    </div>
-
-    <a class="back-link" href="/">← Назад</a>
-    <button class="sound-btn" id="muteBtn" title="Звук">🔊</button>
-    <a class="site-link" id="siteLink">↗ сайт</a>
-
-    <div class="controls">
-      <button class="btn btn-primary" id="startBtn">Начать</button>
-    </div>
-
-    <!-- Инфо-карточка с инструкцией Butterfly Hug -->
-    <div class="info-card" id="infoCard">
-      <span class="butterfly-icon">🦋</span>
-      <div class="info-title">Butterfly Hug</div>
-      <div class="info-subtitle">
-        Скрести руки на груди и дыши<br />в ритм анимации
+    <main>
+      <div class="duration-selector" id="durationSelector">
+        <button class="duration-btn" data-minutes="1">1 min</button>
+        <button class="duration-btn active" data-minutes="3">3 min</button>
+        <button class="duration-btn" data-minutes="5">5 min</button>
+        <button class="duration-btn" data-minutes="10">10 min</button>
       </div>
-      <div class="info-subtitle" style="margin-top: 0.6rem">
-        <span>Вдох 5с</span> <span style="opacity: 0.3">⟷</span>
-        <span>Выдох 5с</span>
-      </div>
-    </div>
 
-    <!-- Сообщение о завершении -->
-    <div class="complete-message" id="completeMessage">
-      <span class="check-icon">✅</span>
-      <div class="complete-text">Сессия завершена</div>
-    </div>
+      <div class="overlay">
+        <div class="phase-label" id="phaseLabel">Ready</div>
+        <div class="timer-display" id="timerDisplay">0:00</div>
+        <div class="cycle-counter" id="cycleCounter">0 cycles</div>
+      </div>
+
+      <a class="back-link" href="/">← Back</a>
+      <button class="sound-btn" id="muteBtn" title="Sound">🔊</button>
+      <a class="site-link" id="siteLink">↗ site</a>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="startBtn">Start</button>
+      </div>
+
+      <!-- Butterfly Hug instruction card -->
+      <div class="info-card" id="infoCard">
+        <span class="butterfly-icon">🦋</span>
+        <div class="info-title">Butterfly Hug</div>
+        <div class="info-subtitle">
+          Cross your arms over your chest<br />and breathe in rhythm with the
+          animation
+        </div>
+        <div class="info-subtitle" style="margin-top: 0.6rem">
+          <span>Inhale 5s</span> <span style="opacity: 0.3">⟷</span>
+          <span>Exhale 5s</span>
+        </div>
+      </div>
+
+      <!-- Completion message -->
+      <div class="complete-message" id="completeMessage">
+        <span class="check-icon">✅</span>
+        <div class="complete-text">Session complete</div>
+      </div>
+    </main>
 
     <script>
       // ── BreathingEngine (inlined) ──

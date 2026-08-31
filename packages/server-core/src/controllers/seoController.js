@@ -286,6 +286,7 @@ ${buildHreflang('/about')}
   app.get('/rss.xml', (req, res) => {
     const baseUrl = `${req.protocol}://${req.get('host')}`
     const isRu = baseUrl.endsWith('.ru')
+    const now = new Date().toUTCString()
     const rss = isRu
       ? `
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -295,19 +296,20 @@ ${buildHreflang('/about')}
   <link>${baseUrl}</link>
   <description>ДПДГ (EMDR) онлайн бесплатно: билатеральная стимуляция движущимся шариком для лечения ПТСР, тревоги и травм. Без регистрации.</description>
   <language>ru</language>
+  <lastBuildDate>${now}</lastBuildDate>
   <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
   <item>
     <title>ДПДГ онлайн — бесплатный EMDR тренажёр билатеральной стимуляции</title>
     <link>${baseUrl}/</link>
     <description>Бесплатный ДПДГ (EMDR) тренажёр онлайн: билатеральная стимуляция движущимся шариком для снижения тревоги, стресса и ПТСР. Без регистрации. 8 языков.</description>
-    <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
+    <pubDate>${now}</pubDate>
     <guid>${baseUrl}/</guid>
   </item>
   <item>
     <title>О ДПДГ (EMDR) терапии | BilateralBound</title>
     <link>${baseUrl}/about</link>
     <description>Что такое ДПДГ (EMDR) терапия и билатеральная стимуляция. Бесплатный онлайн-инструмент для сессий EMDR: движение шарика, билатеральный звук, синхронизация в реальном времени.</description>
-    <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
+    <pubDate>${now}</pubDate>
     <guid>${baseUrl}/about</guid>
   </item>
 </channel>
@@ -321,19 +323,20 @@ ${buildHreflang('/about')}
   <link>${baseUrl}</link>
   <description>Free online EMDR (bilateral stimulation) tool for anxiety, stress and PTSD relief. No registration. 8 languages.</description>
   <language>en</language>
+  <lastBuildDate>${now}</lastBuildDate>
   <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
   <item>
     <title>Free Online EMDR Tool — Bilateral Stimulation Light Bar</title>
     <link>${baseUrl}/</link>
     <description>Free online EMDR tool with bilateral stimulation light bar for anxiety, stress and PTSD relief. No registration. 8 languages.</description>
-    <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
+    <pubDate>${now}</pubDate>
     <guid>${baseUrl}/</guid>
   </item>
   <item>
     <title>About EMDR Therapy | BilateralBound</title>
     <link>${baseUrl}/about</link>
     <description>What is EMDR therapy and bilateral stimulation. Free online tool for EMDR sessions: moving ball, bilateral audio, real-time sync.</description>
-    <pubDate>Mon, 27 Oct 2025 00:00:00 +0300</pubDate>
+    <pubDate>${now}</pubDate>
     <guid>${baseUrl}/about</guid>
   </item>
 </channel>
