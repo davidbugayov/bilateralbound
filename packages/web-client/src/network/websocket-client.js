@@ -126,6 +126,15 @@ class WebSocketClient {
     if (!this.isConnected) {
       // Queue for later delivery when connection is established
       if (!this._sendQueue) this._sendQueue = []
+      // Cap queue to prevent unbounded memory growth during long disconnections
+      const MAX_QUEUE = 50
+      if (this._sendQueue.length >= MAX_QUEUE) {
+        this._sendQueue.shift()
+        this.log(
+          `Send queue full (${MAX_QUEUE}), dropping oldest message`,
+          'warning'
+        )
+      }
       this._sendQueue.push({ type, payload, options })
       this.log(
         `Queued ${type} message (${this._sendQueue.length} pending)`,
@@ -349,9 +358,14 @@ class WebSocketClient {
       return
     }
     this._stats.reconnectCount++
-    const delay =
+    const baseDelay =
       this.config.reconnectInterval *
       Math.pow(1.5, this._stats.reconnectCount - 1)
+    // Cap at 60s and add jitter to prevent thundering herd on server restart
+    const maxDelay = 60000
+    const cappedDelay = Math.min(maxDelay, baseDelay)
+    const jitter = cappedDelay * (0.5 + Math.random() * 0.5)
+    const delay = Math.round(jitter)
     this.log(
       `Reconnecting in ${Math.round(delay / 1000)}s (attempt ${this._stats.reconnectCount})`
     )
@@ -364,14 +378,26 @@ class WebSocketClient {
   _startHeartbeat() {
     // Use setTimeout chain instead of setInterval — more reliable in background tabs
     // where setInterval gets throttled to 1+ minute.
+    let awaitingPong = false
     const sendHeartbeat = () => {
       if (!this.isConnected) {
         this.heartbeatTimer = null
         return
       }
+      // If previous heartbeat got no pong, connection is likely dead
+      if (awaitingPong) {
+        this.log('Heartbeat pong timeout — connection appears dead', 'warning')
+        this.isConnected = false
+        this._handleClose({
+          code: 1006,
+          reason: 'Heartbeat pong timeout'
+        })
+        return
+      }
+      awaitingPong = true
       this.send('heartbeat', { timestamp: Date.now() }).catch((err) => {
+        awaitingPong = false
         this.log(`Heartbeat failed: ${err.message}`, 'warning')
-        // If send failed, connection is likely broken — force reconnect check
         if (this.isConnected && this.ws?.readyState !== WebSocket.OPEN) {
           this.isConnected = false
           this._handleClose({
@@ -380,6 +406,11 @@ class WebSocketClient {
           })
         }
       })
+      // Allow next heartbeat cycle — pong received via send() resolve
+      const pongTimeout = setTimeout(() => {
+        awaitingPong = false
+      }, 5000)
+      pongTimeout.unref?.()
       this.heartbeatTimer = setTimeout(
         sendHeartbeat,
         this.config.heartbeatInterval

@@ -47,7 +47,8 @@ class AnalyticsCollector {
 
   _resolvePersistPath() {
     const port = process.env.NODE_PORT || process.env.PORT || '3000'
-    return `/tmp/emdr-analytics-${port}.json`
+    // Use persistent path to survive reboots (/tmp may be tmpfs)
+    return `/var/lib/emdrbilateral/analytics-${port}.json`
   }
 
   _loadPersistedData() {

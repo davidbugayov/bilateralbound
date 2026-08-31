@@ -241,10 +241,7 @@ function updateStatus(data) {
   }
   if (typeof data.controllerConnected === 'boolean') {
     globalThis.__current.controllerConnected = data.controllerConnected
-    console.log(
-      '📊 [VIEWER] controllerConnected updated to:',
-      data.controllerConnected
-    )
+    debugLog('controllerConnected updated to:', data.controllerConnected)
   }
   if (!components.status) {
     return
@@ -618,8 +615,8 @@ if (typeof globalThis !== 'undefined') {
     if (audioManager) {
       checkAudioOverlay()
     }
-    console.log(
-      '🔊 Audio activation state reset. Reload page to see unmute overlay again.'
+    debugLog(
+      'Audio activation state reset. Reload page to see unmute overlay again.'
     )
   }
 }
@@ -1112,11 +1109,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   })
 
   wsClient.on('controller_connected', (data) => {
-    console.log(
-      '📊 [VIEWER] Controller connected event received:',
-      JSON.stringify(data)
-    )
-    debugLog('📊 Controller connected event:', data)
+    debugLog('Controller connected event:', data)
     // Clear any pending disconnect banner timer
     if (_controllerDisconnectTimer) {
       clearTimeout(_controllerDisconnectTimer)
@@ -1135,11 +1128,7 @@ function setupWebSocketHandlers(wsClient, sessionId) {
   })
 
   wsClient.on('controller_disconnected', (data) => {
-    console.log(
-      '📊 [VIEWER] Controller disconnected event received:',
-      JSON.stringify(data)
-    )
-    debugLog('📊 Controller disconnected event:', data)
+    debugLog('Controller disconnected event:', data)
     if (!globalThis.__current) globalThis.__current = {}
     globalThis.__current.controllerConnected = false
 

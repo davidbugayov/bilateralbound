@@ -10,6 +10,7 @@ let _previewFsCanvas = null
 let _previewFsRenderer = null
 let _fsPanelHideTimer = null
 const _fsPanelDrag = { active: false, offsetX: 0, offsetY: 0 }
+let _fsListenersAdded = false
 let _callbacks = {
   getPreviewPhysicsEngine: () => null,
   centerBallInViewer: () => {},
@@ -95,6 +96,7 @@ function openPreviewFullscreen() {
   setupFsPanelAutoHide()
   setupFsPanelDrag()
   setupFullscreenGestures()
+  _fsListenersAdded = true
   if (typeof _callbacks.syncFsPlayPauseButton === 'function') {
     _callbacks.syncFsPlayPauseButton()
   } else {
@@ -180,6 +182,7 @@ function resizePreviewFullscreen() {
  * Автоскрытие панели
  */
 function setupFsPanelAutoHide() {
+  if (_fsListenersAdded) return
   const panel = document.getElementById('previewFsPanel')
   const overlay = document.getElementById('previewOverlay')
   if (!panel || !overlay) return
@@ -208,6 +211,7 @@ function setupFsPanelAutoHide() {
  * Перетаскивание панели
  */
 function setupFsPanelDrag() {
+  if (_fsListenersAdded) return
   const panel = document.getElementById('previewFsPanel')
   const overlay = document.getElementById('previewOverlay')
   if (!panel || !overlay) return
@@ -267,6 +271,7 @@ function _handleFullscreenSwipe(dx, dy, threshold) {
  * Настройка жестов
  */
 function setupFullscreenGestures() {
+  if (_fsListenersAdded) return
   const overlay = document.getElementById('previewOverlay')
   if (!overlay) return
   let startX = 0
@@ -297,7 +302,17 @@ function setupFullscreenGestures() {
 function syncFsPlayPauseButton() {
   const btn = document.getElementById('fsPlayPauseBtn')
   if (!btn) return
-  btn.textContent = _callbacks.getIsPlaying() ? '⏸ Стоп' : '▶️ Старт'
+  const stopLabel = (() => {
+    const v = globalThis.i18n?.t('controller.stop')
+    return v && v !== 'controller.stop' ? v : 'Stop'
+  })()
+  const startLabel = (() => {
+    const v = globalThis.i18n?.t('controller.start')
+    return v && v !== 'controller.start' ? v : 'Start'
+  })()
+  btn.textContent = _callbacks.getIsPlaying()
+    ? '⏸ ' + stopLabel
+    : '▶️ ' + startLabel
 }
 /**
  * Подключение контролов
