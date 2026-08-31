@@ -120,6 +120,12 @@ setupMiddleware(app, config, logger)
 // CSRF protection on all API routes
 app.use('/api/', csrfProtection)
 
+// Prevent search engines from indexing API endpoints
+app.use('/api/', (req, res, next) => {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow')
+  next()
+})
+
 // Analytics tracking is handled by the analytics plugin (plugins/analytics.js)
 // which registers its own middleware during registerPlugins().
 

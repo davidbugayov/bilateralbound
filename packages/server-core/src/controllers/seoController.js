@@ -33,6 +33,7 @@ function registerSeoRoutes(app) {
       'Disallow: /package-lock.json',
       'Disallow: /c/',
       'Disallow: /s/',
+      'Disallow: /api/',
       '',
       'User-agent: Googlebot',
       'Allow: /',
