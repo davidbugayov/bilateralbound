@@ -189,10 +189,7 @@ function registerStaticRoutes(
   // MUST be registered BEFORE the catch-all static middleware below,
   // otherwise express.static serves privacy.html raw (adding .html automatically).
   app.get('/privacy', (req, res) => {
-    const html = localizationService.getStaticLocalizedHtml(
-      'privacy.html',
-      req
-    )
+    const html = localizationService.getStaticLocalizedHtml('privacy.html', req)
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     setNoCacheHeaders(res)
     res.send(html)
@@ -273,6 +270,7 @@ function registerStaticRoutes(
     }
     html = injectWsToken(html, sessionId, 'viewer')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow')
     setNoCacheHeaders(res)
     res.send(html)
   })
@@ -303,6 +301,7 @@ function registerStaticRoutes(
     }
     html = injectWsToken(html, sessionId, 'controller')
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow')
     setNoCacheHeaders(res)
     res.send(html)
   })

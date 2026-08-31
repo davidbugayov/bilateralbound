@@ -31,6 +31,8 @@ function registerSeoRoutes(app) {
       'Disallow: /.htpasswd',
       'Disallow: /package.json',
       'Disallow: /package-lock.json',
+      'Disallow: /c/',
+      'Disallow: /s/',
       '',
       'User-agent: Googlebot',
       'Allow: /',

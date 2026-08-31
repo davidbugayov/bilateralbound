@@ -385,7 +385,7 @@ class LocalizationService {
       `<link rel="alternate" hreflang="pt" href="${onlineBase}${path}?lang=pt" />`,
       `<link rel="alternate" hreflang="ja" href="${onlineBase}${path}?lang=ja" />`,
       `<link rel="alternate" hreflang="zh" href="${onlineBase}${path}?lang=zh" />`,
-      `<link rel="alternate" hreflang="x-default" href="${onlineBase}${path}" />`
+      `<link rel="alternate" hreflang="x-default" href="${base}${path}" />`
     ].join('\n    ')
 
     const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" />`
