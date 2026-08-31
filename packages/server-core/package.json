@@ -6,8 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "SUBSCRIPTION_TEST_MODE=true nodemon src/index.js",
-    "lint:sonarqube": "node sonar-scanner.js"
+    "dev": "SUBSCRIPTION_TEST_MODE=true nodemon src/index.js"
   },
   "keywords": [
     "emdr",
@@ -34,7 +33,6 @@
     "ws": "^8.13.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10",
-    "sonarqube-scanner": "^4.3.4"
+    "nodemon": "^3.1.10"
   }
 }

@@ -1,10 +1,10 @@
-'use strict';
+'use strict'
 
-const globals = require('globals');
-const js = require('@eslint/js');
-const stylistic = require('@stylistic/eslint-plugin');
-const tsParser = require('@typescript-eslint/parser');
-const tsPlugin = require('@typescript-eslint/eslint-plugin');
+const globals = require('globals')
+const js = require('@eslint/js')
+const stylistic = require('@stylistic/eslint-plugin')
+const tsParser = require('@typescript-eslint/parser')
+const tsPlugin = require('@typescript-eslint/eslint-plugin')
 
 // Define common rules to be shared across configurations
 const commonRules = {
@@ -15,7 +15,7 @@ const commonRules = {
   'no-var': 'error',
   'no-unused-vars': [
     'error',
-    { args: 'none', caughtErrorsIgnorePattern: '^_' },
+    { args: 'none', caughtErrorsIgnorePattern: '^_' }
   ],
   'no-async-promise-executor': 'error',
   'no-await-in-loop': 'error',
@@ -37,15 +37,15 @@ const commonRules = {
 
   // Disabled rules for this project
   'no-console': 'off',
-  'no-debugger': 'off',
-};
+  'no-debugger': 'off'
+}
 
 module.exports = [
   // 0. Import @stylistic plugin
   {
     plugins: {
-      '@stylistic': stylistic,
-    },
+      '@stylistic': stylistic
+    }
   },
 
   // 1. Global ignores
@@ -69,14 +69,13 @@ module.exports = [
       'eslint.config.js',
       'webpack.config.js',
       'packages/web-client/.eslintrc.js',
-      'packages/web-client/sonar-scanner.js',
       'packages/web-client/webpack.config.js',
       'scripts/update-version.js',
       'jsconfig.json',
       '.scannerwork/**',
       'reports/**',
-      '**/assets/**',
-    ],
+      '**/assets/**'
+    ]
   },
 
   // 2. Base recommended config
@@ -88,7 +87,7 @@ module.exports = [
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',
-      globals: globals.node,
+      globals: globals.node
     },
     rules: {
       ...commonRules,
@@ -96,9 +95,9 @@ module.exports = [
       'no-redeclare': 'off',
       'no-unused-vars': [
         'error',
-        { args: 'none', caughtErrorsIgnorePattern: '^_' },
-      ],
-    },
+        { args: 'none', caughtErrorsIgnorePattern: '^_' }
+      ]
+    }
   },
 
   // 3.1. Config files (ESLint, webpack, etc.)
@@ -108,17 +107,16 @@ module.exports = [
       'webpack.config.js',
       'config/**/*.js',
       'packages/web-client/webpack.config.js',
-      'packages/web-client/sonar-scanner.js',
       'ecosystem.config.js',
       'packages/shared/test/**/*.js',
-      'packages/web-client/test/**/*.js',
+      'packages/web-client/test/**/*.js'
     ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',
       globals: {
-        ...globals.node,
-      },
+        ...globals.node
+      }
     },
     rules: {
       // More lenient rules for config files
@@ -127,9 +125,9 @@ module.exports = [
       'no-debugger': 'off',
       'no-unused-vars': [
         'warn',
-        { args: 'none', caughtErrorsIgnorePattern: '^_' },
-      ],
-    },
+        { args: 'none', caughtErrorsIgnorePattern: '^_' }
+      ]
+    }
   },
 
   // 4.1. Client-side code (Browser) - Web Client public files with custom globals
@@ -257,15 +255,15 @@ module.exports = [
         showViewerSoundIndicator: 'readonly',
         resizePreviewFullscreen: 'readonly',
         setSoundEnabled: 'readonly',
-        setSoundType: 'readonly',
-      },
+        setSoundType: 'readonly'
+      }
     },
     rules: {
       ...commonRules,
       // Browser files often redefine globals - this is OK for browserify/global scope
       'no-redeclare': 'off',
-      'no-unused-vars': 'off', // Browser globals may be used in other scripts
-    },
+      'no-unused-vars': 'off' // Browser globals may be used in other scripts
+    }
   },
 
   // 4.1.old. Client-side code (Browser) - Web Client public files (old config - removing)
@@ -276,13 +274,13 @@ module.exports = [
       sourceType: 'script',
       globals: {
         ...globals.browser,
-        Image: 'readonly',
-      },
+        Image: 'readonly'
+      }
     },
     rules: {
       'no-redeclare': 'off',
-      'no-unused-vars': 'off',
-    },
+      'no-unused-vars': 'off'
+    }
   },
 
   // 5. E2E test scripts (hybrid - they use both Node.js and browser globals)
@@ -298,16 +296,16 @@ module.exports = [
         window: 'readonly',
         PhysicsEngine: 'readonly',
         MouseEvent: 'readonly',
-        setDirection: 'readonly',
-      },
+        setDirection: 'readonly'
+      }
     },
     rules: {
       'no-await-in-loop': 'off', // Disable in test scripts where sequential awaiting is often necessary
       'no-unused-vars': [
         'warn',
-        { args: 'none', caughtErrorsIgnorePattern: '^_' },
-      ],
-    },
+        { args: 'none', caughtErrorsIgnorePattern: '^_' }
+      ]
+    }
   },
 
   // 6. Web client src files (JavaScript)
@@ -390,8 +388,8 @@ module.exports = [
         RealtimeClient: 'readonly',
         HTMLElement: 'readonly',
         HTMLInputElement: 'readonly',
-        PreviewManager: 'readonly',
-      },
+        PreviewManager: 'readonly'
+      }
     },
     rules: {
       ...commonRules,
@@ -402,10 +400,10 @@ module.exports = [
           args: 'none',
           varsIgnorePattern: '^_',
           argsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
-    },
+          caughtErrorsIgnorePattern: '^_'
+        }
+      ]
+    }
   },
 
   // 7. Shared package (browser-compatible Node.js module)
@@ -430,13 +428,13 @@ module.exports = [
         window: 'readonly',
         performance: 'readonly',
         CustomEvent: 'readonly',
-        Path2D: 'readonly',
-      },
+        Path2D: 'readonly'
+      }
     },
     rules: {
       ...commonRules,
       'no-redeclare': 'off',
-      'no-unused-vars': ['error', { args: 'none', varsIgnorePattern: '^_' }],
-    },
-  },
-];
+      'no-unused-vars': ['error', { args: 'none', varsIgnorePattern: '^_' }]
+    }
+  }
+]

@@ -79,10 +79,8 @@ temp/
 
 # IDE files
 .vscode/
-.idea/*
-!.idea/vcs.xml
-!.idea/modules.xml
-*.iml
+  .idea/*
+  *.iml
 *.ipr
 *.iws
 .vscode-test
@@ -162,17 +160,9 @@ tramp
 # Qodana reports and analysis results
 qodana_final_report/
 qodana_results/
-.sonarcloud/
 
 # Qodana cache and temporary files
 .qodana/
-scanner-report/
-scannerwork/
-
-# SonarQube temporary files (но не конфиг!)
-.scannerwork/
-sonar-open-issues.json
-sonarqube-results.sarif
 
 # IMPORTANT: emdr-therapy/ directory should NEVER be deleted!
 # It contains professional EMDR therapy pages for couples
