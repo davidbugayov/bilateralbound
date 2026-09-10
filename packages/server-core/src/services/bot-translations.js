@@ -676,6 +676,16 @@ const TRANSLATIONS = {
       '前往<a href="https://emdrbilateral.online">emdrbilateral.online</a>或<a href="https://emdrbilateral.ru">emdrbilateral.ru</a>，' +
       '输入客户名称并点击"Create" — 链接已就绪！🎉'
   },
+  open_site_btn: {
+    en: '🌐 Open site & create links',
+    ru: '🌐 Открыть сайт и создать ссылки',
+    es: '🌐 Abrir sitio y crear enlaces',
+    fr: '🌐 Ouvrir le site et créer des liens',
+    de: '🌐 Seite öffnen & Links erstellen',
+    pt: '🌐 Abrir site e criar links',
+    ja: '🌐 サイトを開いてリンク作成',
+    zh: '🌐 打开网站并创建链接'
+  },
   payment_failed: {
     en: '❌ <b>Activation error:</b>\n\n{error}\n\nPlease contact support.',
     ru: '❌ <b>Ошибка активации:</b>\n\n{error}\n\nПожалуйста, свяжитесь с поддержкой.',

@@ -879,6 +879,19 @@
       }
     }
 
+    // Auto-fill customId from ?client= URL param (sent from Telegram bot after payment)
+    const urlClient = new URLSearchParams(window.location.search).get('client')
+    if (urlClient) {
+      const customIdInput = document.getElementById('customClientId')
+      if (customIdInput && !customIdInput.value) {
+        customIdInput.value = urlClient
+      }
+      const subCustomIdInput = document.getElementById('subCustomId')
+      if (subCustomIdInput && !subCustomIdInput.value) {
+        subCustomIdInput.value = urlClient
+      }
+    }
+
     // Export for global access
     window.subscriptionManagement = {
       checkStatus: checkSubscriptionStatus
