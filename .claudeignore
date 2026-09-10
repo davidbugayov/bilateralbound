@@ -1,7 +1,0 @@
-node_modules/
-dist/
-*.lock
-__pycache__/
-*.min.js
-.next/
-build/

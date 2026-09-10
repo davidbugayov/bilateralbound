@@ -74,32 +74,22 @@ playwright-report/
 tmp/
 temp/
 
-# Claude Code
+# AI tools
 .claude/
+.claudeignore
+.claude-flow/
+.agents/
+.clinerules/
+.cursor/
+.playwright-mcp/
 
 # IDE files
 .vscode/
-.idea/*
-!.idea/vcs.xml
-!.idea/modules.xml
+.idea/
 *.iml
 *.ipr
 *.iws
 .vscode-test
-
-# IntelliJ IDEA caches and indexes (улучшает индексацию)
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/usage.statistics.xml
-.idea/dictionaries
-.idea/shelf
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-.idea/**/dbnavigator.xml
 
 # OS generated files
 .DS_Store
