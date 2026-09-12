@@ -41,15 +41,19 @@ function csrfProtection(req, res, next) {
   }
 
   // Skip CSRF for health check, analytics, session reserve, and Telegram webhook
-  // Use req.baseUrl + req.path — middleware is mounted at /api/, so req.path is relative
+  // Use exact path matching — substring/prefix matching allows CSRF bypass
   const fullPath = req.baseUrl + req.path
+  const csrfSkipPaths = [
+    '/api/health',
+    '/api/analytics',
+    '/api/subscription/webhook',
+    '/api/subscription/test-activate',
+    '/api/admin/set-commands'
+  ]
+  // Exact match for skip paths, or /api/session/:id/reserve pattern
   if (
-    fullPath === '/api/health' ||
-    fullPath === '/api/analytics' ||
-    fullPath === '/api/subscription/webhook' ||
-    fullPath === '/api/subscription/test-activate' ||
-    fullPath.includes('/reserve') ||
-    fullPath.startsWith('/api/admin/')
+    csrfSkipPaths.includes(fullPath) ||
+    /^\/api\/session\/[a-zA-Z0-9_-]+\/reserve$/.test(fullPath)
   ) {
     return next()
   }

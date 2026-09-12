@@ -465,10 +465,14 @@ class BallRenderer {
       return
     }
     try {
-      this.canvas.width = width
-      this.canvas.height = height
+      const dpr = globalThis.devicePixelRatio || 1
+      this.canvas.width = Math.round(width * dpr)
+      this.canvas.height = Math.round(height * dpr)
       this.canvas.style.width = width + 'px'
       this.canvas.style.height = height + 'px'
+      if (this.ctx) {
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      }
       // In preview mode the world size comes from viewerScreenSize, not canvas dimensions
       if (this.physics && !this.options.preserveWorldSize) {
         this.physics.setWorldSize(width, height)
@@ -497,6 +501,8 @@ class BallRenderer {
       try {
         this.ctx = this.canvas.getContext('2d')
         if (this.ctx) {
+          const dpr = globalThis.devicePixelRatio || 1
+          this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
           this.fillRect = this.ctx.fillRect.bind(this.ctx)
           this.beginPath = this.ctx.beginPath.bind(this.ctx)
           this.fill = this.ctx.fill.bind(this.ctx)

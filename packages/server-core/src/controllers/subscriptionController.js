@@ -934,11 +934,18 @@ function registerSubscriptionRoutes(
         )
 
         if (result.success) {
-          // Link the customId to this user (skip for plain /start — payload is telegramUserId)
+          // Link the customId to this user
+          // For plain /start (payload = telegramUserId), auto-link it as customId
+          // so permanent links work immediately without manual activation
           const isNumericPayload =
             /^\d+$/.test(customId) &&
             String(customId) === String(telegramUserId)
-          if (!isNumericPayload) {
+          if (isNumericPayload) {
+            subscriptionService.linkCustomId(
+              String(telegramUserId),
+              telegramUserId
+            )
+          } else {
             subscriptionService.linkCustomId(customId, telegramUserId)
           }
         }
@@ -970,7 +977,27 @@ function registerSubscriptionRoutes(
               siteUrl: siteUrl(pLang)
             })
 
-        telegramBot?.sendMessage(chatId, msg)
+        // For plain /start payments (no customId), add inline button to open
+        // the site with pre-filled client ID so the user can create links immediately
+        const isNumericPayload =
+          /^\d+$/.test(customId) &&
+          String(customId) === String(telegramUserId)
+        const replyMarkup = (!isRenewal && isNumericPayload)
+          ? {
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: t('open_site_btn', pLang),
+                      url: siteUrl(pLang) + '?client=' + encodeURIComponent(String(telegramUserId))
+                    }
+                  ]
+                ]
+              }
+            }
+          : {}
+
+        telegramBot?.sendMessage(chatId, msg, replyMarkup)
       } else {
         logger.warn(
           { telegramUserId, chargeId, error: result.error },

@@ -120,6 +120,12 @@ setupMiddleware(app, config, logger)
 // CSRF protection on all API routes
 app.use('/api/', csrfProtection)
 
+// Prevent search engines from indexing API endpoints
+app.use('/api/', (req, res, next) => {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow')
+  next()
+})
+
 // Analytics tracking is handled by the analytics plugin (plugins/analytics.js)
 // which registers its own middleware during registerPlugins().
 
@@ -257,7 +263,11 @@ function gracefulShutdown() {
 process.on('SIGTERM', gracefulShutdown)
 process.on('SIGINT', gracefulShutdown)
 process.on('unhandledRejection', (err) => {
-  logger.error({ err }, 'Unhandled rejection — exiting for restart')
-  process.exit(1)
+  logger.error({ err }, 'Unhandled rejection — initiating graceful shutdown')
+  gracefulShutdown()
+})
+process.on('uncaughtException', (err) => {
+  logger.error({ err }, 'Uncaught exception — initiating graceful shutdown')
+  gracefulShutdown()
 })
 logger.info('BilateralBound modular server started successfully')
