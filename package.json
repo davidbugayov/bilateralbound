@@ -9,11 +9,11 @@
     "packages/web-client"
   ],
   "scripts": {
-    "start": "npm run start:server",
-    "prestart": "npm run build --workspace=packages/web-client",
-    "start:server": "cd packages/server-core && npm start",
+    "start": "node packages/server-core/src/index.js",
+    "prestart": "npm run build",
+    "start:server": "node packages/server-core/src/index.js",
     "start:client": "cd packages/web-client && npm start",
-    "dev": "concurrently \"npm run dev --workspace=packages/server-core\" \"npm run watch --workspace=packages/web-client\"",
+    "dev": "npm run build && node packages/server-core/src/index.js",
     "build": "node scripts/generate-i18n-iife.js && npm run build --workspace=packages/web-client",
     "build:prod": "node scripts/generate-i18n-iife.js && npm run build --workspace=packages/web-client && npm run minify:css --workspace=packages/web-client",
     "build:dev": "node scripts/generate-i18n-iife.js && npm run build:dev --workspace=packages/web-client",
@@ -81,7 +81,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
-    "puppeteer": "^24.35.0",
     "stylelint": "^16.25.0",
     "stylelint-config-standard": "^39.0.1",
     "stylelint-prettier": "^5.0.3",

@@ -203,7 +203,7 @@ server.on('error', (err) => {
         `Attempting to restart server on port ${PORT}...`
       )
       server.close(() => {
-        server.listen(PORT)
+        server.listen(PORT, '0.0.0.0')
       })
     }, 3000)
   } else if (err.code === 'EADDRINUSE') {
@@ -217,8 +217,8 @@ server.on('error', (err) => {
     process.exit(1)
   }
 })
-server.listen(PORT, () => {
-  logger.info('Modular server architecture is ready.')
+server.listen(PORT, '0.0.0.0', () => {
+  logger.info(`Modular server architecture is ready on port ${PORT}.`)
 })
 
 // 8. Cleanup intervals

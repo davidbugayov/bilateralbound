@@ -61,13 +61,19 @@ function csrfProtection(req, res, next) {
   const token = req.headers['x-csrf-token']
   const cookieToken = req.cookies?.csrfToken
 
+  // If token is provided in header, allow it (supports cross-site iframes where 3rd-party cookies may be blocked)
+  if (token && (!cookieToken || token === cookieToken)) {
+    return next()
+  }
+
   // If no cookie token exists, generate one and return 403
   if (!cookieToken) {
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https'
     const newToken = crypto.randomBytes(32).toString('hex')
     res.cookie('csrfToken', newToken, {
       httpOnly: false, // Must be readable by JS for double-submit
-      secure: !req.app.get('isDev'),
-      sameSite: 'strict',
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax',
       maxAge: 3600000 // 1 hour
     })
     return res.status(403).json({
@@ -93,11 +99,12 @@ function csrfProtection(req, res, next) {
  */
 function setCsrfCookie(req, res, next) {
   if (!req.cookies?.csrfToken) {
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https'
     const token = crypto.randomBytes(32).toString('hex')
     res.cookie('csrfToken', token, {
       httpOnly: false, // Required for double-submit pattern
-      secure: !req.app.get('isDev'),
-      sameSite: 'strict',
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax',
       maxAge: 3600000 // 1 hour
     })
   }
@@ -178,6 +185,8 @@ function setupMiddleware(app, config, logger) {
           connectSrc: [
             '\'self\'',
             'wss:',
+            'ws:',
+            'https:',
             'https://mc.yandex.ru',
             'https://mc.yandex.com',
             'wss://mc.yandex.com'
@@ -190,8 +199,11 @@ function setupMiddleware(app, config, logger) {
           ],
           frameAncestors: [
             '\'self\'',
+            'https://ai.studio',
+            'https://*.google.com',
             'https://web.telegram.org',
-            'https://telegram.org'
+            'https://telegram.org',
+            '*'
           ],
           upgradeInsecureRequests: isDev ? null : []
         }
@@ -222,7 +234,7 @@ function setupMiddleware(app, config, logger) {
   // CORS (from expressApp L304-319)
   app.use(
     cors({
-      origin: config.cors.origins,
+      origin: isDev ? true : config.cors.origins,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: [
         'Content-Type',
