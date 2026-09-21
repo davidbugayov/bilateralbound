@@ -46,8 +46,6 @@ const SCANNER_PATHS = [
   '/api/config',
   '/swagger.json',
   '/api/v1/version',
-  '/api/health',
-  '/api/status',
   '/mcp',
   '/messages',
   '/security.txt',

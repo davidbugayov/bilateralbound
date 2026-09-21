@@ -142,6 +142,7 @@ class AudioManager {
         this.useAudioFiles = false
       })
     }
+    this._dispatchStateEvent()
   }
   setVolume(volume) {
     this.volume = Math.max(0, Math.min(1, volume))
@@ -181,12 +182,77 @@ class AudioManager {
         this.duration = 0.05
         break
     }
+    this._dispatchStateEvent()
+  }
+  getFrequency() {
+    return this.frequency
+  }
+  _dispatchStateEvent() {
+    if (typeof globalThis !== 'undefined' && globalThis.dispatchEvent) {
+      try {
+        globalThis.dispatchEvent(
+          new CustomEvent('bb_audio_state', {
+            detail: {
+              enabled: this.enabled,
+              frequency: this.frequency,
+              soundType: this.soundType,
+              volume: this.volume
+            }
+          })
+        )
+      } catch (_) {
+        /* noop */
+      }
+    }
+  }
+  _dispatchFrequencyEvent(side) {
+    if (typeof globalThis !== 'undefined' && globalThis.dispatchEvent) {
+      try {
+        globalThis.dispatchEvent(
+          new CustomEvent('bb_audio_frequency', {
+            detail: {
+              frequency: this.frequency,
+              soundType: this.soundType,
+              volume: this.volume,
+              side: side || 'both',
+              enabled: this.enabled,
+              timestamp: Date.now()
+            }
+          })
+        )
+      } catch (_) {
+        /* noop */
+      }
+    }
+  }
+  _connectOutput(gainNode, side) {
+    if (!this.audioContext) return
+    const target = this.audioContext.destination
+    if (
+      this.audioContext.createStereoPanner &&
+      (side === 'left' || side === 'right')
+    ) {
+      try {
+        const panner = this.audioContext.createStereoPanner()
+        panner.pan.setValueAtTime(
+          side === 'left' ? -0.85 : 0.85,
+          this.audioContext.currentTime
+        )
+        gainNode.connect(panner)
+        panner.connect(target)
+        return
+      } catch (_) {
+        // Fallback to direct destination connection
+      }
+    }
+    gainNode.connect(target)
   }
   /**
-   * Plays a tick sound using current or override type.
+   * Plays a tick sound using current or override type, with bilateral side support.
    * @param {string} [overrideType] - Optional: override the current sound type
+   * @param {string} [side] - Optional: 'left' or 'right' for bilateral panning & visualization
    */
-  playTick(overrideType) {
+  playTick(overrideType, side) {
     if (!this.enabled || !this.audioContext) {
       return
     }
@@ -198,20 +264,22 @@ class AudioManager {
     if (overrideType && overrideType !== this.soundType) {
       this.setSoundType(overrideType)
     }
+    this._dispatchFrequencyEvent(side)
     if (this.useAudioFiles && this.filesLoaded) {
       const url = this.soundFiles[soundType]
       if (url && this.audioBuffers.has(url)) {
-        this.playBufferedSound(url)
+        this.playBufferedSound(url, side)
         return
       }
     }
-    this.playSynthesizedSound()
+    this.playSynthesizedSound(side)
   }
   /**
-   * Воспроизводит загруженный звук из буфера
+   * Воспроизводит загруженный звук из буфера с билатеральным панорамированием
    * @param {string} url - URL звукового файла
+   * @param {string} [side] - 'left' или 'right'
    */
-  playBufferedSound(url) {
+  playBufferedSound(url, side) {
     try {
       const buffer = this.audioBuffers.get(url)
       if (!buffer) {
@@ -222,22 +290,23 @@ class AudioManager {
       source.buffer = buffer
       gainNode.gain.value = this.volume
       source.connect(gainNode)
-      gainNode.connect(this.audioContext.destination)
+      this._connectOutput(gainNode, side)
       source.start()
     } catch (error) {
       if (typeof logger !== 'undefined') {
         logger.error('Error playing buffered sound:', error)
       }
-      this.playSynthesizedSound()
+      this.playSynthesizedSound(side)
     }
   }
   /**
-   * Воспроизводит синтезированный звук (оригинальный метод)
+   * Воспроизводит синтезированный звук с билатеральным панорамированием
+   * @param {string} [side] - 'left' или 'right'
    */
-  playSynthesizedSound() {
+  playSynthesizedSound(side) {
     try {
       if (this.soundType === 'soft') {
-        this.playSoftWoodenSound()
+        this.playSoftWoodenSound(side)
         return
       }
       const oscillator = this.audioContext.createOscillator()
@@ -257,7 +326,7 @@ class AudioManager {
         this.audioContext.currentTime + this.duration
       )
       oscillator.connect(gainNode)
-      gainNode.connect(this.audioContext.destination)
+      this._connectOutput(gainNode, side)
       oscillator.start()
       oscillator.stop(this.audioContext.currentTime + this.duration)
     } catch (error) {
@@ -268,9 +337,10 @@ class AudioManager {
   }
   /**
    * Plays a soft low-frequency thud — default EMDR bilateral stimulation sound.
-   * Pure sine sweep (120→60 Hz) with smooth decay. No harsh transients.
+   * Pure sine sweep (120→60 Hz) with smooth decay and optional side panning.
+   * @param {string} [side] - 'left' или 'right'
    */
-  playSoftWoodenSound() {
+  playSoftWoodenSound(side) {
     try {
       const now = this.audioContext.currentTime
       const duration = 0.16
@@ -284,7 +354,7 @@ class AudioManager {
       gain.gain.linearRampToValueAtTime(this.volume * 0.8, now + 0.004)
       gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
       osc.connect(gain)
-      gain.connect(this.audioContext.destination)
+      this._connectOutput(gain, side)
       osc.start(now)
       osc.stop(now + duration)
     } catch (error) {

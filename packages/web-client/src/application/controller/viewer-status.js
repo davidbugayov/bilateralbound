@@ -83,6 +83,11 @@ function updateAudioIndicators() {
   } else {
     indicator.classList.add('hidden')
   }
+
+  const ctrlVis = document.getElementById('controllerAudioVisualizerBar')
+  if (ctrlVis) {
+    ctrlVis.classList.toggle('hidden', !soundEnabled)
+  }
 }
 function updateFullscreenStatus() {
   const el = document.getElementById('fsViewerStatus')

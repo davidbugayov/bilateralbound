@@ -2284,3 +2284,221 @@ button:hover {
     align-self: center;
   }
 }
+
+/* ==========================================================================
+   CSS-Based Bilateral Audio Frequency Visualizer Bar
+   ========================================================================== */
+
+.audio-visualizer-bar {
+  --freq-hue: 165;
+  --audio-freq: 180;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgb(15 23 42 / 80%);
+  border: 1px solid rgb(255 255 255 / 12%);
+  backdrop-filter: blur(10px) saturate(1.3);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 25%), inset 0 1px 0 rgb(255 255 255 / 8%);
+  user-select: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, transform 0.2s ease;
+}
+
+.audio-visualizer-bar.is-active {
+  border-color: hsl(var(--freq-hue) 80% 60% / 45%);
+  box-shadow: 0 0 16px hsl(var(--freq-hue) 80% 60% / 22%), 0 2px 8px rgb(0 0 0 / 30%), inset 0 1px 0 rgb(255 255 255 / 12%);
+}
+
+.audio-visualizer-bar.is-inactive {
+  opacity: 0.55;
+}
+
+/* Bilateral Channels */
+.visualizer-channel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.visualizer-channel .channel-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgb(148 163 184);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  transition: color 0.15s ease, transform 0.15s ease, text-shadow 0.15s ease;
+}
+
+.visualizer-channel.channel-active-pulse .channel-lbl {
+  color: hsl(var(--freq-hue) 95% 75%);
+  text-shadow: 0 0 8px hsl(var(--freq-hue) 90% 60% / 75%);
+  transform: scale(1.15);
+}
+
+.channel-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 20px;
+  padding: 1px 0;
+}
+
+.channel-bars .vbar {
+  width: 3.5px;
+  min-width: 3.5px;
+  border-radius: 2px;
+  height: var(--bar-h, 4px);
+  background: hsl(var(--freq-hue) 70% 55% / 40%);
+  transition: height 0.14s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+  will-change: height, background-color;
+}
+
+.is-active .channel-bars .vbar {
+  background: hsl(var(--freq-hue) 75% 55% / 55%);
+}
+
+.visualizer-channel.channel-active-pulse .channel-bars .vbar {
+  background: hsl(var(--freq-hue) 95% 65%);
+  box-shadow: 0 0 8px hsl(var(--freq-hue) 90% 60% / 80%);
+}
+
+/* Ambient breathing while active */
+.is-active:not(.channel-active-pulse) .vbar--1 {
+  animation: visualizer-idle-1 2.4s ease-in-out infinite alternate;
+}
+.is-active:not(.channel-active-pulse) .vbar--2 {
+  animation: visualizer-idle-2 2.4s ease-in-out infinite alternate 0.2s;
+}
+.is-active:not(.channel-active-pulse) .vbar--3 {
+  animation: visualizer-idle-3 2.4s ease-in-out infinite alternate 0.4s;
+}
+.is-active:not(.channel-active-pulse) .vbar--4 {
+  animation: visualizer-idle-2 2.4s ease-in-out infinite alternate 0.6s;
+}
+.is-active:not(.channel-active-pulse) .vbar--5 {
+  animation: visualizer-idle-1 2.4s ease-in-out infinite alternate 0.8s;
+}
+
+@keyframes visualizer-idle-1 {
+  0% { height: 3px; }
+  100% { height: 6px; }
+}
+@keyframes visualizer-idle-2 {
+  0% { height: 4px; }
+  100% { height: 8px; }
+}
+@keyframes visualizer-idle-3 {
+  0% { height: 5px; }
+  100% { height: 9px; }
+}
+
+/* Center Frequency Display & Wave Meter */
+.visualizer-center-meter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 2px;
+}
+
+.visualizer-wave {
+  width: 22px;
+  height: 2.5px;
+  background: rgb(255 255 255 / 12%);
+  border-radius: 9999px;
+  position: relative;
+  overflow: hidden;
+}
+
+.visualizer-wave .wave-pulse {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 100%;
+  border-radius: 9999px;
+  background: hsl(var(--freq-hue) 90% 65%);
+  box-shadow: 0 0 6px hsl(var(--freq-hue) 90% 65%);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), left 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.visualizer-wave .wave-pulse.wave-pulse--left {
+  left: 15%;
+  transform: translateX(0);
+}
+
+.visualizer-wave .wave-pulse.wave-pulse--right {
+  left: 85%;
+  transform: translateX(-100%);
+}
+
+.is-active .visualizer-wave .wave-pulse:not(.wave-pulse--left):not(.wave-pulse--right) {
+  animation: wave-ambient 2s ease-in-out infinite alternate;
+}
+
+@keyframes wave-ambient {
+  0% { left: 25%; }
+  100% { left: 75%; }
+}
+
+.visualizer-freq {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1.5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgb(2 6 23 / 60%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  line-height: 1;
+}
+
+.visualizer-freq .freq-val {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: hsl(var(--freq-hue) 95% 72%);
+  letter-spacing: -0.02em;
+}
+
+.visualizer-freq .freq-unit {
+  font-size: 8px;
+  font-weight: 500;
+  color: rgb(148 163 184);
+}
+
+/* Light Theme overrides */
+.light-theme .audio-visualizer-bar {
+  background: rgb(248 250 252 / 92%);
+  border-color: rgb(203 213 225 / 80%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%), inset 0 1px 0 rgb(255 255 255 / 90%);
+}
+
+.light-theme .audio-visualizer-bar.is-active {
+  border-color: hsl(var(--freq-hue) 70% 45% / 60%);
+  box-shadow: 0 0 14px hsl(var(--freq-hue) 70% 50% / 25%), 0 2px 6px rgb(0 0 0 / 6%);
+}
+
+.light-theme .visualizer-channel .channel-lbl {
+  color: #64748b;
+}
+
+.light-theme .channel-bars .vbar {
+  background: hsl(var(--freq-hue) 65% 45% / 40%);
+}
+
+.light-theme .visualizer-channel.channel-active-pulse .channel-bars .vbar {
+  background: hsl(var(--freq-hue) 80% 45%);
+  box-shadow: 0 0 8px hsl(var(--freq-hue) 80% 45% / 60%);
+}
+
+.light-theme .visualizer-freq {
+  background: rgb(241 245 249 / 90%);
+  border-color: rgb(203 213 225 / 60%);
+}
+
+.light-theme .visualizer-freq .freq-val {
+  color: hsl(var(--freq-hue) 80% 40%);
+}
+

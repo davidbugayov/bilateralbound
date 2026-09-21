@@ -1,14 +1,19 @@
 'use strict'
 
-const isDev = (process.env.NODE_ENV || 'development') !== 'production'
+const isDev =
+  (process.env.NODE_ENV || 'development') !== 'production' ||
+  (process.env.PUBLIC_URL && process.env.PUBLIC_URL.includes('dev.'))
 
 const prodOrigins = [
   'https://emdrbilateral.ru',
-  'https://emdrbilateral.online'
+  'https://emdrbilateral.online',
+  'https://dev.emdrbilateral.online'
 ]
 
 const devOrigins = [
+  'https://dev.emdrbilateral.online',
   'http://localhost:3000',
+  'http://localhost:3003',
   'http://localhost:3006',
   'http://localhost:5000',
   'http://localhost:8080',
@@ -43,7 +48,9 @@ module.exports = {
     PRICE_STARS: Number.parseInt(process.env.PRICE_STARS || '75', 10), // 75 Stars (~100 RUB)
     SUBSCRIPTION_DURATION_MS: 30 * 24 * 60 * 60 * 1000, // 30 days
     TEST_MODE:
-      String(process.env.SUBSCRIPTION_TEST_MODE || '').toLowerCase() === 'true',
+      process.env.SUBSCRIPTION_TEST_MODE !== undefined
+        ? String(process.env.SUBSCRIPTION_TEST_MODE).toLowerCase() === 'true'
+        : isDev,
     BOT_USERNAME: process.env.BOT_USERNAME || 'emdrbilateral_bot',
     WEBHOOK_URL: process.env.WEBHOOK_URL || '',
     WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || ''

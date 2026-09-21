@@ -796,6 +796,58 @@
                 id="viewerAudioText"
               ></span>
             </div>
+
+            <!-- Controller CSS-based Bilateral Audio Frequency Visualizer Bar -->
+            <div
+              id="controllerAudioVisualizerBar"
+              class="audio-visualizer-bar hidden"
+              role="status"
+              aria-label="Bilateral Audio Frequency Visualizer"
+              style="margin-top: 10px; width: 100%; justify-content: space-between; box-sizing: border-box;"
+            >
+              <div
+                class="visualizer-channel visualizer-channel--left"
+                data-channel="left"
+                title="Left bilateral audio channel"
+              >
+                <span class="channel-lbl">L</span>
+                <div class="channel-bars">
+                  <span class="vbar vbar--1" style="--bar-h: 4px"></span>
+                  <span class="vbar vbar--2" style="--bar-h: 5px"></span>
+                  <span class="vbar vbar--3" style="--bar-h: 4px"></span>
+                  <span class="vbar vbar--4" style="--bar-h: 3px"></span>
+                  <span class="vbar vbar--5" style="--bar-h: 2px"></span>
+                </div>
+              </div>
+
+              <div class="visualizer-center-meter">
+                <div class="visualizer-wave">
+                  <span class="wave-pulse"></span>
+                </div>
+                <div
+                  class="visualizer-freq"
+                  title="Active Bilateral Audio Frequency"
+                >
+                  <span class="freq-val" id="controllerVisualizerFreqVal">180</span
+                  ><span class="freq-unit">Hz</span>
+                </div>
+              </div>
+
+              <div
+                class="visualizer-channel visualizer-channel--right"
+                data-channel="right"
+                title="Right bilateral audio channel"
+              >
+                <div class="channel-bars">
+                  <span class="vbar vbar--5" style="--bar-h: 2px"></span>
+                  <span class="vbar vbar--4" style="--bar-h: 3px"></span>
+                  <span class="vbar vbar--3" style="--bar-h: 4px"></span>
+                  <span class="vbar vbar--2" style="--bar-h: 5px"></span>
+                  <span class="vbar vbar--1" style="--bar-h: 4px"></span>
+                </div>
+                <span class="channel-lbl">R</span>
+              </div>
+            </div>
           </div>
         </section>
       </div>

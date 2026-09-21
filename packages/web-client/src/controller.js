@@ -18,6 +18,7 @@ require('./network/websocket-client')
 require('./network/realtime-client')
 require('./network/csrf')
 require('./ui/controller-settings')
+const { AudioVisualizer } = require('./ui/audio-visualizer')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const _ViewerStatus = require('./application/controller/viewer-status')
@@ -1056,14 +1057,39 @@ function _initializeControllerAudio() {
     })
   }
 
-  // Play sound on bounce when monitoring is active
-  globalThis.addEventListener('bb_bounce', () => {
-    if (!_controllerAudioManager?.enabled) return
+  let _audioVisualizerController = null
+  const ctrlVisEl = document.getElementById('controllerAudioVisualizerBar')
+  if (ctrlVisEl) {
+    _audioVisualizerController = new AudioVisualizer(ctrlVisEl, {
+      id: 'controllerAudioVisualizerBar',
+      initialFrequency: 180,
+      initialSoundType: 'soft'
+    })
+  }
+
+  // Play sound and trigger visualizer on bounce
+  globalThis.addEventListener('bb_bounce', (e) => {
+    const side =
+      e?.detail?.side || (lastServerState?.dirX > 0 ? 'right' : 'left')
     const soundType = lastServerState?.soundType || 'soft'
+    const soundEnabled = !!lastServerState?.soundEnabled
+
+    if (_audioVisualizerController) {
+      _audioVisualizerController.setActive(soundEnabled)
+      if (soundEnabled) {
+        _audioVisualizerController.setFrequency(
+          _controllerAudioManager ? _controllerAudioManager.getFrequency() : 180,
+          soundType
+        )
+        _audioVisualizerController.triggerPulse(side)
+      }
+    }
+
+    if (!_controllerAudioManager?.enabled) return
     if (_controllerAudioManager.soundType !== soundType) {
       _controllerAudioManager.setSoundType(soundType)
     }
-    _controllerAudioManager.playTick()
+    _controllerAudioManager.playTick(undefined, side)
   })
 }
 function initializeComponents() {

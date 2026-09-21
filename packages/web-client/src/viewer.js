@@ -17,10 +17,13 @@ require('./network/websocket-client')
 require('./network/realtime-client')
 require('./network/csrf')
 require('./ui/shared-components')
+const { AudioVisualizer } = require('./ui/audio-visualizer')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
 const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
 globalThis.PhysicsEngine = PhysicsEngine
+
+let audioVisualizer = null
 
 // ============================================================================
 // Viewer Application Logic (moved from viewer.html inline <script>)
@@ -449,6 +452,9 @@ function updateAudioFromState(state) {
   if (state.soundType) {
     debugLog('🔊 [VIEWER] soundType from state:', state.soundType)
     audioManager.setSoundType(state.soundType)
+    if (audioVisualizer && audioManager) {
+      audioVisualizer.setFrequency(audioManager.getFrequency(), state.soundType)
+    }
   }
 }
 
@@ -879,15 +885,36 @@ function checkAudioOverlay() {
 
   const audioControls = document.getElementById('viewerAudioControls')
   if (audioControls) {
-    const isAudioActive = audioManager && audioActivated
+    const isAudioActive = !!(audioManager && audioActivated && audioManager.enabled)
     audioControls.classList.toggle('hidden', !isAudioActive)
     audioControls.style.display = isAudioActive ? 'flex' : 'none'
+    if (!audioVisualizer) {
+      const visEl = document.getElementById('audioVisualizerBar')
+      if (visEl) {
+        audioVisualizer = new AudioVisualizer(visEl, {
+          initialFrequency: audioManager ? audioManager.getFrequency() : 180,
+          initialSoundType: audioManager ? audioManager.soundType : 'soft'
+        })
+      }
+    }
+    if (audioVisualizer) {
+      audioVisualizer.setActive(isAudioActive)
+      if (audioManager) {
+        audioVisualizer.setFrequency(
+          audioManager.getFrequency(),
+          audioManager.soundType
+        )
+      }
+    }
   }
 }
 
 function onBounce(side, dirX, dirY) {
   if (audioManager && audioManager.enabled && audioActivated) {
-    audioManager.playTick()
+    audioManager.playTick(undefined, side)
+    if (audioVisualizer) {
+      audioVisualizer.triggerPulse(side, audioManager.getFrequency())
+    }
   }
   if (wsClient && physicsEngine) {
     const ball = physicsEngine.ball

@@ -894,9 +894,17 @@ function t(key, lang, placeholders) {
 }
 
 /**
- * Get the site URL for a given language.
+ * Get the site URL for a given language, with optional customBaseUrl override (e.g. for dev server).
  */
-function siteUrl(lang) {
+function siteUrl(lang, customBaseUrl) {
+  if (
+    customBaseUrl &&
+    (customBaseUrl.includes('dev.') ||
+      customBaseUrl.includes('localhost') ||
+      customBaseUrl.includes('run.app'))
+  ) {
+    return customBaseUrl.replace(/\/+$/, '')
+  }
   return t('siteUrl', lang)
 }
 

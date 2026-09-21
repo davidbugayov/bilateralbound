@@ -226,6 +226,7 @@ function setupMiddleware(app, config, logger) {
       : 'Too many requests, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { keyGeneratorIpFallback: false },
     // keyGenerator uses req.ip which, after trust proxy, reflects X-Forwarded-For
     keyGenerator: (req) => req.ip
   })
