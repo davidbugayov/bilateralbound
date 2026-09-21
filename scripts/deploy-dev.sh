@@ -15,7 +15,7 @@ BRANCH="main"
 PORT="3003"
 MAX_RETRIES=30
 RETRY_INTERVAL=2
-SSH_KEY="$HOME/.ssh/id_rsa_emdr"
+SSH_KEY="$HOME/.ssh/id_ed25519"
 LOCAL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # SSH connection uses key auth (no password needed)
