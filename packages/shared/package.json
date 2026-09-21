@@ -3,6 +3,10 @@
   "version": "2.39.828",
   "description": "Shared modules for EMDR therapy platform",
   "main": "physics-engine.js",
+  "exports": {
+    ".": "./physics-engine.js",
+    "./*": "./*.js"
+  },
   "type": "commonjs",
   "license": "ISC"
 }

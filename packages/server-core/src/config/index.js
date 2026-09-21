@@ -18,7 +18,7 @@ const devOrigins = [
 
 module.exports = {
   server: {
-    PORT: process.env.NODE_PORT || process.env.PORT || 3000,
+    PORT: 3000,
     NODE_ENV: process.env.NODE_ENV || 'development',
     PUBLIC_URL: process.env.PUBLIC_URL || 'https://emdrbilateral.online',
     DATA_DIR: process.env.DATA_DIR || null // null = use default relative path

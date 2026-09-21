@@ -1,7 +1,16 @@
 /* jshint node: true, esversion: 11, strict: true */
 'use strict'
 
-const PhysicsEngine = require('@emdr/shared/physics-engine')
+let PhysicsEngine
+try {
+  PhysicsEngine = require('@emdr/shared/physics-engine')
+} catch (_) {
+  try {
+    PhysicsEngine = require('../../../shared/physics-engine')
+  } catch (_e) {
+    PhysicsEngine = require('../../../../packages/shared/physics-engine')
+  }
+}
 
 class PhysicsService {
   /**

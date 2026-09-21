@@ -47,8 +47,8 @@
     "deploy:prod:status": "bash scripts/deploy-prod-status.sh",
     "ship:dev": "git push origin main && bash scripts/deploy-dev.sh",
     "ship:prod": "git push origin stable && bash scripts/deploy-prod.sh",
-    "prepare": "husky",
-    "postinstall": "find node_modules -name '.claude' -type d ! -path '*/node_modules/.claude' -exec rm -rf {} + 2>/dev/null; true"
+    "prepare": "husky || true",
+    "postinstall": "mkdir -p node_modules/@emdr && ln -sfn ../../packages/shared node_modules/@emdr/shared 2>/dev/null; find node_modules -name '.claude' -type d ! -path '*/node_modules/.claude' -exec rm -rf {} + 2>/dev/null; true"
   },
   "lint-staged": {
     "*.js": "npx eslint --fix",

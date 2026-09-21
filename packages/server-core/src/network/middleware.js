@@ -234,7 +234,23 @@ function setupMiddleware(app, config, logger) {
   // CORS (from expressApp L304-319)
   app.use(
     cors({
-      origin: isDev ? true : config.cors.origins,
+      origin: (origin, callback) => {
+        if (!origin || isDev) return callback(null, true)
+        if (config.cors.origins.includes(origin)) return callback(null, true)
+        try {
+          const parsed = new URL(origin)
+          if (
+            parsed.hostname.endsWith('.run.app') ||
+            parsed.hostname.endsWith('.google.com') ||
+            parsed.hostname.includes('ai.studio')
+          ) {
+            return callback(null, true)
+          }
+        } catch (err) {
+          logger.debug({ err, origin }, 'Failed to parse origin for CORS')
+        }
+        callback(null, false)
+      },
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: [
         'Content-Type',
