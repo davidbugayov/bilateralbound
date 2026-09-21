@@ -1194,12 +1194,27 @@ body.light-theme {
 .cta-btn:hover {
   transform: translateY(-3px) scale(1.02);
   background: linear-gradient(135deg, #3b82f6 0, #2563eb 100%);
-  box-shadow:
-    0 0 0 1px rgb(59 130 246 / 40%),
-    0 12px 40px rgb(59 130 246 / 50%),
-    0 4px 12px rgb(0 0 0 / 25%);
+  animation: ctaHoverPulse 1.4s ease-in-out infinite;
+}
+@keyframes ctaHoverPulse {
+  0%,
+  100% {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+      0 0 0 0 rgb(59 130 246 / 50%),
+      0 12px 35px rgb(59 130 246 / 45%),
+      0 4px 12px rgb(0 0 0 / 25%);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow:
+      0 0 0 8px rgb(59 130 246 / 0%),
+      0 14px 40px rgb(59 130 246 / 55%),
+      0 4px 14px rgb(0 0 0 / 25%);
+  }
 }
 .cta-btn:active {
+  animation: none;
   transform: translateY(0) scale(0.98);
   transition-duration: 80ms;
 }
@@ -2769,7 +2784,8 @@ body.light-theme {
   .hero__ball-svg {
     animation: none;
   }
-  .cta-btn {
+  .cta-btn,
+  .cta-btn:hover {
     animation: none;
   }
   .cta-btn::before {
