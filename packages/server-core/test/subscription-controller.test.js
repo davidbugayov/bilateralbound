@@ -207,7 +207,9 @@ async function runTests() {
     server.close()
     try {
       fs.rmSync(testDataDir, { recursive: true, force: true })
-    } catch {}
+    } catch (_err) {
+      // ignore
+    }
   }
 }
 

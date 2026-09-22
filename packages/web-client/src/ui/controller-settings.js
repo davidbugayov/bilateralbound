@@ -54,8 +54,7 @@ class ControllerSettingsManager {
    * Отрисовка всех представлений пресетов (меню в шапке, быстрые кнопки, карточки)
    */
   renderAllPresetsUI() {
-    this.initPresetsMenu()
-    this.initQuickPresetsBar()
+    this.renderPresetsUI()
     if (this.activePresetId) {
       this._updateActivePresetUI(this.activePresetId)
     }
@@ -216,144 +215,14 @@ class ControllerSettingsManager {
     return defaultPresets
   }
   /**
-   * Инициализация выпадающего меню пресетов в шапке контроллера
+   * Инициализация панели быстрых пресетов
    */
-  initPresetsMenu() {
-    const btn = document.getElementById('presetsMenuBtn')
-    const menu = document.getElementById('presetsDropdownMenu')
-    const list = document.getElementById('presetsDropdownList')
-    if (!btn || !menu || !list) return
-
-    // Рендерим пункты меню
-    while (list.firstChild) list.firstChild.remove()
-    for (const [id, config] of Object.entries(this.presets)) {
-      const item = document.createElement('button')
-      item.type = 'button'
-      item.className = 'preset-menu-item'
-      item.dataset.presetId = id
-      item.setAttribute('role', 'menuitem')
-
-      const iconWrap = document.createElement('span')
-      iconWrap.className = 'pmenu-icon-wrap'
-      iconWrap.setAttribute('aria-hidden', 'true')
-      iconWrap.textContent = config.icon || '🎯'
-
-      const body = document.createElement('div')
-      body.className = 'pmenu-body'
-
-      const topRow = document.createElement('div')
-      topRow.className = 'pmenu-top-row'
-
-      const title = document.createElement('span')
-      title.className = 'pmenu-title'
-      if (config.i18nKey) {
-        title.dataset.i18n = config.i18nKey
-        title.textContent =
-          globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id
-      } else {
-        title.textContent = config.fallbackName || id
-      }
-
-      const tag = document.createElement('span')
-      tag.className = 'pmenu-tag'
-      tag.textContent = config.tag || `${config.speed}%`
-
-      topRow.appendChild(title)
-      topRow.appendChild(tag)
-
-      const desc = document.createElement('span')
-      desc.className = 'pmenu-desc'
-      if (config.descKey) {
-        desc.dataset.i18n = config.descKey
-        desc.textContent =
-          globalThis.i18n?.t(config.descKey) || config.fallbackDesc || ''
-      } else {
-        desc.textContent = config.fallbackDesc || ''
-      }
-
-      body.appendChild(topRow)
-      body.appendChild(desc)
-
-      const check = document.createElement('span')
-      check.className = 'pmenu-check'
-      check.setAttribute('aria-hidden', 'true')
-      check.textContent = '✓'
-
-      item.appendChild(iconWrap)
-      item.appendChild(body)
-      item.appendChild(check)
-
-      item.onclick = (e) => {
-        e.stopPropagation()
-        this.applyPreset(config, id)
-        this.closePresetsMenu()
-      }
-
-      list.appendChild(item)
-    }
-
-    // Слушатели открытия/закрытия
-    if (!this._presetsMenuInitialized) {
-      this._presetsMenuInitialized = true
-      btn.onclick = (e) => {
-        e.stopPropagation()
-        this.togglePresetsMenu()
-      }
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('#headerPresetsWrapper')) {
-          this.closePresetsMenu()
-        }
-      })
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          this.closePresetsMenu()
-        }
-      })
-    }
-  }
-  togglePresetsMenu() {
-    const btn = document.getElementById('presetsMenuBtn')
-    const menu = document.getElementById('presetsDropdownMenu')
-    if (!btn || !menu) return
-    const isHidden = menu.classList.contains('hidden')
-    if (isHidden) {
-      menu.classList.remove('hidden')
-      btn.setAttribute('aria-expanded', 'true')
-    } else {
-      menu.classList.add('hidden')
-      btn.setAttribute('aria-expanded', 'false')
-    }
-  }
-  closePresetsMenu() {
-    const btn = document.getElementById('presetsMenuBtn')
-    const menu = document.getElementById('presetsDropdownMenu')
-    if (btn && menu && !menu.classList.contains('hidden')) {
-      menu.classList.add('hidden')
-      btn.setAttribute('aria-expanded', 'false')
-    }
-  }
-  /**
-   * Инициализация панели быстрых пресетов над блоком Direction
-   */
-  initQuickPresetsBar() {
+  renderPresetsUI() {
     const pillsContainer = document.getElementById('presetsQuickPills')
-    console.log('initQuickPresetsBar - pillsContainer:', pillsContainer)
     if (!pillsContainer) return
     while (pillsContainer.firstChild) pillsContainer.firstChild.remove()
 
-    // Главные паттерны для мгновенного переключения в 1 клик
-    const quickPresetIds = [
-      'slowCalming',
-      'fastIntensive',
-      'standardProcessing',
-      'infinityFlow',
-      'diagonalProcessing',
-      'verticalActivation'
-    ]
-
-    for (const id of quickPresetIds) {
-      const config = this.presets[id]
-      console.log(`preset id ${id} config:`, !!config)
+    for (const [id, config] of Object.entries(this.presets)) {
       if (!config) continue
 
       const pill = document.createElement('button')
@@ -389,7 +258,7 @@ class ControllerSettingsManager {
 
       const tag = document.createElement('span')
       tag.className = 'preset-pill-tag'
-      tag.textContent = `${config.speed}%`
+      tag.textContent = config.tag || `${config.speed}%`
 
       pill.appendChild(left)
       pill.appendChild(tag)
@@ -432,11 +301,6 @@ class ControllerSettingsManager {
    */
   _updateActivePresetUI(activeId) {
     if (!activeId) return
-    document
-      .querySelectorAll('#presetsDropdownList .preset-menu-item')
-      .forEach((item) => {
-        item.classList.toggle('active', item.dataset.presetId === activeId)
-      })
     document
       .querySelectorAll('#presetsQuickPills .preset-pill')
       .forEach((pill) => {
