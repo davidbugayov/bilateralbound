@@ -99,7 +99,10 @@
   },
   "validation": {
     "invalidClientId": "❌ Ungültiges Format. Verwenden Sie nur lateinische Buchstaben, Zahlen, _ oder - (3-32 Zeichen)",
-    "clientIdValid": "✅ Klienten-ID ist gültig"
+    "clientIdValid": "✅ Klienten-ID ist gültig",
+    "disallowedCharacters": "❌ Unzulässiges Zeichen: {{chars}}. Nur a-z, 0-9, _ oder - sind erlaubt",
+    "disallowedCharGeneral": "❌ Unzulässige Zeichen. Nur a-z, 0-9, _ oder - sind erlaubt",
+    "clientIdTooShort": "⚠️ Mindestens 3 Zeichen erforderlich (aktuell {{count}})"
   },
   "notifications": {
     "sessionFound": "🎉 Sitzung gefunden!"
@@ -259,11 +262,20 @@
     "linkCopied": "Client-Link kopiert!",
     "presetApplied": "Preset angewendet",
     "presets": {
+      "slowCalming": "Langsam & Beruhigend",
+      "fastIntensive": "Schnell & Intensiv",
+      "standardProcessing": "Standard-Verarbeitung",
+      "infinityFlow": "Unendlichkeitsfluss",
+      "diagonalProcessing": "Diagonales Tracking",
+      "verticalActivation": "Vertikaler Fokus",
       "activation": "Aktivierung",
       "couplesTherapy": "Paartherapie",
       "dynamic": "Dynamisch",
       "relaxation": "Entspannung"
     },
+    "presetsMenu": "Presets",
+    "presetsMenuHeading": "Stimulationsmuster",
+    "presetsQuickSwitch": "Schnell-Presets",
     "success": "Erfolg",
     "viewerNotConnectedMessage": "Bitte warten Sie, bis sich der Viewer verbindet. Teilen Sie den Viewer-Link mit dem Kunden, damit er der Sitzung beitreten kann.",
     "viewerNotConnectedWarning": "Einstellungen können nicht geändert werden",

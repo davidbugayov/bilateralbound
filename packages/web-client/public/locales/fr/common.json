@@ -99,7 +99,10 @@
   },
   "validation": {
     "invalidClientId": "❌ Format invalide. Utilisez uniquement des lettres latines, des chiffres, _ ou - (3-32 caractères)",
-    "clientIdValid": "✅ L'ID du client est valide"
+    "clientIdValid": "✅ L'ID du client est valide",
+    "disallowedCharacters": "❌ Caractère non autorisé: {{chars}}. Seuls a-z, 0-9, _ ou - sont autorisés",
+    "disallowedCharGeneral": "❌ Caractères non autorisés. Seuls a-z, 0-9, _ ou - sont autorisés",
+    "clientIdTooShort": "⚠️ Entrez au moins 3 caractères (actuellement {{count}})"
   },
   "notifications": {
     "sessionFound": "🎉 Séance trouvée!"
@@ -259,11 +262,20 @@
     "linkCopied": "Lien client copié !",
     "presetApplied": "Préréglage appliqué",
     "presets": {
+      "slowCalming": "Lent et Apaisant",
+      "fastIntensive": "Rapide et Intensif",
+      "standardProcessing": "Traitement Standard",
+      "infinityFlow": "Flux Infini",
+      "diagonalProcessing": "Poursuite Diagonale",
+      "verticalActivation": "Focus Vertical",
       "activation": "Activation",
       "couplesTherapy": "Thérapie de couple",
       "dynamic": "Dynamique",
       "relaxation": "Détente"
     },
+    "presetsMenu": "Préréglages",
+    "presetsMenuHeading": "Modèles de stimulation",
+    "presetsQuickSwitch": "Préréglages rapides",
     "success": "Succès",
     "viewerNotConnectedMessage": "Veuillez attendre que la visionneuse se connecte. Partagez le lien de la visionneuse avec le client pour qu'il rejoigne la session.",
     "viewerNotConnectedWarning": "Impossible de modifier les paramètres",

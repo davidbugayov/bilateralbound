@@ -99,7 +99,10 @@
   },
   "validation": {
     "invalidClientId": "❌ Formato inválido. Use solo letras latinas, números, _ o - (3-32 caracteres)",
-    "clientIdValid": "✅ ID del cliente es válido"
+    "clientIdValid": "✅ ID del cliente es válido",
+    "disallowedCharacters": "❌ Carácter no permitido: {{chars}}. Solo se permiten a-z, 0-9, _ o -",
+    "disallowedCharGeneral": "❌ Caracteres no permitidos. Solo se permiten a-z, 0-9, _ o -",
+    "clientIdTooShort": "⚠️ Ingrese al menos 3 caracteres (actualmente {{count}})"
   },
   "notifications": {
     "sessionFound": "🎉 ¡Sesión encontrada!"
@@ -173,11 +176,20 @@
     "presetNamePrompt": "Nombre del nuevo preajuste:",
     "renameSessionPrompt": "Nuevo nombre de sesión:",
     "presets": {
+      "slowCalming": "Lento y Calmante",
+      "fastIntensive": "Rápido e Intensivo",
+      "standardProcessing": "Procesamiento Estándar",
+      "infinityFlow": "Flujo Infinito",
+      "diagonalProcessing": "Seguimiento Diagonal",
+      "verticalActivation": "Enfoque Vertical",
       "relaxation": "Relajación",
       "activation": "Activación",
       "couplesTherapy": "Terapia de pareja",
       "dynamic": "Dinámica"
     },
+    "presetsMenu": "Preajustes",
+    "presetsMenuHeading": "Patrones de estimulación",
+    "presetsQuickSwitch": "Preajustes rápidos",
     "presetsTitle": "🎯 Preajustes",
     "previewHeading": "👁️ Vista previa de movimiento",
     "random": "🎲 Aleatorio",

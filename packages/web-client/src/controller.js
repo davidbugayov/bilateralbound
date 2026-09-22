@@ -18,6 +18,7 @@ require('./network/websocket-client')
 require('./network/realtime-client')
 require('./network/csrf')
 require('./ui/controller-settings')
+require('./ui/session-logger')
 const { AudioVisualizer } = require('./ui/audio-visualizer')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
@@ -1488,6 +1489,11 @@ function setDirection(directionMode) {
       updateDirectionButtons()
       updateDirectionDisplay(0, 0)
       safeSend(WS_MSG.controllerUpdate, { infinity: true, dirX: 0, dirY: 0 })
+      try {
+        globalThis.sessionLogger?.recordDirection('infinity')
+      } catch (e) {
+        void e
+      }
       return
     }
 
@@ -1520,6 +1526,11 @@ function setDirection(directionMode) {
       })
       // Enable mouse/touch drag on preview canvas for manual ball positioning
       enableBrainspottingDrag()
+      try {
+        globalThis.sessionLogger?.recordDirection('brainspotting')
+      } catch (e) {
+        void e
+      }
       return
     }
 
@@ -1540,6 +1551,11 @@ function setDirection(directionMode) {
     updateDirectionButtons()
     updateDirectionDisplay(dirX, dirY)
     try {
+      globalThis.sessionLogger?.recordDirection(directionMode)
+    } catch (e) {
+      void e
+    }
+    try {
       globalThis.dispatchEvent(
         new CustomEvent('bb_metrika_settings_changed', {
           detail: { setting: 'direction', value: directionMode }
@@ -1559,6 +1575,15 @@ function _setPlayPauseState(shouldPlay) {
   const result = _PlayPause.setPlayPauseState(shouldPlay)
   isPlaying = _PlayPause.getIsPlaying()
   globalThis.isPlaying = isPlaying
+  try {
+    if (isPlaying) {
+      globalThis.sessionLogger?.start()
+    } else {
+      globalThis.sessionLogger?.stop()
+    }
+  } catch (e) {
+    void e
+  }
   return result
 }
 

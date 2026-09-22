@@ -108,21 +108,155 @@
   }
 
   /**
-   * Validate client ID format
+   * Validate client ID format: 3-32 chars, only a-z, 0-9, _ or -
    */
   function validateClientId(clientId) {
-    return /^[A-Za-z0-9_-]{3,32}$/.test(clientId)
+    return /^[a-z0-9_-]{3,32}$/.test(clientId)
+  }
+
+  const CLIENT_ID_ICONS = {
+    success:
+      '<svg class="hub-indicator-icon hub-indicator-icon--success" viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>',
+    error:
+      '<svg class="hub-indicator-icon hub-indicator-icon--error" viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>',
+    warning:
+      '<svg class="hub-indicator-icon hub-indicator-icon--warning" viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>'
   }
 
   /**
-   * Update validation message display
+   * Update visual indicator next to / inside the #customClientId input
    */
-  function updateValidationMessage(message, isError) {
+  function updateClientIdIndicator(state, tooltip = '') {
+    const indicator = document.getElementById('customClientIdIndicator')
+    if (!indicator) return
+
+    indicator.classList.remove(
+      'hub-input-indicator--visible',
+      'hub-input-indicator--success',
+      'hub-input-indicator--error',
+      'hub-input-indicator--warning'
+    )
+
+    if (!state || state === 'none') {
+      indicator.innerHTML = ''
+      indicator.removeAttribute('title')
+      indicator.removeAttribute('aria-label')
+      return
+    }
+
+    if (CLIENT_ID_ICONS[state]) {
+      indicator.innerHTML = CLIENT_ID_ICONS[state]
+      indicator.classList.add(
+        'hub-input-indicator--visible',
+        'hub-input-indicator--' + state
+      )
+      if (tooltip) {
+        indicator.setAttribute('title', tooltip)
+        indicator.setAttribute('aria-label', tooltip)
+      } else {
+        indicator.removeAttribute('title')
+        indicator.removeAttribute('aria-label')
+      }
+    }
+  }
+
+  /**
+   * Update validation message display, toggle error styling, and update indicator
+   */
+  function updateValidationMessage(
+    message,
+    isError,
+    isSuccess = false,
+    status = null
+  ) {
     const msgElement = document.getElementById('linkValidationMessage')
     if (msgElement) {
       msgElement.textContent = message
-      msgElement.classList.toggle('hub-validation--error', isError)
+      msgElement.classList.toggle('hub-validation--error', Boolean(isError))
+      msgElement.classList.toggle('hub-validation--success', Boolean(isSuccess))
     }
+    const input = document.getElementById('customClientId')
+    if (input) {
+      input.classList.toggle('hub-input--error', Boolean(isError))
+      input.classList.toggle('hub-input--valid', Boolean(isSuccess))
+      if (isError) {
+        input.setAttribute('aria-invalid', 'true')
+      } else {
+        input.removeAttribute('aria-invalid')
+      }
+    }
+
+    const state =
+      status || (isError ? 'error' : isSuccess ? 'success' : 'none')
+    updateClientIdIndicator(state, message)
+  }
+
+  /**
+   * Perform real-time validation on #customClientId input.
+   * Immediately flags any disallowed characters (not a-z, 0-9, _ or -).
+   */
+  function validateCustomClientIdInput() {
+    const input = document.getElementById('customClientId')
+    if (!input) return { valid: false, empty: true }
+
+    const rawValue = input.value || ''
+
+    if (!rawValue) {
+      updateValidationMessage(
+        globalThis.i18n?.t('links.examples') ||
+          'Examples: anna_2025, client-ivan, session42',
+        false,
+        false,
+        'none'
+      )
+      return { valid: false, empty: true }
+    }
+
+    // Check for any characters that are not allowed (not a-z, 0-9, _ or -)
+    const illegalMatches = rawValue.match(/[^a-z0-9_-]/g)
+    if (illegalMatches && illegalMatches.length > 0) {
+      const uniqueIllegal = [...new Set(illegalMatches)]
+        .map((c) => (c === ' ' ? 'space' : `"${c}"`))
+        .join(', ')
+
+      const template =
+        globalThis.i18n?.t('validation.disallowedCharacters') ||
+        '❌ Disallowed character: {{chars}}. Only a-z, 0-9, _ or - are allowed'
+      const msg = template.replace('{{chars}}', uniqueIllegal)
+
+      updateValidationMessage(msg, true, false, 'error')
+      return { valid: false, disallowedChars: uniqueIllegal }
+    }
+
+    // Characters are allowed! Check length constraints:
+    if (rawValue.length < 3) {
+      const template =
+        globalThis.i18n?.t('validation.clientIdTooShort') ||
+        '⚠️ Enter at least 3 characters (currently {{count}})'
+      const msg = template.replace('{{count}}', String(rawValue.length))
+
+      updateValidationMessage(msg, false, false, 'warning')
+      return { valid: false, tooShort: true }
+    }
+
+    if (rawValue.length > 32) {
+      const msg =
+        globalThis.i18n?.t('validation.invalidClientId') ||
+        '❌ Max 32 characters. Use only a-z, 0-9, _ or -'
+
+      updateValidationMessage(msg, true, false, 'error')
+      return { valid: false, tooLong: true }
+    }
+
+    // Valid: 3-32 chars of a-z, 0-9, _ or -
+    updateValidationMessage(
+      globalThis.i18n?.t('validation.clientIdValid') ||
+        '✅ Client ID is valid',
+      false,
+      true,
+      'success'
+    )
+    return { valid: true }
   }
 
   /**
@@ -152,23 +286,30 @@
     )
 
     if (!input || !btn) return
-    const clientId = input.value.trim()
+    const rawValue = input.value || ''
+    const clientId = rawValue.trim()
 
     if (!clientId) {
       updateValidationMessage(
         globalThis.i18n?.t('links.validationEmpty') ||
           '❌ Please enter a client ID',
-        true
+        true,
+        false
       )
       input.focus()
       return
     }
-    if (!validateClientId(clientId)) {
-      updateValidationMessage(
-        globalThis.i18n?.t('links.validationFormat') ||
-          '❌ Invalid format. Use only latin letters, numbers, _ or - (3-32 characters)',
-        true
-      )
+
+    const valResult = validateCustomClientIdInput()
+    if (!valResult.valid) {
+      if (valResult.tooShort) {
+        updateValidationMessage(
+          globalThis.i18n?.t('links.validationFormat') ||
+            '❌ Invalid format. Use only a-z, 0-9, _ or - (3-32 characters)',
+          true,
+          false
+        )
+      }
       input.focus()
       return
     }
@@ -245,7 +386,8 @@
       updateValidationMessage(
         globalThis.i18n?.t('links.createdSuccess') ||
           '✅ Links created successfully!',
-        false
+        false,
+        true
       )
 
       if (window.showSuccessNotification) {
@@ -831,26 +973,10 @@
     // Real-time client ID validation
     const clientIdInput = document.getElementById('customClientId')
     if (clientIdInput) {
-      clientIdInput.addEventListener('input', function (e) {
-        const value = (e.target?.value || '').trim()
-        if (!value) {
-          updateValidationMessage(
-            'Examples: anna_2025, client-ivan, session42',
-            false
-          )
-        } else if (validateClientId(value)) {
-          updateValidationMessage(
-            globalThis.i18n?.t('validation.clientIdValid') ||
-              '✅ Client ID is valid',
-            false
-          )
-        } else {
-          updateValidationMessage(
-            globalThis.i18n?.t('validation.invalidClientId') ||
-              '⚠️ Use latin letters, numbers, _ or - (3-32 characters)',
-            true
-          )
-        }
+      clientIdInput.addEventListener('input', validateCustomClientIdInput)
+      clientIdInput.addEventListener('change', validateCustomClientIdInput)
+      clientIdInput.addEventListener('paste', function () {
+        setTimeout(validateCustomClientIdInput, 0)
       })
       clientIdInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
@@ -858,6 +984,9 @@
           generatePermanentLinks()
         }
       })
+      if (clientIdInput.value) {
+        validateCustomClientIdInput()
+      }
     }
 
     // Initialize subscription UI
@@ -885,6 +1014,7 @@
       const customIdInput = document.getElementById('customClientId')
       if (customIdInput && !customIdInput.value) {
         customIdInput.value = urlClient
+        validateCustomClientIdInput()
       }
       const subCustomIdInput = document.getElementById('subCustomId')
       if (subCustomIdInput && !subCustomIdInput.value) {
@@ -909,10 +1039,10 @@
     window.addEventListener('focus', resetCreateSessionButton)
 
     // Language change handlers
-    globalThis.addEventListener(
-      'i18nLanguageChanged',
-      resetCreateSessionButton
-    )
+    globalThis.addEventListener('i18nLanguageChanged', function () {
+      resetCreateSessionButton()
+      validateCustomClientIdInput()
+    })
     globalThis.addEventListener('pageshow', function (e) {
       if (e.persisted && globalThis.i18n?.applyTranslations) {
         globalThis.i18n.applyTranslations()

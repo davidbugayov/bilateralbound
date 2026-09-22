@@ -610,16 +610,24 @@
                 >Client ID (3-32 chars: a-z, 0-9, _ or -)</label
               >
               <div class="hub-input-row">
-                <input
-                  type="text"
-                  id="customClientId"
-                  class="hub-input"
-                  data-i18n-attr="placeholder:links.placeholderClientId"
-                  placeholder="e.g. anna_2025"
-                  maxlength="32"
-                  aria-describedby="linkValidationMessage"
-                  autocomplete="off"
-                />
+                <div class="hub-input-wrapper">
+                  <input
+                    type="text"
+                    id="customClientId"
+                    class="hub-input"
+                    data-i18n-attr="placeholder:links.placeholderClientId"
+                    placeholder="e.g. anna_2025"
+                    maxlength="32"
+                    aria-describedby="linkValidationMessage"
+                    autocomplete="off"
+                  />
+                  <span
+                    id="customClientIdIndicator"
+                    class="hub-input-indicator"
+                    aria-live="polite"
+                    role="status"
+                  ></span>
+                </div>
                 <button
                   id="generateLinksBtn"
                   class="hub-btn"

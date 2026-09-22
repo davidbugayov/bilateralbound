@@ -75,6 +75,7 @@ const bbCounters = {
   },
   stop(incrementSet = false) {
     this.tick(performance.now())
+    this.lastElapsedMs = this.timerMs
     this.running = false
     if (incrementSet) {
       this.sets += 1
@@ -82,11 +83,22 @@ const bbCounters = {
       this.bounceHits = 0
       this._lastBounceTs = 0
       this._passesHistory = []
+      try {
+        if (typeof globalThis !== 'undefined' && globalThis.sessionLogger?.onSet) {
+          globalThis.sessionLogger.onSet()
+        }
+      } catch (e) {
+        void e
+      }
     }
     this.timerMs = 0
     this.render()
   },
+  getElapsedSeconds() {
+    return Math.floor((this.lastElapsedMs || this.timerMs || 0) / 1000)
+  },
   resetAll() {
+    this.lastElapsedMs = 0
     this.timerMs = 0
     this.passes = 0
     this.sets = 0
@@ -105,6 +117,13 @@ const bbCounters = {
     if (this.bounceHits % 2 === 0) {
       this.passes += 1
       this.addPassMeasurement()
+      try {
+        if (typeof globalThis !== 'undefined' && globalThis.sessionLogger?.onPass) {
+          globalThis.sessionLogger.onPass()
+        }
+      } catch (e) {
+        void e
+      }
       if (this.autoStopPasses > 0 && this.passes >= this.autoStopPasses) {
         this.render()
         this._triggerAutoStop()

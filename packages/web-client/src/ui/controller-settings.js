@@ -20,16 +20,29 @@ function _generateId() {
 class ControllerSettingsManager {
   constructor() {
     this.presets = this.loadPresets()
+    this.activePresetId = null
     this.sessionHistory = []
     this.sessions = this.loadSessions()
     this.currentSessionId = this.loadCurrentSessionId()
     this.initFeatures()
+    this.setupI18nListeners()
+  }
+  /**
+   * Слушатели для смены языка и готовности i18n
+   */
+  setupI18nListeners() {
+    globalThis.addEventListener('i18nLanguageChanged', () => {
+      this.renderAllPresetsUI()
+    })
+    globalThis.addEventListener('i18nReady', () => {
+      this.renderAllPresetsUI()
+    })
   }
   /**
    * Инициализация новых функций
    */
   initFeatures() {
-    this.addPresetControls()
+    this.renderAllPresetsUI()
     this.addSessionManagerUI()
     this.addSessionExportImport()
     this.addHistoryControls()
@@ -37,45 +50,156 @@ class ControllerSettingsManager {
     this.updateHeaderSessionName()
   }
   /**
+   * Отрисовка всех представлений пресетов (меню в шапке, быстрые кнопки, карточки)
+   */
+  renderAllPresetsUI() {
+    this.initPresetsMenu()
+    this.initQuickPresetsBar()
+    this.addPresetControls()
+    if (this.activePresetId) {
+      this._updateActivePresetUI(this.activePresetId)
+    }
+  }
+  /**
    * Управление пресетами настроек
    */
   loadPresets() {
     const defaultPresets = {
-      relaxation: {
-        i18nKey: 'controller.presets.relaxation',
-        fallbackName: 'Relaxation',
-        speed: 20,
+      slowCalming: {
+        id: 'slowCalming',
+        i18nKey: 'controller.presets.slowCalming',
+        fallbackName: 'Slow Calming',
+        descKey: 'controller.presetDescriptions.slowCalming',
+        fallbackDesc:
+          'Slow bilateral pace (18%) for calming, grounding & stabilization',
+        speed: 18,
+        direction: 'horizontal',
+        colorBall: '#38bdf8',
+        colorBg: '#020617',
+        size: 24,
+        soundType: 'soft',
+        soundEnabled: true,
+        icon: '🌊',
+        tag: '18% • Calming'
+      },
+      fastIntensive: {
+        id: 'fastIntensive',
+        i18nKey: 'controller.presets.fastIntensive',
+        fallbackName: 'Fast Intensive',
+        descKey: 'controller.presetDescriptions.fastIntensive',
+        fallbackDesc:
+          'Rapid bilateral passes (78%) to tax working memory & accelerate desensitization',
+        speed: 78,
+        direction: 'horizontal',
+        colorBall: '#f59e0b',
+        colorBg: '#000000',
+        size: 32,
+        soundType: 'tone',
+        soundEnabled: true,
+        icon: '⚡',
+        tag: '78% • Intensive'
+      },
+      standardProcessing: {
+        id: 'standardProcessing',
+        i18nKey: 'controller.presets.standardProcessing',
+        fallbackName: 'Standard Processing',
+        descKey: 'controller.presetDescriptions.standardProcessing',
+        fallbackDesc:
+          'Classic moderate EMDR bilateral stimulation (45%) for standard reprocessing',
+        speed: 45,
         direction: 'horizontal',
         colorBall: '#60a5fa',
         colorBg: '#020617',
-        size: 20
+        size: 28,
+        soundType: 'soft',
+        soundEnabled: true,
+        icon: '🎯',
+        tag: '45% • Standard'
       },
-      activation: {
-        i18nKey: 'controller.presets.activation',
-        fallbackName: 'Activation',
-        speed: 80,
+      infinityFlow: {
+        id: 'infinityFlow',
+        i18nKey: 'controller.presets.infinityFlow',
+        fallbackName: 'Infinity Flow',
+        descKey: 'controller.presetDescriptions.infinityFlow',
+        fallbackDesc:
+          'Continuous figure-8 pattern (42%) without edge bounces for deep somatic flow',
+        speed: 42,
+        direction: 'infinity',
+        colorBall: '#10b981',
+        colorBg: '#052e16',
+        size: 28,
+        soundType: 'soft',
+        soundEnabled: true,
+        icon: '∞',
+        tag: '42% • Figure-8'
+      },
+      diagonalProcessing: {
+        id: 'diagonalProcessing',
+        i18nKey: 'controller.presets.diagonalProcessing',
+        fallbackName: 'Diagonal Tracking',
+        descKey: 'controller.presetDescriptions.diagonalProcessing',
+        fallbackDesc:
+          'Alternating cross-hemispheric diagonal bilateral tracking (45%)',
+        speed: 45,
+        direction: 'diagRL',
+        colorBall: '#a855f7',
+        colorBg: '#1e1138',
+        size: 26,
+        soundType: 'click',
+        soundEnabled: true,
+        icon: '↖↘',
+        tag: '45% • Diagonal'
+      },
+      verticalActivation: {
+        id: 'verticalActivation',
+        i18nKey: 'controller.presets.verticalActivation',
+        fallbackName: 'Vertical Focus',
+        descKey: 'controller.presetDescriptions.verticalActivation',
+        fallbackDesc:
+          'Vertical eye movement (60%) for bodily alertness and somatic recalibration',
+        speed: 60,
         direction: 'vertical',
         colorBall: '#ef4444',
-        colorBg: '#000000',
-        size: 30
+        colorBg: '#180808',
+        size: 30,
+        soundType: 'tick',
+        soundEnabled: true,
+        icon: '↕️',
+        tag: '60% • Vertical'
       },
       couplesTherapy: {
+        id: 'couplesTherapy',
         i18nKey: 'controller.presets.couplesTherapy',
         fallbackName: 'Couples Therapy',
+        descKey: 'controller.presetDescriptions.couplesTherapy',
+        fallbackDesc:
+          'Synchronized bilateral path for relational EMDR (40%)',
         speed: 40,
         direction: 'diagRL',
         colorBall: '#10b981',
         colorBg: '#052e16',
-        size: 25
+        size: 25,
+        soundType: 'soft',
+        soundEnabled: true,
+        icon: '🤝',
+        tag: '40% • Relational'
       },
       dynamic: {
+        id: 'dynamic',
         i18nKey: 'controller.presets.dynamic',
         fallbackName: 'Dynamic',
+        descKey: 'controller.presetDescriptions.dynamic',
+        fallbackDesc:
+          'Dynamic alternating trajectory for active processing (60%)',
         speed: 60,
         direction: 'diagRLL',
         colorBall: '#f59e0b',
         colorBg: '#2b1b0e',
-        size: 35
+        size: 35,
+        soundType: 'soft',
+        soundEnabled: true,
+        icon: '🌀',
+        tag: '60% • Dynamic'
       }
     }
     try {
@@ -91,24 +215,213 @@ class ControllerSettingsManager {
     }
     return defaultPresets
   }
+  /**
+   * Инициализация выпадающего меню пресетов в шапке контроллера
+   */
+  initPresetsMenu() {
+    const btn = document.getElementById('presetsMenuBtn')
+    const menu = document.getElementById('presetsDropdownMenu')
+    const list = document.getElementById('presetsDropdownList')
+    if (!btn || !menu || !list) return
+
+    // Рендерим пункты меню
+    while (list.firstChild) list.firstChild.remove()
+    for (const [id, config] of Object.entries(this.presets)) {
+      const item = document.createElement('button')
+      item.type = 'button'
+      item.className = 'preset-menu-item'
+      item.dataset.presetId = id
+      item.setAttribute('role', 'menuitem')
+
+      const iconWrap = document.createElement('span')
+      iconWrap.className = 'pmenu-icon-wrap'
+      iconWrap.setAttribute('aria-hidden', 'true')
+      iconWrap.textContent = config.icon || '🎯'
+
+      const body = document.createElement('div')
+      body.className = 'pmenu-body'
+
+      const topRow = document.createElement('div')
+      topRow.className = 'pmenu-top-row'
+
+      const title = document.createElement('span')
+      title.className = 'pmenu-title'
+      if (config.i18nKey) {
+        title.dataset.i18n = config.i18nKey
+        title.textContent =
+          globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id
+      } else {
+        title.textContent = config.fallbackName || id
+      }
+
+      const tag = document.createElement('span')
+      tag.className = 'pmenu-tag'
+      tag.textContent = config.tag || `${config.speed}%`
+
+      topRow.appendChild(title)
+      topRow.appendChild(tag)
+
+      const desc = document.createElement('span')
+      desc.className = 'pmenu-desc'
+      if (config.descKey) {
+        desc.dataset.i18n = config.descKey
+        desc.textContent =
+          globalThis.i18n?.t(config.descKey) || config.fallbackDesc || ''
+      } else {
+        desc.textContent = config.fallbackDesc || ''
+      }
+
+      body.appendChild(topRow)
+      body.appendChild(desc)
+
+      const check = document.createElement('span')
+      check.className = 'pmenu-check'
+      check.setAttribute('aria-hidden', 'true')
+      check.textContent = '✓'
+
+      item.appendChild(iconWrap)
+      item.appendChild(body)
+      item.appendChild(check)
+
+      item.onclick = (e) => {
+        e.stopPropagation()
+        this.applyPreset(config, id)
+        this.closePresetsMenu()
+      }
+
+      list.appendChild(item)
+    }
+
+    // Слушатели открытия/закрытия
+    if (!this._presetsMenuInitialized) {
+      this._presetsMenuInitialized = true
+      btn.onclick = (e) => {
+        e.stopPropagation()
+        this.togglePresetsMenu()
+      }
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#headerPresetsWrapper')) {
+          this.closePresetsMenu()
+        }
+      })
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          this.closePresetsMenu()
+        }
+      })
+    }
+  }
+  togglePresetsMenu() {
+    const btn = document.getElementById('presetsMenuBtn')
+    const menu = document.getElementById('presetsDropdownMenu')
+    if (!btn || !menu) return
+    const isHidden = menu.classList.contains('hidden')
+    if (isHidden) {
+      menu.classList.remove('hidden')
+      btn.setAttribute('aria-expanded', 'true')
+    } else {
+      menu.classList.add('hidden')
+      btn.setAttribute('aria-expanded', 'false')
+    }
+  }
+  closePresetsMenu() {
+    const btn = document.getElementById('presetsMenuBtn')
+    const menu = document.getElementById('presetsDropdownMenu')
+    if (btn && menu && !menu.classList.contains('hidden')) {
+      menu.classList.add('hidden')
+      btn.setAttribute('aria-expanded', 'false')
+    }
+  }
+  /**
+   * Инициализация панели быстрых пресетов над блоком Direction
+   */
+  initQuickPresetsBar() {
+    const pillsContainer = document.getElementById('presetsQuickPills')
+    if (!pillsContainer) return
+    while (pillsContainer.firstChild) pillsContainer.firstChild.remove()
+
+    // Главные паттерны для мгновенного переключения в 1 клик
+    const quickPresetIds = [
+      'slowCalming',
+      'fastIntensive',
+      'standardProcessing',
+      'infinityFlow',
+      'diagonalProcessing',
+      'verticalActivation'
+    ]
+
+    for (const id of quickPresetIds) {
+      const config = this.presets[id]
+      if (!config) continue
+
+      const pill = document.createElement('button')
+      pill.type = 'button'
+      pill.className = 'preset-pill'
+      pill.dataset.presetId = id
+      const titleText =
+        (config.descKey && globalThis.i18n?.t(config.descKey)) ||
+        config.fallbackDesc ||
+        id
+      pill.setAttribute('title', titleText)
+
+      const left = document.createElement('div')
+      left.className = 'preset-pill-left'
+
+      const icon = document.createElement('span')
+      icon.className = 'preset-pill-icon'
+      icon.setAttribute('aria-hidden', 'true')
+      icon.textContent = config.icon || '🎯'
+
+      const name = document.createElement('span')
+      name.className = 'preset-pill-name'
+      if (config.i18nKey) {
+        name.dataset.i18n = config.i18nKey
+        name.textContent =
+          globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id
+      } else {
+        name.textContent = config.fallbackName || id
+      }
+
+      left.appendChild(icon)
+      left.appendChild(name)
+
+      const tag = document.createElement('span')
+      tag.className = 'preset-pill-tag'
+      tag.textContent = `${config.speed}%`
+
+      pill.appendChild(left)
+      pill.appendChild(tag)
+
+      pill.onclick = () => this.applyPreset(config, id)
+      pillsContainer.appendChild(pill)
+    }
+  }
+  /**
+   * Карточки пресетов в нижней секции настроек
+   */
   addPresetControls() {
     const container = document.getElementById('presetControls')
     if (!container) return
     while (container.firstChild) container.firstChild.remove()
-    const iconMap = {
-      relaxation: '🌊',
-      activation: '⚡',
-      couplesTherapy: '🤝',
-      dynamic: '🌀'
+
+    const dirSymbolMap = {
+      horizontal: '↔️',
+      vertical: '↕️',
+      infinity: '∞',
+      diagRL: '↖↘',
+      diagLR: '↗↙',
+      diagRLL: '🌀'
     }
+
     for (const [id, config] of Object.entries(this.presets)) {
       const btn = document.createElement('button')
+      btn.type = 'button'
       btn.className = 'preset-card'
-      if (iconMap[id]) btn.dataset.presetId = id
+      btn.dataset.presetId = id
 
       const icon = document.createElement('span')
       icon.className = 'preset-icon'
-      icon.textContent = iconMap[id] || '✨'
+      icon.textContent = config.icon || '🎯'
       icon.setAttribute('aria-hidden', 'true')
 
       const name = document.createElement('span')
@@ -118,14 +431,47 @@ class ControllerSettingsManager {
         name.textContent =
           globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id
       } else {
-        name.textContent = id
+        name.textContent = config.fallbackName || id
       }
+
+      const tag = document.createElement('span')
+      tag.className = 'preset-card-tag'
+      tag.textContent = config.tag || `${config.speed}%`
+
+      const desc = document.createElement('span')
+      desc.className = 'preset-card-desc'
+      if (config.descKey) {
+        desc.dataset.i18n = config.descKey
+        desc.textContent =
+          globalThis.i18n?.t(config.descKey) || config.fallbackDesc || ''
+      } else {
+        desc.textContent = config.fallbackDesc || ''
+      }
+
+      const dots = document.createElement('div')
+      dots.className = 'preset-preview-dots'
+
+      const ballDot = document.createElement('span')
+      ballDot.className = 'preset-preview-ball'
+      ballDot.style.backgroundColor = config.colorBall || '#60a5fa'
+
+      const dirSpan = document.createElement('span')
+      dirSpan.className = 'preset-preview-dir'
+      dirSpan.textContent = dirSymbolMap[config.direction] || '↔️'
+
+      dots.appendChild(ballDot)
+      dots.appendChild(dirSpan)
 
       btn.appendChild(icon)
       btn.appendChild(name)
-      btn.onclick = () => this.applyPreset(config)
+      btn.appendChild(tag)
+      btn.appendChild(desc)
+      btn.appendChild(dots)
+
+      btn.onclick = () => this.applyPreset(config, id)
       container.appendChild(btn)
     }
+
     if (globalThis.i18n?.applyTranslations) {
       globalThis.i18n.applyTranslations()
     }
@@ -136,14 +482,52 @@ class ControllerSettingsManager {
   /**
    * Применение предустановленных настроек
    */
-  async applyPreset(preset) {
+  async applyPreset(preset, presetId = null) {
     try {
+      if (!preset) return
+      if (!presetId) {
+        presetId =
+          preset.id ||
+          Object.entries(this.presets).find(([, v]) => v === preset)?.[0] ||
+          null
+      }
+      this.activePresetId = presetId
       await this._applyPresetSettings(preset)
+      this._updateActivePresetUI(presetId)
       this._showPresetAppliedNotification(preset)
+      try {
+        if (globalThis.sessionLogger?.recordPreset) {
+          globalThis.sessionLogger.recordPreset(presetId, preset)
+        }
+      } catch (e) {
+        void e
+      }
     } catch (error) {
       debugError('Apply preset error:', error)
       globalThis.notificationSystem?.error('Error', 'Failed to apply preset')
     }
+  }
+  /**
+   * Обновление активного состояния во всех компонентах интерфейса
+   * @private
+   */
+  _updateActivePresetUI(activeId) {
+    if (!activeId) return
+    document
+      .querySelectorAll('#presetsDropdownList .preset-menu-item')
+      .forEach((item) => {
+        item.classList.toggle('active', item.dataset.presetId === activeId)
+      })
+    document
+      .querySelectorAll('#presetsQuickPills .preset-pill')
+      .forEach((pill) => {
+        pill.classList.toggle('active', pill.dataset.presetId === activeId)
+      })
+    document
+      .querySelectorAll('#presetControls .preset-card')
+      .forEach((card) => {
+        card.classList.toggle('active', card.dataset.presetId === activeId)
+      })
   }
   /**
    * Применяет настройки пресета
@@ -167,7 +551,7 @@ class ControllerSettingsManager {
           globalThis.i18n?.t(presetEntry[1].i18nKey) ||
           presetEntry[1].fallbackName
       } else {
-        presetName = presetEntry[0]
+        presetName = presetEntry[1].fallbackName || presetEntry[0]
       }
     }
     const i18n = globalThis.i18n
@@ -186,18 +570,26 @@ class ControllerSettingsManager {
       globalThis.i18n?.t('controller.presetNamePrompt') || 'New preset name:'
     )
     if (!name || name.trim() === '') return
+    const trimmed = name.trim()
     const colorBtn = document.querySelector('.color-btn.active')
-    this.presets[name.trim()] = {
-      speed: globalThis.components?.speed?.getSpeed?.() ?? 40,
+    const currentSpeed = globalThis.components?.speed?.getSpeed?.() ?? 40
+    const currentDir = globalThis.currentDirectionMode || 'horizontal'
+    this.presets[trimmed] = {
+      id: trimmed,
+      fallbackName: trimmed,
+      fallbackDesc: `Custom preset (${currentSpeed}%)`,
+      speed: currentSpeed,
       colorBall: colorBtn?.style?.backgroundColor ?? '#60a5fa',
       colorBg: document.body.style.backgroundColor || '#020617',
       size: document.querySelector('.size-btn.active')?.dataset?.size ?? 40,
-      direction: globalThis.currentDirectionMode || 'horizontal'
+      direction: currentDir,
+      icon: '✨',
+      tag: `${currentSpeed}%`
     }
     this.savePresets()
-    this.addPresetControls()
+    this.renderAllPresetsUI()
     globalThis.successToast?.success(
-      `"${name}" — ${globalThis.i18n?.t('controller.sessionManagement.presetSaved') || 'Preset saved'}`
+      `"${trimmed}" — ${globalThis.i18n?.t('controller.sessionManagement.presetSaved') || 'Preset saved'}`
     )
   }
   savePresets() {
@@ -288,14 +680,30 @@ class ControllerSettingsManager {
     this.applyPlayStateSetting(settings.isPlaying)
   }
   async _applyCommonSettings(settings) {
+    if (!settings) return
+    const ballColor = settings.ballColor || settings.colorBall
+    const bgColor = settings.bgColor || settings.colorBg
+    const ballSize = settings.ballSize || settings.size
     await this._applySpeedSetting(settings.speed)
     this._applyDirectionSetting(settings.direction)
-    this._applyColorSettings(settings.ballColor, settings.bgColor)
-    this._applySizeSetting(settings.ballSize)
+    this._applyColorSettings(ballColor, bgColor)
+    this._applySizeSetting(ballSize)
+    if (
+      typeof settings.soundEnabled === 'boolean' &&
+      typeof globalThis.setSoundEnabled === 'function'
+    ) {
+      globalThis.setSoundEnabled(settings.soundEnabled)
+    }
+    if (settings.soundType && typeof globalThis.setSoundType === 'function') {
+      globalThis.setSoundType(settings.soundType)
+    }
   }
   async _applySpeedSetting(speed) {
-    if (speed && globalThis.components?.speed) {
+    if (speed !== undefined && speed !== null && globalThis.components?.speed) {
       globalThis.components.speed.setSpeed(speed, true)
+      if (globalThis.previewPhysicsEngine?.setSpeed) {
+        globalThis.previewPhysicsEngine.setSpeed(speed)
+      }
       await this.sendUpdate({ speed: speed })
     }
   }
@@ -767,8 +1175,16 @@ class ControllerSettingsManager {
   }
 }
 globalThis.ControllerSettingsManager = ControllerSettingsManager
-globalThis.applyPreset = (preset) =>
-  globalThis.controllerSettingsManager?.applyPreset?.(preset)
+globalThis.applyPreset = (preset, presetId) =>
+  globalThis.controllerSettingsManager?.applyPreset?.(preset, presetId)
+globalThis.applyPresetById = (presetId) => {
+  const m = globalThis.controllerSettingsManager
+  if (m && m.presets && m.presets[presetId]) {
+    m.applyPreset(m.presets[presetId], presetId)
+    return true
+  }
+  return false
+}
 globalThis.createCustomPreset = () =>
   globalThis.controllerSettingsManager?.createCustomPreset?.()
 globalThis.exportSession = () =>
