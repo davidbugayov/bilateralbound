@@ -603,6 +603,7 @@ let physicsEngine
 let ballRenderer
 let audioManager = null
 let audioActivated = false
+let hapticsEnabled = false
 let pendingSoundEnabled = false
 const components = {}
 let resizeTimeout = null
@@ -624,6 +625,19 @@ if (typeof globalThis !== 'undefined') {
     debugLog(
       'Audio activation state reset. Reload page to see unmute overlay again.'
     )
+  }
+
+  globalThis.toggleHaptics = function () {
+    hapticsEnabled = !hapticsEnabled
+    const btn = document.getElementById('hapticsToggleBtn')
+    if (btn) {
+      btn.style.background = hapticsEnabled ? 'rgba(255,255,255,0.2)' : 'transparent'
+      btn.style.boxShadow = hapticsEnabled ? '0 0 8px rgba(255,255,255,0.3)' : 'none'
+    }
+    if (hapticsEnabled && navigator.vibrate) {
+      // Test vibration
+      navigator.vibrate(50)
+    }
   }
 }
 
@@ -910,6 +924,9 @@ function checkAudioOverlay() {
 }
 
 function onBounce(side, dirX, dirY) {
+  if (hapticsEnabled && navigator.vibrate) {
+    navigator.vibrate(80)
+  }
   if (audioManager && audioManager.enabled && audioActivated) {
     audioManager.playTick(undefined, side)
     if (audioVisualizer) {
