@@ -41,6 +41,7 @@
     "heading": "クライアント用の永続リンク",
     "description": "2時間の無料アクセスが終了しました。1⭐ / 30日で無制限アクセスを購読してください。",
     "formLabelClientId": "クライアントID（3-32文字：ラテン文字、数字、_または-）",
+    "tooltipClientId": "長さ：3〜32文字。使用可能：英小文字（a〜z）、数字（0〜9）、ハイフン（-）、アンダースコア（_）。スペースや特殊文字は使用できません。",
     "placeholderClientId": "anna_2025またはclient-ivan",
     "generateBtn": "作成",
     "examples": "例：anna_2025、client-ivan、session42",

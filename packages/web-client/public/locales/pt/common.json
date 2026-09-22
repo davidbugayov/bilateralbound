@@ -41,6 +41,7 @@
     "heading": "Links permanentes para clientes",
     "description": "O acesso gratuito de 2 horas terminou. Assine por 1⭐ / 30 dias para acesso ilimitado.",
     "formLabelClientId": "ID do cliente (3-32 caracteres: letras latinas, números, _ ou -)",
+    "tooltipClientId": "Tamanho: 3–32 caracteres. Permitidos: letras latinas minúsculas (a–z), números (0–9), hífen (-) e sublinhado (_). Espaços e caracteres especiais não são permitidos.",
     "placeholderClientId": "anna_2025 ou client-ivan",
     "generateBtn": "Criar",
     "examples": "Exemplos: anna_2025, client-ivan, session42",

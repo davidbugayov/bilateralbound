@@ -615,10 +615,11 @@
                     type="text"
                     id="customClientId"
                     class="hub-input"
-                    data-i18n-attr="placeholder:links.placeholderClientId"
+                    data-i18n-attr="placeholder:links.placeholderClientId;title:links.tooltipClientId"
                     placeholder="e.g. anna_2025"
+                    title="Length: 3–32 characters. Allowed: lowercase latin letters (a–z), numbers (0–9), hyphens (-), and underscores (_). Spaces and special characters are not allowed."
                     maxlength="32"
-                    aria-describedby="linkValidationMessage"
+                    aria-describedby="linkValidationMessage customClientIdTooltip"
                     autocomplete="off"
                   />
                   <span
@@ -627,6 +628,14 @@
                     aria-live="polite"
                     role="status"
                   ></span>
+                  <div
+                    id="customClientIdTooltip"
+                    class="hub-tooltip"
+                    role="tooltip"
+                    data-i18n="links.tooltipClientId"
+                  >
+                    Length: 3–32 characters. Allowed: lowercase latin letters (a–z), numbers (0–9), hyphens (-), and underscores (_). Spaces and special characters are not allowed.
+                  </div>
                 </div>
                 <button
                   id="generateLinksBtn"

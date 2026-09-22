@@ -262,6 +262,49 @@ body.light-theme {
   height: 18px;
   flex-shrink: 0;
 }
+.hub-tooltip {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 0;
+  z-index: 50;
+  max-width: 300px;
+  width: max-content;
+  padding: 8px 12px;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: #f1f5f9;
+  background: #1e293b;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 8px;
+  box-shadow:
+    0 10px 25px -3px rgb(0 0 0 / 50%),
+    0 4px 6px -2px rgb(0 0 0 / 25%);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition:
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.2s;
+  overflow-wrap: break-word;
+}
+.hub-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 20px;
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: #1e293b transparent transparent transparent;
+}
+.hub-input:hover ~ .hub-tooltip,
+.hub-input-wrapper:hover .hub-tooltip,
+.hub-input:focus-visible ~ .hub-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
 .hub-input {
   flex: 1;
   min-width: 0;
@@ -969,6 +1012,17 @@ body.light-theme {
 }
 .light-theme .hub-input-indicator--warning {
   color: #d97706;
+}
+.light-theme .hub-tooltip {
+  color: #0f172a;
+  background: #ffffff;
+  border-color: rgb(0 0 0 / 12%);
+  box-shadow:
+    0 10px 25px -3px rgb(0 0 0 / 12%),
+    0 4px 6px -2px rgb(0 0 0 / 6%);
+}
+.light-theme .hub-tooltip::after {
+  border-color: #ffffff transparent transparent transparent;
 }
 .light-theme .hub-input::placeholder {
   color: rgb(0 0 0 / 30%);

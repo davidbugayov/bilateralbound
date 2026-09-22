@@ -41,6 +41,7 @@
     "heading": "客户的永久链接",
     "description": "2小时免费访问已结束。订阅1⭐ / 30天获取无限访问。",
     "formLabelClientId": "客户ID（3-32个字符：拉丁字母、数字、_或-）",
+    "tooltipClientId": "长度：3–32个字符。允许：小写拉丁字母（a–z）、数字（0–9）、连字符（-）和下划线（_）。不允许空格或特殊符号。",
     "placeholderClientId": "anna_2025或client-ivan",
     "generateBtn": "创建",
     "examples": "示例：anna_2025、client-ivan、session42",
