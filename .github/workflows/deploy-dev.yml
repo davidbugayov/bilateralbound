@@ -19,7 +19,6 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-          cache: 'npm'
       - run: npm install --ignore-scripts
       - run: npm run lint
 
@@ -32,7 +31,6 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-          cache: 'npm'
 
       - name: Install SSH client
         run: sudo apt-get update && sudo apt-get install -y openssh-client rsync
