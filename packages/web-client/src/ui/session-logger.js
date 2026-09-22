@@ -63,6 +63,30 @@ class SessionLogger {
     if (typeof globalThis !== 'undefined' && globalThis.isPlaying) {
       this.start()
     }
+
+    // Expose clinical notes saver
+    globalThis.saveClinicalNote = () => {
+      const sud = document.getElementById('sudSlider')?.value || 0
+      const voc = document.getElementById('vocSlider')?.value || 1
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      const noteStr = `[${timestamp}] SUD: ${sud}/10 | VOC: ${voc}/7`
+
+      const currentNotes = this.activeSession.notes || ''
+      this.activeSession.notes = currentNotes ? currentNotes + '\n' + noteStr : noteStr
+      this._persistActiveSession()
+
+      // Visual feedback
+      const btn = event?.currentTarget
+      if (btn) {
+        const ogText = btn.textContent
+        btn.textContent = '✅ Saved!'
+        btn.classList.add('success')
+        setTimeout(() => {
+          btn.textContent = ogText
+          btn.classList.remove('success')
+        }, 2000)
+      }
+    }
   }
 
   // --- Session Lifecycle Tracking ---

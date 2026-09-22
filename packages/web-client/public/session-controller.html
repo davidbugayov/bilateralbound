@@ -595,6 +595,14 @@
               <div class="illus-section">
                 <div class="illus-tabs" role="tablist">
                   <button
+                    class="illus-tab"
+                    role="tab"
+                    data-tab="shapes"
+                    onclick="switchIllusTab('shapes', this)"
+                  >
+                    Shapes
+                  </button>
+                  <button
                     class="illus-tab active"
                     role="tab"
                     data-tab="animals"
@@ -1129,6 +1137,32 @@
                 class="autostop-countdown-val"
               ></span>
             </div>
+          </div>
+        </div>
+
+        <!-- Clinical Tracking (SUD / VOC) -->
+        <div class="controls-card clinical-tracking-card" id="clinicalTrackingCard">
+          <p class="controls-title">
+            <span>📋 Clinical Tracking (SUD/VOC)</span>
+          </p>
+          <div class="clinical-scales">
+            <div class="clinical-scale">
+              <label for="sudSlider" class="clinical-scale-label">
+                SUD (Distress): <span id="sudValue">0</span>
+              </label>
+              <input type="range" id="sudSlider" min="0" max="10" value="0" class="styled-slider" oninput="document.getElementById('sudValue').textContent=this.value" />
+              <div class="scale-ticks"><span>0</span><span>10</span></div>
+            </div>
+            <div class="clinical-scale">
+              <label for="vocSlider" class="clinical-scale-label">
+                VOC (Belief): <span id="vocValue">1</span>
+              </label>
+              <input type="range" id="vocSlider" min="1" max="7" value="1" class="styled-slider" oninput="document.getElementById('vocValue').textContent=this.value" />
+              <div class="scale-ticks"><span>1</span><span>7</span></div>
+            </div>
+            <button class="btn outline btn-sm" style="width: 100%; margin-top: 10px;" onclick="saveClinicalNote()">
+              Save to Session Log
+            </button>
           </div>
         </div>
 
