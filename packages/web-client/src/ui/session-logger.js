@@ -65,7 +65,7 @@ class SessionLogger {
     }
 
     // Expose clinical notes saver
-    globalThis.saveClinicalNote = () => {
+    globalThis.saveClinicalNote = (btnEl) => {
       const sud = document.getElementById('sudSlider')?.value || 0
       const voc = document.getElementById('vocSlider')?.value || 1
       const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -76,14 +76,13 @@ class SessionLogger {
       this._persistActiveSession()
 
       // Visual feedback
-      const btn = event?.currentTarget
-      if (btn) {
-        const ogText = btn.textContent
-        btn.textContent = '✅ Saved!'
-        btn.classList.add('success')
+      if (btnEl) {
+        const ogText = btnEl.textContent
+        btnEl.textContent = '\u2705 Saved!'
+        btnEl.classList.add('success')
         setTimeout(() => {
-          btn.textContent = ogText
-          btn.classList.remove('success')
+          btnEl.textContent = ogText
+          btnEl.classList.remove('success')
         }, 2000)
       }
     }

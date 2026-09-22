@@ -678,10 +678,8 @@ if (typeof globalThis !== 'undefined') {
         ? 'rgba(124,108,247,0.3)'
         : 'none'
     })
-    // Close menu if a sound was chosen
-    if (type !== 'none') {
-      // keep open so user can adjust volume
-    } else {
+    // Close menu only when turning off
+    if (type === 'none') {
       document.getElementById('ambientMenu').style.display = 'none'
     }
   }

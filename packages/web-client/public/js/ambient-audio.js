@@ -4,7 +4,7 @@
  * Uses Web Audio API to generate relaxing background sounds without audio files.
  * Sounds: rain, ocean waves, forest, white noise, binaural beats.
  */
-;(function () {
+(function () {
   'use strict'
 
   class AmbientAudio {
