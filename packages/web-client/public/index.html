@@ -610,7 +610,11 @@
                 >Client ID (3-32 chars: a-z, 0-9, _ or -)</label
               >
               <div class="hub-input-row">
-                <div class="hub-input-wrapper">
+                <div
+                  id="customClientIdWrapper"
+                  class="hub-input-wrapper"
+                  data-focus-trap="true"
+                >
                   <input
                     type="text"
                     id="customClientId"
@@ -619,18 +623,26 @@
                     placeholder="e.g. anna_2025"
                     title="Length: 3–32 characters. Allowed: lowercase latin letters (a–z), numbers (0–9), hyphens (-), and underscores (_). Spaces and special characters are not allowed."
                     maxlength="32"
-                    aria-describedby="linkValidationMessage customClientIdTooltip"
+                    aria-describedby="linkValidationMessage customClientIdTooltip customClientIdCounter"
                     autocomplete="off"
                   />
                   <span
+                    id="customClientIdCounter"
+                    class="hub-input-counter"
+                    aria-live="polite"
+                  >0/32</span>
+                  <span
                     id="customClientIdIndicator"
                     class="hub-input-indicator"
+                    tabindex="-1"
+                    aria-hidden="true"
                     aria-live="polite"
                     role="status"
                   ></span>
                   <div
                     id="customClientIdTooltip"
                     class="hub-tooltip"
+                    tabindex="0"
                     role="tooltip"
                     data-i18n="links.tooltipClientId"
                   >

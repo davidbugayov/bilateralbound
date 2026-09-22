@@ -141,6 +141,8 @@
       indicator.innerHTML = ''
       indicator.removeAttribute('title')
       indicator.removeAttribute('aria-label')
+      indicator.setAttribute('tabindex', '-1')
+      indicator.setAttribute('aria-hidden', 'true')
       return
     }
 
@@ -150,6 +152,8 @@
         'hub-input-indicator--visible',
         'hub-input-indicator--' + state
       )
+      indicator.setAttribute('tabindex', '0')
+      indicator.removeAttribute('aria-hidden')
       if (tooltip) {
         indicator.setAttribute('title', tooltip)
         indicator.setAttribute('aria-label', tooltip)
@@ -192,10 +196,26 @@
   }
 
   /**
+   * Update character counter for #customClientId (e.g., '0/32')
+   */
+  function updateClientIdCharacterCount() {
+    const input = document.getElementById('customClientId')
+    const counter = document.getElementById('customClientIdCounter')
+    if (!counter) return
+    const length = input ? (input.value ? input.value.length : 0) : 0
+    const max = input && input.maxLength > 0 ? input.maxLength : 32
+    counter.textContent = `${length}/${max}`
+    counter.classList.toggle('hub-input-counter--limit', length === max)
+    counter.classList.toggle('hub-input-counter--error', length > max)
+    counter.setAttribute('aria-label', `${length} of ${max} characters`)
+  }
+
+  /**
    * Perform real-time validation on #customClientId input.
    * Immediately flags any disallowed characters (not a-z, 0-9, _ or -).
    */
   function validateCustomClientIdInput() {
+    updateClientIdCharacterCount()
     const input = document.getElementById('customClientId')
     if (!input) return { valid: false, empty: true }
 
@@ -260,6 +280,128 @@
   }
 
   /**
+   * Trigger a CSS shake animation on an input element
+   */
+  function triggerInputShake(input) {
+    if (!input) return
+    input.classList.remove('hub-input--shake')
+    // Force reflow so animation restarts cleanly on repeated attempts
+    void input.offsetWidth
+    input.classList.add('hub-input--shake')
+    let cleaned = false
+    const cleanup = () => {
+      if (cleaned) return
+      cleaned = true
+      input.classList.remove('hub-input--shake')
+      input.removeEventListener('animationend', cleanup)
+    }
+    input.addEventListener('animationend', cleanup)
+    setTimeout(cleanup, 500)
+  }
+
+  /**
+   * Set up accessible keyboard focus trap within #customClientId wrapper
+   * Ensures seamless accessibility when navigating via keyboard through the input field,
+   * active status indicator, and guidance tooltip.
+   */
+  function setupClientIdFocusTrap() {
+    const wrapper =
+      document.getElementById('customClientIdWrapper') ||
+      document.querySelector('.hub-input-wrapper')
+    const input = document.getElementById('customClientId')
+    const indicator = document.getElementById('customClientIdIndicator')
+    const tooltip = document.getElementById('customClientIdTooltip')
+    if (!wrapper || !input) return
+
+    // Ensure tooltip has tabindex="0" for keyboard accessibility
+    if (tooltip && !tooltip.hasAttribute('tabindex')) {
+      tooltip.setAttribute('tabindex', '0')
+    }
+
+    // Keydown handlers for interactive keyboard accessibility on indicator & tooltip
+    if (indicator) {
+      indicator.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          input.focus()
+        }
+      })
+    }
+
+    if (tooltip) {
+      tooltip.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          input.focus()
+        }
+      })
+    }
+
+    // Trap focus inside wrapper during Tab / Shift+Tab navigation
+    wrapper.addEventListener('keydown', function (e) {
+      // Escape allows users to cleanly exit the focus trap
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        if (document.activeElement === input) {
+          const nextBtn = document.getElementById('generateLinksBtn')
+          if (nextBtn) {
+            nextBtn.focus()
+          } else {
+            input.blur()
+          }
+        } else {
+          input.focus()
+        }
+        return
+      }
+
+      if (e.key !== 'Tab') return
+
+      const focusableSelectors =
+        'input:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
+      const focusables = Array.from(
+        wrapper.querySelectorAll(focusableSelectors)
+      ).filter(function (el) {
+        if (el === tooltip || el === input) return true
+        if (window.getComputedStyle(el).display === 'none') return false
+        if (window.getComputedStyle(el).visibility === 'hidden') return false
+        return el.offsetWidth > 0 || el.offsetHeight > 0
+      })
+
+      if (focusables.length <= 1) {
+        if (focusables.includes(document.activeElement)) {
+          e.preventDefault()
+          focusables[0].focus()
+        }
+        return
+      }
+
+      const firstFocusable = focusables[0]
+      const lastFocusable = focusables[focusables.length - 1]
+
+      if (e.shiftKey) {
+        // Shift + Tab (backwards)
+        if (
+          document.activeElement === firstFocusable ||
+          !wrapper.contains(document.activeElement)
+        ) {
+          e.preventDefault()
+          lastFocusable.focus()
+        }
+      } else {
+        // Tab (forwards)
+        if (
+          document.activeElement === lastFocusable ||
+          !wrapper.contains(document.activeElement)
+        ) {
+          e.preventDefault()
+          firstFocusable.focus()
+        }
+      }
+    })
+  }
+
+  /**
    * Setup auto-select on click/focus for URL inputs
    */
   function setupUrlInputClick(input) {
@@ -296,6 +438,7 @@
         true,
         false
       )
+      triggerInputShake(input)
       input.focus()
       return
     }
@@ -310,6 +453,7 @@
           false
         )
       }
+      triggerInputShake(input)
       input.focus()
       return
     }
@@ -403,6 +547,7 @@
     } catch (error) {
       console.error('❌ Error creating permanent links:', error)
       updateValidationMessage('❌ ' + error.message, true)
+      triggerInputShake(input)
       if (window.showErrorNotification) {
         window.showErrorNotification(
           (globalThis.i18n?.t('links.errorCreating') ||
@@ -989,6 +1134,9 @@
       }
     }
 
+    // Set up focus trap for client ID input wrapper
+    setupClientIdFocusTrap()
+
     // Initialize subscription UI
     initSubscriptionUI()
     initSubscriptionManagementUI()
@@ -1062,6 +1210,10 @@
   window.mainPage = {
     createSession: createSession,
     generatePermanentLinks: generatePermanentLinks,
-    loadSession: loadSession
+    loadSession: loadSession,
+    setupClientIdFocusTrap: setupClientIdFocusTrap,
+    triggerInputShake: triggerInputShake,
+    updateClientIdCharacterCount: updateClientIdCharacterCount,
+    validateCustomClientIdInput: validateCustomClientIdInput
   }
 })()

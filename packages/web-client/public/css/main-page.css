@@ -220,11 +220,37 @@ body.light-theme {
 }
 .hub-input-wrapper .hub-input {
   width: 100%;
-  padding-right: 36px;
+  padding-right: 70px;
+}
+.hub-input-counter {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  font-family: inherit;
+  color: var(--mp-muted);
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+  transition:
+    color 0.16s ease,
+    transform 0.16s ease;
+  z-index: 2;
+}
+.hub-input-counter--limit {
+  color: #f59e0b;
+  font-weight: 600;
+}
+.hub-input-counter--error {
+  color: #ef4444;
+  font-weight: 600;
 }
 .hub-input-indicator {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%) scale(0.7);
   display: inline-flex;
@@ -255,6 +281,12 @@ body.light-theme {
 }
 .hub-input-indicator--warning {
   color: #f59e0b;
+}
+.hub-input-indicator:focus,
+.hub-input-indicator:focus-visible {
+  outline: 2px solid var(--mp-cyan, #3b82f6);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 .hub-indicator-icon {
   display: block;
@@ -300,10 +332,19 @@ body.light-theme {
 }
 .hub-input:hover ~ .hub-tooltip,
 .hub-input-wrapper:hover .hub-tooltip,
-.hub-input:focus-visible ~ .hub-tooltip {
+.hub-input:focus-visible ~ .hub-tooltip,
+.hub-input-wrapper:focus-within .hub-tooltip,
+.hub-tooltip:focus,
+.hub-tooltip:focus-visible {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+  pointer-events: auto;
+}
+.hub-tooltip:focus,
+.hub-tooltip:focus-visible {
+  outline: 2px solid var(--mp-cyan, #3b82f6);
+  outline-offset: 2px;
 }
 .hub-input {
   flex: 1;
@@ -338,6 +379,40 @@ body.light-theme {
 .hub-input.hub-input--error:focus {
   border-color: #ef4444 !important;
   box-shadow: 0 0 0 3px rgb(239 68 68 / 32%) !important;
+}
+@keyframes inputShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-8px);
+  }
+  30% {
+    transform: translateX(7px);
+  }
+  45% {
+    transform: translateX(-5px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+  90% {
+    transform: translateX(1px);
+  }
+}
+#customClientId.hub-input--shake,
+.hub-input.hub-input--shake {
+  animation: inputShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  #customClientId.hub-input--shake,
+  .hub-input.hub-input--shake {
+    animation: none;
+  }
 }
 #customClientId.hub-input--valid,
 .hub-input.hub-input--valid {
@@ -1013,6 +1088,15 @@ body.light-theme {
 .light-theme .hub-input-indicator--warning {
   color: #d97706;
 }
+.light-theme .hub-input-counter {
+  color: #64748b;
+}
+.light-theme .hub-input-counter--limit {
+  color: #d97706;
+}
+.light-theme .hub-input-counter--error {
+  color: #dc2626;
+}
 .light-theme .hub-tooltip {
   color: #0f172a;
   background: #ffffff;
@@ -1023,6 +1107,12 @@ body.light-theme {
 }
 .light-theme .hub-tooltip::after {
   border-color: #ffffff transparent transparent transparent;
+}
+.light-theme .hub-input-indicator:focus,
+.light-theme .hub-input-indicator:focus-visible,
+.light-theme .hub-tooltip:focus,
+.light-theme .hub-tooltip:focus-visible {
+  outline-color: var(--mp-cyan-dim, #2563eb);
 }
 .light-theme .hub-input::placeholder {
   color: rgb(0 0 0 / 30%);
