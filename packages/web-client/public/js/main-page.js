@@ -141,8 +141,6 @@
       indicator.innerHTML = ''
       indicator.removeAttribute('title')
       indicator.removeAttribute('aria-label')
-      indicator.setAttribute('tabindex', '-1')
-      indicator.setAttribute('aria-hidden', 'true')
       return
     }
 
@@ -152,8 +150,6 @@
         'hub-input-indicator--visible',
         'hub-input-indicator--' + state
       )
-      indicator.setAttribute('tabindex', '0')
-      indicator.removeAttribute('aria-hidden')
       if (tooltip) {
         indicator.setAttribute('title', tooltip)
         indicator.setAttribute('aria-label', tooltip)
@@ -196,26 +192,10 @@
   }
 
   /**
-   * Update character counter for #customClientId (e.g., '0/32')
-   */
-  function updateClientIdCharacterCount() {
-    const input = document.getElementById('customClientId')
-    const counter = document.getElementById('customClientIdCounter')
-    if (!counter) return
-    const length = input ? (input.value ? input.value.length : 0) : 0
-    const max = input && input.maxLength > 0 ? input.maxLength : 32
-    counter.textContent = `${length}/${max}`
-    counter.classList.toggle('hub-input-counter--limit', length === max)
-    counter.classList.toggle('hub-input-counter--error', length > max)
-    counter.setAttribute('aria-label', `${length} of ${max} characters`)
-  }
-
-  /**
    * Perform real-time validation on #customClientId input.
    * Immediately flags any disallowed characters (not a-z, 0-9, _ or -).
    */
   function validateCustomClientIdInput() {
-    updateClientIdCharacterCount()
     const input = document.getElementById('customClientId')
     if (!input) return { valid: false, empty: true }
 
@@ -299,106 +279,45 @@
     setTimeout(cleanup, 500)
   }
 
+  const CHECKMARK_ICON_SVG =
+    '<svg class="hub-copy-btn__check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" class="hub-checkmark-path"></polyline></svg>'
+
   /**
-   * Set up accessible keyboard focus trap within #customClientId wrapper
-   * Ensures seamless accessibility when navigating via keyboard through the input field,
-   * active status indicator, and guidance tooltip.
+   * Trigger checkmark animation and color change on copy button
    */
-  function setupClientIdFocusTrap() {
-    const wrapper =
-      document.getElementById('customClientIdWrapper') ||
-      document.querySelector('.hub-input-wrapper')
-    const input = document.getElementById('customClientId')
-    const indicator = document.getElementById('customClientIdIndicator')
-    const tooltip = document.getElementById('customClientIdTooltip')
-    if (!wrapper || !input) return
+  function triggerCopySuccessAnimation(btn) {
+    if (!btn) return
 
-    // Ensure tooltip has tabindex="0" for keyboard accessibility
-    if (tooltip && !tooltip.hasAttribute('tabindex')) {
-      tooltip.setAttribute('tabindex', '0')
+    // If button is already in copied state, clear existing timer
+    if (btn._copyTimeout) {
+      clearTimeout(btn._copyTimeout)
+      btn._copyTimeout = null
+    } else {
+      btn._originalHtml = btn.innerHTML
+      btn._originalAriaLabel = btn.getAttribute('aria-label') || ''
     }
 
-    // Keydown handlers for interactive keyboard accessibility on indicator & tooltip
-    if (indicator) {
-      indicator.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          input.focus()
-        }
-      })
-    }
+    btn.innerHTML = CHECKMARK_ICON_SVG
+    btn.classList.add('hub-copy-btn--copied')
+    btn.setAttribute(
+      'aria-label',
+      globalThis.i18n?.t('links.copied') || 'Copied!'
+    )
 
-    if (tooltip) {
-      tooltip.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          input.focus()
-        }
-      })
-    }
-
-    // Trap focus inside wrapper during Tab / Shift+Tab navigation
-    wrapper.addEventListener('keydown', function (e) {
-      // Escape allows users to cleanly exit the focus trap
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        if (document.activeElement === input) {
-          const nextBtn = document.getElementById('generateLinksBtn')
-          if (nextBtn) {
-            nextBtn.focus()
-          } else {
-            input.blur()
-          }
-        } else {
-          input.focus()
-        }
-        return
+    btn._copyTimeout = setTimeout(function () {
+      btn.classList.remove('hub-copy-btn--copied')
+      if (btn._originalHtml !== undefined && btn._originalHtml !== null) {
+        btn.innerHTML = btn._originalHtml
       }
-
-      if (e.key !== 'Tab') return
-
-      const focusableSelectors =
-        'input:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
-      const focusables = Array.from(
-        wrapper.querySelectorAll(focusableSelectors)
-      ).filter(function (el) {
-        if (el === tooltip || el === input) return true
-        if (window.getComputedStyle(el).display === 'none') return false
-        if (window.getComputedStyle(el).visibility === 'hidden') return false
-        return el.offsetWidth > 0 || el.offsetHeight > 0
-      })
-
-      if (focusables.length <= 1) {
-        if (focusables.includes(document.activeElement)) {
-          e.preventDefault()
-          focusables[0].focus()
-        }
-        return
-      }
-
-      const firstFocusable = focusables[0]
-      const lastFocusable = focusables[focusables.length - 1]
-
-      if (e.shiftKey) {
-        // Shift + Tab (backwards)
-        if (
-          document.activeElement === firstFocusable ||
-          !wrapper.contains(document.activeElement)
-        ) {
-          e.preventDefault()
-          lastFocusable.focus()
-        }
+      if (btn._originalAriaLabel) {
+        btn.setAttribute('aria-label', btn._originalAriaLabel)
       } else {
-        // Tab (forwards)
-        if (
-          document.activeElement === lastFocusable ||
-          !wrapper.contains(document.activeElement)
-        ) {
-          e.preventDefault()
-          firstFocusable.focus()
-        }
+        btn.removeAttribute('aria-label')
       }
-    })
+      btn._copyTimeout = null
+      btn._originalHtml = null
+      btn._originalAriaLabel = null
+    }, 1800)
   }
 
   /**
@@ -1099,16 +1018,44 @@
         else if (action === 'generate-links') generatePermanentLinks()
         else if (action === 'load-session') loadSession()
         else if (action === 'copy') {
-          const input = this.closest(
-            '.hub-link-full, .link-group__input-wrapper, .input-group'
-          )?.querySelector('input')
+          const targetId = this.getAttribute('data-target')
+          const input =
+            (targetId ? document.getElementById(targetId) : null) ||
+            this.closest(
+              '.hub-link-full, .link-group__input-wrapper, .input-group'
+            )?.querySelector('input')
           if (input) {
             input.select()
-            document.execCommand('copy')
-            if (window.showSuccessNotification) {
-              window.showSuccessNotification(
-                globalThis.i18n?.t('links.copied') || 'Link copied!'
-              )
+            const textToCopy = input.value || ''
+            const copyBtn = this
+            const onCopied = () => {
+              triggerCopySuccessAnimation(copyBtn)
+              if (window.showSuccessNotification) {
+                window.showSuccessNotification(
+                  globalThis.i18n?.t('links.copied') || 'Link copied!'
+                )
+              }
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard
+                .writeText(textToCopy)
+                .then(onCopied)
+                .catch(() => {
+                  try {
+                    document.execCommand('copy')
+                    onCopied()
+                  } catch (e) {
+                    // copy fallback failed
+                  }
+                })
+            } else {
+              try {
+                document.execCommand('copy')
+                onCopied()
+              } catch (e) {
+                // copy failed
+              }
             }
           }
         }
@@ -1133,9 +1080,6 @@
         validateCustomClientIdInput()
       }
     }
-
-    // Set up focus trap for client ID input wrapper
-    setupClientIdFocusTrap()
 
     // Initialize subscription UI
     initSubscriptionUI()
@@ -1211,9 +1155,8 @@
     createSession: createSession,
     generatePermanentLinks: generatePermanentLinks,
     loadSession: loadSession,
-    setupClientIdFocusTrap: setupClientIdFocusTrap,
+    triggerCopySuccessAnimation: triggerCopySuccessAnimation,
     triggerInputShake: triggerInputShake,
-    updateClientIdCharacterCount: updateClientIdCharacterCount,
     validateCustomClientIdInput: validateCustomClientIdInput
   }
 })()

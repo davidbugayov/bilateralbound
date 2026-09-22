@@ -220,37 +220,11 @@ body.light-theme {
 }
 .hub-input-wrapper .hub-input {
   width: 100%;
-  padding-right: 70px;
-}
-.hub-input-counter {
-  position: absolute;
-  right: 32px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.72rem;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
-  font-family: inherit;
-  color: var(--mp-muted);
-  user-select: none;
-  pointer-events: none;
-  line-height: 1;
-  transition:
-    color 0.16s ease,
-    transform 0.16s ease;
-  z-index: 2;
-}
-.hub-input-counter--limit {
-  color: #f59e0b;
-  font-weight: 600;
-}
-.hub-input-counter--error {
-  color: #ef4444;
-  font-weight: 600;
+  padding-right: 36px;
 }
 .hub-input-indicator {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%) scale(0.7);
   display: inline-flex;
@@ -281,12 +255,6 @@ body.light-theme {
 }
 .hub-input-indicator--warning {
   color: #f59e0b;
-}
-.hub-input-indicator:focus,
-.hub-input-indicator:focus-visible {
-  outline: 2px solid var(--mp-cyan, #3b82f6);
-  outline-offset: 2px;
-  border-radius: 4px;
 }
 .hub-indicator-icon {
   display: block;
@@ -332,19 +300,10 @@ body.light-theme {
 }
 .hub-input:hover ~ .hub-tooltip,
 .hub-input-wrapper:hover .hub-tooltip,
-.hub-input:focus-visible ~ .hub-tooltip,
-.hub-input-wrapper:focus-within .hub-tooltip,
-.hub-tooltip:focus,
-.hub-tooltip:focus-visible {
+.hub-input:focus-visible ~ .hub-tooltip {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
-  pointer-events: auto;
-}
-.hub-tooltip:focus,
-.hub-tooltip:focus-visible {
-  outline: 2px solid var(--mp-cyan, #3b82f6);
-  outline-offset: 2px;
 }
 .hub-input {
   flex: 1;
@@ -685,6 +644,51 @@ body.light-theme {
 }
 .hub-copy-btn--ctrl:active {
   box-shadow: 0 1px 4px rgb(245 158 11 / 20%);
+}
+@keyframes copySuccessPop {
+  0% {
+    transform: scale(0.92);
+  }
+  50% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes checkmarkDraw {
+  0% {
+    stroke-dashoffset: 24;
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    transform: scale(1);
+  }
+}
+.hub-copy-btn--copied,
+.hub-copy-btn--ctrl.hub-copy-btn--copied {
+  background: linear-gradient(135deg, #10b981 0, #059669 100%) !important;
+  color: #fff !important;
+  box-shadow:
+    0 0 0 3px rgb(16 185 129 / 35%),
+    0 4px 16px rgb(16 185 129 / 45%) !important;
+  animation: copySuccessPop 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.hub-copy-btn__check-icon {
+  width: 18px;
+  height: 18px;
+  transform-origin: center;
+}
+.hub-checkmark-path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  animation: checkmarkDraw 0.35s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
 .hub-plan__price {
   display: flex;
@@ -1088,15 +1092,6 @@ body.light-theme {
 .light-theme .hub-input-indicator--warning {
   color: #d97706;
 }
-.light-theme .hub-input-counter {
-  color: #64748b;
-}
-.light-theme .hub-input-counter--limit {
-  color: #d97706;
-}
-.light-theme .hub-input-counter--error {
-  color: #dc2626;
-}
 .light-theme .hub-tooltip {
   color: #0f172a;
   background: #ffffff;
@@ -1107,12 +1102,6 @@ body.light-theme {
 }
 .light-theme .hub-tooltip::after {
   border-color: #ffffff transparent transparent transparent;
-}
-.light-theme .hub-input-indicator:focus,
-.light-theme .hub-input-indicator:focus-visible,
-.light-theme .hub-tooltip:focus,
-.light-theme .hub-tooltip:focus-visible {
-  outline-color: var(--mp-cyan-dim, #2563eb);
 }
 .light-theme .hub-input::placeholder {
   color: rgb(0 0 0 / 30%);
@@ -1141,6 +1130,13 @@ body.light-theme {
 }
 .light-theme .hub-link-input--ctrl {
   border-color: rgb(245 158 11 / 15%);
+}
+.light-theme .hub-copy-btn--copied,
+.light-theme .hub-copy-btn--ctrl.hub-copy-btn--copied {
+  background: linear-gradient(135deg, #10b981 0, #059669 100%) !important;
+  box-shadow:
+    0 0 0 3px rgb(16 185 129 / 25%),
+    0 4px 14px rgb(16 185 129 / 35%) !important;
 }
 .light-theme .hub-subscribe-prompt {
   background: linear-gradient(
