@@ -169,7 +169,58 @@
           data-i18n="controller.themeButton"
         ></button>
       </div>
-
+      <div class="header-presets-wrapper" id="headerPresetsWrapper">
+        <button
+          id="presetsMenuBtn"
+          class="presets-menu-btn"
+          type="button"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="presetsDropdownMenu"
+          title="Stimulation Presets"
+          data-i18n-attr="title:controller.presetsMenu"
+        >
+          <span class="presets-menu-icon" aria-hidden="true">🎯</span>
+          <span class="presets-menu-text" data-i18n="controller.presetsMenu">Presets</span>
+          <svg
+            class="presets-menu-caret"
+            viewBox="0 0 12 12"
+            width="10"
+            height="10"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M2.5 4.5l3.5 3.5 3.5-3.5" />
+          </svg>
+        </button>
+        <div
+          id="presetsDropdownMenu"
+          class="presets-dropdown-menu hidden"
+          role="menu"
+          aria-labelledby="presetsMenuBtn"
+        >
+          <div class="presets-dropdown-header">
+            <span class="presets-dropdown-title" data-i18n="controller.presetsMenuHeading">Stimulation Patterns</span>
+            <span class="presets-dropdown-sub" data-i18n="controller.oneClickSwitch">1-click switch</span>
+          </div>
+          <div class="presets-dropdown-list" id="presetsDropdownList" role="none"></div>
+          <div class="presets-dropdown-footer">
+            <button
+              type="button"
+              class="presets-dropdown-save-btn"
+              id="presetsMenuSaveCustomBtn"
+              onclick="createCustomPreset()"
+            >
+              <span class="presets-save-icon" aria-hidden="true">➕</span>
+              <span data-i18n="controller.saveCustomPresetLabel">Save current as preset...</span>
+            </button>
+          </div>
+        </div>
+      </div>
       <button
         id="headerSessionLogBtn"
         class="header-log-btn"
@@ -1084,9 +1135,9 @@
         <!-- Quick Presets: 1-click stimulation pattern switch -->
         <div class="controls-card presets-quick-card" id="presetsQuickCard">
           <div class="presets-quick-header">
-            <div class="presets-quick-title">
+            <p class="controls-title">
               <span data-i18n="controller.presetsQuickSwitch">⚡ Quick Presets</span>
-            </div>
+            </p>
             <span class="presets-quick-badge" data-i18n="controller.oneClickSwitch">1-click switch</span>
           </div>
           <div
@@ -1095,18 +1146,6 @@
             role="toolbar"
             aria-label="Stimulation pattern presets"
           ></div>
-          <div class="presets-quick-footer" style="margin-top: 12px;">
-            <button
-              type="button"
-              class="btn outline"
-              id="presetsMenuSaveCustomBtn"
-              onclick="createCustomPreset()"
-              style="width: 100%; border-radius: 8px; padding: 6px 10px; font-size: 13px;"
-            >
-              <span class="presets-save-icon" aria-hidden="true" style="margin-right: 6px;">➕</span>
-              <span data-i18n="controller.saveCustomPresetLabel">Save current as preset...</span>
-            </button>
-          </div>
         </div>
 
         <!-- Direction -->

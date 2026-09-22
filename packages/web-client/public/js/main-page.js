@@ -678,7 +678,7 @@
       }
 
       try {
-        const response = await fetch(
+        const response = await globalThis.csrfFetch(
           '/api/subscription/' + encodeURIComponent(customId) + '/check',
           {
             method: 'POST'
