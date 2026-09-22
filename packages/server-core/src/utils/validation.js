@@ -220,11 +220,13 @@ class ValidationUtils {
    * @private
    */
   static _isValidColor(value) {
-    // Поддержка форматов: #RRGGBB и #RGB
-    return (
-      typeof value === 'string' &&
-      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
-    )
+    if (typeof value !== 'string') return false
+    // Allow Hex
+    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value)) return true
+    // Allow rgb/rgba
+    if (/^rgba?\([^)]+\)$/i.test(value)) return true
+    console.log('[VALIDATION] INVALID COLOR:', value)
+    return false
   }
 
   /**

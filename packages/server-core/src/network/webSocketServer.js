@@ -200,6 +200,10 @@ function setupWebSocketServer(
 
       controller_update: (data) => {
         if (role === 'controller') {
+          // Pass priority flag from message root to payload so it can bypass throttling
+          if (data.priority) {
+            data.payload.priority = true
+          }
           sessionService.updateBallState(sessionId, data.payload)
         }
       },
@@ -276,6 +280,9 @@ function setupWebSocketServer(
 
       viewer_update: (data) => {
         if (role === 'viewer') {
+          if (data.priority) {
+            data.payload.priority = true
+          }
           sessionService.updateBallState(sessionId, data.payload)
         }
       }

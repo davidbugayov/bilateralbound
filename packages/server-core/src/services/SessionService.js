@@ -105,12 +105,15 @@ class SessionService {
    * @returns {boolean}
    */
   updateBallState(sessionId, updates) {
+    console.log('[DEBUG updateBallState] received:', updates)
     const session = this.repo.findById(sessionId)
     if (!session) {
+      console.log('[DEBUG updateBallState] no session found')
       return false
     }
 
     if (!this._shouldUpdateState(session, updates)) {
+      this.logger.logSession(sessionId, '[THROTTLE] Update throttled: ' + JSON.stringify(updates))
       return true // Not an error — server-side throttle protection
     }
 
@@ -125,7 +128,9 @@ class SessionService {
     }
 
     this.physics.applyUpdates(session, validatedUpdates)
+    console.log('[DEBUG SessionService] Post applyUpdates, validated:', validatedUpdates)
     this._postUpdateActions(session, validatedUpdates)
+    console.log('[DEBUG SessionService] Post actions complete for:', Object.keys(validatedUpdates))
     return true
   }
 
@@ -303,8 +308,9 @@ class SessionService {
     const now = Date.now()
     const lastUpdate = session.lastStateUpdate || 0
     const throttleDelay = this._getThrottleDelay(updates)
-
+    console.log('[DEBUG shouldUpdateState] now:', now, 'lastUpdate:', lastUpdate, 'throttleDelay:', throttleDelay, 'diff:', now - lastUpdate)
     if (now - lastUpdate < throttleDelay && !updates?.reset) {
+      console.log('[DEBUG shouldUpdateState] Throttled!')
       return false
     }
 
@@ -321,6 +327,9 @@ class SessionService {
   _getThrottleDelay(updates) {
     if (!updates) {
       return THROTTLE_DEFAULT
+    }
+    if (updates.priority) {
+      return 0
     }
     if (updates.colorBall !== undefined || updates.colorBg !== undefined) {
       return THROTTLE_COLOR

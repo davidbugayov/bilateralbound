@@ -19,6 +19,7 @@ function _generateId() {
 }
 class ControllerSettingsManager {
   constructor() {
+    console.log('ControllerSettingsManager constructor called!')
     this.presets = this.loadPresets()
     this.activePresetId = null
     this.sessionHistory = []
@@ -55,7 +56,6 @@ class ControllerSettingsManager {
   renderAllPresetsUI() {
     this.initPresetsMenu()
     this.initQuickPresetsBar()
-    this.addPresetControls()
     if (this.activePresetId) {
       this._updateActivePresetUI(this.activePresetId)
     }
@@ -337,6 +337,7 @@ class ControllerSettingsManager {
    */
   initQuickPresetsBar() {
     const pillsContainer = document.getElementById('presetsQuickPills')
+    console.log('initQuickPresetsBar - pillsContainer:', pillsContainer)
     if (!pillsContainer) return
     while (pillsContainer.firstChild) pillsContainer.firstChild.remove()
 
@@ -352,6 +353,7 @@ class ControllerSettingsManager {
 
     for (const id of quickPresetIds) {
       const config = this.presets[id]
+      console.log(`preset id ${id} config:`, !!config)
       if (!config) continue
 
       const pill = document.createElement('button')
@@ -397,89 +399,6 @@ class ControllerSettingsManager {
     }
   }
   /**
-   * Карточки пресетов в нижней секции настроек
-   */
-  addPresetControls() {
-    const container = document.getElementById('presetControls')
-    if (!container) return
-    while (container.firstChild) container.firstChild.remove()
-
-    const dirSymbolMap = {
-      horizontal: '↔️',
-      vertical: '↕️',
-      infinity: '∞',
-      diagRL: '↖↘',
-      diagLR: '↗↙',
-      diagRLL: '🌀'
-    }
-
-    for (const [id, config] of Object.entries(this.presets)) {
-      const btn = document.createElement('button')
-      btn.type = 'button'
-      btn.className = 'preset-card'
-      btn.dataset.presetId = id
-
-      const icon = document.createElement('span')
-      icon.className = 'preset-icon'
-      icon.textContent = config.icon || '🎯'
-      icon.setAttribute('aria-hidden', 'true')
-
-      const name = document.createElement('span')
-      name.className = 'preset-name'
-      if (config.i18nKey) {
-        name.dataset.i18n = config.i18nKey
-        name.textContent =
-          globalThis.i18n?.t(config.i18nKey) || config.fallbackName || id
-      } else {
-        name.textContent = config.fallbackName || id
-      }
-
-      const tag = document.createElement('span')
-      tag.className = 'preset-card-tag'
-      tag.textContent = config.tag || `${config.speed}%`
-
-      const desc = document.createElement('span')
-      desc.className = 'preset-card-desc'
-      if (config.descKey) {
-        desc.dataset.i18n = config.descKey
-        desc.textContent =
-          globalThis.i18n?.t(config.descKey) || config.fallbackDesc || ''
-      } else {
-        desc.textContent = config.fallbackDesc || ''
-      }
-
-      const dots = document.createElement('div')
-      dots.className = 'preset-preview-dots'
-
-      const ballDot = document.createElement('span')
-      ballDot.className = 'preset-preview-ball'
-      ballDot.style.backgroundColor = config.colorBall || '#60a5fa'
-
-      const dirSpan = document.createElement('span')
-      dirSpan.className = 'preset-preview-dir'
-      dirSpan.textContent = dirSymbolMap[config.direction] || '↔️'
-
-      dots.appendChild(ballDot)
-      dots.appendChild(dirSpan)
-
-      btn.appendChild(icon)
-      btn.appendChild(name)
-      btn.appendChild(tag)
-      btn.appendChild(desc)
-      btn.appendChild(dots)
-
-      btn.onclick = () => this.applyPreset(config, id)
-      container.appendChild(btn)
-    }
-
-    if (globalThis.i18n?.applyTranslations) {
-      globalThis.i18n.applyTranslations()
-    }
-    if (globalThis.reinitializeViewerConnectionWarnings) {
-      globalThis.reinitializeViewerConnectionWarnings()
-    }
-  }
-  /**
    * Применение предустановленных настроек
    */
   async applyPreset(preset, presetId = null) {
@@ -522,11 +441,6 @@ class ControllerSettingsManager {
       .querySelectorAll('#presetsQuickPills .preset-pill')
       .forEach((pill) => {
         pill.classList.toggle('active', pill.dataset.presetId === activeId)
-      })
-    document
-      .querySelectorAll('#presetControls .preset-card')
-      .forEach((card) => {
-        card.classList.toggle('active', card.dataset.presetId === activeId)
       })
   }
   /**
@@ -1193,6 +1107,7 @@ globalThis.importSession = (file) =>
   globalThis.controllerSettingsManager?.importSession?.(file)
 // Initialize when DOM is ready
 function initControllerSettings() {
+  console.log('initControllerSettings called!')
   if (!globalThis.controllerSettingsManager) {
     globalThis.controllerSettingsManager =
       new globalThis.ControllerSettingsManager()
