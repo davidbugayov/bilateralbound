@@ -639,6 +639,57 @@ if (typeof globalThis !== 'undefined') {
       navigator.vibrate(50)
     }
   }
+
+  globalThis.toggleAmbientMenu = function () {
+    const menu = document.getElementById('ambientMenu')
+    if (!menu) return
+    const isVisible = menu.style.display !== 'none'
+    menu.style.display = isVisible ? 'none' : 'block'
+    if (!isVisible) {
+      // Close on outside click
+      const closeHandler = (e) => {
+        if (!document.getElementById('ambientPicker')?.contains(e.target)) {
+          menu.style.display = 'none'
+          document.removeEventListener('click', closeHandler)
+        }
+      }
+      setTimeout(() => document.addEventListener('click', closeHandler), 100)
+    }
+  }
+
+  globalThis.setAmbient = function (type) {
+    const ambient = globalThis.ambientAudio
+    if (!ambient) return
+    ambient.play(type)
+    // Update button label
+    const labels = {
+      none: '🎵 Фон',
+      rain: '🌧️ Дождь',
+      ocean: '🌊 Океан',
+      forest: '🌿 Лес',
+      whitenoise: '⬜ Шум',
+      binaural: '🧠 Бинаурал'
+    }
+    const btn = document.getElementById('ambientToggleBtn')
+    if (btn) btn.textContent = labels[type] || '🎵 Фон'
+    // Highlight active option
+    document.querySelectorAll('.ambient-opt').forEach((opt) => {
+      opt.style.background = opt.getAttribute('onclick')?.includes(`'${type}'`)
+        ? 'rgba(124,108,247,0.3)'
+        : 'none'
+    })
+    // Close menu if a sound was chosen
+    if (type !== 'none') {
+      // keep open so user can adjust volume
+    } else {
+      document.getElementById('ambientMenu').style.display = 'none'
+    }
+  }
+
+  globalThis.setAmbientVolume = function (val) {
+    const ambient = globalThis.ambientAudio
+    if (ambient) ambient.setVolume(val / 100)
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async function () {

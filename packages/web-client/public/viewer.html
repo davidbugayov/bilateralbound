@@ -188,6 +188,31 @@
         >
           📳 Вибрация
         </button>
+        <!-- Ambient Sound Picker -->
+        <div class="ambient-picker" id="ambientPicker">
+          <button
+            id="ambientToggleBtn"
+            class="ambient-btn"
+            onclick="toggleAmbientMenu()"
+            title="Ambient Background Sound"
+            style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-right: 8px; font-size: 14px;"
+          >
+            🎵 Фон
+          </button>
+          <div class="ambient-menu" id="ambientMenu" style="display:none; position:absolute; top:48px; right:120px; background:rgba(20,20,35,0.95); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:8px; z-index:999; min-width:160px; backdrop-filter:blur(12px);">
+            <div style="font-size:11px; color:rgba(255,255,255,0.5); padding:4px 8px 8px;">Background Sound</div>
+            <button class="ambient-opt" onclick="setAmbient('none')" style="display:block; width:100%; text-align:left; background:none; border:none; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:13px;">✕ Off</button>
+            <button class="ambient-opt" onclick="setAmbient('rain')" style="display:block; width:100%; text-align:left; background:none; border:none; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:13px;">🌧️ Rain</button>
+            <button class="ambient-opt" onclick="setAmbient('ocean')" style="display:block; width:100%; text-align:left; background:none; border:none; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:13px;">🌊 Ocean</button>
+            <button class="ambient-opt" onclick="setAmbient('forest')" style="display:block; width:100%; text-align:left; background:none; border:none; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:13px;">🌿 Forest</button>
+            <button class="ambient-opt" onclick="setAmbient('whitenoise')" style="display:block; width:100%; text-align:left; background:none; border:none; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:13px;">⬜ White Noise</button>
+            <button class="ambient-opt" onclick="setAmbient('binaural')" style="display:block; width:100%; text-align:left; background:none; border:none; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:13px;">🧠 Binaural 10Hz</button>
+            <div style="padding: 6px 10px 2px; border-top: 1px solid rgba(255,255,255,0.1); margin-top:4px;">
+              <label style="font-size:11px; color:rgba(255,255,255,0.5); display:block; margin-bottom:4px;">Volume</label>
+              <input type="range" min="0" max="100" value="30" style="width:100%; accent-color:#7c6cf7;" oninput="setAmbientVolume(this.value)" />
+            </div>
+          </div>
+        </div>
         <button
           class="fullscreen-btn"
           onclick="toggleFullscreen()"
@@ -262,6 +287,7 @@
     </main>
     <script src="/js/ui/hint-banner.js?v=2.39.828-f326c70c" defer></script>
     <script src="/js/ui/error-states.js?v=2.39.828-f326c70c" defer></script>
+    <script src="/js/ambient-audio.js" defer></script>
     <script src="/dist/shared.bundle.js?v=2.39.828-f326c70c" defer></script>
     <script src="/dist/viewer.bundle.js?v=2.39.828-f326c70c" defer></script>
   </body>
