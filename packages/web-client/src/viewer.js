@@ -456,6 +456,17 @@ function updateAudioFromState(state) {
       audioVisualizer.setFrequency(audioManager.getFrequency(), state.soundType)
     }
   }
+  if (typeof state.soundVolume === 'number') {
+    debugLog('🔊 [VIEWER] soundVolume from state:', state.soundVolume)
+    const vol = Math.max(0, Math.min(1, state.soundVolume / 100))
+    if (audioManager) {
+      audioManager.setVolume(vol)
+    }
+    const viewerVolumeSlider = document.getElementById('viewerVolumeSlider')
+    if (viewerVolumeSlider) {
+      viewerVolumeSlider.value = state.soundVolume
+    }
+  }
 }
 
 function onLanguageUpdate(data) {

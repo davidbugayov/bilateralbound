@@ -157,6 +157,26 @@ test('rejects invalid soundType', () => {
   assert.strictEqual(r.soundType, undefined)
 })
 
+test('validates valid soundVolume', () => {
+  const r = ValidationUtils.validateBallStateUpdates({ soundVolume: 75 })
+  assert.strictEqual(r.soundVolume, 75)
+})
+
+test('clamps soundVolume below 0 to 0', () => {
+  const r = ValidationUtils.validateBallStateUpdates({ soundVolume: -10 })
+  assert.strictEqual(r.soundVolume, 0)
+})
+
+test('clamps soundVolume above 100 to 100', () => {
+  const r = ValidationUtils.validateBallStateUpdates({ soundVolume: 150 })
+  assert.strictEqual(r.soundVolume, 100)
+})
+
+test('rejects NaN soundVolume', () => {
+  const r = ValidationUtils.validateBallStateUpdates({ soundVolume: NaN })
+  assert.strictEqual(r.soundVolume, undefined)
+})
+
 test('reset=true passes through', () => {
   const r = ValidationUtils.validateBallStateUpdates({ reset: true })
   assert.strictEqual(r.reset, true)

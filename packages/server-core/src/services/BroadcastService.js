@@ -85,6 +85,7 @@ class BroadcastService {
       'colorBg',
       'soundEnabled',
       'soundType',
+      'soundVolume',
       'viewerConnected',
       'controllerConnected',
       'clientSimulationOnly',

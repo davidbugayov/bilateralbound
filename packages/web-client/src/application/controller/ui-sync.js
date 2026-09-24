@@ -140,11 +140,33 @@ function syncSound(ballState) {
           tc.classList.remove('enabled')
         }
       }
+      const mvc = document.getElementById('masterVolumeControl')
+      if (mvc) {
+        if (ballState.soundEnabled) {
+          mvc.classList.add('enabled')
+        } else {
+          mvc.classList.remove('enabled')
+        }
+      }
     }
   }
   if (ballState.soundType) {
     const sel = document.getElementById('soundTypeSelect')
     if (sel) sel.value = ballState.soundType
+  }
+  if (typeof ballState.soundVolume === 'number') {
+    const slider = document.getElementById('masterVolumeSlider')
+    const valSpan = document.getElementById('masterVolumeValue')
+    if (slider) {
+      slider.value = ballState.soundVolume
+      const min = Number(slider.min) || 0
+      const max = Number(slider.max) || 100
+      const pct = ((ballState.soundVolume - min) / (max - min)) * 100
+      slider.style.setProperty('--pct', `${pct}%`)
+    }
+    if (valSpan) {
+      valSpan.textContent = `${ballState.soundVolume}%`
+    }
   }
 }
 function syncAll(ballState) {

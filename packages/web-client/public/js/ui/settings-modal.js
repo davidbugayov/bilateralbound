@@ -164,14 +164,32 @@
 
   // Volume slider gradient fill
   function updateSliderFill(slider) {
-    const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100
+    if (!slider) return
+    const min = Number(slider.min) || 0
+    const max = Number(slider.max) || 100
+    const val = Number(slider.value) || 0
+    const pct = ((val - min) / (max - min)) * 100
     slider.style.setProperty('--pct', pct + '%')
   }
-  const volSlider = document.getElementById('controllerVolumeSlider')
-  if (volSlider) {
-    updateSliderFill(volSlider)
-    volSlider.addEventListener('input', function () {
-      updateSliderFill(volSlider)
+  const volumeSliders = [
+    document.getElementById('controllerVolumeSlider'),
+    document.getElementById('masterVolumeSlider')
+  ]
+  volumeSliders.forEach(function (slider) {
+    if (slider) {
+      updateSliderFill(slider)
+      slider.addEventListener('input', function () {
+        updateSliderFill(slider)
+      })
+      slider.addEventListener('change', function () {
+        updateSliderFill(slider)
+      })
+    }
+  })
+  document.querySelectorAll('.settings-volume-slider').forEach(function (slider) {
+    updateSliderFill(slider)
+    slider.addEventListener('input', function () {
+      updateSliderFill(slider)
     })
-  }
+  })
 })()

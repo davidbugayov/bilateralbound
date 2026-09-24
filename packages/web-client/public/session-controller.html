@@ -811,6 +811,30 @@
                 >
               </div>
             </div>
+            <!-- Master volume (Bilateral stimulation tones) -->
+            <div
+              id="masterVolumeControl"
+              class="sound-card__row sound-card__row--vol"
+            >
+              <span class="sound-card__row-icon" aria-hidden="true">🔊</span>
+              <span
+                class="sound-card__vol-label"
+                data-i18n="controller.masterVolumeLabel"
+                >Master volume</span
+              >
+              <input
+                id="masterVolumeSlider"
+                type="range"
+                min="0"
+                max="100"
+                value="70"
+                class="sound-card__slider"
+                aria-label="Master Volume"
+              />
+              <span id="masterVolumeValue" class="sound-card__vol-val"
+                >70%</span
+              >
+            </div>
             <!-- Controller monitor -->
             <div id="controllerMonitorControl" class="sound-card__row">
               <span class="sound-card__row-icon" aria-hidden="true">🖥️</span>
@@ -833,7 +857,7 @@
                 ></span>
               </label>
             </div>
-            <!-- Volume -->
+            <!-- Volume (Monitor volume) -->
             <div
               id="controllerVolumeControl"
               class="sound-card__row sound-card__row--vol"
@@ -841,8 +865,8 @@
               <span class="sound-card__row-icon" aria-hidden="true">🔈</span>
               <span
                 class="sound-card__vol-label"
-                data-i18n="controller.volumeLabel"
-                >Volume</span
+                data-i18n="controller.monitorVolumeLabel"
+                >Monitor volume</span
               >
               <input
                 id="controllerVolumeSlider"
@@ -851,6 +875,7 @@
                 max="100"
                 value="50"
                 class="sound-card__slider"
+                aria-label="Monitor Volume"
               />
               <span id="controllerVolumeValue" class="sound-card__vol-val"
                 >50%</span
@@ -1019,6 +1044,87 @@
             Waiting for viewer connection
           </div>
         </aside>
+
+        <!-- Local-only Therapist Observations Section -->
+        <section
+          id="therapistObservationsSection"
+          class="control-section therapist-observations-card"
+          aria-labelledby="observationsHeading"
+        >
+          <div class="observations-header">
+            <div class="observations-header__left">
+              <h3 id="observationsHeading" class="observations-title">
+                <span data-i18n="controller.observationsHeading">📝 Observations</span>
+              </h3>
+              <span
+                class="observations-badge"
+                data-i18n="controller.observationsPrivacyBadge"
+                title="Observations are local-only and not sent or saved anywhere"
+              >
+                🔒 Local &amp; Private
+              </span>
+            </div>
+            <div class="observations-header__actions">
+              <button
+                type="button"
+                id="observationsTimestampBtn"
+                class="observations-action-btn"
+                title="Insert current session time"
+                data-i18n-attr="title:controller.observationsInsertTimeTitle;aria-label:controller.observationsInsertTimeTitle"
+                aria-label="Insert timestamp"
+              >
+                ⏱️ <span data-i18n="controller.observationsTimeBtn">Time</span>
+              </button>
+              <button
+                type="button"
+                id="observationsCopyBtn"
+                class="observations-action-btn"
+                title="Copy observations to clipboard"
+                data-i18n-attr="title:controller.observationsCopyTitle;aria-label:controller.observationsCopyTitle"
+                aria-label="Copy observations"
+              >
+                📋 <span data-i18n="controller.observationsCopyBtn">Copy</span>
+              </button>
+              <button
+                type="button"
+                id="observationsClearBtn"
+                class="observations-action-btn observations-action-btn--danger"
+                title="Clear observations"
+                data-i18n-attr="title:controller.observationsClearTitle;aria-label:controller.observationsClearTitle"
+                aria-label="Clear observations"
+              >
+                🗑️ <span data-i18n="controller.observationsClearBtn">Clear</span>
+              </button>
+            </div>
+          </div>
+          <div class="observations-body">
+            <label
+              for="therapistObservationsTextarea"
+              class="sr-only"
+              data-i18n="controller.observationsLabel"
+            >
+              Therapist session observations
+            </label>
+            <textarea
+              id="therapistObservationsTextarea"
+              class="observations-textarea"
+              rows="4"
+              data-i18n-attr="placeholder:controller.observationsPlaceholder"
+              placeholder="Jot down private notes (SUDs, VOC, target shifts, client responses)... Notes are strictly local-only and discarded when the session ends for privacy."
+              spellcheck="false"
+              autocomplete="off"
+            ></textarea>
+          </div>
+          <div class="observations-footer">
+            <span
+              class="observations-privacy-notice"
+              data-i18n="controller.observationsPrivacyNote"
+            >
+              🔒 Confidential: never transmitted to servers or stored across sessions.
+            </span>
+            <span id="observationsCharCount" class="observations-count" aria-live="polite">0 chars</span>
+          </div>
+        </section>
       </div>
 
       <!-- Error state container (injected dynamically) -->
@@ -1489,6 +1595,29 @@
                   <span class="select-arrow" aria-hidden="true">▾</span>
                 </div>
               </div>
+              <div class="settings-row settings-row--volume" id="modalMasterVolumeRow">
+                <span class="settings-row__icon volume-icon" aria-hidden="true"
+                  >🔊</span
+                >
+                <span
+                  data-i18n="controller.masterVolumeLabel"
+                  class="settings-row__label--compact"
+                ></span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="70"
+                  class="settings-volume-slider"
+                  data-mirror="masterVolumeSlider"
+                  aria-label="Master Volume"
+                />
+                <span
+                  class="settings-volume-value"
+                  data-mirror-display="masterVolumeValue"
+                  >70%</span
+                >
+              </div>
               <div class="settings-row settings-row--divider">
                 <div class="settings-row__content">
                   <span class="settings-row__icon" aria-hidden="true">🖥️</span>
@@ -1511,12 +1640,12 @@
                   <span class="slider round"></span>
                 </label>
               </div>
-              <div class="settings-row settings-row--volume">
+              <div class="settings-row settings-row--volume" id="modalMonitorVolumeRow">
                 <span class="settings-row__icon volume-icon" aria-hidden="true"
                   >🔈</span
                 >
                 <span
-                  data-i18n="controller.volumeLabel"
+                  data-i18n="controller.monitorVolumeLabel"
                   class="settings-row__label--compact"
                 ></span>
                 <input
@@ -1526,6 +1655,7 @@
                   value="50"
                   class="settings-volume-slider"
                   data-mirror="controllerVolumeSlider"
+                  aria-label="Monitor Volume"
                 />
                 <span
                   class="settings-volume-value"

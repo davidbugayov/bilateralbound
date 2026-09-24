@@ -184,6 +184,28 @@ function setSoundType(soundType) {
   }
 }
 
+function setSoundVolume(volume) {
+  const vol = Math.max(0, Math.min(100, Math.round(Number(volume) || 0)))
+  const ls = _deps.getLastServerState?.()
+  if (ls) ls.soundVolume = vol
+  if (globalThis.__current?.isInitializing) return
+  if (!globalThis.__current?.viewerConnected) {
+    return
+  }
+  _deps.safeSend?.(globalThis.WS_MSG.controllerUpdate, {
+    soundVolume: vol
+  })
+  try {
+    globalThis.dispatchEvent(
+      new CustomEvent('bb_metrika_settings_changed', {
+        detail: { setting: 'soundVolume', value: vol }
+      })
+    )
+  } catch (e) {
+    void e
+  }
+}
+
 function setBallSizeMultiplier(multiplier) {
   setBallSize(20 * multiplier)
 }
@@ -306,6 +328,7 @@ module.exports = {
   setBallSize,
   setSoundEnabled,
   setSoundType,
+  setSoundVolume,
   setBallSizeMultiplier,
   setBackgroundColor,
   setIllustration,

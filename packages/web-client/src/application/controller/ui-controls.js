@@ -94,26 +94,67 @@ function _initializeSizeControl(onSizeChange) {
 function _initializeSoundControls(
   onSoundEnabledChange,
   onSoundTypeChange,
+  onSoundVolumeChange,
   getLastServerState,
   updateAudioIndicators
 ) {
   const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox')
   const soundTypeSelect = document.getElementById('soundTypeSelect')
   const soundTypeControl = document.getElementById('soundTypeControl')
+  const masterVolumeControl = document.getElementById('masterVolumeControl')
+  const masterVolumeSlider = document.getElementById('masterVolumeSlider')
+  const masterVolumeValue = document.getElementById('masterVolumeValue')
   if (!soundEnabledCheckbox || !soundTypeSelect || !soundTypeControl) return
+
+  const updateSliderFill = (slider) => {
+    if (!slider) return
+    const min = Number(slider.min) || 0
+    const max = Number(slider.max) || 100
+    const val = Number(slider.value) || 0
+    const pct = ((val - min) / (max - min)) * 100
+    slider.style.setProperty('--pct', `${pct}%`)
+  }
+
   try {
+    if (masterVolumeSlider) {
+      updateSliderFill(masterVolumeSlider)
+      masterVolumeSlider.addEventListener('input', (e) => {
+        const val = Math.max(
+          0,
+          Math.min(100, Math.round(Number(e.target.value) || 0))
+        )
+        if (masterVolumeValue) masterVolumeValue.textContent = `${val}%`
+        updateSliderFill(masterVolumeSlider)
+        if (onSoundVolumeChange) onSoundVolumeChange(val)
+        const lastState = getLastServerState ? getLastServerState() : null
+        if (lastState) {
+          lastState.soundVolume = val
+        }
+      })
+    }
+
     soundEnabledCheckbox.addEventListener('change', (e) => {
       const enabled = e.target.checked
       if (onSoundEnabledChange) onSoundEnabledChange(enabled)
       // Toggle enabled class for CSS transitions
       if (enabled) {
         soundTypeControl.classList.add('enabled')
+        masterVolumeControl?.classList.add('enabled')
         soundTypeControl.style.opacity = ''
         soundTypeControl.style.pointerEvents = ''
+        if (masterVolumeControl) {
+          masterVolumeControl.style.opacity = ''
+          masterVolumeControl.style.pointerEvents = ''
+        }
       } else {
         soundTypeControl.classList.remove('enabled')
+        masterVolumeControl?.classList.remove('enabled')
         soundTypeControl.style.opacity = ''
         soundTypeControl.style.pointerEvents = ''
+        if (masterVolumeControl) {
+          masterVolumeControl.style.opacity = ''
+          masterVolumeControl.style.pointerEvents = ''
+        }
       }
       const lastState = getLastServerState ? getLastServerState() : null
       if (lastState) {
@@ -135,12 +176,24 @@ function _initializeSoundControls(
         soundEnabledCheckbox.checked = lastState.soundEnabled
         if (lastState.soundEnabled) {
           soundTypeControl.classList.add('enabled')
+          masterVolumeControl?.classList.add('enabled')
         } else {
           soundTypeControl.classList.remove('enabled')
+          masterVolumeControl?.classList.remove('enabled')
         }
       }
       if (lastState.soundType) {
         soundTypeSelect.value = lastState.soundType
+      }
+      if (
+        typeof lastState.soundVolume === 'number' &&
+        masterVolumeSlider
+      ) {
+        masterVolumeSlider.value = lastState.soundVolume
+        if (masterVolumeValue) {
+          masterVolumeValue.textContent = `${lastState.soundVolume}%`
+        }
+        updateSliderFill(masterVolumeSlider)
       }
     }
   } catch (error) {
@@ -158,6 +211,7 @@ function initializeComponents(callbacks) {
   _initializeSoundControls(
     callbacks?.onSoundEnabledChange,
     callbacks?.onSoundTypeChange,
+    callbacks?.onSoundVolumeChange,
     callbacks?.getLastServerState,
     callbacks?.updateAudioIndicators
   )

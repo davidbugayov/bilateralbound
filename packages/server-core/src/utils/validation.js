@@ -107,6 +107,15 @@ class ValidationUtils {
     ) {
       validated.soundType = updates.soundType
     }
+    if (
+      typeof updates.soundVolume === 'number' &&
+      !Number.isNaN(updates.soundVolume)
+    ) {
+      validated.soundVolume = Math.max(
+        0,
+        Math.min(100, Math.round(updates.soundVolume))
+      )
+    }
   }
 
   /**

@@ -44,6 +44,21 @@ class BallRenderer {
     this.fill = this.ctx.fill.bind(this.ctx)
     this.ball = this.physics.ball
     this.colors = this.physics.colors
+    this.pulseAnimation =
+      options.pulseAnimation ??
+      globalThis.BBConfig?.rendering?.pulseAnimation ??
+      true
+    this.pulseAmplitude =
+      options.pulseAmplitude ??
+      globalThis.BBConfig?.rendering?.pulseAmplitude ??
+      0.10
+    this.pulseFrequency =
+      options.pulseFrequency ??
+      globalThis.BBConfig?.rendering?.pulseFrequency ??
+      (Math.PI * 2 * 1.3)
+    this.currentScale = 1.0
+    this.pulsePhase = 0
+    this.lastDrawTime = 0
     this._cached = {
       radius: null,
       color: null,
@@ -124,6 +139,7 @@ class BallRenderer {
       const clampedDeltaTime = this._calculateDeltaTime(currentTime)
       this.frameCount++
       try {
+        this._updateScalingAnimation(clampedDeltaTime / 1000)
         this._updatePhysics(clampedDeltaTime)
         this._renderFrame(currentTime)
         this.lastTime = currentTime
@@ -351,7 +367,67 @@ class BallRenderer {
     }
   }
   /**
-   * Рисует шарик (оптимизированная версия)
+   * Determines if the ball is actively traveling across the screen.
+   * @returns {boolean}
+   * @private
+   */
+  _isBallMoving() {
+    if (!this.physics) return false
+    const state = this.physics.state
+    if (!state || state.paused) return false
+    if (state.seekingCenter) return true
+
+    const speed = this.physics.ball?.speed ?? 0
+    if (speed <= 0) return false
+
+    if (
+      typeof this.physics.isBrainspotting === 'function' &&
+      this.physics.isBrainspotting()
+    ) {
+      return Boolean(state.brainspottingTarget)
+    }
+
+    return true
+  }
+
+  /**
+   * Updates smooth scaling animation for visual focus cue.
+   * As the ball travels, it subtly pulses between ~0.90x and ~1.10x base scale.
+   * When paused or stationary, it smoothly eases back to 1.0x.
+   * @param {number} dt - Delta time in seconds.
+   * @private
+   */
+  _updateScalingAnimation(dt) {
+    if (typeof dt !== 'number' || dt <= 0) return
+
+    if (!this.pulseAnimation) {
+      if (this.currentScale !== 1.0) {
+        this.currentScale += (1.0 - this.currentScale) * Math.min(1, dt * 8)
+        if (Math.abs(this.currentScale - 1.0) < 0.001) {
+          this.currentScale = 1.0
+        }
+      }
+      return
+    }
+
+    const isMoving = this._isBallMoving()
+    if (isMoving) {
+      this.pulsePhase += dt * this.pulseFrequency
+      if (this.pulsePhase > Math.PI * 2000) {
+        this.pulsePhase %= Math.PI * 2
+      }
+      const targetScale = 1.0 + Math.sin(this.pulsePhase) * this.pulseAmplitude
+      this.currentScale += (targetScale - this.currentScale) * Math.min(1, dt * 10)
+    } else {
+      this.currentScale += (1.0 - this.currentScale) * Math.min(1, dt * 6)
+      if (Math.abs(this.currentScale - 1.0) < 0.001) {
+        this.currentScale = 1.0
+      }
+    }
+  }
+
+  /**
+   * Рисует шарик (оптимизированная версия с анимацией фокусирующей пульсации)
    */
   renderBall(ballState) {
     const ball = ballState || this.ball
@@ -379,17 +455,32 @@ class BallRenderer {
           p.arc(0, 0, Math.max(ball.radius, 2), 0, this.pi2)
           this._cached.path = p
         }
+        const scale = this.currentScale || 1.0
         this.beginPath()
         this.ctx.save()
         this.ctx.imageSmoothingEnabled = true
         this.ctx.imageSmoothingQuality = 'high'
         this.ctx.translate(ball.x, ball.y)
+        if (scale !== 1.0) {
+          this.ctx.scale(scale, scale)
+        }
         this.ctx.fillStyle = this._cached.gradient
         this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
         this.ctx.shadowBlur = 4
         this.ctx.shadowOffsetX = 2
         this.ctx.shadowOffsetY = 2
         this.ctx.fill(this._cached.path)
+
+        // Subtle focus cue ring when ball expands during travel
+        if (scale > 1.01) {
+          this.ctx.save()
+          this.ctx.strokeStyle = col
+          this.ctx.globalAlpha = Math.min(0.25, (scale - 1.0) * 2.2)
+          this.ctx.lineWidth = 2
+          this.ctx.stroke(this._cached.path)
+          this.ctx.restore()
+        }
+
         this.ctx.restore()
         this.ctx.shadowColor = 'transparent'
         this.ctx.shadowBlur = 0
@@ -412,7 +503,8 @@ class BallRenderer {
    */
   _renderBallEmoji(ball, emoji) {
     try {
-      const fontSize = Math.floor(ball.radius * 1.24)
+      const scale = this.currentScale || 1.0
+      const fontSize = Math.floor(ball.radius * scale * 1.24)
       this.ctx.save()
       this.ctx.font = `${fontSize}px sans-serif`
       this.ctx.textAlign = 'center'
@@ -541,6 +633,14 @@ class BallRenderer {
       return
     }
     try {
+      const now = performance.now()
+      if (this.lastDrawTime > 0) {
+        const dt = Math.min((now - this.lastDrawTime) / 1000, 0.05)
+        this._updateScalingAnimation(dt)
+      } else {
+        this._updateScalingAnimation(0.016)
+      }
+      this.lastDrawTime = now
       this.ctx.fillStyle = state.colorBg || this.colors.bg
       this.fillRect(0, 0, this.canvas.width, this.canvas.height)
       this.renderBall(state)

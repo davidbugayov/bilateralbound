@@ -88,6 +88,7 @@ class SessionRepository {
       paused: true,
       soundEnabled: false,
       soundType: 'soft',
+      soundVolume: 70,
       ballEmoji: null,
       infinity: false,
       trackBand: 'center'

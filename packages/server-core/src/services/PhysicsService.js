@@ -218,11 +218,12 @@ class PhysicsService {
    * @private
    */
   _withSoundPreserved(session, fn) {
-    const { soundEnabled, soundType } = session.ballState
+    const { soundEnabled, soundType, soundVolume } = session.ballState
     fn()
     if (soundEnabled !== undefined)
       session.ballState.soundEnabled = soundEnabled
     if (soundType !== undefined) session.ballState.soundType = soundType
+    if (soundVolume !== undefined) session.ballState.soundVolume = soundVolume
   }
 
   /**
