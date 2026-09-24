@@ -38,7 +38,9 @@
         try {
           if (n.stop) n.stop()
           if (n.disconnect) n.disconnect()
-        } catch (_) {}
+        } catch (e) {
+          void e
+        }
       })
       this.nodes = []
       this.isPlaying = false

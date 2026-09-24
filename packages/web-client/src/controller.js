@@ -17,6 +17,10 @@ require('./ui/shared-components')
 require('./network/websocket-client')
 require('./network/realtime-client')
 require('./network/csrf')
+const {
+  initTherapistObservations,
+  clearTherapistObservations
+} = require('./ui/therapist-observations')
 require('./ui/controller-settings')
 require('./ui/session-logger')
 const { AudioVisualizer } = require('./ui/audio-visualizer')
@@ -131,6 +135,7 @@ const {
   setBallSize,
   setSoundEnabled,
   setSoundType,
+  setSoundVolume,
   setBallSizeMultiplier,
   setBackgroundColor,
   setIllustration,
@@ -223,6 +228,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeController().catch(debugError)
   bbCounters.initDom()
   initHintSystem()
+  if (typeof initTherapistObservations === 'function') {
+    initTherapistObservations()
+  }
   bbCounters.onAutoStop = () => _setPlayPauseState(false)
   const autoStopPassesInput = document.getElementById('autoStopPassesInput')
   const autoStopSecondsInput = document.getElementById('autoStopSecondsInput')
@@ -1021,7 +1029,17 @@ function _initializeControllerAudio() {
   const volumeSlider = document.getElementById('controllerVolumeSlider')
   const volumeValue = document.getElementById('controllerVolumeValue')
   const volumeControl = document.getElementById('controllerVolumeControl')
+  const masterVolumeSlider = document.getElementById('masterVolumeSlider')
   if (!monitorCheckbox) return
+
+  function getEffectiveControllerVolume() {
+    const masterPct =
+      Number(
+        masterVolumeSlider?.value ?? lastServerState?.soundVolume ?? 70
+      ) / 100
+    const monitorPct = Number(volumeSlider?.value ?? 50) / 100
+    return Math.max(0, Math.min(1, masterPct * monitorPct))
+  }
 
   monitorCheckbox.addEventListener('change', (e) => {
     const enabled = e.target.checked
@@ -1029,14 +1047,17 @@ function _initializeControllerAudio() {
       if (!_controllerAudioManager && typeof AudioManager !== 'undefined') {
         _controllerAudioManager = new AudioManager()
         _controllerAudioManager.init(true)
-        _controllerAudioManager.setVolume((volumeSlider?.value ?? 50) / 100)
+        _controllerAudioManager.setVolume(getEffectiveControllerVolume())
         _controllerAudioManager.setSoundType(
           lastServerState?.soundType || 'soft'
         )
       } else if (_controllerAudioManager) {
         _controllerAudioManager.init()
       }
-      if (_controllerAudioManager) _controllerAudioManager.setEnabled(true)
+      if (_controllerAudioManager) {
+        _controllerAudioManager.setEnabled(true)
+        _controllerAudioManager.setVolume(getEffectiveControllerVolume())
+      }
       if (volumeControl) {
         volumeControl.style.opacity = '1'
         volumeControl.style.pointerEvents = 'auto'
@@ -1054,7 +1075,15 @@ function _initializeControllerAudio() {
     volumeSlider.addEventListener('input', () => {
       if (volumeValue) volumeValue.textContent = `${volumeSlider.value}%`
       if (_controllerAudioManager)
-        _controllerAudioManager.setVolume(volumeSlider.value / 100)
+        _controllerAudioManager.setVolume(getEffectiveControllerVolume())
+    })
+  }
+
+  if (masterVolumeSlider) {
+    masterVolumeSlider.addEventListener('input', () => {
+      if (_controllerAudioManager && monitorCheckbox.checked) {
+        _controllerAudioManager.setVolume(getEffectiveControllerVolume())
+      }
     })
   }
 
@@ -1101,6 +1130,7 @@ function initializeComponents() {
     onSizeChange: setBallSize,
     onSoundEnabledChange: setSoundEnabled,
     onSoundTypeChange: setSoundType,
+    onSoundVolumeChange: setSoundVolume,
     getLastServerState: () => lastServerState,
     updateAudioIndicators: _ViewerStatus.updateAudioIndicators,
     updateDirectionDisplay
@@ -1647,6 +1677,9 @@ function resetSession() {
     if (isPlaying) {
       _setPlayPauseState(false)
     }
+    if (typeof clearTherapistObservations === 'function') {
+      clearTherapistObservations()
+    }
     safeSend(WS_MSG.controllerUpdate, {
       paused: true,
       returnToCenter: true
@@ -1727,6 +1760,9 @@ globalThis.setBackgroundColor = setBackgroundColor
 globalThis.resetSession = resetSession
 globalThis.setSoundEnabled = setSoundEnabled
 globalThis.setSoundType = setSoundType
+globalThis.setSoundVolume = setSoundVolume
+globalThis.initTherapistObservations = initTherapistObservations
+globalThis.clearTherapistObservations = clearTherapistObservations
 globalThis.setBallSizeMultiplier = setBallSizeMultiplier
 globalThis.showViewerNotConnectedWarning = showViewerNotConnectedWarning
 globalThis.showViewerSizeNotReadyWarning = showViewerSizeNotReadyWarning

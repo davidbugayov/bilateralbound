@@ -611,6 +611,21 @@ class ControllerSettingsManager {
     if (settings.soundType && typeof globalThis.setSoundType === 'function') {
       globalThis.setSoundType(settings.soundType)
     }
+    if (typeof settings.soundVolume === 'number') {
+      if (typeof globalThis.setSoundVolume === 'function') {
+        globalThis.setSoundVolume(settings.soundVolume)
+      }
+      const mvs = document.getElementById('masterVolumeSlider')
+      const mvv = document.getElementById('masterVolumeValue')
+      if (mvs) {
+        mvs.value = settings.soundVolume
+        const min = Number(mvs.min) || 0
+        const max = Number(mvs.max) || 100
+        const pct = ((settings.soundVolume - min) / (max - min)) * 100
+        mvs.style.setProperty('--pct', `${pct}%`)
+      }
+      if (mvv) mvv.textContent = `${settings.soundVolume}%`
+    }
   }
   async _applySpeedSetting(speed) {
     if (speed !== undefined && speed !== null && globalThis.components?.speed) {
@@ -674,7 +689,13 @@ class ControllerSettingsManager {
       direction: globalThis.currentDirectionMode || 'horizontal',
       ballColor: colorBtn?.style?.backgroundColor ?? '#60a5fa',
       bgColor: document.body.style.backgroundColor || '#020617',
-      ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 40
+      ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 40,
+      soundEnabled:
+        document.getElementById('soundEnabledCheckbox')?.checked ?? false,
+      soundType: document.getElementById('soundTypeSelect')?.value ?? 'soft',
+      soundVolume: Number(
+        document.getElementById('masterVolumeSlider')?.value ?? 70
+      )
     }
   }
   /**
@@ -909,6 +930,12 @@ class ControllerSettingsManager {
         bgColor: document.body.style.backgroundColor || '#020617',
         ballSize:
           document.querySelector('.size-btn.active')?.dataset?.size ?? 40,
+        soundEnabled:
+          document.getElementById('soundEnabledCheckbox')?.checked ?? false,
+        soundType: document.getElementById('soundTypeSelect')?.value ?? 'soft',
+        soundVolume: Number(
+          document.getElementById('masterVolumeSlider')?.value ?? 70
+        ),
         isPlaying: globalThis.isPlaying || false
       },
       viewerConnected: globalThis.__current?.viewerConnected ?? false,
