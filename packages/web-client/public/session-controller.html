@@ -146,6 +146,10 @@
     <link rel="stylesheet" href="/css/controller.css?v=2.39.828-f326c70c" />
     <link
       rel="stylesheet"
+      href="/css/session-timer.css?v=2.39.828-f326c70c"
+    />
+    <link
+      rel="stylesheet"
       href="/css/subscription-badge.css?v=2.39.828-f326c70c"
     />
     <script src="/js/ui/cookie-consent.js?v=2.39.828-f326c70c" defer></script>
@@ -222,6 +226,18 @@
         </div>
       </div>
       <button
+        type="button"
+        id="headerSessionTimer"
+        class="header-session-timer"
+        title="Session duration timer"
+        aria-label="Session duration timer"
+        data-i18n-attr="title:controller.sessionTimer.title;aria-label:controller.sessionTimer.title"
+      >
+        <span class="header-timer-icon" aria-hidden="true">⏱️</span>
+        <span id="headerTimerDisplay" class="header-timer-digits">00:00</span>
+        <span id="headerTimerTarget" class="header-timer-target">/ 50m</span>
+      </button>
+      <button
         id="headerSessionLogBtn"
         class="header-log-btn"
         aria-label="Session history log"
@@ -276,6 +292,11 @@
               <span class="fs-status-text" data-i18n="controller.waiting"
                 >Waiting...</span
               >
+            </div>
+            <div id="fsSessionTimerDisplay" class="fs-session-timer" title="Session Timer">
+              <span aria-hidden="true">⏱️</span>
+              <span id="fsSessionTimerText">00:00</span>
+              <span id="fsSessionTimerTarget" class="fs-timer-target">/ 50m</span>
             </div>
             <div class="fs-link-group">
               <label
@@ -1137,6 +1158,139 @@
 
       <!-- RIGHT COLUMN: primary controls -->
       <div class="controller-right-col">
+        <!-- Visual Clinical Session Timer Component -->
+        <section id="sessionTimerCard" class="session-timer-card" aria-labelledby="stCardHeading">
+          <div class="st-header">
+            <div class="st-title-wrap">
+              <span class="st-icon-badge" aria-hidden="true">⏱️</span>
+              <h3 id="stCardHeading" class="st-title" data-i18n="controller.sessionTimer.heading">Session Timer</h3>
+            </div>
+            <div class="st-header-actions">
+              <div id="stStatusBadge" class="st-status-badge">
+                <span class="st-status-dot" aria-hidden="true"></span>
+                <span id="stStatusText" data-i18n="controller.sessionTimer.statusReady">Ready</span>
+              </div>
+              <button
+                type="button"
+                id="stSoundToggle"
+                class="st-icon-btn is-active"
+                title="Sound cues (Closure & Target)"
+                data-i18n-attr="title:controller.sessionTimer.soundAlerts"
+                aria-label="Toggle sound alerts"
+              >
+                🔔
+              </button>
+            </div>
+          </div>
+
+          <div class="st-visual-row">
+            <!-- SVG Radial Gauge -->
+            <div class="st-gauge-wrap">
+              <svg class="st-gauge-svg" viewBox="0 0 100 100" aria-hidden="true">
+                <defs>
+                  <linearGradient id="stGaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#38bdf8" />
+                    <stop offset="100%" stop-color="#06b6d4" />
+                  </linearGradient>
+                </defs>
+                <circle class="st-gauge-track" cx="50" cy="50" r="42" />
+                <circle
+                  id="stGaugeProgress"
+                  class="st-gauge-progress"
+                  cx="50"
+                  cy="50"
+                  r="42"
+                />
+              </svg>
+              <div class="st-gauge-inner">
+                <span id="stGaugePercent" class="st-gauge-percent">0%</span>
+                <span id="stGaugeTargetLabel" class="st-gauge-target-label">50m</span>
+              </div>
+            </div>
+
+            <!-- Digital Time & Mode Info -->
+            <div class="st-info-wrap">
+              <button
+                type="button"
+                id="stTimeBtnToggle"
+                class="st-time-btn-toggle"
+                title="Click to toggle between Elapsed and Remaining"
+                data-i18n-attr="title:controller.sessionTimer.toggleHint"
+              >
+                <div id="stDisplayTime" class="st-digits-main">00:00</div>
+              </button>
+              <div id="stModeSubtitle" class="st-mode-subtitle">
+                <span id="stModeBadge" class="st-mode-badge" data-i18n="controller.sessionTimer.elapsed">Elapsed</span>
+                <span class="st-mode-hint" data-i18n="controller.sessionTimer.remaining">50:00 remaining</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Target Duration Presets Row -->
+          <div class="st-presets-row" role="radiogroup" aria-label="Target session duration">
+            <button type="button" class="st-preset-chip" data-target="30" aria-label="30 minutes">30m</button>
+            <button type="button" class="st-preset-chip" data-target="45" aria-label="45 minutes">45m</button>
+            <button type="button" class="st-preset-chip is-active" data-target="50" aria-label="50 minutes">50m</button>
+            <button type="button" class="st-preset-chip" data-target="60" aria-label="60 minutes">60m</button>
+            <button type="button" class="st-preset-chip" data-target="90" aria-label="90 minutes">90m</button>
+            <button type="button" class="st-preset-chip" data-target="0" title="Count Up (No limit)" data-i18n-attr="title:controller.sessionTimer.freeMode" aria-label="Count up">∞</button>
+          </div>
+
+          <!-- Primary Timer Controls Row -->
+          <div class="st-controls-row">
+            <button type="button" id="stToggleBtn" class="st-btn-main">
+              <span id="stToggleIcon" aria-hidden="true">▶</span>
+              <span id="stToggleText" data-i18n="controller.sessionTimer.start">Start Timer</span>
+            </button>
+            <button
+              type="button"
+              id="stResetBtn"
+              class="st-btn-action"
+              title="Reset session timer"
+              data-i18n-attr="title:controller.sessionTimer.reset"
+              aria-label="Reset timer"
+            >
+              <span aria-hidden="true">↺</span>
+              <span data-i18n="controller.sessionTimer.reset">Reset</span>
+            </button>
+            <button
+              type="button"
+              id="stAddFiveBtn"
+              class="st-btn-action"
+              title="Add 5 minutes to target"
+              data-i18n-attr="title:controller.sessionTimer.addFiveMin"
+              aria-label="Add 5 minutes"
+            >
+              <span>+5m</span>
+            </button>
+          </div>
+
+          <!-- Active Bilateral Stimulation Ratio Breakdown -->
+          <div class="st-ratio-section">
+            <div class="st-ratio-bar-wrap">
+              <div id="stRatioFill" class="st-ratio-bar-fill"></div>
+            </div>
+            <div class="st-ratio-meta">
+              <span>
+                <span data-i18n="controller.sessionTimer.activeBilateral">Active BLS:</span>
+                <strong id="stBilateralTime" class="st-ratio-val">00:00</strong>
+              </span>
+              <span>
+                <span data-i18n="controller.sessionTimer.bilateralRatio">Ratio:</span>
+                <strong id="stBilateralRatio" class="st-ratio-val">0%</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- Footer Options -->
+          <div class="st-footer-row">
+            <label class="st-option-label" for="stAutoStartCheckbox">
+              <input type="checkbox" id="stAutoStartCheckbox" class="st-checkbox" checked />
+              <span data-i18n="controller.sessionTimer.autoStart">Auto-start on stimulation</span>
+            </label>
+          </div>
+        </section>
+
         <!-- Unified session block: Start + Stats + Autostop -->
         <div class="session-unified-block">
           <div class="session-actions-row">

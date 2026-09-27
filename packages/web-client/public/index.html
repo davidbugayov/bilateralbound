@@ -1119,6 +1119,56 @@
                 class="hub-validation"
                 aria-live="polite"
               ></p>
+              <!-- Local Session History -->
+              <div
+                id="sessionHistoryContainer"
+                class="hub-history"
+                style="display: none"
+                aria-labelledby="sessionHistoryTitle"
+              >
+                <div class="hub-history__header">
+                  <div class="hub-history__title-wrap">
+                    <svg
+                      class="hub-history__icon"
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span
+                      id="sessionHistoryTitle"
+                      class="hub-history__title"
+                      data-i18n="restore.recentHeading"
+                    >
+                      Recent sessions
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    id="clearSessionHistoryBtn"
+                    class="hub-history__clear-btn"
+                    data-action="clear-history"
+                    data-i18n="restore.clearHistory"
+                    title="Clear recent session history"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div
+                  id="sessionHistoryList"
+                  class="hub-history__list"
+                  role="list"
+                  aria-label="Recent sessions"
+                ></div>
+              </div>
             </div>
           </details>
         </div>

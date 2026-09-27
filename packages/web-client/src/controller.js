@@ -23,6 +23,7 @@ const {
 } = require('./ui/therapist-observations')
 require('./ui/controller-settings')
 require('./ui/session-logger')
+require('./ui/session-timer')
 const { AudioVisualizer } = require('./ui/audio-visualizer')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
@@ -284,6 +285,22 @@ async function initializeController() {
       return
     }
     globalThis.__current.sessionId = sessionId
+    try {
+      const rawRecent = localStorage.getItem('bb_recent_sessions')
+      const parsedRecent = rawRecent ? JSON.parse(rawRecent) : []
+      const recentList = Array.isArray(parsedRecent)
+        ? parsedRecent.filter(
+            item => (typeof item === 'string' ? item : item?.id) !== sessionId
+          )
+        : []
+      recentList.unshift({ id: sessionId, timestamp: Date.now() })
+      localStorage.setItem(
+        'bb_recent_sessions',
+        JSON.stringify(recentList.slice(0, 10))
+      )
+    } catch (_) {
+      /* ignore storage error */
+    }
     await registerControllerOnServer(sessionId, logger)
     await initializeDOMElements(sessionId)
     await initializePreviewUI()

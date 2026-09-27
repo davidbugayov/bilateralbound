@@ -87,6 +87,7 @@
       } catch (_) {
         /* noop */
       }
+      saveRecentSession(sessionId)
       window.location.href = '/c/' + sessionId
     } finally {
       isCreatingSession = false
@@ -426,6 +427,7 @@
       }
 
       const data = await response.json()
+      saveRecentSession(clientId)
       if (viewerUrlInput) viewerUrlInput.value = data.viewerUrl
       if (controllerUrlInput) controllerUrlInput.value = data.controllerUrl
       if (container) container.style.display = 'block'
@@ -544,6 +546,7 @@
       const data = await response.json()
       console.log('✅ Session found:', data)
       messageEl.textContent = ''
+      saveRecentSession(sessionId)
 
       const baseUrl = window.location.protocol + '//' + window.location.host
       viewerUrlInput.value = baseUrl + '/s/' + sessionId
@@ -572,6 +575,264 @@
       btn.innerHTML = originalBtnText
       btn.disabled = false
     }
+  }
+
+  const RECENT_SESSIONS_STORAGE_KEY = 'bb_recent_sessions'
+  const MAX_RECENT_SESSIONS = 10
+
+  /**
+   * Get list of recent sessions from localStorage
+   * Returns array of { id: string, timestamp: number }
+   */
+  function getRecentSessions() {
+    try {
+      const raw = localStorage.getItem(RECENT_SESSIONS_STORAGE_KEY)
+      if (!raw) return []
+      const parsed = JSON.parse(raw)
+      if (!Array.isArray(parsed)) return []
+      const normalized = parsed
+        .map(function (item) {
+          if (typeof item === 'string' && item.trim()) {
+            return { id: item.trim(), timestamp: Date.now() }
+          }
+          if (item && typeof item.id === 'string' && item.id.trim()) {
+            return {
+              id: item.id.trim(),
+              timestamp:
+                typeof item.timestamp === 'number'
+                  ? item.timestamp
+                  : Date.now()
+            }
+          }
+          return null
+        })
+        .filter(Boolean)
+
+      const seen = new Set()
+      const unique = []
+      for (const entry of normalized) {
+        if (!seen.has(entry.id)) {
+          seen.add(entry.id)
+          unique.push(entry)
+        }
+      }
+      return unique.slice(0, MAX_RECENT_SESSIONS)
+    } catch (e) {
+      console.warn('Failed to parse recent sessions from localStorage:', e)
+      return []
+    }
+  }
+
+  /**
+   * Save a session ID to recent sessions
+   */
+  function saveRecentSession(sessionId) {
+    if (!sessionId || typeof sessionId !== 'string') return
+    const trimmed = sessionId.trim()
+    if (!trimmed) return
+
+    try {
+      const existing = getRecentSessions()
+      const filtered = existing.filter(function (s) {
+        return s.id !== trimmed
+      })
+      filtered.unshift({ id: trimmed, timestamp: Date.now() })
+      const toStore = filtered.slice(0, MAX_RECENT_SESSIONS)
+      localStorage.setItem(
+        RECENT_SESSIONS_STORAGE_KEY,
+        JSON.stringify(toStore)
+      )
+      renderRecentSessionsUI()
+    } catch (e) {
+      console.warn('Failed to save recent session to localStorage:', e)
+    }
+  }
+
+  /**
+   * Remove a single session from recent sessions
+   */
+  function removeRecentSession(sessionId) {
+    if (!sessionId) return
+    try {
+      const existing = getRecentSessions()
+      const filtered = existing.filter(function (s) {
+        return s.id !== sessionId
+      })
+      localStorage.setItem(
+        RECENT_SESSIONS_STORAGE_KEY,
+        JSON.stringify(filtered)
+      )
+      renderRecentSessionsUI()
+    } catch (e) {
+      console.warn('Failed to remove recent session from localStorage:', e)
+    }
+  }
+
+  /**
+   * Clear all recent sessions
+   */
+  function clearRecentSessions() {
+    try {
+      localStorage.removeItem(RECENT_SESSIONS_STORAGE_KEY)
+      renderRecentSessionsUI()
+    } catch (e) {
+      console.warn('Failed to clear recent sessions from localStorage:', e)
+    }
+  }
+
+  /**
+   * Helper to format relative time for display
+   */
+  function formatRelativeTime(timestamp) {
+    if (!timestamp) return ''
+    const diffSec = Math.floor((Date.now() - timestamp) / 1000)
+    if (diffSec < 60) {
+      return globalThis.i18n?.t('restore.justNow') || 'just now'
+    }
+    const diffMin = Math.floor(diffSec / 60)
+    if (diffMin < 60) {
+      return `${diffMin}m`
+    }
+    const diffHours = Math.floor(diffMin / 60)
+    if (diffHours < 24) {
+      return `${diffHours}h`
+    }
+    const diffDays = Math.floor(diffHours / 24)
+    if (diffDays < 7) {
+      return `${diffDays}d`
+    }
+    try {
+      return new Date(timestamp).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric'
+      })
+    } catch (_) {
+      return `${diffDays}d`
+    }
+  }
+
+  /**
+   * Select a session from history and load it
+   */
+  function selectRecentSession(sessionId) {
+    const input = document.getElementById('existingSessionId')
+    const messageEl = document.getElementById('loadSessionMessage')
+    if (input) {
+      input.value = sessionId
+      if (messageEl) messageEl.textContent = ''
+      loadSession()
+    }
+  }
+
+  /**
+   * Render the recent sessions UI in the Restore section
+   */
+  function renderRecentSessionsUI() {
+    const container = document.getElementById('sessionHistoryContainer')
+    const list = document.getElementById('sessionHistoryList')
+    if (!container || !list) return
+
+    const sessions = getRecentSessions()
+    if (!sessions || sessions.length === 0) {
+      container.style.display = 'none'
+      list.innerHTML = ''
+      return
+    }
+
+    container.style.display = 'flex'
+    list.innerHTML = ''
+
+    sessions.forEach(function (session) {
+      const item = document.createElement('div')
+      item.className = 'hub-history__item'
+      item.setAttribute('role', 'listitem')
+
+      const chipBtn = document.createElement('button')
+      chipBtn.type = 'button'
+      chipBtn.className = 'hub-history__chip-btn'
+      const tooltip =
+        (globalThis.i18n?.t('restore.useSession') || 'Load session') +
+        ' ' +
+        session.id
+      chipBtn.title = tooltip
+      chipBtn.setAttribute('aria-label', tooltip)
+
+      const chipIcon = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      )
+      chipIcon.setAttribute('class', 'hub-history__chip-icon')
+      chipIcon.setAttribute('width', '12')
+      chipIcon.setAttribute('height', '12')
+      chipIcon.setAttribute('viewBox', '0 0 24 24')
+      chipIcon.setAttribute('fill', 'none')
+      chipIcon.setAttribute('stroke', 'currentColor')
+      chipIcon.setAttribute('stroke-width', '2.2')
+      chipIcon.setAttribute('stroke-linecap', 'round')
+      chipIcon.setAttribute('stroke-linejoin', 'round')
+      chipIcon.setAttribute('aria-hidden', 'true')
+      chipIcon.innerHTML =
+        '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
+        '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'
+
+      const idSpan = document.createElement('span')
+      idSpan.className = 'hub-history__chip-id'
+      idSpan.textContent = session.id
+
+      chipBtn.appendChild(chipIcon)
+      chipBtn.appendChild(idSpan)
+
+      const timeText = formatRelativeTime(session.timestamp)
+      if (timeText) {
+        const timeSpan = document.createElement('span')
+        timeSpan.className = 'hub-history__chip-time'
+        timeSpan.textContent = timeText
+        chipBtn.appendChild(timeSpan)
+      }
+
+      chipBtn.addEventListener('click', function () {
+        selectRecentSession(session.id)
+      })
+
+      const delBtn = document.createElement('button')
+      delBtn.type = 'button'
+      delBtn.className = 'hub-history__del-btn'
+      const removeLabel =
+        (globalThis.i18n?.t('restore.removeSession') ||
+          'Remove from history') +
+        ' ' +
+        session.id
+      delBtn.title = removeLabel
+      delBtn.setAttribute('aria-label', removeLabel)
+
+      const delIcon = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      )
+      delIcon.setAttribute('width', '10')
+      delIcon.setAttribute('height', '10')
+      delIcon.setAttribute('viewBox', '0 0 24 24')
+      delIcon.setAttribute('fill', 'none')
+      delIcon.setAttribute('stroke', 'currentColor')
+      delIcon.setAttribute('stroke-width', '2.5')
+      delIcon.setAttribute('stroke-linecap', 'round')
+      delIcon.setAttribute('stroke-linejoin', 'round')
+      delIcon.setAttribute('aria-hidden', 'true')
+      delIcon.innerHTML =
+        '<line x1="18" y1="6" x2="6" y2="18"/>' +
+        '<line x1="6" y1="6" x2="18" y2="18"/>'
+
+      delBtn.appendChild(delIcon)
+
+      delBtn.addEventListener('click', function (e) {
+        e.stopPropagation()
+        removeRecentSession(session.id)
+      })
+
+      item.appendChild(chipBtn)
+      item.appendChild(delBtn)
+      list.appendChild(item)
+    })
   }
 
   /**
@@ -1017,6 +1278,7 @@
         if (action === 'create-session') createSession()
         else if (action === 'generate-links') generatePermanentLinks()
         else if (action === 'load-session') loadSession()
+        else if (action === 'clear-history') clearRecentSessions()
         else if (action === 'copy') {
           const targetId = this.getAttribute('data-target')
           const input =
@@ -1119,6 +1381,34 @@
       checkStatus: checkSubscriptionStatus
     }
 
+    // Initialize session history UI
+    renderRecentSessionsUI()
+
+    const restoreDetails = document.getElementById('restoreDetails')
+    if (restoreDetails) {
+      restoreDetails.addEventListener('toggle', function () {
+        if (restoreDetails.open) {
+          renderRecentSessionsUI()
+        }
+      })
+    }
+
+    const existingSessionInput = document.getElementById('existingSessionId')
+    if (existingSessionInput) {
+      existingSessionInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          loadSession()
+        }
+      })
+    }
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === RECENT_SESSIONS_STORAGE_KEY) {
+        renderRecentSessionsUI()
+      }
+    })
+
     // Theme toggle initialization with retry
     if (!initThemeToggle()) {
       setTimeout(initThemeToggle, 100)
@@ -1134,12 +1424,14 @@
     globalThis.addEventListener('i18nLanguageChanged', function () {
       resetCreateSessionButton()
       validateCustomClientIdInput()
+      renderRecentSessionsUI()
     })
     globalThis.addEventListener('pageshow', function (e) {
       if (e.persisted && globalThis.i18n?.applyTranslations) {
         globalThis.i18n.applyTranslations()
       }
       resetCreateSessionButton()
+      renderRecentSessionsUI()
     })
   }
 
@@ -1157,6 +1449,11 @@
     loadSession: loadSession,
     triggerCopySuccessAnimation: triggerCopySuccessAnimation,
     triggerInputShake: triggerInputShake,
-    validateCustomClientIdInput: validateCustomClientIdInput
+    validateCustomClientIdInput: validateCustomClientIdInput,
+    getRecentSessions: getRecentSessions,
+    saveRecentSession: saveRecentSession,
+    removeRecentSession: removeRecentSession,
+    clearRecentSessions: clearRecentSessions,
+    renderRecentSessionsUI: renderRecentSessionsUI
   }
 })()
