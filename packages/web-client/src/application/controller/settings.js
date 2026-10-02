@@ -79,17 +79,28 @@ const ILLUS_TABS = {
 }
 
 function updateSpeed(speed) {
+  const numSpeed = typeof speed === 'number' ? speed : Number(speed)
+  if (Number.isNaN(numSpeed)) return
+
+  const ls = _deps.getLastServerState?.()
+  if (ls) ls.speed = numSpeed
+
+  const engine = _deps.getPreviewPhysicsEngine?.()
+  if (engine && typeof engine.setSpeed === 'function') {
+    engine.setSpeed(numSpeed)
+  }
+
   if (globalThis.__current?.isInitializing) return
   if (!globalThis.__current?.viewerConnected) {
-    _deps.showViewerNotConnectedWarning?.()
     return
   }
+
   try {
-    _deps.safeSend?.(globalThis.WS_MSG.controllerUpdate, { speed })
+    _deps.safeSend?.(globalThis.WS_MSG.controllerUpdate, { speed: numSpeed })
     try {
       globalThis.dispatchEvent(
         new CustomEvent('bb_metrika_settings_changed', {
-          detail: { setting: 'speed', value: speed }
+          detail: { setting: 'speed', value: numSpeed }
         })
       )
     } catch (e) {
@@ -320,12 +331,102 @@ function setTrackBand(band) {
   }
 }
 
+function setBallOpacity(opacity) {
+  const raw = Number(opacity)
+  if (Number.isNaN(raw)) return
+  const pct = Math.max(5, Math.min(100, Math.round(raw <= 1 ? raw * 100 : raw)))
+  const norm = pct / 100
+
+  const ls = _deps.getLastServerState?.()
+  if (ls) {
+    ls.opacity = norm
+    ls.ballOpacity = norm
+  }
+
+  const engine = _deps.getPreviewPhysicsEngine?.()
+  if (engine && typeof engine.setBallOpacity === 'function') {
+    engine.setBallOpacity(norm)
+  } else if (engine?.ball) {
+    engine.ball.opacity = norm
+    engine.ball.ballOpacity = norm
+  }
+
+  _updateOpacityUI(pct)
+
+  try {
+    localStorage.setItem('bb_ball_opacity', String(pct))
+  } catch (_) {
+    /* ignore */
+  }
+
+  if (globalThis.__current?.isInitializing) return
+  if (!globalThis.__current?.viewerConnected) {
+    return
+  }
+
+  _deps.safeSend?.(globalThis.WS_MSG.controllerUpdate, {
+    opacity: norm,
+    ballOpacity: norm
+  })
+  try {
+    globalThis.dispatchEvent(
+      new CustomEvent('bb_metrika_settings_changed', {
+        detail: { setting: 'ballOpacity', value: pct }
+      })
+    )
+  } catch (e) {
+    void e
+  }
+}
+
+function _updateOpacityUI(pct) {
+  const slider = document.getElementById('ballOpacitySlider')
+  const valBadge = document.getElementById('ballOpacityValue')
+  const fsSlider = document.getElementById('fsBallOpacitySlider')
+  const fsValBadge = document.getElementById('fsBallOpacityValue')
+
+  if (slider && Number(slider.value) !== pct) {
+    slider.value = String(pct)
+  }
+  if (valBadge) {
+    valBadge.textContent = `${pct}%`
+  }
+
+  if (fsSlider && Number(fsSlider.value) !== pct) {
+    fsSlider.value = String(pct)
+  }
+  if (fsValBadge) {
+    fsValBadge.textContent = `${pct}%`
+  }
+
+  if (slider) {
+    const min = Number(slider.min) || 0
+    const max = Number(slider.max) || 100
+    const fillPct = ((pct - min) / (max - min)) * 100
+    slider.style.setProperty('--pct', `${fillPct}%`)
+  }
+
+  if (fsSlider) {
+    const min = Number(fsSlider.min) || 0
+    const max = Number(fsSlider.max) || 100
+    const fillPct = ((pct - min) / (max - min)) * 100
+    fsSlider.style.setProperty('--pct', `${fillPct}%`)
+  }
+
+  document.querySelectorAll('.opacity-preset-btn').forEach((btn) => {
+    const btnVal = Number(btn.dataset.opacity)
+    btn.classList.toggle('active', btnVal === pct)
+  })
+}
+
 module.exports = {
   init,
   ILLUS_TABS,
   updateSpeed,
   setBallColor,
   setBallSize,
+  setBallOpacity,
+  _updateOpacityUI,
   setSoundEnabled,
   setSoundType,
   setSoundVolume,

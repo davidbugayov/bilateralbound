@@ -345,6 +345,20 @@ function updatePhysicsFromState(state) {
     delete stateToApply.y
   }
 
+  // Lemniscate and custom paths are computed deterministically per-screen.
+  // Strip x/y coordinates to prevent external server dimensions from overriding smooth local animation.
+  if (
+    (physicsEngine.ball.infinity ||
+      physicsEngine.ball.customPath ||
+      stateToApply.infinity === true ||
+      Boolean(stateToApply.customPath)) &&
+    typeof stateToApply.x === 'number' &&
+    typeof stateToApply.y === 'number'
+  ) {
+    delete stateToApply.x
+    delete stateToApply.y
+  }
+
   if (
     isMoving &&
     stateToApply.paused !== true && // always honour pause/unpause fully

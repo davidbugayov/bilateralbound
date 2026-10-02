@@ -67,7 +67,7 @@ function getRecentSessions() {
       }
     }
     return unique.slice(0, MAX_RECENT_SESSIONS);
-  } catch (e) {
+  } catch (_e) {
     return [];
   }
 }
@@ -88,7 +88,7 @@ function saveRecentSession(sessionId) {
       RECENT_SESSIONS_STORAGE_KEY,
       JSON.stringify(toStore)
     );
-  } catch (e) {
+  } catch (_e) {
     // ignore
   }
 }
@@ -104,7 +104,7 @@ function removeRecentSession(sessionId) {
       RECENT_SESSIONS_STORAGE_KEY,
       JSON.stringify(filtered)
     );
-  } catch (e) {
+  } catch (_e) {
     // ignore
   }
 }
@@ -112,7 +112,7 @@ function removeRecentSession(sessionId) {
 function clearRecentSessions() {
   try {
     localStorage.removeItem(RECENT_SESSIONS_STORAGE_KEY);
-  } catch (e) {
+  } catch (_e) {
     // ignore
   }
 }

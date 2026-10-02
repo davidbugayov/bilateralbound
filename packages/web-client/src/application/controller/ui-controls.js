@@ -9,12 +9,14 @@ const components = {}
  * Инициализация контрола скорости
  */
 function _initializeSpeedControl(onSpeedChange) {
-  const container = document.getElementById('speedControl')
+  const container =
+    document.getElementById('speedControl') ||
+    document.getElementById('speedCard')
   if (!container) return
   components.speed = sharedComponents.createSpeedControl(container, {
     onSpeedChange: throttle((speed) => {
       if (onSpeedChange) onSpeedChange(speed)
-    }, 100)
+    }, 60)
   })
 }
 /**
@@ -87,6 +89,98 @@ function _initializeSizeControl(onSizeChange) {
       if (onSizeChange) onSizeChange(size)
     }
   })
+}
+/**
+ * Инициализация контрола прозрачности/яркости мяча
+ */
+function _initializeBallOpacityControl(onOpacityChange) {
+  const slider = document.getElementById('ballOpacitySlider')
+  const valBadge = document.getElementById('ballOpacityValue')
+  const fsSlider = document.getElementById('fsBallOpacitySlider')
+  const fsValBadge = document.getElementById('fsBallOpacityValue')
+
+  const updateSliderTrack = (sl) => {
+    if (!sl) return
+    const min = Number(sl.min) || 0
+    const max = Number(sl.max) || 100
+    const val = Number(sl.value) || 100
+    const pct = ((val - min) / (max - min)) * 100
+    sl.style.setProperty('--pct', `${pct}%`)
+  }
+
+  let initialPct = 100
+  try {
+    const saved = localStorage.getItem('bb_ball_opacity')
+    if (saved) {
+      const parsed = Number.parseInt(saved, 10)
+      if (!Number.isNaN(parsed) && parsed >= 5 && parsed <= 100) {
+        initialPct = parsed
+      }
+    }
+  } catch (_) {
+    /* ignore */
+  }
+
+  const applyVal = (pct, dispatch = true) => {
+    const clamped = Math.max(5, Math.min(100, Math.round(pct)))
+    if (slider) {
+      slider.value = String(clamped)
+      updateSliderTrack(slider)
+    }
+    if (valBadge) valBadge.textContent = `${clamped}%`
+    if (fsSlider) {
+      fsSlider.value = String(clamped)
+      updateSliderTrack(fsSlider)
+    }
+    if (fsValBadge) fsValBadge.textContent = `${clamped}%`
+
+    document.querySelectorAll('.opacity-preset-btn').forEach((btn) => {
+      btn.classList.toggle('active', Number(btn.dataset.opacity) === clamped)
+    })
+
+    if (dispatch && onOpacityChange) {
+      onOpacityChange(clamped)
+    }
+  }
+
+  if (slider) {
+    slider.value = String(initialPct)
+    updateSliderTrack(slider)
+    if (valBadge) valBadge.textContent = `${initialPct}%`
+
+    slider.addEventListener('input', (e) => {
+      const val = Number(e.target.value) || 100
+      applyVal(val, true)
+    })
+  }
+
+  if (fsSlider) {
+    fsSlider.value = String(initialPct)
+    updateSliderTrack(fsSlider)
+    if (fsValBadge) fsValBadge.textContent = `${initialPct}%`
+
+    fsSlider.addEventListener('input', (e) => {
+      const val = Number(e.target.value) || 100
+      applyVal(val, true)
+    })
+  }
+
+  document.querySelectorAll('.opacity-preset-btn').forEach((btn) => {
+    btn.classList.toggle('active', Number(btn.dataset.opacity) === initialPct)
+    btn.addEventListener('click', () => {
+      const val = Number(btn.dataset.opacity) || 100
+      applyVal(val, true)
+    })
+  })
+
+  if (initialPct !== 100 && onOpacityChange) {
+    onOpacityChange(initialPct)
+  }
+
+  components.ballOpacity = {
+    setOpacity: (val) => applyVal(val, false),
+    getOpacity: () => Number(slider?.value || 100)
+  }
 }
 /**
  * Инициализация контролов звука
@@ -208,6 +302,7 @@ function initializeComponents(callbacks) {
   _initializeBallColorControl(callbacks?.onBallColorChange)
   _initializeBgColorControl(callbacks?.onBgColorChange)
   _initializeSizeControl(callbacks?.onSizeChange)
+  _initializeBallOpacityControl(callbacks?.onBallOpacityChange)
   _initializeSoundControls(
     callbacks?.onSoundEnabledChange,
     callbacks?.onSoundTypeChange,
@@ -236,6 +331,7 @@ function setControlsEnabled(enabled) {
   toggle('ballColorControl')
   toggle('bgColorControl')
   toggle('sizeControl')
+  toggle('opacityCard')
   toggle('speedControl')
 }
 /**

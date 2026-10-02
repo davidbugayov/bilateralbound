@@ -72,7 +72,6 @@ const SCANNER_PATHS = [
   '/test.php',
   '/_next',
   '/_next/server',
-  '/app',
   '/api/route',
   '/SDK/webLanguage',
   '/wiki',

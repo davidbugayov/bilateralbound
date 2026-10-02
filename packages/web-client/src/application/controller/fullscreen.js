@@ -20,6 +20,7 @@ let _callbacks = {
   setBallSize: () => {},
   setBallSizeMultiplier: () => {},
   setBallColor: () => {},
+  setBallOpacity: () => {},
   setBackgroundColor: () => {},
   getIsPlaying: () => false,
   getComponents: () => ({}),
@@ -343,7 +344,9 @@ function wireFullscreenControls() {
     fsDirV: 'vertical',
     fsDirDL: 'diagRLL',
     fsDirDR: 'diagRL',
-    fsDirRandom: 'random'
+    fsDirRandom: 'random',
+    fsDirZigzag: 'zigzag',
+    fsDirSpiral: 'spiral'
   }
   Object.entries(dirs).forEach(([id, mode]) => {
     const btn = document.getElementById(id)

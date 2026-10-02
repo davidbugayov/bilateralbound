@@ -1,6 +1,72 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Immediate Theme Pre-loader: sets theme class before first paint to prevent dark/light flash -->
+    <script>
+      ;(function () {
+        try {
+          var t = localStorage.getItem('bb_theme') || 'dark';
+          if (t === 'light') {
+            document.documentElement.className = 'light-theme';
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.style.backgroundColor = '#f8fafc';
+            document.documentElement.style.colorScheme = 'light';
+          } else {
+            document.documentElement.className = 'dark-theme';
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.documentElement.style.backgroundColor = '#0f172a';
+            document.documentElement.style.colorScheme = 'dark';
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <style id="critical-theme-style">
+      html.light-theme,
+      html.light-theme body,
+      body.light-theme {
+        background-color: #f8fafc !important;
+        background-image: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%) !important;
+        color: #1e293b !important;
+        color-scheme: light !important;
+      }
+      html.light-theme .controller-header,
+      body.light-theme .controller-header {
+        background: rgba(255, 255, 255, 0.94) !important;
+        border-color: rgba(203, 213, 225, 0.8) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      }
+      html.light-theme .control-section,
+      html.light-theme .controls-card,
+      html.light-theme .floating-preview,
+      html.light-theme .session-unified-block,
+      body.light-theme .control-section,
+      body.light-theme .controls-card,
+      body.light-theme .floating-preview,
+      body.light-theme .session-unified-block {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+        background-color: #ffffff !important;
+        color: #374151 !important;
+        border-color: rgba(226, 232, 240, 0.8) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06) !important;
+      }
+      html.light-theme .back-btn,
+      body.light-theme .back-btn {
+        background: #f8fafc !important;
+        color: #475569 !important;
+        border-color: #cbd5e1 !important;
+      }
+      html.light-theme .header-session-timer,
+      body.light-theme .header-session-timer {
+        background: rgba(255, 255, 255, 0.92) !important;
+        border-color: rgba(203, 213, 225, 0.75) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+      }
+      html.light-theme #preview,
+      body.light-theme #preview {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+        border-color: #cbd5e1 !important;
+      }
+    </style>
     <!-- Language pre-loader (inlined to avoid blocking network request) -->
     <script>
       ;(function () {
@@ -71,6 +137,11 @@
     <!-- Preload Critical Resources -->
     <link
       rel="preload"
+      href="/css/common.css?v=2.39.828-f326c70c"
+      as="style"
+    />
+    <link
+      rel="preload"
       href="/css/shared-components.css?v=2.39.828-f326c70c"
       as="style"
     />
@@ -83,6 +154,16 @@
       rel="preload"
       href="/css/controller.css?v=2.39.828-f326c70c"
       as="style"
+    />
+    <link
+      rel="preload"
+      href="/dist/shared.bundle.js?v=2.39.828-f326c70c"
+      as="script"
+    />
+    <link
+      rel="preload"
+      href="/dist/controller.bundle.js?v=2.39.828-f326c70c"
+      as="script"
     />
     <link
       rel="preconnect"
@@ -142,12 +223,8 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/css/common.css?v=2.39.828-f326c70c" />
-    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.828-f326c70c" />
     <link rel="stylesheet" href="/css/controller.css?v=2.39.828-f326c70c" />
-    <link
-      rel="stylesheet"
-      href="/css/session-timer.css?v=2.39.828-f326c70c"
-    />
+    <link rel="stylesheet" href="/css/light-theme.css?v=2.39.828-f326c70c" />
     <link
       rel="stylesheet"
       href="/css/subscription-badge.css?v=2.39.828-f326c70c"
@@ -159,38 +236,132 @@
     ></script>
   </head>
   <body>
-    <header>
-      <a
-        class="back-btn"
-        href="/"
-        aria-label="Return to main page"
-        data-i18n="controller.backToMain"
-      ></a>
-      <div class="theme-toggle-container">
-        <button
-          id="themeToggleBtn"
-          class="theme-toggle-btn"
-          data-i18n="controller.themeButton"
-        ></button>
-      </div>
-      <div class="header-presets-wrapper" id="headerPresetsWrapper">
-        <button
-          id="presetsMenuBtn"
-          class="presets-menu-btn"
-          type="button"
-          aria-haspopup="true"
-          aria-expanded="false"
-          aria-controls="presetsDropdownMenu"
-          title="Stimulation Presets"
-          data-i18n-attr="title:controller.presetsMenu"
+    <!-- Instant body theme initialization before first paint -->
+    <script>
+      ;(function () {
+        try {
+          var t = localStorage.getItem('bb_theme') || 'dark';
+          document.body.className = t === 'light' ? 'light-theme' : 'dark-theme';
+        } catch (e) {}
+      })();
+    </script>
+    <header class="controller-header">
+      <div class="header-left">
+        <a
+          class="back-btn"
+          href="/"
+          aria-label="Return to main page"
+          data-i18n-attr="title:controller.backToMain"
         >
-          <span class="presets-menu-icon" aria-hidden="true">🎯</span>
-          <span class="presets-menu-text" data-i18n="controller.presetsMenu">Presets</span>
+          <span class="back-btn-arrow" aria-hidden="true">←</span>
+          <span class="back-btn-text" data-i18n="controller.backToMain">Main page</span>
+        </a>
+      </div>
+      <!-- Session Duration Timer (Exercise & Total) -->
+      <div class="header-center">
+        <div id="headerSessionTimer" class="header-session-timer" title="Exercise & Session Duration">
+          <div class="header-timer-status-dot ready" id="headerTimerDot" aria-hidden="true"></div>
+          <div class="header-timer-content">
+            <div class="header-timer-main">
+              <span class="header-timer-icon" aria-hidden="true">⏱️</span>
+              <span id="headerTimer" class="header-timer-digits" aria-label="Exercise duration">00:00</span>
+              <span id="headerTimerBadge" class="header-timer-badge ready">READY</span>
+            </div>
+            <div class="header-timer-sub">
+              <span class="header-timer-sub-label" data-i18n="controller.totalSessionLabel">Total:</span>
+              <span id="headerTimerTotal" class="header-timer-total">00:00</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            id="headerResetTimerBtn"
+            class="header-timer-reset-btn"
+            title="Reset exercise timer"
+            data-i18n-attr="title:controller.resetTimerTooltip"
+            aria-label="Reset exercise timer"
+          >
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1 1v4h4" />
+              <path d="M2.5 10a5.5 5.5 0 1 0 1.2-6.5L1 5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-presets-wrapper" id="headerPresetsWrapper">
+          <button
+            id="presetsMenuBtn"
+            class="presets-menu-btn"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="presetsDropdownMenu"
+            title="Stimulation Presets"
+            data-i18n-attr="title:controller.presetsMenu"
+          >
+            <span class="presets-menu-icon" aria-hidden="true">🎯</span>
+            <span class="presets-menu-text" data-i18n="controller.presetsMenu">Presets</span>
+            <svg
+              class="presets-menu-caret"
+              viewBox="0 0 12 12"
+              width="10"
+              height="10"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M2.5 4.5l3.5 3.5 3.5-3.5" />
+            </svg>
+          </button>
+          <div
+            id="presetsDropdownMenu"
+            class="presets-dropdown-menu hidden"
+            role="menu"
+            aria-labelledby="presetsMenuBtn"
+          >
+            <div class="presets-dropdown-header">
+              <span class="presets-dropdown-title" data-i18n="controller.presetsMenuHeading">Stimulation Patterns</span>
+              <span class="presets-dropdown-sub" data-i18n="controller.oneClickSwitch">1-click switch</span>
+            </div>
+            <div class="presets-dropdown-list" id="presetsDropdownList" role="none"></div>
+            <div class="presets-dropdown-footer">
+              <button
+                type="button"
+                class="presets-dropdown-save-btn"
+                id="presetsMenuSaveCustomBtn"
+                onclick="createCustomPreset()"
+              >
+                <span class="presets-save-icon" aria-hidden="true">➕</span>
+                <span data-i18n="controller.saveCustomPresetLabel">Save current as preset...</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button
+          id="headerSessionLogBtn"
+          class="header-log-btn"
+          aria-label="Session history log"
+          data-i18n-attr="aria-label:controller.sessionLog.title"
+          title="Session history log"
+        >
+          <span class="header-log-icon" aria-hidden="true">📋</span>
+          <span class="header-log-text" data-i18n="controller.sessionLog.headerButton">Session Log</span>
+          <span id="headerSessionLogBadge" class="session-log-badge">0</span>
+        </button>
+        <button
+          id="settingsBtn"
+          class="settings-gear-btn"
+          aria-label="Settings"
+          data-i18n-attr="aria-label:controller.settingsLabel"
+          title="Settings"
+        >
           <svg
-            class="presets-menu-caret"
-            viewBox="0 0 12 12"
-            width="10"
-            height="10"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
@@ -198,80 +369,13 @@
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            <path d="M2.5 4.5l3.5 3.5 3.5-3.5" />
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+            />
           </svg>
         </button>
-        <div
-          id="presetsDropdownMenu"
-          class="presets-dropdown-menu hidden"
-          role="menu"
-          aria-labelledby="presetsMenuBtn"
-        >
-          <div class="presets-dropdown-header">
-            <span class="presets-dropdown-title" data-i18n="controller.presetsMenuHeading">Stimulation Patterns</span>
-            <span class="presets-dropdown-sub" data-i18n="controller.oneClickSwitch">1-click switch</span>
-          </div>
-          <div class="presets-dropdown-list" id="presetsDropdownList" role="none"></div>
-          <div class="presets-dropdown-footer">
-            <button
-              type="button"
-              class="presets-dropdown-save-btn"
-              id="presetsMenuSaveCustomBtn"
-              onclick="createCustomPreset()"
-            >
-              <span class="presets-save-icon" aria-hidden="true">➕</span>
-              <span data-i18n="controller.saveCustomPresetLabel">Save current as preset...</span>
-            </button>
-          </div>
-        </div>
       </div>
-      <button
-        type="button"
-        id="headerSessionTimer"
-        class="header-session-timer"
-        title="Session duration timer"
-        aria-label="Session duration timer"
-        data-i18n-attr="title:controller.sessionTimer.title;aria-label:controller.sessionTimer.title"
-      >
-        <span class="header-timer-icon" aria-hidden="true">⏱️</span>
-        <span id="headerTimerDisplay" class="header-timer-digits">00:00</span>
-        <span id="headerTimerTarget" class="header-timer-target">/ 50m</span>
-      </button>
-      <button
-        id="headerSessionLogBtn"
-        class="header-log-btn"
-        aria-label="Session history log"
-        data-i18n-attr="aria-label:controller.sessionLog.title"
-        title="Session history log"
-      >
-        <span class="header-log-icon" aria-hidden="true">📋</span>
-        <span class="header-log-text" data-i18n="controller.sessionLog.headerButton">Session Log</span>
-        <span id="headerSessionLogBadge" class="session-log-badge">0</span>
-      </button>
-      <button
-        id="settingsBtn"
-        class="settings-gear-btn"
-        aria-label="Settings"
-        data-i18n-attr="aria-label:controller.settingsLabel"
-        title="Settings"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          width="18"
-          height="18"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="12" r="3" />
-          <path
-            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
-          />
-        </svg>
-      </button>
     </header>
     <main class="wrap controller-layout">
       <div id="previewOverlay" class="fullscreen-overlay hidden">
@@ -287,16 +391,15 @@
         <div id="previewFsPanel" class="fullscreen-panel">
           <div class="fs-panel-header">
             <span id="fsCurSid" class="fs-session-id">SID: ...</span>
+            <div id="fsTimerWrap" class="fs-timer-wrap" title="Exercise Duration">
+              <span class="fs-timer-icon" aria-hidden="true">⏱️</span>
+              <span id="fsTimer" class="fs-timer-value">00:00</span>
+            </div>
             <div id="fsViewerStatus" class="fs-viewer-status">
               <span class="fs-status-indicator"></span>
               <span class="fs-status-text" data-i18n="controller.waiting"
                 >Waiting...</span
               >
-            </div>
-            <div id="fsSessionTimerDisplay" class="fs-session-timer" title="Session Timer">
-              <span aria-hidden="true">⏱️</span>
-              <span id="fsSessionTimerText">00:00</span>
-              <span id="fsSessionTimerTarget" class="fs-timer-target">/ 50m</span>
             </div>
             <div class="fs-link-group">
               <label
@@ -358,6 +461,16 @@
               id="fsDirRandom"
               data-i18n="controller.random"
             ></button>
+            <button
+              class="seg-btn fs-seg-btn"
+              id="fsDirZigzag"
+              title="Zig-Zag"
+            >⚡</button>
+            <button
+              class="seg-btn fs-seg-btn"
+              id="fsDirSpiral"
+              title="Spiral"
+            >🌀</button>
           </div>
           <div class="fs-slider-group">
             <label
@@ -372,6 +485,27 @@
               min="5"
               max="60"
               value="20"
+              class="fs-slider"
+            />
+          </div>
+          <div class="fs-slider-group fs-opacity-slider-group">
+            <div class="fs-slider-header">
+              <span class="fs-label" data-i18n="controller.ballOpacityShort">Opacity</span>
+              <span class="fs-value-badge" id="fsBallOpacityValue">100%</span>
+            </div>
+            <label
+              for="fsBallOpacitySlider"
+              class="sr-only"
+              data-i18n="controller.ballOpacityTitle"
+              >Ball opacity</label
+            >
+            <input
+              type="range"
+              id="fsBallOpacitySlider"
+              min="10"
+              max="100"
+              value="100"
+              step="5"
               class="fs-slider"
             />
           </div>
@@ -602,6 +736,41 @@
                 data-i18n="controller.ballSizeTitle"
               ></p>
               <div id="sizeControl"></div>
+            </div>
+            <div class="controls-card" id="opacityCard">
+              <div class="opacity-header-row">
+                <p class="controls-title" data-i18n="controller.ballOpacityTitle">
+                  Ball opacity / brightness
+                </p>
+                <span class="opacity-value-badge" id="ballOpacityValue">100%</span>
+              </div>
+              <div class="opacity-slider-container">
+                <label for="ballOpacitySlider" class="sr-only" data-i18n="controller.ballOpacityTitle">Ball opacity</label>
+                <input
+                  type="range"
+                  id="ballOpacitySlider"
+                  class="custom-slider opacity-slider"
+                  min="10"
+                  max="100"
+                  value="100"
+                  step="5"
+                  aria-label="Ball opacity"
+                  data-i18n-attr="aria-label:controller.ballOpacityTitle"
+                />
+                <div class="opacity-scale-ticks scale-ticks">
+                  <span>10%</span>
+                  <span>25%</span>
+                  <span>50%</span>
+                  <span>75%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+              <div class="opacity-presets-row" role="group" aria-label="Opacity presets">
+                <button type="button" class="preset-pill-btn opacity-preset-btn" data-opacity="25" title="25%">25%</button>
+                <button type="button" class="preset-pill-btn opacity-preset-btn" data-opacity="50" title="50%">50%</button>
+                <button type="button" class="preset-pill-btn opacity-preset-btn" data-opacity="75" title="75%">75%</button>
+                <button type="button" class="preset-pill-btn opacity-preset-btn active" data-opacity="100" title="100%">100%</button>
+              </div>
             </div>
             <details class="illus-accordion" id="illustrationCard">
               <summary class="illus-accordion__summary">
@@ -1020,7 +1189,7 @@
 
         <aside
           id="previewWrap"
-          class="control-section floating-preview hidden"
+          class="control-section floating-preview"
           aria-labelledby="preview-heading"
         >
           <div class="preview-header">
@@ -1065,87 +1234,6 @@
             Waiting for viewer connection
           </div>
         </aside>
-
-        <!-- Local-only Therapist Observations Section -->
-        <section
-          id="therapistObservationsSection"
-          class="control-section therapist-observations-card"
-          aria-labelledby="observationsHeading"
-        >
-          <div class="observations-header">
-            <div class="observations-header__left">
-              <h3 id="observationsHeading" class="observations-title">
-                <span data-i18n="controller.observationsHeading">📝 Observations</span>
-              </h3>
-              <span
-                class="observations-badge"
-                data-i18n="controller.observationsPrivacyBadge"
-                title="Observations are local-only and not sent or saved anywhere"
-              >
-                🔒 Local &amp; Private
-              </span>
-            </div>
-            <div class="observations-header__actions">
-              <button
-                type="button"
-                id="observationsTimestampBtn"
-                class="observations-action-btn"
-                title="Insert current session time"
-                data-i18n-attr="title:controller.observationsInsertTimeTitle;aria-label:controller.observationsInsertTimeTitle"
-                aria-label="Insert timestamp"
-              >
-                ⏱️ <span data-i18n="controller.observationsTimeBtn">Time</span>
-              </button>
-              <button
-                type="button"
-                id="observationsCopyBtn"
-                class="observations-action-btn"
-                title="Copy observations to clipboard"
-                data-i18n-attr="title:controller.observationsCopyTitle;aria-label:controller.observationsCopyTitle"
-                aria-label="Copy observations"
-              >
-                📋 <span data-i18n="controller.observationsCopyBtn">Copy</span>
-              </button>
-              <button
-                type="button"
-                id="observationsClearBtn"
-                class="observations-action-btn observations-action-btn--danger"
-                title="Clear observations"
-                data-i18n-attr="title:controller.observationsClearTitle;aria-label:controller.observationsClearTitle"
-                aria-label="Clear observations"
-              >
-                🗑️ <span data-i18n="controller.observationsClearBtn">Clear</span>
-              </button>
-            </div>
-          </div>
-          <div class="observations-body">
-            <label
-              for="therapistObservationsTextarea"
-              class="sr-only"
-              data-i18n="controller.observationsLabel"
-            >
-              Therapist session observations
-            </label>
-            <textarea
-              id="therapistObservationsTextarea"
-              class="observations-textarea"
-              rows="4"
-              data-i18n-attr="placeholder:controller.observationsPlaceholder"
-              placeholder="Jot down private notes (SUDs, VOC, target shifts, client responses)... Notes are strictly local-only and discarded when the session ends for privacy."
-              spellcheck="false"
-              autocomplete="off"
-            ></textarea>
-          </div>
-          <div class="observations-footer">
-            <span
-              class="observations-privacy-notice"
-              data-i18n="controller.observationsPrivacyNote"
-            >
-              🔒 Confidential: never transmitted to servers or stored across sessions.
-            </span>
-            <span id="observationsCharCount" class="observations-count" aria-live="polite">0 chars</span>
-          </div>
-        </section>
       </div>
 
       <!-- Error state container (injected dynamically) -->
@@ -1158,139 +1246,6 @@
 
       <!-- RIGHT COLUMN: primary controls -->
       <div class="controller-right-col">
-        <!-- Visual Clinical Session Timer Component -->
-        <section id="sessionTimerCard" class="session-timer-card" aria-labelledby="stCardHeading">
-          <div class="st-header">
-            <div class="st-title-wrap">
-              <span class="st-icon-badge" aria-hidden="true">⏱️</span>
-              <h3 id="stCardHeading" class="st-title" data-i18n="controller.sessionTimer.heading">Session Timer</h3>
-            </div>
-            <div class="st-header-actions">
-              <div id="stStatusBadge" class="st-status-badge">
-                <span class="st-status-dot" aria-hidden="true"></span>
-                <span id="stStatusText" data-i18n="controller.sessionTimer.statusReady">Ready</span>
-              </div>
-              <button
-                type="button"
-                id="stSoundToggle"
-                class="st-icon-btn is-active"
-                title="Sound cues (Closure & Target)"
-                data-i18n-attr="title:controller.sessionTimer.soundAlerts"
-                aria-label="Toggle sound alerts"
-              >
-                🔔
-              </button>
-            </div>
-          </div>
-
-          <div class="st-visual-row">
-            <!-- SVG Radial Gauge -->
-            <div class="st-gauge-wrap">
-              <svg class="st-gauge-svg" viewBox="0 0 100 100" aria-hidden="true">
-                <defs>
-                  <linearGradient id="stGaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#38bdf8" />
-                    <stop offset="100%" stop-color="#06b6d4" />
-                  </linearGradient>
-                </defs>
-                <circle class="st-gauge-track" cx="50" cy="50" r="42" />
-                <circle
-                  id="stGaugeProgress"
-                  class="st-gauge-progress"
-                  cx="50"
-                  cy="50"
-                  r="42"
-                />
-              </svg>
-              <div class="st-gauge-inner">
-                <span id="stGaugePercent" class="st-gauge-percent">0%</span>
-                <span id="stGaugeTargetLabel" class="st-gauge-target-label">50m</span>
-              </div>
-            </div>
-
-            <!-- Digital Time & Mode Info -->
-            <div class="st-info-wrap">
-              <button
-                type="button"
-                id="stTimeBtnToggle"
-                class="st-time-btn-toggle"
-                title="Click to toggle between Elapsed and Remaining"
-                data-i18n-attr="title:controller.sessionTimer.toggleHint"
-              >
-                <div id="stDisplayTime" class="st-digits-main">00:00</div>
-              </button>
-              <div id="stModeSubtitle" class="st-mode-subtitle">
-                <span id="stModeBadge" class="st-mode-badge" data-i18n="controller.sessionTimer.elapsed">Elapsed</span>
-                <span class="st-mode-hint" data-i18n="controller.sessionTimer.remaining">50:00 remaining</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Target Duration Presets Row -->
-          <div class="st-presets-row" role="radiogroup" aria-label="Target session duration">
-            <button type="button" class="st-preset-chip" data-target="30" aria-label="30 minutes">30m</button>
-            <button type="button" class="st-preset-chip" data-target="45" aria-label="45 minutes">45m</button>
-            <button type="button" class="st-preset-chip is-active" data-target="50" aria-label="50 minutes">50m</button>
-            <button type="button" class="st-preset-chip" data-target="60" aria-label="60 minutes">60m</button>
-            <button type="button" class="st-preset-chip" data-target="90" aria-label="90 minutes">90m</button>
-            <button type="button" class="st-preset-chip" data-target="0" title="Count Up (No limit)" data-i18n-attr="title:controller.sessionTimer.freeMode" aria-label="Count up">∞</button>
-          </div>
-
-          <!-- Primary Timer Controls Row -->
-          <div class="st-controls-row">
-            <button type="button" id="stToggleBtn" class="st-btn-main">
-              <span id="stToggleIcon" aria-hidden="true">▶</span>
-              <span id="stToggleText" data-i18n="controller.sessionTimer.start">Start Timer</span>
-            </button>
-            <button
-              type="button"
-              id="stResetBtn"
-              class="st-btn-action"
-              title="Reset session timer"
-              data-i18n-attr="title:controller.sessionTimer.reset"
-              aria-label="Reset timer"
-            >
-              <span aria-hidden="true">↺</span>
-              <span data-i18n="controller.sessionTimer.reset">Reset</span>
-            </button>
-            <button
-              type="button"
-              id="stAddFiveBtn"
-              class="st-btn-action"
-              title="Add 5 minutes to target"
-              data-i18n-attr="title:controller.sessionTimer.addFiveMin"
-              aria-label="Add 5 minutes"
-            >
-              <span>+5m</span>
-            </button>
-          </div>
-
-          <!-- Active Bilateral Stimulation Ratio Breakdown -->
-          <div class="st-ratio-section">
-            <div class="st-ratio-bar-wrap">
-              <div id="stRatioFill" class="st-ratio-bar-fill"></div>
-            </div>
-            <div class="st-ratio-meta">
-              <span>
-                <span data-i18n="controller.sessionTimer.activeBilateral">Active BLS:</span>
-                <strong id="stBilateralTime" class="st-ratio-val">00:00</strong>
-              </span>
-              <span>
-                <span data-i18n="controller.sessionTimer.bilateralRatio">Ratio:</span>
-                <strong id="stBilateralRatio" class="st-ratio-val">0%</strong>
-              </span>
-            </div>
-          </div>
-
-          <!-- Footer Options -->
-          <div class="st-footer-row">
-            <label class="st-option-label" for="stAutoStartCheckbox">
-              <input type="checkbox" id="stAutoStartCheckbox" class="st-checkbox" checked />
-              <span data-i18n="controller.sessionTimer.autoStart">Auto-start on stimulation</span>
-            </label>
-          </div>
-        </section>
-
         <!-- Unified session block: Start + Stats + Autostop -->
         <div class="session-unified-block">
           <div class="session-actions-row">
@@ -1309,10 +1264,32 @@
           </div>
           <div id="bbCounters" class="session-stats-row">
             <div class="session-stat session-stat--timer">
-              <span class="session-stat-label" data-i18n="controller.timerLabel"
-                >Timer</span
-              >
-              <div id="bbTimer" class="session-stat-value">0:00</div>
+              <div class="session-stat-header">
+                <span class="session-stat-label" data-i18n="controller.timerLabel"
+                  >Timer</span
+                >
+                <span id="controllerTimerBadge" class="controller-timer-badge ready">READY</span>
+              </div>
+              <div class="session-stat-timer-main">
+                <div id="bbTimer" class="session-stat-value">0:00</div>
+                <button
+                  type="button"
+                  id="bbResetBtn"
+                  class="stat-timer-reset-btn"
+                  title="Reset exercise timer"
+                  data-i18n-attr="title:controller.resetTimerTooltip"
+                  aria-label="Reset exercise timer"
+                >
+                  <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 1v4h4" />
+                    <path d="M2.5 10a5.5 5.5 0 1 0 1.2-6.5L1 5" />
+                  </svg>
+                </button>
+              </div>
+              <div class="controller-total-timer-wrap">
+                <span class="controller-total-timer-label" data-i18n="controller.totalSessionLabel">Total:</span>
+                <span id="controllerTotalTimer" class="controller-total-timer-digits">0:00</span>
+              </div>
             </div>
             <div class="session-stat">
               <span
@@ -1420,7 +1397,7 @@
               <input type="range" id="vocSlider" min="1" max="7" value="1" class="styled-slider" oninput="document.getElementById('vocValue').textContent=this.value" />
               <div class="scale-ticks"><span>1</span><span>7</span></div>
             </div>
-            <button class="btn outline btn-sm" style="width: 100%; margin-top: 10px;" onclick="saveClinicalNote(this)">
+            <button class="btn outline btn-sm clinical-log-save-btn" onclick="saveClinicalNote(this)">
               Save to Session Log
             </button>
           </div>
@@ -1440,6 +1417,54 @@
             role="toolbar"
             aria-label="Stimulation pattern presets"
           ></div>
+        </div>
+
+        <!-- Speed -->
+        <div class="controls-card speed-card" id="speedCard">
+          <div class="speed-header-row">
+            <p class="controls-title">
+              <span class="speed-icon" aria-hidden="true">⚡</span>
+              <span data-i18n="controller.speedTitle">Speed</span>
+            </p>
+            <div class="speed-display" id="speedDisplay">
+              <span id="speedValue" class="speed-value">30%</span>
+              <span id="speedCategory" class="speed-category">(Medium)</span>
+            </div>
+          </div>
+          <div class="speed-slider-container">
+            <label for="speedSlider" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
+            <input
+              type="range"
+              id="speedSlider"
+              name="speed"
+              class="speed-range styled-slider"
+              min="5"
+              max="100"
+              value="30"
+              step="1"
+              aria-label="Speed"
+              data-i18n-attr="aria-label:controller.speedTitle"
+            />
+            <div class="speed-scale-ticks scale-ticks">
+              <span>5%</span>
+              <span>25%</span>
+              <span>50%</span>
+              <span>75%</span>
+              <span>100%</span>
+            </div>
+          </div>
+          <div class="speed-presets-row" role="group" aria-label="Speed presets">
+            <button type="button" class="speed-preset-btn" data-speed="20" title="Slow">
+              <span>🐌</span> <span data-i18n="controller.speedSlow">Slow</span>
+            </button>
+            <button type="button" class="speed-preset-btn active" data-speed="40" title="Medium">
+              <span>⚡</span> <span data-i18n="controller.speedMedium">Medium</span>
+            </button>
+            <button type="button" class="speed-preset-btn" data-speed="75" title="Fast">
+              <span>🚀</span> <span data-i18n="controller.speedFast">Fast</span>
+            </button>
+          </div>
+          <div id="speedControl" class="speed-control-hook" style="display: none;"></div>
         </div>
 
         <!-- Direction -->
@@ -1521,7 +1546,167 @@
                 >BSP</span
               >
             </button>
+            <button
+              class="dir-btn dir-zigzag-btn"
+              data-mode="zigzag"
+              onclick="setDirection('zigzag')"
+              data-i18n-attr="title:controller.zigzagFull"
+            >
+              <span class="dir-icon">⚡</span>
+              <span class="dir-lbl" data-i18n="controller.zigzagShort">ZigZag</span>
+            </button>
+            <button
+              class="dir-btn dir-spiral-btn"
+              data-mode="spiral"
+              onclick="setDirection('spiral')"
+              data-i18n-attr="title:controller.spiralFull"
+            >
+              <span class="dir-icon">🌀</span>
+              <span class="dir-lbl" data-i18n="controller.spiralShort">Spiral</span>
+            </button>
+            <button
+              class="dir-btn dir-wave-btn"
+              data-mode="wave"
+              onclick="setDirection('wave')"
+              data-i18n-attr="title:controller.waveFull"
+            >
+              <span class="dir-icon">〰️</span>
+              <span class="dir-lbl" data-i18n="controller.waveShort">Wave</span>
+            </button>
+            <button
+              class="dir-btn dir-custom-btn"
+              data-mode="custom"
+              onclick="setDirection('custom')"
+              data-i18n-attr="title:controller.customPathFull"
+            >
+              <span class="dir-icon">🛠️</span>
+              <span class="dir-lbl" data-i18n="controller.customPathShort">Custom</span>
+            </button>
           </fieldset>
+        </div>
+
+        <!-- Custom Movement Paths Card -->
+        <div class="controls-card custom-path-card" id="customPathCard" style="display: none;">
+          <div class="custom-path-header-row">
+            <p class="controls-title">
+              <span class="custom-path-icon" aria-hidden="true">📐</span>
+              <span data-i18n="controller.customPathTitle">Custom Movement Paths</span>
+            </p>
+            <span class="custom-path-badge" id="activePathBadge">⚡ Zig-Zag</span>
+          </div>
+
+          <!-- Path Mode Tabs -->
+          <div class="custom-path-tabs" role="tablist" aria-label="Movement Path Types">
+            <button
+              type="button"
+              class="custom-path-tab active"
+              data-path-type="zigzag"
+              role="tab"
+              title="Zig-Zag trajectory"
+            >
+              <span>⚡</span> <span data-i18n="controller.zigzagShort">ZigZag</span>
+            </button>
+            <button
+              type="button"
+              class="custom-path-tab"
+              data-path-type="spiral"
+              role="tab"
+              title="Spiral trajectory"
+            >
+              <span>🌀</span> <span data-i18n="controller.spiralShort">Spiral</span>
+            </button>
+            <button
+              type="button"
+              class="custom-path-tab"
+              data-path-type="wave"
+              role="tab"
+              title="Sine wave trajectory"
+            >
+              <span>〰️</span> <span data-i18n="controller.waveShort">Wave</span>
+            </button>
+            <button
+              type="button"
+              class="custom-path-tab"
+              data-path-type="custom"
+              role="tab"
+              title="Custom waypoints"
+            >
+              <span>✍️</span> <span data-i18n="controller.waypointsShort">Waypoints</span>
+            </button>
+          </div>
+
+          <!-- Parameter Sliders -->
+          <div class="custom-path-params">
+            <div class="path-param-row">
+              <div class="path-param-label-row">
+                <span class="path-param-label" data-i18n="controller.pathFrequency">Waves / Loops / Peaks:</span>
+                <span class="path-param-val" id="pathFreqValue">4</span>
+              </div>
+              <input
+                type="range"
+                id="pathFreqSlider"
+                class="path-slider"
+                min="1"
+                max="10"
+                value="4"
+                step="1"
+                aria-label="Path frequency / loops"
+              />
+            </div>
+
+            <div class="path-param-row">
+              <div class="path-param-label-row">
+                <span class="path-param-label" data-i18n="controller.pathAmplitude">Height / Amplitude:</span>
+                <span class="path-param-val" id="pathAmpValue">60%</span>
+              </div>
+              <input
+                type="range"
+                id="pathAmpSlider"
+                class="path-slider"
+                min="15"
+                max="100"
+                value="60"
+                step="5"
+                aria-label="Path amplitude"
+              />
+            </div>
+          </div>
+
+          <!-- Waypoint Canvas Section (active when custom waypoints selected) -->
+          <div class="waypoint-section" id="waypointSection" style="display: none;">
+            <div class="waypoint-header">
+              <span class="waypoint-hint" data-i18n="controller.waypointHint">Click canvas to add points or drag to adjust:</span>
+              <div class="waypoint-actions">
+                <button type="button" class="waypoint-btn-sm" id="clearWaypointsBtn" data-i18n="controller.clearPoints">Clear</button>
+              </div>
+            </div>
+            <div class="waypoint-canvas-wrap">
+              <canvas id="waypointCanvas" width="300" height="130"></canvas>
+            </div>
+            <div class="waypoint-presets">
+              <span class="waypoint-presets-label" data-i18n="controller.templates">Templates:</span>
+              <button type="button" class="waypoint-preset-btn" data-shape="triangle">△ Triangle</button>
+              <button type="button" class="waypoint-preset-btn" data-shape="diamond">◇ Diamond</button>
+              <button type="button" class="waypoint-preset-btn" data-shape="hourglass">⧖ Hourglass</button>
+              <button type="button" class="waypoint-preset-btn" data-shape="star">★ Star</button>
+              <button type="button" class="waypoint-preset-btn" data-shape="mountain">▲ Mountain</button>
+            </div>
+          </div>
+
+          <!-- Mini Live Trajectory Preview -->
+          <div class="path-preview-container">
+            <div class="path-preview-header">
+              <span class="path-preview-label" data-i18n="controller.trajectoryPreview">Trajectory Preview:</span>
+            </div>
+            <div class="path-preview-canvas-wrap">
+              <canvas id="pathTrajectoryPreviewCanvas" width="300" height="90"></canvas>
+            </div>
+          </div>
+
+          <!-- Activate Path Button -->
+          <button type="button" class="custom-path-apply-btn" id="applyCustomPathBtn">
+            <span>▶️</span> <span data-i18n="controller.applyCustomPath">Activate Custom Path</span>
+          </button>
         </div>
 
         <!-- Position -->
@@ -1567,12 +1752,6 @@
               >
             </button>
           </fieldset>
-        </div>
-
-        <!-- Speed -->
-        <div class="controls-card">
-          <p class="controls-title" data-i18n="controller.speedTitle"></p>
-          <div id="speedControl"></div>
         </div>
 
       </div>

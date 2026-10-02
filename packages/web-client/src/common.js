@@ -190,11 +190,16 @@ class ThemeManager {
   loadTheme() {
     const savedTheme = localStorage.getItem(this.themeKey) || 'dark'
     document.body.classList.remove('dark-theme', 'light-theme')
+    document.documentElement.classList.remove('dark-theme', 'light-theme')
     if (savedTheme === 'light') {
       document.body.classList.add('light-theme')
+      document.documentElement.classList.add('light-theme')
+      document.documentElement.setAttribute('data-theme', 'light')
       this.updateThemeButton('☀️')
     } else {
       document.body.classList.add('dark-theme')
+      document.documentElement.classList.add('dark-theme')
+      document.documentElement.setAttribute('data-theme', 'dark')
       this.updateThemeButton('🌙')
     }
   }
@@ -203,14 +208,21 @@ class ThemeManager {
    */
   toggleTheme() {
     const body = document.body
-    const hasLightClass = body.classList.contains('light-theme')
+    const hasLightClass =
+      body.classList.contains('light-theme') ||
+      document.documentElement.classList.contains('light-theme')
     body.classList.remove('dark-theme', 'light-theme')
+    document.documentElement.classList.remove('dark-theme', 'light-theme')
     if (hasLightClass) {
       body.classList.add('dark-theme')
+      document.documentElement.classList.add('dark-theme')
+      document.documentElement.setAttribute('data-theme', 'dark')
       localStorage.setItem(this.themeKey, 'dark')
       this.updateThemeButton('🌙')
     } else {
       body.classList.add('light-theme')
+      document.documentElement.classList.add('light-theme')
+      document.documentElement.setAttribute('data-theme', 'light')
       localStorage.setItem(this.themeKey, 'light')
       this.updateThemeButton('☀️')
     }

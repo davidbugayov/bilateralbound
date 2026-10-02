@@ -1,6 +1,8 @@
 /* global globalThis */
 'use strict'
 
+const { mountSessionDurationChart } = require('./session-duration-chart')
+
 /**
  * Local Session Logger & History Manager for EMDR Bilateral Controller.
  * Tracks session durations, completed passes and sets, and bilateral patterns used.
@@ -386,6 +388,74 @@ class SessionLogger {
     this._showToast(this._t('controller.sessionLog.logsCleared', 'All session logs cleared'))
   }
 
+  loadSampleDemoLogs() {
+    const now = Date.now()
+    const oneDay = 86400000
+    const demoSessions = [
+      {
+        id: 'demo-s1',
+        title: 'Trauma Desensitization • Set 1-4',
+        createdAt: new Date(now - 14 * oneDay).toISOString(),
+        updatedAt: new Date(now - 14 * oneDay).toISOString(),
+        activeDurationMs: 12 * 60 * 1000 + 40 * 1000,
+        totalPasses: 34,
+        totalSets: 4,
+        patterns: [{ name: 'Standard Processing', direction: 'horizontal', speed: 45, durationMs: 760000 }],
+        notes: 'Target memory: Car accident. SUD dropped from 7 to 4.'
+      },
+      {
+        id: 'demo-s2',
+        title: 'Anxiety Processing • Reprocessing',
+        createdAt: new Date(now - 10 * oneDay).toISOString(),
+        updatedAt: new Date(now - 10 * oneDay).toISOString(),
+        activeDurationMs: 22 * 60 * 1000 + 15 * 1000,
+        totalPasses: 62,
+        totalSets: 6,
+        patterns: [{ name: 'Fast Intensive', direction: 'horizontal', speed: 55, durationMs: 1335000 }],
+        notes: 'Elevated affect cleared midway. Client reported chest tension release.'
+      },
+      {
+        id: 'demo-s3',
+        title: 'Cognitive Interweave • Resource Tapping',
+        createdAt: new Date(now - 6 * oneDay).toISOString(),
+        updatedAt: new Date(now - 6 * oneDay).toISOString(),
+        activeDurationMs: 18 * 60 * 1000 + 50 * 1000,
+        totalPasses: 48,
+        totalSets: 5,
+        patterns: [{ name: 'Slow Calming', direction: 'infinity', speed: 30, durationMs: 1130000 }],
+        notes: 'Safe place reinforcement. VOC raised to 6/7.'
+      },
+      {
+        id: 'demo-s4',
+        title: 'Phobia Desensitization • Set 5-9',
+        createdAt: new Date(now - 3 * oneDay).toISOString(),
+        updatedAt: new Date(now - 3 * oneDay).toISOString(),
+        activeDurationMs: 34 * 60 * 1000 + 20 * 1000,
+        totalPasses: 92,
+        totalSets: 9,
+        patterns: [{ name: 'Dynamic Trajectory', direction: 'diagonal', speed: 50, durationMs: 2060000 }],
+        notes: 'Deep processing achieved. Complete somatic resolution.'
+      },
+      {
+        id: 'demo-s5',
+        title: 'Recent Distress • Future Template',
+        createdAt: new Date(now - 1 * oneDay).toISOString(),
+        updatedAt: new Date(now - 1 * oneDay).toISOString(),
+        activeDurationMs: 26 * 60 * 1000 + 10 * 1000,
+        totalPasses: 70,
+        totalSets: 7,
+        patterns: [{ name: 'Infinity Flow', direction: 'infinity', speed: 40, durationMs: 1570000 }],
+        notes: 'Future rehearsal successful. Body scan neutral.'
+      }
+    ]
+
+    this.logs = demoSessions.concat(this.logs.filter((l) => !l.id.startsWith('demo-')))
+    this._saveLogs()
+    this.updateBadge()
+    this.renderModalContent()
+    this._showToast(this._t('controller.sessionLog.demoLoaded', 'Sample session history loaded'))
+  }
+
   updateLogNotes(logId, notes) {
     const log = this.logs.find((l) => l.id === logId)
     if (log) {
@@ -558,6 +628,15 @@ class SessionLogger {
   // --- UI Injections ---
 
   _injectHeaderButton() {
+    const existingHeaderBtn = document.getElementById('headerSessionLogBtn')
+    if (existingHeaderBtn) {
+      if (!existingHeaderBtn._wired) {
+        existingHeaderBtn._wired = true
+        existingHeaderBtn.addEventListener('click', () => this.openModal())
+      }
+      return
+    }
+
     if (document.getElementById('sessionLogBtn')) return
 
     const presetsWrapper = document.getElementById('headerPresetsWrapper')
@@ -670,6 +749,7 @@ class SessionLogger {
             📋 ${this._t('controller.sessionLog.title', 'Open Full Session History Modal')}
           </button>
         </div>
+        <div id="settingsHistoryChartEmbed" class="settings-history-chart-embed"></div>
         <div id="settingsHistoryListEmbed" class="settings-history-list-embed"></div>
       </div>
     `
@@ -768,6 +848,33 @@ class SessionLogger {
 
         <!-- History Records Container -->
         <div class="slog-modal__body" id="slogModalBody" role="region" aria-label="Session records list">
+          <!-- Session Duration Trends Chart (Recharts) -->
+          <div class="slog-chart-section" id="slogChartSection">
+            <div class="slog-chart-header">
+              <div class="slog-chart-title-wrap">
+                <h3 class="slog-chart-title">
+                  📈 <span data-i18n="controller.sessionLog.chartTitle">${this._t(
+                    'controller.sessionLog.chartTitle',
+                    'Session Duration Trends'
+                  )}</span>
+                </h3>
+                <p class="slog-chart-subtitle" data-i18n="controller.sessionLog.chartSubtitle">${this._t(
+                  'controller.sessionLog.chartSubtitle',
+                  'Track how long EMDR exercises and sessions run over time'
+                )}</p>
+              </div>
+              <div class="slog-chart-toggle-wrap">
+                <button type="button" class="slog-chart-collapse-btn" id="slogChartCollapseBtn" aria-expanded="true">
+                  <span id="slogChartCollapseText">${this._t('controller.sessionLog.chartHide', 'Hide Chart')}</span>
+                  <span class="slog-chart-chevron" aria-hidden="true">▲</span>
+                </button>
+              </div>
+            </div>
+            <div class="slog-chart-body" id="slogChartBody">
+              <div id="rechartsSessionDurationRoot" class="recharts-session-duration-root"></div>
+            </div>
+          </div>
+
           <div class="slog-records-list" id="slogRecordsList"></div>
         </div>
       </div>
@@ -783,6 +890,22 @@ class SessionLogger {
     modal.querySelector('#slogExportCsvBtn').addEventListener('click', () => this.exportLogsCsv())
     modal.querySelector('#slogCopyAllBtn').addEventListener('click', () => this.copyAllSummaries())
     modal.querySelector('#slogClearAllBtn').addEventListener('click', () => this.clearAllLogs())
+
+    const collapseBtn = modal.querySelector('#slogChartCollapseBtn')
+    const chartBody = modal.querySelector('#slogChartBody')
+    const collapseText = modal.querySelector('#slogChartCollapseText')
+    if (collapseBtn && chartBody) {
+      collapseBtn.addEventListener('click', () => {
+        const isHidden = chartBody.classList.toggle('hidden')
+        collapseBtn.setAttribute('aria-expanded', String(!isHidden))
+        collapseBtn.classList.toggle('collapsed', isHidden)
+        if (collapseText) {
+          collapseText.textContent = isHidden
+            ? this._t('controller.sessionLog.chartShow', 'Show Chart')
+            : this._t('controller.sessionLog.chartHide', 'Hide Chart')
+        }
+      })
+    }
 
     const searchInput = modal.querySelector('#slogSearchInput')
     const clearSearchBtn = modal.querySelector('#slogClearSearchBtn')
@@ -830,7 +953,15 @@ class SessionLogger {
     if (!this._modalEl) return
 
     this._renderActiveSessionCard()
+    this._renderDurationChart()
     this._renderRecordsList()
+  }
+
+  _renderDurationChart() {
+    const chartRoot = this._modalEl.querySelector('#rechartsSessionDurationRoot')
+    if (!chartRoot) return
+
+    mountSessionDurationChart(chartRoot, this.logs, () => this.loadSampleDemoLogs())
   }
 
   _renderActiveSessionCard() {
@@ -1123,6 +1254,11 @@ class SessionLogger {
   }
 
   _renderSettingsTabEmbed() {
+    const chartContainer = document.getElementById('settingsHistoryChartEmbed')
+    if (chartContainer) {
+      mountSessionDurationChart(chartContainer, this.logs, () => this.loadSampleDemoLogs())
+    }
+
     const container = document.getElementById('settingsHistoryListEmbed')
     if (!container) return
 
@@ -1185,10 +1321,15 @@ class SessionLogger {
 
   updateBadge() {
     const badge = document.getElementById('sessionLogCountBadge')
+    const headerBadge = document.getElementById('headerSessionLogBadge')
+    const count = this.logs.length
     if (badge) {
-      const count = this.logs.length
       badge.textContent = String(count)
       badge.classList.toggle('has-logs', count > 0)
+    }
+    if (headerBadge) {
+      headerBadge.textContent = String(count)
+      headerBadge.classList.toggle('has-logs', count > 0)
     }
   }
 

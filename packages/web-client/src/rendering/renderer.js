@@ -437,6 +437,16 @@ class BallRenderer {
       }
       try {
         const col = ball.colorBall || this.colors.ball
+        const rawOp =
+          ball.opacity ??
+          ball.ballOpacity ??
+          this.ball?.opacity ??
+          this.ball?.ballOpacity
+        const opacity =
+          typeof rawOp === 'number' && !Number.isNaN(rawOp)
+            ? Math.max(0.05, Math.min(1.0, rawOp <= 1 ? rawOp : rawOp / 100))
+            : 1.0
+
         if (this._cached.radius !== ball.radius || this._cached.color !== col) {
           this._cached.radius = ball.radius
           this._cached.color = col
@@ -458,6 +468,7 @@ class BallRenderer {
         const scale = this.currentScale || 1.0
         this.beginPath()
         this.ctx.save()
+        this.ctx.globalAlpha = opacity
         this.ctx.imageSmoothingEnabled = true
         this.ctx.imageSmoothingQuality = 'high'
         this.ctx.translate(ball.x, ball.y)
@@ -465,7 +476,7 @@ class BallRenderer {
           this.ctx.scale(scale, scale)
         }
         this.ctx.fillStyle = this._cached.gradient
-        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
+        this.ctx.shadowColor = `rgba(0, 0, 0, ${0.2 * opacity})`
         this.ctx.shadowBlur = 4
         this.ctx.shadowOffsetX = 2
         this.ctx.shadowOffsetY = 2
@@ -475,7 +486,7 @@ class BallRenderer {
         if (scale > 1.01) {
           this.ctx.save()
           this.ctx.strokeStyle = col
-          this.ctx.globalAlpha = Math.min(0.25, (scale - 1.0) * 2.2)
+          this.ctx.globalAlpha = Math.min(0.25 * opacity, (scale - 1.0) * 2.2 * opacity)
           this.ctx.lineWidth = 2
           this.ctx.stroke(this._cached.path)
           this.ctx.restore()
@@ -487,7 +498,7 @@ class BallRenderer {
         this.ctx.shadowOffsetX = 0
         this.ctx.shadowOffsetY = 0
         const emoji = ball.ballEmoji ?? this.ball?.ballEmoji
-        if (emoji) this._renderBallEmoji(ball, emoji)
+        if (emoji) this._renderBallEmoji(ball, emoji, opacity)
       } catch (err) {
         if (typeof globalThis?.logger?.warn === 'function') {
           globalThis.logger.warn('Error rendering ball:', err)
@@ -499,13 +510,15 @@ class BallRenderer {
    * Renders emoji illustration on top of the ball
    * @param {object} ball - Ball state with x, y, radius
    * @param {string} emoji - Emoji character(s) to render
+   * @param {number} [opacity=1.0] - Ball opacity
    * @private
    */
-  _renderBallEmoji(ball, emoji) {
+  _renderBallEmoji(ball, emoji, opacity = 1.0) {
     try {
       const scale = this.currentScale || 1.0
       const fontSize = Math.floor(ball.radius * scale * 1.24)
       this.ctx.save()
+      this.ctx.globalAlpha = opacity
       this.ctx.font = `${fontSize}px sans-serif`
       this.ctx.textAlign = 'center'
       this.ctx.textBaseline = 'middle'

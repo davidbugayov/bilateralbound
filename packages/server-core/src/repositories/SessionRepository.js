@@ -91,6 +91,8 @@ class SessionRepository {
       soundVolume: 70,
       ballEmoji: null,
       infinity: false,
+      customPath: null,
+      customPathConfig: null,
       trackBand: 'center'
     }
 

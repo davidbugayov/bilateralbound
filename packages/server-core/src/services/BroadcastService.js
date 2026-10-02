@@ -92,6 +92,8 @@ class BroadcastService {
       'ballEmoji',
       'infinity',
       'brainspotting',
+      'customPath',
+      'customPathConfig',
       'trackBand'
     ]
 

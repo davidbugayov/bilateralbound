@@ -17,13 +17,8 @@ require('./ui/shared-components')
 require('./network/websocket-client')
 require('./network/realtime-client')
 require('./network/csrf')
-const {
-  initTherapistObservations,
-  clearTherapistObservations
-} = require('./ui/therapist-observations')
 require('./ui/controller-settings')
 require('./ui/session-logger')
-require('./ui/session-timer')
 const { AudioVisualizer } = require('./ui/audio-visualizer')
 
 const PhysicsEngine = require('@emdr/shared/physics-engine')
@@ -36,6 +31,7 @@ const _Notifications = require('./application/controller/notifications')
 const _BrainspottingDrag = require('./application/controller/brainspotting-drag')
 const _Settings = require('./application/controller/settings')
 const _DirectionUI = require('./application/controller/direction-ui')
+const _CustomPathUI = require('./application/controller/custom-path-ui')
 const { applyAdaptiveSmoothing } = require('@emdr/shared/smoothing-utils')
 const {
   getDirectionVector,
@@ -134,6 +130,7 @@ const {
   updateSpeed,
   setBallColor,
   setBallSize,
+  setBallOpacity,
   setSoundEnabled,
   setSoundType,
   setSoundVolume,
@@ -149,6 +146,14 @@ const {
 _BrainspottingDrag.init({
   getPreviewPhysicsEngine: () => previewPhysicsEngine,
   safeSend: (type, payload) => safeSend(type, payload)
+})
+
+// Wire custom path module
+_CustomPathUI.init({
+  setDirection: (mode) => setDirection(mode),
+  safeSend: (type, payload) => safeSend(type, payload),
+  getPreviewPhysicsEngine: () => previewPhysicsEngine,
+  getCurrentDirectionMode: () => getCurrentDirectionMode()
 })
 
 globalThis.__controllerLoaded = true
@@ -229,9 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeController().catch(debugError)
   bbCounters.initDom()
   initHintSystem()
-  if (typeof initTherapistObservations === 'function') {
-    initTherapistObservations()
-  }
   bbCounters.onAutoStop = () => _setPlayPauseState(false)
   const autoStopPassesInput = document.getElementById('autoStopPassesInput')
   const autoStopSecondsInput = document.getElementById('autoStopSecondsInput')
@@ -353,7 +355,8 @@ async function registerControllerOnServer(sessionId, logger) {
 async function initializePreviewUI() {
   const previewWrap = document.getElementById('previewWrap')
   if (previewWrap) {
-    previewWrap.style.display = 'block'
+    previewWrap.classList.remove('hidden')
+    previewWrap.style.display = ''
   }
 }
 function setupFullscreenListeners() {
@@ -369,6 +372,7 @@ function setupFullscreenListeners() {
     setBallSize,
     setBallSizeMultiplier,
     setBallColor,
+    setBallOpacity,
     setBackgroundColor,
     getIsPlaying: () => _PlayPause.getIsPlaying(),
     getComponents: () => components,
@@ -1145,6 +1149,7 @@ function initializeComponents() {
     onBallColorChange: setBallColor,
     onBgColorChange: setBackgroundColor,
     onSizeChange: setBallSize,
+    onBallOpacityChange: setBallOpacity,
     onSoundEnabledChange: setSoundEnabled,
     onSoundTypeChange: setSoundType,
     onSoundVolumeChange: setSoundVolume,
@@ -1186,18 +1191,19 @@ async function initializePreview() {
   showWaitingForViewer()
   const previewWrap = document.getElementById('previewWrap')
   if (previewWrap) {
-    previewWrap.style.display = 'block'
+    previewWrap.classList.remove('hidden')
+    previewWrap.style.display = ''
   }
   const canvas = document.getElementById('preview')
   if (!canvas) {
     return
   }
-  // Default drawing buffer: 500x250 (2:1) — explicit style to prevent CSS stretching.
-  // When viewer connects, buffer is resized to match viewer's actual dimensions.
+  // Default drawing buffer: 500x250 (2:1).
+  // CSS handles visual width (100%) and aspect ratio (2:1).
   canvas.width = 500
   canvas.height = 250
-  canvas.style.width = '500px'
-  canvas.style.height = '250px'
+  canvas.style.maxWidth = '100%'
+  canvas.style.height = 'auto'
   try {
     previewPhysicsEngine = new PhysicsEngine({
       sessionId: 'preview',
@@ -1262,8 +1268,8 @@ function showWaitingForViewer() {
   if (canvas) {
     canvas.width = 500
     canvas.height = 250
-    canvas.style.width = '500px'
-    canvas.style.height = '250px'
+    canvas.style.maxWidth = '100%'
+    canvas.style.height = 'auto'
     if (previewPhysicsEngine) {
       previewPhysicsEngine.setWorldSize(500, 250)
       previewPhysicsEngine.setPosition(250, 125)
@@ -1384,8 +1390,8 @@ function calculatePreviewDimensions(canvas, viewerScreenSize) {
 function setCanvasDimensions(canvas, previewWidth, previewHeight) {
   canvas.width = previewWidth
   canvas.height = previewHeight
-  canvas.style.width = canvas.width + 'px'
-  canvas.style.height = canvas.height + 'px'
+  canvas.style.maxWidth = '100%'
+  canvas.style.height = 'auto'
 }
 function updatePhysicsEngineWorldSize(viewerScreenSize) {
   if (
@@ -1494,19 +1500,26 @@ function setDirection(directionMode) {
     return
   }
   try {
-    // Exit infinity or brainspotting mode when switching to a different direction
+    // Exit special modes when switching to a different direction
+    const isCustomMode = ['zigzag', 'spiral', 'wave', 'custom'].includes(
+      directionMode
+    )
     const exitingSpecialMode =
       (lastServerState?.infinity && directionMode !== 'infinity') ||
-      (lastServerState?.brainspotting && directionMode !== 'brainspotting')
+      (lastServerState?.brainspotting && directionMode !== 'brainspotting') ||
+      (lastServerState?.customPath && !isCustomMode)
     if (exitingSpecialMode) {
       if (previewPhysicsEngine) {
         previewPhysicsEngine.ball.infinity = false
         previewPhysicsEngine._infinityT = 0
         previewPhysicsEngine.ball.brainspotting = false
+        previewPhysicsEngine.ball.customPath = null
+        previewPhysicsEngine._customPathT = 0
       }
       if (lastServerState) {
         lastServerState.infinity = false
         lastServerState.brainspotting = false
+        lastServerState.customPath = null
       }
       disableBrainspottingDrag()
     }
@@ -1575,6 +1588,49 @@ function setDirection(directionMode) {
       enableBrainspottingDrag()
       try {
         globalThis.sessionLogger?.recordDirection('brainspotting')
+      } catch (e) {
+        void e
+      }
+      return
+    }
+
+    if (isCustomMode) {
+      setCurrentDirectionMode(directionMode)
+      __ignoreServerDirectionUntilTs = performance.now() + 1500
+      const cfg = _CustomPathUI.getConfig()
+      cfg.type = directionMode
+      if (previewPhysicsEngine) {
+        previewPhysicsEngine.setCustomPath(directionMode, cfg)
+      }
+      try {
+        globalThis.dispatchEvent(
+          new CustomEvent('bb_metrika_feature_used', {
+            detail: { feature: 'custom_path', action: directionMode }
+          })
+        )
+      } catch (_) {
+        /* noop */
+      }
+      if (lastServerState) {
+        lastServerState.customPath = directionMode
+        lastServerState.customPathConfig = cfg
+        lastServerState.infinity = false
+        lastServerState.brainspotting = false
+        lastServerState.dirX = 0
+        lastServerState.dirY = 0
+      }
+      updateDirectionButtons()
+      updateDirectionDisplay(0, 0)
+      safeSend(WS_MSG.controllerUpdate, {
+        customPath: directionMode,
+        customPathConfig: cfg,
+        infinity: false,
+        brainspotting: false,
+        dirX: 0,
+        dirY: 0
+      })
+      try {
+        globalThis.sessionLogger?.recordDirection(directionMode)
       } catch (e) {
         void e
       }
@@ -1694,9 +1750,6 @@ function resetSession() {
     if (isPlaying) {
       _setPlayPauseState(false)
     }
-    if (typeof clearTherapistObservations === 'function') {
-      clearTherapistObservations()
-    }
     safeSend(WS_MSG.controllerUpdate, {
       paused: true,
       returnToCenter: true
@@ -1771,15 +1824,21 @@ function initHintSystem() {
 globalThis.togglePlayPause = togglePlayPause
 globalThis.setDirection = setDirection
 globalThis.updateSpeed = updateSpeed
+globalThis.setSpeed = (speed) => {
+  if (globalThis.components?.speed?.setSpeed) {
+    globalThis.components.speed.setSpeed(speed)
+  } else {
+    updateSpeed(speed)
+  }
+}
 globalThis.setBallColor = setBallColor
 globalThis.setBallSize = setBallSize
+globalThis.setBallOpacity = setBallOpacity
 globalThis.setBackgroundColor = setBackgroundColor
 globalThis.resetSession = resetSession
 globalThis.setSoundEnabled = setSoundEnabled
 globalThis.setSoundType = setSoundType
 globalThis.setSoundVolume = setSoundVolume
-globalThis.initTherapistObservations = initTherapistObservations
-globalThis.clearTherapistObservations = clearTherapistObservations
 globalThis.setBallSizeMultiplier = setBallSizeMultiplier
 globalThis.showViewerNotConnectedWarning = showViewerNotConnectedWarning
 globalThis.showViewerSizeNotReadyWarning = showViewerSizeNotReadyWarning
@@ -1792,6 +1851,15 @@ globalThis.setIllustration = setIllustration
 globalThis.applyCustomIllustration = applyCustomIllustration
 globalThis.switchIllusTab = switchIllusTab
 globalThis.setTrackBand = setTrackBand
+globalThis.CustomPathUI = _CustomPathUI
+globalThis.setCustomPath = (type, config) => {
+  if (type) _CustomPathUI.setType(type)
+  if (config) {
+    if (typeof config.frequency === 'number') _CustomPathUI.setFrequency(config.frequency)
+    if (typeof config.amplitude === 'number') _CustomPathUI.setAmplitude(config.amplitude)
+  }
+  _CustomPathUI.applyCurrentPath()
+}
 
 // Инициализация обработчиков предупреждений после загрузки DOM
 if (document.readyState === 'loading') {

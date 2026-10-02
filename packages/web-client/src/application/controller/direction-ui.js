@@ -22,13 +22,21 @@ function updateDirectionButtons() {
     fsDirV: 'vertical',
     fsDirDL: 'diagRLL',
     fsDirDR: 'diagRL',
-    fsDirRandom: 'random'
+    fsDirRandom: 'random',
+    fsDirZigzag: 'zigzag',
+    fsDirSpiral: 'spiral'
   }
   for (const [id, mode] of Object.entries(fsDirectionButtons)) {
     const button = document.getElementById(id)
     if (button) {
       button.classList.toggle('active', mode === currentMode)
     }
+  }
+
+  const customPathCard = document.getElementById('customPathCard')
+  if (customPathCard) {
+    const isCustom = ['zigzag', 'spiral', 'wave', 'custom'].includes(currentMode)
+    customPathCard.style.display = isCustom ? 'block' : 'none'
   }
 }
 
@@ -71,6 +79,27 @@ function getDirectionInfo(mode) {
           globalThis.i18n?.t('controller.brainspottingFull') ||
           '⊕ Brainspotting',
         icon: '⊕'
+      }
+    case 'zigzag':
+      return {
+        text: globalThis.i18n?.t('controller.zigzagFull') || '⚡ Zig-Zag',
+        icon: '⚡'
+      }
+    case 'spiral':
+      return {
+        text: globalThis.i18n?.t('controller.spiralFull') || '🌀 Spiral',
+        icon: '🌀'
+      }
+    case 'wave':
+      return {
+        text: globalThis.i18n?.t('controller.waveFull') || '〰️ Wave',
+        icon: '〰️'
+      }
+    case 'custom':
+      return {
+        text:
+          globalThis.i18n?.t('controller.customPathFull') || '🛠️ Custom Path',
+        icon: '🛠️'
       }
     default:
       return {

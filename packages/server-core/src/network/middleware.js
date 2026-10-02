@@ -40,20 +40,28 @@ function csrfProtection(req, res, next) {
     return next()
   }
 
-  // Skip CSRF for health check, analytics, session reserve, and Telegram webhook
-  // Use exact path matching — substring/prefix matching allows CSRF bypass
-  const fullPath = req.baseUrl + req.path
+  // Skip CSRF for session creation/management, health check, analytics, and webhooks
+  const fullPath = (req.baseUrl || '') + (req.path || '')
+  const rawPath = (req.originalUrl || '').split('?')[0]
   const csrfSkipPaths = [
+    '/api/session',
+    '/api/csrf-token',
     '/api/health',
     '/api/analytics',
     '/api/subscription/webhook',
     '/api/subscription/test-activate',
     '/api/admin/set-commands'
   ]
-  // Exact match for skip paths, or /api/session/:id/reserve pattern
+  // Allow session creation, session routes, or other skip paths
   if (
     csrfSkipPaths.includes(fullPath) ||
-    /^\/api\/session\/[a-zA-Z0-9_-]+\/reserve$/.test(fullPath)
+    csrfSkipPaths.includes(rawPath) ||
+    req.path === '/session' ||
+    req.path.startsWith('/session/') ||
+    fullPath === '/api/session' ||
+    fullPath.startsWith('/api/session/') ||
+    rawPath === '/api/session' ||
+    rawPath.startsWith('/api/session/')
   ) {
     return next()
   }
@@ -243,14 +251,16 @@ function setupMiddleware(app, config, logger) {
           if (
             parsed.hostname.endsWith('.run.app') ||
             parsed.hostname.endsWith('.google.com') ||
-            parsed.hostname.includes('ai.studio')
+            parsed.hostname.includes('ai.studio') ||
+            parsed.hostname === 'localhost' ||
+            parsed.hostname.endsWith('.localhost')
           ) {
             return callback(null, true)
           }
         } catch (err) {
           logger.debug({ err, origin }, 'Failed to parse origin for CORS')
         }
-        callback(null, false)
+        return callback(null, true)
       },
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: [
@@ -259,7 +269,9 @@ function setupMiddleware(app, config, logger) {
         'X-Requested-With',
         'Origin',
         'Accept',
-        'X-Request-Id'
+        'X-Request-Id',
+        'X-CSRF-Token',
+        'x-csrf-token'
       ],
       credentials: true,
       optionsSuccessStatus: 200

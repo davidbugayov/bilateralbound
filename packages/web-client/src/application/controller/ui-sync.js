@@ -52,6 +52,26 @@ function syncColors(ballState) {
     _components.bgColor.setColor(ballState.colorBg)
   }
 }
+function syncOpacity(ballState) {
+  const raw =
+    ballState.ballOpacity !== undefined
+      ? ballState.ballOpacity
+      : ballState.opacity
+  if (raw !== undefined) {
+    const num = Number(raw)
+    if (!Number.isNaN(num)) {
+      const pct = Math.max(
+        5,
+        Math.min(100, Math.round(num <= 1 ? num * 100 : num))
+      )
+      _components.ballOpacity?.setOpacity(pct)
+      const engine = _deps.getPreviewPhysicsEngine?.()
+      if (engine && typeof engine.setBallOpacity === 'function') {
+        engine.setBallOpacity(pct / 100)
+      }
+    }
+  }
+}
 function syncPause(ballState) {
   if (ballState.paused === undefined) return
   if (performance.now() >= _ignorePaused()) {
@@ -65,6 +85,12 @@ function syncDirection(ballState) {
   if (performance.now() < _ignoreDirection()) return
   if (_deps.getCurrentDirectionMode() === 'infinity') return
   if (_deps.getCurrentDirectionMode() === 'brainspotting') return
+  if (
+    ['zigzag', 'spiral', 'wave', 'custom'].includes(
+      _deps.getCurrentDirectionMode()
+    )
+  )
+    return
   const mode = domainGetDirectionMode(ballState.dirX, ballState.dirY)
   if (mode && mode !== _deps.getCurrentDirectionMode()) {
     _deps.setDirectionState(ballState.dirX, ballState.dirY)
@@ -99,6 +125,35 @@ function syncBrainspotting(ballState) {
     _deps.updateDirectionDisplay(0, 0)
   } else if (_deps.getCurrentDirectionMode() === 'brainspotting') {
     _deps.disableBrainspottingDrag?.()
+  }
+}
+function syncCustomPath(ballState) {
+  if (ballState.customPath === undefined) return
+  if (performance.now() < _ignoreDirection()) return
+  const engine = _deps.getPreviewPhysicsEngine?.()
+  if (engine) {
+    engine.ball.customPath = ballState.customPath
+    if (ballState.customPathConfig) {
+      engine.ball.customPathConfig = ballState.customPathConfig
+    }
+  }
+  const lastState = _deps.getLastServerState?.()
+  if (lastState) {
+    lastState.customPath = ballState.customPath
+    if (ballState.customPathConfig) {
+      lastState.customPathConfig = ballState.customPathConfig
+    }
+  }
+  if (ballState.customPath) {
+    _deps.setCurrentDirectionMode(ballState.customPath)
+    _deps.updateDirectionButtons()
+    _deps.updateDirectionDisplay(0, 0)
+    if (typeof globalThis.customPathUI?.syncFromState === 'function') {
+      globalThis.customPathUI.syncFromState(
+        ballState.customPath,
+        ballState.customPathConfig
+      )
+    }
   }
 }
 function syncIllustration(ballState) {
@@ -178,10 +233,12 @@ function syncAll(ballState) {
   syncSpeed(ballState)
   syncSize(ballState)
   syncColors(ballState)
+  syncOpacity(ballState)
   syncPause(ballState)
   syncDirection(ballState)
   syncInfinity(ballState)
   syncBrainspotting(ballState)
+  syncCustomPath(ballState)
   syncIllustration(ballState)
   syncTrackBand(ballState)
   syncSound(ballState)
@@ -198,10 +255,12 @@ globalThis.UISync = {
   syncSpeed,
   syncSize,
   syncColors,
+  syncOpacity,
   syncPause,
   syncDirection,
   syncInfinity,
   syncBrainspotting,
+  syncCustomPath,
   syncIllustration,
   syncTrackBand,
   syncSound,
@@ -215,10 +274,12 @@ module.exports = {
   syncSpeed,
   syncSize,
   syncColors,
+  syncOpacity,
   syncPause,
   syncDirection,
   syncInfinity,
   syncBrainspotting,
+  syncCustomPath,
   syncIllustration,
   syncTrackBand,
   syncSound,

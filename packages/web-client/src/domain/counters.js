@@ -5,10 +5,13 @@
  */
 const bbCounters = {
   timerMs: 0,
+  totalSessionMs: 0,
   passes: 0,
   sets: 0,
   running: false,
+  status: 'ready', // 'ready' | 'running' | 'paused'
   lastTickTs: 0,
+  lastElapsedMs: 0,
   $timer: null,
   $passes: null,
   $sets: null,
@@ -27,6 +30,19 @@ const bbCounters = {
   $countdownRow: null,
   $countdownPasses: null,
   $countdownSeconds: null,
+  // Header session timer elements
+  $headerSessionTimer: null,
+  $headerTimer: null,
+  $headerTimerBadge: null,
+  $headerTimerTotal: null,
+  $headerTimerDot: null,
+  $headerResetBtn: null,
+  // Controller timer elements
+  $controllerTimerBadge: null,
+  $controllerTotalTimer: null,
+  $controllerResetBtn: null,
+  // Fullscreen overlay timer element
+  $fsTimer: null,
   initDom() {
     this.$timer = document.getElementById('bbTimer')
     this.$passes = document.getElementById('bbPasses')
@@ -38,10 +54,42 @@ const bbCounters = {
     this.$countdownSeconds = document.getElementById(
       'autoStopCountdownSeconds'
     )
-    const resetBtn = document.getElementById('bbResetBtn')
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => this.resetAll())
+
+    // Header timer elements
+    this.$headerSessionTimer = document.getElementById('headerSessionTimer')
+    this.$headerTimer = document.getElementById('headerTimer')
+    this.$headerTimerBadge = document.getElementById('headerTimerBadge')
+    this.$headerTimerTotal = document.getElementById('headerTimerTotal')
+    this.$headerTimerDot = document.getElementById('headerTimerDot')
+    this.$headerResetBtn = document.getElementById('headerResetTimerBtn')
+
+    // Controller timer elements
+    this.$controllerTimerBadge = document.getElementById('controllerTimerBadge')
+    this.$controllerTotalTimer = document.getElementById('controllerTotalTimer')
+    this.$controllerResetBtn = document.getElementById('bbResetBtn')
+
+    // Fullscreen timer element
+    this.$fsTimer = document.getElementById('fsTimer')
+
+    if (this.$headerResetBtn) {
+      this.$headerResetBtn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        this.resetTimer()
+      })
     }
+
+    if (this.$controllerResetBtn) {
+      this.$controllerResetBtn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        this.resetTimer()
+      })
+    }
+
+    const resetSessionBtn = document.querySelector('.session-reset-btn')
+    if (resetSessionBtn) {
+      // Handled via resetSession() in controller.js, which calls resetAll()
+    }
+
     this.initSpeedMeasurement()
     this.render()
   },
@@ -69,9 +117,11 @@ const bbCounters = {
   },
   start() {
     this.running = true
+    this.status = 'running'
     this.lastTickTs = performance.now()
     this._passesHistory = []
     this._autoStopFired = false
+    this.render()
   },
   stop(incrementSet = false) {
     this.tick(performance.now())
@@ -83,6 +133,8 @@ const bbCounters = {
       this.bounceHits = 0
       this._lastBounceTs = 0
       this._passesHistory = []
+      this.timerMs = 0
+      this.status = 'ready'
       try {
         if (typeof globalThis !== 'undefined' && globalThis.sessionLogger?.onSet) {
           globalThis.sessionLogger.onSet()
@@ -90,8 +142,15 @@ const bbCounters = {
       } catch (e) {
         void e
       }
+    } else {
+      this.status = this.timerMs > 0 ? 'paused' : 'ready'
     }
+    this.render()
+  },
+  resetTimer() {
     this.timerMs = 0
+    this.lastElapsedMs = 0
+    this.status = this.running ? 'running' : 'ready'
     this.render()
   },
   getElapsedSeconds() {
@@ -100,12 +159,14 @@ const bbCounters = {
   resetAll() {
     this.lastElapsedMs = 0
     this.timerMs = 0
+    this.totalSessionMs = 0
     this.passes = 0
     this.sets = 0
     this.bounceHits = 0
     this._lastBounceTs = 0
     this._passesHistory = []
     this._currentPassesPerSecond = 0
+    this.status = this.running ? 'running' : 'ready'
     this.render()
   },
   onBounce() {
@@ -137,6 +198,7 @@ const bbCounters = {
     const dt = nowTs - this.lastTickTs
     if (dt > 0) {
       this.timerMs += dt
+      this.totalSessionMs = (this.totalSessionMs || 0) + dt
       this.lastTickTs = nowTs
       if (
         this.autoStopSeconds > 0 &&
@@ -159,15 +221,80 @@ const bbCounters = {
     this.onAutoStop?.()
   },
   formatTime(ms) {
+    if (!ms || ms <= 0) return '0:00'
     const totalSec = Math.floor(ms / 1000)
-    const m = Math.floor(totalSec / 60)
+    const h = Math.floor(totalSec / 3600)
+    const m = Math.floor((totalSec % 3600) / 60)
     const s = totalSec % 60
+    if (h > 0) {
+      return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    }
     return `${m}:${String(s).padStart(2, '0')}`
   },
+  formatTimePadded(ms) {
+    if (!ms || ms <= 0) return '00:00'
+    const totalSec = Math.floor(ms / 1000)
+    const h = Math.floor(totalSec / 3600)
+    const m = Math.floor((totalSec % 3600) / 60)
+    const s = totalSec % 60
+    if (h > 0) {
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    }
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  },
   render() {
-    if (this.$timer) this.$timer.textContent = this.formatTime(this.timerMs)
+    const formattedExercise = this.formatTime(this.timerMs)
+    const formattedExercisePadded = this.formatTimePadded(this.timerMs)
+    const formattedTotal = this.formatTime(this.totalSessionMs)
+    const formattedTotalPadded = this.formatTimePadded(this.totalSessionMs)
+
+    if (this.$timer) this.$timer.textContent = formattedExercise
     if (this.$passes) this.$passes.textContent = String(this.passes)
     if (this.$sets) this.$sets.textContent = String(this.sets)
+
+    // Update status text & class
+    let statusText = 'READY'
+    let statusClass = 'ready'
+    if (this.running) {
+      statusText = globalThis.i18n?.t('controller.timerRunning') || 'RUNNING'
+      statusClass = 'running'
+    } else if (this.timerMs > 0) {
+      statusText = globalThis.i18n?.t('controller.timerPaused') || 'PAUSED'
+      statusClass = 'paused'
+    } else {
+      statusText = globalThis.i18n?.t('controller.timerReady') || 'READY'
+      statusClass = 'ready'
+    }
+
+    // Controller timer elements
+    if (this.$controllerTimerBadge) {
+      this.$controllerTimerBadge.textContent = statusText
+      this.$controllerTimerBadge.className = `controller-timer-badge ${statusClass}`
+    }
+    if (this.$controllerTotalTimer) {
+      this.$controllerTotalTimer.textContent = formattedTotal
+    }
+
+    // Header session timer elements
+    if (this.$headerTimer) {
+      this.$headerTimer.textContent = formattedExercisePadded
+    }
+    if (this.$headerTimerBadge) {
+      this.$headerTimerBadge.textContent = statusText
+      this.$headerTimerBadge.className = `header-timer-badge ${statusClass}`
+    }
+    if (this.$headerTimerTotal) {
+      this.$headerTimerTotal.textContent = formattedTotalPadded
+    }
+    if (this.$headerTimerDot) {
+      this.$headerTimerDot.className = `header-timer-status-dot ${statusClass}`
+    }
+
+    // Fullscreen timer element
+    if (this.$fsTimer) {
+      this.$fsTimer.textContent = formattedExercisePadded
+    }
+
     this._renderCountdown()
     this.renderSpeedInfo()
   },

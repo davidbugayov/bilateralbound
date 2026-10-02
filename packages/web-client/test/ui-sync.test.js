@@ -93,6 +93,43 @@ test('syncDirection does not override infinity mode', () => {
   assert.strictEqual(deps.getCurrentDirectionMode(), 'infinity');
 });
 
+test('syncDirection does not override customPath modes', () => {
+  for (const mode of ['zigzag', 'spiral', 'wave', 'custom']) {
+    const deps = createDeps({ initialMode: mode });
+    UISync.init({}, deps);
+
+    UISync.syncDirection({ dirX: 1, dirY: 0 });
+
+    assert.strictEqual(deps.getCurrentDirectionMode(), mode, `Mode ${mode} should not be overridden`);
+  }
+});
+
+test('syncCustomPath sets mode and calls customPathUI.syncFromState', () => {
+  let syncedType = null;
+  let syncedConfig = null;
+  globalThis.customPathUI = {
+    syncFromState: (type, cfg) => {
+      syncedType = type;
+      syncedConfig = cfg;
+    }
+  };
+
+  const deps = createDeps({ initialMode: 'horizontal' });
+  UISync.init({}, deps);
+
+  UISync.syncCustomPath({
+    customPath: 'spiral',
+    customPathConfig: { frequency: 5, amplitude: 75 }
+  });
+
+  assert.strictEqual(deps.getCurrentDirectionMode(), 'spiral');
+  assert.strictEqual(syncedType, 'spiral');
+  assert.strictEqual(syncedConfig.frequency, 5);
+  assert.strictEqual(syncedConfig.amplitude, 75);
+
+  delete globalThis.customPathUI;
+});
+
 test('syncBrainspotting sets mode to brainspotting when server sends brainspotting: true', () => {
   const deps = createDeps({ initialMode: 'horizontal' });
   UISync.init({}, deps);
@@ -181,6 +218,46 @@ test('syncAll with dirX/dirY does not override brainspotting mode', () => {
 
   assert.strictEqual(deps.getCurrentDirectionMode(), 'brainspotting');
   delete globalThis.__current;
+});
+
+test('syncOpacity updates components.ballOpacity and physics engine with normalized opacity', () => {
+  let updatedOpacity = null;
+  let engineOpacity = null;
+  const components = {
+    ballOpacity: {
+      setOpacity: (val) => {
+        updatedOpacity = val;
+      }
+    }
+  };
+  const deps = createDeps({
+    getPreviewPhysicsEngine: () => ({
+      setBallOpacity: (norm) => {
+        engineOpacity = norm;
+      }
+    })
+  });
+  UISync.init(components, deps);
+
+  // Test normalized input (0.5 -> 50%)
+  UISync.syncOpacity({ opacity: 0.5 });
+  assert.strictEqual(updatedOpacity, 50);
+  assert.strictEqual(engineOpacity, 0.5);
+
+  // Test percentage input (80 -> 80%)
+  UISync.syncOpacity({ ballOpacity: 80 });
+  assert.strictEqual(updatedOpacity, 80);
+  assert.strictEqual(engineOpacity, 0.8);
+
+  // Test clamping low (0.01 -> 5%)
+  UISync.syncOpacity({ opacity: 0.01 });
+  assert.strictEqual(updatedOpacity, 5);
+  assert.strictEqual(engineOpacity, 0.05);
+
+  // Test clamping high (150 -> 100%)
+  UISync.syncOpacity({ opacity: 150 });
+  assert.strictEqual(updatedOpacity, 100);
+  assert.strictEqual(engineOpacity, 1.0);
 });
 
 // ============================================

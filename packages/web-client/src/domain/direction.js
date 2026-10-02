@@ -30,6 +30,11 @@ function getDirectionVector(directionMode) {
       return { dirX: 0, dirY: 0 }
     case 'brainspotting':
       return { dirX: 0, dirY: 0 }
+    case 'zigzag':
+    case 'spiral':
+    case 'wave':
+    case 'custom':
+      return { dirX: 0, dirY: 0 }
     case 'random': {
       // Math.random() is safe here: used only for visual randomization of ball direction
       // (not cryptographic or security-sensitive). No sensitive data depends on this randomness.

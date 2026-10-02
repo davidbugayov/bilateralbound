@@ -165,6 +165,54 @@ class ValidationUtils {
     ) {
       validated.brainspotting = updates.brainspotting
     }
+    if (
+      updates.customPath !== undefined &&
+      (updates.customPath === null ||
+        (typeof updates.customPath === 'string' &&
+          ['zigzag', 'spiral', 'wave', 'custom', ''].includes(updates.customPath)))
+    ) {
+      validated.customPath = updates.customPath || null
+    }
+    if (
+      updates.customPathConfig !== undefined &&
+      (updates.customPathConfig === null || typeof updates.customPathConfig === 'object')
+    ) {
+      if (updates.customPathConfig === null) {
+        validated.customPathConfig = null
+      } else {
+        const cfg = updates.customPathConfig
+        const cleanCfg = {}
+        if (
+          typeof cfg.type === 'string' &&
+          ['zigzag', 'spiral', 'wave', 'custom'].includes(cfg.type)
+        ) {
+          cleanCfg.type = cfg.type
+        }
+        if (typeof cfg.frequency === 'number' && !Number.isNaN(cfg.frequency)) {
+          cleanCfg.frequency = Math.max(1, Math.min(20, Math.round(cfg.frequency)))
+        }
+        if (typeof cfg.amplitude === 'number' && !Number.isNaN(cfg.amplitude)) {
+          cleanCfg.amplitude = Math.max(10, Math.min(100, Math.round(cfg.amplitude)))
+        }
+        if (Array.isArray(cfg.points)) {
+          cleanCfg.points = cfg.points
+            .filter(
+              (p) =>
+                p &&
+                typeof p.x === 'number' &&
+                typeof p.y === 'number' &&
+                !Number.isNaN(p.x) &&
+                !Number.isNaN(p.y)
+            )
+            .map((p) => ({
+              x: Math.max(0, Math.min(1, p.x)),
+              y: Math.max(0, Math.min(1, p.y))
+            }))
+            .slice(0, 50)
+        }
+        validated.customPathConfig = cleanCfg
+      }
+    }
     // Allow x/y position updates for brainspotting mode (therapist sets position)
     if (
       updates.x !== undefined &&
@@ -185,6 +233,26 @@ class ValidationUtils {
       ['top', 'center', 'bottom'].includes(updates.trackBand)
     ) {
       validated.trackBand = updates.trackBand
+    }
+    if (
+      updates.ballOpacity !== undefined &&
+      typeof updates.ballOpacity === 'number' &&
+      !Number.isNaN(updates.ballOpacity)
+    ) {
+      validated.ballOpacity = Math.max(
+        0.05,
+        Math.min(1.0, updates.ballOpacity <= 1 ? updates.ballOpacity : updates.ballOpacity / 100)
+      )
+    }
+    if (
+      updates.opacity !== undefined &&
+      typeof updates.opacity === 'number' &&
+      !Number.isNaN(updates.opacity)
+    ) {
+      validated.opacity = Math.max(
+        0.05,
+        Math.min(1.0, updates.opacity <= 1 ? updates.opacity : updates.opacity / 100)
+      )
     }
   }
 

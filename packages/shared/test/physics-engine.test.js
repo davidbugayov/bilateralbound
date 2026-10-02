@@ -650,6 +650,147 @@ test('exiting brainspotting via applyCommand with dirX/dirY but no brainspotting
 })
 
 // ============================================
+// CUSTOM PATH TESTS (Zigzag, Spiral, Wave, Waypoints)
+// ============================================
+
+test('customPath defaults to null', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  assert.strictEqual(engine.ball.customPath, null)
+  assert.strictEqual(engine.ball.customPathConfig, null)
+})
+
+test('applyCommand sets customPath and customPathConfig', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({
+    customPath: 'zigzag',
+    customPathConfig: { frequency: 4, amplitude: 60 }
+  })
+  assert.strictEqual(engine.ball.customPath, 'zigzag')
+  assert.strictEqual(engine.ball.customPathConfig.frequency, 4)
+  assert.strictEqual(engine.ball.customPathConfig.amplitude, 60)
+})
+
+test('customPath and infinity are mutually exclusive', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ customPath: 'spiral' })
+  assert.strictEqual(engine.ball.customPath, 'spiral')
+  assert.strictEqual(engine.ball.infinity, false)
+
+  engine.applyCommand({ infinity: true })
+  assert.strictEqual(engine.ball.infinity, true)
+  assert.strictEqual(engine.ball.customPath, null)
+
+  engine.applyCommand({ customPath: 'zigzag' })
+  assert.strictEqual(engine.ball.customPath, 'zigzag')
+  assert.strictEqual(engine.ball.infinity, false)
+})
+
+test('customPath and brainspotting are mutually exclusive', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ customPath: 'wave' })
+  assert.strictEqual(engine.ball.customPath, 'wave')
+
+  engine.applyCommand({ brainspotting: true })
+  assert.strictEqual(engine.ball.brainspotting, true)
+  assert.strictEqual(engine.ball.customPath, null)
+
+  engine.applyCommand({ customPath: 'spiral' })
+  assert.strictEqual(engine.ball.customPath, 'spiral')
+  assert.strictEqual(engine.ball.brainspotting, false)
+})
+
+test('zigzag path updates position and stays within world boundaries', () => {
+  const engine = new PhysicsEngine({
+    isViewer: true,
+    worldWidth: 800,
+    worldHeight: 600
+  })
+  engine.setWorldSize(800, 600)
+  engine.applyCommand({
+    customPath: 'zigzag',
+    customPathConfig: { frequency: 4, amplitude: 70 },
+    paused: false,
+    speed: 30
+  })
+
+  const initialX = engine.ball.x
+  const initialY = engine.ball.y
+  let moved = false
+
+  for (let i = 0; i < 60; i++) {
+    engine.update(1 / 60)
+    assert.ok(engine.ball.x >= 0 && engine.ball.x <= 800, `X out of bounds: ${engine.ball.x}`)
+    assert.ok(engine.ball.y >= 0 && engine.ball.y <= 600, `Y out of bounds: ${engine.ball.y}`)
+    if (Math.abs(engine.ball.x - initialX) > 1 || Math.abs(engine.ball.y - initialY) > 1) {
+      moved = true
+    }
+  }
+  assert.ok(moved, 'Ball should move along zigzag path')
+})
+
+test('spiral path updates position and stays within world boundaries', () => {
+  const engine = new PhysicsEngine({
+    isViewer: true,
+    worldWidth: 800,
+    worldHeight: 600
+  })
+  engine.setWorldSize(800, 600)
+  engine.applyCommand({
+    customPath: 'spiral',
+    customPathConfig: { frequency: 3, amplitude: 50 },
+    paused: false,
+    speed: 30
+  })
+
+  let moved = false
+  const initialX = engine.ball.x
+
+  for (let i = 0; i < 60; i++) {
+    engine.update(1 / 60)
+    assert.ok(engine.ball.x >= 0 && engine.ball.x <= 800, `Spiral X out of bounds: ${engine.ball.x}`)
+    assert.ok(engine.ball.y >= 0 && engine.ball.y <= 600, `Spiral Y out of bounds: ${engine.ball.y}`)
+    if (Math.abs(engine.ball.x - initialX) > 1) {
+      moved = true
+    }
+  }
+  assert.ok(moved, 'Ball should move along spiral path')
+})
+
+test('custom waypoints path interpolates positions smoothly', () => {
+  const engine = new PhysicsEngine({
+    isViewer: true,
+    worldWidth: 800,
+    worldHeight: 600
+  })
+  engine.setWorldSize(800, 600)
+  engine.setCustomPath('custom', {
+    type: 'custom',
+    points: [
+      { x: 0.1, y: 0.1 },
+      { x: 0.9, y: 0.5 },
+      { x: 0.5, y: 0.9 }
+    ]
+  })
+  engine.setPaused(false)
+  engine.setSpeed(20)
+
+  for (let i = 0; i < 60; i++) {
+    engine.update(1 / 60)
+    assert.ok(engine.ball.x >= 0 && engine.ball.x <= 800, `Waypoints X out of bounds: ${engine.ball.x}`)
+    assert.ok(engine.ball.y >= 0 && engine.ball.y <= 600, `Waypoints Y out of bounds: ${engine.ball.y}`)
+  }
+})
+
+test('reset clears customPath mode', () => {
+  const engine = new PhysicsEngine({ isViewer: true })
+  engine.applyCommand({ customPath: 'zigzag' })
+  assert.strictEqual(engine.ball.customPath, 'zigzag')
+  engine.reset()
+  assert.strictEqual(engine.ball.customPath, null)
+  assert.strictEqual(engine.ball.customPathConfig, null)
+})
+
+// ============================================
 console.log('\n========================================')
 console.log(`Пройдено: ${passed}/${passed + failed}`)
 if (failed > 0) {

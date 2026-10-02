@@ -244,9 +244,59 @@ test('validates trackBand top/center/bottom', () => {
   }
 })
 
+test('validates opacity and ballOpacity', () => {
+  const r1 = ValidationUtils.validateBallStateUpdates({ opacity: 0.5 })
+  assert.strictEqual(r1.opacity, 0.5)
+
+  const r2 = ValidationUtils.validateBallStateUpdates({ ballOpacity: 75 })
+  assert.strictEqual(r2.ballOpacity, 0.75)
+
+  const r3 = ValidationUtils.validateBallStateUpdates({ opacity: 0.01 })
+  assert.strictEqual(r3.opacity, 0.05) // clamped to min 0.05
+
+  const r4 = ValidationUtils.validateBallStateUpdates({ opacity: 150 })
+  assert.strictEqual(r4.opacity, 1.0) // clamped to max 1.0
+
+  const r5 = ValidationUtils.validateBallStateUpdates({ opacity: NaN })
+  assert.strictEqual(r5.opacity, undefined)
+})
+
 test('rejects invalid trackBand', () => {
   const r = ValidationUtils.validateBallStateUpdates({ trackBand: 'middle' })
   assert.strictEqual(r.trackBand, undefined)
+})
+
+test('validates customPath types', () => {
+  for (const type of ['zigzag', 'spiral', 'wave', 'custom']) {
+    const r = ValidationUtils.validateBallStateUpdates({ customPath: type })
+    assert.strictEqual(r.customPath, type)
+  }
+  const rNull = ValidationUtils.validateBallStateUpdates({ customPath: null })
+  assert.strictEqual(rNull.customPath, null)
+
+  const rInvalid = ValidationUtils.validateBallStateUpdates({ customPath: 'invalid_mode' })
+  assert.strictEqual(rInvalid.customPath, undefined)
+})
+
+test('validates customPathConfig', () => {
+  const cfg = {
+    type: 'spiral',
+    frequency: 6,
+    amplitude: 80,
+    points: [
+      { x: 0.2, y: 0.3 },
+      { x: 0.8, y: 0.7 }
+    ]
+  }
+  const r = ValidationUtils.validateBallStateUpdates({ customPathConfig: cfg })
+  assert.strictEqual(r.customPathConfig.type, 'spiral')
+  assert.strictEqual(r.customPathConfig.frequency, 6)
+  assert.strictEqual(r.customPathConfig.amplitude, 80)
+  assert.strictEqual(r.customPathConfig.points.length, 2)
+  assert.strictEqual(r.customPathConfig.points[0].x, 0.2)
+
+  const rNull = ValidationUtils.validateBallStateUpdates({ customPathConfig: null })
+  assert.strictEqual(rNull.customPathConfig, null)
 })
 
 test('multiple fields validated together', () => {

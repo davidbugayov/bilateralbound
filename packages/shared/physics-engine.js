@@ -203,10 +203,30 @@ function validateCommonCommand(command) {
   )
     validated.brainspotting = command.brainspotting
   if (
+    command.customPath !== undefined &&
+    (command.customPath === null ||
+      (typeof command.customPath === 'string' &&
+        ['zigzag', 'spiral', 'wave', 'custom', ''].includes(command.customPath)))
+  ) {
+    validated.customPath = command.customPath || null
+  }
+  if (
+    command.customPathConfig !== undefined &&
+    (command.customPathConfig === null || typeof command.customPathConfig === 'object')
+  ) {
+    validated.customPathConfig = command.customPathConfig
+  }
+  if (
     command.trackBand !== undefined &&
     ['top', 'center', 'bottom'].includes(command.trackBand)
   )
     validated.trackBand = command.trackBand
+  if (typeof command.opacity === 'number' && !Number.isNaN(command.opacity)) {
+    validated.opacity = Math.max(0.05, Math.min(1.0, command.opacity <= 1 ? command.opacity : command.opacity / 100))
+  }
+  if (typeof command.ballOpacity === 'number' && !Number.isNaN(command.ballOpacity)) {
+    validated.ballOpacity = Math.max(0.05, Math.min(1.0, command.ballOpacity <= 1 ? command.ballOpacity : command.ballOpacity / 100))
+  }
 
   return validated
 }
@@ -286,7 +306,9 @@ class PhysicsEngine {
       y: this.ball.y,
       radius: this.ball.radius,
       colorBall: null,
-      ballEmoji: null
+      ballEmoji: null,
+      opacity: 1.0,
+      ballOpacity: 1.0
     }
 
     // Colors
@@ -319,6 +341,7 @@ class PhysicsEngine {
     // Ensures identical physics output regardless of caller FPS.
     this._accumulator = 0
     this._infinityT = 0
+    this._customPathT = 0
 
     // Callbacks
     this.bounceCallback = this.options.bounceCallback
@@ -353,7 +376,11 @@ class PhysicsEngine {
       radius: this.options.ballRadius,
       infinity: false,
       brainspotting: false,
-      ballEmoji: null
+      customPath: null,
+      customPathConfig: null,
+      ballEmoji: null,
+      opacity: 1.0,
+      ballOpacity: 1.0
     }
   }
 
@@ -373,6 +400,22 @@ class PhysicsEngine {
   // ============================================
   // PUBLIC API - CONFIGURATION
   // ============================================
+
+  /**
+   * Sets ball opacity (0.05 to 1.0 or 5 to 100)
+   * @param {number} opacity - Normalized (0..1) or percentage (0..100)
+   */
+  setBallOpacity(opacity) {
+    const val = typeof opacity === 'number' ? opacity : Number(opacity)
+    if (!Number.isFinite(val)) return
+    const norm = val > 1 ? Math.max(0.05, Math.min(1.0, val / 100)) : Math.max(0.05, Math.min(1.0, val))
+    this.ball.opacity = norm
+    this.ball.ballOpacity = norm
+    if (this._interpBall) {
+      this._interpBall.opacity = norm
+      this._interpBall.ballOpacity = norm
+    }
+  }
 
   /**
    * Sets renderer for cache invalidation on color change
@@ -493,6 +536,9 @@ class PhysicsEngine {
    * @param {number} dirY - Y direction (-1 to 1)
    */
   setDirection(dirX, dirY) {
+    this.ball.infinity = false
+    this.ball.brainspotting = false
+    this.ball.customPath = null
     this.state.lastDirection.x = dirX
     this.state.lastDirection.y = dirY
 
@@ -521,6 +567,28 @@ class PhysicsEngine {
     if (normalized) {
       this.state.lastDirection.x = normalized.x
       this.state.lastDirection.y = normalized.y
+    }
+  }
+
+  /**
+   * Sets custom movement path (zigzag, spiral, wave, custom)
+   * @param {string|null} pathType - Path type ('zigzag', 'spiral', 'wave', 'custom' or null)
+   * @param {object} [config={}] - Optional configuration
+   */
+  setCustomPath(pathType, config = {}) {
+    this.ball.customPath = pathType || null
+    if (config && typeof config === 'object') {
+      this.ball.customPathConfig = {
+        ...(this.ball.customPathConfig || {}),
+        ...config
+      }
+    }
+    this._customPathT = 0
+    if (pathType) {
+      this.ball.infinity = false
+      this.ball.brainspotting = false
+      this.ball.vx = 0
+      this.ball.vy = 0
     }
   }
 
@@ -611,6 +679,15 @@ class PhysicsEngine {
     // Early return prevents trackBand snap (infinity uses full-screen center).
     if (this.ball.infinity) {
       this._infinityT = 0
+      this._snapToCenter()
+      if (this.options.clientSimulation) {
+        this._restoreLocalVelocity()
+      }
+      return
+    }
+
+    if (this.ball.customPath) {
+      this._customPathT = 0
       this._snapToCenter()
       if (this.options.clientSimulation) {
         this._restoreLocalVelocity()
@@ -1051,6 +1128,8 @@ class PhysicsEngine {
     this._interpBall.radius = this.ball.radius
     this._interpBall.colorBall = this.ball.colorBall || null
     this._interpBall.ballEmoji = this.ball.ballEmoji ?? null
+    this._interpBall.opacity = this.ball.opacity ?? 1.0
+    this._interpBall.ballOpacity = this.ball.ballOpacity ?? 1.0
 
     return this._interpBall
   }
@@ -1097,8 +1176,12 @@ class PhysicsEngine {
       colorBall: this.colors.ball,
       colorBg: this.colors.bg,
       ballEmoji: this.ball.ballEmoji ?? null,
+      opacity: this.ball.opacity ?? 1.0,
+      ballOpacity: this.ball.ballOpacity ?? (this.ball.opacity ?? 1.0),
       infinity: this.ball.infinity ?? false,
       brainspotting: this.ball.brainspotting ?? false,
+      customPath: this.ball.customPath ?? null,
+      customPathConfig: this.ball.customPathConfig ?? null,
       trackBand: this.options.trackBand ?? 'center'
     }
   }
@@ -1126,7 +1209,10 @@ class PhysicsEngine {
     this.ball.ballEmoji = null
     this.ball.infinity = false
     this.ball.brainspotting = false
+    this.ball.customPath = null
+    this.ball.customPathConfig = null
     this._infinityT = 0
+    this._customPathT = 0
   }
 
   // ============================================
@@ -1189,6 +1275,129 @@ class PhysicsEngine {
       this._triggerBounceCallback(side, dir)
       this._dispatchBounceEvent(side)
     }
+  }
+
+  // Custom paths (zigzag, spiral, wave, custom waypoints)
+  _stepCustomPath() {
+    const w = this.options.worldWidth
+    const cx = w / 2
+    const cy = this._getTrackBandCenterY()
+    const bandHalfH =
+      (this._getTrackBandYMax() - this._getTrackBandYMin()) / 2
+    const scale = 0.92
+
+    const pathType =
+      this.ball.customPath || this.ball.customPathConfig?.type || 'zigzag'
+    const config = this.ball.customPathConfig || {}
+    const frequency =
+      typeof config.frequency === 'number' && config.frequency >= 1
+        ? config.frequency
+        : 4
+    const amplitudePct =
+      typeof config.amplitude === 'number' && config.amplitude >= 10
+        ? config.amplitude
+        : 60
+    const ampScale = (amplitudePct / 100) * scale
+
+    const prevT = this._customPathT || 0
+    const dt = this.ball.speed * FIXED_DT * 0.1
+    this._customPathT = (prevT + dt) % (2 * Math.PI)
+    const t = this._customPathT
+
+    this._prevPos.x = this.ball.x
+    this._prevPos.y = this.ball.y
+
+    if (pathType === 'zigzag') {
+      const xSpan = (w / 2) * scale
+      this.ball.x = cx + xSpan * Math.cos(t)
+      const tri = (2 / Math.PI) * Math.asin(Math.sin(frequency * t))
+      this.ball.y = cy + bandHalfH * ampScale * tri
+
+      if (prevT > 0 && Math.cos(prevT) * Math.cos(t) < 0) {
+        const crossingRight = Math.cos(prevT) > 0
+        const side = crossingRight ? 'left' : 'right'
+        const dir = { x: crossingRight ? -1 : 1, y: 0 }
+        this._triggerBounceCallback(side, dir)
+        this._dispatchBounceEvent(side)
+      }
+    } else if (pathType === 'spiral') {
+      const maxR = Math.min(
+        (w / 2) * scale,
+        Math.max(40, bandHalfH * ampScale * 1.6)
+      )
+      const minR = Math.max(15, this.options.ballRadius * 1.2)
+      const loops = Math.max(1, frequency)
+      const expansion = (1 - Math.cos(t)) / 2
+      const r = minR + (maxR - minR) * expansion
+      const angle = t * loops
+      const yAspect = Math.min(1.0, (bandHalfH * 2) / (w * 0.6))
+      this.ball.x = cx + r * Math.cos(angle)
+      this.ball.y = cy + r * yAspect * Math.sin(angle)
+
+      if (prevT > 0 && Math.cos(prevT * loops) * Math.cos(t * loops) < 0) {
+        const crossingRight = Math.cos(prevT * loops) > 0
+        const side = crossingRight ? 'left' : 'right'
+        const dir = { x: crossingRight ? -1 : 1, y: 0 }
+        this._triggerBounceCallback(side, dir)
+        this._dispatchBounceEvent(side)
+      }
+    } else if (pathType === 'wave') {
+      const xSpan = (w / 2) * scale
+      this.ball.x = cx + xSpan * Math.cos(t)
+      this.ball.y = cy + bandHalfH * ampScale * Math.sin(frequency * t)
+
+      if (prevT > 0 && Math.cos(prevT) * Math.cos(t) < 0) {
+        const crossingRight = Math.cos(prevT) > 0
+        const side = crossingRight ? 'left' : 'right'
+        const dir = { x: crossingRight ? -1 : 1, y: 0 }
+        this._triggerBounceCallback(side, dir)
+        this._dispatchBounceEvent(side)
+      }
+    } else if (
+      pathType === 'custom' &&
+      Array.isArray(config.points) &&
+      config.points.length >= 2
+    ) {
+      const pts = config.points
+      const numPts = pts.length
+      const phase = t / (2 * Math.PI)
+      const currentPos = phase * numPts
+      const idx = Math.floor(currentPos) % numPts
+      const nextIdx = (idx + 1) % numPts
+      const segT = currentPos - Math.floor(currentPos)
+      const smoothT = (1 - Math.cos(segT * Math.PI)) / 2
+      const p1 = pts[idx]
+      const p2 = pts[nextIdx]
+
+      const normX = p1.x + (p2.x - p1.x) * smoothT
+      const normY = p1.y + (p2.y - p1.y) * smoothT
+
+      const yMin = this._getTrackBandYMin()
+      const yMax = this._getTrackBandYMax()
+      this.ball.x = w * 0.05 + normX * (w * 0.9)
+      this.ball.y = yMin + normY * (yMax - yMin)
+
+      if (prevT > 0 && Math.cos(prevT) * Math.cos(t) < 0) {
+        const side = Math.cos(prevT) > 0 ? 'left' : 'right'
+        this._triggerBounceCallback(side, { x: 1, y: 0 })
+        this._dispatchBounceEvent(side)
+      }
+    } else {
+      const xSpan = (w / 2) * scale
+      this.ball.x = cx + xSpan * Math.cos(t)
+      this.ball.y = cy
+      if (prevT > 0 && Math.cos(prevT) * Math.cos(t) < 0) {
+        const crossingRight = Math.cos(prevT) > 0
+        const side = crossingRight ? 'left' : 'right'
+        this._triggerBounceCallback(side, { x: crossingRight ? -1 : 1, y: 0 })
+        this._dispatchBounceEvent(side)
+      }
+    }
+
+    this.ball.vx = 0
+    this.ball.vy = 0
+    this._currPos.x = this.ball.x
+    this._currPos.y = this.ball.y
   }
 
   // ============================================
@@ -1290,6 +1499,13 @@ class PhysicsEngine {
       return
     }
 
+    // Custom movement path (zigzag, spiral, wave, custom waypoints)
+    if (this.ball.customPath) {
+      this._stepCustomPath()
+      this._decayVisualOffset(deltaTime)
+      return
+    }
+
     // Brainspotting: ball position is manually controlled by therapist.
     // No physics updates — position is set via setPosition() from controller input.
     // When a cursor target is set, the ball smoothly chases it instead of teleporting.
@@ -1322,6 +1538,12 @@ class PhysicsEngine {
     // Lemniscate (∞) path: deterministic center-crossing detection replaces wall bounces
     if (this.ball.infinity) {
       this._stepInfinityPath()
+      return
+    }
+
+    // Custom movement path (zigzag, spiral, wave, custom waypoints)
+    if (this.ball.customPath) {
+      this._stepCustomPath()
       return
     }
 
@@ -1844,19 +2066,41 @@ class PhysicsEngine {
     if (command.colorBg !== undefined) this.setBgColor(command.colorBg)
     if (command.ballEmoji !== undefined)
       this.ball.ballEmoji = command.ballEmoji
+    if (command.ballOpacity !== undefined) {
+      this.setBallOpacity(command.ballOpacity)
+    } else if (command.opacity !== undefined) {
+      this.setBallOpacity(command.opacity)
+    }
+    if (command.customPath !== undefined) {
+      this.ball.customPath = command.customPath || null
+      this._customPathT = 0
+      if (command.customPath) {
+        this.ball.infinity = false
+        this.ball.brainspotting = false
+        this.ball.vx = 0
+        this.ball.vy = 0
+      }
+    }
+    if (command.customPathConfig !== undefined) {
+      this.ball.customPathConfig = command.customPathConfig
+    }
     if (typeof command.infinity === 'boolean') {
       this.ball.infinity = command.infinity
       // Reset phase on any infinity state change so viewer and controller preview
       // always start lemniscate from the same origin (t=0)
       this._infinityT = 0
-      // Entering infinity disables brainspotting
-      if (command.infinity) this.ball.brainspotting = false
+      // Entering infinity disables brainspotting and custom path
+      if (command.infinity) {
+        this.ball.brainspotting = false
+        this.ball.customPath = null
+      }
     }
     if (typeof command.brainspotting === 'boolean') {
       this.ball.brainspotting = command.brainspotting
-      // Entering brainspotting disables infinity
+      // Entering brainspotting disables infinity and custom path
       if (command.brainspotting) {
         this.ball.infinity = false
+        this.ball.customPath = null
         // Ball stays at current position — therapist moves it manually
       } else {
         // Leaving brainspotting: drop any pending cursor-chase target
@@ -1908,6 +2152,7 @@ class PhysicsEngine {
    * @private
    */
   _handleViewerPositionUpdate(command) {
+    if (this.ball.infinity || this.ball.customPath) return
     if (command.x === undefined || command.y === undefined) return
 
     const cx = clamp(
@@ -1979,6 +2224,7 @@ class PhysicsEngine {
    * @private
    */
   _handleViewerVelocityUpdate(command) {
+    if (this.ball.infinity || this.ball.customPath) return
     if (this.options.clientSimulation) return
 
     let newVx = command.vx
@@ -2172,7 +2418,7 @@ class PhysicsEngine {
    * @private
    */
   _handleServerUnpause(command) {
-    if (this.ball.infinity) return
+    if (this.ball.infinity || this.ball.customPath) return
     const willBeUnpaused =
       command.paused === false || this.state.paused === false
     if (willBeUnpaused) {

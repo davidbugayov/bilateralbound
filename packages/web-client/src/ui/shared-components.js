@@ -15,9 +15,9 @@ class SharedComponents {
    */
   createSpeedControl(container, options = {}) {
     const defaultOptions = {
-      min: 5, // Новое минимальное значение - медленная скорость
-      max: 100, // Максимальное значение - быстрая скорость
-      defaultValue: 30, // Установлено значение "Средне" (30)
+      min: 5,
+      max: 100,
+      defaultValue: 30,
       onSpeedChange: null,
       showValue: true,
       showLabels: true,
@@ -30,121 +30,93 @@ class SharedComponents {
       currentSpeed: defaultOptions.defaultValue,
       elements: {},
       render() {
+        const existingRange =
+          document.getElementById('speedSlider') ||
+          document.getElementById('speedRange') ||
+          container?.querySelector?.('.speed-range')
+        if (existingRange) {
+          this.setupElements()
+          this.setupEventListeners()
+          this.setSpeed(this.currentSpeed, true)
+          return this
+        }
         const speedControl = document.createElement('div')
         speedControl.className = 'speed-control'
-        if (defaultOptions.simple) {
-          speedControl.innerHTML = `
+        speedControl.innerHTML = `
   <div class="speed-info">
   ${
     defaultOptions.showValue
-      ? `<div class="speed-display"><span class="speed-value">${(() => {
-          const v = globalThis.i18n?.t('controller.speedMedium')
-          return v && v !== 'controller.speedMedium' ? v : 'Medium'
-        })()}</span></div>`
+      ? '<div class="speed-display"><span class="speed-value">30%</span> <span class="speed-category">(Medium)</span></div>'
       : ''
   }
   </div>
   <div class="speed-slider-container">
-  <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
+  <label for="speedSlider" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
   <input type="range"
-  id="speedRange"
-  class="speed-range"
+  id="speedSlider"
+  class="speed-range styled-slider"
   min="${defaultOptions.min}"
   max="${defaultOptions.max}"
-  value="${defaultOptions.currentSpeed}"
+  value="${defaultOptions.currentSpeed || defaultOptions.defaultValue}"
   step="1">
   </div>
   `
-        } else {
-          speedControl.innerHTML = `
-  <div class="speed-header">
-  <div class="speed-icon">⚡</div>
-  <div class="speed-info">
-  ${
-    defaultOptions.showValue
-      ? `<div class="speed-display"><span class="speed-value">${(() => {
-          const v = globalThis.i18n?.t('controller.speedMedium')
-          return v && v !== 'controller.speedMedium' ? v : 'Medium'
-        })()}</span></div>`
-      : ''
-  }
-  </div>
-  <div class="speed-indicator">
-  <div class="speed-bar">
-  <div class="speed-fill" style="width: 40%"></div>
-  </div>
-  </div>
-  </div>
-  <div class="speed-controls">
-  <div class="speed-presets">
-  <button class="speed-preset slow" data-speed="20">🐌<span>${(() => {
-    const v = globalThis.i18n?.t('controller.speedSlow')
-    return v && v !== 'controller.speedSlow' ? v : 'Slow'
-  })()}</span></button>
-  <button class="speed-preset normal active" data-speed="40">⚡<span>${(() => {
-    const v = globalThis.i18n?.t('controller.speedMedium')
-    return v && v !== 'controller.speedMedium' ? v : 'Medium'
-  })()}</span></button>
-  <button class="speed-preset fast" data-speed="80">🚀<span>${(() => {
-    const v = globalThis.i18n?.t('controller.speedFast')
-    return v && v !== 'controller.speedFast' ? v : 'Fast'
-  })()}</span></button>
-  </div>
-  <div class="speed-slider-container">
-  <label for="speedRange" class="sr-only" data-i18n="controller.speedTitle">Speed</label>
-  <div class="speed-track">
-  <input type="range"
-  id="speedRange"
-  class="speed-range"
-  min="${defaultOptions.min}"
-  max="${defaultOptions.max}"
-  value="${defaultOptions.currentSpeed}"
-  step="1">
-  <div class="speed-marks">
-  <span class="mark" style="left: 0">0</span>
-  <span class="mark" style="left: 25%">25</span>
-  <span class="mark" style="left: 50%">50</span>
-  <span class="mark" style="left: 75%">75</span>
-  <span class="mark" style="left: 100%">100</span>
-  </div>
-  </div>
-  </div>
-  </div>
-  `
+        if (container) {
+          container.appendChild(speedControl)
         }
-        container.appendChild(speedControl)
         this.setupElements()
         this.setupEventListeners()
+        this.setSpeed(this.currentSpeed, true)
         return this
       },
       setupElements() {
-        this.elements.range = container.querySelector('.speed-range')
-        this.elements.value = container.querySelector('.speed-value')
-        this.elements.display = container.querySelector('.speed-display')
-        this.elements.fill = container.querySelector('.speed-fill')
-        this.elements.presets = container.querySelectorAll('.speed-preset')
+        this.elements.range =
+          document.getElementById('speedSlider') ||
+          document.getElementById('speedRange') ||
+          container?.querySelector?.('.speed-range')
+        this.elements.value =
+          document.getElementById('speedValue') ||
+          container?.querySelector?.('.speed-value')
+        this.elements.category =
+          document.getElementById('speedCategory') ||
+          container?.querySelector?.('.speed-category')
+        this.elements.display =
+          document.getElementById('speedDisplay') ||
+          container?.querySelector?.('.speed-display')
+        this.elements.fill = container?.querySelector?.('.speed-fill')
+        this.elements.presets =
+          document.querySelectorAll('.speed-preset-btn, .speed-preset')
       },
       setupEventListeners() {
         if (this.elements.range) {
-          this.elements.range.addEventListener('input', (e) => {
-            this.setSpeed(Number.parseInt(e.target.value, 10))
-          })
+          const onRangeInput = (e) => {
+            const val = Number.parseInt(e.target.value, 10)
+            if (!Number.isNaN(val)) {
+              this.setSpeed(val)
+            }
+          }
+          this.elements.range.addEventListener('input', onRangeInput)
+          this.elements.range.addEventListener('change', onRangeInput)
         }
         if (this.elements?.presets?.length) {
           for (const preset of this.elements.presets) {
             preset.addEventListener('click', () => {
               const speed = Number.parseInt(preset.dataset.speed, 10)
-              this.setSpeed(speed)
-              this.updateActivePreset(speed)
+              if (!Number.isNaN(speed)) {
+                this.setSpeed(speed)
+              }
             })
           }
         }
       },
       updateActivePreset(speed) {
-        if (this.elements?.presets?.length === 0) {
+        const presets = document.querySelectorAll(
+          '.speed-preset, .speed-preset-btn'
+        )
+        if (!presets || presets.length === 0) {
           return
         }
-        for (const preset of this.elements.presets) {
+        for (const preset of presets) {
           preset.classList.remove('active')
         }
         let activePreset = null
@@ -155,56 +127,102 @@ class SharedComponents {
         } else {
           activePreset = 'fast'
         }
-        const activeElement = container.querySelector(
-          `.speed-preset.${activePreset}`
-        )
-        if (activeElement) {
-          activeElement.classList.add('active')
+        for (const preset of presets) {
+          const pSpeed = Number.parseInt(preset.dataset.speed, 10)
+          if (
+            (activePreset === 'slow' &&
+              (preset.classList.contains('slow') || pSpeed <= 30)) ||
+            (activePreset === 'normal' &&
+              (preset.classList.contains('normal') ||
+                (pSpeed > 30 && pSpeed <= 60))) ||
+            (activePreset === 'fast' &&
+              (preset.classList.contains('fast') || pSpeed > 60))
+          ) {
+            preset.classList.add('active')
+            break
+          }
         }
       },
       setSpeed(speed, silent = false) {
         this.currentSpeed = Math.max(
           this.options.min,
-          Math.min(this.options.max, speed)
+          Math.min(this.options.max, Number(speed) || this.options.defaultValue)
         )
         if (this.elements.range) {
           this.elements.range.value = this.currentSpeed
+          const pct = Math.round(
+            ((this.currentSpeed - this.options.min) /
+              (this.options.max - this.options.min)) *
+              100
+          )
+          this.elements.range.style.setProperty('--pct', `${pct}%`)
+        }
+        const fsSpeed = document.getElementById('fsSpeed')
+        if (fsSpeed && fsSpeed !== this.elements.range) {
+          fsSpeed.value = this.currentSpeed
         }
         // Get speed category and color based on current speed
         const { category, color } = this._getSpeedCategoryAndColor(
           this.currentSpeed
         )
         if (this.elements.value) {
-          this.elements.value.textContent = category
-          this.elements.value.style.color = color
+          this.elements.value.textContent = `${this.currentSpeed}%`
+        }
+        if (this.elements.category) {
+          this.elements.category.textContent = `(${category})`
+          this.elements.category.style.color = color
         }
         if (this.elements.fill) {
           this.elements.fill.style.width = `${this.currentSpeed}%`
           this.elements.fill.style.background = color
         }
         this.updateActivePreset(this.currentSpeed)
+
+        // Real-time local preview animation update
+        if (
+          globalThis.previewPhysicsEngine &&
+          typeof globalThis.previewPhysicsEngine.setSpeed === 'function'
+        ) {
+          globalThis.previewPhysicsEngine.setSpeed(this.currentSpeed)
+        }
+
         if (!silent && this.options.onSpeedChange) {
           this.options.onSpeedChange(this.currentSpeed)
         }
       },
       _getSpeedCategoryAndColor(speed) {
-        const t = (key) => {
+        const t = (key, fallback) => {
           const v = globalThis.i18n?.t(key)
-          return v && v !== key ? v : key
+          return v && v !== key ? v : fallback
         }
         if (speed <= 15) {
-          return { category: t('controller.speedVerySlow'), color: '#22c55e' }
+          return {
+            category: t('controller.speedVerySlow', 'Very slow'),
+            color: '#22c55e'
+          }
         }
         if (speed <= 25) {
-          return { category: t('controller.speedSlow'), color: '#3b82f6' }
-        }
-        if (speed <= 35) {
-          return { category: t('controller.speedMedium'), color: '#8b5cf6' }
+          return {
+            category: t('controller.speedSlow', 'Slow'),
+            color: '#38bdf8'
+          }
         }
         if (speed <= 50) {
-          return { category: t('controller.speedFast'), color: '#f59e0b' }
+          return {
+            category: t('controller.speedMedium', 'Medium'),
+            color: '#818cf8'
+          }
         }
-        return { category: t('controller.speedVeryFast'), color: '#ef4444' }
+        if (speed <= 75) {
+          return {
+            category: t('controller.speedFast', 'Fast'),
+            color: '#f59e0b'
+          }
+        }
+        return {
+          category: t('controller.speedVeryFast', 'Very fast'),
+          color: '#ef4444'
+        }
       },
       getSpeed() {
         return this.currentSpeed

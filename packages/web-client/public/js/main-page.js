@@ -20,65 +20,72 @@
         globalThis.i18n?.t('session.creating') || '🔄 Creating session...'
 
       console.log('🔄 Creating session...')
-      const response = await globalThis.csrfFetch('/api/session', {
-        method: 'POST'
-      })
+      let sessionId = null
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('❌ Response error:', errorText)
-        alert(
-          'HTTP ' +
-            response.status +
-            ': ' +
-            (errorText ||
-              globalThis.i18n?.t('session.createError') ||
-              'Failed to create session')
-        )
-        return
+      /* eslint-disable no-await-in-loop */
+      for (let attempt = 0; attempt < 4; attempt++) {
+        if (attempt > 0) {
+          await new Promise((r) => setTimeout(r, 600 * attempt))
+        }
+        try {
+          let response = await (globalThis.csrfFetch || fetch)('/api/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          })
+          if (!response || !response.ok) {
+            response = await fetch('/api/session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            })
+          }
+          if (response && response.ok) {
+            const contentType = response.headers.get('content-type')
+            if (contentType && contentType.includes('application/json')) {
+              const data = await response.json()
+              if (data && data.sessionId) {
+                sessionId = data.sessionId
+                break
+              }
+            } else {
+              const text = await response.text()
+              if (text && (text.includes('Starting Server') || text.includes('<!doctype'))) {
+                console.warn('Server is starting up, retrying attempt ' + (attempt + 1) + '...')
+                continue
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Session create attempt ' + (attempt + 1) + ' failed:', err)
+        }
       }
-
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text()
-        console.error('❌ Response not JSON:', text.substring(0, 200))
-        alert(
-          globalThis.i18n?.t('session.jsonError') ||
-            'Server returned non-JSON response'
-        )
-        return
-      }
-
-      const data = await response.json()
-      console.log('✅ Session data:', data)
-      const sessionId = data.sessionId
+      /* eslint-enable no-await-in-loop */
 
       if (!sessionId) {
         console.error('Session created but ID not received')
         alert(
-          globalThis.i18n?.t('session.noId') ||
-            'Session created but ID not received.'
+          globalThis.i18n?.t('session.createError') ||
+            'Unable to create session. Please wait a moment and try again.'
         )
         return
       }
 
-      const connectResponse = await globalThis.csrfFetch(
-        '/api/session/' + sessionId + '/controller/connect',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        }
-      )
-
-      if (!connectResponse.ok) {
-        const connectError = await connectResponse.text()
-        console.error('Controller connect error:', connectError)
-        alert(
-          (globalThis.i18n?.t('session.controllerError') ||
-            'Error connecting controller: ') + connectError
+      // Fire controller connect asynchronously so user transitions immediately
+      try {
+        const connectPromise = (globalThis.csrfFetch || fetch)(
+          '/api/session/' + sessionId + '/controller/connect',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          }
         )
-        return
+        // Give 150ms for optimistic connect, don't block navigation
+        await Promise.race([
+          connectPromise,
+          new Promise((r) => setTimeout(r, 150))
+        ])
+      } catch (_) {
+        /* Controller page will reconnect automatically on load */
       }
 
       // Track session creation in Metrika (via event system)

@@ -598,10 +598,17 @@ class ControllerSettingsManager {
     const ballColor = settings.ballColor || settings.colorBall
     const bgColor = settings.bgColor || settings.colorBg
     const ballSize = settings.ballSize || settings.size
+    const ballOpacity = settings.ballOpacity ?? settings.opacity
     await this._applySpeedSetting(settings.speed)
     this._applyDirectionSetting(settings.direction)
     this._applyColorSettings(ballColor, bgColor)
     this._applySizeSetting(ballSize)
+    if (
+      ballOpacity !== undefined &&
+      typeof globalThis.setBallOpacity === 'function'
+    ) {
+      globalThis.setBallOpacity(ballOpacity)
+    }
     if (
       typeof settings.soundEnabled === 'boolean' &&
       typeof globalThis.setSoundEnabled === 'function'
@@ -690,6 +697,9 @@ class ControllerSettingsManager {
       ballColor: colorBtn?.style?.backgroundColor ?? '#60a5fa',
       bgColor: document.body.style.backgroundColor || '#020617',
       ballSize: document.querySelector('.size-btn.active')?.dataset?.size ?? 40,
+      ballOpacity: Number(
+        document.getElementById('ballOpacitySlider')?.value ?? 100
+      ),
       soundEnabled:
         document.getElementById('soundEnabledCheckbox')?.checked ?? false,
       soundType: document.getElementById('soundTypeSelect')?.value ?? 'soft',
