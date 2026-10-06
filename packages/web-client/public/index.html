@@ -458,7 +458,49 @@
               <stop offset="0%" stop-color="#67e8f9" />
               <stop offset="100%" stop-color="#2563eb" />
             </radialGradient>
+            <radialGradient id="heroTrailGrad" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="#a5f3fc" />
+              <stop offset="60%" stop-color="#38bdf8" />
+              <stop offset="100%" stop-color="#2563eb" />
+            </radialGradient>
           </defs>
+          <!-- Motion trail circles fading out behind the main ball during movement -->
+          <circle
+            class="hero__ball-trail hero__ball-trail--5"
+            cx="450"
+            cy="35"
+            r="6"
+            fill="url(#heroTrailGrad)"
+          />
+          <circle
+            class="hero__ball-trail hero__ball-trail--4"
+            cx="450"
+            cy="35"
+            r="8"
+            fill="url(#heroTrailGrad)"
+          />
+          <circle
+            class="hero__ball-trail hero__ball-trail--3"
+            cx="450"
+            cy="35"
+            r="10"
+            fill="url(#heroTrailGrad)"
+          />
+          <circle
+            class="hero__ball-trail hero__ball-trail--2"
+            cx="450"
+            cy="35"
+            r="11.5"
+            fill="url(#heroTrailGrad)"
+          />
+          <circle
+            class="hero__ball-trail hero__ball-trail--1"
+            cx="450"
+            cy="35"
+            r="13"
+            fill="url(#heroTrailGrad)"
+          />
+          <!-- Main Hero Ball -->
           <circle
             class="hero__ball-svg"
             cx="450"
